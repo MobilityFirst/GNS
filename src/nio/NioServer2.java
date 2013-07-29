@@ -8,8 +8,8 @@ package nio;
  * To change this template use File | Settings | File Templates.
  */
 
-import edu.umass.cs.gnrs.main.GNS;
-import edu.umass.cs.gnrs.main.StartNameServer;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import org.json.JSONObject;
 
 import java.io.IOException;

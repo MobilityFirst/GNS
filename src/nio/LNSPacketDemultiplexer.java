@@ -6,7 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 //import edu.umass.cs.gnrs.localnameserver.LNSListenerUpdate;
-import edu.umass.cs.gnrs.packet.Packet;
+import edu.umass.cs.gns.packet.Packet;
 
 public class LNSPacketDemultiplexer extends PacketDemultiplexer{
 

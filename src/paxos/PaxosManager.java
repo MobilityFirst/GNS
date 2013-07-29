@@ -1,13 +1,13 @@
 package paxos;
 
-import edu.umass.cs.gnrs.main.GNS;
-import edu.umass.cs.gnrs.main.GNS.PortType;
-import edu.umass.cs.gnrs.main.StartNameServer;
-import edu.umass.cs.gnrs.nameserver.NameServer;
-import edu.umass.cs.gnrs.packet.Packet;
-import edu.umass.cs.gnrs.packet.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gnrs.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gnrs.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.GNS.PortType;
+import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import nio.ByteStreamToJSONObjects;
 import nio.NioServer2;
 import nio.PacketDemultiplexer;

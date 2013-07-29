@@ -1,8 +1,19 @@
 package paxos;
 
-import edu.umass.cs.gnrs.main.GNS;
-import edu.umass.cs.gnrs.main.StartNameServer;
-import edu.umass.cs.gnrs.packet.paxospacket.*;
+import edu.umass.cs.gns.packet.paxospacket.AcceptReplyPacket;
+import edu.umass.cs.gns.packet.paxospacket.SynchronizeReplyPacket;
+import edu.umass.cs.gns.packet.paxospacket.SendCurrentStatePacket;
+import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.packet.paxospacket.SynchronizePacket;
+import edu.umass.cs.gns.packet.paxospacket.PreparePacket;
+import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.packet.paxospacket.AcceptPacket;
+import edu.umass.cs.gns.packet.paxospacket.ProposalPacket;
+import edu.umass.cs.gns.packet.paxospacket.PValuePacket;
+import edu.umass.cs.gns.packet.paxospacket.Packet;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import org.json.JSONException;
 import org.json.JSONObject;
 

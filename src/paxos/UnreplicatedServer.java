@@ -1,7 +1,7 @@
 package paxos;
 
-import edu.umass.cs.gnrs.main.GNS;
-import edu.umass.cs.gnrs.main.StartNameServer;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import nio.ByteStreamToJSONObjects;
 import nio.NioServer2;
 import nio.PacketDemultiplexer;

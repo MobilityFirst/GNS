@@ -1,10 +1,10 @@
 package paxos;
 
-import edu.umass.cs.gnrs.main.GNS;
-import edu.umass.cs.gnrs.main.StartNameServer;
-import edu.umass.cs.gnrs.packet.paxospacket.PValuePacket;
-import edu.umass.cs.gnrs.packet.paxospacket.ProposalPacket;
-import edu.umass.cs.gnrs.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.packet.paxospacket.PValuePacket;
+import edu.umass.cs.gns.packet.paxospacket.ProposalPacket;
+import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 

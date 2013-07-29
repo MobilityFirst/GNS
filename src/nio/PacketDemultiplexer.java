@@ -2,7 +2,7 @@ package nio;
 
 import java.util.ArrayList;
 
-import edu.umass.cs.gnrs.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.ConfigFileInfo;
 
 public abstract class PacketDemultiplexer {
 	

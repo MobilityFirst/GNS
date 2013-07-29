@@ -1,10 +1,10 @@
 package nio;
 
-import edu.umass.cs.gnrs.main.GNS;
-import edu.umass.cs.gnrs.main.GNS.PortType;
-import edu.umass.cs.gnrs.main.StartNameServer;
-import edu.umass.cs.gnrs.packet.Packet;
-import edu.umass.cs.gnrs.util.ConfigFileInfo;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.GNS.PortType;
+import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 

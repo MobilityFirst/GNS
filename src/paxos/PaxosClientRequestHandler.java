@@ -1,7 +1,7 @@
 package paxos;
 
-import edu.umass.cs.gnrs.packet.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gnrs.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 
 /**
  * Created with IntelliJ IDEA.
