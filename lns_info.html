@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>Distributed Name Service</title>
+<link href="http://code.google.com/apis/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript">
+var map;
+var infowindow = new google.maps.InfoWindow();
+function initialize() {
+  var myLatlng = new google.maps.LatLng(40.814,-73.6081);
+  var myOptions = {
+    zoom: 4,
+    center: myLatlng,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  }
+
+  map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	
+  var image = 'blue-dot.png';
+  var ns = [
+['University of Florida - ACIS Lab', 10061, 29.68, -82.27, ['planetlab1.acis.ufl.edu', 10172, '128.227.150.11', 'boot']]
+ ,['University of Pittsburgh', 10066, 40.26, -80.0, ['planetlab1.cs.pitt.edu', 10175, '130.49.221.40', 'boot']]
+ ,['University of North Carolina at Charlotte', 10067, 35.3061, -80.7326, ['planetlab01.uncc.edu', 10326, '152.15.98.226', 'boot']]
+ ,['George Mason University', 10064, 38.51, -77.18, ['plgmu2.ite.gmu.edu', 10254, '199.26.254.66', 'boot']]
+ ,['Tel Aviv Yaffo College', 11543, 32.0479, 34.761, ['planetlab1.mta.ac.il', 13994, '', 'boot']]
+ ,['Tennessee State University', 11541, 36.1659, -86.8313, ['planetlab1.tsuniv.edu', 13786, '206.23.240.28', 'boot']]
+ ,['Moscow Institute of Electronic Technology, TU MIET', 10211, 55.59, 37.11, ['mercury.silicon-valley.ru', 10783, '82.179.176.42', 'boot']]
+ ,['Orbit', 10108, 40.48, -74.45, ['orbpl2.rutgers.edu', 10379, '128.6.192.156', 'boot']]
+ ,['ITEC, Klagenfurt University', 11544, 46.62, 14.3, ['plab1-itec.uni-klu.ac.at', 13782, '', 'boot']]
+ ,['University of South Florida (CSE)', 10107, 28.0587, -82.4152, ['planetlab4.csee.usf.edu', 11042, '131.247.2.245', 'boot']]
+ ,['University of California, Santa Cruz', 138, 37.0, -122.06, ['planetslug5.cse.ucsc.edu', 11065, '128.114.63.64', 'boot']]
+ ,['Indiana University (Bloomington)', 10100, 39.1708, -86.5372, ['pl2.ucs.indiana.edu', 11015, '156.56.250.227', 'boot']]
+ ,['University of California at Berkeley', 24, 37.8757, -122.259, ['planetlab12.millennium.berkeley.edu', 3215, '169.229.50.14', 'boot']]
+ ,['Telecom and Management Sud Paris', 11381, 48.0, 2.0, ['planetlab-node1.it-sudparis.eu', 13187, '', 'boot']]
+ ,['Rice University', 26, 29.7225, -95.3924, ['ricepl-5.cs.rice.edu', 13566, '128.42.142.45', 'boot']]
+ ,['Eotvos Lorand University', 11383, 47.4744, 19.0622, ['planet1.elte.hu', 13113, '', 'boot'], ['planet2.elte.hu', 13114, '', 'boot']]
+ ,['University of Michigan', 21, 42.2944, -83.7126, ['planetlab3.eecs.umich.edu', 11077, '141.212.113.178', 'boot']]
+ ,['University of California at Santa Barbara', 22, 34.4285, -119.722, ['planet6.cs.ucsb.edu', 13626, '128.111.52.59', 'boot'], ['planet3.cs.ucsb.edu', 11382, '128.111.52.63', 'boot']]
+ ,['Oklahoma State University', 11660, 36.1222, -97.0714, ['planetlab1.cs.okstate.edu', 14100, '139.78.141.243', 'boot']]
+ ,['Cal Poly State University SLO', 11389, 35.3006, -120.662, ['planetlab-2.calpoly-netlab.net', 13150, '208.94.63.194', 'boot']]
+ ,['Nanyang Technological University', 11461, 1.34618, 103.682, ['pnode2.pdcc-ntu.singaren.net.sg', 13581, '203.30.39.239', 'boot']]
+ ,['University of Kentucky', 4, 38.0401, -84.5054, ['planetlab2.netlab.uky.edu', 74, '128.163.142.21', 'boot']]
+ ,['Lawrence Berkeley National Laboratory', 8, 37.8702, -122.268, ['node1.lbnl.nodes.planet-lab.org', 8159, '198.128.56.11', 'boot']]
+ ,['University of Melbourne - CSSE', 220, -37.8, 144.9, ['plnode02.cs.mu.oz.au', 8262, '220.245.140.197', 'boot']]
+ ,['University of Connecticut', 10059, 41.49, -72.15, ['planetlab1.engr.uconn.edu', 10157, '137.99.11.86', 'boot']]
+ ,['Osaka City University', 10286, 34.5927, 135.504, ['planetlab4.n.info.eng.osaka-cu.ac.jp', 13342, '160.193.163.106', 'boot']]
+ ,['Technical University of Madrid', 11539, 40.42, -3.72, ['planetlab2.dit.upm.es', 13921, '', 'boot']]
+ ,['Iowa State University Electrical and Computer Engineering', 10050, 42.02, -93.37, ['planetlab-6.ece.iastate.edu', 11494, '129.186.205.78', 'boot']]
+ ,['University of Oregon', 120, 44.04, -123.06, ['planetlab4.cs.uoregon.edu', 13428, '128.223.8.114', 'boot'], ['planetlab1.cs.uoregon.edu', 13431, '128.223.8.111', 'boot']]
+ ,['ETH Zuerich - Computer Science', 10205, 47.3794, 8.54513, ['planetlab4.inf.ethz.ch', 10737, '192.33.90.69', 'boot']]
+ ,['Universitat Rovira i Virgili', 11579, 41.07, 1.15, ['planetlab1.urv.cat', 13843, '', 'boot']]
+ ,['University of Ioannina', 11577, 39.6182, 20.8386, ['planetlab1.cs.uoi.gr', 13844, '', 'boot']]
+ ,['University of Passau', 11575, 48.58, 13.47, ['aladdin.planetlab.extranet.uni-passau.de', 13810, '', 'boot']]
+ ,['Virginia Tech', 10208, 37.2055, -80.4124, ['planetlab-04.vt.nodes.planet-lab.org', 13508, '198.82.160.221', 'boot']]
+ ,['University of Illinois at Urbana-Champaign', 58, 40.1103, -88.2272, ['planetlab4.cs.uiuc.edu', 10431, '72.36.112.74', 'boot']]
+ ,['PlanetLab Colo - CLARA Santiago', 10214, -33.45, -70.55, ['planetlab2-santiago.lan.redclara.net', 10756, '200.0.206.203', 'boot']]
+ ,['Telecom Lille 1', 11371, 50.6103, 3.13525, ['node2pl.planet-lab.telecom-lille1.eu', 13055, '', 'boot']]
+ ,['Universita di Pisa', 11372, 43.7207, 10.3852, ['onelab6.iet.unipi.it', 13532, '', 'boot']]
+ ,['IT/ISCTE-IUL', 11564, 38.43, -9.08, ['planetlab-1.iscte.pt', 13800, '', 'boot']]
+ ,['Monash University', 11470, -37.9096, 145.133, ['pl2.eng.monash.edu.au', 13536, '130.194.252.9', 'boot']]
+ ,['North Carolina State University', 137, 35.7667, -78.6333, ['planet11.csc.ncsu.edu', 13486, '152.14.93.140', 'boot']]
+ ,['Hiroshima City University - Information Science', 11478, 34.4403, 132.415, ['pl2.sos.info.hiroshima-cu.ac.jp', 13546, '165.242.90.129', 'boot']]
+ ,['Petru Maior University of Targu Mures', 11479, 46.547, 24.566, ['planetlab1.upm.ro', 13560, '', 'boot']]
+ ,['SRI International', 10323, 37.4557, -122.178, ['pl-node-0.csl.sri.com', 11498, '192.12.33.100', 'boot']]
+ ,['University of Ottawa', 10326, 45.4205, -75.6813, ['pl2.rcc.uottawa.ca', 13335, '216.48.80.14', 'boot']]
+ ,['The Hong Kong University of Science and Technology', 191, 22.3, 114.166, ['plab1.cs.ust.hk', 8207, '143.89.197.12', 'boot']]
+ ,['BeiHang University', 192, 39.9, 116.5, ['planetlab2.buaa.edu.cn', 13791, '202.112.128.11', 'boot']]
+ ,['DePaul University', 114, 41.88, -87.63, ['planetlab1.mnlab.cti.depaul.edu', 10093, '140.192.249.203', 'boot']]
+ ,['RNP - Rio Grande do Sul', 230, -30.0533, -51.13, ['planetlab1.pop-rs.rnp.br', 8320, '200.132.1.4', 'boot']]
+ ,['Japan Advanced Institute of Science and Technology (JAIST)', 10127, 39.38, 140.05, ['planet0.jaist.ac.jp', 10446, '150.65.32.66', 'boot']]
+ ,['Aston University', 11548, 52.4866, -1.89098, ['planetlab1.aston.ac.uk', 13907, '', 'boot']]
+ ,['University of Cyprus', 11566, 35.15, 33.36, ['planetlab-4.cs.ucy.ac.cy', 14131, '', 'boot']]
+ ,['HAW Hamburg', 11549, 53.5686, 10.0386, ['mars.planetlab.haw-hamburg.de', 13784, '', 'boot']]
+ ,['The Hebrew University of Jerusalem', 11363, 31.7857, 35.2007, ['planet3.cs.huji.ac.il', 13061, '', 'boot']]
+ ,['Universita degli Studi di Trento', 11361, 46.066, 11.15, ['planetlab1.science.unitn.it', 13079, '', 'boot']]
+ ,['Vrije Universiteit', 11601, 52.35, 4.9, ['planetlab1.cs.vu.nl', 13868, '', 'boot']]
+ ,['The Koszalin University of Technology', 11446, 54.2047, 16.1972, ['ple2.tu.koszalin.pl', 13461, '', 'boot']]
+ ,['University of Arizona', 7, 32.2333, -110.948, ['planetlab2.arizona-gigapop.net', 11076, '206.207.248.35', 'boot']]
+ ,['Illinois Institute of Technology', 10134, 41.8383, -87.629, ['server2.planetlab.iit-tech.net', 10465, '192.42.83.252', 'boot']]
+ ,['University of Essex', 11380, 51.8754, 0.944138, ['uoepl1.essex.ac.uk', 13912, '', 'boot']]
+ ,['Stanford University', 25, 37.4294, -122.172, ['planet1.scs.stanford.edu', 4, '171.66.3.181', 'boot']]
+ ,['Washington State University', 10138, 46.731, -117.178, ['planetlab2.eecs.wsu.edu', 10485, '134.121.64.7', 'boot']]
+ ,['Laboratoire dInformatique de Grenoble', 11382, 45.2174, 5.80872, ['planetlab-1.imag.fr', 13173, '', 'boot']]
+ ,['Texas AM University', 109, 30.61, -96.34, ['planetlab3.tamu.edu', 13850, '165.91.55.10', 'boot']]
+ ,['University of Colorado at Boulder', 10038, 40.0072, -105.262, ['planetlab1.cs.colorado.edu', 10112, '128.138.207.54', 'boot']]
+ ,['University of Stuttgart - IPVS', 11551, 48.7835, 9.17517, ['planetvs1.informatik.uni-stuttgart.de', 13780, '', 'boot']]
+ ,['Universitat Pompeu Fabra - NeTS', 11359, 41.3849, 2.1864, ['planetlabpc1.upf.edu', 13736, '', 'boot']]
+ ,['University of Massachusetts at Amherst', 38, 42.3949, -72.5274, ['planetlab1.cs.umass.edu', 19, '128.119.41.210', 'boot']]
+ ,['Sun Yat-Sen University', 11519, 23.0993, 113.299, ['planetlab-2.sysu.edu.cn', 13757, '202.116.81.195', 'boot']]
+ ,['Cornell University', 33, 42.4436, -76.4816, ['planetlab4-dsl.cs.cornell.edu', 10240, '141.149.218.209', 'boot']]
+ ,['National NetWork New Media Engineering Research Center', 11517, 39.92, 116.46, ['planet2.dsp.ac.cn', 13735, '210.75.225.62', 'boot']]
+ ,['Instituto Tecnologico Buenos Aires', 11387, -34.6039, -58.3679, ['planet-lab1.itba.edu.ar', 13134, '190.227.163.142', 'boot']]
+ ,['University of British Columbia', 36, 49.2637, -123.237, ['planetlab1.cs.ubc.ca', 14, '142.103.2.1', 'boot']]
+ ,['University of Tennessee at Knoxville', 34, 35.9483, -83.9367, ['pl2.eecs.utk.edu', 12, '160.36.57.173', 'boot']]
+ ,['University of Zurich, Communication Systems Group', 11596, 47.23, 8.32, ['planetlab1.csg.uzh.ch', 13881, '', 'boot']]
+ ,['University of St Andrews', 11591, 56.25, -3.03, ['planetlab3.cs.st-andrews.ac.uk', 13953, '', 'boot']]
+ ,['Jordan University of Science and Technology', 11459, 32.4931, 35.9875, ['planetlab1.just.edu.jo', 13464, '87.236.232.153', 'boot']]
+ ,['Helsinki Institute for Information Technology', 11593, 60.1, 25.0, ['planetlab3.hiit.fi', 13916, '', 'boot']]
+ ,['National Chung Cheng University', 11454, 23.5619, 120.478, ['planetlab-1.webedu.ccu.edu.tw', 13416, '140.123.230.248', 'boot']]
+ ,['Shanghai Jiaotong University', 11457, 31.1992, 121.43, ['planetlab-2.sjtu.edu.cn', 13459, '202.112.28.100', 'boot']]
+ ,['Space Monitoring Data Center SINP MSU', 10229, 55.6955, 37.5347, ['plab-1.sinp.msu.ru', 10792, '213.131.1.101', 'boot']]
+ ,['Keio University', 10145, 35.5546, 140.059, ['planetlab1.sfc.wide.ad.jp', 10505, '203.178.143.10', 'boot']]
+ ,['Academia Sinica - Taiwan', 61, 25.02, 121.37, ['planetlab1.iis.sinica.edu.tw', 150, '140.109.17.180', 'boot']]
+ ,['Boston University', 63, 42.35, -71.1, ['planetlab-02.bu.edu', 10815, '204.8.155.227', 'boot']]
+ ,['Toyohashi University of Technology', 10250, 34.7008, 137.41, ['pl1.planetlab.ics.tut.ac.jp', 10881, '133.15.59.1', 'boot']]
+ ,['Technical University Ilmenau', 11571, 50.6803, 10.9314, ['planet2.prakinf.tu-ilmenau.de', 13871, '', 'boot']]
+ ,['Michigan Technological University', 10256, 47.1181, -88.5463, ['mtuplanetlab2.cs.mtu.edu', 13125, '141.219.252.133', 'boot']]
+ ,['University of Massachusetts Dartmouth', 11538, 41.6286, -71.0061, ['planetlab1.umassd.edu', 13923, '134.88.5.251', 'boot']]
+ ,['Netgroup at University of Rome "Tor Vergata"', 11500, 41.8556, 12.6243, ['planet-lab-node1.netgroup.uniroma2.it', 13653, '', 'boot']]
+ ,['IRISA', 11501, 48.1155, -1.65071, ['inriarennes1.irisa.fr', 13662, '', 'boot']]
+ ,['Swedish Institute of Computer Science', 11585, 59.3333, 18.05, ['planetlab1.sics.se', 13880, '', 'boot']]
+ ,['University of Neuchatel', 11583, 46.59, 6.56, ['planetlab2.unineuchatel.ch', 13860, '', 'boot']]
+ ,['Imperial College London', 11580, 51.1, -0.1, ['planetlab-4.imperial.ac.uk', 13879, '', 'boot']]
+ ,['University of California at San Diego', 6, 32.877, -117.237, ['planetlab3.ucsd.edu', 10546, '132.239.17.226', 'boot']]
+ ,['Alcatel Lucent Italia', 11421, 40.608, 14.9507, ['host147-82-static.93-94-b.business.telecomitalia.it', 13433, '', 'boot']]
+ ,['National University of Singapore', 189, 1.37, 103.8, ['planetlab3.comp.nus.edu.sg', 11089, '137.132.80.110', 'boot']]
+ ,['CESNET - Czech Education and Research Network', 10151, 50.1, 14.4, ['planetlab2.cesnet.cz', 10527, '195.113.161.83', 'boot']]
+ ,['Singapore Advanced Research and Education Network', 10158, 1.45141, 103.918, ['planetlab1.singaren.net.sg', 10599, '203.30.39.240', 'boot']]
+ ,['Universita di Napoli Federico II', 11345, 40.8283, 14.1906, ['planetlab02.dis.unina.it', 13107, '', 'boot']]
+ ,['University of Virginia - Systems and Information Engineering', 10248, 38.032, -78.5108, ['planetlab02.sys.virginia.edu', 10884, '128.143.6.130', 'boot']]
+ ,['Polish-Japanese Institute of Information Technology (PJIIT)', 11358, 52.22, 20.99, ['planetlab1.pjwstk.edu.pl', 13056, '', 'boot']]
+ ,['University College Dublin', 11546, 53.3092, -6.22169, ['planetlab-node-01.ucd.ie', 13891, '', 'boot']]
+ ,['Alcatel-Lucent Villarceaux', 11414, 48.6682, 2.2405, ['pl1.bell-labs.fr', 14069, '', 'boot']]
+ ,['Tsinghua University', 93, 40.0, 116.327, ['pl2.6test.edu.cn', 13666, '219.243.208.62', 'boot']]
+ ,['Universidade Federal de Minas Gerais', 92, -19.9333, -43.95, ['planetlab1.pop-mg.rnp.br', 201, '200.19.159.34', 'boot']]
+ ,['University of Texas Dallas - Computer Science', 10247, 32.9861, -96.75, ['planetlab1.utdallas.edu', 11090, '129.110.125.51', 'boot']]
+ ,['University of Nevada, Reno', 11415, 39.5399, -119.813, ['planetlab1.scsr.nevada.edu', 13351, '207.197.40.250', 'boot']]
+ ,['Princeton', 13, 40.3502, -74.6524, ['planetlab-01.cs.princeton.edu', 13293, '128.112.139.42', 'boot']]
+ ,['IT-Aveiro', 11422, 40.6401, -8.65628, ['planet1.servers.ua.pt', 13357, '', 'boot']]
+ ,['Carnegie Mellon University', 15, 40.4446, -79.9427, ['planetlab-2.cmcl.cs.cmu.edu', 41, '128.2.211.114', 'boot']]
+ ,['University of Washington', 14, 47.6531, -122.313, ['planetlab04.cs.washington.edu', 10525, '128.208.4.99', 'boot'], ['planetlab03.cs.washington.edu', 36, '128.208.4.199', 'boot']]
+ ,['University of Copenhagen, DIKU', 11533, 55.7014, 12.5612, ['planetlab1.diku.dk', 14119, '', 'boot']]
+ ,['Max Planck Institute for Software Systems', 10098, 49.14, 6.59, ['planetlab01.mpi-sws.mpg.de', 10331, '139.19.142.1', 'boot']]
+ ,['Beijing University of Posts and Telecommunications', 11515, 39.9606, 116.359, ['planetlab2.bupt.edu.cn', 13689, '211.68.70.36', 'boot']]
+ ,['Peking University', 11433, 39.9887, 116.307, ['pl2.pku.edu.cn', 13583, '162.105.205.22', 'boot']]
+ ,['Technical University of Lodz', 11430, 51.7461, 19.4556, ['ple1.dmcs.p.lodz.pl', 13557, '', 'boot']]
+ ,['University of Athens', 11431, 37.9684, 23.7669, ['zoi.di.uoa.gr', 13650, '', 'boot']]
+ ,['Universidad Carlos III Madrid', 11351, 40.3545, -3.74463, ['planetlab2.uc3m.es', 13731, '', 'boot']]
+ ,['The University of Auckland', 11434, -36.8535, 174.771, ['planetlab-1.cs.auckland.ac.nz', 13319, '130.216.1.22', 'boot']]
+ ,['Czech Educational and Scientific Network', 11435, 50.1287, 14.3907, ['ple1.cesnet.cz', 13453, '', 'boot']]
+ ,['University of Utah', 30, 40.7686, -111.846, ['planetlab7.flux.utah.edu', 11075, '155.98.35.8', 'boot']]
+ ,['Case Western Reserve University', 10001, 41.5022, -81.6079, ['planetlab-4.eecs.cwru.edu', 11484, '129.22.150.29', 'boot']]
+ ,['Johns Hopkins Information Security Institute', 157, 39.33, -76.6, ['planetlab2.jhu.edu', 13678, '128.220.251.52', 'boot']]
+ ,['Emory University', 10279, 33.7895, -84.3255, ['node2.planetlab.mathcs.emory.edu', 11072, '170.140.119.70', 'boot']]
+ ,['INRIA Nancy - Grand Est', 11356, 48.6661, 6.15775, ['host3-plb.loria.fr', 13090, '', 'boot']]
+ ,['Yale University', 11527, 41.3134, -72.9251, ['pl2.cs.yale.edu', 13747, '128.36.233.154', 'boot']]
+ ,['ESPOL University', 11522, -2.15, -79.96, ['planetlab2.cti.espol.edu.ec', 14039, '200.10.150.253', 'boot']]
+ ,['Clemson University', 11488, 34.6754, -82.8394, ['planetlab1.clemson.edu', 13654, '130.127.39.152', 'boot']]
+ ,['Texas Tech University - Computer Science', 11487, 33.5874, -101.875, ['ttu1-1.nodes.planet-lab.org', 13683, '66.140.111.5', 'boot']]
+ ,['Tampere University of Technology', 11485, 61.449, 23.855, ['planetlab1.rd.tut.fi', 13616, '', 'boot']]
+ ,['Nagoya Institute of Technology', 11512, 35.1566, 136.925, ['planet2.pnl.nitech.ac.jp', 13720, '133.68.253.243', 'boot']]
+ ,['New York Institute of Technology', 11528, 40.814, -73.6081, ['planetlab1.cnis.nyit.edu', 13766, '108.58.13.205', 'boot']]
+ ,['FUNDP - The University of Namur', 11482, 50.467, 4.867, ['orval.infonet.fundp.ac.be', 13631, '', 'boot']]
+ ,['ESPRIT', 11481, 36.0, 10.0, ['planetlab1.esprit-tn.com', 13740, '', 'boot']]
+ ,['National University of Defense Technology', 11480, 28.227, 112.996, ['planetlab-1.pdl.nudt.edu.cn', 13550, '202.197.15.1', 'boot']]
+ ,['University of Toronto', 49, 43.0, -79.5, ['pl2.csl.utoronto.ca', 10277, '142.150.238.13', 'boot']]
+ ,['Colorado State University', 10085, 40.35, -105.05, ['planetlab-1.cs.colostate.edu', 10267, '129.82.12.187', 'boot']]
+ ,['University of Wisconsin', 41, 43.0757, -89.3867, ['planetlab4.wail.wisc.edu', 11084, '198.133.224.149', 'boot']]
+ ,['Simon Fraser University', 10057, 49.15, -122.57, ['cs-planetlab3.cs.surrey.sfu.ca', 11003, '206.12.16.154', 'boot']]
+ ,['National ICT Australia (NICTA)', 11646, -33.8954, 151.197, ['planetlab1.research.nicta.com.au', 14057, '', 'boot']]
+ ,['University of Minnesota', 205, 44.98, -93.24, ['planetlab1.dtc.umn.edu', 8254, '146.57.249.98', 'boot']]
+ ,['Royal Institute of Technology (KTH), Sweden', 10074, 59.52, 17.38, ['planetlab-1.ssvl.kth.se', 10208, '192.16.125.11', 'boot']]
+ ,['Purdue', 77, 40.4274, -86.9167, ['planetlab1.cs.purdue.edu', 159, '128.10.19.52', 'boot']]
+ ,['Zuse Institute Berlin', 11553, 52.4545, 13.2962, ['planet1.zib.de', 13798, '', 'boot']]
+ ,['Technische Universitat Dresden', 11555, 51.026, 13.725, ['planet2.inf.tu-dresden.de', 13811, '', 'boot']]
+ ,['University of Innsbruck, Austria.', 11554, 47.2641, 11.3844, ['plab1-c703.uibk.ac.at', 13793, '', 'boot']]
+ ,['University of Wuerzburg', 11491, 49.8, 9.93, ['planetlab2.informatik.uni-wuerzburg.de', 13604, '', 'boot']]
+ ,['University of Denver', 11494, 39.6798, -104.963, ['planetlab2.cs.du.edu', 13638, '130.253.21.123', 'boot']]
+ ,['The University of Waikato', 11495, -37.7892, 175.318, ['planetlab-n1.wand.net.nz', 13645, '192.107.171.145', 'boot']]
+ ,['HP Labs', 79, 37.44, -122.15, ['pli1-pa-6.hpl.hp.com', 11511, '204.123.28.57', 'boot']]
+ ,['Ohio State University', 10110, 39.98, -83.03, ['planetlab-2.cse.ohio-state.edu', 10396, '164.107.127.13', 'boot']]
+ ,['University of Oklahoma', 11397, 35.2098, -97.4424, ['roam1.cs.ou.edu', 13211, '129.15.78.30', 'boot']]
+ ,['University of Oslo', 11610, 59.93, 10.75, ['planetlab1.ifi.uio.no', 13889, '', 'boot']]
+ ,['Technicolor Paris Research Lab', 11412, 48.8319, 2.28097, ['planetlab2.thlab.net', 13655, '', 'boot']]
+ ,['C3SL - Centro de Computacao Cientifica e Software Livre ', 11394, -25.4507, -49.2318, ['planetlab1.c3sl.ufpr.br', 13167, '200.17.202.194', 'boot']]
+ ,['University of Waterloo', 11393, 43.4726, -80.5422, ['plonk.cs.uwaterloo.ca', 13166, '129.97.74.14', 'boot']]
+ ,['Silesian University of Technology, Insti', 11392, 50.2901, 18.6773, ['plab4.ple.silweb.pl', 13375, '', 'boot']]
+ ,['Doshisha University, Network Information Systems Laboratory', 11390, 34.7995, 135.768, ['nis-planet2.doshisha.ac.jp', 13146, '202.23.159.52', 'boot']]
+ ,['University of California at Los Angeles', 31, 34.0711, -118.442, ['planetlab1.cs.ucla.edu', 11403, '131.179.150.70', 'boot']]
+ ,['Waseda University', 10185, 35.42, 139.42, ['planetlab6.goto.info.waseda.ac.jp', 13360, '133.9.81.166', 'boot']]
+ ,['University of Science and Technology of China', 11453, 31.87, 117.27, ['planetlab1.ustc.edu.cn', 13687, '202.141.161.43', 'boot']]
+
+];
+
+  for (var i = 0; i < ns.length; i++) {
+	var siteInfo = ns[i];
+	var siteName = siteInfo[0];
+	var siteId = siteInfo[1];
+	var location = new google.maps.LatLng(siteInfo[2], siteInfo[3]);
+    var marker = new google.maps.Marker({
+        position: location,
+        icon: image,
+        map: map,
+    });
+    marker.setTitle("Site_Id:" + siteId + "  Site_Name: " + siteName);
+
+    var nodeInfo = "";
+    for(var j = 4; j < siteInfo.length; j++) {
+        node = siteInfo[j];
+        nodeInfo = nodeInfo + "<br/>Node_Id: " + node[1] + " Node_Name: " + node[0]
+    }
+    attachMarkerInformation(marker, siteName, siteId, nodeInfo);
+  }
+
+  var lns = [];
+
+  for (var i = 0; i < lns.length; i++) {
+	    var node = lns[i];
+	    var location = new google.maps.LatLng(node[1], node[2]);
+	    var marker = new google.maps.Marker({
+	        position: location,
+	        map: map,
+	    });
+
+	    marker.setTitle("Site_Id:" + node[4] + "  Site_Name: " + node[0]);
+	    var localnameserver = "LNSid: " + node[4];
+	    attachSecretMessage(marker, node[0], localnameserver, node[3]);
+	  }
+}
+
+function attachMarkerInformation(marker, siteName, siteId, nodeInfo) {
+	  google.maps.event.addListener(marker, 'click', function() {
+		  infowindow.close()
+		  infowindow.setContent("<b>Site_Id: " + siteId + "<br/>Site_Name: " + siteName + "</b>" + nodeInfo);
+		  infowindow.open(map,marker);
+	  });  
+}
+
+function attachSecretMessage(marker, message, id, bootState) {
+  var infowindow = new google.maps.InfoWindow(
+      { content: "<b>" + id + "</b>" + "<br/>Name: " + message + "<br/>Boot Status: " + bootState
+      });
+  google.maps.event.addListener(marker, 'mouseover', function() {
+    infowindow.open(map,marker);
+  });
+  google.maps.event.addListener(marker, 'mouseout', function() {
+	    infowindow.close(map,marker);
+  });
+}
+
+</script>
+</head>
+<body onload="initialize()">
+  <div id="map_canvas"></div>
+</body>
+
+</html>

@@ -1,0 +1,1970 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984112</millis>
+  <sequence>0</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=0, ipAddress=/127.0.0.1, startingPortNumber=35000, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984125</millis>
+  <sequence>1</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=1, ipAddress=/127.0.0.1, startingPortNumber=35010, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984125</millis>
+  <sequence>2</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=2, ipAddress=/127.0.0.1, startingPortNumber=35020, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984125</millis>
+  <sequence>3</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=3, ipAddress=/127.0.0.1, startingPortNumber=35030, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984126</millis>
+  <sequence>4</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=4, ipAddress=/127.0.0.1, startingPortNumber=35040, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984126</millis>
+  <sequence>5</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=5, ipAddress=/127.0.0.1, startingPortNumber=35050, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984127</millis>
+  <sequence>6</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=6, ipAddress=/127.0.0.1, startingPortNumber=35060, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984127</millis>
+  <sequence>7</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=7, ipAddress=/127.0.0.1, startingPortNumber=35070, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984127</millis>
+  <sequence>8</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=8, ipAddress=/127.0.0.1, startingPortNumber=35080, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984128</millis>
+  <sequence>9</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=9, ipAddress=/127.0.0.1, startingPortNumber=35090, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984128</millis>
+  <sequence>10</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=10, ipAddress=/127.0.0.1, startingPortNumber=35100, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984129</millis>
+  <sequence>11</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=11, ipAddress=/127.0.0.1, startingPortNumber=35110, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984129</millis>
+  <sequence>12</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=12, ipAddress=/127.0.0.1, startingPortNumber=35120, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984129</millis>
+  <sequence>13</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=13, ipAddress=/127.0.0.1, startingPortNumber=35130, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984130</millis>
+  <sequence>14</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=14, ipAddress=/127.0.0.1, startingPortNumber=35140, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984130</millis>
+  <sequence>15</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=15, ipAddress=/127.0.0.1, startingPortNumber=35150, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984130</millis>
+  <sequence>16</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>readHostInfo</method>
+  <thread>10</thread>
+  <message>Number of name servers is : 16</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984141</millis>
+  <sequence>17</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor$1</class>
+  <method>run</method>
+  <thread>11</thread>
+  <message>Intercessor update result thread started.</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984141</millis>
+  <sequence>18</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>setLocalServerID</method>
+  <thread>10</thread>
+  <message>Local server id: 4 Address: /127.0.0.1 Port: 35045</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984149</millis>
+  <sequence>19</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer</class>
+  <method>tryPort</method>
+  <thread>10</thread>
+  <message>HTTP server failed to start on port 80 due to java.net.SocketException: Permission denied</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:24</date>
+  <millis>1373517984160</millis>
+  <sequence>20</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer</class>
+  <method>tryPort</method>
+  <thread>10</thread>
+  <message>HTTP server is listening on port 8080</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:38</date>
+  <millis>1373517998190</millis>
+  <sequence>21</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: resetDatabase Query:</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:38</date>
+  <millis>1373517998203</millis>
+  <sequence>22</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: +OK+</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017497</millis>
+  <sequence>23</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: registerAccount Query:name=fred&amp;publickey=dummy</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017537</millis>
+  <sequence>24</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>sending add: fred-&gt;[829C3804401B0727F70F73D4415E162400CBE57B]</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017664</millis>
+  <sequence>25</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":-226033443,"nsID":2,"tP":-883152767,"tR":35046,"type":3,"tH":4,"reqid":-1937116851,"newvalue":["829C3804401B0727F70F73D4415E162400CBE57B"],"tADD":"127.0.0.1","tA":false,"name":"fred","recordkey":"_GNS_guid","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017668</millis>
+  <sequence>26</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Add (-1937116851): fred/_GNS_guid
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017700</millis>
+  <sequence>27</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>sending add: 829C3804401B0727F70F73D4415E162400CBE57B-&gt;[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}]</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017877</millis>
+  <sequence>28</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":1142167993,"nsID":7,"tP":-460283782,"tR":35046,"type":3,"tH":4,"reqid":1484703672,"newvalue":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"tADD":"127.0.0.1","tA":false,"name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_account_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017878</millis>
+  <sequence>29</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Add (1484703672): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_account_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017881</millis>
+  <sequence>30</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>12</thread>
+  <message>sending update: 829C3804401B0727F70F73D4415E162400CBE57B : _GNS_guid_info newValue: [{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}] oldValue: null</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017969</millis>
+  <sequence>31</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":2146293393,"nsID":0,"tP":-1263754445,"tR":35046,"type":14,"tH":4,"reqid":-236120480,"newvalue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"tADD":"127.0.0.1","operation":"CREATE","tA":false,"name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_guid_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":3}</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017970</millis>
+  <sequence>32</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Update (-236120480): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_guid_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:46:57</date>
+  <millis>1373518017971</millis>
+  <sequence>33</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: 829C3804401B0727F70F73D4415E162400CBE57B</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024582</millis>
+  <sequence>34</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: registerAccount Query:name=sam&amp;publickey=dummy2</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024583</millis>
+  <sequence>35</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>sending add: sam-&gt;[403C716EA737AFEB54F40549CDF5727F10BA6F18]</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024610</millis>
+  <sequence>36</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":302701314,"nsID":8,"tP":-2048334355,"tR":35046,"type":3,"tH":4,"reqid":-515185764,"newvalue":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"tADD":"127.0.0.1","tA":false,"name":"sam","recordkey":"_GNS_guid","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024610</millis>
+  <sequence>37</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Add (-515185764): sam/_GNS_guid
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024611</millis>
+  <sequence>38</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>sending add: 403C716EA737AFEB54F40549CDF5727F10BA6F18-&gt;[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}]</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024746</millis>
+  <sequence>39</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":820789985,"nsID":4,"tP":-304309209,"tR":35046,"type":3,"tH":4,"reqid":1616104494,"newvalue":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"tADD":"127.0.0.1","tA":false,"name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","recordkey":"_GNS_account_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024747</millis>
+  <sequence>40</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Add (1616104494): 403C716EA737AFEB54F40549CDF5727F10BA6F18/_GNS_account_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024748</millis>
+  <sequence>41</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>12</thread>
+  <message>sending update: 403C716EA737AFEB54F40549CDF5727F10BA6F18 : _GNS_guid_info newValue: [{"tags":[],"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","updated":"20130711044704","created":"20130711044704","name":"sam","type":"DEFAULT","publickey":"dummy2"}] oldValue: null</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024890</millis>
+  <sequence>42</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":1504285278,"nsID":9,"tP":1105375854,"tR":35046,"type":14,"tH":4,"reqid":-810742076,"newvalue":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"],"tADD":"127.0.0.1","operation":"CREATE","tA":false,"name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","recordkey":"_GNS_guid_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":3}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024891</millis>
+  <sequence>43</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Update (-810742076): 403C716EA737AFEB54F40549CDF5727F10BA6F18/_GNS_guid_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:04</date>
+  <millis>1373518024891</millis>
+  <sequence>44</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: 403C716EA737AFEB54F40549CDF5727F10BA6F18</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031595</millis>
+  <sequence>45</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: registerAccount Query:name=sally&amp;publickey=dummy3</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031597</millis>
+  <sequence>46</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>sending add: sally-&gt;[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031677</millis>
+  <sequence>47</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":886997353,"nsID":1,"tP":-207811235,"tR":35046,"type":3,"tH":4,"reqid":-725741219,"newvalue":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"tADD":"127.0.0.1","tA":false,"name":"sally","recordkey":"_GNS_guid","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031677</millis>
+  <sequence>48</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Add (-725741219): sally/_GNS_guid
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031677</millis>
+  <sequence>49</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>sending add: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-&gt;[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}]</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031715</millis>
+  <sequence>50</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":1045017157,"nsID":0,"tP":1100987775,"tR":35046,"type":3,"tH":4,"reqid":-678972539,"newvalue":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"tADD":"127.0.0.1","tA":false,"name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","recordkey":"_GNS_account_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031719</millis>
+  <sequence>51</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Add (-678972539): 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24/_GNS_account_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031725</millis>
+  <sequence>52</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>12</thread>
+  <message>sending update: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 : _GNS_guid_info newValue: [{"tags":[],"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","updated":"20130711044711","created":"20130711044711","name":"sally","type":"DEFAULT","publickey":"dummy3"}] oldValue: null</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031799</millis>
+  <sequence>53</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":1770851564,"nsID":2,"tP":-950421343,"tR":35046,"type":14,"tH":4,"reqid":-1003748676,"newvalue":["{\"tags\":[],\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"name\":\"sally\",\"type\":\"DEFAULT\",\"publickey\":\"dummy3\"}"],"tADD":"127.0.0.1","operation":"CREATE","tA":false,"name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","recordkey":"_GNS_guid_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":3}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031801</millis>
+  <sequence>54</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Update (-1003748676): 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24/_GNS_guid_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:11</date>
+  <millis>1373518031801</millis>
+  <sequence>55</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:24</date>
+  <millis>1373518044303</millis>
+  <sequence>56</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: create Query:guid=829C3804401B0727F70F73D4415E162400CBE57B&amp;field=test&amp;value=first&amp;signature=signature</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:24</date>
+  <millis>1373518044320</millis>
+  <sequence>57</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"tP":-806663453,"tR":35046,"Primary":[7,9,15],"recordValue":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"tH":4,"header":{"id":-1911938551,"rcode":0,"qr":1},"sender":-1,"tADD":"127.0.0.1","Active":[0,10,13],"qname":"829C3804401B0727F70F73D4415E162400CBE57B","tA":false,"fieldValue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"ttlAddress":0,"qrecordkey":"_GNS_guid_info"}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:24</date>
+  <millis>1373518044321</millis>
+  <sequence>58</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendQuery</method>
+  <thread>12</thread>
+  <message>Query (-1911938551): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_guid_info
+  Returning: [{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:24</date>
+  <millis>1373518044322</millis>
+  <sequence>59</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>12</thread>
+  <message>sending update: 829C3804401B0727F70F73D4415E162400CBE57B : test newValue: [first] oldValue: null</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:24</date>
+  <millis>1373518044346</millis>
+  <sequence>60</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":-503887174,"nsID":0,"tP":-719298279,"tR":35046,"type":14,"tH":4,"reqid":-260362850,"newvalue":["first"],"tADD":"127.0.0.1","operation":"CREATE","tA":false,"name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"test","lnsID":4,"seqnum":0,"success":true,"numNSupdates":3}</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:24</date>
+  <millis>1373518044347</millis>
+  <sequence>61</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Update (-260362850): 829C3804401B0727F70F73D4415E162400CBE57B/test
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:24</date>
+  <millis>1373518044347</millis>
+  <sequence>62</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: +OK+</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:49</date>
+  <millis>1373518069852</millis>
+  <sequence>63</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: help Query:</message>
+</record>
+<record>
+  <date>2013-07-11T00:47:49</date>
+  <millis>1373518069854</millis>
+  <sequence>64</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: Commands are sent as HTTP GET queries.
+
+Note: We use the terms field and key interchangably below.
+
+Commands:
+http://127.0.0.1:8080/GNS/help
+  Returns this help message.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Creates a GUID associated with the the human readable name and the supplied publickey. Returns a guid.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;guid=&lt;guid&gt;&amp;publickey=&lt;publickey&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Associates the GUID supplied with the human readable name and the publickey.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/lookupGuid?name=&lt;name&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Returns the guid registered for this human readable name. Returns +BADACCOUNT+ if the GUID has not been registered.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/lookupGuidRecord?guid=&lt;guid&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Returns human readable name and public key associated with the given GUID. Returns +BADGUID+ if the GUID has not been registered.
+  Must be signed by the given application guid.
+
+Unsecure versions of above operations - soon will only work in DEMO mode
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;
+  Creates a GUID associated with the the human readable name (a human readable name) and the supplied publickey. Returns a guid.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;guid=&lt;guid&gt;&amp;publickey=&lt;publickey&gt;
+  Associates the GUID supplied with the human readable name (a human readable name for the user) and the publickey.
+
+http://127.0.0.1:8080/GNS/lookupGuid?name=&lt;name&gt;
+  Returns the guid associated with for this human readable name. Returns +BADACCOUNT+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/lookupGuidRecord?guid=&lt;guid&gt;
+  Returns human readable name and public key associated with the given GUID. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/addGuid?guid=&lt;guid&gt;&amp;name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;&amp;signature=&lt;signature&gt;
+  Adds a GUID to the account associated with the GUID. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/addAlias?guid=&lt;guid&gt;&amp;name=&lt;alias&gt;&amp;signature=&lt;signature&gt;
+  Adds a additional human readble name to the account associated with the GUID. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+DATABASE CREATE OPERATIONS
+
+http://127.0.0.1:8080/GNS/create?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/createList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE UPSERT OPERATIONS - are also SET OPERATIONS
+
+http://127.0.0.1:8080/GNS/appendOrCreate?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise append value onto existing value. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendOrCreateList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise appends values onto existing value. Value is a list of items formated as a JSON list.
+
+http://127.0.0.1:8080/GNS/replaceOrCreate?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/replaceOrCreateList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+ Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID with the value.  Value is a list of items formated as a JSON list.
+
+DATABASE SET OPERATIONS - treat the value associated with the key as a set - duplicate items are removed or not added
+
+http://127.0.0.1:8080/GNS/append?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Appends the value onto the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/substitute?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;newValue&gt;&amp;oldvalue=&lt;oldValue&gt;&amp;signature=&lt;signature&gt;
+  Replaces oldvalue with newvalue in the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/substituteList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;oldvalue=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Replaces oldvalue with newvalue in the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE LIST OPERATIONS - treat the value associated with the key as a list - duplicate are allowed
+
+http://127.0.0.1:8080/GNS/appendDup?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Appends the value onto the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendListDup?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE REMOVE OPERATIONS - remove all instances of value
+
+http://127.0.0.1:8080/GNS/remove?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Removes the value from the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/removeList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Removes all the values from the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE READ OPERATIONS
+
+http://127.0.0.1:8080/GNS/read?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. Values are always returned as a JSON list. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/read?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;reader=&lt;readerguid&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. Values are always returned as a JSON list. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/readOne?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. Treats the value of key value pair as a singleton item and returns that item. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/readOne?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;reader=&lt;readerguid&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. Treats the value of key value pair as a singleton item and returns that item. See below for more on signature. 
+
+DATABASE ACCESS CONTROL OPERATIONS - regulate access to individual fields
+
+http://127.0.0.1:8080/GNS/aclAdd?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;accesser=&lt;accesserguid&gt;&amp;aclType=&lt;ACL type&gt;&amp;signature=&lt;signature&gt;
+  Updates the access control list of the given GUID's field to include the allowedreader. 
+accessor guid can be guid or group guid or +ALL+ which means anyone.
+field can be also be +ALL+ which means all fields can be read by the accessor
+See below for description of ACL type and signature. 
+
+http://127.0.0.1:8080/GNS/aclRemove?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;accesser=&lt;accesserguid&gt;&amp;aclType&amp;signature=&lt;signature&gt;
+  Updates the access control list of the given GUID's field to remove the allowedreader. See below for description of ACL type and signature. 
+
+http://127.0.0.1:8080/GNS/aclRetrieve?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;aclType=&lt;ACL type&gt;&amp;signature=&lt;signature&gt;
+  Returns the access control list for a GUID's field. See below for description of ACL type and signature. 
+
+DATABASE GROUP OPERATIONS - all guids can act as a group GUID
+
+http://127.0.0.1:8080/GNS/addToGroup?guid=&lt;guid&gt;&amp;member=&lt;member guid&gt;&amp;writer=&lt;writer guid&gt;&amp;signature=&lt;signature&gt;
+  Adds the member guid to the group specified by guid. Writer guid needs to have write access and sign the command.
+
+http://127.0.0.1:8080/GNS/removeFromGroup?guid=&lt;guid&gt;&amp;member=&lt;member guid&gt;&amp;writer=&lt;writer guid&gt;&amp;signature=&lt;signature&gt;
+  Removes the member guid from the group specified by guid. Writer guid needs to have write access and sign the command.
+
+http://127.0.0.1:8080/GNS/getGroupMembers?guid=&lt;guid&gt;&amp;reader=&lt;reader guid&gt;&amp;signature=&lt;signature&gt;
+  Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command.
+
+GUID TAGGING 
+
+http://127.0.0.1:8080/GNS/addTag?guid=&lt;guid&gt;&amp;name=&lt;tagname&gt;&amp;signature=&lt;signature&gt;
+  Adds a tag to the guid. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/removeTag?guid=&lt;guid&gt;&amp;name=&lt;tagname&gt;&amp;signature=&lt;signature&gt;
+  Removes a tag from the guid. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/clearTagged?name=&lt;tagname&gt;
+  Removes all guids that contain the tag.
+
+MISCELLANEOUS OPERATIONS 
+
+http://127.0.0.1:8080/GNS/demo?passkey=&lt;value&gt;
+  Enters demo mode if supplied with the correct passkey. If passkey is 'off' turns demo mode off. 
+In demo mode signatures and access control is ignored and additional commands are enabled. 
+
+http://127.0.0.1:8080/GNS/deleteAllRecords
+  [ONLY IN DEMO MODE] Deletes all records.
+
+http://127.0.0.1:8080/GNS/resetDatabase
+  [ONLY IN DEMO MODE] Rests the database to an initialized state. The nuclear option.
+
+http://127.0.0.1:8080/GNS/clearCache
+  [ONLY IN DEMO MODE] Clears the local name server cache.
+
+http://127.0.0.1:8080/GNS/dump
+  [ONLY IN DEMO MODE] Returns the contents of the database.
+
+Notes: 
+
+o) The signature is a digest of the entire command signed by the private key associated with the GUID.
+
+o) Group read and write access is controlled using the special +GROUP_ACL+ field.
+
+o) ACL Type is one of READ_WHITELIST, WRITE_WHITELIST, READ_BLACKLIST, WRITE_BLACKLIST
+
+o) Commands that don't return anything return the string +OK+ if they are accepted.
+
+o) Commands that cannot be processed return the string that starts with the token +NO+ 
+followed by a token that indicates the problem, followed by an optional additional message.
+The following line is an example bad response line (the tokens are separated by a space):
++NO+ +BADSIGNATURE+ This string provides further information about the problem
+Problem indicator tokens (the second token above, also referenced in the query descriptions above) and their meanings are as follows:
+      +BADSIGNATURE+ - an incorrect signature was supplied
+      +ACCESSDENIED+ - access priveleges to the field do not exist for the given GUID
+      +BADREADERGUID+ - the GUID does not exist
+      +BADGUID+ - the GUID has not been registered
+      +BADACCOUNT+ - the user has not been registered
+      +BADGROUP+ - the group has not been registered
+      +BADFIELD+ - the field does not exist
+      +DUPLICATENAME+ - the human readable name already exists
+      +DUPLICATEGUID+ - the GUID already exists
+      +DUPLICATEGROUP+ - the group already exists
+      +DUPLICATEFIELD+ - the field already exists
+      +JSONPARSEERROR+ - there was a problem parsing a json list
+      +NOACTIONFOUND+ - there was a problem parsing the action in the query
+      +TOMANYALIASES+ - there is a limit to the number of human readable aliases for a GUID
+      +TOMANYGUIDS+ - there is a limit to the number of GUIDs that can be created
+      +OPERATIONNOTSUPPORTED+ - the indicated operation does not exist
+      +QUERYPROCESSINGERROR+ - a general error occurred during the processing of a query
+      +GENERICEERROR+ - covers those pesky cases where you just don't know
+
+o) A JSON list with 3 values in it looks like this [value1, value2, value3]
+
+</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:19</date>
+  <millis>1373518159341</millis>
+  <sequence>65</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: aclAdd Query:guid=829C3804401B0727F70F73D4415E162400CBE57B&amp;field=test&amp;accesser=403C716EA737AFEB54F40549CDF5727F10BA6F18&amp;aclType=READ_WHITELIST&amp;signature=signature</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:19</date>
+  <millis>1373518159351</millis>
+  <sequence>66</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"tP":-1113878809,"tR":35046,"Primary":[7,9,15],"recordValue":{"test":["first"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"tH":4,"header":{"id":864406709,"rcode":0,"qr":1},"sender":-1,"tADD":"127.0.0.1","Active":[0,10,13],"qname":"829C3804401B0727F70F73D4415E162400CBE57B","tA":false,"fieldValue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"ttlAddress":0,"qrecordkey":"_GNS_guid_info"}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:19</date>
+  <millis>1373518159352</millis>
+  <sequence>67</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendQuery</method>
+  <thread>12</thread>
+  <message>Query (864406709): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_guid_info
+  Returning: [{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:19</date>
+  <millis>1373518159353</millis>
+  <sequence>68</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>12</thread>
+  <message>sending update: 829C3804401B0727F70F73D4415E162400CBE57B : _GNS_READ_WHITELIST_test newValue: [403C716EA737AFEB54F40549CDF5727F10BA6F18] oldValue: null</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:19</date>
+  <millis>1373518159385</millis>
+  <sequence>69</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":1031922804,"nsID":13,"tP":-1349487971,"tR":35046,"type":14,"tH":4,"reqid":-1177486514,"newvalue":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"tADD":"127.0.0.1","operation":"APPEND","tA":false,"name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_READ_WHITELIST_test","lnsID":4,"seqnum":0,"success":true,"numNSupdates":3}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:19</date>
+  <millis>1373518159385</millis>
+  <sequence>70</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateRecordWithConfirmation</method>
+  <thread>12</thread>
+  <message>Update (-1177486514): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_READ_WHITELIST_test
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:19</date>
+  <millis>1373518159385</millis>
+  <sequence>71</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: +OK+</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165343</millis>
+  <sequence>72</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: dump Query:</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165343</millis>
+  <sequence>73</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpOutputHelper</method>
+  <thread>12</thread>
+  <message>sending dump</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165344</millis>
+  <sequence>74</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpGetInputSocket</method>
+  <thread>12</thread>
+  <message>waiting for responses dump</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165406</millis>
+  <sequence>75</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[4,6,10],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"test":["first"],"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":1,"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_READ_WHITELIST_test","test","_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["first"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_previousAggregateWriteFrequency":0,"nr_oldactive":[0,10,13],"nr_lookupRate":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":13,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165422</millis>
+  <sequence>76</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sam-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sam-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[8,10,12],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":7,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165424</millis>
+  <sequence>77</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sam-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sam-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[8,10,12],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":12,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165426</millis>
+  <sequence>78</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sam-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sam-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[8,10,12],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":8,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165430</millis>
+  <sequence>79</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[4,6,10],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"test":["first"],"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_READ_WHITELIST_test","test","_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["first"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_previousAggregateWriteFrequency":0,"nr_oldactive":[0,10,13],"nr_lookupRate":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sam-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sam-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[8,10,12],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":10,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165433</millis>
+  <sequence>80</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"name\":\"sally\",\"type\":\"DEFAULT\",\"publickey\":\"dummy3\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":1,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[4,6,10],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":9,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165436</millis>
+  <sequence>81</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"]},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":15,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165438</millis>
+  <sequence>82</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":5,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165440</millis>
+  <sequence>83</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"]},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[4,6,10],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":6,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165445</millis>
+  <sequence>84</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[4,6,10],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"test":["first"],"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":2,"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["test","_GNS_READ_WHITELIST_test","_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":2,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["first"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_previousAggregateWriteFrequency":0,"nr_oldactive":[0,10,13],"nr_lookupRate":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_nameServerStatsMap":{}}],"primary":0,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165448</millis>
+  <sequence>85</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":1,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"name\":\"sally\",\"type\":\"DEFAULT\",\"publickey\":\"dummy3\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sam-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sam-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[8,10,12],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":2,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165450</millis>
+  <sequence>86</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"]},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":1,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165453</millis>
+  <sequence>87</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"name\":\"sally\",\"type\":\"DEFAULT\",\"publickey\":\"dummy3\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":14,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165454</millis>
+  <sequence>88</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":3,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165456</millis>
+  <sequence>89</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sam-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sam-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[8,10,12],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":11,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165457</millis>
+  <sequence>90</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-153315901,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[4,6,10],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":4,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165458</millis>
+  <sequence>91</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165458</millis>
+  <sequence>92</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read sentinal{"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T00:49:25</date>
+  <millis>1373518165463</millis>
+  <sequence>93</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: Nameserver: 0 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","updated":"20130711044704","created":"20130711044704","name":"sam","type":"DEFAULT","publickey":"dummy2"}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_READ_WHITELIST_test=[403C716EA737AFEB54F40549CDF5727F10BA6F18], test=[first], _GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 1 (localhost)
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 2 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","updated":"20130711044711","created":"20130711044711","name":"sally","type":"DEFAULT","publickey":"dummy3"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 3 (localhost)
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 4 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 5 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 6 (localhost)
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 7 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 8 (localhost)
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 9 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","updated":"20130711044711","created":"20130711044711","name":"sally","type":"DEFAULT","publickey":"dummy3"}]}
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","updated":"20130711044704","created":"20130711044704","name":"sam","type":"DEFAULT","publickey":"dummy2"}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 10 (localhost)
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {test=[first], _GNS_READ_WHITELIST_test=[403C716EA737AFEB54F40549CDF5727F10BA6F18], _GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 11 (localhost)
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 12 (localhost)
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 13 (localhost)
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","updated":"20130711044704","created":"20130711044704","name":"sam","type":"DEFAULT","publickey":"dummy2"}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {test=[first], _GNS_READ_WHITELIST_test=[403C716EA737AFEB54F40549CDF5727F10BA6F18], _GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+Nameserver: 14 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","updated":"20130711044711","created":"20130711044711","name":"sally","type":"DEFAULT","publickey":"dummy3"}]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 15 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+</message>
+</record>
+<record>
+  <date>2013-07-11T00:51:03</date>
+  <millis>1373518263809</millis>
+  <sequence>94</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: help Query:</message>
+</record>
+<record>
+  <date>2013-07-11T00:51:03</date>
+  <millis>1373518263809</millis>
+  <sequence>95</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: Commands are sent as HTTP GET queries.
+
+Note: We use the terms field and key interchangably below.
+
+Commands:
+http://127.0.0.1:8080/GNS/help
+  Returns this help message.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Creates a GUID associated with the the human readable name and the supplied publickey. Returns a guid.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;guid=&lt;guid&gt;&amp;publickey=&lt;publickey&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Associates the GUID supplied with the human readable name and the publickey.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/lookupGuid?name=&lt;name&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Returns the guid registered for this human readable name. Returns +BADACCOUNT+ if the GUID has not been registered.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/lookupGuidRecord?guid=&lt;guid&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Returns human readable name and public key associated with the given GUID. Returns +BADGUID+ if the GUID has not been registered.
+  Must be signed by the given application guid.
+
+Unsecure versions of above operations - soon will only work in DEMO mode
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;
+  Creates a GUID associated with the the human readable name (a human readable name) and the supplied publickey. Returns a guid.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;guid=&lt;guid&gt;&amp;publickey=&lt;publickey&gt;
+  Associates the GUID supplied with the human readable name (a human readable name for the user) and the publickey.
+
+http://127.0.0.1:8080/GNS/lookupGuid?name=&lt;name&gt;
+  Returns the guid associated with for this human readable name. Returns +BADACCOUNT+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/lookupGuidRecord?guid=&lt;guid&gt;
+  Returns human readable name and public key associated with the given GUID. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/addGuid?guid=&lt;guid&gt;&amp;name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;&amp;signature=&lt;signature&gt;
+  Adds a GUID to the account associated with the GUID. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/addAlias?guid=&lt;guid&gt;&amp;name=&lt;alias&gt;&amp;signature=&lt;signature&gt;
+  Adds a additional human readble name to the account associated with the GUID. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+DATABASE CREATE OPERATIONS
+
+http://127.0.0.1:8080/GNS/create?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/createList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE UPSERT OPERATIONS - are also SET OPERATIONS
+
+http://127.0.0.1:8080/GNS/appendOrCreate?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise append value onto existing value. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendOrCreateList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise appends values onto existing value. Value is a list of items formated as a JSON list.
+
+http://127.0.0.1:8080/GNS/replaceOrCreate?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/replaceOrCreateList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+ Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID with the value.  Value is a list of items formated as a JSON list.
+
+DATABASE SET OPERATIONS - treat the value associated with the key as a set - duplicate items are removed or not added
+
+http://127.0.0.1:8080/GNS/append?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Appends the value onto the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/substitute?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;newValue&gt;&amp;oldvalue=&lt;oldValue&gt;&amp;signature=&lt;signature&gt;
+  Replaces oldvalue with newvalue in the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/substituteList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;oldvalue=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Replaces oldvalue with newvalue in the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE LIST OPERATIONS - treat the value associated with the key as a list - duplicate are allowed
+
+http://127.0.0.1:8080/GNS/appendDup?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Appends the value onto the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendListDup?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE REMOVE OPERATIONS - remove all instances of value
+
+http://127.0.0.1:8080/GNS/remove?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Removes the value from the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/removeList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Removes all the values from the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE READ OPERATIONS
+
+http://127.0.0.1:8080/GNS/read?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. Values are always returned as a JSON list. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/read?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;reader=&lt;readerguid&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. Values are always returned as a JSON list. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/readOne?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. Treats the value of key value pair as a singleton item and returns that item. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/readOne?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;reader=&lt;readerguid&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. Treats the value of key value pair as a singleton item and returns that item. See below for more on signature. 
+
+DATABASE ACCESS CONTROL OPERATIONS - regulate access to individual fields
+
+http://127.0.0.1:8080/GNS/aclAdd?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;accesser=&lt;accesserguid&gt;&amp;aclType=&lt;ACL type&gt;&amp;signature=&lt;signature&gt;
+  Updates the access control list of the given GUID's field to include the allowedreader. 
+accessor guid can be guid or group guid or +ALL+ which means anyone.
+field can be also be +ALL+ which means all fields can be read by the accessor
+See below for description of ACL type and signature. 
+
+http://127.0.0.1:8080/GNS/aclRemove?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;accesser=&lt;accesserguid&gt;&amp;aclType&amp;signature=&lt;signature&gt;
+  Updates the access control list of the given GUID's field to remove the allowedreader. See below for description of ACL type and signature. 
+
+http://127.0.0.1:8080/GNS/aclRetrieve?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;aclType=&lt;ACL type&gt;&amp;signature=&lt;signature&gt;
+  Returns the access control list for a GUID's field. See below for description of ACL type and signature. 
+
+DATABASE GROUP OPERATIONS - all guids can act as a group GUID
+
+http://127.0.0.1:8080/GNS/addToGroup?guid=&lt;guid&gt;&amp;member=&lt;member guid&gt;&amp;writer=&lt;writer guid&gt;&amp;signature=&lt;signature&gt;
+  Adds the member guid to the group specified by guid. Writer guid needs to have write access and sign the command.
+
+http://127.0.0.1:8080/GNS/removeFromGroup?guid=&lt;guid&gt;&amp;member=&lt;member guid&gt;&amp;writer=&lt;writer guid&gt;&amp;signature=&lt;signature&gt;
+  Removes the member guid from the group specified by guid. Writer guid needs to have write access and sign the command.
+
+http://127.0.0.1:8080/GNS/getGroupMembers?guid=&lt;guid&gt;&amp;reader=&lt;reader guid&gt;&amp;signature=&lt;signature&gt;
+  Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command.
+
+GUID TAGGING 
+
+http://127.0.0.1:8080/GNS/addTag?guid=&lt;guid&gt;&amp;name=&lt;tagname&gt;&amp;signature=&lt;signature&gt;
+  Adds a tag to the guid. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/removeTag?guid=&lt;guid&gt;&amp;name=&lt;tagname&gt;&amp;signature=&lt;signature&gt;
+  Removes a tag from the guid. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/clearTagged?name=&lt;tagname&gt;
+  Removes all guids that contain the tag.
+
+MISCELLANEOUS OPERATIONS 
+
+http://127.0.0.1:8080/GNS/demo?passkey=&lt;value&gt;
+  Enters demo mode if supplied with the correct passkey. If passkey is 'off' turns demo mode off. 
+In demo mode signatures and access control is ignored and additional commands are enabled. 
+
+http://127.0.0.1:8080/GNS/deleteAllRecords
+  [ONLY IN DEMO MODE] Deletes all records.
+
+http://127.0.0.1:8080/GNS/resetDatabase
+  [ONLY IN DEMO MODE] Rests the database to an initialized state. The nuclear option.
+
+http://127.0.0.1:8080/GNS/clearCache
+  [ONLY IN DEMO MODE] Clears the local name server cache.
+
+http://127.0.0.1:8080/GNS/dump
+  [ONLY IN DEMO MODE] Returns the contents of the database.
+
+Notes: 
+
+o) The signature is a digest of the entire command signed by the private key associated with the GUID.
+
+o) Group read and write access is controlled using the special +GROUP_ACL+ field.
+
+o) ACL Type is one of READ_WHITELIST, WRITE_WHITELIST, READ_BLACKLIST, WRITE_BLACKLIST
+
+o) Commands that don't return anything return the string +OK+ if they are accepted.
+
+o) Commands that cannot be processed return the string that starts with the token +NO+ 
+followed by a token that indicates the problem, followed by an optional additional message.
+The following line is an example bad response line (the tokens are separated by a space):
++NO+ +BADSIGNATURE+ This string provides further information about the problem
+Problem indicator tokens (the second token above, also referenced in the query descriptions above) and their meanings are as follows:
+      +BADSIGNATURE+ - an incorrect signature was supplied
+      +ACCESSDENIED+ - access priveleges to the field do not exist for the given GUID
+      +BADREADERGUID+ - the GUID does not exist
+      +BADGUID+ - the GUID has not been registered
+      +BADACCOUNT+ - the user has not been registered
+      +BADGROUP+ - the group has not been registered
+      +BADFIELD+ - the field does not exist
+      +DUPLICATENAME+ - the human readable name already exists
+      +DUPLICATEGUID+ - the GUID already exists
+      +DUPLICATEGROUP+ - the group already exists
+      +DUPLICATEFIELD+ - the field already exists
+      +JSONPARSEERROR+ - there was a problem parsing a json list
+      +NOACTIONFOUND+ - there was a problem parsing the action in the query
+      +TOMANYALIASES+ - there is a limit to the number of human readable aliases for a GUID
+      +TOMANYGUIDS+ - there is a limit to the number of GUIDs that can be created
+      +OPERATIONNOTSUPPORTED+ - the indicated operation does not exist
+      +QUERYPROCESSINGERROR+ - a general error occurred during the processing of a query
+      +GENERICEERROR+ - covers those pesky cases where you just don't know
+
+o) A JSON list with 3 values in it looks like this [value1, value2, value3]
+
+</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:18</date>
+  <millis>1373518518924</millis>
+  <sequence>96</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>13</thread>
+  <message>Action: addTag Query:guid=829C3804401B0727F70F73D4415E162400CBE57B&amp;name=FRANK&amp;signature=signature</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:18</date>
+  <millis>1373518518932</millis>
+  <sequence>97</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"tP":457331590,"tR":35046,"Primary":[7,9,15],"recordValue":{"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["first"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"tH":4,"header":{"id":-1623453564,"rcode":0,"qr":1},"sender":-1,"tADD":"127.0.0.1","Active":[0,10,13],"qname":"829C3804401B0727F70F73D4415E162400CBE57B","tA":false,"fieldValue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"ttlAddress":0,"qrecordkey":"_GNS_guid_info"}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:18</date>
+  <millis>1373518518933</millis>
+  <sequence>98</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendQuery</method>
+  <thread>13</thread>
+  <message>Query (-1623453564): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_guid_info
+  Returning: [{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:18</date>
+  <millis>1373518518933</millis>
+  <sequence>99</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>13</thread>
+  <message>sending update: 829C3804401B0727F70F73D4415E162400CBE57B : _GNS_account_info newValue: [{"tags":["FRANK"],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711045518","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}] oldValue: null</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:18</date>
+  <millis>1373518518947</millis>
+  <sequence>100</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":1379343947,"nsID":0,"tP":-567408545,"tR":35046,"type":14,"tH":4,"reqid":884946973,"newvalue":["{\"tags\":[\"FRANK\"],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711045518\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"tADD":"127.0.0.1","operation":"REPLACE_ALL","tA":false,"name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_account_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":3}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:18</date>
+  <millis>1373518518948</millis>
+  <sequence>101</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateRecordWithConfirmation</method>
+  <thread>13</thread>
+  <message>Update (884946973): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_account_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:18</date>
+  <millis>1373518518948</millis>
+  <sequence>102</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>13</thread>
+  <message>Response: +OK+</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524033</millis>
+  <sequence>103</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>13</thread>
+  <message>Action: dump Query:</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524033</millis>
+  <sequence>104</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpOutputHelper</method>
+  <thread>13</thread>
+  <message>sending dump</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524033</millis>
+  <sequence>105</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpGetInputSocket</method>
+  <thread>13</thread>
+  <message>waiting for responses dump</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524056</millis>
+  <sequence>106</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sam-Active--2122733586","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"sam-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,7,11],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":12,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524059</millis>
+  <sequence>107</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"]},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-Active-119271777","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":1,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[1],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,9,13],"nr_previousAggregateWriteFrequency":1,"nr_lookupRate":0,"nr_nameServerStatsMap":{"9":{"write":1,"read":0}}}],"primary":6,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524062</millis>
+  <sequence>108</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{"2":{"write":1,"read":0}}}],"primary":5,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524065</millis>
+  <sequence>109</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{"0":{"write":2,"read":2}}},{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sam-Active--2122733586","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sam-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,7,11],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":7,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524068</millis>
+  <sequence>110</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-Active--1942819125","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,8,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-Active-119271777","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,9,13],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"test":["first"],"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":1,"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["test","_GNS_READ_WHITELIST_test","_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"tags\":[\"FRANK\"],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711045518\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"test":["first"],"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_previousAggregateWriteFrequency":0,"nr_oldactive":[0,10,13],"nr_lookupRate":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_nameServerStatsMap":{}}],"primary":13,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524070</millis>
+  <sequence>111</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sam-Active--2122733586","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"sam-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,7,11],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-Active--1942819125","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,8,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":8,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524075</millis>
+  <sequence>112</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"test":["first"],"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":3,"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["test","_GNS_READ_WHITELIST_test","_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":3,"_GNS_account_info":["{\"tags\":[\"FRANK\"],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711045518\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["first"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_previousAggregateWriteFrequency":0,"nr_oldactive":[0,10,13],"nr_lookupRate":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{"2":{"write":1,"read":0}}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-Active-119271777","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,9,13],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-Active--1942819125","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,8,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":0,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524079</millis>
+  <sequence>113</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sam-Active--2122733586","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sam-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,7,11],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":1,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"name\":\"sally\",\"type\":\"DEFAULT\",\"publickey\":\"dummy3\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-Active--1942819125","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"fred-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,8,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":2,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524083</millis>
+  <sequence>114</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"]},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-Active--1942819125","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"fred-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,8,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{"0":{"write":2,"read":2}}}],"primary":15,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524086</millis>
+  <sequence>115</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"]},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":1,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524097</millis>
+  <sequence>116</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"test":["first"],"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["test","_GNS_READ_WHITELIST_test","_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"tags\":[\"FRANK\"],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711045518\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"test":["first"],"_GNS_READ_WHITELIST_test":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_previousAggregateWriteFrequency":0,"nr_oldactive":[0,10,13],"nr_lookupRate":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-Active-119271777","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":1,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[1],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,9,13],"nr_previousAggregateWriteFrequency":1,"nr_lookupRate":0,"nr_nameServerStatsMap":{"9":{"write":1,"read":0}}},{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"sam-Active--2122733586","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"sam-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,7,11],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":10,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524103</millis>
+  <sequence>117</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-Active-119271777","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":1,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,9,13],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"name\":\"sam\",\"type\":\"DEFAULT\",\"publickey\":\"dummy2\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"name\":\"sally\",\"type\":\"DEFAULT\",\"publickey\":\"dummy3\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active--384138861","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711044657\",\"created\":\"20130711044657\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{"0":{"write":2,"read":2}}}],"primary":9,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524105</millis>
+  <sequence>118</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"name\":\"sally\",\"type\":\"DEFAULT\",\"publickey\":\"dummy3\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":14,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524107</millis>
+  <sequence>119</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sally-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sally","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sally-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,3,14],"nr_primary":[1,6,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[1,6,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":3,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524109</millis>
+  <sequence>120</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\",\"username\":\"sally\",\"updated\":\"20130711044711\",\"created\":\"20130711044711\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[2,9,14],"nr_primary":[0,4,5],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,4,5],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{"2":{"write":1,"read":0}}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-Active-119271777","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":1,"nr_movingAverageLookups":[],"nr_name":"403C716EA737AFEB54F40549CDF5727F10BA6F18","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"403C716EA737AFEB54F40549CDF5727F10BA6F18-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"403C716EA737AFEB54F40549CDF5727F10BA6F18\",\"username\":\"sam\",\"updated\":\"20130711044704\",\"created\":\"20130711044704\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,9,13],"nr_primary":[4,6,10],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[1],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,9,13],"nr_previousAggregateWriteFrequency":1,"nr_lookupRate":0,"nr_nameServerStatsMap":{"9":{"write":1,"read":0}}}],"primary":4,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524110</millis>
+  <sequence>121</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"id":1798915232,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-Active--1942819125","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[0],"nr_oldActivePaxosID":"fred-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[0],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,8,13],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"sam-Active--2122733586","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"sam","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"sam-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["403C716EA737AFEB54F40549CDF5727F10BA6F18"]},"nr_active":[2,7,11],"nr_primary":[8,10,12],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,7,11],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":11,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524111</millis>
+  <sequence>122</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read {"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524111</millis>
+  <sequence>123</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>13</thread>
+  <message>read sentinal{"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T00:55:24</date>
+  <millis>1373518524113</millis>
+  <sequence>124</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>13</thread>
+  <message>Response: Nameserver: 0 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","updated":"20130711044704","created":"20130711044704","name":"sam","type":"DEFAULT","publickey":"dummy2"}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_READ_WHITELIST_test=[403C716EA737AFEB54F40549CDF5727F10BA6F18], test=[first], _GNS_account_info=[{"tags":["FRANK"],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711045518","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 1 (localhost)
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 2 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","updated":"20130711044711","created":"20130711044711","name":"sally","type":"DEFAULT","publickey":"dummy3"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 3 (localhost)
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 4 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 5 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 6 (localhost)
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 7 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 8 (localhost)
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 9 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","updated":"20130711044711","created":"20130711044711","name":"sally","type":"DEFAULT","publickey":"dummy3"}]}
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","updated":"20130711044704","created":"20130711044704","name":"sam","type":"DEFAULT","publickey":"dummy2"}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 10 (localhost)
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_READ_WHITELIST_test=[403C716EA737AFEB54F40549CDF5727F10BA6F18], test=[first], _GNS_account_info=[{"tags":["FRANK"],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711045518","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 11 (localhost)
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 12 (localhost)
+  NAME: sam P: [8, 10, 12] A: [2, 7, 11] TTL: 0
+    VALUE: {_GNS_guid=[403C716EA737AFEB54F40549CDF5727F10BA6F18]}
+Nameserver: 13 (localhost)
+  NAME: 403C716EA737AFEB54F40549CDF5727F10BA6F18 P: [4, 6, 10] A: [0, 9, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","username":"sam","updated":"20130711044704","created":"20130711044704","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"403C716EA737AFEB54F40549CDF5727F10BA6F18","updated":"20130711044704","created":"20130711044704","name":"sam","type":"DEFAULT","publickey":"dummy2"}]}
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_READ_WHITELIST_test=[403C716EA737AFEB54F40549CDF5727F10BA6F18], test=[first], _GNS_account_info=[{"tags":["FRANK"],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711045518","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711044657","created":"20130711044657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+Nameserver: 14 (localhost)
+  NAME: 1A434C0DAA0B17E48ABD4B59C632CF13501C7D24 P: [0, 4, 5] A: [2, 9, 14] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","username":"sally","updated":"20130711044711","created":"20130711044711","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","updated":"20130711044711","created":"20130711044711","name":"sally","type":"DEFAULT","publickey":"dummy3"}]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+Nameserver: 15 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711044657","created":"20130711044657","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+  NAME: sally P: [1, 6, 15] A: [0, 3, 14] TTL: 0
+    VALUE: {_GNS_guid=[1A434C0DAA0B17E48ABD4B59C632CF13501C7D24]}
+</message>
+</record>
+</log>

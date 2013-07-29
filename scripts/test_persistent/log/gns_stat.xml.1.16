@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-29T15:12:47</date>
+  <millis>1375125167812</millis>
+  <sequence>87</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	1	NameRecordKey{_GNS_account_info}	B1327EF76C7F944CAD622EC3C6921C25CC881F78	58	0.0	0.0	0	1	2	4	1375125167653	single-transmission	2	0.0</message>
+</record>
+<record>
+  <date>2013-07-29T15:12:47</date>
+  <millis>1375125167824</millis>
+  <sequence>89</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	2	NameRecordKey{_GNS_account_info}	B1327EF76C7F944CAD622EC3C6921C25CC881F78	6	0.0	0.0	0	1	2	4	1375125167720	single-transmission	2	0.0</message>
+</record>
+</log>

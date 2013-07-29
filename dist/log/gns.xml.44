@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971191</millis>
+  <sequence>0</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=0, ipAddress=/127.0.0.1, startingPortNumber=35000, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971234</millis>
+  <sequence>1</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=1, ipAddress=/127.0.0.1, startingPortNumber=35010, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971235</millis>
+  <sequence>2</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=2, ipAddress=/127.0.0.1, startingPortNumber=35020, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971236</millis>
+  <sequence>3</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=3, ipAddress=/127.0.0.1, startingPortNumber=35030, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971236</millis>
+  <sequence>4</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=4, ipAddress=/127.0.0.1, startingPortNumber=35040, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971237</millis>
+  <sequence>5</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=5, ipAddress=/127.0.0.1, startingPortNumber=35050, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971239</millis>
+  <sequence>6</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=6, ipAddress=/127.0.0.1, startingPortNumber=35060, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971240</millis>
+  <sequence>7</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=7, ipAddress=/127.0.0.1, startingPortNumber=35070, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971240</millis>
+  <sequence>8</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=8, ipAddress=/127.0.0.1, startingPortNumber=35080, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971241</millis>
+  <sequence>9</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=9, ipAddress=/127.0.0.1, startingPortNumber=35090, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971242</millis>
+  <sequence>10</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=10, ipAddress=/127.0.0.1, startingPortNumber=35100, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971242</millis>
+  <sequence>11</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=11, ipAddress=/127.0.0.1, startingPortNumber=35110, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971243</millis>
+  <sequence>12</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=12, ipAddress=/127.0.0.1, startingPortNumber=35120, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971243</millis>
+  <sequence>13</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=13, ipAddress=/127.0.0.1, startingPortNumber=35130, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971244</millis>
+  <sequence>14</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=14, ipAddress=/127.0.0.1, startingPortNumber=35140, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971245</millis>
+  <sequence>15</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=15, ipAddress=/127.0.0.1, startingPortNumber=35150, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971245</millis>
+  <sequence>16</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>readHostInfo</method>
+  <thread>10</thread>
+  <message>Number of name servers is : 16</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971292</millis>
+  <sequence>17</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor$1</class>
+  <method>run</method>
+  <thread>11</thread>
+  <message>Intercessor update result thread started.</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971294</millis>
+  <sequence>18</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>setLocalServerID</method>
+  <thread>10</thread>
+  <message>Local server id: 0 Address: /127.0.0.1 Port: 35005</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971407</millis>
+  <sequence>19</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer</class>
+  <method>tryPort</method>
+  <thread>10</thread>
+  <message>HTTP server failed to start on port 80 due to java.net.SocketException: Permission denied</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:31</date>
+  <millis>1373426971480</millis>
+  <sequence>20</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer</class>
+  <method>tryPort</method>
+  <thread>10</thread>
+  <message>HTTP server is listening on port 8080</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:49</date>
+  <millis>1373426989338</millis>
+  <sequence>21</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: getGroupMembers Query:group=829C3804401B0727F70F73D4415E162400CBE57B&amp;signature=signature</message>
+</record>
+<record>
+  <date>2013-07-09T23:29:49</date>
+  <millis>1373426989339</millis>
+  <sequence>22</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: +NO+ +OPERATIONNOTSUPPORTED+ - Don't understand getGroupMembers?group=829C3804401B0727F70F73D4415E162400CBE57B&amp;signature=signature</message>
+</record>
+<record>
+  <date>2013-07-09T23:30:00</date>
+  <millis>1373427000331</millis>
+  <sequence>23</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: getGroupMembers Query:guid=829C3804401B0727F70F73D4415E162400CBE57B&amp;signature=signature</message>
+</record>
+<record>
+  <date>2013-07-09T23:30:00</date>
+  <millis>1373427000800</millis>
+  <sequence>24</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"tP":-120060889,"tR":35006,"Primary":[7,9,15],"recordValue":{"_GNS_groupv2":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["fourth","fifth","sixth","first","third"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"test2":["sixth"]},"tH":0,"header":{"id":1142323094,"rcode":0,"qr":1},"sender":-1,"tADD":"127.0.0.1","Active":[0,1,2,3,4,5,6,8,10,11,12,13,14],"qname":"829C3804401B0727F70F73D4415E162400CBE57B","tA":false,"fieldValue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"ttlAddress":0,"qrecordkey":"_GNS_guid_info"}</message>
+</record>
+<record>
+  <date>2013-07-09T23:30:00</date>
+  <millis>1373427000805</millis>
+  <sequence>25</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendQuery</method>
+  <thread>12</thread>
+  <message>Query (1142323094): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_guid_info
+  Returning: [{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130709191047","created":"20130709191047","name":"fred","type":"DEFAULT","publickey":"dummy"}]</message>
+</record>
+<record>
+  <date>2013-07-09T23:30:01</date>
+  <millis>1373427001025</millis>
+  <sequence>26</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"tP":1045244642,"tR":35006,"Primary":[7,9,15],"recordValue":{"_GNS_groupv2":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["fourth","fifth","sixth","first","third"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"test2":["sixth"]},"tH":0,"header":{"id":-1142971349,"rcode":0,"qr":1},"sender":-1,"tADD":"127.0.0.1","Active":[0,1,2,3,4,5,6,8,10,11,12,13,14],"qname":"829C3804401B0727F70F73D4415E162400CBE57B","tA":false,"fieldValue":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","403C716EA737AFEB54F40549CDF5727F10BA6F18"],"ttlAddress":0,"qrecordkey":"_GNS_groupv2"}</message>
+</record>
+<record>
+  <date>2013-07-09T23:30:01</date>
+  <millis>1373427001026</millis>
+  <sequence>27</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendQuery</method>
+  <thread>12</thread>
+  <message>Query (-1142971349): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_groupv2
+  Returning: [1A434C0DAA0B17E48ABD4B59C632CF13501C7D24, 403C716EA737AFEB54F40549CDF5727F10BA6F18]</message>
+</record>
+<record>
+  <date>2013-07-09T23:30:01</date>
+  <millis>1373427001027</millis>
+  <sequence>28</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: ["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","403C716EA737AFEB54F40549CDF5727F10BA6F18"]</message>
+</record>
+<record>
+  <date>2013-07-09T23:31:03</date>
+  <millis>1373427063230</millis>
+  <sequence>29</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: help Query:</message>
+</record>
+<record>
+  <date>2013-07-09T23:31:03</date>
+  <millis>1373427063231</millis>
+  <sequence>30</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: Commands are sent as HTTP GET queries.
+
+Note: We use the terms field and key interchangably below.
+
+Commands:
+http://127.0.0.1:8080/GNS/help
+  Returns this help message.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Creates a GUID associated with the the human readable name and the supplied publickey. Returns a guid.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;guid=&lt;guid&gt;&amp;publickey=&lt;publickey&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Associates the GUID supplied with the human readable name and the publickey.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/lookupGuid?name=&lt;name&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Returns the guid registered for this human readable name. Returns +BADACCOUNT+ if the GUID has not been registered.
+  Must be signed by the given application guid.
+
+http://127.0.0.1:8080/GNS/lookupGuidRecord?guid=&lt;guid&gt;&amp;appGuid=&lt;app guid&gt;&amp;signature=&lt;signature&gt;
+  Returns human readable name and public key associated with the given GUID. Returns +BADGUID+ if the GUID has not been registered.
+  Must be signed by the given application guid.
+
+Unsecure versions of above operations - soon will only work in DEMO mode
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;
+  Creates a GUID associated with the the human readable name (a human readable name) and the supplied publickey. Returns a guid.
+
+http://127.0.0.1:8080/GNS/registerAccount?name=&lt;name&gt;&amp;guid=&lt;guid&gt;&amp;publickey=&lt;publickey&gt;
+  Associates the GUID supplied with the human readable name (a human readable name for the user) and the publickey.
+
+http://127.0.0.1:8080/GNS/lookupGuid?name=&lt;name&gt;
+  Returns the guid associated with for this human readable name. Returns +BADACCOUNT+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/lookupGuidRecord?guid=&lt;guid&gt;
+  Returns human readable name and public key associated with the given GUID. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/addGuid?guid=&lt;guid&gt;&amp;name=&lt;name&gt;&amp;publickey=&lt;publickey&gt;&amp;signature=&lt;signature&gt;
+  Adds a GUID to the account associated with the GUID. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/addAlias?guid=&lt;guid&gt;&amp;name=&lt;alias&gt;&amp;signature=&lt;signature&gt;
+  Adds a additional human readble name to the account associated with the GUID. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+DATABASE CREATE OPERATIONS
+
+http://127.0.0.1:8080/GNS/create?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/createList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE UPSERT OPERATIONS - are also SET OPERATIONS
+
+http://127.0.0.1:8080/GNS/appendOrCreate?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise append value onto existing value. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendOrCreateList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise appends values onto existing value. Value is a list of items formated as a JSON list.
+
+http://127.0.0.1:8080/GNS/replaceOrCreate?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/replaceOrCreateList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+ Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID with the value.  Value is a list of items formated as a JSON list.
+
+DATABASE SET OPERATIONS - treat the value associated with the key as a set - duplicate items are removed or not added
+
+http://127.0.0.1:8080/GNS/append?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Appends the value onto the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/substitute?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;newValue&gt;&amp;oldvalue=&lt;oldValue&gt;&amp;signature=&lt;signature&gt;
+  Replaces oldvalue with newvalue in the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/substituteList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;oldvalue=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Replaces oldvalue with newvalue in the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE LIST OPERATIONS - treat the value associated with the key as a list - duplicate are allowed
+
+http://127.0.0.1:8080/GNS/appendDup?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Appends the value onto the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/appendListDup?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+   Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE REMOVE OPERATIONS - remove all instances of value
+
+http://127.0.0.1:8080/GNS/remove?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;value&gt;&amp;signature=&lt;signature&gt;
+  Removes the value from the key value pair for the given GUID. See below for more on the signature. 
+
+http://127.0.0.1:8080/GNS/removeList?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;value=&lt;JSON List&gt;&amp;signature=&lt;signature&gt;
+  Removes all the values from the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. 
+
+DATABASE READ OPERATIONS
+
+http://127.0.0.1:8080/GNS/read?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. Values are always returned as a JSON list. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/read?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;reader=&lt;readerguid&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. Values are always returned as a JSON list. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/readOne?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. Treats the value of key value pair as a singleton item and returns that item. See below for more on signature. 
+
+http://127.0.0.1:8080/GNS/readOne?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;reader=&lt;readerguid&gt;&amp;signature=&lt;signature&gt;
+  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. Treats the value of key value pair as a singleton item and returns that item. See below for more on signature. 
+
+DATABASE ACCESS CONTROL OPERATIONS - regulate access to individual fields
+
+http://127.0.0.1:8080/GNS/aclAdd?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;accesser=&lt;accesserguid&gt;&amp;aclType=&lt;ACL type&gt;&amp;signature=&lt;signature&gt;
+  Updates the access control list of the given GUID's field to include the allowedreader. 
+accessor guid can be guid or group guid or +ALL+ which means anyone.
+field can be also be +ALL+ which means all fields can be read by the accessor
+See below for description of ACL type and signature. 
+
+http://127.0.0.1:8080/GNS/aclRemove?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;accesser=&lt;accesserguid&gt;&amp;aclType&amp;signature=&lt;signature&gt;
+  Updates the access control list of the given GUID's field to remove the allowedreader. See below for description of ACL type and signature. 
+
+http://127.0.0.1:8080/GNS/aclRetrieve?guid=&lt;guid&gt;&amp;field=&lt;field&gt;&amp;aclType=&lt;ACL type&gt;&amp;signature=&lt;signature&gt;
+  Returns the access control list for a GUID's field. See below for description of ACL type and signature. 
+
+DATABASE GROUP OPERATIONS - all guids can act as a group GUID
+
+http://127.0.0.1:8080/GNS/addToGroup?guid=&lt;guid&gt;&amp;member=&lt;member guid&gt;&amp;writer=&lt;writer guid&gt;&amp;signature=&lt;signature&gt;
+  Adds the member guid to the group specified by guid. Writer guid needs to have write access and sign the command.
+
+http://127.0.0.1:8080/GNS/removeFromGroup?guid=&lt;guid&gt;&amp;member=&lt;member guid&gt;&amp;writer=&lt;writer guid&gt;&amp;signature=&lt;signature&gt;
+  Removes the member guid from the group specified by guid. Writer guid needs to have write access and sign the command.
+
+http://127.0.0.1:8080/GNS/getGroupMembers?guid=&lt;guid&gt;&amp;reader=&lt;reader guid&gt;&amp;signature=&lt;signature&gt;
+  Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command.
+
+GUID TAGGING 
+
+http://127.0.0.1:8080/GNS/addTag?guid=&lt;guid&gt;&amp;name=&lt;tagname&gt;&amp;signature=&lt;signature&gt;
+  Adds a tag to the guid. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/removeTag?guid=&lt;guid&gt;&amp;name=&lt;tagname&gt;&amp;signature=&lt;signature&gt;
+  Removes a tag from the guid. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.
+
+http://127.0.0.1:8080/GNS/clearTagged?name=&lt;tagname&gt;
+  Removes all guids that contain the tag.
+
+MISCELLANEOUS OPERATIONS 
+
+http://127.0.0.1:8080/GNS/demo?passkey=&lt;value&gt;
+  Enters demo mode if supplied with the correct passkey. If passkey is 'off' turns demo mode off. 
+In demo mode signatures and access control is ignored and additional commands are enabled. 
+
+http://127.0.0.1:8080/GNS/deleteAllRecords
+  [ONLY IN DEMO MODE] Deletes all records.
+
+http://127.0.0.1:8080/GNS/resetDatabase
+  [ONLY IN DEMO MODE] Rests the database to an initialized state. The nuclear option.
+
+http://127.0.0.1:8080/GNS/clearCache
+  [ONLY IN DEMO MODE] Clears the local name server cache.
+
+http://127.0.0.1:8080/GNS/dump
+  [ONLY IN DEMO MODE] Returns the contents of the database.
+
+Notes: 
+
+o) The signature is a digest of the entire command signed by the private key associated with the GUID.
+
+o) Group read and write access is controlled using the special +GROUP_ACL+ field.
+
+o) ACL Type is one of READ_WHITELIST, WRITE_WHITELIST, READ_BLACKLIST, WRITE_BLACKLIST
+
+o) Commands that don't return anything return the string +OK+ if they are accepted.
+
+o) Commands that cannot be processed return the string that starts with the token +NO+ 
+followed by a token that indicates the problem, followed by an optional additional message.
+The following line is an example bad response line (the tokens are separated by a space):
++NO+ +BADSIGNATURE+ This string provides further information about the problem
+Problem indicator tokens (the second token above, also referenced in the query descriptions above) and their meanings are as follows:
+      +BADSIGNATURE+ - an incorrect signature was supplied
+      +ACCESSDENIED+ - access priveleges to the field do not exist for the given GUID
+      +BADREADERGUID+ - the GUID does not exist
+      +BADGUID+ - the GUID has not been registered
+      +BADACCOUNT+ - the user has not been registered
+      +BADGROUP+ - the group has not been registered
+      +BADFIELD+ - the field does not exist
+      +DUPLICATENAME+ - the human readable name already exists
+      +DUPLICATEGUID+ - the GUID already exists
+      +DUPLICATEGROUP+ - the group already exists
+      +DUPLICATEFIELD+ - the field already exists
+      +JSONPARSEERROR+ - there was a problem parsing a json list
+      +NOACTIONFOUND+ - there was a problem parsing the action in the query
+      +TOMANYALIASES+ - there is a limit to the number of human readable aliases for a GUID
+      +TOMANYGUIDS+ - there is a limit to the number of GUIDs that can be created
+      +OPERATIONNOTSUPPORTED+ - the indicated operation does not exist
+      +QUERYPROCESSINGERROR+ - a general error occurred during the processing of a query
+      +GENERICEERROR+ - covers those pesky cases where you just don't know
+
+o) A JSON list with 3 values in it looks like this [value1, value2, value3]
+
+</message>
+</record>
+<record>
+  <date>2013-07-09T23:32:41</date>
+  <millis>1373427161835</millis>
+  <sequence>31</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: removeFromGroup Query:guid=829C3804401B0727F70F73D4415E162400CBE57B&amp;member=403C716EA737AFEB54F40549CDF5727F10BA6F18&amp;writer=829C3804401B0727F70F73D4415E162400CBE57B&amp;signature=signature</message>
+</record>
+<record>
+  <date>2013-07-09T23:32:41</date>
+  <millis>1373427161849</millis>
+  <sequence>32</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"tP":1523641886,"tR":35006,"Primary":[7,9,15],"recordValue":{"_GNS_groupv2":["1A434C0DAA0B17E48ABD4B59C632CF13501C7D24","403C716EA737AFEB54F40549CDF5727F10BA6F18"],"test":["fourth","fifth","sixth","first","third"],"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"test2":["sixth"]},"tH":0,"header":{"id":-1221260399,"rcode":0,"qr":1},"sender":-1,"tADD":"127.0.0.1","Active":[0,1,2,3,4,5,6,8,10,11,12,13,14],"qname":"829C3804401B0727F70F73D4415E162400CBE57B","tA":false,"fieldValue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130709191047\",\"created\":\"20130709191047\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"ttlAddress":0,"qrecordkey":"_GNS_guid_info"}</message>
+</record>
+<record>
+  <date>2013-07-09T23:32:41</date>
+  <millis>1373427161850</millis>
+  <sequence>33</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendQuery</method>
+  <thread>12</thread>
+  <message>Query (-1221260399): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_guid_info
+  Returning: [{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130709191047","created":"20130709191047","name":"fred","type":"DEFAULT","publickey":"dummy"}]</message>
+</record>
+<record>
+  <date>2013-07-09T23:32:41</date>
+  <millis>1373427161851</millis>
+  <sequence>34</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>12</thread>
+  <message>sending update: 829C3804401B0727F70F73D4415E162400CBE57B : _GNS_groupv2 newValue: [403C716EA737AFEB54F40549CDF5727F10BA6F18] oldValue: null</message>
+</record>
+</log>

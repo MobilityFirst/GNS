@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-16T15:01:50</date>
+  <millis>1374001310395</millis>
+  <sequence>82</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	829C3804401B0727F70F73D4415E162400CBE57B	170	3	10	4	-1108690906	1374001310386</message>
+</record>
+<record>
+  <date>2013-07-16T15:02:08</date>
+  <millis>1374001328936</millis>
+  <sequence>120</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	403C716EA737AFEB54F40549CDF5727F10BA6F18	37	3	0	4	491404686	1374001328936</message>
+</record>
+<record>
+  <date>2013-07-16T15:02:16</date>
+  <millis>1374001336189</millis>
+  <sequence>158</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	1A434C0DAA0B17E48ABD4B59C632CF13501C7D24	79	3	2	4	-912565071	1374001336189</message>
+</record>
+<record>
+  <date>2013-07-16T15:02:26</date>
+  <millis>1374001346474</millis>
+  <sequence>187</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	1A434C0DAA0B17E48ABD4B59C632CF13501C7D24	25	3	2	4	1683024472	1374001346474</message>
+</record>
+<record>
+  <date>2013-07-16T15:02:26</date>
+  <millis>1374001346525</millis>
+  <sequence>188</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	1	NameRecordKey{_GNS_guid_info}	1A434C0DAA0B17E48ABD4B59C632CF13501C7D24	7	0.0	0.0	0	1	2	4	1374001346421	single-transmission	2	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:02:36</date>
+  <millis>1374001356571</millis>
+  <sequence>214</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	2	NameRecordKey{_GNS_guid_info}	829C3804401B0727F70F73D4415E162400CBE57B	5	0.0	0.0	0	1	0	4	1374001356468	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:03</date>
+  <millis>1374001443985</millis>
+  <sequence>263</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	829C3804401B0727F70F73D4415E162400CBE57B	9	3	0	4	-684451890	1374001443984</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:04</date>
+  <millis>1374001444072</millis>
+  <sequence>264</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	4	NameRecordKey{_GNS_guid_info}	829C3804401B0727F70F73D4415E162400CBE57B	3	0.0	0.0	0	1	0	4	1374001443969	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:10</date>
+  <millis>1374001450416</millis>
+  <sequence>294</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	5	NameRecordKey{_GNS_guid_info}	829C3804401B0727F70F73D4415E162400CBE57B	3	0.0	0.0	0	1	0	4	1374001450314	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:10</date>
+  <millis>1374001450421</millis>
+  <sequence>296</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	6	NameRecordKey{location}	829C3804401B0727F70F73D4415E162400CBE57B	2	0.0	0.0	0	1	0	4	1374001450319	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:17</date>
+  <millis>1374001457005</millis>
+  <sequence>323</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	7	NameRecordKey{_GNS_guid}	sally	6	0.0	0.0	0	1	0	4	1374001456899	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:23</date>
+  <millis>1374001463323</millis>
+  <sequence>339</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	8	NameRecordKey{_GNS_guid_info}	1A434C0DAA0B17E48ABD4B59C632CF13501C7D24	4	0.0	0.0	0	1	2	4	1374001463221	single-transmission	2	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:36</date>
+  <millis>1374001476142</millis>
+  <sequence>365</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	829C3804401B0727F70F73D4415E162400CBE57B	13	3	13	4	1803230983	1374001476142</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:36</date>
+  <millis>1374001476225</millis>
+  <sequence>366</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	9	NameRecordKey{_GNS_guid_info}	829C3804401B0727F70F73D4415E162400CBE57B	3	0.0	0.0	0	1	0	4	1374001476123	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:48</date>
+  <millis>1374001488210</millis>
+  <sequence>394</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	10	NameRecordKey{_GNS_guid_info}	829C3804401B0727F70F73D4415E162400CBE57B	3	0.0	0.0	0	1	0	4	1374001488107	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:48</date>
+  <millis>1374001488214</millis>
+  <sequence>396</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	11	NameRecordKey{test}	829C3804401B0727F70F73D4415E162400CBE57B	2	0.0	0.0	0	1	0	4	1374001488112	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:56</date>
+  <millis>1374001496667</millis>
+  <sequence>422</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	829C3804401B0727F70F73D4415E162400CBE57B	10	3	13	4	2125483914	1374001496667</message>
+</record>
+<record>
+  <date>2013-07-16T15:04:56</date>
+  <millis>1374001496753</millis>
+  <sequence>423</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	12	NameRecordKey{_GNS_guid_info}	829C3804401B0727F70F73D4415E162400CBE57B	3	0.0	0.0	0	1	0	4	1374001496651	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:05:02</date>
+  <millis>1374001502431</millis>
+  <sequence>451</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	13	NameRecordKey{_GNS_guid_info}	829C3804401B0727F70F73D4415E162400CBE57B	3	0.0	0.0	0	1	0	4	1374001502329	single-transmission	0	0.0</message>
+</record>
+<record>
+  <date>2013-07-16T15:05:02</date>
+  <millis>1374001502437</millis>
+  <sequence>453</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSQueryTask</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>Success-LookupRequest	14	NameRecordKey{_GNS_groupv2}	829C3804401B0727F70F73D4415E162400CBE57B	2	0.0	0.0	0	1	0	4	1374001502335	single-transmission	0	0.0</message>
+</record>
+</log>

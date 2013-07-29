@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="jar" name="Build file for GNRS">
+
+    <property name="src" value="src"/>
+    <property name="testsrc" location="test"/>
+    <property name="build" value="build"/>
+    <property name="jarbuild" value="${build}/jars"/>
+    <property name="lib" value="lib"/>
+    <property name="junit" value="${lib}/junit-4.10.jar"/>
+    <property name="dist" value="dist"/>
+    <property name="conf" value="conf"/>
+  
+    <path id="classpath.base">
+        <pathelement location="${build}"/>
+        <pathelement location="${conf}"/>
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init">
+        <tstamp/>
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="compile" depends="init" description="compile java files">
+        <javac srcdir="${src}" destdir="${build}" debug="true" debuglevel="lines,vars,source"
+                       includeantruntime="false">
+            <classpath refid="classpath.base"/>
+        </javac>
+    </target>
+  
+    <target name="jarbuild" depends="compile" description="generate jar files">
+        <mkdir dir="${jarbuild}"/>
+        <jar destfile="${jarbuild}/GNS.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Main-Class" value="edu.umass.cs.gnrs.httpserver.GnrsHttpServer"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${build}" includes="**/*.class" excludes="**/*Test.class"/>
+            <fileset dir="${conf}" includes="**/*.xml" />
+            <zipgroupfileset dir="${lib}" includes="**/*.jar" excludes="${junit}"/>
+        </jar>
+    </target>
+
+    <target name="clean" description="remove generated files">
+        <delete dir="${build}"/>
+    </target>
+
+    <target name="doc" description="generate javadoc">
+        <mkdir dir="${build}/doc"/>
+        <javadoc packagenames="edu.umass.cs.gnrs.*" sourcepath="${src}" destdir="${build}/doc">
+            <classpath refid="classpath.base"/>
+            <link href="http://java.sun.com/javase/6/docs/api/"/>
+        </javadoc>
+    </target>
+    
+    <target name="jar" depends="jarbuild">
+      <mkdir dir="${dist}"/>
+      <copy todir="${dist}">
+       <fileset dir="${jarbuild}" includes="**"/>
+      </copy>    
+    </target>
+
+    <target name="all" depends="clean,jar"
+                description="build all files"/>
+  
+</project>

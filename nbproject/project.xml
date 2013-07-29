@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>GNRS-westy</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>GNRS-westy</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>GNRS-westy</label>
+                    <location>.</location>
+                    <encoding>MacRoman</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>src</label>
+                    <type>java</type>
+                    <location>src</location>
+                    <encoding>MacRoman</encoding>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>jar</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="javadoc">
+                    <target>doc</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>jar</target>
+                </action>
+                <action name="run.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-selected-file-in-src</target>
+                    <context>
+                        <property>run.class</property>
+                        <folder>src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>src</label>
+                        <location>src</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="javadoc"/>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/3">
+            <compilation-unit>
+                <package-root>src</package-root>
+                <classpath mode="compile">lib:lib/amazontools.jar:lib/aws-java-sdk-1.3.20-javadoc.jar:lib/aws-java-sdk-1.3.20-sources.jar:lib/aws-java-sdk-1.3.20.jar:lib/aws-java-sdk-flow-build-tools-1.3.20.jar:lib/commons-codec-1.3.jar:lib/commons-logging-1.1.1.jar:lib/guava-11.0.1.jar:lib/httpclient-4.1.1.jar:lib/httpcore-4.1.jar:lib/jsch-0.1.48.jar:lib/mysql-connector-java-5.1.13-bin.jar:lib/stax-1.2.0.jar:lib/stax-api-1.0.1.jar:lib/jmapviewer.jar:lib/mongo-2.10.1.jar:lib/apache-cassandra-1.1.7.jar:lib/apache-cassandra-clientutil-1.1.7.jar:lib/apache-cassandra-thrift-1.1.7.jar:lib/libthrift-0.7.0.jar:lib/slf4j-api-1.6.1.jar:lib/slf4j-log4j12-1.6.1.jar:lib/log4j-1.2.16.jar:lib/commons-pool-1.5.3.jar:lib/FastInfoset-1.2.2.jar:lib/uuid-3.2.0.jar:lib/speed4j-0.9.jar:lib/commons-lang-2.4.jar:lib/hector-core-1.0-5.jar:lib/hector-test-1.0-5.jar</classpath>
+                <source-level>1.6</source-level>
+            </compilation-unit>
+        </java-data>
+    </configuration>
+</project>

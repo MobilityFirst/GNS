@@ -1,0 +1,5 @@
+NumberOfReplicas 5
+NumberOfRequests 10000
+TestDurationSeconds 10
+EnableLogging false
+MaxThreads 5

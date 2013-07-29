@@ -1,0 +1,32 @@
+Installing java1.6 on Fedora 8:
+
+1. sudo yum -y install rpm-build
+   yum install fedora-rpmdevtools (optional)
+   
+   these command are not required for installing java
+
+2. Download Java SE 6 Update 25 from http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u25-download-346242.html
+
+   Get Linux x86 - RPM Installer (jdk-6u25-linux-i586-rpm.bin)
+
+3. sudo chmod 755 jdk-6u2-linux-i586-rpm.bin
+   sudo ./jdk-6u2-linux-i586-rpm.bin
+
+//Java on Fedora x86. Might be slow and cause errors. 
+sudo yum install java-1.6.0-openjdk.i686
+
+//Download and install java 32bits
+cat local_name_server_ssh | parallel -j+15 scp -q -oStrictHostKeyChecking=no -i ~/.ssh/id_rsa jdk-6u25-linux-i586-rpm.bin umass_nameservice@{}:
+(cat ~/Desktop/Workspace/PlanetlabScripts/src/SliceInfo/pl_nodes_alive) | parallel -j0 ssh -q -oStrictHostKeyChecking=no -l umass_nameservice -i ~/.ssh/id_rsa {} 'chmod +x jdk-6u25-linux-i586-rpm.bin'
+(cat ~/Desktop/Workspace/PlanetlabScripts/src/SliceInfo/pl_nodes_alive) | parallel -j0 ssh -q -t -oStrictHostKeyChecking=no -l umass_nameservice -i ~/.ssh/id_rsa {} 'sudo ./jdk-6u25-linux-i586-rpm.bin'
+
+
+//For x86_64 we need jdk-6u26-linux-x64-rpm.bin
+
+
+//Get a list of planet lab nodes that can be shh into
+(cat planetlab_nodes_boot) | parallel -j+110 ssh -q -oStrictHostKeyChecking=no -l umass_nameservice -oConnectTimeout=5 -i ~/.ssh/id_rsa {} 'uname -n'
+
+
+//Get the name server file from local name servers
+(cat ../local_name_server_ssh) | parallel -j+30 scp -q -oStrictHostKeyChecking=no -oConnectTimeout=20 -i ~/.ssh/id_rsa umass_nameservice@{}:name_server_ssh_ping_lat_long {}_nameserver_file

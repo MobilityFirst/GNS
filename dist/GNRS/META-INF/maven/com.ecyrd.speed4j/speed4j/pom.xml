@@ -1,0 +1,175 @@
+<!-- 
+    Maven is one of the big mysteries of humankind.  In fact, it's amazing that anyone
+    ever gets anything done with it.  To make your task easier, I'm documenting some
+    really useful goals for you here to use.
+    
+    mvn eclipse:eclipse - Create an Eclipse project out, ready for importing.
+    
+    mvn clean install - Cleans and compiles and installs it into your local repository (e.g. ~/.m2/...)
+                        The $project/target -subdirectory will contain the built artifacts.
+   
+    mvn deploy - Deploys the project to the configured site (see the distributionManagement section below).
+    
+    Don't forget that you can always use "-o" switch for offline use.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.ecyrd.speed4j</groupId>
+  <artifactId>speed4j</artifactId>
+  <version>0.9</version>
+  <packaging>jar</packaging>
+  <description>Speed4j is a basic performance analysis library for Java which allows you to insert
+               stopwatches into your codebase and turn them on or off as you need.</description>
+  <name>speed4j</name>
+  <url>https://github.com/jalkanen/speed4j</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <scm>
+    <url>http://github.com/jalkanen/speed4j</url>
+    <connection>git://github.com/jalkanen/speed4j.git</connection>
+    <developerConnection>scm:git:git@github.com:jalkanen/speed4j.git</developerConnection>
+  </scm>
+  
+  <developers>
+    <developer>
+      <id>jalkanen</id>
+      <name>Janne Jalkanen</name>
+      <email>jalkanen@ecyrd.com</email>
+      <url>http://www.ecyrd.com/</url>
+    </developer>
+  </developers>
+  
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/jalkanen/speed4j/issues</url>
+  </issueManagement>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+
+    <!--  This is the only hard dependency that we have. If you don't
+          like it, get me a patch for using java.util.logging instead. -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+
+    <!-- These are then the dependencies for running our unit tests. -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.6.1</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <!--  Define build dependencies, like the source version. -->  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+            <execution>
+                <id>attach-sources</id>
+                <goals>
+                    <goal>jar</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+            <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                    <goal>jar</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+
+    </plugins>
+    
+     <extensions>
+      <!-- Enabling the use of FTP -->
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-ssh-external</artifactId>
+         <version>1.0-beta-6</version>
+      </extension>
+    </extensions>
+    
+  </build>
+  
+  <!-- We'd like to use the sonatype parent because we upload to Sonatype repo. -->
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+  
+  
+  <!--  This is for pushing for my own repo. -->
+<!-- 
+  <distributionManagement>
+    <downloadUrl>http://www.ecyrd.com/mvn</downloadUrl>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>ecyrd-maven-repo</id>
+      <name>Ecyrd.com testing repo</name>
+      <url>scpexe://www.ecyrd.com/p/web/www-data/www.ecyrd.com/htdocs/mvn/</url>
+      <layout>default</layout>
+    </repository>
+  </distributionManagement>
+-->
+
+</project>

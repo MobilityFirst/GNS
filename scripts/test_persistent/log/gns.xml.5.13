@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801520</millis>
+  <sequence>0</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Date: 07/29/2013 14:33:19</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801526</millis>
+  <sequence>1</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Id: 4</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801526</millis>
+  <sequence>2</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>NS File: name-server-info</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801526</millis>
+  <sequence>3</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Local: false</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801526</millis>
+  <sequence>4</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Regular Workload Size: 0</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801527</millis>
+  <sequence>5</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Mobile Workload Size: 0</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801527</millis>
+  <sequence>6</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Workload File: null</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801527</millis>
+  <sequence>7</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Lookup Trace File: null</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801528</millis>
+  <sequence>8</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Update Trace File: null</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801528</millis>
+  <sequence>9</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Primary: 3</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801528</millis>
+  <sequence>10</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Alpha: 0.0</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801528</millis>
+  <sequence>11</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Lookups: 0</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801529</millis>
+  <sequence>12</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Updates: 0</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801529</millis>
+  <sequence>13</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Lookup Rate: 10000.0ms</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801529</millis>
+  <sequence>14</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Update Rate Mobile: 0.0ms</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801529</millis>
+  <sequence>15</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Update Rate Regular: 10000.0ms</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801530</millis>
+  <sequence>16</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Zipf Workload: false</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801530</millis>
+  <sequence>17</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Name: null</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801530</millis>
+  <sequence>18</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Location Based Replication: true</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801531</millis>
+  <sequence>19</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Vote Interval: 1000000ms</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801531</millis>
+  <sequence>20</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Cache Size: 10000</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801531</millis>
+  <sequence>21</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Experiment Mode: false</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801532</millis>
+  <sequence>22</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Debug Mode: true</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801586</millis>
+  <sequence>23</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=0, ipAddress=/127.0.0.1, startingPortNumber=35000, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801586</millis>
+  <sequence>24</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=1, ipAddress=/127.0.0.1, startingPortNumber=35010, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801587</millis>
+  <sequence>25</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=2, ipAddress=/127.0.0.1, startingPortNumber=35020, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801588</millis>
+  <sequence>26</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=3, ipAddress=/127.0.0.1, startingPortNumber=35030, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801588</millis>
+  <sequence>27</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=4, ipAddress=/127.0.0.1, startingPortNumber=35040, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801589</millis>
+  <sequence>28</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=5, ipAddress=/127.0.0.1, startingPortNumber=35050, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801589</millis>
+  <sequence>29</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=6, ipAddress=/127.0.0.1, startingPortNumber=35060, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801590</millis>
+  <sequence>30</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=7, ipAddress=/127.0.0.1, startingPortNumber=35070, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801591</millis>
+  <sequence>31</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=8, ipAddress=/127.0.0.1, startingPortNumber=35080, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801591</millis>
+  <sequence>32</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=9, ipAddress=/127.0.0.1, startingPortNumber=35090, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801592</millis>
+  <sequence>33</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=10, ipAddress=/127.0.0.1, startingPortNumber=35100, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801593</millis>
+  <sequence>34</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=11, ipAddress=/127.0.0.1, startingPortNumber=35110, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801593</millis>
+  <sequence>35</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=12, ipAddress=/127.0.0.1, startingPortNumber=35120, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801594</millis>
+  <sequence>36</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=13, ipAddress=/127.0.0.1, startingPortNumber=35130, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801594</millis>
+  <sequence>37</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=14, ipAddress=/127.0.0.1, startingPortNumber=35140, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801594</millis>
+  <sequence>38</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=15, ipAddress=/127.0.0.1, startingPortNumber=35150, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801595</millis>
+  <sequence>39</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>readHostInfo</method>
+  <thread>10</thread>
+  <message>Number of name servers is : 16</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801605</millis>
+  <sequence>40</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LocalNameServer</class>
+  <method>run</method>
+  <thread>10</thread>
+  <message>LNS listener started.</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801610</millis>
+  <sequence>41</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LocalNameServer</class>
+  <method>run</method>
+  <thread>10</thread>
+  <message>LNS listener admin started.</message>
+</record>
+<record>
+  <date>2013-07-29T14:33:21</date>
+  <millis>1375122801610</millis>
+  <sequence>42</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSListenerAdmin</class>
+  <method>run</method>
+  <thread>11</thread>
+  <message>LNS Node 4 starting Admin Server on port 35048</message>
+</record>
+<record>
+  <date>2013-07-29T14:37:40</date>
+  <millis>1375123060154</millis>
+  <sequence>43</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.localnameserver.NameServerVoteThread</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message> NameRecordStats Key Set: []</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150841</millis>
+  <sequence>44</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSListenerAdmin</class>
+  <method>run</method>
+  <thread>11</thread>
+  <message>ListenerAdmin: Request from localhost port: 35048</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150855</millis>
+  <sequence>45</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 12</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150856</millis>
+  <sequence>46</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 12</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150857</millis>
+  <sequence>47</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 6</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150858</millis>
+  <sequence>48</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 6</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150859</millis>
+  <sequence>49</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 13</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150860</millis>
+  <sequence>50</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 13</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150861</millis>
+  <sequence>51</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 5</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150862</millis>
+  <sequence>52</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 5</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150863</millis>
+  <sequence>53</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 7</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150864</millis>
+  <sequence>54</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 7</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150865</millis>
+  <sequence>55</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 0</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150866</millis>
+  <sequence>56</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 0</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150867</millis>
+  <sequence>57</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 8</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150868</millis>
+  <sequence>58</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 8</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150869</millis>
+  <sequence>59</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 9</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150869</millis>
+  <sequence>60</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 9</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150870</millis>
+  <sequence>61</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 2</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150871</millis>
+  <sequence>62</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 2</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150872</millis>
+  <sequence>63</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 15</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150873</millis>
+  <sequence>64</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 15</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150874</millis>
+  <sequence>65</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 10</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150875</millis>
+  <sequence>66</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 10</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150876</millis>
+  <sequence>67</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 1</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150877</millis>
+  <sequence>68</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 1</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150878</millis>
+  <sequence>69</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 14</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150879</millis>
+  <sequence>70</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 14</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150880</millis>
+  <sequence>71</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 3</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150881</millis>
+  <sequence>72</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 3</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150882</millis>
+  <sequence>73</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 11</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150883</millis>
+  <sequence>74</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 11</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150884</millis>
+  <sequence>75</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 4</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150884</millis>
+  <sequence>76</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>edu.umass.cs.gnrs.packet.Packet</class>
+  <method>multicastTCP</method>
+  <thread>11</thread>
+  <message>Exception: socket closed by nameserver 4</message>
+</record>
+<record>
+  <date>2013-07-29T14:39:10</date>
+  <millis>1375123150885</millis>
+  <sequence>77</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.localnameserver.LNSListenerAdmin</class>
+  <method>run</method>
+  <thread>11</thread>
+  <message>ListenerAdmin: Multicast out for -1084018608 --&gt; {"id":-1084018608,"json":[],"primary":-1,"local":4,"type":40}</message>
+</record>
+</log>

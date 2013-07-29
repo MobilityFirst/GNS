@@ -1,0 +1,6 @@
+1. Download gnu parallel from ftp://ftp.gnu.org/gnu/parallel/parallel-20110422.tar.bz2
+2. Untar the file
+3. cd parallel-20110422
+4. ./configure
+5. make
+6. make install

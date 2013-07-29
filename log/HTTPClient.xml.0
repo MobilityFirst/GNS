@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-03-06T01:18:59</date>
+  <millis>1362550739878</millis>
+  <sequence>0</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/demo?passkey=23.21.120.250:8080</message>
+</record>
+<record>
+  <date>2013-03-06T01:18:59</date>
+  <millis>1362550739986</millis>
+  <sequence>1</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +OK+</message>
+</record>
+<record>
+  <date>2013-03-06T01:18:59</date>
+  <millis>1362550739987</millis>
+  <sequence>2</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/clearDatabase</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:00</date>
+  <millis>1362550740069</millis>
+  <sequence>3</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +OK+</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:00</date>
+  <millis>1362550740070</millis>
+  <sequence>4</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/demo?passkey=off</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:00</date>
+  <millis>1362550740149</millis>
+  <sequence>5</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +OK+</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:00</date>
+  <millis>1362550740151</millis>
+  <sequence>6</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/lookupEntity?name=notification%255Fdemo7%2540cs%252Eumass%252Eedu</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:05</date>
+  <millis>1362550745475</millis>
+  <sequence>7</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +NO+ +BADUSER+</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:05</date>
+  <millis>1362550745677</millis>
+  <sequence>8</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/registerEntity?name=notification%255Fdemo7%2540cs%252Eumass%252Eedu&amp;publickey=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCySXL5zBY%2BLnMm%2FXJJjqJnZ8QpczOX1s5sYrE6VwesCmlEdpEnIUuWxyINQSiW8jB7YG4s50kxU1AWte175tkDyy%2BM8ZU%2BPkHF8irHh6EFKPr3McAYvzmHz5XcyKwppRs7hi8tDEY8DQWrbfXhMMXdG%2F8n7VLGwGUujBIo08%2FCLwIDAQAB</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:06</date>
+  <millis>1362550746394</millis>
+  <sequence>9</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: E308EED97F5E0ABE73B40AEC3B23C97D84201D34</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:06</date>
+  <millis>1362550746430</millis>
+  <sequence>10</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/lookupEntity?name=clientGuid</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:11</date>
+  <millis>1362550751621</millis>
+  <sequence>11</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +NO+ +BADUSER+</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:11</date>
+  <millis>1362550751730</millis>
+  <sequence>12</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/registerEntity?name=clientGuid&amp;publickey=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCFFXosz7kG90beEOz7glviTmXU4rn6hOwDhAwovwkxqXps1Z5XnnJHg%2FFzZtxcSYYY9JbGJmW89qaYzVatknWmI60nNRnyXmz84HhtLcbPzimzl6zTo6a7jOr8OicrUaH4EQvp%2BGXth7zFT5Jlu1pM8lfXF9iXRYUj%2FoL%2FAnDOSwIDAQAB</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:11</date>
+  <millis>1362550751858</millis>
+  <sequence>13</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: C2126BA21CCA97FB05AB8E1D5C5FAA0D9D5164B6</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:11</date>
+  <millis>1362550751889</millis>
+  <sequence>14</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/createList?guid=E308EED97F5E0ABE73B40AEC3B23C97D84201D34&amp;field=subscribers&amp;value=%5B%5D&amp;signature=63EFC0FD674EA5D3C91AC18004ACB24AE675F56B2C4E3354F703ADD6BF9FC71A4EB157E2D232F828D75387E5F18E78685F793722C3C6AC9D643D6EDD29B267045F1A4D1B245FC606B8835E04C4C17ACB828055196620A1304DA2997AD26B1849AADC993AF6C59CE77F89D57629AC5EE3944F791E01C5F58E0B4B452702568ECF</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:12</date>
+  <millis>1362550752539</millis>
+  <sequence>15</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +OK+</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:12</date>
+  <millis>1362550752548</millis>
+  <sequence>16</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/aclAdd?aclType=WRITE%5FWHITELIST&amp;guid=E308EED97F5E0ABE73B40AEC3B23C97D84201D34&amp;field=subscribers&amp;accesser=%2BALL%2B&amp;signature=6D479E907F976281C278E0FA585F57A9F0E26E45B8E1415AD5BB1EB75CAEAAF3DBC5F07CB4E24983A80AABEB1AF6FB9673FD376478338CEC561EFD59190AE05D45110AAC862E8C56B04130E10CE0D2BEB05E9556898EC7BCE27798D8902B27D1687055FFC5268F37EFA8DAED05257C3A864BFECD5251285A6D6AFAA4CB7E4BBC</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:18</date>
+  <millis>1362550758072</millis>
+  <sequence>17</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +OK+</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:18</date>
+  <millis>1362550758079</millis>
+  <sequence>18</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/appendList?guid=E308EED97F5E0ABE73B40AEC3B23C97D84201D34&amp;field=subscribers&amp;value=%5B%22C2126BA21CCA97FB05AB8E1D5C5FAA0D9D5164B6%22%5D&amp;signature=2ECBAC9DCCD5A36E72EB7D3AC665B612EFC44738C6D86BCFE8A08601B54B1A2E7E561DF5835555C161C8944C334EB5F9FD1D49919F10C7DB7230CC2DEDB2874C518EB1F73293E6D0BD7B33E0DA54096146EB47E10762681677AD5B80E2A4FFC0793D269DEC8BC1DFCB3E73AA7CB4BD14F21053574D9D0C075CD78CE2C4F8FCBE</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:18</date>
+  <millis>1362550758794</millis>
+  <sequence>19</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: +OK+</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:18</date>
+  <millis>1362550758798</millis>
+  <sequence>20</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Sending: http://23.21.120.250:8080/GNRS/read?guid=E308EED97F5E0ABE73B40AEC3B23C97D84201D34&amp;field=subscribers&amp;reader=E308EED97F5E0ABE73B40AEC3B23C97D84201D34&amp;signature=85293701D0442F3DC9A1A266A18720264EA16033900C704B432931631BBA856AF6B90D7DA76F7E62444E4FBF06B3A7EE8987A80ADA8BCF3FECCE32FE87E2770C1DC5042EDD2F455DA6D4819305474DAFF2D18A636CCF612F8BEBC7FFB1EBEB1A02598AFE12B920CEE6802F270D897CC956A97427B5D2FE9A86F6FB205FC6CEF3</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:19</date>
+  <millis>1362550759298</millis>
+  <sequence>21</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>sendGetCommand</method>
+  <thread>10</thread>
+  <message>Received: ["C2126BA21CCA97FB05AB8E1D5C5FAA0D9D5164B6"]</message>
+</record>
+<record>
+  <date>2013-03-06T01:19:19</date>
+  <millis>1362550759299</millis>
+  <sequence>22</sequence>
+  <logger>edu.umass.cs.gnrs.httpserver.HTTPClient</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.httpserver.HTTPClient</class>
+  <method>runBlockTest</method>
+  <thread>10</thread>
+  <message>subscribers = ["C2126BA21CCA97FB05AB8E1D5C5FAA0D9D5164B6"]</message>
+</record>
+</log>

@@ -1,0 +1,35 @@
+0	ananas.cs.umass.edu	4400 5500 10
+1	ananas.cs.umass.edu	4411 5511 15
+2	ananas.cs.umass.edu	4422 5522 20
+3	ananas.cs.umass.edu	4433 5533 25
+4	ananas.cs.umass.edu	4444 5544 30
+5	ananas.cs.umass.edu	4455 5555 35
+6	ananas.cs.umass.edu	4466 5566 40
+7	ananas.cs.umass.edu	4477 5577 45
+
+
+0       planetlab1.cs.uml.edu   20.109
+1       planetlab2.cnis.nyit.edu        36.207
+2       planetlab4.eecs.umich.edu       58.763
+3       planetlab-06.cs.princeton.edu   32.175
+4       planetlab3.csail.mit.edu        16.704
+5       planetlab2.dtc.umn.edu  58.671
+
+
+['12', 'www.amazon.com', 44.98, 44.98], 
+['15', 'www.amazon.com', 36.1659, 36.1659], 
+['19', 'www.amazon.com', 40.7686, 40.7686], 
+['11', 'www.amazon.com', 38.9527, 38.9527]
+
+
+				//Flush the response time and information to a file every 100 queries 
+				if( numQueryResponse % 100 == 0 ) {
+					LocalNameServer.transResponseFile = new FileWriter( LocalNameServer.transFile, true );
+					LocalNameServer.transResponseBW  = new BufferedWriter( LocalNameServer.transResponseFile );
+					writeResponseInfo( LocalNameServer.transResponseBW, LocalNameServer.responseTime );
+					LocalNameServer.transResponseBW.close();
+					LocalNameServer.transResponseFile.close();
+					
+					//Flush all response information from the list after data is written to the file
+					LocalNameServer.responseTime.clear();
+				}

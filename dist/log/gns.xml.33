@@ -1,0 +1,1366 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-11T12:20:53</date>
+  <millis>1373559653725</millis>
+  <sequence>0</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=0, ipAddress=/127.0.0.1, startingPortNumber=35000, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654279</millis>
+  <sequence>1</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=1, ipAddress=/127.0.0.1, startingPortNumber=35010, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654280</millis>
+  <sequence>2</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=2, ipAddress=/127.0.0.1, startingPortNumber=35020, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654280</millis>
+  <sequence>3</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=3, ipAddress=/127.0.0.1, startingPortNumber=35030, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654281</millis>
+  <sequence>4</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=4, ipAddress=/127.0.0.1, startingPortNumber=35040, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654282</millis>
+  <sequence>5</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=5, ipAddress=/127.0.0.1, startingPortNumber=35050, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654282</millis>
+  <sequence>6</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=6, ipAddress=/127.0.0.1, startingPortNumber=35060, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654283</millis>
+  <sequence>7</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=7, ipAddress=/127.0.0.1, startingPortNumber=35070, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654284</millis>
+  <sequence>8</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=8, ipAddress=/127.0.0.1, startingPortNumber=35080, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654284</millis>
+  <sequence>9</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=9, ipAddress=/127.0.0.1, startingPortNumber=35090, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654285</millis>
+  <sequence>10</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=10, ipAddress=/127.0.0.1, startingPortNumber=35100, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654285</millis>
+  <sequence>11</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=11, ipAddress=/127.0.0.1, startingPortNumber=35110, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654286</millis>
+  <sequence>12</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=12, ipAddress=/127.0.0.1, startingPortNumber=35120, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654287</millis>
+  <sequence>13</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=13, ipAddress=/127.0.0.1, startingPortNumber=35130, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654287</millis>
+  <sequence>14</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=14, ipAddress=/127.0.0.1, startingPortNumber=35140, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654288</millis>
+  <sequence>15</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=15, ipAddress=/127.0.0.1, startingPortNumber=35150, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654289</millis>
+  <sequence>16</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>readHostInfo</method>
+  <thread>10</thread>
+  <message>Number of name servers is : 16</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654305</millis>
+  <sequence>17</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor$1</class>
+  <method>run</method>
+  <thread>11</thread>
+  <message>Intercessor update result thread started.</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654305</millis>
+  <sequence>18</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>setLocalServerID</method>
+  <thread>10</thread>
+  <message>Local server id: 4 Address: /127.0.0.1 Port: 35045</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654317</millis>
+  <sequence>19</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer</class>
+  <method>tryPort</method>
+  <thread>10</thread>
+  <message>HTTP server failed to start on port 80 due to java.net.SocketException: Permission denied</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:54</date>
+  <millis>1373559654333</millis>
+  <sequence>20</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer</class>
+  <method>tryPort</method>
+  <thread>10</thread>
+  <message>HTTP server is listening on port 8080</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:59</date>
+  <millis>1373559659975</millis>
+  <sequence>21</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: dump Query:</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:59</date>
+  <millis>1373559659977</millis>
+  <sequence>22</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpOutputHelper</method>
+  <thread>12</thread>
+  <message>sending dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:20:59</date>
+  <millis>1373559659989</millis>
+  <sequence>23</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpGetInputSocket</method>
+  <thread>12</thread>
+  <message>waiting for responses dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660426</millis>
+  <sequence>24</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":0,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660428</millis>
+  <sequence>25</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":5,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660431</millis>
+  <sequence>26</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":12,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660436</millis>
+  <sequence>27</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":13,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660444</millis>
+  <sequence>28</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":6,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660445</millis>
+  <sequence>29</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":7,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660509</millis>
+  <sequence>30</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":9,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660589</millis>
+  <sequence>31</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":1,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660590</millis>
+  <sequence>32</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":10,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660596</millis>
+  <sequence>33</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":3,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660619</millis>
+  <sequence>34</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":14,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660620</millis>
+  <sequence>35</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":2,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660626</millis>
+  <sequence>36</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":4,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:00</date>
+  <millis>1373559660666</millis>
+  <sequence>37</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":713785682,"json":[],"primary":15,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679337</millis>
+  <sequence>38</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>13</thread>
+  <message>Action: dump Query:</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679338</millis>
+  <sequence>39</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpOutputHelper</method>
+  <thread>13</thread>
+  <message>sending dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679339</millis>
+  <sequence>40</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpGetInputSocket</method>
+  <thread>13</thread>
+  <message>waiting for responses dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679339</millis>
+  <sequence>41</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>WARNING</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpGetInputSocket</method>
+  <thread>13</thread>
+  <message>Error creating admin socket: java.net.BindException: Address already in use</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679340</millis>
+  <sequence>42</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>13</thread>
+  <message>Response: +NO+ +QUERYPROCESSINGERROR+ Error while waiting for dump response</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679350</millis>
+  <sequence>43</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":12,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679350</millis>
+  <sequence>44</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":6,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679351</millis>
+  <sequence>45</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":13,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679352</millis>
+  <sequence>46</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":5,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679352</millis>
+  <sequence>47</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":7,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679353</millis>
+  <sequence>48</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":0,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679353</millis>
+  <sequence>49</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":9,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679354</millis>
+  <sequence>50</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":2,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679355</millis>
+  <sequence>51</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":15,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679355</millis>
+  <sequence>52</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":10,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679356</millis>
+  <sequence>53</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":1,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679359</millis>
+  <sequence>54</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":14,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679361</millis>
+  <sequence>55</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":3,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679362</millis>
+  <sequence>56</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":4,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679494</millis>
+  <sequence>57</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":8,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679500</millis>
+  <sequence>58</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":-2104118695,"json":[],"primary":11,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679501</millis>
+  <sequence>59</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679501</millis>
+  <sequence>60</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read sentinal{"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:19</date>
+  <millis>1373559679504</millis>
+  <sequence>61</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: Nameserver: 0 (localhost)
+Nameserver: 1 (localhost)
+Nameserver: 2 (localhost)
+Nameserver: 3 (localhost)
+Nameserver: 4 (localhost)
+Nameserver: 5 (localhost)
+Nameserver: 6 (localhost)
+Nameserver: 7 (localhost)
+Nameserver: 8 (localhost)
+Nameserver: 9 (localhost)
+Nameserver: 10 (localhost)
+Nameserver: 11 (localhost)
+Nameserver: 12 (localhost)
+Nameserver: 13 (localhost)
+Nameserver: 14 (localhost)
+Nameserver: 15 (localhost)
+</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683298</millis>
+  <sequence>62</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Action: dump Query:</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683298</millis>
+  <sequence>63</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpOutputHelper</method>
+  <thread>12</thread>
+  <message>sending dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683299</millis>
+  <sequence>64</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpGetInputSocket</method>
+  <thread>12</thread>
+  <message>waiting for responses dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683310</millis>
+  <sequence>65</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":12,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683311</millis>
+  <sequence>66</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":6,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683312</millis>
+  <sequence>67</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":13,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683313</millis>
+  <sequence>68</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":5,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683314</millis>
+  <sequence>69</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":7,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683314</millis>
+  <sequence>70</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":0,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683315</millis>
+  <sequence>71</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":8,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683316</millis>
+  <sequence>72</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":9,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683317</millis>
+  <sequence>73</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":2,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683318</millis>
+  <sequence>74</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":15,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683318</millis>
+  <sequence>75</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":10,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683319</millis>
+  <sequence>76</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":1,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683320</millis>
+  <sequence>77</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":14,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683321</millis>
+  <sequence>78</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":3,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683322</millis>
+  <sequence>79</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":11,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683322</millis>
+  <sequence>80</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"id":1348277378,"json":[],"primary":4,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683323</millis>
+  <sequence>81</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read {"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683323</millis>
+  <sequence>82</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>12</thread>
+  <message>read sentinal{"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T12:21:23</date>
+  <millis>1373559683323</millis>
+  <sequence>83</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>12</thread>
+  <message>Response: Nameserver: 0 (localhost)
+Nameserver: 1 (localhost)
+Nameserver: 2 (localhost)
+Nameserver: 3 (localhost)
+Nameserver: 4 (localhost)
+Nameserver: 5 (localhost)
+Nameserver: 6 (localhost)
+Nameserver: 7 (localhost)
+Nameserver: 8 (localhost)
+Nameserver: 9 (localhost)
+Nameserver: 10 (localhost)
+Nameserver: 11 (localhost)
+Nameserver: 12 (localhost)
+Nameserver: 13 (localhost)
+Nameserver: 14 (localhost)
+Nameserver: 15 (localhost)
+</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:56</date>
+  <millis>1373560016693</millis>
+  <sequence>84</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>14</thread>
+  <message>Action: registerAccount Query:name=fred&amp;publickey=dummy</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:56</date>
+  <millis>1373560016734</millis>
+  <sequence>85</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>14</thread>
+  <message>sending add: fred-&gt;[829C3804401B0727F70F73D4415E162400CBE57B]</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:56</date>
+  <millis>1373560016856</millis>
+  <sequence>86</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":623369690,"nsID":2,"tP":-1799291369,"tR":35046,"type":3,"tH":4,"reqid":1282076219,"newvalue":["829C3804401B0727F70F73D4415E162400CBE57B"],"tADD":"127.0.0.1","tA":false,"name":"fred","recordkey":"_GNS_guid","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:56</date>
+  <millis>1373560016859</millis>
+  <sequence>87</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>14</thread>
+  <message>Add (1282076219): fred/_GNS_guid
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:56</date>
+  <millis>1373560016919</millis>
+  <sequence>88</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>14</thread>
+  <message>sending add: 829C3804401B0727F70F73D4415E162400CBE57B-&gt;[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711162656","created":"20130711162656","guids":[],"type":"DEFAULT","aliases":[]}]</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:57</date>
+  <millis>1373560017018</millis>
+  <sequence>89</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":-1148182993,"nsID":7,"tP":2120400742,"tR":35046,"type":3,"tH":4,"reqid":954359720,"newvalue":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"tADD":"127.0.0.1","tA":false,"name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_account_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":0}</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:57</date>
+  <millis>1373560017019</millis>
+  <sequence>90</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendAddRecordWithConfirmation</method>
+  <thread>14</thread>
+  <message>Add (954359720): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_account_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:57</date>
+  <millis>1373560017022</millis>
+  <sequence>91</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateWithSequenceNumber</method>
+  <thread>14</thread>
+  <message>sending update: 829C3804401B0727F70F73D4415E162400CBE57B : _GNS_guid_info newValue: [{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711162657","created":"20130711162657","name":"fred","type":"DEFAULT","publickey":"dummy"}] oldValue: null</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:57</date>
+  <millis>1373560017093</millis>
+  <sequence>92</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>checkForResult</method>
+  <thread>11</thread>
+  <message>Intercessor Recvd result: {"lnreqsid":673680287,"nsID":0,"tP":1114409731,"tR":35046,"type":14,"tH":4,"reqid":-152344698,"newvalue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711162657\",\"created\":\"20130711162657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"tADD":"127.0.0.1","operation":"CREATE","tA":false,"name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_guid_info","lnsID":4,"seqnum":0,"success":true,"numNSupdates":3}</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:57</date>
+  <millis>1373560017094</millis>
+  <sequence>93</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendUpdateRecordWithConfirmation</method>
+  <thread>14</thread>
+  <message>Update (-152344698): 829C3804401B0727F70F73D4415E162400CBE57B/_GNS_guid_info
+  Returning: true</message>
+</record>
+<record>
+  <date>2013-07-11T12:26:57</date>
+  <millis>1373560017095</millis>
+  <sequence>94</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>14</thread>
+  <message>Response: 829C3804401B0727F70F73D4415E162400CBE57B</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020327</millis>
+  <sequence>95</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>14</thread>
+  <message>Action: dump Query:</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020327</millis>
+  <sequence>96</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpOutputHelper</method>
+  <thread>14</thread>
+  <message>sending dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020328</millis>
+  <sequence>97</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDumpGetInputSocket</method>
+  <thread>14</thread>
+  <message>waiting for responses dump</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020343</millis>
+  <sequence>98</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[],"primary":12,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020344</millis>
+  <sequence>99</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[],"primary":6,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020345</millis>
+  <sequence>100</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[],"primary":5,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020349</millis>
+  <sequence>101</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":7,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020357</millis>
+  <sequence>102</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":8,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020359</millis>
+  <sequence>103</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":2,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020362</millis>
+  <sequence>104</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711162657\",\"created\":\"20130711162657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":13,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020366</millis>
+  <sequence>105</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":9,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020366</millis>
+  <sequence>106</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[],"primary":1,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020369</millis>
+  <sequence>107</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":1,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711162657\",\"created\":\"20130711162657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":0,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020371</millis>
+  <sequence>108</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130711162657\",\"created\":\"20130711162657\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":10,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020372</millis>
+  <sequence>109</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[],"primary":14,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020373</millis>
+  <sequence>110</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[],"primary":3,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020376</millis>
+  <sequence>111</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130711162656\",\"created\":\"20130711162656\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}},{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":15,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020377</millis>
+  <sequence>112</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[],"primary":4,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020378</millis>
+  <sequence>113</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"id":1634689943,"json":[{"nr_activeRunning":true,"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"],"nr_markedForRemoval":false,"nr_primaryReplica":true,"nr_activePaxosID":"fred-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"fred","nr_user_keys":["_GNS_guid"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"nr_movingAvgAggregateLookupFrequency":[],"nr_oldActivePaxosID":"fred-1","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_guid":["829C3804401B0727F70F73D4415E162400CBE57B"]},"nr_active":[0,8,13],"nr_primary":[2,11,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_movingAvgAggregateUpdateFrequency":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[2,11,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}],"primary":11,"local":4,"type":40}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020379</millis>
+  <sequence>114</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read {"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020379</millis>
+  <sequence>115</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.client.Intercessor</class>
+  <method>sendDump</method>
+  <thread>14</thread>
+  <message>read sentinal{"type":41}</message>
+</record>
+<record>
+  <date>2013-07-11T12:27:00</date>
+  <millis>1373560020381</millis>
+  <sequence>116</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.httpserver.GnsHttpServer$DefaultHandler</class>
+  <method>handle</method>
+  <thread>14</thread>
+  <message>Response: Nameserver: 0 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711162656","created":"20130711162656","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711162657","created":"20130711162657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+Nameserver: 1 (localhost)
+Nameserver: 2 (localhost)
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+Nameserver: 3 (localhost)
+Nameserver: 4 (localhost)
+Nameserver: 5 (localhost)
+Nameserver: 6 (localhost)
+Nameserver: 7 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711162656","created":"20130711162656","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 8 (localhost)
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+Nameserver: 9 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711162656","created":"20130711162656","guids":[],"type":"DEFAULT","aliases":[]}]}
+Nameserver: 10 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711162656","created":"20130711162656","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711162657","created":"20130711162657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+Nameserver: 11 (localhost)
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+Nameserver: 12 (localhost)
+Nameserver: 13 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711162656","created":"20130711162656","guids":[],"type":"DEFAULT","aliases":[]}], _GNS_guid_info=[{"tags":[],"guid":"829C3804401B0727F70F73D4415E162400CBE57B","updated":"20130711162657","created":"20130711162657","name":"fred","type":"DEFAULT","publickey":"dummy"}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+Nameserver: 14 (localhost)
+Nameserver: 15 (localhost)
+  NAME: 829C3804401B0727F70F73D4415E162400CBE57B P: [7, 9, 15] A: [0, 10, 13] TTL: 0
+    VALUE: {_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130711162656","created":"20130711162656","guids":[],"type":"DEFAULT","aliases":[]}]}
+  NAME: fred P: [2, 11, 15] A: [0, 8, 13] TTL: 0
+    VALUE: {_GNS_guid=[829C3804401B0727F70F73D4415E162400CBE57B]}
+</message>
+</record>
+</log>

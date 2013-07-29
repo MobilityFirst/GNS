@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-16T15:41:26</date>
+  <millis>1374003686950</millis>
+  <sequence>76</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>12</thread>
+  <message>	NIOSTAT	connection-event	1	9	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:28</date>
+  <millis>1374003688890</millis>
+  <sequence>78</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>12</thread>
+  <message>	NIOSTAT	connection-event	2	13	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:28</date>
+  <millis>1374003688920</millis>
+  <sequence>80</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>12</thread>
+  <message>	NIOSTAT	connection-event	3	7	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:29</date>
+  <millis>1374003689397</millis>
+  <sequence>82</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>14</thread>
+  <message>	NIOSTAT	connection-event	4	0	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:29</date>
+  <millis>1374003689526</millis>
+  <sequence>84</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>15</thread>
+  <message>	NIOSTAT	connection-event	5	14	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:29</date>
+  <millis>1374003689807</millis>
+  <sequence>86</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>14</thread>
+  <message>	NIOSTAT	connection-event	6	12	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:30</date>
+  <millis>1374003690766</millis>
+  <sequence>88</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>14</thread>
+  <message>	NIOSTAT	connection-event	7	4	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:30</date>
+  <millis>1374003690866</millis>
+  <sequence>90</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>14</thread>
+  <message>	NIOSTAT	connection-event	8	2	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:31</date>
+  <millis>1374003691651</millis>
+  <sequence>92</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>14</thread>
+  <message>	NIOSTAT	connection-event	9	8	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:32</date>
+  <millis>1374003692865</millis>
+  <sequence>94</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>16</thread>
+  <message>	NIOSTAT	connection-event	10	6	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:33</date>
+  <millis>1374003693185</millis>
+  <sequence>96</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>12</thread>
+  <message>	NIOSTAT	connection-event	11	10	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:33</date>
+  <millis>1374003693497</millis>
+  <sequence>98</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>17</thread>
+  <message>	NIOSTAT	connection-event	12	15	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:34</date>
+  <millis>1374003694021</millis>
+  <sequence>101</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>15</thread>
+  <message>	NIOSTAT	connection-event	13	1	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:34</date>
+  <millis>1374003694514</millis>
+  <sequence>103</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>12</thread>
+  <message>	NIOSTAT	connection-event	14	11	</message>
+</record>
+<record>
+  <date>2013-07-16T15:41:34</date>
+  <millis>1374003694869</millis>
+  <sequence>105</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>sendToID</method>
+  <thread>16</thread>
+  <message>	NIOSTAT	connection-event	15	3	</message>
+</record>
+</log>

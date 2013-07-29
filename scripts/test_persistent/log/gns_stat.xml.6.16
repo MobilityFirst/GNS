@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-16T14:51:55</date>
+  <millis>1374000715611</millis>
+  <sequence>82</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	1A434C0DAA0B17E48ABD4B59C632CF13501C7D24	149	3	9	4	-1587808061	1374000715604</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747416</millis>
+  <sequence>123</sequence>
+  <logger>STAT_edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.localnameserver.Update</class>
+  <method>handlePacketConfirmUpdateLNS</method>
+  <thread>12</thread>
+  <message>Success-UpdateRequest	829C3804401B0727F70F73D4415E162400CBE57B	79	3	0	4	1947792703	1374000747416</message>
+</record>
+</log>

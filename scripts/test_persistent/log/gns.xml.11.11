@@ -1,0 +1,2721 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-07-16T14:51:16</date>
+  <millis>1374000676959</millis>
+  <sequence>0</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Date: 07/16/2013 14:51:16</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677015</millis>
+  <sequence>1</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Id: 10</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677016</millis>
+  <sequence>2</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>NS File: name-server-info</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677016</millis>
+  <sequence>3</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Local: false</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677016</millis>
+  <sequence>4</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Persistant Data Store: true</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677017</millis>
+  <sequence>5</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Regular Workload Size: 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677017</millis>
+  <sequence>6</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Mobile Workload Size: 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677017</millis>
+  <sequence>7</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Primary: 3</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677018</millis>
+  <sequence>8</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Static Replication: false</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677018</millis>
+  <sequence>9</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Random Replication: false</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677018</millis>
+  <sequence>10</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Location Based Replication: true</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677019</millis>
+  <sequence>11</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Name Server Selection Vote Size: 5</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677019</millis>
+  <sequence>12</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Beehive Replication: false</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677020</millis>
+  <sequence>13</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>C: 0.0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677020</millis>
+  <sequence>14</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>DHT Base: 0.0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677020</millis>
+  <sequence>15</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Alpha: 0.0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677021</millis>
+  <sequence>16</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Aggregate Interval: 1000000ms</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677021</millis>
+  <sequence>17</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Replication Interval: 1000000ms</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677021</millis>
+  <sequence>18</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Normalizing Constant: 0.1</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677021</millis>
+  <sequence>19</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Moving Average Window: 20</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677022</millis>
+  <sequence>20</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>TTL Constant: 0.0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677022</millis>
+  <sequence>21</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Default TTL Regular Names: 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677022</millis>
+  <sequence>22</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Default TTL Mobile Names: 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677023</millis>
+  <sequence>23</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Debug Mode: true</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677023</millis>
+  <sequence>24</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.Util</class>
+  <method>println</method>
+  <thread>10</thread>
+  <message>Experiment Mode: false</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677446</millis>
+  <sequence>25</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=0, ipAddress=/127.0.0.1, startingPortNumber=35000, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677447</millis>
+  <sequence>26</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=1, ipAddress=/127.0.0.1, startingPortNumber=35010, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677525</millis>
+  <sequence>27</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=2, ipAddress=/127.0.0.1, startingPortNumber=35020, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677525</millis>
+  <sequence>28</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=3, ipAddress=/127.0.0.1, startingPortNumber=35030, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677599</millis>
+  <sequence>29</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=4, ipAddress=/127.0.0.1, startingPortNumber=35040, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677599</millis>
+  <sequence>30</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=5, ipAddress=/127.0.0.1, startingPortNumber=35050, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677600</millis>
+  <sequence>31</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=6, ipAddress=/127.0.0.1, startingPortNumber=35060, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677601</millis>
+  <sequence>32</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=7, ipAddress=/127.0.0.1, startingPortNumber=35070, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677601</millis>
+  <sequence>33</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=8, ipAddress=/127.0.0.1, startingPortNumber=35080, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677602</millis>
+  <sequence>34</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=9, ipAddress=/127.0.0.1, startingPortNumber=35090, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677602</millis>
+  <sequence>35</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=10, ipAddress=/127.0.0.1, startingPortNumber=35100, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677603</millis>
+  <sequence>36</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=11, ipAddress=/127.0.0.1, startingPortNumber=35110, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677603</millis>
+  <sequence>37</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=12, ipAddress=/127.0.0.1, startingPortNumber=35120, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677604</millis>
+  <sequence>38</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=13, ipAddress=/127.0.0.1, startingPortNumber=35130, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677604</millis>
+  <sequence>39</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=14, ipAddress=/127.0.0.1, startingPortNumber=35140, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677605</millis>
+  <sequence>40</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>addHostInfo</method>
+  <thread>10</thread>
+  <message>HostInfo{id=15, ipAddress=/127.0.0.1, startingPortNumber=35150, pingLatency=0.0, latitude=0.0, longitude=0.0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677605</millis>
+  <sequence>41</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.util.ConfigFileInfo</class>
+  <method>readHostInfo</method>
+  <thread>10</thread>
+  <message>Number of name servers is : 16</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677628</millis>
+  <sequence>42</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.nameserver.NameServer</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>NS Node 10 using Mongo DB </message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677823</millis>
+  <sequence>43</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677835</millis>
+  <sequence>44</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677836</millis>
+  <sequence>45</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 1</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677836</millis>
+  <sequence>46</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 1</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677836</millis>
+  <sequence>47</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 2</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677837</millis>
+  <sequence>48</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 2</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677837</millis>
+  <sequence>49</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 3</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677838</millis>
+  <sequence>50</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 3</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677838</millis>
+  <sequence>51</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 4</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677839</millis>
+  <sequence>52</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 4</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677840</millis>
+  <sequence>53</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 5</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677840</millis>
+  <sequence>54</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 5</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677840</millis>
+  <sequence>55</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 6</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677840</millis>
+  <sequence>56</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 6</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677841</millis>
+  <sequence>57</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 7</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677841</millis>
+  <sequence>58</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 7</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677841</millis>
+  <sequence>59</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 8</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677841</millis>
+  <sequence>60</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 8</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677848</millis>
+  <sequence>61</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 9</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677849</millis>
+  <sequence>62</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 9</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677849</millis>
+  <sequence>63</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 11</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677849</millis>
+  <sequence>64</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 11</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677849</millis>
+  <sequence>65</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 12</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677850</millis>
+  <sequence>66</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 12</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677850</millis>
+  <sequence>67</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 13</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677850</millis>
+  <sequence>68</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 13</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677850</millis>
+  <sequence>69</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 14</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677851</millis>
+  <sequence>70</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 14</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677851</millis>
+  <sequence>71</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetectionTask</class>
+  <method>&lt;init&gt;</method>
+  <thread>10</thread>
+  <message>10 Started FailureDetectionTask for 15</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677851</millis>
+  <sequence>72</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>startNodeMonitoring</method>
+  <thread>10</thread>
+  <message>10 started monitoring node 15</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677851</millis>
+  <sequence>73</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.FailureDetection</class>
+  <method>initializeFailureDetection</method>
+  <thread>10</thread>
+  <message>Failure detection initialized for 16 nodes</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677852</millis>
+  <sequence>74</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>initalizePaxosManager</method>
+  <thread>10</thread>
+  <message>Paxos manager initialization complete</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:17</date>
+  <millis>1374000677871</millis>
+  <sequence>75</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>edu.umass.cs.gnrs.nameserver.NSListenerAdmin</class>
+  <method>run</method>
+  <thread>11</thread>
+  <message>NS Node 10 starting Admin Request Server on port 35104</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:18</date>
+  <millis>1374000678054</millis>
+  <sequence>77</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:18</date>
+  <millis>1374000678237</millis>
+  <sequence>79</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:18</date>
+  <millis>1374000678370</millis>
+  <sequence>81</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:18</date>
+  <millis>1374000678786</millis>
+  <sequence>83</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:18</date>
+  <millis>1374000678835</millis>
+  <sequence>85</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:19</date>
+  <millis>1374000679864</millis>
+  <sequence>87</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:20</date>
+  <millis>1374000680040</millis>
+  <sequence>89</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:20</date>
+  <millis>1374000680407</millis>
+  <sequence>91</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:20</date>
+  <millis>1374000680700</millis>
+  <sequence>93</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:20</date>
+  <millis>1374000680965</millis>
+  <sequence>95</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:22</date>
+  <millis>1374000682120</millis>
+  <sequence>97</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:22</date>
+  <millis>1374000682245</millis>
+  <sequence>99</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:22</date>
+  <millis>1374000682525</millis>
+  <sequence>101</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:23</date>
+  <millis>1374000683457</millis>
+  <sequence>103</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:51:25</date>
+  <millis>1374000685296</millis>
+  <sequence>105</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>INFO</level>
+  <class>nio.NioServer</class>
+  <method>run</method>
+  <thread>13</thread>
+  <message>SELECTOR: Socket registered with this selector.</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:00</date>
+  <millis>1374000720439</millis>
+  <sequence>106</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>WARNING</level>
+  <class>edu.umass.cs.gnrs.statusdisplay.StatusClient</class>
+  <method>sendStatus</method>
+  <thread>11</thread>
+  <message>Unable to send status. Server address has not been initialized!</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747344</millis>
+  <sequence>107</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B	Using Value in NewActiveSetStartupPacket To Create Name Record.{_GNS_account_info=[{"guid":"829C3804401B0727F70F73D4415E162400CBE57B","username":"fred","updated":"20130716185227","created":"20130716185227","guids":[],"type":"DEFAULT","aliases":[]}]}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747346</millis>
+  <sequence>108</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":2,"slotNumber":-1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","ballot":"1:13","receiverID":10,"type":90,"coordinatorID":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747349</millis>
+  <sequence>109</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747351</millis>
+  <sequence>110</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":21,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{},"prepareBallot":"1:13","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747352</millis>
+  <sequence>111</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747353</millis>
+  <sequence>112</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":2,"slotNumber":-1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","ballot":"1:0","receiverID":10,"type":90,"coordinatorID":0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747358</millis>
+  <sequence>113</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747359</millis>
+  <sequence>114</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":21,"sendingNodeID":0,"currentBallot":"1:0","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{},"prepareBallot":"1:0","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747367</millis>
+  <sequence>115</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747393</millis>
+  <sequence>116</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":3,"s1":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}","x2":-1,"type":90,"x1":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747393</millis>
+  <sequence>117</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747400</millis>
+  <sequence>118</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":5,"s1":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747400</millis>
+  <sequence>119</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747408</millis>
+  <sequence>120</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.NameServer</class>
+  <method>addNameRecord</method>
+  <thread>12</thread>
+  <message>Start addNameRecord 829C3804401B0727F70F73D4415E162400CBE57B</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747409</millis>
+  <sequence>121</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.NameServer</class>
+  <method>addNameRecord</method>
+  <thread>12</thread>
+  <message>Start primary [7, 9, 15]</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747409</millis>
+  <sequence>122</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>12</thread>
+  <message> NAME RECORD ADDED AT ACTIVE NODE: name record = {"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747410</millis>
+  <sequence>123</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>12</thread>
+  <message> NEW_ACTIVE_START_PREV_VALUE_RESPONSE. Name Record Value: {"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-1","nr_updateRate":0,"nr_oldValuesMap":{},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[7,9,15],"nr_previousAggregateWriteFrequency":0,"nr_lookupRate":0,"nr_nameServerStatsMap":{}}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747410</millis>
+  <sequence>124</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	Enter createPaxos</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747410</millis>
+  <sequence>125</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	Before creating replica.</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747416</millis>
+  <sequence>126</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>12</thread>
+  <message>Paxos instance created. Paxos ID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747418</millis>
+  <sequence>127</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	Starting replica</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747419</millis>
+  <sequence>128</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C Coordinator proposing new ballot: 1:10</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747419</millis>
+  <sequence>129</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C sending prepare msg to 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747420</millis>
+  <sequence>130</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C sending prepare msg to 10</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747420</millis>
+  <sequence>131</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Acceptor received PreparePacket: {"PT":2,"slotNumber":-1,"ballot":"1:10","receiverID":10,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747422</millis>
+  <sequence>132</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747423</millis>
+  <sequence>133</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>updateNodeAndSlotNumbers</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C Slot number for 10 updated to node 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747423</millis>
+  <sequence>134</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS PROCESS START {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747423</millis>
+  <sequence>135</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C received Prepare-Reply Msg {"PT":6,"slotNumber":0,"accepted":[],"ballot":"1:10","receiverID":10,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747423</millis>
+  <sequence>136</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C Ballot accepted 1:10 by node 10</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747423</millis>
+  <sequence>137</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C Scout prepare msg count: 1</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747424</millis>
+  <sequence>138</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	Reached here.</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747424</millis>
+  <sequence>139</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C sending prepare msg to 13</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747424</millis>
+  <sequence>140</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>updateNodeAndSlotNumbers</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	0C Slot number for 0 updated to node 1</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747425</millis>
+  <sequence>141</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Sent current state to node 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747425</millis>
+  <sequence>142</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C received Prepare-Reply Msg {"PT":6,"slotNumber":1,"accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":0,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747425</millis>
+  <sequence>143</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Send state {"currentBallot":"1:10","sendingNodeID":10,"PT":21,"slotNumber":0,"decisions":{},"prepareBallot":"1:10"}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747425</millis>
+  <sequence>144</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C Ballot pre-empted. </message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747425</millis>
+  <sequence>145</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS MSG DONE {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747426</millis>
+  <sequence>146</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Sent current state to node 13</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747426</millis>
+  <sequence>147</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Send state {"currentBallot":"1:10","sendingNodeID":10,"PT":21,"slotNumber":0,"decisions":{},"prepareBallot":""}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747426</millis>
+  <sequence>148</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	Exit create Paxos</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747426</millis>
+  <sequence>149</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>12</thread>
+  <message> PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. 829C3804401B0727F70F73D4415E162400CBE57B</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747427</millis>
+  <sequence>150</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>12</thread>
+  <message>NEW_ACTIVE_START: replied to active sending the startup packet from node: 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747427</millis>
+  <sequence>151</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":13,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747428</millis>
+  <sequence>152</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS PROCESS START {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":13,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747428</millis>
+  <sequence>154</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747428</millis>
+  <sequence>153</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>updateNodeAndSlotNumbers</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	13C Slot number for 13 updated to node 1</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747429</millis>
+  <sequence>155</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS PROCESS START {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747429</millis>
+  <sequence>156</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C not getting ballot accepted now.</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747429</millis>
+  <sequence>157</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":22,"sendingNodeID":0,"currentBallot":"1:13","slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747429</millis>
+  <sequence>159</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS MSG DONE {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":13,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747429</millis>
+  <sequence>158</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2C	10C not getting ballot accepted now.</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747430</millis>
+  <sequence>160</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS PROCESS START {"PT":22,"sendingNodeID":0,"currentBallot":"1:13","slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747430</millis>
+  <sequence>161</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS MSG DONE {"PT":6,"slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","accepted":[{"PT":3,"s1":0,"b1":"1:13","y1":13,"y2":-2145244101,"y3":"{\"NSreqID\":1,\"sequencenumber\":0,\"nsID\":0,\"reqID\":1947792703,\"LSNreqID\":547482958,\"type\":13,\"ttl\":-1,\"newvalue\":[\"{\\\"tags\\\":[],\\\"guid\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"updated\\\":\\\"20130716185227\\\",\\\"created\\\":\\\"20130716185227\\\",\\\"name\\\":\\\"fred\\\",\\\"type\\\":\\\"DEFAULT\\\",\\\"publickey\\\":\\\"dummy\\\"}\"],\"operation\":\"CREATE\",\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"recordkey\":\"_GNS_guid_info\",\"lnsID\":4,\"primaryNSs\":[7,9,15]}"}],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747430</millis>
+  <sequence>162</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":22,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747430</millis>
+  <sequence>163</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleSendState</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Recvd current state from 0 state: {"currentBallot":"1:13","sendingNodeID":0,"PT":22,"slotNumber":1,"decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":""}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747430</millis>
+  <sequence>164</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS PROCESS START {"PT":22,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747431</millis>
+  <sequence>165</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>parseDecisionsReceived</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747432</millis>
+  <sequence>166</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleSendState</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Recvd current state from 13 state: {"currentBallot":"1:13","sendingNodeID":13,"PT":22,"slotNumber":1,"decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":""}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747432</millis>
+  <sequence>167</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>parseDecisionsReceived</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747433</millis>
+  <sequence>168</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>SEVERE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>perform</method>
+  <thread>17</thread>
+  <message>	PAXOS-COMMIT	829C3804401B0727F70F73D4415E162400CBE57B-2	10	0	{"NSreqID":1,"sequencenumber":0,"nsID":0,"reqID":1947792703,"LSNreqID":547482958,"type":13,"ttl":-1,"newvalue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"operation":"CREATE","name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_guid_info","lnsID":4,"primaryNSs":[7,9,15]}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747434</millis>
+  <sequence>169</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ClientRequestWorker</class>
+  <method>handleUpdateAddressNS</method>
+  <thread>14</thread>
+  <message>PAXOS DECISION: Update Confirmed{"NSreqID":1,"sequencenumber":0,"nsID":0,"reqID":1947792703,"LSNreqID":547482958,"type":13,"ttl":-1,"newvalue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"operation":"CREATE","name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_guid_info","lnsID":4,"primaryNSs":[7,9,15]}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747434</millis>
+  <sequence>171</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS MSG DONE {"PT":22,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747434</millis>
+  <sequence>170</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS MSG DONE {"PT":22,"sendingNodeID":0,"currentBallot":"1:13","slotNumber":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","decisions":{"0":"{\"PT\":5,\"y1\":13,\"y2\":-2145244101,\"y3\":\"{\\\"NSreqID\\\":1,\\\"sequencenumber\\\":0,\\\"nsID\\\":0,\\\"reqID\\\":1947792703,\\\"LSNreqID\\\":547482958,\\\"type\\\":13,\\\"ttl\\\":-1,\\\"newvalue\\\":[\\\"{\\\\\\\"tags\\\\\\\":[],\\\\\\\"guid\\\\\\\":\\\\\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\\\\\",\\\\\\\"updated\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"created\\\\\\\":\\\\\\\"20130716185227\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"fred\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"DEFAULT\\\\\\\",\\\\\\\"publickey\\\\\\\":\\\\\\\"dummy\\\\\\\"}\\\"],\\\"operation\\\":\\\"CREATE\\\",\\\"name\\\":\\\"829C3804401B0727F70F73D4415E162400CBE57B\\\",\\\"recordkey\\\":\\\"_GNS_guid_info\\\",\\\"lnsID\\\":4,\\\"primaryNSs\\\":[7,9,15]}\"}"},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747437</millis>
+  <sequence>172</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ClientRequestWorker</class>
+  <method>handleUpdateAddressNS</method>
+  <thread>14</thread>
+  <message>Update applied{"NSreqID":1,"sequencenumber":0,"nsID":0,"reqID":1947792703,"LSNreqID":547482958,"type":13,"ttl":-1,"newvalue":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"operation":"CREATE","name":"829C3804401B0727F70F73D4415E162400CBE57B","recordkey":"_GNS_guid_info","lnsID":4,"primaryNSs":[7,9,15]}</message>
+</record>
+<record>
+  <date>2013-07-16T14:52:27</date>
+  <millis>1374000747438</millis>
+  <sequence>173</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ClientRequestWorker</class>
+  <method>handleUpdateAddressNS</method>
+  <thread>14</thread>
+  <message>Saved name record to database.</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117560</millis>
+  <sequence>174</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":3,"s1":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","b1":"1:13","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","x2":-1,"type":90,"x1":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117560</millis>
+  <sequence>175</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS PROCESS START {"PT":3,"s1":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","b1":"1:13","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","x2":-1,"type":90,"x1":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117561</millis>
+  <sequence>176</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleAccept</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 ACCEPTORInto Acceptor: slot = : 1{"PT":3,"s1":1,"b1":"1:13","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","x2":-1,"x1":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117562</millis>
+  <sequence>177</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleAccept</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 ACCEPTORAcceptor: after locks : slot = 1</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117562</millis>
+  <sequence>178</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleAccept</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 ACCEPTORAcceptor: SEND REPLY : to 13 for slot = 1 Packet = {"PT":7,"s1":1,"b1":"1:13","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","x2":1,"x1":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117562</millis>
+  <sequence>179</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS MSG DONE {"PT":3,"s1":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","b1":"1:13","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","x2":-1,"type":90,"x1":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117563</millis>
+  <sequence>180</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS RECVD MSG: {"PT":5,"s1":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117563</millis>
+  <sequence>181</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS PROCESS START {"PT":5,"s1":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117563</millis>
+  <sequence>182</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleDecision</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	10 Decision recvd at slot = 1 req = {"PT":5,"y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}"}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117565</millis>
+  <sequence>183</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>run</method>
+  <thread>14</thread>
+  <message>PAXOS DECISION: Old Active Stopped: {"activeReceiver":0,"paxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","primarySender":7,"name":"829C3804401B0727F70F73D4415E162400CBE57B","type":112}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117566</millis>
+  <sequence>184</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.NameRecord</class>
+  <method>handleCurrentActiveStop</method>
+  <thread>14</thread>
+  <message> Updated variables after current active stopped. </message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117567</millis>
+  <sequence>185</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-2	PAXOS MSG DONE {"PT":5,"s1":1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-2","y1":112,"y2":27025647,"y3":"{\"activeReceiver\":0,\"paxosID\":\"829C3804401B0727F70F73D4415E162400CBE57B-2\",\"primarySender\":7,\"name\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"type\":112}","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117567</millis>
+  <sequence>186</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>deletePaxosInstance</method>
+  <thread>14</thread>
+  <message>PAXOS INSTANCE DELETED. PaxosID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117567</millis>
+  <sequence>187</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>sendOldActiveStopConfirmationToPrimary</method>
+  <thread>14</thread>
+  <message>OLD ACTIVE STOP: Name Record Updated. OldPaxosID = 829C3804401B0727F70F73D4415E162400CBE57B-2</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117580</millis>
+  <sequence>188</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.CopyStateFromOldActiveTask</class>
+  <method>run</method>
+  <thread>18</thread>
+  <message> NEW_ACTIVE_START_FORWARD received packet: {"oldActives":"0:10:13","newActives":"0:10:13","pvCorrect":false,"primarySender":7,"name":"829C3804401B0727F70F73D4415E162400CBE57B","newPaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","oldPaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nasID":-405264524,"type":102,"activeSender":0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117580</millis>
+  <sequence>189</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.CopyStateFromOldActiveTask</class>
+  <method>run</method>
+  <thread>18</thread>
+  <message> OLD ACTIVE SELECTED = : 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117581</millis>
+  <sequence>190</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.CopyStateFromOldActiveTask</class>
+  <method>run</method>
+  <thread>18</thread>
+  <message> REQUESTED VALUE from OLD ACTIVE. PACKET: {"oldActives":"0:10:13","newActives":"0:10:13","pvCorrect":false,"primarySender":7,"name":"829C3804401B0727F70F73D4415E162400CBE57B","newPaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","oldPaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nasID":-405264524,"type":105,"activeSender":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117583</millis>
+  <sequence>191</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>run</method>
+  <thread>16</thread>
+  <message> Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node 10</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117584</millis>
+  <sequence>192</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>16</thread>
+  <message> NAME RECORD UPDATED AT ACTIVE  NODE. name record = {"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117584</millis>
+  <sequence>193</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":2,"slotNumber":-1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","ballot":"1:0","receiverID":10,"type":90,"coordinatorID":0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117584</millis>
+  <sequence>194</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>16</thread>
+  <message> NEW_ACTIVE_START_PREV_VALUE_RESPONSE. Name Record Value: {"nr_activeRunning":true,"nr_markedForRemoval":false,"nr_primaryReplica":false,"nr_activePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","nr_oldActiveRunning":false,"nr_nameserverVotesMap":{},"nr_totalUpdateRequest":0,"nr_totalAggregateWriteFrequency":0,"nr_movingAverageLookups":[],"nr_name":"829C3804401B0727F70F73D4415E162400CBE57B","nr_user_keys":["_GNS_account_info","_GNS_guid_info"],"nr_lastLookupTimestamp":0,"nr_timeToLive":0,"nr_previousAggregateReadFrequency":0,"nr_totalLookupRequest":0,"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"nr_oldActivePaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nr_updateRate":0,"nr_oldValuesMap":{"_GNS_account_info":["{\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"username\":\"fred\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"guids\":[],\"type\":\"DEFAULT\",\"aliases\":[]}"],"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"]},"nr_active":[0,10,13],"nr_primary":[7,9,15],"nr_lastUpdateTimestamp":0," nr_movingAverageUpdates":[],"nr_lnsRequestsCount":{},"nr_totalAggregateReadFrequency":0,"nr_oldactive":[0,10,13],"nr_previousAggregateWriteFrequency":0,"_GNS_guid_info":["{\"tags\":[],\"guid\":\"829C3804401B0727F70F73D4415E162400CBE57B\",\"updated\":\"20130716185227\",\"created\":\"20130716185227\",\"name\":\"fred\",\"type\":\"DEFAULT\",\"publickey\":\"dummy\"}"],"nr_lookupRate":0,"nr_nameServerStatsMap":{}}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117585</millis>
+  <sequence>196</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":21,"sendingNodeID":0,"currentBallot":"1:0","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"1:0","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117584</millis>
+  <sequence>195</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117585</millis>
+  <sequence>198</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>14</thread>
+  <message>ERROR: Paxos Instances does not contain ID = 829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117585</millis>
+  <sequence>197</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	Enter createPaxos</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117585</millis>
+  <sequence>199</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	Before creating replica.</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117585</millis>
+  <sequence>200</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>16</thread>
+  <message>Paxos instance created. Paxos ID = 829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117586</millis>
+  <sequence>201</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	Starting replica</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117586</millis>
+  <sequence>202</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C Coordinator proposing new ballot: 1:10</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117586</millis>
+  <sequence>203</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C sending prepare msg to 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117586</millis>
+  <sequence>204</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":2,"slotNumber":-1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","ballot":"1:13","receiverID":10,"type":90,"coordinatorID":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117587</millis>
+  <sequence>205</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C sending prepare msg to 10</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117587</millis>
+  <sequence>206</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS PROCESS START {"PT":2,"slotNumber":-1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","ballot":"1:13","receiverID":10,"type":90,"coordinatorID":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117587</millis>
+  <sequence>207</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Acceptor received PreparePacket: {"PT":2,"slotNumber":-1,"ballot":"1:10","receiverID":10,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117587</millis>
+  <sequence>208</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Acceptor received PreparePacket: {"PT":2,"slotNumber":-1,"ballot":"1:13","receiverID":10,"coordinatorID":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117588</millis>
+  <sequence>209</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>updateNodeAndSlotNumbers</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C Slot number for 10 updated to node 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117588</millis>
+  <sequence>210</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C received Prepare-Reply Msg {"PT":6,"slotNumber":0,"accepted":[],"ballot":"1:10","receiverID":10,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117588</millis>
+  <sequence>211</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C Ballot accepted 1:10 by node 10</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117588</millis>
+  <sequence>212</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C Scout prepare msg count: 1</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117589</millis>
+  <sequence>213</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117591</millis>
+  <sequence>214</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	Reached here.</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117591</millis>
+  <sequence>215</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>initScout</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C sending prepare msg to 13</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117591</millis>
+  <sequence>216</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS PROCESS START {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117592</millis>
+  <sequence>217</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>updateNodeAndSlotNumbers</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	0C Slot number for 0 updated to node 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117592</millis>
+  <sequence>218</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	Reached here.</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117592</millis>
+  <sequence>220</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS MSG DONE {"PT":2,"slotNumber":-1,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","ballot":"1:13","receiverID":10,"type":90,"coordinatorID":13}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117592</millis>
+  <sequence>221</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Sent current state to node 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117593</millis>
+  <sequence>222</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Send state {"currentBallot":"1:13","sendingNodeID":10,"PT":21,"slotNumber":0,"decisions":{},"prepareBallot":"1:10"}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117592</millis>
+  <sequence>219</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C received Prepare-Reply Msg {"PT":6,"slotNumber":0,"accepted":[],"ballot":"1:13","receiverID":0,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117593</millis>
+  <sequence>223</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C Ballot pre-empted. </message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117593</millis>
+  <sequence>224</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS MSG DONE {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117593</millis>
+  <sequence>225</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Sent current state to node 13</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117593</millis>
+  <sequence>226</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Send state {"currentBallot":"1:13","sendingNodeID":10,"PT":21,"slotNumber":0,"decisions":{},"prepareBallot":""}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117594</millis>
+  <sequence>227</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>createPaxosInstance</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	Exit create Paxos</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117594</millis>
+  <sequence>228</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>16</thread>
+  <message> PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. 829C3804401B0727F70F73D4415E162400CBE57B</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117594</millis>
+  <sequence>229</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.ReplicationWorkerPaxos</class>
+  <method>addNameRecord</method>
+  <thread>16</thread>
+  <message>NEW_ACTIVE_START: replied to active sending the startup packet from node: 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117594</millis>
+  <sequence>230</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117594</millis>
+  <sequence>231</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS PROCESS START {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117595</millis>
+  <sequence>232</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C not getting ballot accepted now.</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117595</millis>
+  <sequence>233</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>16</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS MSG DONE {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":0,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117595</millis>
+  <sequence>234</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":22,"sendingNodeID":0,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"1:0","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117595</millis>
+  <sequence>235</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS PROCESS START {"PT":22,"sendingNodeID":0,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"1:0","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117595</millis>
+  <sequence>236</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleSendState</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Recvd current state from 0 state: {"currentBallot":"1:13","sendingNodeID":0,"PT":22,"slotNumber":0,"decisions":{},"prepareBallot":"1:0"}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>237</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":13,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>238</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Acceptor received PreparePacket: {"PT":2,"slotNumber":-1,"ballot":"1:0","receiverID":10,"coordinatorID":0}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>239</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS PROCESS START {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":13,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>240</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepare</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	Reached here.</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>241</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>updateNodeAndSlotNumbers</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	13C Slot number for 13 updated to node 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>242</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>parseDecisionsReceived</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	{}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>244</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handlePrepareMessageReply</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989C	10C not getting ballot accepted now.</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>243</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":21,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117596</millis>
+  <sequence>245</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>17</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS MSG DONE {"PT":22,"sendingNodeID":0,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"1:0","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117597</millis>
+  <sequence>246</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>14</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS MSG DONE {"PT":6,"slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","accepted":[],"ballot":"1:13","receiverID":13,"type":90,"coordinatorID":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117597</millis>
+  <sequence>247</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS PROCESS START {"PT":21,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117597</millis>
+  <sequence>248</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleSendState</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Recvd current state from 13 state: {"currentBallot":"1:13","sendingNodeID":13,"PT":21,"slotNumber":0,"decisions":{},"prepareBallot":""}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117597</millis>
+  <sequence>249</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>parseDecisionsReceived</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	{}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117598</millis>
+  <sequence>250</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>getDecisionsAfterSlotNumber</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Send Decisions slot number 0</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117598</millis>
+  <sequence>251</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>getDecisionsAfterSlotNumber</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 JSON Object created for sending {}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117598</millis>
+  <sequence>252</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Sent current state to node 13</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117598</millis>
+  <sequence>253</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>sendCurrentState</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Send state {"currentBallot":"1:13","sendingNodeID":10,"PT":22,"slotNumber":0,"decisions":{},"prepareBallot":""}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117598</millis>
+  <sequence>254</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>15</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS MSG DONE {"PT":21,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117600</millis>
+  <sequence>255</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosManager</class>
+  <method>handleIncomingPacket</method>
+  <thread>13</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS RECVD MSG: {"PT":22,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117601</millis>
+  <sequence>256</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS PROCESS START {"PT":22,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117601</millis>
+  <sequence>257</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>handleSendState</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	10 Recvd current state from 13 state: {"currentBallot":"1:13","sendingNodeID":13,"PT":22,"slotNumber":0,"decisions":{},"prepareBallot":""}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117601</millis>
+  <sequence>258</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.PaxosReplica</class>
+  <method>parseDecisionsReceived</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	{}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:37</date>
+  <millis>1374001117601</millis>
+  <sequence>259</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>paxos.HandlePaxosMessageTask</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989	PAXOS MSG DONE {"PT":22,"sendingNodeID":13,"currentBallot":"1:13","slotNumber":0,"PXS":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","decisions":{},"prepareBallot":"","type":90}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:42</date>
+  <millis>1374001122581</millis>
+  <sequence>260</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.CopyStateFromOldActiveTask</class>
+  <method>run</method>
+  <thread>18</thread>
+  <message> NEW_ACTIVE_START_FORWARD received packet: {"oldActives":"0:10:13","newActives":"0:10:13","pvCorrect":false,"primarySender":7,"name":"829C3804401B0727F70F73D4415E162400CBE57B","newPaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-Active-1235731989","oldPaxosID":"829C3804401B0727F70F73D4415E162400CBE57B-2","nasID":-405264524,"type":103,"activeSender":10}</message>
+</record>
+<record>
+  <date>2013-07-16T14:58:42</date>
+  <millis>1374001122581</millis>
+  <sequence>261</sequence>
+  <logger>edu.umass.cs.gnrs.main.GNS</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.gnrs.nameserver.CopyStateFromOldActiveTask</class>
+  <method>run</method>
+  <thread>18</thread>
+  <message> COPY State from Old Active Successful! Cancel Task; Actives Queried: [0]</message>
+</record>
+</log>

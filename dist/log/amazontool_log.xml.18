@@ -1,0 +1,1005 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2013-05-31T01:38:30</date>
+  <millis>1369978710595</millis>
+  <sequence>1</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>11</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:34</date>
+  <millis>1369978714398</millis>
+  <sequence>2</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>11</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:37</date>
+  <millis>1369978717390</millis>
+  <sequence>3</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>12</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:39</date>
+  <millis>1369978719953</millis>
+  <sequence>4</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>12</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:40</date>
+  <millis>1369978720224</millis>
+  <sequence>5</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>13</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:40</date>
+  <millis>1369978720426</millis>
+  <sequence>6</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>14</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:42</date>
+  <millis>1369978722238</millis>
+  <sequence>7</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>14</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:42</date>
+  <millis>1369978722352</millis>
+  <sequence>8</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>15</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:42</date>
+  <millis>1369978722631</millis>
+  <sequence>9</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>16</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:43</date>
+  <millis>1369978723091</millis>
+  <sequence>10</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>13</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:44</date>
+  <millis>1369978724530</millis>
+  <sequence>11</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>16</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:38:44</date>
+  <millis>1369978724548</millis>
+  <sequence>12</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>15</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:39:53</date>
+  <millis>1369978793843</millis>
+  <sequence>13</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>17</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:41:05</date>
+  <millis>1369978865149</millis>
+  <sequence>14</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>17</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:44:28</date>
+  <millis>1369979068778</millis>
+  <sequence>15</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>12</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:44:38</date>
+  <millis>1369979078134</millis>
+  <sequence>16</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>13</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:44:43</date>
+  <millis>1369979083121</millis>
+  <sequence>17</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>11</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:44:51</date>
+  <millis>1369979091636</millis>
+  <sequence>18</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>16</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:45:02</date>
+  <millis>1369979102391</millis>
+  <sequence>19</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>14</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:45:28</date>
+  <millis>1369979128016</millis>
+  <sequence>20</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>15</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:04</date>
+  <millis>1369979284837</millis>
+  <sequence>21</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>17</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:21</date>
+  <millis>1369979301830</millis>
+  <sequence>22</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:22</date>
+  <millis>1369979302722</millis>
+  <sequence>23</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:22</date>
+  <millis>1369979302757</millis>
+  <sequence>24</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:23</date>
+  <millis>1369979303190</millis>
+  <sequence>25</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:23</date>
+  <millis>1369979303190</millis>
+  <sequence>26</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:23</date>
+  <millis>1369979303416</millis>
+  <sequence>27</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:23</date>
+  <millis>1369979303759</millis>
+  <sequence>28</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:24</date>
+  <millis>1369979304376</millis>
+  <sequence>29</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:24</date>
+  <millis>1369979304490</millis>
+  <sequence>30</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:24</date>
+  <millis>1369979304565</millis>
+  <sequence>31</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:24</date>
+  <millis>1369979304640</millis>
+  <sequence>32</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:25</date>
+  <millis>1369979305256</millis>
+  <sequence>33</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:25</date>
+  <millis>1369979305743</millis>
+  <sequence>34</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:25</date>
+  <millis>1369979305743</millis>
+  <sequence>35</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:26</date>
+  <millis>1369979306341</millis>
+  <sequence>36</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:26</date>
+  <millis>1369979306470</millis>
+  <sequence>37</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:26</date>
+  <millis>1369979306534</millis>
+  <sequence>38</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:27</date>
+  <millis>1369979307022</millis>
+  <sequence>39</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:27</date>
+  <millis>1369979307404</millis>
+  <sequence>40</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:27</date>
+  <millis>1369979307640</millis>
+  <sequence>41</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:28</date>
+  <millis>1369979308072</millis>
+  <sequence>42</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:28</date>
+  <millis>1369979308110</millis>
+  <sequence>43</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:28</date>
+  <millis>1369979308276</millis>
+  <sequence>44</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:28</date>
+  <millis>1369979308307</millis>
+  <sequence>45</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:29</date>
+  <millis>1369979309348</millis>
+  <sequence>46</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:29</date>
+  <millis>1369979309528</millis>
+  <sequence>47</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:29</date>
+  <millis>1369979309540</millis>
+  <sequence>48</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:29</date>
+  <millis>1369979309887</millis>
+  <sequence>49</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:30</date>
+  <millis>1369979310145</millis>
+  <sequence>50</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:30</date>
+  <millis>1369979310388</millis>
+  <sequence>51</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:30</date>
+  <millis>1369979310782</millis>
+  <sequence>52</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:31</date>
+  <millis>1369979311027</millis>
+  <sequence>53</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:31</date>
+  <millis>1369979311672</millis>
+  <sequence>54</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:31</date>
+  <millis>1369979311700</millis>
+  <sequence>55</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:32</date>
+  <millis>1369979312008</millis>
+  <sequence>56</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:32</date>
+  <millis>1369979312034</millis>
+  <sequence>57</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:32</date>
+  <millis>1369979312157</millis>
+  <sequence>58</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:32</date>
+  <millis>1369979312907</millis>
+  <sequence>59</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:33</date>
+  <millis>1369979313290</millis>
+  <sequence>60</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>18</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:33</date>
+  <millis>1369979313440</millis>
+  <sequence>61</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:33</date>
+  <millis>1369979313840</millis>
+  <sequence>62</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:33</date>
+  <millis>1369979313842</millis>
+  <sequence>63</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:34</date>
+  <millis>1369979314331</millis>
+  <sequence>64</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:34</date>
+  <millis>1369979314959</millis>
+  <sequence>65</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:35</date>
+  <millis>1369979315217</millis>
+  <sequence>66</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:35</date>
+  <millis>1369979315409</millis>
+  <sequence>67</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:35</date>
+  <millis>1369979315675</millis>
+  <sequence>68</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:35</date>
+  <millis>1369979315976</millis>
+  <sequence>69</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:36</date>
+  <millis>1369979316998</millis>
+  <sequence>70</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:37</date>
+  <millis>1369979317526</millis>
+  <sequence>71</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:37</date>
+  <millis>1369979317576</millis>
+  <sequence>72</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:37</date>
+  <millis>1369979317721</millis>
+  <sequence>73</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:37</date>
+  <millis>1369979317756</millis>
+  <sequence>74</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:38</date>
+  <millis>1369979318062</millis>
+  <sequence>75</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:38</date>
+  <millis>1369979318762</millis>
+  <sequence>76</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>19</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:39</date>
+  <millis>1369979319348</millis>
+  <sequence>77</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>20</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:40</date>
+  <millis>1369979320039</millis>
+  <sequence>78</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:40</date>
+  <millis>1369979320145</millis>
+  <sequence>79</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:40</date>
+  <millis>1369979320476</millis>
+  <sequence>80</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:40</date>
+  <millis>1369979320864</millis>
+  <sequence>81</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:42</date>
+  <millis>1369979322275</millis>
+  <sequence>82</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>21</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:42</date>
+  <millis>1369979322543</millis>
+  <sequence>83</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:43</date>
+  <millis>1369979323284</millis>
+  <sequence>84</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:44</date>
+  <millis>1369979324209</millis>
+  <sequence>85</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:44</date>
+  <millis>1369979324865</millis>
+  <sequence>86</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>22</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:46</date>
+  <millis>1369979326097</millis>
+  <sequence>87</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:47</date>
+  <millis>1369979327444</millis>
+  <sequence>88</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:48</date>
+  <millis>1369979328840</millis>
+  <sequence>89</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>23</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:50</date>
+  <millis>1369979330633</millis>
+  <sequence>90</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+<record>
+  <date>2013-05-31T01:48:53</date>
+  <millis>1369979333825</millis>
+  <sequence>91</sequence>
+  <logger>edu.umass.cs.amazontools.Amazontool</logger>
+  <level>FINE</level>
+  <class>edu.umass.cs.amazontools.SSHClient</class>
+  <method>exec</method>
+  <thread>24</thread>
+  <message>exit status: 0</message>
+</record>
+</log>
