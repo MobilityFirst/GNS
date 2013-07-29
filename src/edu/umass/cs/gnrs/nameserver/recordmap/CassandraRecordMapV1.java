@@ -1,9 +1,11 @@
-package edu.umass.cs.gnrs.nameserver;
+package edu.umass.cs.gnrs.nameserver.recordmap;
 
 import edu.umass.cs.gnrs.database.CassandraRecords;
 import edu.umass.cs.gnrs.database.MongoRecords;
 import edu.umass.cs.gnrs.main.GNS;
 import edu.umass.cs.gnrs.nameserver.NameRecordKey;
+import edu.umass.cs.gnrs.nameserver.NameRecordKey;
+import edu.umass.cs.gnrs.nameserver.NameRecordV1;
 import edu.umass.cs.gnrs.nameserver.NameRecordV1;
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,5 +1,7 @@
 package edu.umass.cs.gnrs.nameserver;
 
+import edu.umass.cs.gnrs.nameserver.recordmap.MongoRecordMap;
+import edu.umass.cs.gnrs.nameserver.recordmap.RecordMapInterface;
 import edu.umass.cs.gnrs.database.MongoRecords;
 import edu.umass.cs.gnrs.main.GNS;
 import edu.umass.cs.gnrs.main.StartNameServer;

@@ -1,8 +1,10 @@
-package edu.umass.cs.gnrs.nameserver;
+package edu.umass.cs.gnrs.nameserver.recordmap;
 
 import edu.umass.cs.gnrs.database.MongoRecords;
 import edu.umass.cs.gnrs.main.GNS;
 import edu.umass.cs.gnrs.nameserver.NameRecord;
+import edu.umass.cs.gnrs.nameserver.NameRecord;
+import edu.umass.cs.gnrs.nameserver.NameRecordKey;
 import edu.umass.cs.gnrs.nameserver.NameRecordKey;
 import edu.umass.cs.gnrs.util.ConfigFileInfo;
 import edu.umass.cs.gnrs.util.HashFunction;

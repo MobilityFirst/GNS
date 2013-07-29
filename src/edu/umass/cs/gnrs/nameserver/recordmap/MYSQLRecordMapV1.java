@@ -1,9 +1,11 @@
-package edu.umass.cs.gnrs.nameserver;
+package edu.umass.cs.gnrs.nameserver.recordmap;
 
 import edu.umass.cs.gnrs.main.GNS;
 import edu.umass.cs.gnrs.database.MYSQLRecordTable;
 import edu.umass.cs.gnrs.database.MYSQLRecordTableEntry;
 import edu.umass.cs.gnrs.nameserver.NameRecordKey;
+import edu.umass.cs.gnrs.nameserver.NameRecordKey;
+import edu.umass.cs.gnrs.nameserver.NameRecordV1;
 import edu.umass.cs.gnrs.nameserver.NameRecordV1;
 import java.util.HashSet;
 import java.util.Iterator;
