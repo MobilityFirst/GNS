@@ -6,9 +6,9 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import org.apache.commons.cli.*;
-import paxos.FailureDetection;
-import paxos.PaxosLogger;
-import paxos.PaxosLogger2;
+import edu.umass.cs.gns.paxos.FailureDetection;
+import edu.umass.cs.gns.paxos.PaxosLogger;
+import edu.umass.cs.gns.paxos.PaxosLogger2;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

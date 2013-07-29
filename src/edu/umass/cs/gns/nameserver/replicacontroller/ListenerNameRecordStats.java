@@ -13,7 +13,7 @@ import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
-import paxos.PaxosManager;
+import edu.umass.cs.gns.paxos.PaxosManager;
 
 public class ListenerNameRecordStats extends Thread {
 

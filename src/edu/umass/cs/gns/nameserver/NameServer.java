@@ -14,9 +14,9 @@ import edu.umass.cs.gns.replicationframework.RandomReplication;
 import edu.umass.cs.gns.replicationframework.ReplicationFramework;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
-import nio.ByteStreamToJSONObjects;
-import nio.NioServer;
-import paxos.PaxosManager;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.io.IOException;
 import java.net.DatagramSocket;

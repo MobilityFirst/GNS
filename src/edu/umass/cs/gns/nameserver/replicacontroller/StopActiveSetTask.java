@@ -15,7 +15,7 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 
-import paxos.FailureDetection;
+import edu.umass.cs.gns.paxos.FailureDetection;
 
 /**
  * This class sends a message to current active replicas to stop an active replica

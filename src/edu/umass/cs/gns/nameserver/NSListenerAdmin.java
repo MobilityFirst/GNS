@@ -14,7 +14,7 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import paxos.PaxosManager;
+import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.io.IOException;
 import java.net.ServerSocket;

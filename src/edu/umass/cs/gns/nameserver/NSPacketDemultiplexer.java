@@ -3,10 +3,10 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.packet.Packet;
-import nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import org.json.JSONException;
 import org.json.JSONObject;
-import paxos.PaxosManager;
+import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.util.ArrayList;
 

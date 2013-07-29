@@ -8,8 +8,8 @@ import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
-import paxos.PaxosClientRequestHandler;
-import paxos.PaxosManager;
+import edu.umass.cs.gns.paxos.PaxosClientRequestHandler;
+import edu.umass.cs.gns.paxos.PaxosManager;
 
 /**
  * Created with IntelliJ IDEA.

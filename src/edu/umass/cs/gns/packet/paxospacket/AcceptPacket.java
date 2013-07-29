@@ -2,7 +2,7 @@ package edu.umass.cs.gns.packet.paxospacket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import paxos.Ballot;
+import edu.umass.cs.gns.paxos.Ballot;
 
 public class AcceptPacket extends Packet{
 

@@ -7,7 +7,7 @@ import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
-import paxos.FailureDetection;
+import edu.umass.cs.gns.paxos.FailureDetection;
 
 import java.io.IOException;
 import java.util.HashSet;

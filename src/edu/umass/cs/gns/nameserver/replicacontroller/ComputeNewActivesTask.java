@@ -11,7 +11,7 @@ import edu.umass.cs.gns.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
-import paxos.PaxosManager;
+import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.util.Set;
 import java.util.TimerTask;

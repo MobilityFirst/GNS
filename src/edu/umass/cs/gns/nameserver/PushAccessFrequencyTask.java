@@ -10,7 +10,7 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import paxos.FailureDetection;
+import edu.umass.cs.gns.paxos.FailureDetection;
 
 import edu.umass.cs.gns.packet.NameRecordStatsPacket;
 import edu.umass.cs.gns.statusdisplay.StatusClient;

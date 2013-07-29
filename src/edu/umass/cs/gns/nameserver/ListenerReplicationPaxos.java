@@ -12,7 +12,7 @@ import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-import paxos.PaxosManager;
+import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.io.IOException;
 import java.util.HashSet;
