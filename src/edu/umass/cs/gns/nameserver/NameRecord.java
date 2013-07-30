@@ -22,8 +22,8 @@ import java.util.Set;
  * Created with IntelliJ IDEA. User: abhigyan Date: 7/26/13 Time: 12:46 PM To change this template use File | Settings | File
  * Templates.
  */
-public class NameRecord {
-  
+public class NameRecord implements Comparable<NameRecord> {
+
   private final static String USER_KEYS = "nr_user_keys";
   private final static String OLDVALUESMAP = "nr_oldValuesMap";
   //
@@ -82,12 +82,12 @@ public class NameRecord {
    */
   private boolean lazyEval = false;
   private BasicRecordMap recordMap;
-  
+
   public NameRecord(String name, BasicRecordMap recordMap) {
     if (recordMap == null) {
       throw new RuntimeException("Record map cannot be null!");
     }
-    
+
     this.recordMap = recordMap;
     this.lazyEval = true;
     this.name = name;
@@ -102,7 +102,7 @@ public class NameRecord {
     this.totalLookupRequest = LAZYINT;
     this.totalUpdateRequest = LAZYINT;
   }
-  
+
   public NameRecord(String name) {
     this.name = name;
     //Initialize the entry in the map
@@ -112,18 +112,18 @@ public class NameRecord {
     if (StartNameServer.debugMode) {
       GNS.getLogger().finer("Constructor Primaries: " + primaryNameservers);
     }
-    
+
     this.activeNameservers = initializeInitialActives(primaryNameservers, StartNameServer.minReplica, name);
     if (StartNameServer.debugMode) {
       GNS.getLogger().finer(" Name Record INITIAL ACTIVES ARE: " + activeNameservers);
     }
     this.oldActivePaxosID = name + "-1"; // initialized uniformly among primaries
     this.activePaxosID = name + "-2";
-    
+
     this.totalLookupRequest = 0;
     this.totalUpdateRequest = 0;
   }
-  
+
   public NameRecord(JSONObject json) throws JSONException {
     this.valuesMap = new ValuesMap();
     // extract the user keys out of the json object
@@ -131,13 +131,13 @@ public class NameRecord {
       this.valuesMap.put(key, new QueryResultValue(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
     }
     this.oldValuesMap = new ValuesMap(json.getJSONObject(OLDVALUESMAP));
-    
+
     this.name = json.getString(NAME);
     this.timeToLive = json.getInt(TIMETOLIVE);
-    
+
     this.primaryNameservers = (HashSet<Integer>) JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARY_NAMESERVERS));
     this.activeNameservers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
-    
+
     this.oldActivePaxosID = json.getString(OLD_ACTIVE_PAXOS_ID);
     if (!json.has(ACTIVE_PAXOS_ID)) {
       this.activePaxosID = null;
@@ -147,13 +147,13 @@ public class NameRecord {
     this.totalLookupRequest = json.getInt(TOTALLOOKUPREQUEST);
     this.totalUpdateRequest = json.getInt(TOTALUPDATEREQUEST);
   }
-  
+
   public NameRecord(String name, NameRecordKey nameRecordKey, ArrayList<String> values) {
     this(name);
     this.valuesMap.put(nameRecordKey.getName(), new QueryResultValue(values));
     this.oldValuesMap.put(nameRecordKey.getName(), new QueryResultValue(values));
   }
-  
+
   public synchronized JSONObject toJSONObject() throws JSONException {
     if (isLazyEval()) {
       throw new RuntimeException("Attempting to convert a lazy NameRecord to JSON");
@@ -165,7 +165,7 @@ public class NameRecord {
     // of data and metadata.
     valuesMap.addToJSONObject(json);
     json.put(USER_KEYS, new JSONArray(valuesMap.keySet()));
-    
+
     json.put(OLDVALUESMAP, getOldValuesMap().toJSONObject());
     //
     json.put(NAME, getName());
@@ -176,18 +176,18 @@ public class NameRecord {
     // new fields
     json.put(ACTIVE_PAXOS_ID, getActiveNameservers());
     json.put(OLD_ACTIVE_PAXOS_ID, getOldActivePaxosID());
-    
+
     json.put(TOTALLOOKUPREQUEST, getTotalLookupRequest());
     json.put(TOTALUPDATEREQUEST, getTotalUpdateRequest());
-    
+
     return json;
   }
-  
+
   private static Set<Integer> initializeInitialActives(Set<Integer> primaryNameservers, int count, String name) {
     // choose three actives which are different from primaries
     Set<Integer> newActives = new HashSet<Integer>();
     Random r = new Random(name.hashCode());
-    
+
     for (int j = 0; j < count; j++) {
       while (true) {
         int id = r.nextInt(ConfigFileInfo.getNumberOfNameServers());
@@ -285,14 +285,14 @@ public class NameRecord {
       recordMap.updateNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS, activeNameservers);
     }
   }
-  
+
   public HashSet<Integer> getPrimaryNameservers() {
     if (isLazyEval() && primaryNameservers == null) {
       primaryNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, PRIMARY_NAMESERVERS);
     }
     return primaryNameservers;
   }
-  
+
   public synchronized String getActivePaxosID() {
     if (isLazyEval() && activePaxosID == null) {
       activePaxosID = recordMap.getNameRecordField(name, ACTIVE_PAXOS_ID);
@@ -408,7 +408,7 @@ public class NameRecord {
   public synchronized boolean containsKey(String key) {
     return getValuesMap().containsKey(key);
   }
-  
+
   public synchronized QueryResultValue get(String key) {
     return getValuesMap().get(key);
   }
@@ -474,7 +474,7 @@ public class NameRecord {
    * @param paxosID ID of the active set stopped
    */
   public synchronized void handleCurrentActiveStop(String paxosID) {
-    
+
     if (getActivePaxosID().equals(paxosID)) {
       // current set of actives has stopped.
       // copy all fields to "oldActive" variables
@@ -532,5 +532,11 @@ public class NameRecord {
     } catch (JSONException e) {
       return "Error printing NameRecord: " + e;
     }
+  }
+
+  @Override
+  public int compareTo(NameRecord d) {
+    int result = (this.getName()).compareTo(d.getName());
+    return result;
   }
 }
