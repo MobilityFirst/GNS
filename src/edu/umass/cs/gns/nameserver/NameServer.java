@@ -60,8 +60,8 @@ public class NameServer {
 //    NameServer.updateSocket = new DatagramSocket(ConfigFileInfo.getUpdatePort(nodeID));
 
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
-    NameServer.recordMap = new MongoRecordMap(); 
-    
+    NameServer.recordMap = new MongoRecordMap();
+
     // will need to add back some form of the code to select the appropriate one
     // probably make persistentDataStore a selector
 
@@ -225,12 +225,18 @@ public class NameServer {
     return recordMap.getNameRecord(name);
   }
 
+  public static NameRecord getNameRecordLazy(String name) {
+    return recordMap.getNameRecordLazy(name);
+  }
+
   public static void addNameRecord(NameRecord recordEntry) {
     recordMap.addNameRecord(recordEntry);
   }
 
   public static void updateNameRecord(NameRecord recordEntry) {
-    recordMap.updateNameRecord(recordEntry);
+    if (!recordEntry.isLazyEval()) {
+      recordMap.updateNameRecord(recordEntry);
+    }
   }
 
   public static void removeNameRecord(String name) {
@@ -244,7 +250,7 @@ public class NameServer {
   public static Set<NameRecord> getAllNameRecords() {
     return recordMap.getAllNameRecords();
   }
-  
+
   //  the nuclear option
   public static void resetDB() {
     recordMap.reset();
@@ -300,8 +306,6 @@ public class NameServer {
 //    public static Set<NameRecord> getAllActiveNameRecords() {
 //        return recordMap.getAllNameRecords();
 //    }
-  
-
   public static DNSPacket makeResponseFromRecord(DNSPacket dnsPacket, NameRecord nameRecord) {
     if (dnsPacket.getQname() == null || !dnsPacket.isQuery() //|| !DBNameRecord.containsName(dnsPacket.getQname())
             // shouldn't be called with a null namerecord, but just to be sure

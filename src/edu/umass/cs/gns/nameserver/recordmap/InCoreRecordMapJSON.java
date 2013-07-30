@@ -108,6 +108,11 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
       return null;
     }
   }
+  
+  @Override
+  public NameRecord getNameRecordLazy(String name) {
+   throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   //
   // THESE WILL BE DEPRECATED

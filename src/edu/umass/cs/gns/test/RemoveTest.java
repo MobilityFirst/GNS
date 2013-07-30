@@ -6,21 +6,14 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.GroupAccess;
-import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMapV2;
-//import edu.umass.cs.gnrs.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.recordmap.RecordMapInterfaceV2;
 import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.ThreadUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
 import javax.swing.JOptionPane;
 
 /**

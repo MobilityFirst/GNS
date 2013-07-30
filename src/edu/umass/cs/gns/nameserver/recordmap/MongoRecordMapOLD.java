@@ -16,11 +16,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * This will be deleted soon.
+ * 
  * Stores GUID, KEY, VALUE triples in a Mongo Database
  *
  * @author westy
  */
-public class MongoRecordMapV2 extends BasicRecordMap {
+public class MongoRecordMapOLD extends BasicRecordMap {
   String collectionName = MongoRecords.DBNAMERECORD;
   
   @Override
@@ -41,6 +43,11 @@ public class MongoRecordMapV2 extends BasicRecordMap {
       e.printStackTrace();
       return null;
     }
+  }
+  
+  @Override
+  public NameRecord getNameRecordLazy(String name) {
+   throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
@@ -168,7 +175,7 @@ public class MongoRecordMapV2 extends BasicRecordMap {
   private static void test() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", 4);
     HashFunction.initializeHashFunction();
-    MongoRecordMapV2 recordMap = new MongoRecordMapV2();
+    MongoRecordMapOLD recordMap = new MongoRecordMapOLD();
     NameRecord nameRecord = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24",
             new NameRecordKey("FRANK"),
             new ArrayList(Arrays.asList("XYZ")));

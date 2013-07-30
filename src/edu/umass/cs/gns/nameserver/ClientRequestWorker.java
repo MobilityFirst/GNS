@@ -271,7 +271,7 @@ public class ClientRequestWorker extends TimerTask {
             updatePacket.setOperation(UpdateOperation.REPLACE_ALL);
           }
           if (StartNameServer.debugMode) {
-            GNS.getLogger().fine("UPSERT forwarded  as UPDATE to active: " + activeID);
+            GNS.getLogger().fine("UPSERT forwarded as UPDATE to active: " + activeID);
           }
           NameServer.tcpTransport.sendToID(updatePacket.toJSONObject(), activeID, PortType.STATS_PORT);
         } else {
@@ -301,6 +301,7 @@ public class ClientRequestWorker extends TimerTask {
 
 
     NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
+    //NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
     //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
 
     if (nameRecord == null || !nameRecord.containsActiveNameServer(NameServer.nodeID)) {
@@ -364,6 +365,7 @@ public class ClientRequestWorker extends TimerTask {
     }
     UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
     NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
+    //NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
     //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
 
 
@@ -371,7 +373,8 @@ public class ClientRequestWorker extends TimerTask {
     if (nameRecord != null) {
       // Apply update
       GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
-      boolean result = nameRecord.updateValuesMap(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getOperation());
+      boolean result = nameRecord.updateField(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(), 
+              updatePacket.getOldValue(), updatePacket.getOperation());
       if (!result) { // update failed
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("Update operation failed " + incomingJSON);

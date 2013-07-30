@@ -392,7 +392,7 @@ public class MongoRecords implements NoSQLRecords {
     JSONObject json = instance.lookup(COLLECTIONS[0], n.getName(), true);
     System.out.println("LOOKUP BY GUID => " + json);
     NameRecord record = new NameRecord(json);
-    record.updateValuesMap("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
+    record.updateField("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
     System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
     instance.update(COLLECTIONS[0], record.getName(), record.toJSONObject());
     JSONObject json2 = instance.lookup(COLLECTIONS[0], n.getName(), true);

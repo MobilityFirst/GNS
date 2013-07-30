@@ -34,6 +34,8 @@ public interface RecordMapInterface {
     public String tableToString();
 
     public void reset();
+    
+    public NameRecord getNameRecordLazy(String name);
 
     //
     // OLD Style

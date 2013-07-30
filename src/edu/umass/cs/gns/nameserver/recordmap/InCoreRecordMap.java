@@ -1,25 +1,26 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Stores GUID, KEY, VALUE triples
  *
  * @author westy
  */
-public class InCoreRecordMapV2 extends BasicRecordMapV2 {
+public class InCoreRecordMap extends BasicRecordMap {
 
   private ConcurrentMap<String, NameRecord> recordMap;
 
-  public InCoreRecordMapV2() {
+  public InCoreRecordMap() {
     recordMap = new ConcurrentHashMap<String, NameRecord>();
   }
 
@@ -31,6 +32,15 @@ public class InCoreRecordMapV2 extends BasicRecordMapV2 {
   @Override
   public void addNameRecord(NameRecord recordEntry) {
     recordMap.put(recordEntry.getName(), recordEntry);
+  }
+
+  @Override
+  public void addNameRecord(JSONObject json) {
+    try {
+      recordMap.put(json.getString(NameRecord.NAME), new NameRecord(json));
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Error getting json record: " + e);
+    }
   }
 
   @Override
@@ -58,17 +68,41 @@ public class InCoreRecordMapV2 extends BasicRecordMapV2 {
   }
 
   @Override
-  public void reset() {
-    recordMap.clear();
+  public Set<String> getAllRowKeys() {
+    return recordMap.keySet();
   }
 
   @Override
-  public void updateNameRecordField(String name, NameRecordKey recordKey, String value) {
+  public Set<String> getAllColumnKeys(String name) {
+    if (!containsName(name)) {
+      return recordMap.get(name).getValuesMap().keySet();
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public void reset() {
+    recordMap.clear();
+  }
+  
+  @Override
+  public NameRecord getNameRecordLazy(String name) {
+   throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void updateNameRecordField(String name, String key, String value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public String getNameRecordField(String name, NameRecordKey recordKey) {
+  public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public String getNameRecordField(String name, String key) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 }

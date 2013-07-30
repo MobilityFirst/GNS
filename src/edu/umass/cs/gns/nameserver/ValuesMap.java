@@ -16,7 +16,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * This is the key / value representation for keys and values when we are manipulating them in memory.
+ * 
+ * Keys are strings and values are always a list (see also QueryResultValue).
+ * 
  * @author westy
  */
 public class ValuesMap {

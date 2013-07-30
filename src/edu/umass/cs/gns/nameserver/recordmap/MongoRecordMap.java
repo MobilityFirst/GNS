@@ -68,6 +68,15 @@ public class MongoRecordMap extends BasicRecordMap {
       return null;
     }
   }
+  
+  @Override
+  public NameRecord getNameRecordLazy(String name) {
+    if (MongoRecords.getInstance().contains(DBNAMERECORD, name)) {
+      return new NameRecord(name, this);
+    } else {
+      return null;
+    }
+  }
 
   @Override
   public NameRecord getNameRecord(String name) {

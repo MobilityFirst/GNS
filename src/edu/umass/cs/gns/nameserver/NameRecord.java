@@ -39,7 +39,8 @@ public class NameRecord implements Comparable<NameRecord> {
   public final static String OLD_ACTIVE_PAXOS_ID = "nr_oldActivePaxosID";
   public final static String TOTALLOOKUPREQUEST = "nr_totalLookupRequest";
   public final static String TOTALUPDATEREQUEST = "nr_totalUpdateRequest";
-  public final static int LAZYINT = -9999;
+  //
+  private final static int LAZYINT = -9999;
   /**
    * Name (host/domain) *
    */
@@ -151,6 +152,13 @@ public class NameRecord implements Comparable<NameRecord> {
     this.totalUpdateRequest = json.getInt(TOTALUPDATEREQUEST);
   }
 
+  /**
+   * Only use for testing.
+   *
+   * @param name
+   * @param nameRecordKey
+   * @param values
+   */
   public NameRecord(String name, NameRecordKey nameRecordKey, ArrayList<String> values) {
     this(name);
     this.valuesMap.put(nameRecordKey.getName(), new QueryResultValue(values));
@@ -240,11 +248,21 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param operation
    * @return
    */
-  public synchronized boolean updateValuesMap(String key, ArrayList<String> newValues, ArrayList<String> oldValues, UpdateOperation operation) {
+  public synchronized boolean updateField(String key, ArrayList<String> newValues,
+          ArrayList<String> oldValues, UpdateOperation operation) {
+    if (isLazyEval()) {
+      //get a fresh copy of this value in case it changed elsewhere
+      ArrayList<String> freshValue = recordMap.getNameRecordFieldAsArrayList(name, key);
+      if (freshValue != null) {
+        this.valuesMap.put(key, new QueryResultValue(freshValue));
+      }
+    }
+    // butter our bread here - actually do the update
     boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation);
+    //
     if (updated) {
       if (isLazyEval()) {
-        recordMap.updateNameRecordListValue(name, key, new ArrayList<String>(get(key)));
+        recordMap.updateNameRecordListValue(name, key, new ArrayList<String>(this.valuesMap.get(key)));
         // make sure the key is in the user keys
         ArrayList<String> keys = recordMap.getNameRecordFieldAsArrayList(name, USER_KEYS);
         if (!keys.contains(key)) {
@@ -255,6 +273,30 @@ public class NameRecord implements Comparable<NameRecord> {
       return true;
     } else {
       return false;
+    }
+  }
+
+  public synchronized QueryResultValue get(String key) {
+    if (isLazyEval()) {
+      ArrayList<String> result = recordMap.getNameRecordFieldAsArrayList(name, key);
+      if (result != null) {
+        QueryResultValue value = new QueryResultValue(result);
+        this.valuesMap.put(key, value);
+        return value;
+      } else {
+        return null;
+      }
+    } else {
+      return getValuesMap().get(key);
+    }
+  }
+
+  public synchronized boolean containsKey(String key) {
+    if (isLazyEval()) {
+      ArrayList<String> keys = recordMap.getNameRecordFieldAsArrayList(name, USER_KEYS);
+      return keys.contains(key);
+    } else {
+      return getValuesMap().containsKey(key);
     }
   }
 
@@ -422,15 +464,6 @@ public class NameRecord implements Comparable<NameRecord> {
     }
   }
 
-  // utilites that use the acessors
-  public synchronized boolean containsKey(String key) {
-    return getValuesMap().containsKey(key);
-  }
-
-  public synchronized QueryResultValue get(String key) {
-    return getValuesMap().get(key);
-  }
-
   /**
    * Returns a copy of the active name servers set.
    */
@@ -545,10 +578,14 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   @Override
   public synchronized String toString() {
-    try {
-      return toJSONObject().toString();
-    } catch (JSONException e) {
-      return "Error printing NameRecord: " + e;
+    if (isLazyEval()) {
+      return "NameRecord{LAZY - " + "name=" + name + '}';
+    } else {
+      try {
+        return toJSONObject().toString();
+      } catch (JSONException e) {
+        return "Error printing NameRecord: " + e;
+      }
     }
   }
 
@@ -561,17 +598,29 @@ public class NameRecord implements Comparable<NameRecord> {
   // test code
   public static void main(String[] args) throws Exception {
     NameServer.nodeID = 2;
-    retrieveFieldTest();
+    test();
     //System.exit(0);
   }
 
-  private static void retrieveFieldTest() throws Exception {
+  // make this query:
+  // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
+  private static void test() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     BasicRecordMap recordMap = new MongoRecordMap();
     NameRecord record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", recordMap);
-    System.out.println(record.getPrimaryNameservers());
-    record.updateValuesMap("COLOR", new ArrayList<String>(Arrays.asList("Red", "Green")), null, UpdateOperation.CREATE);
-    System.out.println(record.get("COLOR"));
+    System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
+    record.updateField("COLOR", new ArrayList<String>(Arrays.asList("Red", "Green")), null, UpdateOperation.CREATE);
+    System.out.println("COLOR: " + record.get("COLOR"));
+    System.out.println("CONTAINS KEY: " + record.containsKey("COLOR"));
+    System.out.println("CONTAINS ACTIVE NS: " + record.containsActiveNameServer(14));
+    System.out.println("TOTAL LOOKUP: " + record.getTotalLookupRequest());
+    record.incrementLookupRequest();
+    System.out.println("TOTAL LOOKUP: " + record.getTotalLookupRequest());
+    record.setTotalLookupRequest(0);
+    System.out.println("CONTAINS KEY: " + record.getTotalLookupRequest());
+    System.out.println("OLD VALUES MAP: " + record.getOldValuesMap());
+    record.setOldValuesMap(record.getValuesMap());
+    System.out.println("OLD VALUES MAP: " + record.getOldValuesMap());
   }
 }
