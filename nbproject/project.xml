@@ -11,7 +11,7 @@
             <properties/>
             <folders>
                 <source-folder>
-                    <label>GNRS-westy</label>
+                    <label>GNS</label>
                     <location>.</location>
                     <encoding>MacRoman</encoding>
                 </source-folder>

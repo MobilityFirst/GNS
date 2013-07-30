@@ -3,8 +3,6 @@ package edu.umass.cs.gns.nameserver.recordmap;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
@@ -96,9 +94,15 @@ public class MongoRecordMapV2 extends BasicRecordMap {
   }
 
   @Override
-  public void updateNameRecordField(String name, String string, ArrayList<String> value) {
+  public void updateNameRecordListValue(String name, String string, ArrayList<String> value) {
     MongoRecords records = MongoRecords.getInstance();
-    records.update(collectionName, name, string, value);
+    records.updateListValue(collectionName, name, string, value);
+  }
+  
+  @Override
+  public void updateNameRecordField(String name, String key, String string) {
+    MongoRecords records = MongoRecords.getInstance();
+    records.updateField(collectionName, name, key, string);
   }
 
   @Override
@@ -176,7 +180,7 @@ public class MongoRecordMapV2 extends BasicRecordMap {
       System.out.println(nameRecord.get("_GNS_guid_info"));
     }
     System.out.println(recordMap.getNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK"));
-    recordMap.updateNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "SLACKER");
+    recordMap.updateNameRecordSingleValue("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "SLACKER");
     System.out.println(recordMap.getNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK"));
     System.out.println(recordMap.getAllRowKeys());
     nameRecord = recordMap.getNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");

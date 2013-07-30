@@ -35,7 +35,7 @@ public class PushAccessFrequencyTask extends TimerTask {
     //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
 
 
-      if (nameRecord.getTotalReadFrequency() == 0 && nameRecord.getTotalWriteFrequency() == 0) {
+      if (nameRecord.getTotalLookupRequest() == 0 && nameRecord.getTotalUpdateRequest() == 0) {
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("Zero read write frequency. NO Frequency to report.");
         }
@@ -44,8 +44,8 @@ public class PushAccessFrequencyTask extends TimerTask {
 
       NameRecordStatsPacket statsPacket = new NameRecordStatsPacket(
               // nameRecord.getRecordKey(), 
-              nameRecord.getName(), nameRecord.getTotalReadFrequency(),
-              nameRecord.getTotalWriteFrequency(), NameServer.nodeID);
+              nameRecord.getName(), nameRecord.getTotalLookupRequest(),
+              nameRecord.getTotalUpdateRequest(), NameServer.nodeID);
 
       try {
         JSONObject json = statsPacket.toJSONObject();

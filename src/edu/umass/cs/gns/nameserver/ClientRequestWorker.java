@@ -92,8 +92,8 @@ public class ClientRequestWorker extends TimerTask {
       // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (Exception e) {
-        GNS.getLogger().severe(" EXCEPTION Exception Exception  in client request worker. " + e.getMessage());
-        e.printStackTrace();
+      GNS.getLogger().severe(" EXCEPTION Exception Exception  in client request worker. " + e.getMessage());
+      e.printStackTrace();
     }
 
   }
@@ -112,9 +112,9 @@ public class ClientRequestWorker extends TimerTask {
             + ") : " + name + "/" + nameRecordKey.toString() + ", "
             + value);
     ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(name);
-            //NameServer.getNameRecord(name);
+    //NameServer.getNameRecord(name);
 
-      // assuming this is a primary name server for this "name".
+    // assuming this is a primary name server for this "name".
 
     // if name record is already created by this name.
     if (nameRecord != null) {     // && nameRecord.containsKey(nameRecordKey.getName())
@@ -146,17 +146,17 @@ public class ClientRequestWorker extends TimerTask {
       // send to all the other primaries except us
       NameServer.tcpTransport.sendToAll(outgoingJSON, primaryNameServers,
               PortType.STATS_PORT, NameServer.nodeID);
-        ValuesMap valuesMap = new ValuesMap();
-        valuesMap.put(nameRecordKey.getName(),new QueryResultValue(value));
-        nameRecord = new ReplicaControllerRecord(name);
-        DBReplicaController.addNameRecordPrimary(nameRecord);
-        ReplicaController.handleNameRecordAddAtPrimary(nameRecord, valuesMap);
-        GNS.getLogger().info("");
+      ValuesMap valuesMap = new ValuesMap();
+      valuesMap.put(nameRecordKey.getName(), new QueryResultValue(value));
+      nameRecord = new ReplicaControllerRecord(name);
+      DBReplicaController.addNameRecordPrimary(nameRecord);
+      ReplicaController.handleNameRecordAddAtPrimary(nameRecord, valuesMap);
+      GNS.getLogger().info("");
 //        NameRecord record = new NameRecord(name, nameRecordKey, value);
 //        // add the name record, which also creates a paxos instance for this name record
 //        NameServer.addNameRecord(record);
 //      if (nameRecord == null) {
-        // create and add the record
+      // create and add the record
 
 //      } else {
 //        nameRecord.put(nameRecordKey.getName(), new QueryResultValue(value));
@@ -198,17 +198,17 @@ public class ClientRequestWorker extends TimerTask {
 //            value);
 //    NameServer.addNameRecord(record);
 
-    ReplicaControllerRecord nameRecord =  DBReplicaController.getNameRecordPrimary(name);//NameServer.getNameRecord(name);
+    ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(name);//NameServer.getNameRecord(name);
     if (nameRecord == null) {
       // create and add the record
 
       nameRecord = new ReplicaControllerRecord(name);
-        DBReplicaController.addNameRecordPrimary(nameRecord);
+      DBReplicaController.addNameRecordPrimary(nameRecord);
 //      NameServer.addNameRecord(record);
     }
-      ValuesMap valuesMap = new ValuesMap();
-      valuesMap.put(addRecordPacket.getRecordKey().getName(),new QueryResultValue(addRecordPacket.getValue()));
-      ReplicaController.handleNameRecordAddAtPrimary(nameRecord, valuesMap);
+    ValuesMap valuesMap = new ValuesMap();
+    valuesMap.put(addRecordPacket.getRecordKey().getName(), new QueryResultValue(addRecordPacket.getValue()));
+    ReplicaController.handleNameRecordAddAtPrimary(nameRecord, valuesMap);
 
 //    else {
 //
@@ -239,10 +239,10 @@ public class ClientRequestWorker extends TimerTask {
 //    NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName()//, updatePacket.getRecordKey()
 //            );
 
-      // IF this is an UPSERT operation
+    // IF this is an UPSERT operation
     if (updatePacket.getOperation().isUpsert()) {
       // this must be primary
-        ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(updatePacket.getName());
+      ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(updatePacket.getName());
       if (nameRecordPrimary == null) {
         // ADD name record
 
@@ -298,9 +298,9 @@ public class ClientRequestWorker extends TimerTask {
 //        if (isUpsert(updatePacket, nameRecord)) {
 //
 //        }
-    
-   
-    NameRecord nameRecord =  NameServer.getNameRecord(updatePacket.getName());
+
+
+    NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
     //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
 
     if (nameRecord == null || !nameRecord.containsActiveNameServer(NameServer.nodeID)) {
@@ -370,31 +370,31 @@ public class ClientRequestWorker extends TimerTask {
     long t0 = System.currentTimeMillis();
     if (nameRecord != null) {
       // Apply update
-        GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
+      GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
       boolean result = nameRecord.updateValuesMap(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getOperation());
-        if (!result) { // update failed
-            if (StartNameServer.debugMode) {
-                GNS.getLogger().fine("Update operation failed " + incomingJSON);
-            }
-            if (updatePacket.getNameServerId() == NameServer.nodeID) { //if this node proposed this update
-                // send error message to client
-                ConfirmUpdateLNSPacket confirmUpdateLNSPacket = proposedUpdates.remove(updatePacket.getNSRequestID());
-
-                confirmUpdateLNSPacket.convertToFailPacket();
-
-
-                NSListenerUDP.udpTransport.sendPacket(confirmUpdateLNSPacket.toJSONObject(),
-                        updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
-                if (StartNameServer.debugMode) {
-                    GNS.getLogger().fine("Error msg sent to client for failed update " + incomingJSON);
-                }
-            }
-            // return now.
-            return;
-        }
+      if (!result) { // update failed
         if (StartNameServer.debugMode) {
-            GNS.getLogger().fine("Update applied" + incomingJSON);
+          GNS.getLogger().fine("Update operation failed " + incomingJSON);
         }
+        if (updatePacket.getNameServerId() == NameServer.nodeID) { //if this node proposed this update
+          // send error message to client
+          ConfirmUpdateLNSPacket confirmUpdateLNSPacket = proposedUpdates.remove(updatePacket.getNSRequestID());
+
+          confirmUpdateLNSPacket.convertToFailPacket();
+
+
+          NSListenerUDP.udpTransport.sendPacket(confirmUpdateLNSPacket.toJSONObject(),
+                  updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+          if (StartNameServer.debugMode) {
+            GNS.getLogger().fine("Error msg sent to client for failed update " + incomingJSON);
+          }
+        }
+        // return now.
+        return;
+      }
+      if (StartNameServer.debugMode) {
+        GNS.getLogger().fine("Update applied" + incomingJSON);
+      }
       if (updatePacket.getNameServerId() == NameServer.nodeID) {
 
         // if I had proposed this update, increment update count
@@ -468,11 +468,11 @@ public class ClientRequestWorker extends TimerTask {
       NSListenerUDP.udpTransport.sendPacket(outgoingJSON, address, port);
       t7 = System.currentTimeMillis();
       if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("NS SENT DNS PACKET: " + outgoingJSON);
+        GNS.getLogger().fine("NS SENT DNS PACKET: " + outgoingJSON);
       }
       NameServer.updateNameRecord(nameRecord);
       //DBNameRecord.updateNameRecord(nameRecord);
-      
+
 
     } else { // send error msg.
       if (StartNameServer.debugMode) {
@@ -503,7 +503,7 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine("NS RECVD REQUEST ACTIVES PACKET." + incomingJSON);
     }
     RequestActivesPacket packet = new RequestActivesPacket(incomingJSON);
-      ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(packet.getName());
+    ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(packet.getName());
 //    NameRecord nameRecord = NameServer.getNameRecord(packet.getName()//, packet.getRecordKey()
 //            );
     if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {

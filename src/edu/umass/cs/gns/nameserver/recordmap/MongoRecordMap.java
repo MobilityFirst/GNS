@@ -4,9 +4,12 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,7 +19,7 @@ import java.util.Set;
 public class MongoRecordMap extends BasicRecordMap {
 
   private final String DBNAMERECORD = MongoRecords.DBNAMERECORD;
-  
+
   @Override
   public String getNameRecordField(String name, String string) {
     MongoRecords records = MongoRecords.getInstance();
@@ -29,14 +32,20 @@ public class MongoRecordMap extends BasicRecordMap {
       return null;
     }
   }
-  
-   @Override
-  public void updateNameRecordField(String name, String string, ArrayList<String> value) {
+
+  @Override
+  public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     MongoRecords records = MongoRecords.getInstance();
-    records.update(DBNAMERECORD, name, string, value);
+    records.updateListValue(DBNAMERECORD, name, key, value);
   }
-   
-   @Override
+  
+  @Override
+  public void updateNameRecordField(String name, String key, String string) {
+    MongoRecords records = MongoRecords.getInstance();
+    records.updateField(DBNAMERECORD, name, key, string);
+  }
+
+  @Override
   public Set<String> getAllRowKeys() {
     MongoRecords records = MongoRecords.getInstance();
     return records.keySet(DBNAMERECORD);
@@ -88,7 +97,7 @@ public class MongoRecordMap extends BasicRecordMap {
       return;
     }
   }
-  
+
   @Override
   public void addNameRecord(JSONObject json) {
     MongoRecords records = MongoRecords.getInstance();
@@ -136,9 +145,25 @@ public class MongoRecordMap extends BasicRecordMap {
     }
     return result;
   }
-  
+
   @Override
   public void reset() {
     MongoRecords.getInstance().reset();
+  }
+  
+  // test code
+  public static void main(String[] args) throws Exception {
+    NameServer.nodeID = 2;
+    retrieveFieldTest();
+    //System.exit(0);
+  }
+  
+  private static void retrieveFieldTest() throws Exception {
+    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+    HashFunction.initializeHashFunction();
+    BasicRecordMap recordMap = new MongoRecordMap();
+    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS));
+    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1,2,3)));
+    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
   }
 }

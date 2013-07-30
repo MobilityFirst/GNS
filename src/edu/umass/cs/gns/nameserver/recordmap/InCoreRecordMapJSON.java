@@ -53,10 +53,22 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public void updateNameRecordField(String name, String key, ArrayList<String> value) {
+  public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     if (containsName(name)) {
       try {
         recordMap.get(name).put(key, value);
+        //System.out.println("&&&&"+recordMap.get(name).toString());
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Error updating json record: " + e);
+      }
+    }
+  }
+  
+  @Override
+  public void updateNameRecordField(String name, String key, String string) {
+    if (containsName(name)) {
+      try {
+        recordMap.get(name).put(key, string);
         //System.out.println("&&&&"+recordMap.get(name).toString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Error updating json record: " + e);
@@ -164,7 +176,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
       System.out.println(nameRecord.get("_GNS_guid_info"));
     }
     System.out.println(recordMap.getNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK"));
-    recordMap.updateNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "SLACKER");
+    recordMap.updateNameRecordSingleValue("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "SLACKER");
     System.out.println(recordMap.getNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK"));
     System.out.println(recordMap.getAllRowKeys());
     nameRecord = recordMap.getNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");

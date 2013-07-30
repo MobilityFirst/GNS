@@ -1,9 +1,9 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
@@ -36,7 +36,7 @@ public class NameServer {
    * UDP socket over which DNSPackets are received and sent *
    */
   public static DatagramSocket dnsSocket;
-  private static RecordMapInterface recordMap;
+  private static BasicRecordMap recordMap;
   public static ReplicationFramework replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer tcpTransport;
@@ -315,7 +315,7 @@ public class NameServer {
     //Generate the respose packet
     dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
     dnsPacket.getHeader().setQr(1);
-    dnsPacket.setTTL(nameRecord.getTTL());
+    dnsPacket.setTTL(nameRecord.getTimeToLive());
     dnsPacket.setRecordValue(nameRecord.getValuesMap());
     // this is redundant with above, but for now we keep both
     dnsPacket.setFieldValue(nameRecord.get(dnsPacket.getQrecordKey().getName()));

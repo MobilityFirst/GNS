@@ -5,11 +5,9 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecord;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Set;
+import org.json.JSONObject;
 
 /**
  *
@@ -27,10 +25,12 @@ public interface RecordMapInterface {
 
     public Set<String> getAllRowKeys();
 
-    public void updateNameRecordField(String name, String key, ArrayList<String> value);
+    public void updateNameRecordListValue(String name, String key, ArrayList<String> value);
+    
+    public void updateNameRecordField(String name, String key, String string);
 
     public String getNameRecordField(String name, String key);
-
+    
     public String tableToString();
 
     public void reset();

@@ -4,8 +4,6 @@ import edu.umass.cs.gns.database.CassandraRecords;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.NameRecordV1;
 import edu.umass.cs.gns.nameserver.NameRecordV1;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +17,7 @@ import java.util.Set;
  * @author westy
  */
 public class CassandraRecordMapV1 extends BasicRecordMapV1 {
-    String COLLECTION_NAME = MongoRecords.DBNAMERECORD;
+  String COLLECTION_NAME = MongoRecords.DBNAMERECORD;
   @Override
   public NameRecordV1 getNameRecord(String name, NameRecordKey recordKey) {
     
@@ -43,7 +41,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   public void addNameRecord(NameRecordV1 record) {
     CassandraRecords records = CassandraRecords.getInstance();
     try {
-      records.insert(record.getName(), record.getRecordKey().getName(), record.toJSONObject().toString());
+      records.insert(COLLECTION_NAME, record.getName(), record.toJSONObject().toString());
     } catch (JSONException e) {
       GNS.getLogger().severe("Error adding name record: " + e);
       e.printStackTrace();
@@ -54,7 +52,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   public void updateNameRecord(NameRecordV1 record) {
     CassandraRecords records = CassandraRecords.getInstance();
     try {
-      records.update(COLLECTION_NAME, record.getName(), record.getRecordKey().getName(), record.toJSONObject().toString());
+      records.update(COLLECTION_NAME, record.getName(), record.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().severe("Error updating name record: " + e);
       e.printStackTrace();

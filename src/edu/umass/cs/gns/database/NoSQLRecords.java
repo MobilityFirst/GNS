@@ -19,7 +19,8 @@ public interface NoSQLRecords {
   public String lookup(String collection, String guid, String key);
   public void insert(String collection, String guid, JSONObject value);
   public void update(String collection, String guid, JSONObject value);
-  public void update(String collection, String guid, String key,  ArrayList<String> value);
+  public void updateListValue(String collection, String guid, String key,  ArrayList<String> value);
+  public void updateField(String collectionName, String guid, String key, String string);
   public boolean contains(String collection, String guid);
   public void remove(String collection, String guid);
   public ArrayList<JSONObject> retrieveAllEntries(String collection);

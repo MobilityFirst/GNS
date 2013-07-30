@@ -456,7 +456,7 @@ public class Intercessor {
         result.append(" A: ");
         result.append(record.copyActiveNameServers().toString());
         result.append(" TTL: ");
-        result.append(record.getTTL());
+        result.append(record.getTimeToLive());
         result.append(LINE_SEPARATOR);
         result.append("    VALUE: ");
         result.append(record.getValuesMap());

@@ -159,14 +159,25 @@ public class CassandraRecords implements NoSQLRecords {
     }
   }
   
-  public void update(String collection, String name, String key, String value) {
-    update(collection, name, key, new ArrayList(Arrays.asList(value)));
+  public void updateSingleValue(String collection, String name, String key, String value) {
+    updateListValue(collection, name, key, new ArrayList(Arrays.asList(value)));
   }
 
   @Override
-  public void update(String collection, String guid, String key, ArrayList<String> value) {
+  public void updateListValue(String collection, String guid, String key, ArrayList<String> value) {
     ColumnFamilyUpdater<String, String> updater = template.createUpdater(guid);
     updater.setString(key, new JSONArray(value).toString());
+    try {
+      template.update(updater);
+    } catch (HectorException e) {
+      GNS.getLogger().warning("Unable to update: " + e);
+    }
+  }
+  
+  @Override
+  public void updateField(String collection, String guid, String key, String string) {
+    ColumnFamilyUpdater<String, String> updater = template.createUpdater(guid);
+    updater.setString(key, string);
     try {
       template.update(updater);
     } catch (HectorException e) {
