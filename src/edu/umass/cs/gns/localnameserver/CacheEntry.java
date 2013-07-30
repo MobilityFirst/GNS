@@ -51,49 +51,7 @@ public class CacheEntry {
    */
   private Set<Integer> activeNameServer;
 
-  /**
-   * ************************************************************
-   * Constructs a new cache entry with the specified name information
-   *
-   * @param recordKey The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord.
-   * @param name A host/domain name
-   * @param timeToLive Time to live in cache
-   * @param value List of IP addresses for the name
-   * @param primaryNameServer List of primary name servers for the name
-   * @param activeNameServer List of active name servers for the name ***********************************************************
-   */
-  public CacheEntry(NameRecordKey recordKey, String name, int timeToLive, int ttlNameserver, ValuesMap value,
-          HashSet<Integer> primaryNameServer,
-          Set<Integer> activeNameServer) {
-
-    //this.recordKey = recordKey;
-    this.name = name;
-    this.timeToLive = timeToLive;
-    this.value = value;
-    this.primaryNameServer = primaryNameServer;
-    this.activeNameServer = new HashSet<Integer>(activeNameServer);
-    this.timestampAddress = System.currentTimeMillis();
-  }
   private static int DEFAULTTTLINSECONDS = 2;
-
-  public CacheEntry(TinyQuery packet) {
-    //this.recordKey = NameRecordKey.EdgeRecord;
-    this.name = packet.getName();
-    this.timeToLive = 0; // this will depend on TTL sent by NS.
-    this.value = new ValuesMap();
-    this.value.put("Frank", new QueryResultValue(Arrays.asList(getRandomString())));
-    //
-
-    this.primaryNameServer = (HashSet<Integer>) packet.getPrimaries();
-
-    this.activeNameServer = new HashSet<Integer>(packet.getActives());
-    //Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>(packet.activeNameServers.size(), 0.75f, 3));
-//    for (Integer id : packet.activeNameServers) {
-//      this.activeNameServer.add(id);
-//    }
-
-    this.timestampAddress = System.currentTimeMillis();
-  }
 
   /**
    * Constructs a cache entry using data from a DNS packet
@@ -101,7 +59,6 @@ public class CacheEntry {
    * @param packet DNS packet 
    */
   public CacheEntry(DNSPacket packet) {
-    //this.recordKey = packet.getQrecordKey();
     this.name = packet.getQname();
     // this will depend on TTL sent by NS. UPDATE: NEVER LET IT BE -1 which means infinite
     this.timeToLive = packet.getTTL() == -1 ? DEFAULTTTLINSECONDS : packet.getTTL();
@@ -117,12 +74,27 @@ public class CacheEntry {
   }
 
   public CacheEntry(RequestActivesPacket packet) {
-    //this.recordKey = packet.getRecordKey();
     this.name = packet.getName();
 
-    this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name//, recordKey
-            );
+    this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
     this.activeNameServer = packet.getActiveNameServers();
+  }
+  
+  public CacheEntry(TinyQuery packet) {
+    this.name = packet.getName();
+    this.timeToLive = 0; // this will depend on TTL sent by NS.
+    this.value = new ValuesMap();
+    this.value.put("Frank", new QueryResultValue(Arrays.asList(getRandomString())));
+    //
+    this.primaryNameServer = (HashSet<Integer>) packet.getPrimaries();
+
+    this.activeNameServer = new HashSet<Integer>(packet.getActives());
+    //Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>(packet.activeNameServers.size(), 0.75f, 3));
+//    for (Integer id : packet.activeNameServers) {
+//      this.activeNameServer.add(id);
+//    }
+
+    this.timestampAddress = System.currentTimeMillis();
   }
 
   public synchronized int getTTL() {

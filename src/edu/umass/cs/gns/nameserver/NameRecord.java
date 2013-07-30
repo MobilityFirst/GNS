@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface;
 import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.UpdateOperation;
@@ -14,7 +15,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -91,8 +94,8 @@ public class NameRecord implements Comparable<NameRecord> {
     this.recordMap = recordMap;
     this.lazyEval = true;
     this.name = name;
+    this.valuesMap = new ValuesMap(); // set this to a default value - it's handled specially
     // set these to sentinel values which tells us the should be loaded on demand
-    this.valuesMap = null;
     this.oldValuesMap = null;
     this.timeToLive = LAZYINT;
     this.primaryNameservers = null;
@@ -217,6 +220,13 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   /**
+   * @return the lazyEval
+   */
+  public boolean isLazyEval() {
+    return lazyEval;
+  }
+
+  /**
    * Implements the updating of values in the namerecord for a given key.
    *
    * Note: If the key doesn't exist the underlying calls will create it.
@@ -231,26 +241,31 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return
    */
   public synchronized boolean updateValuesMap(String key, ArrayList<String> newValues, ArrayList<String> oldValues, UpdateOperation operation) {
-    if (isLazyEval()) {
-      throw new UnsupportedOperationException("Not supported yet.");
+    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation);
+    if (updated) {
+      if (isLazyEval()) {
+        recordMap.updateNameRecordListValue(name, key, new ArrayList<String>(get(key)));
+        // make sure the key is in the user keys
+        ArrayList<String> keys = recordMap.getNameRecordFieldAsArrayList(name, USER_KEYS);
+        if (!keys.contains(key)) {
+          keys.add(key);
+          recordMap.updateNameRecordListValue(name, USER_KEYS, keys);
+        }
+      }
+      return true;
+    } else {
+      return false;
     }
-    return UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation);
-  }
-
-  /**
-   * @return the lazyEval
-   */
-  public boolean isLazyEval() {
-    return lazyEval;
   }
 
   // these might be special
-  /*
-   * Not a fan of this one... it should go away.
-   */
   public synchronized ValuesMap getValuesMap() {
-    if (isLazyEval() && valuesMap == null) {
-      throw new UnsupportedOperationException("Not supported yet.");
+    if (isLazyEval()) {
+      // extract the user keys out of the json object
+      ArrayList<String> keys = recordMap.getNameRecordFieldAsArrayList(name, USER_KEYS);
+      for (String key : keys) {
+        this.valuesMap.put(key, new QueryResultValue(recordMap.getNameRecordFieldAsArrayList(name, key)));
+      }
     }
     return valuesMap;
   }
@@ -260,8 +275,11 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   public void setValuesMap(ValuesMap valuesMap) {
     this.valuesMap = valuesMap;
-    if (isLazyEval() && this.valuesMap != null) {
-      throw new UnsupportedOperationException("Not supported yet.");
+    if (isLazyEval()) {
+      for (Map.Entry<String, QueryResultValue> entry : this.valuesMap.entrySet()) {
+        recordMap.updateNameRecordListValue(name, entry.getKey(), new ArrayList<String>(entry.getValue()));
+      }
+      recordMap.updateNameRecordListValue(name, USER_KEYS, new ArrayList<String>(valuesMap.keySet()));
     }
   }
 
@@ -538,5 +556,22 @@ public class NameRecord implements Comparable<NameRecord> {
   public int compareTo(NameRecord d) {
     int result = (this.getName()).compareTo(d.getName());
     return result;
+  }
+
+  // test code
+  public static void main(String[] args) throws Exception {
+    NameServer.nodeID = 2;
+    retrieveFieldTest();
+    //System.exit(0);
+  }
+
+  private static void retrieveFieldTest() throws Exception {
+    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+    HashFunction.initializeHashFunction();
+    BasicRecordMap recordMap = new MongoRecordMap();
+    NameRecord record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", recordMap);
+    System.out.println(record.getPrimaryNameservers());
+    record.updateValuesMap("COLOR", new ArrayList<String>(Arrays.asList("Red", "Green")), null, UpdateOperation.CREATE);
+    System.out.println(record.get("COLOR"));
   }
 }

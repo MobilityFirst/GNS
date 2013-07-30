@@ -9,6 +9,7 @@ import edu.umass.cs.gns.util.JSONUtils;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,6 +70,10 @@ public class ValuesMap {
   
   public Set<String> keySet() {
     return content.keySet();
+  }
+  
+  public Set<Entry<String, QueryResultValue>> entrySet() {
+    return content.entrySet();
   }
 
   @Override

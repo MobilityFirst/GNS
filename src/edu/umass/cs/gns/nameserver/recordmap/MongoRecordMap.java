@@ -21,14 +21,14 @@ public class MongoRecordMap extends BasicRecordMap {
   private final String DBNAMERECORD = MongoRecords.DBNAMERECORD;
 
   @Override
-  public String getNameRecordField(String name, String string) {
+  public String getNameRecordField(String name, String key) {
     MongoRecords records = MongoRecords.getInstance();
-    String result = records.lookup(DBNAMERECORD, name, string);
+    String result = records.lookup(DBNAMERECORD, name, key);
     if (result != null) {
-      GNS.getLogger().finer(records.toString() + ":: Retrieved " + name + "/" + string + ": " + result);
+      GNS.getLogger().fine(records.toString() + ":: Retrieved " + name + "/" + key + ": " + result);
       return result;
     } else {
-      GNS.getLogger().finer(records.toString() + ":: No record named " + name + " with key " + string);
+      GNS.getLogger().fine(records.toString() + ":: No record named " + name + " with key " + key);
       return null;
     }
   }
@@ -36,12 +36,14 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     MongoRecords records = MongoRecords.getInstance();
+    GNS.getLogger().fine(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
     records.updateListValue(DBNAMERECORD, name, key, value);
   }
-  
+
   @Override
   public void updateNameRecordField(String name, String key, String string) {
     MongoRecords records = MongoRecords.getInstance();
+    GNS.getLogger().fine(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
     records.updateField(DBNAMERECORD, name, key, string);
   }
 
@@ -150,20 +152,20 @@ public class MongoRecordMap extends BasicRecordMap {
   public void reset() {
     MongoRecords.getInstance().reset();
   }
-  
+
   // test code
   public static void main(String[] args) throws Exception {
     NameServer.nodeID = 2;
     retrieveFieldTest();
     //System.exit(0);
   }
-  
+
   private static void retrieveFieldTest() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     BasicRecordMap recordMap = new MongoRecordMap();
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS));
-    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1,2,3)));
+    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
   }
 }
