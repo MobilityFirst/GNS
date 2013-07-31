@@ -327,11 +327,11 @@ public class NameServer {
     dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
     dnsPacket.getHeader().setQr(1);
     dnsPacket.setTTL(nameRecord.getTimeToLive());
-    dnsPacket.setRecordValue(nameRecord.getValuesMap());
+//    dnsPacket.setRecordValue(nameRecord.getValuesMap());
     // this is redundant with above, but for now we keep both
     dnsPacket.setFieldValue(nameRecord.get(dnsPacket.getQrecordKey().getName()));
-    dnsPacket.setPrimaryNameServers(nameRecord.getPrimaryNameservers());
-    dnsPacket.setActiveNameServers(nameRecord.copyActiveNameServers());
+//    dnsPacket.setPrimaryNameServers(nameRecord.getPrimaryNameservers());
+//    dnsPacket.setActiveNameServers(nameRecord.copyActiveNameServers());
 
     //update lookup frequency
     nameRecord.incrementLookupRequest();

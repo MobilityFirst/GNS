@@ -81,7 +81,7 @@ public class NewClient  extends PacketDemultiplexer{
      */
     int responseCount = 0;
 
-    public static int groupsize = 10;
+    public static int groupsize = 1;
 
     public static int printsize = 1000;
 

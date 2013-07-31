@@ -3,6 +3,7 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import org.json.JSONException;
@@ -92,13 +93,13 @@ public class Lookup {
                     AdaptiveRetransmission.addResponseTimeSample(responseTimeSample);
                 }
             }
-            CacheEntry entry = LocalNameServer.updateCacheEntry(dnsPacket);
+            CacheEntry cacheEntry = LocalNameServer.updateCacheEntry(dnsPacket);
             //Cache response at the local name server, and update the set of active name servers.
 //			if ( ==)) {
 //				;
 //				if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("LNSListenerResponse: Updating cache QueryID:" + dnsPacket.getQueryId());
-            if (entry == null) {
-                entry = LocalNameServer.addCacheEntry(dnsPacket);
+            if (cacheEntry == null) {
+                cacheEntry = LocalNameServer.addCacheEntry(dnsPacket);
                 if (StartLocalNameServer.debugMode) {
                     GNS.getLogger().fine("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
                 }
@@ -109,7 +110,8 @@ public class Lookup {
 
 //            dnsPacket.s
             // send response to user right now.
-            sendReplyToUser(query, entry);
+            sendReplyToUser(query, dnsPacket.getFieldValue(), cacheEntry.getTTL());
+//            sendReplyToUser(query, entry);
 
             //GNRS.getLogger().fine("LNSListenerResponse: Removed name:" + dnsPacket.qname + " id:" + dnsPacket.getQueryId() + " from query table", debugMode);
             if (GNS.getLogger().isLoggable(Level.FINER)) {
@@ -180,10 +182,11 @@ public class Lookup {
      *
      * @param query
      */
-    private static void sendReplyToUser(QueryInfo query, CacheEntry entry) {
+    private static void sendReplyToUser(QueryInfo query, QueryResultValue value, int TTL) {
 //		CacheEntry entry = LocalNameServer.getCacheEntry(query.qName, query.qRecordKey);
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("LNSListenerQuery: send response from cache: " + entry);
-        DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(), entry, query.incomingPacket.getQrecordKey());
+//        DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(), entry, query.incomingPacket.getQrecordKey());
+        DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(),query.incomingPacket.getQname(),query.incomingPacket.getQrecordKey(),value,TTL);
         try {
 
             if (query.senderAddress != null && query.senderPort > 0) {

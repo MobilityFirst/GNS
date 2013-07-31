@@ -66,7 +66,7 @@ public class Update {
           LNSListener.udpTransport.sendPacket(json,
                   InetAddress.getByName(updateInfo.senderAddress), updateInfo.senderPort);
         }
-
+          GNS.getLogger().severe("this is the key: " + confirmPkt.getRecordKey().toString());
         LocalNameServer.updateCacheEntry(confirmPkt);
         // record some stats
         LocalNameServer.incrementUpdateResponse(confirmPkt.getName() //, confirmPkt.getRecordKey()

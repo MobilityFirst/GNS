@@ -436,6 +436,7 @@ public class ClientRequestWorker extends TimerTask {
       }
     }
   }
+
   private static ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket> proposedUpdates = new ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket>();
   private static ConcurrentHashMap<Integer, Long> proposedUpdatesTime = new ConcurrentHashMap<Integer, Long>();
 

@@ -3,10 +3,7 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.Header;
-import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -70,14 +67,15 @@ public class LNSQueryTask extends TimerTask {
 //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("1.1 Bookkeeping Done." + incomingPacket.qrecordKey + " " + incomingPacket.qname);
       // if address already in cache?
       if (!DISABLECACHE) {
-        if (LocalNameServer.isValidAddressInCache(incomingPacket.getQname())) {
-          loggingForAddressInCache();
-
-//				if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("1.2.1 Bookkeeping Done." + incomingPacket.qrecordKey + " " + incomingPacket.qname);
-          sendReplyToUser();
-//				if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("1.2.2 Reply Sent to User." + incomingPacket.qrecordKey + " " + incomingPacket.qname);
-          return;
-        }
+          CacheEntry cacheEntry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
+          if (cacheEntry != null) {
+              QueryResultValue value = cacheEntry.getValue(incomingPacket.getQrecordKey());
+              if (value != null) {
+                  loggingForAddressInCache();
+                  sendReplyToUser(value, cacheEntry.getTTL());
+                  return;
+              }
+          }
       } else {
         if (StartLocalNameServer.debugMode) GNS.getLogger().warning("!!!! CACHE IS DISABLED !!!!");
       }
@@ -101,22 +99,24 @@ public class LNSQueryTask extends TimerTask {
     }
     
     if (!DISABLECACHE) {
-      // for retransmissions: is address already in cache? 
-      if (LocalNameServer.isValidAddressInCache(incomingPacket.getQname())) {
-        QueryInfo query = LocalNameServer.removeQueryInfo(queryId);
-        if (query != null) {
-          query.setRecvTime(System.currentTimeMillis());
-          String stats = query.getLookupStats();
-          GNS.getStatLogger().info(stats);
-        } else {
-          loggingForAddressInCache();
+      // for retransmissions: is address already in cache?
+        CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
+        if (entry != null) {
+            QueryResultValue value = entry.getValue(incomingPacket.getQrecordKey());
+            if (value != null) {
+                QueryInfo query = LocalNameServer.removeQueryInfo(queryId);
+                if (query != null) {
+                    query.setRecvTime(System.currentTimeMillis());
+                    String stats = query.getLookupStats();
+                    GNS.getStatLogger().info(stats);
+                } else {
+                    loggingForAddressInCache();
+
+                }
+                sendReplyToUser(value,entry.getTTL());
+            }
 
         }
-        sendReplyToUser();
-//			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
-//	        + incomingPacket.qname + "\tEnd-of-processing-in-cache");
-        return;
-      }
     } else {
       if (StartLocalNameServer.debugMode) GNS.getLogger().warning("!!!! CACHE IS DISABLED !!!!");
     }
@@ -273,7 +273,7 @@ public class LNSQueryTask extends TimerTask {
     NameRecordKey nameRecordKey = incomingPacket.getQrecordKey();
     String name = incomingPacket.getQname();
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Valid Address in cache... "
-            + "Time:" + LocalNameServer.timeSinceAddressCached(name) + "ms");
+            + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
     LocalNameServer.incrementLookupResponse(name);
     QueryInfo tempQueryInfo = new QueryInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, QueryInfo.CACHE, lookupNumber,
             incomingPacket, senderAddress, senderPort);
@@ -289,10 +289,10 @@ public class LNSQueryTask extends TimerTask {
   /**
    * Send DNS Query reply to User
    */
-  private void sendReplyToUser() {
-    CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + entry);
-    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(), entry, incomingPacket.getQrecordKey());
+  private void sendReplyToUser(QueryResultValue value, int TTL) {
+//    CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + incomingPacket.getQname());
+    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getQname(),incomingPacket.getQrecordKey(),value,TTL);
     try {
         if (senderAddress != null && senderPort > 0) {
     	    LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), senderAddress, senderPort);

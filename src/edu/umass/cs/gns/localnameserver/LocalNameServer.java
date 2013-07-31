@@ -832,22 +832,21 @@ public class LocalNameServer {
     }
   }
 
-  /**
-   * ************************************************************
-   * Updates an existing cache entry' active name server set with <i>activeNameServers</i> list.
-   *
-   * @param name Host/device/domain name
-   * @param activeNameServers List of active name server ***********************************************************
-   */
-  public static void updateActiveNameServerCacheEntry(String name, //NameRecordKey recordKey, 
-          Set<Integer> activeNameServers) {
-    CacheEntry entry = cache.getIfPresent(name);
-    if (entry == null) {
-      return;
-    }
-    entry.updateActiveNameServerCacheEntry(name, //recordKey, 
-            activeNameServers);
-  }
+//  /**
+//   * ************************************************************
+//   * Updates an existing cache entry' active name server set with <i>activeNameServers</i> list.
+//   *
+//   * @param name Host/device/domain name
+//   * @param activeNameServers List of active name server ***********************************************************
+//   */
+//  public static void updateActiveNameServerCacheEntry(String name, //NameRecordKey recordKey,
+//          Set<Integer> activeNameServers) {
+//    CacheEntry entry = cache.getIfPresent(name);
+//    if (entry == null) {
+//      return;
+//    }
+//    entry.updateActiveNameServerCacheEntry(activeNameServers);
+//  }
 
   /**
    * ************************************************************
@@ -868,19 +867,7 @@ public class LocalNameServer {
     return cache.asMap().entrySet();
   }
 
-  /**
-   * ************************************************************
-   * Checks the validity of the address in cache.
-   *
-   * @param name Host/device/domain name whose name record is cached.
-   * @return Returns true if the entry is valid, false otherwise
-   * ***********************************************************
-   */
-  public static boolean isValidAddressInCache(String name//, NameRecordKey recordKey
-          ) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.isValidValue() : false;
-  }
+
 
   /**
    * ************************************************************
@@ -896,10 +883,10 @@ public class LocalNameServer {
     return (cacheEntry != null) ? cacheEntry.isValidNameserver() : false;
   }
 
-  public static int timeSinceAddressCached(String name//, NameRecordKey recordKey
+  public static int timeSinceAddressCached(String name, NameRecordKey recordKey
           ) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.timeSinceAddressCached() : -1;
+    return (cacheEntry != null) ? cacheEntry.timeSinceAddressCached(recordKey) : -1;
   }
 
   /**

@@ -6,14 +6,15 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.util.JSONUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
@@ -62,8 +63,11 @@ public class ValuesMap {
   public void put(String key, QueryResultValue value) {
     content.put(key, value);
   }
-  
-  public boolean containsKey(String key) {
+    public void remove(String key) {
+        content.remove(key);
+    }
+
+    public boolean containsKey(String key) {
     return content.containsKey(key);
   }
   

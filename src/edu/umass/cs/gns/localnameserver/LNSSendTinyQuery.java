@@ -1,17 +1,16 @@
 package edu.umass.cs.gns.localnameserver;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.TimerTask;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.TinyQuery;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashSet;
+import java.util.Random;
+import java.util.TimerTask;
 
 public class LNSSendTinyQuery {
 	public static Random r= new Random();
@@ -66,7 +65,7 @@ public class LNSSendTinyQuery {
 			// Send a lookup query to the closest active name server.
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Name: " + name 
                                 //+ " / " + nameRecordKey.getName()
-                                + " Address invalid in cache" + "TimeAddress:" + LocalNameServer.timeSinceAddressCached(name) + "ms");
+                                + " Address invalid in cache" + "TimeAddress:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
 			if (StartLocalNameServer.beehiveReplication && StartLocalNameServer.loadDependentRedirection) {
 				nameServerID = LocalNameServer.getLoadAwareBeehiveNameServerFromCache(name, new HashSet<Integer>());
 			}
@@ -82,7 +81,7 @@ public class LNSSendTinyQuery {
 			//Send a request to the closest primary name server.
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Name: " + name 
                                 //+ " / " + nameRecordKey.getName() 
-                                + " Both address and NS invalid. " + "TimeAddress:" + LocalNameServer.timeSinceAddressCached(name) + "ms");
+                                + " Both address and NS invalid. " + "TimeAddress:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
 			if (StartLocalNameServer.beehiveReplication) {
 				nameServerID = LocalNameServer.getBeehivePrimaryNameServer(name, new HashSet<Integer>());
 			} else if (StartLocalNameServer.loadDependentRedirection) {

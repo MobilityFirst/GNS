@@ -194,7 +194,7 @@ def num_events(trace_file):
 """ Executes an instance of the Local Name Server with the give parameters """
 def run_local_name_server():
     #command = 'nohup java -Djava.util.logging.config.file=/Users/abhigyan/Documents/workspace/GNRS-westy/logging.properties -cp ' + local_name_server_jar + ' edu.umass.cs.gnrs.main.StartLocalNameServer '
-    command = 'nohup java  -cp ' + local_name_server_jar + ' edu.umass.cs.gnrs.main.StartLocalNameServer '
+    command = 'nohup java  -cp ' + local_name_server_jar + ' edu.umass.cs.gns.main.StartLocalNameServer '
     if is_local:
         command += ' ' + LOCAL_EXP
     #else:
