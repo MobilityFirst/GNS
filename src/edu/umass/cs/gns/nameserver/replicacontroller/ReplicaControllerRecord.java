@@ -104,7 +104,8 @@ public class ReplicaControllerRecord {
         this.nameServerStatsMap = new ConcurrentHashMap<Integer, StatsInfo>(10, 0.75f, 3);
 
         this.oldActiveNameservers = new HashSet<Integer>(primaryNameservers);
-        this.activeNameservers = getInitialActives(primaryNameservers, StartNameServer.minReplica, name);
+        this.activeNameservers = new HashSet<Integer>(primaryNameservers);
+        //getInitialActives(primaryNameservers, StartNameServer.minReplica, name);
         if (StartNameServer.debugMode) {
             GNS.getLogger().finer(" Name Record INITIAL ACTIVES ARE: " + activeNameservers);
         }
@@ -326,8 +327,7 @@ public class ReplicaControllerRecord {
                 int votes = entry.getValue();
                 //Skip name server that are unreachable
                 // from main branch 269
-                if (ConfigFileInfo.getPingLatency(nameServerId) == -1
-                        || getPrimaryNameservers().contains(nameServerId)) {
+                if (ConfigFileInfo.getPingLatency(nameServerId) == -1) { //|| getPrimaryNameservers().contains(nameServerId)
                     continue;
                 }
                 if (!replicas.contains(nameServerId)

@@ -248,19 +248,22 @@ class ReplicationWorkerPaxos extends TimerTask {
 
     private  void addNameRecord(NewActiveSetStartupPacket originalPacket, ValuesMap previousValue)
             throws  JSONException, IOException{
+        try {
+
 
        NameRecord nameRecord = NameServer.getNameRecord(originalPacket.getName());
        //NameRecord nameRecord = DBNameRecord.getNameRecord(originalPacket.getName());
-       
+
         if (nameRecord == null) {
             nameRecord = new NameRecord(originalPacket.getName());
+
             nameRecord.handleNewActiveStart(originalPacket.getNewActiveNameServers(),
                     originalPacket.getNewActivePaxosID(), previousValue);
             // first add name record, then create paxos instance for it.
-            //
+
             NameServer.addNameRecord(nameRecord);
+
             //DBNameRecord.addNameRecord(nameRecord);
-            
             GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: "
                     + "name record = " + nameRecord);
         } else {
@@ -289,6 +292,11 @@ class ReplicationWorkerPaxos extends TimerTask {
         GNS.getLogger().fine("NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
         NameServer.tcpTransport.sendToID(originalPacket.toJSONObject(), sendingActive,
                 GNS.PortType.STATS_PORT);
+        } catch (Exception e) {
+            GNS.getLogger().fine(" Exception Exception Exception: ****************");
+            e.getMessage();
+            e.printStackTrace();
+        }
     }
 
 //	/**

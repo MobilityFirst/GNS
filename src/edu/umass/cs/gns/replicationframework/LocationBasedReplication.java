@@ -1,12 +1,12 @@
 package edu.umass.cs.gns.replicationframework;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 /*************************************************************
  * This class implements the ReplicationFramework interface
@@ -36,7 +36,7 @@ public class LocationBasedReplication implements ReplicationFramework {
 		if (numReplica >= ConfigFileInfo.getNumberOfNameServers()) {
 			newActiveNameServerSet = new HashSet<Integer>();
 			for (int i = 0; i < ConfigFileInfo.getNumberOfNameServers(); i++) {
-				if (nameRecordPrimary.getPrimaryNameservers().contains(i)) continue;
+//				if (nameRecordPrimary.getPrimaryNameservers().contains(i)) continue;
 				newActiveNameServerSet.add(i);
 			}
 			return newActiveNameServerSet;
@@ -51,20 +51,19 @@ public class LocationBasedReplication implements ReplicationFramework {
 		// Select based on votes as much as you can.
 		//		newActiveNameServerSet = nameRecord.getHighestVotedReplicaID(numReplica);
 
-        // TODO once primary and actives can co-exist on same node, this method must be re-written
 		if (newActiveNameServerSet.size() < numReplica) {
 			int difference = numReplica - newActiveNameServerSet.size();
 			//Randomly select the other active name servers
 			for (int i = 1; i <= difference; i++) {
-                if (newActiveNameServerSet.size() + nameRecordPrimary.getPrimaryNameservers().size() >=
+                if (newActiveNameServerSet.size() >= //+ nameRecordPrimary.getPrimaryNameservers().size()
                         ConfigFileInfo.getNumberOfNameServers()) break;
 				boolean added = false;
 				// Ensures that random selection will still be deterministic for each name. 
 				Random random = new Random(nameRecordPrimary.getName().hashCode());
 				do {
 					int newActiveNameServerId = random.nextInt(ConfigFileInfo.getNumberOfNameServers());
-					if ( nameRecordPrimary.getPrimaryNameservers().contains(newActiveNameServerId) ||
-							ConfigFileInfo.getPingLatency(newActiveNameServerId) == -1) {
+					if (ConfigFileInfo.getPingLatency(newActiveNameServerId) == -1) {
+                        // nameRecordPrimary.getPrimaryNameservers().contains(newActiveNameServerId) ||
 						continue;
 					}
 					added = newActiveNameServerSet.add(newActiveNameServerId);

@@ -84,7 +84,7 @@ public class HashFunction {
 //      primaryReplicas.add(1);
 //      primaryReplicas.add(2);
 //      return primaryReplicas;
-
+      GNS.getLogger().fine("here 2.2.1");
     List<MessageDigest> hashFunctions = new ArrayList<MessageDigest>();
     try
 	{
@@ -116,6 +116,7 @@ public class HashFunction {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
+      GNS.getLogger().fine("here 2.2.2");
     return primaryReplicas;
   }
   

@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface;
 import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -14,12 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA. User: abhigyan Date: 7/26/13 Time: 12:46 PM To change this template use File | Settings | File
@@ -117,7 +111,7 @@ public class NameRecord implements Comparable<NameRecord> {
       GNS.getLogger().finer("Constructor Primaries: " + primaryNameservers);
     }
 
-    this.activeNameservers = initializeInitialActives(primaryNameservers, StartNameServer.minReplica, name);
+    this.activeNameservers = new HashSet<Integer>(primaryNameservers);//initializeInitialActives(primaryNameservers, StartNameServer.minReplica, name);
     if (StartNameServer.debugMode) {
       GNS.getLogger().finer(" Name Record INITIAL ACTIVES ARE: " + activeNameservers);
     }
