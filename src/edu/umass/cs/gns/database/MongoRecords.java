@@ -134,7 +134,12 @@ public class MongoRecords implements NoSQLRecords {
       }
       if (cursor.hasNext()) {
         DBObject obj = cursor.next();
-        return new JSONObject(obj.toString()).getString(key);
+        JSONObject json = new JSONObject(obj.toString());
+        if (json.has(key)) {
+          return json.getString(key);
+        } else {
+          return null;
+        }
       } else {
         return null;
       }

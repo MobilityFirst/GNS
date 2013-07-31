@@ -91,7 +91,7 @@ public class NameRecord implements Comparable<NameRecord> {
     if (recordMap == null) {
       throw new RuntimeException("Record map cannot be null!");
     }
-
+    //GNS.getLogger().info("Creating lazy name record for " + name);
     this.recordMap = recordMap;
     this.lazyEval = true;
     this.name = name;
@@ -185,7 +185,7 @@ public class NameRecord implements Comparable<NameRecord> {
     json.put(ACTIVE_NAMESERVERS, new JSONArray(getActiveNameservers()));
 
     // new fields
-    json.put(ACTIVE_PAXOS_ID, getActiveNameservers());
+    json.put(ACTIVE_PAXOS_ID, getActivePaxosID());
     json.put(OLD_ACTIVE_PAXOS_ID, getOldActivePaxosID());
 
     json.put(TOTALLOOKUPREQUEST, getTotalLookupRequest());
@@ -608,7 +608,10 @@ public class NameRecord implements Comparable<NameRecord> {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     BasicRecordMap recordMap = new MongoRecordMap();
-    NameRecord record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", recordMap);
+    NameRecord record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", new NameRecordKey("FRED"), 
+            new ArrayList<String>(Arrays.asList("FRANK")));
+    recordMap.addNameRecord(record);
+    record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", recordMap);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
     record.updateField("COLOR", new ArrayList<String>(Arrays.asList("Red", "Green")), null, UpdateOperation.CREATE);
     System.out.println("COLOR: " + record.get("COLOR"));
@@ -620,7 +623,7 @@ public class NameRecord implements Comparable<NameRecord> {
     record.setTotalLookupRequest(0);
     System.out.println("CONTAINS KEY: " + record.getTotalLookupRequest());
     System.out.println("OLD VALUES MAP: " + record.getOldValuesMap());
-    record.setOldValuesMap(record.getValuesMap());
-    System.out.println("OLD VALUES MAP: " + record.getOldValuesMap());
+    //record.setOldValuesMap(record.getValuesMap());
+    //System.out.println("OLD VALUES MAP: " + record.getOldValuesMap());
   }
 }

@@ -300,8 +300,8 @@ public class ClientRequestWorker extends TimerTask {
 //        }
 
 
-    NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
-    //NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
+    //NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
+    NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
     //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
 
     if (nameRecord == null || !nameRecord.containsActiveNameServer(NameServer.nodeID)) {
@@ -361,11 +361,11 @@ public class ClientRequestWorker extends TimerTask {
   private void handleUpdateAddressNS() throws JSONException {
 
     if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("PAXOS DECISION: Update Confirmed" + incomingJSON);
+      GNS.getLogger().fine("PAXOS DECISION: Update Confirmed... going LAZY  " + incomingJSON);
     }
     UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
-    NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
-    //NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
+    //NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
+    NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
     //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
 
 

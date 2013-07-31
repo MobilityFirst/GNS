@@ -72,6 +72,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public NameRecord getNameRecordLazy(String name) {
     if (MongoRecords.getInstance().contains(DBNAMERECORD, name)) {
+      //GNS.getLogger().info("Creating lazy name record for " + name);
       return new NameRecord(name, this);
     } else {
       return null;

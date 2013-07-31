@@ -1,6 +1,6 @@
 #
 
-cd /Users/westy/Documents/Code/GNRS-westy/scripts/test_persistent
+cd /Users/westy/Documents/Code/GNS/scripts/test_persistent
 
 ./name-server.py --id 0 --nsFile name-server-info   --location &
 ./name-server.py --id 1 --nsFile name-server-info   --location &

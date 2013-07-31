@@ -225,7 +225,14 @@ public class NameServer {
     return recordMap.getNameRecord(name);
   }
 
+  /**
+   * Creates a name record that loads reads and writes fields on demand.
+   * 
+   * @param name
+   * @return 
+   */
   public static NameRecord getNameRecordLazy(String name) {
+    GNS.getLogger().info("Creating lazy name record for " + name);
     return recordMap.getNameRecordLazy(name);
   }
 
