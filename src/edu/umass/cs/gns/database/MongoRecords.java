@@ -53,7 +53,7 @@ public class MongoRecords implements NoSQLRecords {
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + NameServer.nodeID;
-      MongoClient mongoClient = new MongoClient("localhost", 12345);
+      MongoClient mongoClient = new MongoClient("localhost");
       db = mongoClient.getDB(dbName);
       intializeIndexes();
     } catch (UnknownHostException e) {
