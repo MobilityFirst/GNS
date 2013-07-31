@@ -27,15 +27,22 @@ public class AcceptReplyPacket extends Packet {
      */
     public int slotNumber;
 
+//    /**
+//     * slot number
+//     */
+//    public int commitSlot;
+
     private static final  String NODE_ID = "ar1";
     private static final  String BALLOT_NUMBER = "ar2";
     private static final  String SLOT_NUMBER = "ar3";
+//    private static final  String COMMIT_SLOT = "ar4";
 
-    public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber) {
+    public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
         this.packetType = PaxosPacketType.ACCEPT_REPLY;
         this.nodeID = nodeID;
         this.ballot = ballot;
         this.slotNumber = slotNumber;
+//        this.commitSlot = commitSlot;
     }
 
     public AcceptReplyPacket(JSONObject jsonObject) throws  JSONException{
@@ -43,6 +50,7 @@ public class AcceptReplyPacket extends Packet {
         this.nodeID = jsonObject.getInt(NODE_ID);
         this.ballot = new Ballot(jsonObject.getString(BALLOT_NUMBER));
         this.slotNumber = jsonObject.getInt(SLOT_NUMBER);
+//        this.commitSlot = jsonObject.getInt(COMMIT_SLOT);
     }
 
 
@@ -53,6 +61,7 @@ public class AcceptReplyPacket extends Packet {
         jsonObject.put(NODE_ID, nodeID);
         jsonObject.put(BALLOT_NUMBER, ballot.toString());
         jsonObject.put(SLOT_NUMBER, slotNumber);
+//        jsonObject.put(COMMIT_SLOT, slotNumber);
         return jsonObject;
     }
 

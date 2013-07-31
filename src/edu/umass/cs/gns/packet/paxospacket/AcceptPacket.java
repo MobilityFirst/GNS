@@ -57,7 +57,7 @@ public class AcceptPacket extends Packet{
         if (ballot == null) {
             ballot = this.pValue.ballot;
         }
-        ProposalPacket proposalPacket = new ProposalPacket(this.pValue.proposal.slot,pValue.proposal.req,0);
+        ProposalPacket proposalPacket = new ProposalPacket(this.pValue.proposal.slot,pValue.proposal.req,0,0);
         PValuePacket pValuePacket = new PValuePacket(ballot,proposalPacket);
         AcceptPacket acceptPacket = new AcceptPacket(nodeID,pValuePacket,PaxosPacketType.ACCEPT_REPLY,0);
         return acceptPacket;

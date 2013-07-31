@@ -55,7 +55,7 @@ public class NewClient  extends PacketDemultiplexer{
      */
     String testConfig;
 
-    int numberOfReplica = 5;
+    int numberOfReplicas = 5;
     /**
      * number of requests sent
      */
@@ -85,7 +85,7 @@ public class NewClient  extends PacketDemultiplexer{
 
     public static int printsize = 1000;
 
-//    /**
+    //    /**
 //     * lock for the {@code responseCount} field
 //     */
     ReentrantLock lock = new ReentrantLock();
@@ -137,13 +137,14 @@ public class NewClient  extends PacketDemultiplexer{
     private void startSendingRequests() {
         readTestConfig();
 
-        if (StartNameServer.debugMode) GNS.getLogger().fine(" Client " + ID + " starting to send requests ..");
+        System.out.println(" Client " + ID + " starting to send requests ..");
 
         double interRequestIntervalMilliseconds = testDurationSeconds*1000.0/numberRequests*NewClient.groupsize;
         double delay = 0;
 //        long t0 = System.currentTimeMillis();
         for (int i = 1; i <= numberRequests/NewClient.groupsize; i++) {
-            int replica = i%numberOfReplica;
+//            int replica = i % numberOfReplicas;
+            int replica = defaultReplica;
             SendRequestTask task = new SendRequestTask(i, ID, defaultPaxosID, replica, nioServer2);
             t.schedule(task, (long)delay, TimeUnit.MILLISECONDS);
             delay += interRequestIntervalMilliseconds;
@@ -158,7 +159,7 @@ public class NewClient  extends PacketDemultiplexer{
 //                }
 //                delay = 0;
 //            }
-//            if (StartNameServer.debugMode) GNS.getLogger().fine(" Sent request " + i + " ");
+//            System.out.println(" Sent request " + i + " ");
         }
 
         try {
@@ -171,15 +172,11 @@ public class NewClient  extends PacketDemultiplexer{
 
         try {
             lock.lock();
-//            if (responseCount%100 == 0) {
-            if (StartNameServer.debugMode) GNS.getLogger().severe(" Requests sent = " + numberRequests +
-                    " Response received = " + responseCount);
-//            }
             System.out.println(" Requests sent = " + numberRequests + " Response received = " + responseCount);
         } finally {
             lock.unlock();
         }
-        if (StartNameServer.debugMode) GNS.getLogger().fine(" Client is quitting. Client ID = " + ID  );
+        System.out.println(" Client is quitting. Client ID = " + ID  );
         System.exit(2);
     }
 
@@ -192,7 +189,6 @@ public class NewClient  extends PacketDemultiplexer{
             responseCount ++;
             if (responseCount%printsize == 0) {
                 System.out.println(" Received response " + responseCount + " ");
-                if (StartNameServer.debugMode) GNS.getLogger().fine(" Received response " + responseCount + " ");
             }
         }finally{
             lock.unlock();
@@ -209,7 +205,7 @@ public class NewClient  extends PacketDemultiplexer{
     private void readTestConfig() {
         File f = new File(testConfig);
         if (!f.exists()) {
-            if (StartNameServer.debugMode) GNS.getLogger().fine(" testConfig file does not exist. Quit. " +
+            System.out.println(" testConfig file does not exist. Quit. " +
                     "Filename =  " + testConfig);
             System.exit(2);
         }
@@ -226,7 +222,7 @@ public class NewClient  extends PacketDemultiplexer{
                     printsize = numberRequests/10;
                 }
                 else if (tokens[0].equals("TestDurationSeconds")) testDurationSeconds = Integer.parseInt(tokens[1]);
-                else if (tokens[0].equals("NumberOfReplica")) numberOfReplica = Integer.parseInt(tokens[1]);
+                else if (tokens[0].equals("NumberOfReplicas")) numberOfReplicas = Integer.parseInt(tokens[1]);
             }
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -236,10 +232,8 @@ public class NewClient  extends PacketDemultiplexer{
     @Override
     public void handleJSONObjects(ArrayList jsonObjects) {
         for (Object j: jsonObjects) {
-
-                handlePaxosDecision();
+            handlePaxosDecision();
         }
-
     }
 
     /**
@@ -263,14 +257,6 @@ public class NewClient  extends PacketDemultiplexer{
 
 }
 
-class HandleResponseTask extends TimerTask {
-
-
-    @Override
-    public void run() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-}
 
 class SendRequestTask extends TimerTask {
 
@@ -295,12 +281,14 @@ class SendRequestTask extends TimerTask {
 
     @Override
     public void run() {
+
         for (int i = 0; i < NewClient.groupsize; i++) {
             try {
                 RequestPacket requestPacket = new RequestPacket(ID, NewClient.getRandomString(), PaxosPacketType.REQUEST);
                 JSONObject json = requestPacket.toJSONObject();
                 json.put(PaxosManager.PAXOS_ID, defaultPaxosID); // send request to paxos instance with ID = 0.
                 nioServer2.sendToID(replica, json);
+//                System.out.println(" XXXXXXXXXSent " + requestPacket + " to " + replica);
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             } catch (JSONException e) {
@@ -309,8 +297,7 @@ class SendRequestTask extends TimerTask {
         }
 
         if ((requestID*NewClient.groupsize)%NewClient.printsize == 0) {
-            System.out.println(" Sent request " + (requestID * NewClient.groupsize) + " ");
-            if (StartNameServer.debugMode) GNS.getLogger().fine(" Sent request " + (requestID*NewClient.groupsize) + " ");
+            System.out.println(" Sent request " + (requestID*NewClient.groupsize) + " ");
         }
     }
 

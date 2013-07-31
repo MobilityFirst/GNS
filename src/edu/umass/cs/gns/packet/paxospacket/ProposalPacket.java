@@ -10,14 +10,25 @@ public class ProposalPacket extends Packet{
 	public RequestPacket req;
 
 	public  static String SLOT = "s1";
+    public  static String GC_SLOT = "s2";
 
-	public ProposalPacket(int slot, RequestPacket req, int packetType) {
-		this.slot = slot;
-		this.req = req;
-		this.packetType = packetType;
-	}
-	
-	public ProposalPacket(JSONObject json) throws JSONException {
+    public  int gcSlot = 0;
+
+//	public ProposalPacket(int slot, RequestPacket req, int packetType) {
+//		this.slot = slot;
+//		this.req = req;
+//		this.packetType = packetType;
+//        this.gcSlot = 0;
+//	}
+
+    public ProposalPacket(int slot, RequestPacket req, int packetType, int gcSlot) {
+        this.slot = slot;
+        this.req = req;
+        this.packetType = packetType;
+        this.gcSlot = gcSlot;
+    }
+
+    public ProposalPacket(JSONObject json) throws JSONException {
         try {
 		    this.req = new RequestPacket(json);
         } catch (JSONException e) {
@@ -25,10 +36,11 @@ public class ProposalPacket extends Packet{
         }
 		this.packetType = json.getInt(PaxosPacketType.ptype);
 		this.slot = json.getInt(SLOT);
+        if (json.has(GC_SLOT)) gcSlot = json.getInt(GC_SLOT);
 	}
 	
 	public ProposalPacket getDecisionPacket() {
-		return new ProposalPacket(slot, req, PaxosPacketType.DECISION);
+		return new ProposalPacket(slot, req, PaxosPacketType.DECISION, gcSlot);
 	}
 
     public void makeDecisionPacket() {
@@ -42,6 +54,7 @@ public class ProposalPacket extends Packet{
         JSONObject json = this.req.toJSONObject();
 		json.put(SLOT, slot);
 		json.put(PaxosPacketType.ptype, packetType);
+        if (gcSlot > 0) json.put(GC_SLOT, gcSlot);
 		return json;
 	}
 

@@ -163,14 +163,14 @@ public class PaxosLoggerTestCode {
 
     private  ProposalPacket generateProposalPacket(int clientID, String value, int slotNumber) {
         RequestPacket req = new RequestPacket(clientID,value,PaxosPacketType.REQUEST);
-        ProposalPacket proposalPacket = new ProposalPacket(slotNumber,req, PaxosPacketType.PROPOSAL);
+        ProposalPacket proposalPacket = new ProposalPacket(slotNumber,req, PaxosPacketType.PROPOSAL,0);
         return proposalPacket;
 
     }
 
     private PValuePacket generatePValuePacket(int clientID, String value, int slotNumber, Ballot b) {
         RequestPacket req = new RequestPacket(clientID,value,PaxosPacketType.REQUEST);
-        ProposalPacket proposalPacket = new ProposalPacket(slotNumber,req, PaxosPacketType.PROPOSAL);
+        ProposalPacket proposalPacket = new ProposalPacket(slotNumber,req, PaxosPacketType.PROPOSAL, 0);
         PValuePacket pValuePacket = new PValuePacket(b,proposalPacket);
         return pValuePacket;
 

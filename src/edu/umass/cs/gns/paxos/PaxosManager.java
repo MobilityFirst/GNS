@@ -463,7 +463,7 @@ public class PaxosManager extends Thread{
      */
 	public static void handleDecision(String paxosID, RequestPacket req, boolean stop)
 	{
-        if (PaxosManager.debug) {return;}
+        if (PaxosManager.debug) return;
 
         if (paxosInstances.containsKey(paxosID)) {
             clientRequestHandler.forwardDecisionToClient(paxosID, req);
@@ -509,7 +509,7 @@ public class PaxosManager extends Thread{
 
         int incomingPacketType;
         try {
-            GNS.getLogger().finest("here " + json.toString());
+//            GNS.getLogger().finest("here " + json.toString());
             incomingPacketType = json.getInt(PaxosPacketType.ptype);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -594,9 +594,7 @@ public class PaxosManager extends Thread{
 
         PaxosLogger2.logFolder = paxosLogFolder + "/paxoslog_" + myID;
 		initalizePaxosManagerDebugMode(nodeConfigFile, testConfig, myID, new DefaultPaxosClientRequestHandler());
-
 	}
-
 }
 
 
@@ -650,9 +648,9 @@ class HandlePaxosMessageTask extends TimerTask {
             }
             PaxosReplica replica = PaxosManager.paxosInstances.get(paxosID);
             if (replica != null) {
-                if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tPAXOS PROCESS START " + paxosID + "\t" +  json);
+//                if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tPAXOS PROCESS START " + paxosID + "\t" +  json);
                 replica.handleIncomingMessage(json,packetType);
-                if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tPAXOS MSG DONE " + paxosID + "\t" +  json);
+//                if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tPAXOS MSG DONE " + paxosID + "\t" +  json);
             }
             else {
                 if (StartNameServer.debugMode) GNS.getLogger().fine("ERROR: Paxos Instances does not contain ID = " + paxosID);
