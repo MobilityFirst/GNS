@@ -8,6 +8,7 @@ import com.mongodb.*;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameServer;
@@ -53,7 +54,11 @@ public class MongoRecords implements NoSQLRecords {
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + NameServer.nodeID;
-      MongoClient mongoClient = new MongoClient("localhost");
+      MongoClient mongoClient;
+      if (StartNameServer.mongoPort > 0)
+        mongoClient = new MongoClient("localhost", StartNameServer.mongoPort);
+      else mongoClient = new MongoClient("localhost");
+
       db = mongoClient.getDB(dbName);
       intializeIndexes();
     } catch (UnknownHostException e) {

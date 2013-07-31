@@ -48,6 +48,7 @@ STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
 STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 
 PERSISTENT_DATA_STORE = '-persistentDataStore'
+MONGO_PORT = '-mongoPort'
 PAXOS_LOG_FOLDER = '-paxosLogFolder'
 
 #Parameters: Update as required
@@ -95,6 +96,7 @@ lnsnsping_file = ''
 nsnsping_file = ''
 
 persistent_data_store = True
+mongo_port = 12345
 paxos_log_folder = '/Users/abhigyan/Documents/paxoslog/'
 # logging related parameters:
 ## values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
@@ -195,9 +197,11 @@ def run_name_server():
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
     
     command += ' ' + PAXOS_LOG_FOLDER + ' ' + paxos_log_folder
+    
     if persistent_data_store:
         command += ' ' + PERSISTENT_DATA_STORE
-
+    if mongo_port > 0:
+        command += ' ' + MONGO_PORT + ' ' + str(mongo_port)
     if tiny_update:
         command += ' ' + TINY_UPDATE
     #if primary_paxos:

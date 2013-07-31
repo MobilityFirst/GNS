@@ -3,12 +3,11 @@ package edu.umass.cs.gns.main;
 //import edu.umass.cs.gnrs.nameserver.NSListenerUpdate;
 import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.paxos.FailureDetection;
+import edu.umass.cs.gns.paxos.PaxosLogger2;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import org.apache.commons.cli.*;
-import edu.umass.cs.gns.paxos.FailureDetection;
-import edu.umass.cs.gns.paxos.PaxosLogger;
-import edu.umass.cs.gns.paxos.PaxosLogger2;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -44,6 +43,7 @@ public class StartNameServer {
   //public static boolean isPlanetlab = false;
   public static boolean debugMode = true;
   public static boolean persistentDataStore = false;
+  public static int mongoPort = -1;
   public static boolean simpleDiskStore = true;
   // incore with disk backup
   public static String dataFolder = "/state/partition1/";
@@ -98,6 +98,7 @@ public class StartNameServer {
     Option persistentDataStore = new Option("persistentDataStore", "Use a persistent data store for name records");
     Option simpleDiskStore = new Option("simpleDiskStore", "Use a simple disk store for name records");
     Option dataFolder = new Option("dataFolder", true, "dataFolder");
+    Option mongoPort = new Option("mongoPort", true, "Which port number to use for MongoDB.");
 
 
     Option fileLoggingLevel = new Option("fileLoggingLevel", true, "fileLoggingLevel");
@@ -218,6 +219,7 @@ public class StartNameServer {
     commandLineOptions.addOption(persistentDataStore);
     commandLineOptions.addOption(simpleDiskStore);
     commandLineOptions.addOption(dataFolder);
+    commandLineOptions.addOption(mongoPort);
 
     commandLineOptions.addOption(paxosLogFolder);
     commandLineOptions.addOption(failureDetectionMsgInterval);
@@ -325,7 +327,8 @@ public class StartNameServer {
       if (simpleDiskStore && parser.hasOption("dataFolder")) {
         dataFolder = parser.getOptionValue("dataFolder");
       }
-
+      if (parser.hasOption("mongoPort"))
+        mongoPort = Integer.parseInt(parser.getOptionValue("mongoPort"));
 
 //      primaryPaxos = parser.hasOption("primaryPaxos");
 //      PaxosManager.writeStateToDisk = parser.hasOption("paxosDiskBackup");
