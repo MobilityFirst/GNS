@@ -4,7 +4,7 @@ import sys
 from os.path import join
 import time
 import exp_config
-gnrs_dir = '/Users/abhigyan/Documents/workspace/gnrs/'
+gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS/'
 
 def main():
     from kill_local import kill_local_gnrs

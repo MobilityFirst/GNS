@@ -2,16 +2,16 @@
 import os
 import sys
 
-#jar_file_path = '/Users/abhigyan/Documents/workspace/gnrs/out/production/gnrs/'
-jar_file_path = '/Users/abhigyan/Documents/workspace/gnrs/dist/GNS.jar'
+#jar_file_path = '/Users/abhigyan/Documents/workspace/GNS/out/production/GNS/'
+jar_file_path = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 
-experiment_folder = '/Users/abhigyan/Documents/workspace/gnrs/local/'
+experiment_folder = '/Users/abhigyan/Documents/workspace/GNS/local/'
 
-node_config = '/Users/abhigyan/Documents/workspace/gnrs/local/node_config'
+node_config = '/Users/abhigyan/Documents/workspace/GNS/local/node_config'
 
-test_config = '/Users/abhigyan/Documents/workspace/gnrs/local/test_config'
+test_config = '/Users/abhigyan/Documents/workspace/GNS/local/test_config'
 
-paxos_log = '/Users/abhigyan/Documents/workspace/gnrs/local/paxos_log'
+paxos_log = '/Users/abhigyan/Documents/workspace/GNS/local/paxos_log'
 
 def main():
     
@@ -24,10 +24,9 @@ def main():
     os.system('rm -rf ' + paxos_log + '/*')
     # run paxos replicas
     for i in range(replica_count):
-        workdir = experiment_folder + '/log/log_' + str(i)
-        
+        workdir = experiment_folder + '/log/log_' + str(i)        
         os.system('mkdir -p ' + workdir)
-        cmd = 'cd ' + workdir + ';nohup java -cp ' + jar_file_path + ' paxos.PaxosManager ' + node_config + ' ' + test_config + ' ' + paxos_log + ' ' + str(i) + ' > console_output &'
+        cmd = 'cd ' + workdir + ';nohup java -cp ' + jar_file_path + ' edu.umass.cs.gns.paxos.PaxosManager ' + node_config + ' ' + test_config + ' ' + paxos_log + ' ' + str(i) + ' > console_output &'
         print (cmd)
         os.system(cmd)
     import time
@@ -35,7 +34,7 @@ def main():
     # run a client
     workdir = experiment_folder + '/log/clientlog_' + str(replica_count)
     os.system('mkdir -p ' + workdir)
-    cmd = 'cd ' + workdir +';java -cp ' + jar_file_path + ' paxos.NewClient ' + node_config + ' ' + test_config + ' ' + str(replica_count)
+    cmd = 'cd ' + workdir +';java -cp ' + jar_file_path + ' edu.umass.cs.gns.paxos.NewClient ' + node_config + ' ' + test_config + ' ' + str(replica_count)
     print (cmd)
     os.system(cmd)
     os.system(' cd ' + experiment_folder + ';./kill_local.py')
