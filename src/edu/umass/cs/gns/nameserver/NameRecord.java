@@ -79,6 +79,9 @@ public class NameRecord implements Comparable<NameRecord> {
    * Indicates if we're using new load-as-you-go-scheme
    */
   private boolean lazyEval = false;
+  /**
+   * When we're loading values on demand this is the recordMap we use.
+   */
   private BasicRecordMap recordMap;
 
   public NameRecord(String name, BasicRecordMap recordMap) {

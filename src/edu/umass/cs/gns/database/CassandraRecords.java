@@ -44,7 +44,7 @@ import java.util.Set;
 public class CassandraRecords implements NoSQLRecords {
 
   private static final String DBROOTNAME = "gnrs";
-    private static final String[] COLLECTIONS = MongoRecords.COLLECTIONS;
+  private static final String[] COLLECTIONS = null;
 
   private static final StringSerializer SS = StringSerializer.get();
   String dbName;
@@ -319,7 +319,7 @@ public class CassandraRecords implements NoSQLRecords {
   // test code
 
   public static void main(String[] args) throws Exception {
-      String collection = CassandraRecords.COLLECTIONS[0];
+    String collection = CassandraRecords.COLLECTIONS[0];
     NameRecordV1 n = NameRecordV1.testCreateNameRecord();
     CassandraRecords.getInstance().remove(collection, n.getName());
     CassandraRecords.getInstance().insert(n.getName(), n.getRecordKey().getName(), n.toJSONObject().toString());

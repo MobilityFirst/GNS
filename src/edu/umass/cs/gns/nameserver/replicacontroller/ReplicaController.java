@@ -152,7 +152,7 @@ public class ReplicaController
 		// this method will schedule a timer task to startup active replicas.
 		StartupActiveSetTask startupTask = new StartupActiveSetTask(
 				nameRecord.getName(),
-				nameRecord.getOldActiveNameServers(),
+				nameRecord.getOldActiveNameservers(),
 				nameRecord.copyActiveNameServers(),
 				nameRecord.getActivePaxosID(), nameRecord.getOldActivePaxosID(), initialValue);
 		// scheduled
@@ -169,7 +169,7 @@ public class ReplicaController
 		// this method will schedule a timer task to startup active replicas.
 		StopActiveSetTask task = new StopActiveSetTask(nameRecord.getName(), 
                                 // nameRecord.getRecordKey(), 
-				nameRecord.getOldActiveNameServers(), nameRecord.copyActiveNameServers(), 
+				nameRecord.getOldActiveNameservers(), nameRecord.copyActiveNameServers(), 
 				nameRecord.getOldActivePaxosID());
 		NameServer.timer.schedule(task, 0, TIMEOUT_INTERVAL);
 	}
@@ -372,8 +372,8 @@ public class ReplicaController
 		// create task to stop currently running active.
 		StopActiveSetTask stopTask = new StopActiveSetTask(nameRecord.getName(), 
 				//nameRecord.getRecordKey(), 
-                        nameRecord.getOldActiveNameServers(), 
-				nameRecord.getOldActiveNameServers(), nameRecord.getOldActivePaxosID());
+                        nameRecord.getOldActiveNameservers(), 
+				nameRecord.getOldActiveNameservers(), nameRecord.getOldActivePaxosID());
 		NameServer.timer.schedule(stopTask, 0, TIMEOUT_INTERVAL);
 	}
 	

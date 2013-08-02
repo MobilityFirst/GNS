@@ -20,7 +20,7 @@ import java.util.*;
  * @author westy
  */
 public class InCoreRecordMapJSON extends BasicRecordMap {
-    private static final String NAME = MongoRecords.PRIMARYKEY;
+  private static final String NAME = NameRecord.NAME;
 
   private Map<String, JSONObject> recordMap;
 

@@ -31,16 +31,14 @@ public class CacheEntry {
    * The key of the key value pair.
    */
 //  private NameRecordKey recordKey;
-
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded (default to zero)
    */
   private int timeToLive = DEFAULTTTLINSECONDS;
-
   /**
    * time stamp when the value for each field was inserted into record.
    */
-    private ConcurrentHashMap<String, Long> timestampAddress = new ConcurrentHashMap<String, Long>();
+  private ConcurrentHashMap<String, Long> timestampAddress = new ConcurrentHashMap<String, Long>();
   /**
    * The value of the key value pair.. NOTE: Value can be NULL meaning that the value is not valid.
    */
@@ -53,27 +51,26 @@ public class CacheEntry {
    * A list of Active Nameservers for the name.
    */
   private Set<Integer> activeNameServer;
-
   private static int DEFAULTTTLINSECONDS = 2;
 
   /**
    * Constructs a cache entry using data from a DNS packet
    *
-   * @param packet DNS packet 
+   * @param packet DNS packet
    */
   public CacheEntry(DNSPacket packet) {
     this.name = packet.getQname();
     // this will depend on TTL sent by NS. UPDATE: NEVER LET IT BE -1 which means infinite
     this.timeToLive = packet.getTTL() == -1 ? DEFAULTTTLINSECONDS : packet.getTTL();
 //    this.value = new ValuesMap(packet.getRecordValue());
-      // adding the value of the field queried by DNSPacket into cache
+    // adding the value of the field queried by DNSPacket into cache
     this.value.put(packet.getQrecordKey().getName(), new QueryResultValue(packet.getFieldValue()));
-      // set the timestamp for that field
-      this.timestampAddress.put(packet.getQrecordKey().getName(), System.currentTimeMillis());
+    // set the timestamp for that field
+    this.timestampAddress.put(packet.getQrecordKey().getName(), System.currentTimeMillis());
     //this.ipAddressList = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>(packet.rdata.size(), 0.75f, 3));
-    
+
 //    this.primaryNameServer = packet.getPrimaryNameServers();
-      this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
+    this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
 
 //    this.activeNameServer = new HashSet<Integer>(packet.getActiveNameServers());
 
@@ -85,7 +82,7 @@ public class CacheEntry {
     this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
     this.activeNameServer = packet.getActiveNameServers();
   }
-  
+
   public CacheEntry(TinyQuery packet) {
     this.name = packet.getName();
     this.timeToLive = 0; // this will depend on TTL sent by NS.
@@ -110,50 +107,47 @@ public class CacheEntry {
 //  public synchronized long getTimestampValue() {
 //    return timestampAddress;
 //  }
-
 //  public synchronized boolean isValidValue(NameRecordKey recordKey) {
 //    return isValidAddress(false, recordKey.getName());
 //  }
-
   public synchronized Set<Integer> getActiveNameServers() {
     return activeNameServer;
   }
 
   public synchronized QueryResultValue getValue(NameRecordKey key) {
-      if (isValidAddress(false,key.getName()))
-            return value.get(key.getName());
-      return null;
+    if (isValidAddress(key.getName())) {
+      return value.get(key.getName());
+    }
+    return null;
   }
 
-    /**
-     * ************************************************************
-     * Returns true if the ttl associated with address has not expired in the cache. Returns false if the ttl has expired.
-     * ***********************************************************
-     */
-    private synchronized boolean isValidAddress(boolean checkSize, String key) {
-
-
-        // NULL MEANS THE VALUE IS INVALID
-        if (value == null || (checkSize && !value.containsKey(key))) {
-            return false;
-        }
-        //-1 means infinite TTL
-        if (timeToLive == -1) {
-            return true;
-        }
-        // 0 means TTL == 0
-        else if (timeToLive == 0) {
-            return false;
-        }
-        // else TTL is the value of field timeToLive.
-        else {
-            Long ts = timestampAddress.get(key);
-            if (ts == null) return false;
-            int secondPast = (int) ((System.currentTimeMillis() - ts) / 1000);
-            return secondPast < timeToLive;
-        }
-
+  /**
+   * ************************************************************
+   * Returns true if the ttl associated with address has not expired in the cache. Returns false if the ttl has expired.
+   * ***********************************************************
+   */
+  private synchronized boolean isValidAddress(String key) {
+    // NULL MEANS THE VALUE IS INVALID
+    if (value == null || value.containsKey(key)) {
+      return false;
     }
+    //-1 means infinite TTL
+    if (timeToLive == -1) {
+      return true;
+    } // 0 means TTL == 0
+    else if (timeToLive == 0) {
+      return false;
+    } // else TTL is the value of field timeToLive.
+    else {
+      Long ts = timestampAddress.get(key);
+      if (ts == null) {
+        return false;
+      }
+      int secondPast = (int) ((System.currentTimeMillis() - ts) / 1000);
+      return secondPast < timeToLive;
+    }
+
+  }
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
 //    activeNameServer = new HashSet<Integer>(packet.getActiveNameServers());
@@ -236,19 +230,22 @@ public class CacheEntry {
 //          Set<Integer> activeNameServers) {
 //    activeNameServer = new HashSet<Integer>(activeNameServers);
 //  }
-
-  /**************************************************************
-   * returns true if a non-empty  set of active name servers is stored in cache
-   * ************************************************************/
+  /**
+   * ************************************************************
+   * returns true if a non-empty set of active name servers is stored in cache
+   * ***********************************************************
+   */
   public synchronized boolean isValidNameserver() {
     GNS.getLogger().fine("Active name servers in cache: " + activeNameServer);
     return activeNameServer != null && activeNameServer.size() != 0;
   }
 
   public synchronized int timeSinceAddressCached(NameRecordKey nameRecordKey) {
-      Long ts = timestampAddress.get(nameRecordKey.getName());
-      if (ts == null) return -1;
-      return (int) (System.currentTimeMillis() - ts);
+    Long ts = timestampAddress.get(nameRecordKey.getName());
+    if (ts == null) {
+      return -1;
+    }
+    return (int) (System.currentTimeMillis() - ts);
   }
 
   public synchronized void invalidateActiveNameServer() {
@@ -257,8 +254,7 @@ public class CacheEntry {
 
   /**
    * ************************************************************
-   * Returns a string representation of a cache entry
-   * ***********************************************************
+   * Returns a string representation of a cache entry ***********************************************************
    */
   @Override
   public synchronized String toString() {
@@ -311,7 +307,6 @@ public class CacheEntry {
 //  public void setName(String name) {
 //    this.name = name;
 //  }
-
 //  /**
 //   * @return the recordKey
 //   */
@@ -338,7 +333,6 @@ public class CacheEntry {
 //  public void setPrimaryNameServer(HashSet<Integer> primaryNameServer) {
 //    this.primaryNameServer = primaryNameServer;
 //  }
-  
   /**
    * Returns a 8-character string.
    *
