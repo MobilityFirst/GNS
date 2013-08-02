@@ -10,20 +10,23 @@ import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class MongoRecordMap extends BasicRecordMap {
+  
+  private String collectionName;
 
-  private final String DBNAMERECORD = MongoRecords.DBNAMERECORD;
-
+  public MongoRecordMap(String collectionName) {
+    this.collectionName = collectionName;
+  }
+  
   @Override
   public String getNameRecordField(String name, String key) {
     MongoRecords records = MongoRecords.getInstance();
-    String result = records.lookup(DBNAMERECORD, name, key);
+    String result = records.lookup(collectionName, name, key);
     if (result != null) {
       GNS.getLogger().fine(records.toString() + ":: Retrieved " + name + "/" + key + ": " + result);
       return result;
@@ -37,20 +40,20 @@ public class MongoRecordMap extends BasicRecordMap {
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().fine(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
-    records.updateListValue(DBNAMERECORD, name, key, value);
+    records.updateListValue(collectionName, name, key, value);
   }
 
   @Override
   public void updateNameRecordField(String name, String key, String string) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().fine(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
-    records.updateField(DBNAMERECORD, name, key, string);
+    records.updateField(collectionName, name, key, string);
   }
 
   @Override
   public Set<String> getAllRowKeys() {
     MongoRecords records = MongoRecords.getInstance();
-    return records.keySet(DBNAMERECORD);
+    return records.keySet(collectionName);
   }
 
   @Override
@@ -58,7 +61,7 @@ public class MongoRecordMap extends BasicRecordMap {
     if (!containsName(name)) {
       try {
         MongoRecords records = MongoRecords.getInstance();
-        JSONObject json = records.lookup(DBNAMERECORD, name);
+        JSONObject json = records.lookup(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
         GNS.getLogger().severe("Error updating json record: " + e);
@@ -71,7 +74,7 @@ public class MongoRecordMap extends BasicRecordMap {
   
   @Override
   public NameRecord getNameRecordLazy(String name) {
-    if (MongoRecords.getInstance().contains(DBNAMERECORD, name)) {
+    if (MongoRecords.getInstance().contains(collectionName, name)) {
       //GNS.getLogger().info("Creating lazy name record for " + name);
       return new NameRecord(name, this);
     } else {
@@ -82,7 +85,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public NameRecord getNameRecord(String name) {
     try {
-      JSONObject json = MongoRecords.getInstance().lookup(DBNAMERECORD, name);
+      JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -102,7 +105,7 @@ public class MongoRecordMap extends BasicRecordMap {
     }
     try {
       addNameRecord(recordEntry.toJSONObject());
-      //MongoRecords.getInstance().insert(DBNAMERECORD, recordEntry.getName(), recordEntry.toJSONObject());
+      //MongoRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();
       GNS.getLogger().severe("Error adding name record: " + e);
@@ -115,7 +118,7 @@ public class MongoRecordMap extends BasicRecordMap {
     MongoRecords records = MongoRecords.getInstance();
     try {
       String name = json.getString(NameRecord.NAME);
-      records.insert(DBNAMERECORD, name, json);
+      records.insert(collectionName, name, json);
       GNS.getLogger().finer(records.toString() + ":: Added " + name);
     } catch (JSONException e) {
       GNS.getLogger().severe(records.toString() + ":: Error adding name record: " + e);
@@ -126,7 +129,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecord(NameRecord recordEntry) {
     try {
-      MongoRecords.getInstance().update(DBNAMERECORD, recordEntry.getName(), recordEntry.toJSONObject());
+      MongoRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
@@ -134,20 +137,20 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public void removeNameRecord(String name) {
-    MongoRecords.getInstance().remove(DBNAMERECORD, name);
+    MongoRecords.getInstance().remove(collectionName, name);
   }
 
   @Override
   public boolean containsName(String name) {
-    return MongoRecords.getInstance().contains(DBNAMERECORD, name);
+    return MongoRecords.getInstance().contains(collectionName, name);
   }
 
   @Override
   public Set<NameRecord> getAllNameRecords() {
-    MongoRecords.getInstance().keySet(DBNAMERECORD);
+    MongoRecords.getInstance().keySet(collectionName);
     MongoRecords records = MongoRecords.getInstance();
     Set<NameRecord> result = new HashSet<NameRecord>();
-    for (JSONObject json : records.retrieveAllEntries(DBNAMERECORD)) {
+    for (JSONObject json : records.retrieveAllEntries(collectionName)) {
       try {
         result.add(new NameRecord(json));
       } catch (JSONException e) {
@@ -173,7 +176,7 @@ public class MongoRecordMap extends BasicRecordMap {
   private static void retrieveFieldTest() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
-    BasicRecordMap recordMap = new MongoRecordMap();
+    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS));
     recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));

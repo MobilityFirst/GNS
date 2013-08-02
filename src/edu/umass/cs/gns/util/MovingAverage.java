@@ -1,13 +1,11 @@
 package edu.umass.cs.gns.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.gns.main.StartNameServer;
 
 /*************************************************************
  * This class implements the moving average
@@ -97,6 +95,7 @@ public class MovingAverage {
   /*************************************************************
    * Returns the String representation of this object
    ************************************************************/
+  @Override
   public String toString() {
     return "Window:" + window.toString() + " Size:" + window.size() + " Sum:" + sum + " Avg:" + getAverage();
   }

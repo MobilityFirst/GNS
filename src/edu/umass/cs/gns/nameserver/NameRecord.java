@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
@@ -26,7 +27,7 @@ public class NameRecord implements Comparable<NameRecord> {
   //
   public final static String NAME = "nr_name";
   public final static String KEY = "nr_key"; // legacy use
-  public final static String TIMETOLIVE = "nr_timeToLive";
+  public final static String TIME_TO_LIVE = "nr_timeToLive";
   public final static String PRIMARY_NAMESERVERS = "nr_primary";
   public final static String ACTIVE_NAMESERVERS = "nr_active";
   public final static String ACTIVE_PAXOS_ID = "nr_activePaxosID";
@@ -134,7 +135,7 @@ public class NameRecord implements Comparable<NameRecord> {
     this.oldValuesMap = new ValuesMap(json.getJSONObject(OLDVALUESMAP));
 
     this.name = json.getString(NAME);
-    this.timeToLive = json.getInt(TIMETOLIVE);
+    this.timeToLive = json.getInt(TIME_TO_LIVE);
 
     this.primaryNameservers = (HashSet<Integer>) JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARY_NAMESERVERS));
     this.activeNameservers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
@@ -177,7 +178,7 @@ public class NameRecord implements Comparable<NameRecord> {
     json.put(OLDVALUESMAP, getOldValuesMap().toJSONObject());
     //
     json.put(NAME, getName());
-    json.put(TIMETOLIVE, getTimeToLive());
+    json.put(TIME_TO_LIVE, getTimeToLive());
     json.put(PRIMARY_NAMESERVERS, new JSONArray(getPrimaryNameservers()));
     json.put(ACTIVE_NAMESERVERS, new JSONArray(getActiveNameservers()));
 
@@ -322,7 +323,12 @@ public class NameRecord implements Comparable<NameRecord> {
     }
   }
 
+  //
   // lazified accessors
+  //
+  // NOTE THAT ALL OF THESE (WITH EXCEPTIONS OF THE ONES THAT EXPLICITLY UPDATE AN OBJECT) READ THE VALUE FROM THE
+  // DATABASE ONCE! WHICH MEANS THEY ASSUME THERE ARE NO INTERLEAVED CALLS THAT UPDATE THE DATABASE
+  //
   /**
    * @return the activeNameservers
    */
@@ -372,7 +378,7 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   public synchronized int getTimeToLive() {
     if (isLazyEval() && timeToLive == LAZYINT) {
-      timeToLive = recordMap.getNameRecordFieldAsInt(name, TIMETOLIVE);
+      timeToLive = recordMap.getNameRecordFieldAsInt(name, TIME_TO_LIVE);
     }
     return timeToLive;
   }
@@ -413,7 +419,7 @@ public class NameRecord implements Comparable<NameRecord> {
   public void setTotalLookupRequest(int totalLookupRequest) {
     this.totalLookupRequest = totalLookupRequest;
     if (isLazyEval() && totalLookupRequest != LAZYINT) {
-      recordMap.updateNameRecordField(name, TOTALLOOKUPREQUEST, Integer.toString(totalLookupRequest));
+      recordMap.updateNameRecordFieldAsInteger(name, TOTALLOOKUPREQUEST, totalLookupRequest);
     }
   }
 
@@ -433,7 +439,7 @@ public class NameRecord implements Comparable<NameRecord> {
   public void setTotalUpdateRequest(int totalUpdateRequest) {
     this.totalUpdateRequest = totalUpdateRequest;
     if (isLazyEval() && totalUpdateRequest != LAZYINT) {
-      recordMap.updateNameRecordField(name, TOTALUPDATEREQUEST, Integer.toString(totalUpdateRequest));
+      recordMap.updateNameRecordFieldAsInteger(name, TOTALUPDATEREQUEST, totalUpdateRequest);
     }
   }
 
@@ -460,6 +466,10 @@ public class NameRecord implements Comparable<NameRecord> {
       }
     }
   }
+  
+  //
+  // Utilities that use the accessors
+  //
 
   /**
    * Returns a copy of the active name servers set.
@@ -604,7 +614,7 @@ public class NameRecord implements Comparable<NameRecord> {
   private static void test() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
-    BasicRecordMap recordMap = new MongoRecordMap();
+    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
     NameRecord record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", new NameRecordKey("FRED"), 
             new ArrayList<String>(Arrays.asList("FRANK")));
     recordMap.addNameRecord(record);

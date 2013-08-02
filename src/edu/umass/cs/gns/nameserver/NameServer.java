@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
@@ -60,7 +61,7 @@ public class NameServer {
 //    NameServer.updateSocket = new DatagramSocket(ConfigFileInfo.getUpdatePort(nodeID));
 
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
-    NameServer.recordMap = new MongoRecordMap();
+    NameServer.recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
 
     // will need to add back some form of the code to select the appropriate one
     // probably make persistentDataStore a selector
