@@ -384,10 +384,10 @@ public class MongoRecords implements NoSQLRecords {
   // test code
   public static void main(String[] args) throws Exception {
     NameServer.nodeID = 4;
-    //listDatabases();
+    listDatabases();
     //clear();
-    //runtest();
-    printFieldsTest();
+    runtest();
+    //printFieldsTest();
     //retrieveFieldTest();
     System.exit(0);
 

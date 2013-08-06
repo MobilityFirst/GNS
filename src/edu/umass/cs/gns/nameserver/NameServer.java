@@ -1,14 +1,16 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.nameserver.replicacontroller.BasicReplicaController;
+import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.replicationframework.KMediods;
 import edu.umass.cs.gns.replicationframework.LocationBasedReplication;
@@ -16,10 +18,6 @@ import edu.umass.cs.gns.replicationframework.RandomReplication;
 import edu.umass.cs.gns.replicationframework.ReplicationFramework;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.paxos.PaxosManager;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
