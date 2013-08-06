@@ -65,7 +65,7 @@ public class GenerateSyntheticRecordTable {
 
 					//Generate an entry for the name and add its record to the name server record table
                     ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
-                    NameServer.replicaController.addNameRecordPrimary(nameRecordPrimary);
+                    NameServer.addNameRecordPrimary(nameRecordPrimary);
                     ValuesMap valuesMap = new ValuesMap();
                     valuesMap.put(NameRecordKey.EdgeRecord.getName(),new QueryResultValue(new ArrayList(Arrays.asList(Integer.toString(address)))));
                     ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
@@ -83,7 +83,7 @@ public class GenerateSyntheticRecordTable {
 					GNS.getLogger().fine("GenerateSynthicRecordTable:\tRECORDADDED\tName:\t" + name);
 					//Generate an entry for the name and add its record to the name server record table
                     ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
-                    NameServer.replicaController.addNameRecordPrimary(nameRecordPrimary);
+                    NameServer.addNameRecordPrimary(nameRecordPrimary);
                     ValuesMap valuesMap = new ValuesMap();
                     valuesMap.put(NameRecordKey.EdgeRecord.getName(),new QueryResultValue(new ArrayList(Arrays.asList(Integer.toString(address)))));
                     ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);

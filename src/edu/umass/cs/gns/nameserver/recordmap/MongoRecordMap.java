@@ -181,6 +181,16 @@ public class MongoRecordMap extends BasicRecordMap {
     }
     return null;
   }
+  
+  @Override
+  public ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
+    if (MongoRecords.getInstance().contains(collectioName, name)) {
+      //GNS.getLogger().info("Creating lazy name record for " + name);
+      return new ReplicaControllerRecord(name, this);
+    } else {
+      return null;
+    }
+  }
 
   @Override
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {

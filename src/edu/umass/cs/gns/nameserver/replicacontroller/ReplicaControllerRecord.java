@@ -288,6 +288,16 @@ public class ReplicaControllerRecord {
   }
 
   /**
+   * @param activeNameservers the activeNameservers to set
+   */
+  public void setActiveNameservers(Set<Integer> activeNameservers) {
+    this.activeNameservers = activeNameservers;
+    if (isLazyEval() && activeNameservers != null) {
+      recordMap.updateNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS, activeNameservers);
+    }
+  }
+
+  /**
    * Returns the PrimaryNameservers.
    *
    * @return primaryNameservers as a set of Integers
@@ -297,16 +307,6 @@ public class ReplicaControllerRecord {
       primaryNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, PRIMARY_NAMESERVERS);
     }
     return primaryNameservers;
-  }
-
-  /**
-   * @param activeNameservers the activeNameservers to set
-   */
-  public void setActiveNameservers(Set<Integer> activeNameservers) {
-    this.activeNameservers = activeNameservers;
-    if (isLazyEval() && activeNameservers != null) {
-      recordMap.updateNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS, activeNameservers);
-    }
   }
 
   /**
@@ -691,7 +691,11 @@ public class ReplicaControllerRecord {
    * @param id Primary name server id
    */
   public synchronized boolean containsPrimaryNameserver(int id) {
-    return getPrimaryNameservers().contains(id);
+    if (getPrimaryNameservers() != null) {
+      return getPrimaryNameservers().contains(id);
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -946,6 +950,7 @@ public class ReplicaControllerRecord {
     replicaController.reset();
     ReplicaControllerRecord record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
     replicaController.addNameRecordPrimary(record);
+    // create the lazy record
     record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", replicaController);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
     System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
@@ -961,7 +966,7 @@ public class ReplicaControllerRecord {
     record.updateMovingAvgAggregateLookupFrequency(30);
     record.updateMovingAvgAggregateLookupFrequency(50);
     System.out.println("MOVING AG READ: " + record.getMovingAvgAggregateLookupFrequency());
-    
+
     MongoRecords instance = MongoRecords.getInstance();
     instance.printAllEntries(MongoRecords.DBREPLICACONTROLLER);
   }

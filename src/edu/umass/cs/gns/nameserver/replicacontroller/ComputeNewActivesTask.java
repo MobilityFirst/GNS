@@ -35,7 +35,7 @@ public class ComputeNewActivesTask extends TimerTask
 		
 		//Iterate through the NameRecord and check if any changes need to
 		//be made to the active name server set
-		Set<ReplicaControllerRecord> nameRecords = NameServer.replicaController.getAllPrimaryNameRecords();
+		Set<ReplicaControllerRecord> nameRecords = NameServer.getAllPrimaryNameRecords();
 		if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfNameRecords\t" + nameRecords.size());
 
 		int count = 0;
@@ -131,7 +131,7 @@ public class ComputeNewActivesTask extends TimerTask
 		update = nameRecord.getWriteStats_Paxos();
 		lookup = nameRecord.getReadStats_Paxos();
 		
-		NameServer.replicaController.updateNameRecordPrimary(nameRecord);
+		NameServer.updateNameRecordPrimary(nameRecord);
 		
 		int replicaCount = 0;
 		if (update == 0 && lookup == 0) {
@@ -169,8 +169,8 @@ public class ComputeNewActivesTask extends TimerTask
 		
 		try {
 			NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
-			ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(activeProposalPacket.getName());
-            if (nameRecord == null) {
+			ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(activeProposalPacket.getName());
+            if (nameRecordPrimary == null) {
                 if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: PAXOS DECISION: " +
                         "BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
                 return;
@@ -179,26 +179,26 @@ public class ComputeNewActivesTask extends TimerTask
 			if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name = " + activeProposalPacket.getName()
 					+ " Actives: " + activeProposalPacket.getProposedActiveNameServers() 
 					+ " DECISION: "+ decision );
-			if (nameRecord.isMarkedForRemoval()) {
+			if (nameRecordPrimary.isMarkedForRemoval()) {
 				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION NOT APPLIED: actives not changed because namerecord is markedForRemoval ");
 				return;
 			}
 			
-			if (nameRecord.isActiveRunning() == false) {
+			if (nameRecordPrimary.isActiveRunning() == false) {
 				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION NOT APPLIED. Because most recently " +
-						"proposed active name servers is not yet running: " + nameRecord.copyActiveNameServers());
+						"proposed active name servers is not yet running: " + nameRecordPrimary.copyActiveNameServers());
 				return;
 			}
 			
 			// All primaries will apply this decision.
 			
-			nameRecord.updateActiveNameServers(activeProposalPacket.getProposedActiveNameServers(), 
+			nameRecordPrimary.updateActiveNameServers(activeProposalPacket.getProposedActiveNameServers(), 
 					activeProposalPacket.getPaxosID());
 			
-			if (StartNameServer.debugMode) GNS.getLogger().fine("Name Record Now: = " + nameRecord.toString());
+			if (StartNameServer.debugMode) GNS.getLogger().fine("Name Record Now: = " + nameRecordPrimary.toString());
 //			nameRecord.replaceActiveNameServers(activeProposalPacket.getProposedActiveNameServers());
 			// Update Database.
-            NameServer.replicaController.updateNameRecordPrimary(nameRecord);
+            NameServer.updateNameRecordPrimary(nameRecordPrimary);
 //			NameServer.updateNameRecord(nameRecord);
 			// TODO: 2-3 update database operations, reduce them.
 			
@@ -209,13 +209,13 @@ public class ComputeNewActivesTask extends TimerTask
 			if (activeProposalPacket.getProposingNode() == NameServer.nodeID) {
 				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS : Stop oldActiveSet now: Name = "
 						+ activeProposalPacket.getName() + " Decision = " + decision);
-				ReplicaController.stopOldActives(nameRecord);
+				ReplicaController.stopOldActives(nameRecordPrimary);
 				
 				// we're using timer instead of executor service because we need repeat execution.
 			}
 			else {
 				// This keeps the name record at primary in sync.
-				numberOfReplica(nameRecord);
+				numberOfReplica(nameRecordPrimary);
 			}
 			
 		} catch (JSONException e) {

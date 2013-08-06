@@ -111,6 +111,11 @@ public class InCoreRecordMap extends BasicRecordMap {
   public ReplicaControllerRecord getNameRecordPrimary(String name) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
+  
+  @Override
+  public ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
+     throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   @Override
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {

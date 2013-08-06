@@ -68,7 +68,8 @@ public class NSListenerAdmin extends Thread {
 
             GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
 
-            ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(activeNSInfoPacket.getName());
+            //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(activeNSInfoPacket.getName());
+            ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(activeNSInfoPacket.getName());
             if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
               sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest, nameRecordPrimary.copyActiveNameServers());
             }

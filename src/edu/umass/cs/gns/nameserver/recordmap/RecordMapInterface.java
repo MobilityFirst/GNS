@@ -59,4 +59,6 @@ public interface RecordMapInterface {
   
   public Set<ReplicaControllerRecord> getAllPrimaryNameRecords();
   
+  public ReplicaControllerRecord getNameRecordPrimaryLazy(String name);
+  
 }

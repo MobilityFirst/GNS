@@ -110,7 +110,7 @@ public class ClientRequestWorker extends TimerTask {
             "NSListenerUpdate ADD FROM LNS (ns " + NameServer.nodeID
             + ") : " + name + "/" + nameRecordKey.toString() + ", "
             + value);
-    ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(name);
+    ReplicaControllerRecord nameRecord = NameServer.getNameRecordPrimary(name);
     //NameServer.getNameRecord(name);
 
     // assuming this is a primary name server for this "name".
@@ -148,7 +148,7 @@ public class ClientRequestWorker extends TimerTask {
       ValuesMap valuesMap = new ValuesMap();
       valuesMap.put(nameRecordKey.getName(), new QueryResultValue(value));
       nameRecord = new ReplicaControllerRecord(name);
-      NameServer.replicaController.addNameRecordPrimary(nameRecord);
+      NameServer.addNameRecordPrimary(nameRecord);
       ReplicaController.handleNameRecordAddAtPrimary(nameRecord, valuesMap);
       GNS.getLogger().info("");
 //        NameRecord record = new NameRecord(name, nameRecordKey, value);
@@ -192,28 +192,19 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().info("NSListenerUpdate ADD FROM NS (ns " + NameServer.nodeID + ") : "
               + name + "/" + nameRecordKey.toString() + ", " + value);
     }
-//    // create and add the record
-//    NameRecord record = new NameRecord(name, //nameRecordKey, 
-//            value);
-//    NameServer.addNameRecord(record);
 
-    ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(name);//NameServer.getNameRecord(name);
-    if (nameRecord == null) {
+    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(name);//NameServer.getNameRecord(name);
+    if (nameRecordPrimary == null) {
       // create and add the record
 
-      nameRecord = new ReplicaControllerRecord(name);
-      NameServer.replicaController.addNameRecordPrimary(nameRecord);
+      nameRecordPrimary = new ReplicaControllerRecord(name);
+      NameServer.addNameRecordPrimary(nameRecordPrimary);
 //      NameServer.addNameRecord(record);
     }
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), new QueryResultValue(addRecordPacket.getValue()));
-    ReplicaController.handleNameRecordAddAtPrimary(nameRecord, valuesMap);
+    ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
 
-//    else {
-//
-//      nameRecord.put(nameRecordKey.getName(), new QueryResultValue(value));
-//      NameServer.updateNameRecord(nameRecord);
-//    }
 
   }
   /**
@@ -235,15 +226,13 @@ public class ClientRequestWorker extends TimerTask {
 
     UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
 
-//    NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName()//, updatePacket.getRecordKey()
-//            );
-
     // IF this is an UPSERT operation
     if (updatePacket.getOperation().isUpsert()) {
       // this must be primary
-      ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(updatePacket.getName());
+      ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(updatePacket.getName());
+      //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(updatePacket.getName());
       if (nameRecordPrimary == null) {
-        // ADD name record
+        // do an INSERT (AKA ADD) operation
 
         AddRecordPacket addRecordPacket = new AddRecordPacket(updatePacket.getRequestID(), updatePacket.getName(),
                 updatePacket.getRecordKey(), updatePacket.getUpdateValue(), updatePacket.getLocalNameServerId());
@@ -254,6 +243,7 @@ public class ClientRequestWorker extends TimerTask {
           GNS.getLogger().fine(" NS processing UPSERT changed to ADD: "
                   + incomingJSON);
         }
+        // Name record was found.. do the update
       } else {
         int activeID = -1;
         Set<Integer> activeNS = nameRecordPrimary.copyActiveNameServers();
@@ -273,6 +263,7 @@ public class ClientRequestWorker extends TimerTask {
             GNS.getLogger().fine("UPSERT forwarded as UPDATE to active: " + activeID);
           }
           NameServer.tcpTransport.sendToID(updatePacket.toJSONObject(), activeID, PortType.STATS_PORT);
+          // could not find activeNS for this name
         } else {
           // send error to LNS
           ConfirmUpdateLNSPacket failConfirmPacket =
@@ -286,77 +277,63 @@ public class ClientRequestWorker extends TimerTask {
           }
         }
       }
-      return;
-      //
-    }
-//        if (nameRecord == null && NameServer.isPrimaryNameServer(updatePacket.getName(),
-//                updatePacket.getRecordKey())) {
-//
-//        }
-
-//        if (isUpsert(updatePacket, nameRecord)) {
-//
-//        }
-
-
-    //NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
-    NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
-    //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
-
-    if (nameRecord == null || !nameRecord.containsActiveNameServer(NameServer.nodeID)) {
-      ConfirmUpdateLNSPacket failConfirmPacket =
-              ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NameServer.nodeID);
-      // inform LNS of failed request
-      NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
-              updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
-      String msg = " UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
-              + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId() + "\t" + updatePacket.getSequenceNumber();
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(msg);
-      }
+      // END OF UPSERT HANDLING
     } else {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" PAXOS PROPOSAL: propose update request: " + updatePacket.toString());
-      }
+      // HANDLE NON-UPSERT CASE
 
-      // Save request info to send confirmation to LNS later.
-      updatePacket.setNameServerId(NameServer.nodeID); // to check that I had proposed this message
-      int updateID = incrementUpdateID();
-      updatePacket.setNSRequestID(updateID); // to check the request ID.
-      updatePacket.setType(Packet.PacketType.UPDATE_ADDRESS_NS); //
-      ConfirmUpdateLNSPacket confirmPacket = ConfirmUpdateLNSPacket.createSuccessPacket(updatePacket,
-              NameServer.nodeID, nameRecord.copyActiveNameServers().size());
-      proposedUpdates.put(updateID, confirmPacket);
-      proposedUpdatesTime.put(updateID, System.currentTimeMillis());
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" Update Packet : " + updatePacket);
+      //NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
+      NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
+      //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
+
+      if (nameRecord == null || !nameRecord.containsActiveNameServer(NameServer.nodeID)) {
+        ConfirmUpdateLNSPacket failConfirmPacket =
+                ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NameServer.nodeID);
+        // inform LNS of failed request
+        NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
+                updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+        String msg = " UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
+                + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId() + "\t" + updatePacket.getSequenceNumber();
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine(msg);
+        }
+      } else {
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine(" PAXOS PROPOSAL: propose update request: " + updatePacket.toString());
+        }
+
+        // Save request info to send confirmation to LNS later.
+        updatePacket.setNameServerId(NameServer.nodeID); // to check that I had proposed this message
+        int updateID = incrementUpdateID();
+        updatePacket.setNSRequestID(updateID); // to check the request ID.
+        updatePacket.setType(Packet.PacketType.UPDATE_ADDRESS_NS); //
+        ConfirmUpdateLNSPacket confirmPacket = ConfirmUpdateLNSPacket.createSuccessPacket(updatePacket,
+                NameServer.nodeID, nameRecord.copyActiveNameServers().size());
+        proposedUpdates.put(updateID, confirmPacket);
+        proposedUpdatesTime.put(updateID, System.currentTimeMillis());
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine(" Update Packet : " + updatePacket);
+        }
+        // Propose to paxos
+        String activePaxosID = nameRecord.getActivePaxosID();
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine(" Update proposed to paxosID = " + activePaxosID);
+        }
+        PaxosManager.propose(activePaxosID, new RequestPacket(updatePacket.getType().getInt(),
+                updatePacket.toString(), PaxosPacketType.REQUEST));
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine(" Update Packet Type : " + updatePacket.getType().getInt());
+        }
       }
-      // Propose to paxos
-      String activePaxosID = nameRecord.getActivePaxosID();
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" Update proposed to paxosID = " + activePaxosID);
-      }
-      PaxosManager.propose(activePaxosID, new RequestPacket(updatePacket.getType().getInt(),
-              updatePacket.toString(), PaxosPacketType.REQUEST));
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" Update Packet Type : " + updatePacket.getType().getInt());
+      long t1 = System.currentTimeMillis();
+      if (t1 - t0 > 50) {
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().severe("UpdateLongDelay = " + (t1 - t0) + " in handleUpdateAddressNS UpdatePacket = "
+                  + updatePacket + " NameRecord = " + nameRecord);
+        }
       }
     }
-    long t1 = System.currentTimeMillis();
-    if (t1 - t0 > 50) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().severe("UpdateLongDelay = " + (t1 - t0) + " in handleUpdateAddressNS UpdatePacket = "
-                + updatePacket + " NameRecord = " + nameRecord);
-      }
-    }
-
   }
 
-//    private boolean isUpsert(UpdateAddressPacket updateAddressPacket, NameRecord nameRecord) {
-//
-//
-//
-//    }
   private void handleUpdateAddressNS() throws JSONException {
 
     if (StartNameServer.debugMode) {
@@ -372,7 +349,7 @@ public class ClientRequestWorker extends TimerTask {
     if (nameRecord != null) {
       // Apply update
       GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
-      boolean result = nameRecord.updateField(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(), 
+      boolean result = nameRecord.updateField(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(),
               updatePacket.getOldValue(), updatePacket.getOperation());
       if (!result) { // update failed
         if (StartNameServer.debugMode) {
@@ -435,7 +412,6 @@ public class ClientRequestWorker extends TimerTask {
       }
     }
   }
-
   private static ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket> proposedUpdates = new ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket>();
   private static ConcurrentHashMap<Integer, Long> proposedUpdatesTime = new ConcurrentHashMap<Integer, Long>();
 
@@ -506,9 +482,8 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine("NS RECVD REQUEST ACTIVES PACKET." + incomingJSON);
     }
     RequestActivesPacket packet = new RequestActivesPacket(incomingJSON);
-    ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(packet.getName());
-//    NameRecord nameRecord = NameServer.getNameRecord(packet.getName()//, packet.getRecordKey()
-//            );
+    //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(packet.getName());
+    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(packet.getName());
     if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
       packet.setActiveNameServers(nameRecordPrimary.copyActiveNameServers());
       NSListenerUDP.udpTransport.sendPacket(packet.toJSONObject(), packet.getLNSID(), PortType.LNS_UPDATE_PORT);

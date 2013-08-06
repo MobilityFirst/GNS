@@ -6,6 +6,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
+import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.DNSPacket;
@@ -37,7 +38,7 @@ public class NameServer {
    */
   public static DatagramSocket dnsSocket;
   private static BasicRecordMap recordMap;
-  public static BasicRecordMap replicaController;
+  private static BasicRecordMap replicaController;
   public static ReplicationFramework replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer tcpTransport;
@@ -230,22 +231,22 @@ public class NameServer {
 
   /**
    * Creates a name record that loads reads and writes fields on demand.
-   * 
+   *
    * @param name
-   * @return 
+   * @return
    */
   public static NameRecord getNameRecordLazy(String name) {
     GNS.getLogger().info("Creating lazy name record for " + name);
     return recordMap.getNameRecordLazy(name);
   }
 
-  public static void addNameRecord(NameRecord recordEntry) {
-    recordMap.addNameRecord(recordEntry);
+  public static void addNameRecord(NameRecord record) {
+    recordMap.addNameRecord(record);
   }
 
-  public static void updateNameRecord(NameRecord recordEntry) {
-    if (!recordEntry.isLazyEval()) {
-      recordMap.updateNameRecord(recordEntry);
+  public static void updateNameRecord(NameRecord record) {
+    if (!record.isLazyEval()) {
+      recordMap.updateNameRecord(record);
     }
   }
 
@@ -259,6 +260,29 @@ public class NameServer {
 
   public static Set<NameRecord> getAllNameRecords() {
     return recordMap.getAllNameRecords();
+  }
+
+  public static ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
+    GNS.getLogger().info("Creating lazy primary name record for " + name);
+    return replicaController.getNameRecordPrimaryLazy(name);
+  }
+
+  public static ReplicaControllerRecord getNameRecordPrimary(String name) {
+    return replicaController.getNameRecordPrimary(name);
+  }
+
+  public static void addNameRecordPrimary(ReplicaControllerRecord record) {
+    replicaController.addNameRecordPrimary(record);
+  }
+
+  public static void updateNameRecordPrimary(ReplicaControllerRecord record) {
+    if (!record.isLazyEval()) {
+      replicaController.updateNameRecordPrimary(record);
+    }
+  }
+
+  public static Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
+    return replicaController.getAllPrimaryNameRecords();
   }
 
   //  the nuclear option
