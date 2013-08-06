@@ -942,11 +942,11 @@ public class ReplicaControllerRecord {
   private static void test() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
-    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
-    recordMap.reset();
+    BasicRecordMap replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
+    replicaController.reset();
     ReplicaControllerRecord record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
-    DBReplicaController.addNameRecordPrimary(record);
-    record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", recordMap);
+    NameServer.replicaController.addNameRecordPrimary(record);
+    record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", replicaController);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
     System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
     record.addNameServerStats(10, 50, 75);

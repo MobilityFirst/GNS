@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
@@ -85,10 +86,10 @@ public class InCoreRecordMap extends BasicRecordMap {
   public void reset() {
     recordMap.clear();
   }
-  
+
   @Override
   public NameRecord getNameRecordLazy(String name) {
-   throw new UnsupportedOperationException("Not supported yet.");
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
@@ -103,6 +104,26 @@ public class InCoreRecordMap extends BasicRecordMap {
 
   @Override
   public String getNameRecordField(String name, String key) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public ReplicaControllerRecord getNameRecordPrimary(String name) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 }

@@ -54,7 +54,7 @@ public class ReplicaController
 		// 2. stop current primaries
 		// 3. send confirmation to client.
 		RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(removeRecord.getName());
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(removeRecord.getName());
                 //NameServer.getNameRecord(removeRecord.getName()//, removeRecord.getRecordKey()
 
 		if (nameRecord != null && nameRecord.isPrimaryReplica()) {
@@ -105,7 +105,7 @@ public class ReplicaController
 		if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION remove record packet accepted by paxos: " + value);
 		RemoveRecordPacket removeRecord = new RemoveRecordPacket(new JSONObject(value));
 		// 
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(removeRecord.getName());
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(removeRecord.getName());
 
 		if (nameRecord != null &&  nameRecord.isPrimaryReplica()) {
 			if (nameRecord.isMarkedForRemoval() == true) {
@@ -114,7 +114,7 @@ public class ReplicaController
 				return;
 			}
 			nameRecord.setMarkedForRemoval();
-            DBReplicaController.updateNameRecordPrimary(nameRecord);
+            NameServer.replicaController.updateNameRecordPrimary(nameRecord);
 			stopRunningActiveToRemoveNameRecord(nameRecord);
 
 		}
@@ -225,7 +225,7 @@ public class ReplicaController
 		if (StartNameServer.debugMode) GNS.getLogger().fine(
 				"NEW_ACTIVE_START: Received confirmation at primary. "
 						+ packet.getName());
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(packet.getName());
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(packet.getName());
 //                NameServer.getNameRecord(packet.getName()//,packet.getRecordKey()
 //                        );
 		if (nameRecord != null) {
@@ -264,7 +264,7 @@ public class ReplicaController
 		if (StartNameServer.debugMode) GNS.getLogger().fine(
 				"OLD ACTIVE STOP: Received confirmation at primary. Name = "
 						+ packet.getName());
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(packet.getName());
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(packet.getName());
 //                NameServer.getNameRecord(packet.getName()//,packet.getRecordKey()
 //                        );
 
@@ -301,7 +301,7 @@ public class ReplicaController
 						+ decision);
 		ChangeActiveStatusPacket packet = new ChangeActiveStatusPacket(
 				new JSONObject(decision));
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(packet.getName());
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(packet.getName());
 		
 		if (nameRecord != null)
 		{
@@ -320,7 +320,7 @@ public class ReplicaController
 			if (nameRecord.isMarkedForRemoval() == true) {
 				createTaskToStopCurrentActives(nameRecord);
 			}
-            DBReplicaController.updateNameRecordPrimary(nameRecord);
+            NameServer.replicaController.updateNameRecordPrimary(nameRecord);
 			
 		} else
 		{
@@ -334,7 +334,7 @@ public class ReplicaController
 	{
 		ChangeActiveStatusPacket packet = new ChangeActiveStatusPacket(
 				new JSONObject(decision));
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(packet.getName());
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(packet.getName());
 
 		if (StartNameServer.debugMode) GNS.getLogger().fine(
 				"PAXOS DECISION: old active stoppped. write to nameRecord: "
@@ -347,7 +347,7 @@ public class ReplicaController
 						"OLD Active paxos stopped. Name: "
 								+ nameRecord.getName() + " Old Paxos ID: "
 								+ packet.getPaxosID());
-                DBReplicaController.updateNameRecordPrimary(nameRecord);
+                NameServer.replicaController.updateNameRecordPrimary(nameRecord);
 				startupNewActives(nameRecord, null);
 			} else
 			{
@@ -366,7 +366,7 @@ public class ReplicaController
 	private static void createTaskToStopCurrentActives(ReplicaControllerRecord nameRecord) {
 		// UPDATE NAME RECORD AFTER YOU CALL THIS //
 		nameRecord.updateActiveNameServers(nameRecord.copyActiveNameServers(), getActivePaxosID(nameRecord));
-        DBReplicaController.updateNameRecordPrimary(nameRecord);
+        NameServer.replicaController.updateNameRecordPrimary(nameRecord);
 //        NameServer.updateNameRecord(nameRecord);
 
 		// create task to stop currently running active.
@@ -386,7 +386,7 @@ public class ReplicaController
 //		String name = packet.getName();
 		RemoveRecordPacket removeRecordPacket = removeRecordRequests.remove(paxosID);
 
-        DBReplicaController.removeNameRecord(packet.getName());
+        NameServer.replicaController.removeNameRecord(packet.getName());
 //        NameServer.removeNameRecord(packet.getName());
 
 //		PaxosManager.deletePaxosInstance(paxosID);
@@ -446,7 +446,7 @@ public class ReplicaController
         GNS.getLogger().fine(" Failed Node Detected: replication controller working. " + failedNode);
 
 //		if (node fails then what happens)
-		Set<ReplicaControllerRecord> nameRecords = DBReplicaController.getAllPrimaryNameRecords();
+		Set<ReplicaControllerRecord> nameRecords = NameServer.replicaController.getAllPrimaryNameRecords();
 		for (ReplicaControllerRecord record: nameRecords) {
 			// if both this node & failed node are primaries.
 			if (record.containsPrimaryNameserver(NameServer.nodeID) && 

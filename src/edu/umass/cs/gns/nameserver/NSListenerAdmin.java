@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.replicacontroller.DBReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.packet.AdminRequestPacket;
@@ -69,7 +68,7 @@ public class NSListenerAdmin extends Thread {
 
             GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
 
-            ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(activeNSInfoPacket.getName());
+            ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(activeNSInfoPacket.getName());
             if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
               sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest, nameRecordPrimary.copyActiveNameServers());
             }

@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.replicacontroller.DBReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.AddRecordPacket;
@@ -111,7 +110,7 @@ public class ClientRequestWorker extends TimerTask {
             "NSListenerUpdate ADD FROM LNS (ns " + NameServer.nodeID
             + ") : " + name + "/" + nameRecordKey.toString() + ", "
             + value);
-    ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(name);
+    ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(name);
     //NameServer.getNameRecord(name);
 
     // assuming this is a primary name server for this "name".
@@ -149,7 +148,7 @@ public class ClientRequestWorker extends TimerTask {
       ValuesMap valuesMap = new ValuesMap();
       valuesMap.put(nameRecordKey.getName(), new QueryResultValue(value));
       nameRecord = new ReplicaControllerRecord(name);
-      DBReplicaController.addNameRecordPrimary(nameRecord);
+      NameServer.replicaController.addNameRecordPrimary(nameRecord);
       ReplicaController.handleNameRecordAddAtPrimary(nameRecord, valuesMap);
       GNS.getLogger().info("");
 //        NameRecord record = new NameRecord(name, nameRecordKey, value);
@@ -198,12 +197,12 @@ public class ClientRequestWorker extends TimerTask {
 //            value);
 //    NameServer.addNameRecord(record);
 
-    ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(name);//NameServer.getNameRecord(name);
+    ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(name);//NameServer.getNameRecord(name);
     if (nameRecord == null) {
       // create and add the record
 
       nameRecord = new ReplicaControllerRecord(name);
-      DBReplicaController.addNameRecordPrimary(nameRecord);
+      NameServer.replicaController.addNameRecordPrimary(nameRecord);
 //      NameServer.addNameRecord(record);
     }
     ValuesMap valuesMap = new ValuesMap();
@@ -242,7 +241,7 @@ public class ClientRequestWorker extends TimerTask {
     // IF this is an UPSERT operation
     if (updatePacket.getOperation().isUpsert()) {
       // this must be primary
-      ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(updatePacket.getName());
+      ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(updatePacket.getName());
       if (nameRecordPrimary == null) {
         // ADD name record
 
@@ -507,7 +506,7 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine("NS RECVD REQUEST ACTIVES PACKET." + incomingJSON);
     }
     RequestActivesPacket packet = new RequestActivesPacket(incomingJSON);
-    ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(packet.getName());
+    ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(packet.getName());
 //    NameRecord nameRecord = NameServer.getNameRecord(packet.getName()//, packet.getRecordKey()
 //            );
     if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {

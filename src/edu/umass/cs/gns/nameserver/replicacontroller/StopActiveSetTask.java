@@ -61,7 +61,7 @@ public class StopActiveSetTask extends TimerTask
 	public void run()
 	{
 		
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(name);
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(name);
 
         if (nameRecord == null) {
             if (StartNameServer.debugMode) GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name 

@@ -35,7 +35,7 @@ public class ComputeNewActivesTask extends TimerTask
 		
 		//Iterate through the NameRecord and check if any changes need to
 		//be made to the active name server set
-		Set<ReplicaControllerRecord> nameRecords = DBReplicaController.getAllPrimaryNameRecords();
+		Set<ReplicaControllerRecord> nameRecords = NameServer.replicaController.getAllPrimaryNameRecords();
 		if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfNameRecords\t" + nameRecords.size());
 
 		int count = 0;
@@ -131,7 +131,7 @@ public class ComputeNewActivesTask extends TimerTask
 		update = nameRecord.getWriteStats_Paxos();
 		lookup = nameRecord.getReadStats_Paxos();
 		
-		DBReplicaController.updateNameRecordPrimary(nameRecord);
+		NameServer.replicaController.updateNameRecordPrimary(nameRecord);
 		
 		int replicaCount = 0;
 		if (update == 0 && lookup == 0) {
@@ -169,7 +169,7 @@ public class ComputeNewActivesTask extends TimerTask
 		
 		try {
 			NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
-			ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(activeProposalPacket.getName());
+			ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(activeProposalPacket.getName());
             if (nameRecord == null) {
                 if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: PAXOS DECISION: " +
                         "BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
@@ -198,7 +198,7 @@ public class ComputeNewActivesTask extends TimerTask
 			if (StartNameServer.debugMode) GNS.getLogger().fine("Name Record Now: = " + nameRecord.toString());
 //			nameRecord.replaceActiveNameServers(activeProposalPacket.getProposedActiveNameServers());
 			// Update Database.
-            DBReplicaController.updateNameRecordPrimary(nameRecord);
+            NameServer.replicaController.updateNameRecordPrimary(nameRecord);
 //			NameServer.updateNameRecord(nameRecord);
 			// TODO: 2-3 update database operations, reduce them.
 			

@@ -6,6 +6,7 @@ import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -157,6 +158,26 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   @Override
   public void updateNameRecord(NameRecord recordEntry) {
     addNameRecord(recordEntry);
+  }
+  
+  @Override
+  public ReplicaControllerRecord getNameRecordPrimary(String name) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   //

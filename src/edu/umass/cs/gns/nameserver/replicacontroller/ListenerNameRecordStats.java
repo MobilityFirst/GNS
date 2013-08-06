@@ -42,7 +42,7 @@ public class ListenerNameRecordStats extends Thread {
                 GNS.PortType.LNS_UPDATE_PORT);
 
         //Add vote for the name record if your the primary name server for this name record
-        ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(selectionPacket.getName());
+        ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(selectionPacket.getName());
         if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
             RequestPacket request = new RequestPacket(PacketType.NAMESERVER_SELECTION.getInt(),
                     selectionPacket.toString(),
@@ -62,7 +62,7 @@ public class ListenerNameRecordStats extends Thread {
             e.printStackTrace();
             return;
         }
-        ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(statsPacket.getName());
+        ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(statsPacket.getName());
         if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
             // Propose to paxos.
             String paxosID = ReplicaController.getPrimaryPaxosID(nameRecordPrimary);
@@ -87,13 +87,13 @@ public class ListenerNameRecordStats extends Thread {
         }
         if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: StatsPacket for name " + statsPacket.getName()
                 + " Decision: " + decision);
-        ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(statsPacket.getName());
+        ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(statsPacket.getName());
         if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica())
         {
             // Record access frequency from the name server
             nameRecordPrimary.addNameServerStats(statsPacket.getActiveNameServerId(),
                     statsPacket.getReadFrequency(), statsPacket.getWriteFrequency());
-            DBReplicaController.updateNameRecordPrimary(nameRecordPrimary);
+            NameServer.replicaController.updateNameRecordPrimary(nameRecordPrimary);
             StatusClient.sendStatus(NameServer.nodeID, "Updating stats: " + statsPacket.getName()
                     // + " / " + statsPacket.getRecordKey().getName()
                     + ", r = " + statsPacket.getReadFrequency() + ", w = " + statsPacket.getWriteFrequency());
@@ -108,11 +108,11 @@ public class ListenerNameRecordStats extends Thread {
         try {
             NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(new JSONObject(decision));
             if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name Sever Vote: " + selectionPacket.toString());
-            ReplicaControllerRecord nameRecordPrimary = DBReplicaController.getNameRecordPrimary(selectionPacket.getName());
+            ReplicaControllerRecord nameRecordPrimary = NameServer.replicaController.getNameRecordPrimary(selectionPacket.getName());
 
             if (nameRecordPrimary!=null && nameRecordPrimary.isPrimaryReplica()) {
                 nameRecordPrimary.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote());
-                DBReplicaController.updateNameRecordPrimary(nameRecordPrimary);
+                NameServer.replicaController.updateNameRecordPrimary(nameRecordPrimary);
             }
             else {
                 if (StartNameServer.debugMode)GNS.getLogger().severe(" Name Record Does Not Exist At Active for Packet " + selectionPacket);

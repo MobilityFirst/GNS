@@ -16,7 +16,7 @@ import java.util.Set;
  * Time: 7:09 PM
  * To change this template use File | Settings | File Templates.
  */
-public class DBReplicaController {
+public class DBReplicaControllerV1 {
 
     private static String DBREPLICACONTROLLER = MongoRecords.DBREPLICACONTROLLER;
 

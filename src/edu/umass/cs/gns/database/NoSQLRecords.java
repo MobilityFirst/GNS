@@ -14,7 +14,7 @@ import org.json.JSONObject;
  * @author westy
  */
 public interface NoSQLRecords {
-  public void reset();
+  public void reset(String collection);
   public JSONObject lookup(String collection, String guid);
   public String lookup(String collection, String guid, String key);
   public void insert(String collection, String guid, JSONObject value);
@@ -25,7 +25,7 @@ public interface NoSQLRecords {
   public void remove(String collection, String guid);
   public ArrayList<JSONObject> retrieveAllEntries(String collection);
   public Set<String> keySet(String collection);
-  public void printAllEntries(); 
+  public void printAllEntries(String collection); 
   @Override
   public String toString();
  

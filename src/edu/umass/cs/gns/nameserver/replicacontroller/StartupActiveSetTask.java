@@ -65,7 +65,7 @@ public class StartupActiveSetTask extends TimerTask
 	{
 
 
-		ReplicaControllerRecord nameRecord = DBReplicaController.getNameRecordPrimary(name);
+		ReplicaControllerRecord nameRecord = NameServer.replicaController.getNameRecordPrimary(name);
 //        NameServer.getNameRecord(name// , nameRecordKey
 //                        );
 

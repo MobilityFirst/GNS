@@ -98,41 +98,48 @@ public class MongoRecords implements NoSQLRecords {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + NameServer.nodeID;
       MongoClient mongoClient;
-      if (StartNameServer.mongoPort > 0)
+      if (StartNameServer.mongoPort > 0) {
         mongoClient = new MongoClient("localhost", StartNameServer.mongoPort);
-      else mongoClient = new MongoClient("localhost");
+      } else {
+        mongoClient = new MongoClient("localhost");
+      }
       db = mongoClient.getDB(dbName);
-      intializeIndexes();
+      initializeIndexes();
     } catch (UnknownHostException e) {
       GNS.getLogger().severe("Unable to open Mongo DB: " + e);
     }
   }
 
-  private void intializeIndexes() {
+  private void initializeIndexes() {
     for (CollectionSpec spec : collectionSpecs) {
-      //for (String collectioName : COLLECTIONS) {
-      db.getCollection(spec.getName()).ensureIndex(spec.getIndex(), new BasicDBObject("unique", true));
+      initializeIndex(spec.name);
     }
+  }
+
+  private void initializeIndex(String collectionName) {
+    CollectionSpec spec = getCollectionSpec(collectionName);
+    db.getCollection(spec.getName()).ensureIndex(spec.getIndex(), new BasicDBObject("unique", true));
     //db.getCollection(COLLECTIONNAME).ensureIndex(RECORD_KEY_INDEX, new BasicDBObject("unique", true));
   }
 
   @Override
-  public void reset() {
+  public void reset(String collectionName) {
 //    ArrayList<JSONObject> result = new ArrayList<JSONObject>();
-    db.requestStart();
-    try {
-      db.requestEnsureConnection();
-      for (CollectionSpec spec : collectionSpecs) {
-        //for (String collectionName : COLLECTIONS) {
-        String collectionName = spec.getName();
+    if (getCollectionSpec(collectionName) != null) {
+      db.requestStart();
+      try {
+        db.requestEnsureConnection();
         db.getCollection(collectionName).dropIndexes();
         db.getCollection(collectionName).drop();
         GNS.getLogger().info("MONGO DB RESET. DBNAME: " + dbName + " Collection name: " + collectionName);
+
+        // IMPORTANT... recreate the index
+        initializeIndex(collectionName);
+      } finally {
+        db.requestDone();
       }
-      // IMPORTANT... recreate the index
-      intializeIndexes();
-    } finally {
-      db.requestDone();
+    } else {
+      GNS.getLogger().severe("MONGO DB: No collection named: " + collectionName);
     }
 
   }
@@ -300,6 +307,12 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
+  /**
+   * THIS SHOULD NEVER BE CALLED IN PRODUCTION CODE UNLESS IT IS A TEST FUNCTION.
+   * 
+   * @param collectionName
+   * @return 
+   */
   @Override
   public ArrayList<JSONObject> retrieveAllEntries(String collectionName) {
     ArrayList<JSONObject> result = new ArrayList<JSONObject>();
@@ -351,14 +364,11 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void printAllEntries() {
-    for (CollectionSpec spec : collectionSpecs) {
-      //for (String collectionName : COLLECTIONS) {
-      String collectionName = spec.getName();
-      for (JSONObject entry : retrieveAllEntries(collectionName)) {
-        System.out.println(entry.toString());
-      }
+  public void printAllEntries(String collectionName) {
+    for (JSONObject entry : retrieveAllEntries(collectionName)) {
+      System.out.println(entry.toString());
     }
+
   }
 
   @Override
@@ -419,7 +429,7 @@ public class MongoRecords implements NoSQLRecords {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
-    instance.printAllEntries();
+    instance.printAllEntries(collectionSpecs.get(0).getName());
   }
 
   private static void updateFieldTest() throws Exception {
@@ -434,7 +444,7 @@ public class MongoRecords implements NoSQLRecords {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
-    instance.reset();
+    instance.reset(collectionSpecs.get(0).getName());
     for (CollectionSpec spec : collectionSpecs) {
       //for (String collectionName : COLLECTIONS) {
       String collectionName = spec.getName();

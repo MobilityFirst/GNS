@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.replicacontroller.DBReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.QueryResultValue;
@@ -66,7 +65,7 @@ public class GenerateSyntheticRecordTable {
 
 					//Generate an entry for the name and add its record to the name server record table
                     ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
-                    DBReplicaController.addNameRecordPrimary(nameRecordPrimary);
+                    NameServer.replicaController.addNameRecordPrimary(nameRecordPrimary);
                     ValuesMap valuesMap = new ValuesMap();
                     valuesMap.put(NameRecordKey.EdgeRecord.getName(),new QueryResultValue(new ArrayList(Arrays.asList(Integer.toString(address)))));
                     ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
@@ -84,7 +83,7 @@ public class GenerateSyntheticRecordTable {
 					GNS.getLogger().fine("GenerateSynthicRecordTable:\tRECORDADDED\tName:\t" + name);
 					//Generate an entry for the name and add its record to the name server record table
                     ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
-                    DBReplicaController.addNameRecordPrimary(nameRecordPrimary);
+                    NameServer.replicaController.addNameRecordPrimary(nameRecordPrimary);
                     ValuesMap valuesMap = new ValuesMap();
                     valuesMap.put(NameRecordKey.EdgeRecord.getName(),new QueryResultValue(new ArrayList(Arrays.asList(Integer.toString(address)))));
                     ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);

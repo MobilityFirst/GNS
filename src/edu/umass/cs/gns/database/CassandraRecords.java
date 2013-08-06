@@ -45,7 +45,6 @@ public class CassandraRecords implements NoSQLRecords {
 
   private static final String DBROOTNAME = "gnrs";
   private static final String[] COLLECTIONS = null;
-
   private static final StringSerializer SS = StringSerializer.get();
   String dbName;
   private Cluster cluster;
@@ -138,7 +137,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void reset() {
+  public void reset(String collection) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -158,7 +157,7 @@ public class CassandraRecords implements NoSQLRecords {
       GNS.getLogger().warning("Unable to insert: " + e);
     }
   }
-  
+
   public void updateSingleValue(String collection, String name, String key, String value) {
     updateListValue(collection, name, key, new ArrayList(Arrays.asList(value)));
   }
@@ -173,7 +172,7 @@ public class CassandraRecords implements NoSQLRecords {
       GNS.getLogger().warning("Unable to update: " + e);
     }
   }
-  
+
   @Override
   public void updateField(String collection, String guid, String key, String string) {
     ColumnFamilyUpdater<String, String> updater = template.createUpdater(guid);
@@ -256,15 +255,15 @@ public class CassandraRecords implements NoSQLRecords {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-    @Override
-    public void printAllEntries() {
-        for (String collection: COLLECTIONS)
-        for (JSONObject entry : retrieveAllEntries(collection)) {
-            System.out.println(entry.toString());
-        }
-    }
+  @Override
+  public void printAllEntries(String collection) {
+    for (JSONObject entry : retrieveAllEntries(collection)) {
+      System.out.println(entry.toString());
 
-    public void resetKeySpace() {
+    }
+  }
+
+  public void resetKeySpace() {
     cluster.dropKeyspace(dbName);
     initKeySpace();
   }
@@ -311,7 +310,6 @@ public class CassandraRecords implements NoSQLRecords {
 //  public void printAllEntries() {
 //
 //  }
-
   @Override
   public String toString() {
     return "CassandraRecords{" + "name = " + dbName + '}';
@@ -329,6 +327,6 @@ public class CassandraRecords implements NoSQLRecords {
     System.out.println("CONTAINS =>" + CassandraRecords.getInstance().contains(n.getName(), n.getRecordKey().getName()));
     System.out.println("BAD CONTAINS =>" + CassandraRecords.getInstance().contains(n.getName(), "fred"));
     System.out.println("DUMP vvvvv");
-    CassandraRecords.getInstance().printAllEntries();
+    CassandraRecords.getInstance().printAllEntries(collection);
   }
 }

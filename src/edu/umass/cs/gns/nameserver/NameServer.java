@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.nameserver.replicacontroller.BasicReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
@@ -38,6 +39,7 @@ public class NameServer {
    */
   public static DatagramSocket dnsSocket;
   private static BasicRecordMap recordMap;
+  public static BasicRecordMap replicaController;
   public static ReplicationFramework replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer tcpTransport;
@@ -62,6 +64,8 @@ public class NameServer {
 
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
+    // Ditto for the replica controller records
+    NameServer.replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
 
     // will need to add back some form of the code to select the appropriate one
     // probably make persistentDataStore a selector
@@ -262,6 +266,8 @@ public class NameServer {
   //  the nuclear option
   public static void resetDB() {
     recordMap.reset();
+    // reset them both
+    replicaController.reset();
   }
 
 //  public static boolean isActiveNameServer(String name) {
