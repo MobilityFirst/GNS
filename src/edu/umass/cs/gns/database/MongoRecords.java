@@ -94,6 +94,10 @@ public class MongoRecords implements NoSQLRecords {
   //private static final BasicDBObject RECORD_KEY_INDEX = new BasicDBObject(NameRecord.NAME, 1).append(NameRecord.KEY, -1);
 
   private MongoRecords() {
+    init();
+  }
+
+  private void init() {
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + NameServer.nodeID;
@@ -309,9 +313,9 @@ public class MongoRecords implements NoSQLRecords {
 
   /**
    * THIS SHOULD NEVER BE CALLED IN PRODUCTION CODE UNLESS IT IS A TEST FUNCTION.
-   * 
+   *
    * @param collectionName
-   * @return 
+   * @return
    */
   @Override
   public ArrayList<JSONObject> retrieveAllEntries(String collectionName) {
@@ -385,12 +389,13 @@ public class MongoRecords implements NoSQLRecords {
   public static void main(String[] args) throws Exception {
     NameServer.nodeID = 4;
     listDatabases();
-    clear();
+    if (args.length > 0 && args[0].startsWith("-clear")) {
+      dropAllDatabases();
+    }
     //runtest();
     //printFieldsTest();
     //retrieveFieldTest();
     System.exit(0);
-
   }
 
   private static void listDatabases() throws Exception {
@@ -401,14 +406,22 @@ public class MongoRecords implements NoSQLRecords {
     //updateFieldTest();
     //retrieveTest();
   }
-
-  private static void clear() throws Exception {
-    MongoClient mongoClient = new MongoClient("localhost");
+  
+  public static void dropAllDatabases() {
+    MongoClient mongoClient;
+    try {
+      mongoClient = new MongoClient("localhost");
+    } catch (UnknownHostException e) {
+      GNS.getLogger().severe("Unable to open Mongo DB: " + e);
+      return;
+    }
     List<String> names = mongoClient.getDatabaseNames();
     for (String name : names) {
       mongoClient.dropDatabase(name);
     }
-    System.out.println("Dropped " + names.toString());
+    System.out.println("Dropped mongo DBs: " + names.toString());
+    // reinit the instance
+    getInstance().init();
   }
 
   private static void retrieveTest() throws Exception {

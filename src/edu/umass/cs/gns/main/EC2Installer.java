@@ -193,7 +193,7 @@ public class EC2Installer {
     // now start all the finishing threads
     for (InstanceInfo info : idTable.values()) {
       System.out.println("Finishing install for " + info.getHostname());
-      //GNRS.getLogger().info("Finishing install for " + entry.getKey());
+      //GNS.getLogger().info("Finishing install for " + entry.getKey());
       threads.add(new InstallFinishThread(info.getId(), info.getHostname()));
     }
     for (int i = 0; i < threads.size(); i++) {
@@ -230,7 +230,7 @@ public class EC2Installer {
     StatusListener.sendOutServerInitPackets(idTable.keySet());
   }
   private static final String keyName = "aws";
-  private static final String GNSJar = "/Users/westy/Documents/Code/GNRS-westy/build/jars/GNS.jar";
+  private static final String GNSJar = "/Users/westy/Documents/Code/GNS/build/jars/GNS.jar";
   private static String GNSFile = new File(GNSJar).getName();
   // this one installs mondoDB
   private static final String installScript = "#!/bin/bash\n"
@@ -253,10 +253,10 @@ public class EC2Installer {
           + "/etc/init.d/mysqld start\n"
           + "/usr/bin/mysql_install_db \n"
           + "/usr/bin/mysqladmin -u root password 'toorbar'\n"
-          + "mysqladmin -u root --password=toorbar -v create gnrs";
+          + "mysqladmin -u root --password=toorbar -v create gns";
 
   /**
-   * This is called to initialize an EC2 host for use as A GNRS server in a region. It starts the host, loads all the necessary
+   * This is called to initialize an EC2 host for use as A GNS server in a region. It starts the host, loads all the necessary
    * software and copies the JAR files over. We also collect info about this host, like it's IP address and geographic location.
    * When every host is initialized and we have collected all the IPs, phase two is called.
    *
@@ -330,9 +330,19 @@ public class EC2Installer {
     StatusModel.getInstance().queueUpdate(id, "Copying jar files");
     SSHClient.scpTo(EC2USERNAME, hostname, keyFile, GNSJar, GNSFile);
   }
-  private static final String StartLNSClass = "edu.umass.cs.gnrs.main.StartLocalNameServer";
-  private static final String StartNSClass = "edu.umass.cs.gnrs.main.StartNameServer";
-  private static final String StartHTTPServerClass = "edu.umass.cs.gnrs.httpserver.GnsHttpServer";
+  
+   private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
+   
+  private static void deleteDatabase(int id, String hostname) {
+    File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
+    AWSEC2.executeBashScript(hostname, keyFile, "deleteDatabase.sh",
+             "#!/bin/bash\n" 
+            + "java -cp " + GNSFile + " " + MongoRecordsClass + " -clear");
+  }
+  
+  private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
+  private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
+  private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
 
   /**
    * Starts an LNS, NS and HTTP server on the host.
@@ -460,18 +470,17 @@ public class EC2Installer {
     }
   }
 
-  /**
-   * Copies the latest version of the JAR files to the all the hosts in the current runset and restarts all the servers.
-   */
-//  public static void updateCurrentRunSet() {
-//    updateRunSet(currentRunSetName());
-//  }
+  public enum UpdateAction {
+    UPDATE,
+    RESTART,
+    DELETE_DATABASE
+    };
   /**
    * Copies the latest version of the JAR files to the all the hosts in the runset given by name and restarts all the servers.
    *
    * @param name
    */
-  public static void updateRunSet(String name, boolean restartOnly) {
+  public static void updateRunSet(String name, UpdateAction action) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     AWSCredentials credentials = null;
     try {
@@ -490,8 +499,9 @@ public class EC2Installer {
           String idString = getTagValue(instance, "id");
           if (idString != null && name.equals(getTagValue(instance, "runset"))) {
             int id = Integer.parseInt(idString);
-            String hostname = retrieveHostname(name, id);
-            threads.add(new UpdateThread(id, hostname, restartOnly));
+            String hostname = instance.getPublicDnsName();
+            //String hostname = retrieveHostname(name, id);
+            threads.add(new UpdateThread(id, hostname, action));
           }
         }
       }
@@ -521,7 +531,8 @@ public class EC2Installer {
             final String idString = getTagValue(instance, "id");
             if (idString != null && name.equals(getTagValue(instance, "runset"))) {
               int id = Integer.parseInt(idString);
-              String hostname = retrieveHostname(name, id);
+              String hostname = instance.getPublicDnsName();
+              //String hostname = retrieveHostname(name, id);
               System.out.println("Node " + id + " running on " + hostname);
             }
           }
@@ -564,6 +575,9 @@ public class EC2Installer {
     Option restart = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("restart a runset")
             .create("restart");
+     Option deleteDatabase = OptionBuilder.withArgName("runSet name").hasArg()
+            .withDescription("delete the databases in a runset")
+            .create("deleteDatabase");
     Option describe = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("describe a runset")
             .create("describe");
@@ -578,6 +592,7 @@ public class EC2Installer {
     //commandLineOptions.addOption(createOne);
     commandLineOptions.addOption(update);
     commandLineOptions.addOption(restart);
+    commandLineOptions.addOption(deleteDatabase);
     //commandLineOptions.addOption(updateCurrent);
     commandLineOptions.addOption(describe);
     commandLineOptions.addOption(configName);
@@ -592,7 +607,7 @@ public class EC2Installer {
   }
 
   private static void printUsage(String header) {
-    formatter.printHelp("java -cp GNS.jar edu.umass.cs.gnrs.main.EC2Installer <options>", header, commandLineOptions, "");
+    formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", header, commandLineOptions, "");
   }
 
   private static void startAllMonitoringAndGUIProcesses() {
@@ -630,6 +645,7 @@ public class EC2Installer {
       //Boolean updateCurrent = parser.hasOption("updateCurrent");
       String runsetUpdate = parser.getOptionValue("update");
       String runsetRestart = parser.getOptionValue("restart");
+      String runsetDeleteDatabase = parser.getOptionValue("deleteDatabase");
       String runsetDescribe = parser.getOptionValue("describe");
       String configName = parser.getOptionValue("config");
 
@@ -649,11 +665,11 @@ public class EC2Installer {
 //      } else if (terminateAll) {
 //        terminateAllRunSets();
       } else if (runsetUpdate != null) {
-        updateRunSet(runsetUpdate, false);
+        updateRunSet(runsetUpdate, UpdateAction.UPDATE);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetRestart, true);
-//      } else if (updateCurrent) {
-//        updateCurrentRunSet();
+        updateRunSet(runsetRestart, UpdateAction.RESTART);
+      } else if (runsetDeleteDatabase != null) {
+        updateRunSet(runsetDeleteDatabase, UpdateAction.DELETE_DATABASE);
       } else if (runsetDescribe != null) {
         describeRunSet(runsetDescribe);
       } else {
@@ -711,21 +727,28 @@ public class EC2Installer {
 
     String hostname;
     int id;
-    boolean restartOnly;
+    UpdateAction action;
 
-    public UpdateThread(int id, String hostname, boolean restartOnly) {
+    public UpdateThread(int id, String hostname, UpdateAction action) {
       super("Update " + id);
       this.hostname = hostname;
       this.id = id;
-      this.restartOnly = restartOnly;
+      this.action = action;
     }
 
     @Override
     public void run() {
       System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
       killAllServers(id, hostname);
-      if (!restartOnly) {
-        copyJARFiles(id, hostname);
+      switch (action) {
+        case UPDATE:
+          copyJARFiles(id, hostname);
+          break;
+        case RESTART:
+          break;
+        case DELETE_DATABASE:
+          deleteDatabase(id, hostname);
+          break;
       }
       startServers(id, hostname);
       System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");

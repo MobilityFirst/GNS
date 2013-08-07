@@ -100,7 +100,7 @@ public class LNSListenerAdmin extends Thread {
               Set<Integer> serverIds = ConfigFileInfo.getAllNameServerIDs();
               replicationMap.put(id, serverIds.size());
               Packet.multicastTCP(serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT);
-              GNS.getLogger().fine("ListenerAdmin: Multicast out for " + id + " --> " + dumpRequestPacket.toString());
+              GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
             } else {
               // INCOMING - send it out to original requester
 
@@ -109,7 +109,7 @@ public class LNSListenerAdmin extends Thread {
               InetAddress host = hostMap.get(incomingId);
               Socket socketOut = new Socket(host, ConfigFileInfo.getDumpReponsePort(LocalNameServer.nodeID));
               Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), socketOut);
-              GNS.getLogger().finer("ListenerAdmin: Sent response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());
+              GNS.getLogger().fine("ListenerAdmin: Relayed response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());
               int remaining = replicationMap.get(incomingId);
               remaining = remaining - 1;
               if (remaining > 0) {
@@ -141,7 +141,7 @@ public class LNSListenerAdmin extends Thread {
                 Packet.multicastTCP(serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
                 // clear the cache
                 LocalNameServer.invalidateCache();
-                break;
+                break;  
               case CLEARCACHE:
                 GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.nodeID + ") Clearing Cache as requested");
                 LocalNameServer.invalidateCache();

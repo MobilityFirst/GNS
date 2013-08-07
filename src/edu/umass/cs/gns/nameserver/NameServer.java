@@ -291,6 +291,13 @@ public class NameServer {
     // reset them both
     replicaController.reset();
   }
+  
+  //  the nuclear option
+  public static void deleteAllDatabases() {
+    recordMap.reset();
+    // reset them both
+    replicaController.reset();
+  }
 
 //  public static boolean isActiveNameServer(String name) {
 //    //println("isActiveNameServer: recordKey = " + recordKey + " name = " + name, debugMode);
