@@ -3,8 +3,7 @@ package edu.umass.cs.gns.main;
 //import edu.umass.cs.gnrs.nameserver.NSListenerUpdate;
 import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.paxos.FailureDetection;
-import edu.umass.cs.gns.paxos.PaxosLogger2;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import org.apache.commons.cli.*;
@@ -336,18 +335,18 @@ public class StartNameServer {
 //      if (PaxosManager.writeStateToDisk && parser.hasOption("paxosLogFolder")) {
 //      }
       if (parser.hasOption("paxosLogFolder") == false) {
-        PaxosLogger2.logFolder = DEFAULTPAXOSLOGPATHNAME;
+        PaxosManager.setPaxosLogFolder(DEFAULTPAXOSLOGPATHNAME);
+
       } else {
-        PaxosLogger2.logFolder = parser.getOptionValue("paxosLogFolder");
+        PaxosManager.setPaxosLogFolder(parser.getOptionValue("paxosLogFolder"));
       }
 
+
       if (parser.hasOption("failureDetectionMsgInterval")) {
-        FailureDetection.pingInterval =
-                Integer.parseInt(parser.getOptionValue("failureDetectionMsgInterval")) * 1000;
+        PaxosManager.setFailureDetectionPingInterval(Integer.parseInt(parser.getOptionValue("failureDetectionMsgInterval")) * 1000);
       }
       if (parser.hasOption("failureDetectionTimeoutInterval")) {
-        FailureDetection.timeoutInterval =
-                Integer.parseInt(parser.getOptionValue("failureDetectionTimeoutInterval")) * 1000;
+        PaxosManager.setFailureDetectionTimeoutInterval(Integer.parseInt(parser.getOptionValue("failureDetectionTimeoutInterval")) * 1000);
       }
 
 

@@ -182,7 +182,7 @@ class ReplicationWorkerPaxos extends TimerTask {
                         // Put client ID = PAXOS_STOP.getInt() so that PaxosManager can route decision
                         // to this class.
                         PaxosManager.propose(paxosID, new RequestPacket(PacketType.ACTIVE_PAXOS_STOP.getInt(),
-                                oldActiveStopPacket.toString(), PaxosPacketType.REQUEST));
+                                oldActiveStopPacket.toString(), PaxosPacketType.REQUEST, true));
                         GNS.getLogger().fine("PAXOS PROPOSE: STOP Current Active Set. Paxos ID = " + paxosID);
                     } else if (paxosStatus == 2) { // this is the old paxos ID
                         // send confirmation to primary that this paxos ID is stopped.
@@ -279,7 +279,7 @@ class ReplicationWorkerPaxos extends TimerTask {
                 + "Name Record Value: " + nameRecord);
         // fire up paxos instance
         boolean created = PaxosManager.createPaxosInstance(originalPacket.getNewActivePaxosID(),
-                originalPacket.getNewActiveNameServers());
+                originalPacket.getNewActiveNameServers(), nameRecord.toString());
         if (created) {
             GNS.getLogger().fine(" PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. " + nameRecord.getName());
         } else {

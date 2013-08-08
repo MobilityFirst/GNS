@@ -1,5 +1,5 @@
 NumberOfReplicas 3
-NumberOfRequests 30000
-TestDurationSeconds 30
-EnableLogging false
+NumberOfRequests 100
+TestDurationSeconds 100
+EnableLogging true
 MaxThreads 5

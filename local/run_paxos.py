@@ -29,6 +29,7 @@ def main():
         cmd = 'cd ' + workdir + ';nohup java -cp ' + jar_file_path + ' edu.umass.cs.gns.paxos.PaxosManager ' + node_config + ' ' + test_config + ' ' + paxos_log + ' ' + str(i) + ' > console_output &'
         print (cmd)
         os.system(cmd)
+    #sys.exit(2)    
     import time
     time.sleep(5)
     # run a client
@@ -37,6 +38,7 @@ def main():
     cmd = 'cd ' + workdir +';java -cp ' + jar_file_path + ' edu.umass.cs.gns.paxos.NewClient ' + node_config + ' ' + test_config + ' ' + str(replica_count)
     print (cmd)
     os.system(cmd)
+    print('Killing GNS Instances ..')
     os.system(' cd ' + experiment_folder + ';./kill_local.py')
 
 def get_replica_count(test_config):

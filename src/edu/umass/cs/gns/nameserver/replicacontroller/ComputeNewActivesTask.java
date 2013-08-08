@@ -65,8 +65,9 @@ public class ComputeNewActivesTask extends TimerTask
 					//nameRecord.getRecordKey(), 
                                         NameServer.nodeID, newActiveNameServers, newActivePaxosID);
 				String paxosID = ReplicaController.getPrimaryPaxosID(nameRecord);
+      boolean isStop = false;
 				RequestPacket requestPacket = new RequestPacket(PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(), 
-						PaxosPacketType.REQUEST);
+						PaxosPacketType.REQUEST, isStop);
 				PaxosManager.propose(paxosID, requestPacket);
 				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
 //			}

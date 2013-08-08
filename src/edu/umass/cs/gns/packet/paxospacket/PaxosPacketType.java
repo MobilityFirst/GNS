@@ -35,5 +35,9 @@ public class PaxosPacketType {
 
     public static final int SYNC_REQUEST = 31;
     public static final int SYNC_REPLY = 32;
+
+  public static final int START = 41;
+  public static final int STOP = 42;
+
 	
 }

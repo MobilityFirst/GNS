@@ -12,11 +12,7 @@ import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.paxos.PaxosManager;
-import edu.umass.cs.gns.replicationframework.BeehiveReplication;
-import edu.umass.cs.gns.replicationframework.KMediods;
-import edu.umass.cs.gns.replicationframework.LocationBasedReplication;
-import edu.umass.cs.gns.replicationframework.RandomReplication;
-import edu.umass.cs.gns.replicationframework.ReplicationFramework;
+import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
 import java.io.IOException;
@@ -139,7 +135,7 @@ public class NameServer {
 
       // start paxos manager first.
       // this will recover state from paxos logs, if it exists
-      PaxosManager.initalizePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, new NSPaxosClientRequestHandler(), executorService);
+      PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, new NSPaxosInterface(), executorService);
 
       // Name server starts listening on UDP Port for messages.
       new NSListenerUDP().start();
@@ -175,7 +171,7 @@ public class NameServer {
     }
   }
 
-//    private void restartAfterCrash() {
+  //    private void restartAfterCrash() {
 //        Set<NameRecord> nameRecords = getAllNameRecords();
 //        // check if all name records have replicas created for them.
 //        for (NameRecord nameRecord: nameRecords) {
@@ -254,6 +250,7 @@ public class NameServer {
     recordMap.removeNameRecord(name);
   }
 
+
   public static boolean containsName(String name) {
     return recordMap.containsName(name);
   }
@@ -274,6 +271,11 @@ public class NameServer {
   public static void addNameRecordPrimary(ReplicaControllerRecord record) {
     replicaController.addNameRecordPrimary(record);
   }
+
+  public static void removeNameRecordPrimary(String name) {
+    replicaController.removeNameRecord(name);
+  }
+
 
   public static void updateNameRecordPrimary(ReplicaControllerRecord record) {
     if (!record.isLazyEval()) {
@@ -299,7 +301,7 @@ public class NameServer {
     replicaController.reset();
   }
 
-//  public static boolean isActiveNameServer(String name) {
+  //  public static boolean isActiveNameServer(String name) {
 //    //println("isActiveNameServer: recordKey = " + recordKey + " name = " + name, debugMode);
 //    //println("isActiveNameServer: " + NameServer.recordMap, debugMode);
 //    NameRecord nameRecord = getNameRecord(name);

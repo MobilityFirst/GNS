@@ -7,6 +7,7 @@ import java.util.TimerTask;
 
 
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 
 import edu.umass.cs.gns.main.GNS;
@@ -15,7 +16,6 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 
-import edu.umass.cs.gns.paxos.FailureDetection;
 
 /**
  * This class sends a message to current active replicas to stop an active replica
@@ -41,7 +41,7 @@ public class StopActiveSetTask extends TimerTask {
    * @param newActiveNameServers
    */
   public StopActiveSetTask(String name, //NameRecordKey nameRecordKey, 
-          Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers, String oldPaxosID) {
+                           Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers, String oldPaxosID) {
     this.name = name;
     //this.nameRecordKey = nameRecordKey;
     this.oldActiveNameServers = oldActiveNameServers;
@@ -59,7 +59,7 @@ public class StopActiveSetTask extends TimerTask {
     if (nameRecordPrimary == null) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name // + " Record Key = " + nameRecordKey
-                );
+        );
       }
       this.cancel();
       return;
@@ -145,7 +145,7 @@ public class StopActiveSetTask extends TimerTask {
   private int selectNextActiveToQuery() {
     int selectedActive = -1;
     for (int x : oldActiveNameServers) {
-      if (oldActivesQueried.contains(x) || !FailureDetection.isNodeUp(x)) {
+      if (oldActivesQueried.contains(x) || !PaxosManager.isNodeUp(x)) {
         continue;
       }
       selectedActive = x;

@@ -18,9 +18,9 @@ public class FailureDetection extends Thread{
 	/**
 	 * Frequency of pinging a node.
 	 */
-	public static int pingInterval = 10000;
+	static int pingInterval = 10000;
 
-	public static int timeoutInterval = 31000;
+	static int timeoutInterval = 31000;
 
 	/**
 	 * number of nodes.
@@ -45,7 +45,7 @@ public class FailureDetection extends Thread{
 	/**
 	 * 
 	 */
-	public static ReentrantLock lock = new ReentrantLock();
+	static ReentrantLock lock = new ReentrantLock();
 
 //	public DatagramSocket socket;
 
@@ -64,7 +64,7 @@ public class FailureDetection extends Thread{
 	 * @param N number of nodes
 	 * @param nodeID ID of this node 
 	 */
-	public static void initializeFailureDetection(int N, int nodeID) {
+	static void initializeFailureDetection(int N, int nodeID) {
 		FailureDetection.nodeID = nodeID;
 		FailureDetection.N =  N;
 		FailureDetection.startingTime = System.currentTimeMillis();
@@ -84,7 +84,7 @@ public class FailureDetection extends Thread{
 	 * if node is already being monitored, method makes no change.
 	 * @param monitoredNodeID
 	 */
-	public static void startNodeMonitoring(int monitoredNodeID){
+	static void startNodeMonitoring(int monitoredNodeID){
 		lock.lock();
 		try {
 			if (nodeInfo.containsKey(monitoredNodeID)) return;
@@ -146,7 +146,7 @@ public class FailureDetection extends Thread{
 	 * Update node info for the fdPacket.
 //	 * @param fdPacket
 	 */
-	public static void updateNodeInfo(int responderNodeID) {
+	static void updateNodeInfo(int responderNodeID) {
 		
 		// this condition should never be true.
 //		if (fdPacket.senderNodeID != nodeID) return;
@@ -166,7 +166,7 @@ public class FailureDetection extends Thread{
 
 	}
 
-    public static void resetNodeInfo(int responderNodeID) {
+    static void resetNodeInfo(int responderNodeID) {
 
         // this condition should never be true.
 //		if (fdPacket.senderNodeID != nodeID) return;
@@ -189,7 +189,7 @@ public class FailureDetection extends Thread{
 	 * @param nodeID ID of the node.
 	 * @return true if node = nodeID is up, false otherwise.
 	 */
-	public static boolean isNodeUp(int nodeID) {
+	static boolean isNodeUp(int nodeID) {
 		return nodeStatus.get(nodeID);
 	}
 	
@@ -258,7 +258,7 @@ public class FailureDetection extends Thread{
 	 * notify local replica.
 	 * @param monitoredNode
 	 */
-	public static void notifyNodeOfStatusChange(int monitoredNode) {
+	 static void notifyNodeOfStatusChange(int monitoredNode) {
 		
 		FailureDetectionPacket fdPacket = null;
 		lock.lock();

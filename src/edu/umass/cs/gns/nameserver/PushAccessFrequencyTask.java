@@ -2,18 +2,15 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-
-import java.io.IOException;
-import java.util.TimerTask;
-
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
+import edu.umass.cs.gns.packet.NameRecordStatsPacket;
+import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.paxos.FailureDetection;
-
-import edu.umass.cs.gns.packet.NameRecordStatsPacket;
-import edu.umass.cs.gns.statusdisplay.StatusClient;
+import java.io.IOException;
+import java.util.TimerTask;
 
 /**
  * ***********************************************************
@@ -55,7 +52,7 @@ public class PushAccessFrequencyTask extends TimerTask {
         }
         int selectedPrimaryNS = -1;
         for (int x : nameRecord.getPrimaryNameservers()) {
-          if (FailureDetection.isNodeUp(x)) {
+          if (PaxosManager.isNodeUp(x)) {
             selectedPrimaryNS = x;
             break;
           }

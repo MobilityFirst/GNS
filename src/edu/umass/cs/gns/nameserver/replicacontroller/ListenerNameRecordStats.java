@@ -47,7 +47,7 @@ public class ListenerNameRecordStats extends Thread {
         if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
             RequestPacket request = new RequestPacket(PacketType.NAMESERVER_SELECTION.getInt(),
                     selectionPacket.toString(),
-                    PaxosPacketType.REQUEST);
+                    PaxosPacketType.REQUEST, false);
             PaxosManager.propose(ReplicaController.getPrimaryPaxosID(nameRecordPrimary), request);
             if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: NameSever Vote: " + incomingJSON.toString());
         }
@@ -70,7 +70,7 @@ public class ListenerNameRecordStats extends Thread {
             // Propose to paxos.
             String paxosID = ReplicaController.getPrimaryPaxosID(nameRecordPrimary);
             RequestPacket requestPacket = new RequestPacket(PacketType.NAME_RECORD_STATS_RESPONSE.getInt(),
-                    statsPacket.toString(), PaxosPacketType.REQUEST);
+                    statsPacket.toString(), PaxosPacketType.REQUEST, false);
             PaxosManager.propose(paxosID, requestPacket);
             if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Stats Packet proposed. ");
         }

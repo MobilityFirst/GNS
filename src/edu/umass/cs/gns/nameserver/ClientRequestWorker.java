@@ -108,8 +108,8 @@ public class ClientRequestWorker extends TimerTask {
     value = addRecordPacket.getValue();
     GNS.getLogger().info(
             "NSListenerUpdate ADD FROM LNS (ns " + NameServer.nodeID
-            + ") : " + name + "/" + nameRecordKey.toString() + ", "
-            + value);
+                    + ") : " + name + "/" + nameRecordKey.toString() + ", "
+                    + value);
     ReplicaControllerRecord nameRecord = NameServer.getNameRecordPrimary(name);
     //NameServer.getNameRecord(name);
 
@@ -122,7 +122,7 @@ public class ClientRequestWorker extends TimerTask {
 
       GNS.getLogger().info(
               "NSListenerUpdate ADD (ns " + NameServer.nodeID
-              + ") : Record already exists");
+                      + ") : Record already exists");
 
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(
               NameServer.nodeID, false, addRecordPacket);
@@ -140,8 +140,8 @@ public class ClientRequestWorker extends TimerTask {
               .getPrimaryNameServers();
       GNS.getLogger().info(
               "NSListenerUpdate ADD FROM LNS (ns " + NameServer.nodeID
-              + ") : " + name + "/" + nameRecordKey.toString() + ", "
-              + value + " - SENDING TO OTHER PRIMARIES: " + primaryNameServers.toString());
+                      + ") : " + name + "/" + nameRecordKey.toString() + ", "
+                      + value + " - SENDING TO OTHER PRIMARIES: " + primaryNameServers.toString());
       // send to all the other primaries except us
       NameServer.tcpTransport.sendToAll(outgoingJSON, primaryNameServers,
               PortType.STATS_PORT, NameServer.nodeID);
@@ -167,10 +167,10 @@ public class ClientRequestWorker extends TimerTask {
       JSONObject jsonConfirm = confirmPacket.toJSONObject();
       GNS.getLogger().info(
               "NSListenerUpdate CONFIRM (ns " + NameServer.nodeID
-              + ") : to "
-              + addRecordPacket.getLocalNameServerID() + ":"
-              + GNS.PortType.LNS_UPDATE_PORT + " : "
-              + jsonConfirm.toString());
+                      + ") : to "
+                      + addRecordPacket.getLocalNameServerID() + ":"
+                      + GNS.PortType.LNS_UPDATE_PORT + " : "
+                      + jsonConfirm.toString());
 
       NSListenerUDP.udpTransport.sendPacket(jsonConfirm,
               addRecordPacket.getLocalNameServerID(),
@@ -319,7 +319,7 @@ public class ClientRequestWorker extends TimerTask {
           GNS.getLogger().fine(" Update proposed to paxosID = " + activePaxosID);
         }
         PaxosManager.propose(activePaxosID, new RequestPacket(updatePacket.getType().getInt(),
-                updatePacket.toString(), PaxosPacketType.REQUEST));
+                updatePacket.toString(), PaxosPacketType.REQUEST, false));
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine(" Update Packet Type : " + updatePacket.getType().getInt());
         }
@@ -497,7 +497,7 @@ public class ClientRequestWorker extends TimerTask {
       NSListenerUDP.udpTransport.sendPacket(packet.toJSONObject(), packet.getLNSID(), PortType.LNS_UPDATE_PORT);
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("NAME RECORD DOES NOT Exist for. " + packet.getName() // + " " + packet.getRecordKey()
-                );
+        );
       }
 //            NameServer.isPrimaryNameServer(packet.getName(), packet.getRecordKey());
     }

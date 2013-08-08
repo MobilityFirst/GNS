@@ -3,13 +3,14 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
+import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.PaxosInterface;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 import org.json.JSONObject;
-import edu.umass.cs.gns.paxos.PaxosClientRequestHandler;
-import edu.umass.cs.gns.paxos.PaxosManager;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,15 +19,15 @@ import edu.umass.cs.gns.paxos.PaxosManager;
  * Time: 8:34 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NSPaxosClientRequestHandler extends PaxosClientRequestHandler {
+public class NSPaxosInterface implements PaxosInterface {
 
-    @Override
-    public void handleRequestFromClient(String paxosID, RequestPacket requestPacket) {
+//    @Override
+    public void proposeRequestToPaxos(String paxosID, RequestPacket requestPacket) {
         PaxosManager.propose(paxosID, requestPacket);
     }
 
     @Override
-    public void forwardDecisionToClient(String paxosID, RequestPacket req) {
+    public void handlePaxosDecision(String paxosID, RequestPacket req) {
         try {
             // messages decided for paxos between primaries
 
@@ -72,4 +73,38 @@ public class NSPaxosClientRequestHandler extends PaxosClientRequestHandler {
 
         ReplicaController.handleNodeFailure(fdPacket);
     }
+
+  @Override
+  public String getState(String paxosID) {
+
+    if (ReplicaController.isPrimaryPaxosID(paxosID)) {
+      String name = ReplicaController.getNameFromPrimaryPaxosID(paxosID);
+      // read all fields of the record
+      ReplicaControllerRecord record = NameServer.getNameRecordPrimary(name);
+      return  (record == null) ? null: record.toString();
+
+    }
+    else {
+      String name = ReplicaController.getNameFromActivePaxosID(paxosID);
+      // read all fields of the record
+      NameRecord record = NameServer.getNameRecord(name);
+      return  (record == null) ? null: record.toString();
+    }
+  }
+
+  @Override
+  public void updateState(String paxosID, String state) {
+    try {
+      JSONObject json = new JSONObject(state);
+      if (ReplicaController.isPrimaryPaxosID(paxosID)) {
+        NameServer.updateNameRecordPrimary(new ReplicaControllerRecord(json));
+      } else {
+        NameServer.updateNameRecord(new NameRecord(json));
+      }
+
+    } catch (JSONException e) {
+
+      e.printStackTrace();
+    }
+  }
 }

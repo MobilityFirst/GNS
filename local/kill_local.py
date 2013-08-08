@@ -7,9 +7,11 @@ def kill_local_gnrs():
     #return
     os.system('ps aux | grep GNS.jar > temp.txt ')
     pids = get_pids('temp.txt')
-    if len(pids) == 0:
+    if len(pids) <=2:
         print('gnrs: No processes killed')
         return
+    #print (pids)
+    print('Killed',len(pids) - 2 ,'processes')
     os.system('kill -9 ' + ' '.join(pids) + ' 2>/dev/null')
     os.system('rm temp.txt')
 

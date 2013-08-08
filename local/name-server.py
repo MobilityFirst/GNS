@@ -97,9 +97,9 @@ nsnsping_file = ''
 
 persistent_data_store = True
 mongo_port = 12345
-paxos_log_folder = '/Users/abhigyan/Documents/paxoslog/'
+paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS/local/paxoslog/'
 # logging related parameters:
-## values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
+# values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
 file_logging_level = 'FINE'
 console_output_level = 'FINE'
 stat_file_logging_level = 'FINE'
@@ -196,7 +196,7 @@ def run_name_server():
     command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
     
-    command += ' ' + PAXOS_LOG_FOLDER + ' ' + paxos_log_folder
+    command += ' ' + PAXOS_LOG_FOLDER + ' ' + paxos_log_folder + '/log_'  + str(node_id)
     
     if persistent_data_store:
         command += ' ' + PERSISTENT_DATA_STORE

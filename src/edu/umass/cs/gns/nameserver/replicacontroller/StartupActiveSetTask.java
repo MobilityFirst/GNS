@@ -6,8 +6,8 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
-import edu.umass.cs.gns.paxos.FailureDetection;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -40,8 +40,8 @@ public class StartupActiveSetTask extends TimerTask {
    * @param newActiveNameServers
    */
   public StartupActiveSetTask(String name, //NameRecordKey nameRecordKey, 
-          Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers,
-          String newActivePaxosID, String oldActivePaxosID, ValuesMap initialValue) {
+                              Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers,
+                              String newActivePaxosID, String oldActivePaxosID, ValuesMap initialValue) {
     this.name = name;
     //this.nameRecordKey = nameRecordKey;
     this.oldActiveNameServers = oldActiveNameServers;
@@ -61,7 +61,7 @@ public class StartupActiveSetTask extends TimerTask {
     if (nameRecordPrimary == null) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name //+ " Record Key = " + nameRecordKey
-                );
+        );
       }
       this.cancel();
       return;
@@ -155,7 +155,7 @@ public class StartupActiveSetTask extends TimerTask {
   private int selectNextActiveToQuery() {
     int selectedActive = -1;
     for (int x : newActiveNameServers) {
-      if (newActivesQueried.contains(x) || !FailureDetection.isNodeUp(x)) {
+      if (newActivesQueried.contains(x) || !PaxosManager.isNodeUp(x)) {
         continue;
       }
       selectedActive = x;
