@@ -286,7 +286,6 @@ public class PaxosManager extends Thread{
   }
 
 
-
   /**
    *
    */

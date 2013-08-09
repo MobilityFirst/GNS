@@ -29,6 +29,13 @@ is_location_replication = False
 is_random_replication = False
 is_static_replication = False
 
+gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS/'
+
+paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS/local/paxoslog/'
+delete_paxos_log = True
+
+
+
 if scheme not in schemes:
     print 'ERROR: Scheme name not valid:', scheme, 'Valid scheme names:', schemes.keys()
     sys.exit(2)

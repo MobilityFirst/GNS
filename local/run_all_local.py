@@ -4,7 +4,8 @@ import sys
 from os.path import join
 import time
 import exp_config
-gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS/'
+
+gnrs_dir = exp_config.gnrs_dir
 
 def main():
     from kill_local import kill_local_gnrs
@@ -12,10 +13,16 @@ def main():
     config_file = join(gnrs_dir, 'local/local_config')
     working_dir = join(gnrs_dir, 'local/log_local/')
     
-    if not os.path.exists(working_dir):
+    if not os.path.exists(working_dir): 
         os.system('mkdir -p ' + working_dir)
     os.system('rm -rf ' + working_dir + '/*')
+
+    if exp_config.delete_paxos_log:
+        print 'Deleting paxos logs ..'
+        os.system('rm -rf ' + exp_config.paxos_log_folder +'/*')
+    
     os.system('./kill_mongodb_local.sh;./run_mongodb_local.sh')
+    
     #os.system('sleep 100')
 #os.system('pssh -h hosts.txt "killall -9 java"')
     f = open(config_file)

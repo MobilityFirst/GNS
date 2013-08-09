@@ -731,9 +731,8 @@ public class PaxosReplica {
       acceptorLock.unlock();
     }
 
-
-
   }
+
   /**
    * Received request from client, so propose it to the current coordinator.
    * @param json

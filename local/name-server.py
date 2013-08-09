@@ -97,7 +97,7 @@ nsnsping_file = ''
 
 persistent_data_store = True
 mongo_port = 12345
-paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS/local/paxoslog/'
+paxos_log_folder = exp_config.paxos_log_folder
 # logging related parameters:
 # values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
 file_logging_level = 'FINE'

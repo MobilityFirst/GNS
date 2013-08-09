@@ -88,7 +88,7 @@ public class ReplicaController {
   {
     Random r = new Random();
     return nameRecord.getName() // + "-" + nameRecord.getRecordKey().getName()
-            + "-Active-" + r.nextInt();
+            + "-" + r.nextInt(100000000);
   }
 
 
@@ -117,7 +117,12 @@ public class ReplicaController {
    * @return
    */
   public static String getNameFromPrimaryPaxosID(String primaryPaxosID) {
-    // TODO implement this method
+    String[] tokens = primaryPaxosID.split("-");
+    if (tokens.length == 2 && tokens[1].equals("P")) {
+      return tokens[0];
+    }
+    GNS.getLogger().severe("Error Exception: String is not a valid primaryPaxosID. String = " + primaryPaxosID);
+
     return  null;
   }
 
@@ -127,7 +132,11 @@ public class ReplicaController {
    * @return
    */
   public static String getNameFromActivePaxosID(String activePaxosID) {
-    // TODO implement this method
+    String[] tokens = activePaxosID.split("-");
+    if (tokens.length == 2) {
+      return tokens[0];
+    }
+    GNS.getLogger().severe("Error Exception: String is not a valid activePaxosID. String = " + activePaxosID);
     return  null;
   }
 
@@ -137,8 +146,13 @@ public class ReplicaController {
    * @return
    */
   public static boolean isPrimaryPaxosID(String paxosID) {
-    // TODO implement this method
-    return false;
+    if (paxosID == null) {
+      GNS.getLogger().severe("Error Exception: PaxosID is null. String = " + paxosID);
+      return false;
+    }
+
+    if (paxosID.endsWith("-P")) return true;
+    return  false;
   }
 
   public static void applyRemovedRecordPacket(String value) throws JSONException {

@@ -16,9 +16,10 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * All logs are stored in folder {@code paxosLogFolder}. Log folder contains 3 types of files:
  *
- * (1) Paxos IDs file: This file is stored in {@code paxosIDsFile}. It logs two events: (1) a paxos instance is created
+ * (1) Paxos IDs file: This file is stored in {@code paxosIDsFile}. It logs two types of events: (1) a paxos instance is created
  * (2)a paxos instance is stopped. This is an infinite log.
  * On startup, this {@code paxosIDsFile} tells which paxos instances were active before the system stopped.
+ *
  *
  * (2) Paxos state: These files are stored in folder {@code logFolder}/{@code stateFolderSubdir}. It contains periodic
  * snapshots of complete state of all active paxos instance. The name of each file is formatted as follows:
@@ -26,14 +27,17 @@ import java.util.concurrent.locks.ReentrantLock;
  * as follows. The first line contains an integer represented in string format. The integer tells the
  * the length of the paxos state contained in the file. Lines after the first line contain the state of the paxos instance.
  *
+ *
  * (3) Log message files: This files are stored '{@code logFolder}/{@code logFilePrefix}_X' where 'X' is a non-negative
  * integer. These files the paxos messages as as they are processed. Each file contains at most {@code MSG_MAX} messages.
  * After {@code MSG_MAX} are logged to file {@code logFilePrefix}_X, further message are logged to
  * {@code logFilePrefix}_(X+1).
+ *
  * Messages to be logged in are queued. A logging thread checks the queue periodically,
  * logs messages, and then performs the action associated with every logging message.
  * Currently, we log three types of messages: PREPARE, ACCEPT, and DECISION.  For example, once the DECISION message
  * is logged, it is forwarded to the paxos instance for processing.
+ *
  *
  * TODO describe format of logs
  *
