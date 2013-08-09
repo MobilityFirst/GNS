@@ -21,76 +21,31 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ReplicaController {
 
+  /**
+   * TODO add doc here
+   */
   public static int TIMEOUT_INTERVAL = 5000;
 
+  /**
+   * TODO add doc here
+   */
   private static ConcurrentHashMap<String, RemoveRecordPacket> removeRecordRequests = new ConcurrentHashMap<String, RemoveRecordPacket>();
-
-  public static void handleNameRecordAddAtPrimary(ReplicaControllerRecord recordEntry, ValuesMap valuesMap) {
-    HashSet<Integer> primaries = recordEntry.getPrimaryNameservers();
-//        if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName() +
-//                "\tBefore Paxos instance created for name: " + recordEntry.getName()
-//                        + " Primaries: " + primaries);
-    PaxosManager.createPaxosInstance(getPrimaryPaxosID(recordEntry), primaries, recordEntry.toString());
-//		if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName()  +
-//				"\tPaxos instance created for name: " + recordEntry.getName()
-//						+ " Primaries: " + primaries);
-    startupNewActives(recordEntry, valuesMap);
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine(recordEntry.getName()
-              + "\tStartup new actives.: " + recordEntry.getName()
-              + " Primaries: " + primaries);
-    }
-  }
-
-  public static void handleNameRecordRemoveRequestAtPrimary(JSONObject json) throws JSONException {
-    // 1. stop current actives
-    // 2. stop current primaries
-    // 3. send confirmation to client.
-    RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
-    //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(removeRecord.getName());
-    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(removeRecord.getName());
-    //NameServer.getNameRecord(removeRecord.getName()//, removeRecord.getRecordKey()
-
-    if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
-      if (nameRecordPrimary.isMarkedForRemoval() == true) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("Already marked for removal. Name record will "
-                  + "be deleted soon. So request is dropped.");
-        }
-        return;
-      }
-      // propose this to primary paxos
-      String primaryPaxosID = getPrimaryPaxosID(nameRecordPrimary);
-      PaxosManager.propose(primaryPaxosID,
-              new RequestPacket(removeRecord.getType().getInt(), removeRecord.toString(), PaxosPacketType.REQUEST, false));
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("PAXOS PROPOSAL: Proposed mark for removal in primary paxos. Packet = " + removeRecord);
-      }
-      removeRecordRequests.put(getPrimaryPaxosID(nameRecordPrimary), removeRecord);
-
-    } else {
-      GNS.getLogger().severe(" REMOVE RECORD ERROR!! Name: " + removeRecord.getName()
-              // + " Record key: " + removeRecord.getRecordKey()
-              + " NAME RECORD: " + nameRecordPrimary);
-      if (nameRecordPrimary != null) {
-        GNS.getLogger().severe(" REMOVE RECORD PRIMARY: " + nameRecordPrimary.getPrimaryNameservers());
-      }
-    }
-  }
 
 
   /**
-   * Return ID of the paxos instance among active name servers of this record.
-   *
-   * @param nameRecord
+   * returns true if the given paxosID belongs to that between primary name servers for a name
+   * @param paxosID
+   * @return
    */
-  public static String getActivePaxosID(ReplicaControllerRecord nameRecord)
-  {
-    Random r = new Random();
-    return nameRecord.getName() // + "-" + nameRecord.getRecordKey().getName()
-            + "-" + r.nextInt(100000000);
-  }
+  public static boolean isPrimaryPaxosID(String paxosID) {
+    if (paxosID == null) {
+      GNS.getLogger().severe("Error Exception: PaxosID is null. String = " + paxosID);
+      return false;
+    }
 
+    if (paxosID.endsWith("-P")) return true;
+    return  false;
+  }
 
   /**
    * Return ID of the paxos instance among primary name servers for the record.
@@ -127,6 +82,18 @@ public class ReplicaController {
   }
 
   /**
+   * Return ID of the paxos instance among active name servers of this record.
+   *
+   * @param nameRecord
+   */
+  public static String getActivePaxosID(ReplicaControllerRecord nameRecord)
+  {
+    Random r = new Random();
+    return nameRecord.getName() // + "-" + nameRecord.getRecordKey().getName()
+            + "-" + r.nextInt(100000000);
+  }
+
+  /**
    * Reverse lookup for name given the paxosID between actives.
    * @param activePaxosID
    * @return
@@ -140,20 +107,82 @@ public class ReplicaController {
     return  null;
   }
 
-  /**
-   * returns true if the given paxosID belongs to that between primary name servers for a name
-   * @param paxosID
-   * @return
-   */
-  public static boolean isPrimaryPaxosID(String paxosID) {
-    if (paxosID == null) {
-      GNS.getLogger().severe("Error Exception: PaxosID is null. String = " + paxosID);
-      return false;
-    }
 
-    if (paxosID.endsWith("-P")) return true;
-    return  false;
+
+  public static void handleNameRecordAddAtPrimary(ReplicaControllerRecord recordEntry, ValuesMap valuesMap) {
+    HashSet<Integer> primaries = recordEntry.getPrimaryNameservers();
+//        if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName() +
+//                "\tBefore Paxos instance created for name: " + recordEntry.getName()
+//                        + " Primaries: " + primaries);
+    PaxosManager.createPaxosInstance(getPrimaryPaxosID(recordEntry), primaries, recordEntry.toString());
+//		if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName()  +
+//				"\tPaxos instance created for name: " + recordEntry.getName()
+//						+ " Primaries: " + primaries);
+    startupNewActives(recordEntry, valuesMap);
+    if (StartNameServer.debugMode) {
+      GNS.getLogger().fine(recordEntry.getName()
+              + "\tStartup new actives.: " + recordEntry.getName()
+              + " Primaries: " + primaries);
+    }
   }
+
+  public static void handleNameRecordRemoveRequestAtPrimary(JSONObject json) throws JSONException {
+    // 1. stop current actives
+    // 2. stop current primaries
+    // 3. send confirmation to client.
+    RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
+    //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(removeRecord.getName());
+    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(removeRecord.getName());
+    //NameServer.getNameRecord(removeRecord.getName()//, removeRecord.getRecordKey()
+
+    if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
+      if (nameRecordPrimary.isRemoved()) { // if removed, send confirm to client
+        ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NameServer.nodeID,
+                true, removeRecord);
+
+        NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
+                confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine("Record already remove. Sent confirmation to client. Name = " + removeRecord.getName());
+        }
+         return;
+      }
+      if (nameRecordPrimary.isMarkedForRemoval() == true) {
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine("Already marked for removal. Name record will "
+                  + "be deleted soon. So request is dropped.");
+        }
+        return;
+      }
+      // propose this to primary paxos
+      String primaryPaxosID = getPrimaryPaxosID(nameRecordPrimary);
+      PaxosManager.propose(primaryPaxosID,
+              new RequestPacket(removeRecord.getType().getInt(), removeRecord.toString(), PaxosPacketType.REQUEST, false));
+      if (StartNameServer.debugMode) {
+        GNS.getLogger().fine("PAXOS PROPOSAL: Proposed mark for removal in primary paxos. Packet = " + removeRecord);
+      }
+      removeRecordRequests.put(getPrimaryPaxosID(nameRecordPrimary), removeRecord);
+
+    } else {
+      // return failure, because record was not even found in deleted state
+      ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NameServer.nodeID,
+              false, removeRecord);
+      NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
+              confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+      if (StartNameServer.debugMode) {
+        GNS.getLogger().fine("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
+      }
+      GNS.getLogger().severe(" REMOVE RECORD ERROR!! Name: " + removeRecord.getName()
+              // + " Record key: " + removeRecord.getRecordKey()
+              + " NAME RECORD: " + nameRecordPrimary);
+      if (nameRecordPrimary != null) {
+        GNS.getLogger().severe(" REMOVE RECORD PRIMARY: " + nameRecordPrimary.getPrimaryNameservers());
+      }
+    }
+  }
+
+
+
 
   public static void applyRemovedRecordPacket(String value) throws JSONException {
     // create a remove record object
@@ -450,15 +479,19 @@ public class ReplicaController {
 //		String name = packet.getName();
     RemoveRecordPacket removeRecordPacket = removeRecordRequests.remove(paxosID);
 
-    NameServer.removeNameRecordPrimary(packet.getName());
+    ReplicaControllerRecord record = NameServer.getNameRecordPrimary(packet.getName());
+    if (record != null) record.setRemoved();
+    GNS.getLogger().fine("RECORD MARKED AS REMOVED IN REPLICA CONTROLLER DB");
+//    NameServer.removeNameRecordPrimary(packet.getName());
 
 //        NameServer.removeNameRecord(packet.getName());
 
 //		PaxosManager.deletePaxosInstance(paxosID);
 
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("REMOVED RECORD FROM DB");
-    }
+//    if (StartNameServer.debugMode) {
+
+//    }
+
     if (removeRecordPacket != null) {
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NameServer.nodeID,
               true, removeRecordPacket);

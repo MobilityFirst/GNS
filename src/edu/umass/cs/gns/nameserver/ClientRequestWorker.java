@@ -120,9 +120,7 @@ public class ClientRequestWorker extends TimerTask {
       // if the name record already exists and already contains the key 
       // we send back a confirmation with a failure flag
 
-      GNS.getLogger().info(
-              "NSListenerUpdate ADD (ns " + NameServer.nodeID
-                      + ") : Record already exists");
+      GNS.getLogger().info("NSListenerUpdate ADD (ns " + NameServer.nodeID+ ") : Record already exists");
 
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(
               NameServer.nodeID, false, addRecordPacket);
@@ -231,7 +229,17 @@ public class ClientRequestWorker extends TimerTask {
       // this must be primary
       ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(updatePacket.getName());
       //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(updatePacket.getName());
-      if (nameRecordPrimary == null) {
+      if (nameRecordPrimary!= null && nameRecordPrimary.isMarkedForRemoval()) {
+      // if name record is deleted, no further operation for this GUID.
+        // send failure to client
+        ConfirmUpdateLNSPacket failConfirmPacket =
+                ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NameServer.nodeID);
+        NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
+                updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+        if (StartNameServer.debugMode)  GNS.getLogger().fine(" UPSERT-FAILED because name record deleted already\t" + updatePacket.getName()
+                  + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId() + "\t" + updatePacket.getSequenceNumber());
+      }
+      else if (nameRecordPrimary == null ) {
         // do an INSERT (AKA ADD) operation
 
         AddRecordPacket addRecordPacket = new AddRecordPacket(updatePacket.getRequestID(), updatePacket.getName(),
@@ -484,7 +492,7 @@ public class ClientRequestWorker extends TimerTask {
     RequestActivesPacket packet = new RequestActivesPacket(incomingJSON);
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(packet.getName());
     ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(packet.getName());
-    if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
+    if (nameRecordPrimary != null && nameRecordPrimary.isMarkedForRemoval() == false && nameRecordPrimary.isPrimaryReplica()) {
       packet.setActiveNameServers(nameRecordPrimary.copyActiveNameServers());
       NSListenerUDP.udpTransport.sendPacket(packet.toJSONObject(), packet.getLNSID(), PortType.LNS_UPDATE_PORT);
       if (StartNameServer.debugMode) {

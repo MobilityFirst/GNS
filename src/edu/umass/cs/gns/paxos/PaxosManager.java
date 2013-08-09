@@ -60,20 +60,23 @@ public class PaxosManager extends Thread{
   static ConcurrentHashMap<String, PaxosReplica> paxosInstances = new ConcurrentHashMap<String, PaxosReplica>();
 
 
-  private static HashSet<String> paxosIDsActive = new HashSet<String>();
-
   static PaxosInterface clientRequestHandler;
 
   static ScheduledThreadPoolExecutor executorService;
 
   static int maxThreads = 5;
+
   /**
    * debug = true is used to debug the paxos module,  debug = false when complete GNRS system is running.
    */
   static boolean debug = false;
+  /**
+   * Paxos ID of the paxos instance created for testing/debugging.
+   */
+  static String defaultPaxosID  = "0";
 
   /**
-   * Minimum interval (in milliseconds) between two garbage state collections by this replica.
+   * Minimum interval (in milliseconds) between two garbage state collections of replicas.
    */
   static int MEMORY_GARBAGE_COLLECTION_INTERVAL = 100;
 
@@ -81,7 +84,6 @@ public class PaxosManager extends Thread{
    * Paxos coordinator checks whether all replicas have received the latest messages decided.
    */
   private static long RESEND_PENDING_MSG_INTERVAL_SEC = 1;
-
 
   /**
    * Paxos logs are garbage collected at this interval
@@ -93,10 +95,6 @@ public class PaxosManager extends Thread{
    */
   private static long PAXOS_LOG_DELETE_INTERVAL_SEC = 3600;
 
-  /**
-   * Paxos ID of the paxos instance created for testing/debugging.
-   */
-  static String defaultPaxosID  = "0";
 
 
   /**
@@ -155,7 +153,6 @@ public class PaxosManager extends Thread{
 
     if (debug && paxosInstances.size() == 0) createDefaultPaxosInstance();
     else startAllPaxosReplicas();
-
 
     // step 2: start global log synchronization: what do we
     //

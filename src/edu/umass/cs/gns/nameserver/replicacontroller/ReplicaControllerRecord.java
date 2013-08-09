@@ -7,23 +7,17 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.MovingAverage;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * The ReplicaControllerRecord class.
@@ -85,7 +79,7 @@ public class ReplicaControllerRecord {
   /**
    * At primary name servers, this field means that the name record is going to be removed once current set of active is deleted.
    */
-  private boolean markedForRemoval = false;
+  private int markedForRemoval = 0;
   /**
    * Read write rates reported from name server.
    */
@@ -130,7 +124,7 @@ public class ReplicaControllerRecord {
     this.activeRunning = false;
     this.oldActivePaxosID = null;
     this.activePaxosID = null;
-    this.markedForRemoval = false;
+    this.markedForRemoval = 0;
     this.nameServerStatsMap = null;
     this.movingAvgAggregateLookupFrequency = null;
     this.movingAvgAggregateUpdateFrequency = null;
@@ -197,7 +191,7 @@ public class ReplicaControllerRecord {
     } else {
       this.activePaxosID = json.getString(ACTIVE_PAXOS_ID);
     }
-    this.markedForRemoval = json.getBoolean(MARKED_FOR_REMOVAL);
+    this.markedForRemoval = json.getInt(MARKED_FOR_REMOVAL);
 
     this.nameServerVotesMap = toIntegerMap(json.getJSONObject(NAMESERVER_VOTES_MAP));
     this.nameServerStatsMap = toStatsMap(json.getJSONObject(NAMESERVER_STATS_MAP));
@@ -240,7 +234,7 @@ public class ReplicaControllerRecord {
     json.put(ACTIVE_NAMESERVERS_RUNNING, isActiveRunning());
     json.put(ACTIVE_PAXOS_ID, getActivePaxosID());
     json.put(OLD_ACTIVE_PAXOS_ID, getOldActivePaxosID());
-    json.put(MARKED_FOR_REMOVAL, isMarkedForRemoval());
+    json.put(MARKED_FOR_REMOVAL, getMarkedForRemoval());
     //		json.put(key, value)
     json.put(NAMESERVER_VOTES_MAP, getNameServerVotesMap());
     json.put(NAMESERVER_STATS_MAP, statsMapToJSONObject(getNameServerStatsMap()));
@@ -424,20 +418,57 @@ public class ReplicaControllerRecord {
    */
   public synchronized boolean isMarkedForRemoval() {
     if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsBoolean(name, MARKED_FOR_REMOVAL);
+      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
+    }
+    return markedForRemoval > 0;
+  }
+
+  public synchronized int getMarkedForRemoval() {
+    if (isLazyEval()) {
+      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
     }
     return markedForRemoval;
   }
 
   /**
-   * @param markedForRemoval the markedForRemoval to set
+   * whether the flag is set of not.
+   *
+   * @return
    */
-  public void setMarkedForRemoval(boolean markedForRemoval) {
-    this.markedForRemoval = markedForRemoval;
+  public synchronized boolean isRemoved() {
     if (isLazyEval()) {
-      recordMap.updateNameRecordFieldAsBoolean(name, MARKED_FOR_REMOVAL, markedForRemoval);
+      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
+    }
+    return markedForRemoval == 2;
+  }
+
+  /**
+   * set marked for removal as
+   */
+  public void setMarkedForRemoval() {
+    if (isLazyEval()) {
+      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
+    }
+    if (markedForRemoval == 0) {
+      this.markedForRemoval = 1;
+      if (isLazyEval()) {
+        recordMap.updateNameRecordFieldAsInteger(name, MARKED_FOR_REMOVAL, markedForRemoval);
+      }
     }
   }
+
+  public void setRemoved() {
+    if (isLazyEval()) {
+      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
+    }
+    if (markedForRemoval != 2) {
+      this.markedForRemoval = 2;
+      if (isLazyEval()) {
+        recordMap.updateNameRecordFieldAsInteger(name, MARKED_FOR_REMOVAL, markedForRemoval);
+      }
+    }
+  }
+
 
   /**
    * @return the nameServerStatsMap
@@ -888,12 +919,6 @@ public class ReplicaControllerRecord {
     return false;
   }
 
-  /**
-   * sets the flag at name record stored at primary that this name record will be removed soon.
-   */
-  public synchronized void setMarkedForRemoval() {
-    this.setMarkedForRemoval(true);
-  }
 
   /**
    * primary checks the current step of transition from old active name servers to new active name servers
