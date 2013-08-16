@@ -6,9 +6,10 @@ package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Set;
-import org.json.JSONObject;
 
 /**
  *
@@ -27,6 +28,8 @@ public interface RecordMapInterface {
   public Set<String> getAllRowKeys();
 
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value);
+
+  public void updateNameRecordListValueInt(String name, String key, Set<Integer> value);
 
   public void updateNameRecordField(String name, String key, String string);
 

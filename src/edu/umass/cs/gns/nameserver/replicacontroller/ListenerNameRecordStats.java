@@ -43,7 +43,7 @@ public class ListenerNameRecordStats extends Thread {
 
         //Add vote for the name record if your the primary name server for this name record
         //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(selectionPacket.getName());
-        ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(selectionPacket.getName());
+        ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(selectionPacket.getName());
         if (nameRecordPrimary != null && nameRecordPrimary.isMarkedForRemoval() == false && nameRecordPrimary.isPrimaryReplica()) {
             RequestPacket request = new RequestPacket(PacketType.NAMESERVER_SELECTION.getInt(),
                     selectionPacket.toString(),
@@ -65,7 +65,7 @@ public class ListenerNameRecordStats extends Thread {
         }
        
          //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(statsPacket.getName());
-        ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(statsPacket.getName());
+        ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(statsPacket.getName());
         if (nameRecordPrimary != null && nameRecordPrimary.isMarkedForRemoval() == false && nameRecordPrimary.isPrimaryReplica()) {
             // Propose to paxos.
             String paxosID = ReplicaController.getPrimaryPaxosID(nameRecordPrimary);
@@ -90,7 +90,7 @@ public class ListenerNameRecordStats extends Thread {
         }
         if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: StatsPacket for name " + statsPacket.getName()
                 + " Decision: " + decision);
-        ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(statsPacket.getName());
+        ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(statsPacket.getName());
         if (nameRecordPrimary != null && nameRecordPrimary.isMarkedForRemoval() == false && nameRecordPrimary.isPrimaryReplica())
         {
             // Record access frequency from the name server
@@ -111,7 +111,7 @@ public class ListenerNameRecordStats extends Thread {
         try {
             NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(new JSONObject(decision));
             if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name Sever Vote: " + selectionPacket.toString());
-            ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(selectionPacket.getName());
+            ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(selectionPacket.getName());
 
             if (nameRecordPrimary!=null && nameRecordPrimary.isMarkedForRemoval() == false && nameRecordPrimary.isPrimaryReplica()) {
                 nameRecordPrimary.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote());

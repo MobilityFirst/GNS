@@ -45,7 +45,18 @@ def main():
                 time.sleep(exp_config.ns_sleep) # sleep for 10 sec after starting name servers
                 first_lns = True
             run_local_name_server(id, working_dir, config_file)
-
+    # not doing restart stuff right now
+    sys.exit(2)
+    restart_period = 20
+    number_restarts = 1
+    restart_node = '2'
+    for i in range(number_restarts):
+        time.sleep(restart_period)
+        print 'Restarting node ' + restart_node 
+        run_name_server(restart_node, working_dir, config_file)
+        print 'Done'
+    
+    
     #os.system('./kill_mongodb_local.sh')            
 
 def run_name_server(id, working_dir, config_file):

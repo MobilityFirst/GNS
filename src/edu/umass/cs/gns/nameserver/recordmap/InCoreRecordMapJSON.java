@@ -1,10 +1,7 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
-import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -64,7 +61,19 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
       }
     }
   }
-  
+
+  @Override
+  public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
+    if (containsName(name)) {
+      try {
+        recordMap.get(name).put(key, value);
+        //System.out.println("&&&&"+recordMap.get(name).toString());
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Error updating json record: " + e);
+      }
+    }
+  }
+
   @Override
   public void updateNameRecordField(String name, String key, String string) {
     if (containsName(name)) {

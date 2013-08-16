@@ -1,13 +1,8 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.packet.Transport;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,82 +10,96 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 public class AddRemove {
 
-  public static void handlePacketAddRecordLNS(JSONObject json) throws JSONException {
-    NameRecordKey nameRecordKey;
-    String name;
-    int nameServerId;
+  /**
+   *
+   * @param json
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
+  public static void handlePacketAddRecordLNS(JSONObject json) throws JSONException, UnknownHostException {
+
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
-    nameRecordKey = addRecordPacket.getRecordKey();
-    name = addRecordPacket.getName();
-    ArrayList<String> value = addRecordPacket.getValue();
+    InetAddress senderAddress = null;
+    int senderPort = -1;
+    senderPort = Transport.getReturnPort(json);
+    if (Transport.getReturnAddress(json) != null) {
+      senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
+    }
 
-    GNS.getLogger().fine("LNSListenerUpdate ADD (lns " + LocalNameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
-    nameServerId = LocalNameServer.getClosestPrimaryNameServer(name, null);
-    addRecordPacket.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(name));
-    // some local bookkeeping so we know where to send the confirmation
-    int addResquestId = LocalNameServer.addUpdateInfo(name, nameServerId, System.currentTimeMillis(),
-            Transport.getReturnAddress(json), Transport.getReturnPort(json));
-    addRecordPacket.setLNSRequestID(addResquestId);
-    JSONObject jsonAddRecord = addRecordPacket.toJSONObject();
-    LNSListener.udpTransport.sendPacket(jsonAddRecord, nameServerId, ConfigFileInfo.getUpdatePort(nameServerId));
-      GNS.getLogger().fine("Sent add record packet to node: " + nameServerId + " Packet is: " + jsonAddRecord);
+    addRecordPacket.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(addRecordPacket.getName()));
+
+    SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
+            senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
+    LocalNameServer.timer.schedule(addTask, 0, StartLocalNameServer.queryTimeout);
+                        addRecordPacket.getLocalNameServerID();
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Add  Task Scheduled. " +
+            "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
   }
 
-  public static void handleUpsert(UpdateAddressPacket updateAddressPacket, InetAddress address, int port) throws JSONException {
-    NameRecordKey nameRecordKey;
-    String name;
-    int nameServerId;
+  /**
+   *
+   * @param updateAddressPacket
+   * @param address
+   * @param port
+   * @throws JSONException
+   */
+  static void handleUpsert(UpdateAddressPacket updateAddressPacket, InetAddress address, int port) throws JSONException {
+    updateAddressPacket.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(updateAddressPacket.getName()));
 
-    nameRecordKey = updateAddressPacket.getRecordKey();
-    name = updateAddressPacket.getName();
-    ArrayList<String> value = updateAddressPacket.getUpdateValue();
+//    updateAddressPacket.setLocalNameServerId(LocalNameServer.nodeID);
 
-    GNS.getLogger().fine("LNSListenerUpdate UPSERT (lns " + LocalNameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
-    nameServerId = LocalNameServer.getClosestPrimaryNameServer(name, null);
-    updateAddressPacket.setPrimaryNameServers((HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name));
-    // some local bookkeeping so we know where to send the confirmation
-    int addResquestId = LocalNameServer.addUpdateInfo(name, nameServerId, System.currentTimeMillis(),
-            address.getHostAddress(), port);
-    updateAddressPacket.setLocalNameServerId(LocalNameServer.nodeID);
-    updateAddressPacket.setLNSRequestID(addResquestId);
-//        updateAddressPacket.
-    JSONObject jsonAddRecord = updateAddressPacket.toJSONObject();
-    LNSListener.udpTransport.sendPacket(jsonAddRecord, nameServerId, ConfigFileInfo.getUpdatePort(nameServerId));
-    GNS.getLogger().fine(" UPSERT sent to primary: " + nameServerId);
+    SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
+            address, port, System.currentTimeMillis(), new HashSet<Integer>());
+    LocalNameServer.timer.schedule(upsertTask, 0, StartLocalNameServer.queryTimeout);
+
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Upsert Task Scheduled. " +
+            "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
+
   }
 
-  public static void handlePacketRemoveRecordLNS(JSONObject json) throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException {
-    NameRecordKey nameRecordKey;
-    String name;
-    int nameServerId;
-    RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(json);
-    // not used        
-    //nameRecordKey = removeRecordPacket.getRecordKey();
-    name = removeRecordPacket.getName();
+  /**
+   *
+   * @param json
+   * @throws JSONException
+   * @throws NoSuchAlgorithmException
+   * @throws UnsupportedEncodingException
+   */
+  public static void handlePacketRemoveRecordLNS(JSONObject json)
+          throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
+    RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
+    InetAddress senderAddress = null;
+    int senderPort = -1;
+    senderPort = Transport.getReturnPort(json);
+    if (Transport.getReturnAddress(json) != null) {
+      senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
+    }
 
-    nameServerId = LocalNameServer.getClosestPrimaryNameServer(name, null);
-    removeRecordPacket.setPrimaryNameServers((HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name));
-    GNS.getLogger().fine("LNSListenerUpdate REMOVE (lns " + LocalNameServer.nodeID + ") : "
-            + name + " Sent to primary: " + nameServerId);
-    // some local bookkeeping so we know where to send the confirmation
-    int removeRequestId = LocalNameServer.addUpdateInfo(name, nameServerId, System.currentTimeMillis(),
-            Transport.getReturnAddress(json), Transport.getReturnPort(json));
-    removeRecordPacket.setLNSRequestID(removeRequestId);
-    JSONObject jsonRemoveRecord = removeRecordPacket.toJSONObject();
-    LNSListener.udpTransport.sendPacket(jsonRemoveRecord, nameServerId, ConfigFileInfo.getUpdatePort(nameServerId));
+    removeRecord.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(removeRecord.getName()));
+
+    SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
+            senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
+    LocalNameServer.timer.schedule(task, 0, StartLocalNameServer.queryTimeout);
+
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Remove  Task Scheduled. " +
+            "Name: " + removeRecord.getName() + " Request: " + removeRecord.getRequestID());
   }
 
+  /**
+   *
+   * @param json
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
   public static void handlePacketConfirmAddLNS(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdateLNSPacket confirmAddPacket = new ConfirmUpdateLNSPacket(json);
     UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
     if (addInfo == null) {
-      GNS.getLogger().warning("Add confirmation return info not found.");
+      GNS.getLogger().warning("Add confirmation return info not found.: lns request id = " + confirmAddPacket.getLNSRequestID());
     } else {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmAddPacket);
@@ -105,6 +114,12 @@ public class AddRemove {
     }
   }
 
+  /**
+   *
+   * @param json
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
   public static void handlePacketConfirmRemoveLNS(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdateLNSPacket confirmRemovePacket = new ConfirmUpdateLNSPacket(json);
     UpdateInfo removeInfo = LocalNameServer.removeUpdateInfo(confirmRemovePacket.getLNSRequestID());

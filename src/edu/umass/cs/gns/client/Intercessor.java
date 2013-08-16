@@ -10,14 +10,7 @@ import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.AdminRequestPacket;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.DumpRequestPacket;
-import edu.umass.cs.gns.packet.Header;
-import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.apache.commons.cli.Options;
@@ -35,11 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static edu.umass.cs.gns.packet.Packet.*;
-import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.packet.Transport;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
-import edu.umass.cs.gns.packet.UpdateOperation;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
 
@@ -136,7 +124,7 @@ public class Intercessor {
     try {
       JSONObject json = transport.readPacket();
       if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Intercessor Recvd result: " + json);
+//        GNS.getLogger().fine("Intercessor Recvd result: " + json);
       }
       switch (getPacketType(json)) {
         case CONFIRM_UPDATE_LNS:
@@ -147,7 +135,7 @@ public class Intercessor {
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           if (StartLocalNameServer.debugMode) {
-            GNS.getLogger().finer((packet.isSuccess() ? "Sucessful" : "Unsucessful") + " Update (" + id + "): " + packet.getName() + "/" + packet.getRecordKey().getName());
+            GNS.getLogger().finer((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + "): " + packet.getName() + "/" + packet.getRecordKey().getName());
           }
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.isSuccess());
@@ -163,7 +151,7 @@ public class Intercessor {
             if (StartLocalNameServer.debugMode) {
               GNS.getLogger().fine("Query (" + id + "): "
                       + nameRecordPacket.getQname() + "/" + nameRecordPacket.getQrecordKey()
-                      + " Received: " + nameRecordPacket.toJSONObject().toString());
+                      + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             }
             synchronized (monitor) {
               queryResult.put(id, nameRecordPacket.getFieldValue());
@@ -173,7 +161,7 @@ public class Intercessor {
             if (StartLocalNameServer.debugMode) {
               GNS.getLogger().fine("Intercessor: Query (" + id + "): "
                       + nameRecordPacket.getQname() + "/" + nameRecordPacket.getQrecordKey()
-                      + " Error Received: " + nameRecordPacket.toJSONObject().toString());
+                      + " Error Received. ");// + nameRecordPacket.toJSONObject().toString());
             }
             synchronized (monitor) {
               queryResult.put(id, ERRORQUERYRESULT);
@@ -204,7 +192,7 @@ public class Intercessor {
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      // ABHIGYAN: sending query (lookup) using transport object to Update port 
+      // ABHIGYAN: sending query (lookup) using transport object to Update port
       transport.sendPacket(json, localServerID, PortType.LNS_UPDATE_PORT);
     } catch (JSONException e) {
       e.printStackTrace();
@@ -349,7 +337,7 @@ public class Intercessor {
             name, new NameRecordKey(key),
             newValue,
             oldValue,
-            operation);
+            operation, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
       transport.sendPacket(json, localServerID, PortType.LNS_UPDATE_PORT);

@@ -63,6 +63,8 @@ public class StartNameServer {
   public static String specifiedActives = "specifiedActive.txt";
   public static int loadMonitorWindow = 100;
 
+  private static int quitAfterTime = -1; // only for testing: local name server will quit after this time
+
   @SuppressWarnings("static-access")
   /**
    * ************************************************************
@@ -188,6 +190,9 @@ public class StartNameServer {
             .create("lnsnsping");
     Option signatureCheck = new Option("signatureCheck",
             "whether an update operation checks signature or not");
+    // used for testing only
+    Option quitAfterTime = new Option("quitAfterTime",true,
+            "name server will quit after this time");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(nodeId);
@@ -238,7 +243,7 @@ public class StartNameServer {
     commandLineOptions.addOption(statConsoleOutputLevel);
     commandLineOptions.addOption(statFileLoggingLevel);
     commandLineOptions.addOption(signatureCheck);
-
+    commandLineOptions.addOption(quitAfterTime);
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
   }
@@ -373,6 +378,30 @@ public class StartNameServer {
       if (parser.hasOption("statConsoleOutputLevel")) {
         GNS.statConsoleOutputLevel = parser.getOptionValue("statConsoleOutputLevel");
       }
+
+      // only for testing
+      if (parser.hasOption("quitAfterTime")) {
+        quitAfterTime = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
+        if (quitAfterTime >= 0) {
+          Thread t = new Thread() {
+
+            @Override
+            public void run() {
+              System.out.println("Sleeping for " + quitAfterTime + " sec before quitting ...");
+              try {
+                Thread.sleep(quitAfterTime*1000);
+              } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+              }
+              System.out.println("SYSTEM EXIT.");
+              System.exit(2);
+
+            }
+          };
+          t.start();
+        }
+      }
+
 
 //      NSListenerUpdate.doSignatureCheck = parser.hasOption("signatureCheck");
     } catch (Exception e1) {

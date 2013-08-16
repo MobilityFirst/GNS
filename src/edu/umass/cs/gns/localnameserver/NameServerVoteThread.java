@@ -129,7 +129,7 @@ public class NameServerVoteThread extends Thread {
 //						destIDs.add(x);
 //						portNumbers.add(ConfigFileInfo.getUpdatePort(x));
 //					}
-//					// LNS listening on Update port. Use its transport object to send packt 
+//					// LNS listening on Update port. Use its transport object to send packt
 //					LNSListenerUpdate.transport.sendPacketToAll(json, destIDs, portNumbers);
 //					//            Packet.multicastTCP(primaryNameServers, json, 2, GNRS.PortType.REPLICATION_PORT, -1);
 //					StatusClient.sendTrafficStatus(LocalNameServer.nodeID, primaryNameServers, GNRS.PortType.UPDATE_PORT, nsSelectionPacket.getType(),

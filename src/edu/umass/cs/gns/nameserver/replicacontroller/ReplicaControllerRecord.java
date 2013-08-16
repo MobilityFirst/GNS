@@ -42,6 +42,7 @@ public class ReplicaControllerRecord {
   public final static String PREVIOUSAGGREAGATEWRITEFREQUENCY = "rcr_previousAggregateWriteFrequency";
   public final static String MOVINGAGGREGATELOOKUPFREQUENCY = "rcr_movingAvgAggregateLookupFrequency";
   public final static String MOVINGAGGREGATEUPDATEFREQUENCY = "rcr_movingAvgAggregateUpdateFrequency";
+  public final static String KEEP_ALIVE_TIME = "rcr_keepAlive";
   //
   private final static int LAZYINT = -9999;
   /**
@@ -79,7 +80,7 @@ public class ReplicaControllerRecord {
   /**
    * At primary name servers, this field means that the name record is going to be removed once current set of active is deleted.
    */
-  private int markedForRemoval = 0;
+  private int markedForRemoval = -1; // default is -1, not added.
   /**
    * Read write rates reported from name server.
    */
@@ -94,6 +95,8 @@ public class ReplicaControllerRecord {
    * List of name server voted as a replica for this record. <Key = NameserverID, Value=#Votes}
    */
   private ConcurrentMap<Integer, Integer> nameServerVotesMap;
+
+  private long keepAliveTime = 0;
   /**
    * Indicates if we're using new load-as-you-go-scheme
    */
@@ -115,7 +118,7 @@ public class ReplicaControllerRecord {
       throw new RuntimeException("Record map cannot be null!");
     }
     this.recordMap = recordMap;
-    this.lazyEval = true;
+    this.lazyEval = true; // Important
     this.name = name;
     this.primaryNameservers = null;
     this.activeNameservers = null;
@@ -124,7 +127,7 @@ public class ReplicaControllerRecord {
     this.activeRunning = false;
     this.oldActivePaxosID = null;
     this.activePaxosID = null;
-    this.markedForRemoval = 0;
+    this.markedForRemoval = -1;
     this.nameServerStatsMap = null;
     this.movingAvgAggregateLookupFrequency = null;
     this.movingAvgAggregateUpdateFrequency = null;
@@ -133,6 +136,7 @@ public class ReplicaControllerRecord {
     this.previousAggregateReadFrequency = LAZYINT;
     this.previousAggregateWriteFrequency = LAZYINT;
     this.nameServerVotesMap = null;
+    this.keepAliveTime = LAZYINT;
   }
 
   /**
@@ -158,6 +162,7 @@ public class ReplicaControllerRecord {
     }
     this.oldActivePaxosID = name + "-1"; // initialized uniformly among primaries
     this.activePaxosID = name + "-2";
+    this.activeRunning = true;
 
     this.totalAggregateReadFrequency = 0;
     this.totalAggregateWriteFrequency = 0;
@@ -166,6 +171,7 @@ public class ReplicaControllerRecord {
     this.nameServerVotesMap = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
     this.movingAvgAggregateLookupFrequency = new MovingAverage(StartNameServer.movingAverageWindowSize);
     this.movingAvgAggregateUpdateFrequency = new MovingAverage(StartNameServer.movingAverageWindowSize);
+    this.keepAliveTime = 0;
   }
 
   /**
@@ -177,8 +183,10 @@ public class ReplicaControllerRecord {
   public ReplicaControllerRecord(JSONObject json) throws JSONException {
 
     this.name = json.getString(NAME);
-
+    GNS.getLogger().fine(" JSON = " + json);
     this.primaryNameservers = (HashSet<Integer>) JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARY_NAMESERVERS));
+      GNS.getLogger().fine(" THIS IS ACTIVE:  " + json.getJSONArray(ACTIVE_NAMESERVERS));
+    GNS.getLogger().fine(" TO SET INTEGER:  " + JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS)));
     this.activeNameservers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
 
     // New fields
@@ -208,6 +216,7 @@ public class ReplicaControllerRecord {
     if (json.has(MOVINGAGGREGATEUPDATEFREQUENCY)) {
       this.movingAvgAggregateUpdateFrequency = new MovingAverage(json.getJSONArray(MOVINGAGGREGATEUPDATEFREQUENCY), StartNameServer.movingAverageWindowSize);
     }
+    this.keepAliveTime = json.getLong(KEEP_ALIVE_TIME);
   }
 
   /**
@@ -251,7 +260,7 @@ public class ReplicaControllerRecord {
     if (getMovingAvgAggregateUpdateFrequency() != null) {
       json.put(MOVINGAGGREGATEUPDATEFREQUENCY, getMovingAvgAggregateUpdateFrequency().toJSONArray());
     }
-
+    json.put(KEEP_ALIVE_TIME, keepAliveTime);
     return json;
   }
 
@@ -411,6 +420,32 @@ public class ReplicaControllerRecord {
     }
   }
 
+
+  public synchronized boolean isAdded() {
+    if (isLazyEval()) {
+      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
+    }
+    return markedForRemoval == 0;
+  }
+
+  public synchronized void setAdded() {
+    if (isLazyEval()) {
+      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
+    }
+
+    if (markedForRemoval > 0) {
+      GNS.getLogger().severe(" Exception: Trying to add a deleted record " + getName());
+//      System.exit(2);
+    }
+
+    if (markedForRemoval == -1) {
+      this.markedForRemoval = 0;
+      if (isLazyEval()) {
+        recordMap.updateNameRecordFieldAsInteger(name, MARKED_FOR_REMOVAL, markedForRemoval);
+      }
+    }
+  }
+
   /**
    * whether the flag is set of not.
    *
@@ -422,6 +457,7 @@ public class ReplicaControllerRecord {
     }
     return markedForRemoval > 0;
   }
+
 
   public synchronized int getMarkedForRemoval() {
     if (isLazyEval()) {
@@ -659,6 +695,28 @@ public class ReplicaControllerRecord {
       recordMap.updateNameRecordFieldAsInteger(name, PREVIOUSAGGREAGATEWRITEFREQUENCY, previousAggregateWriteFrequency);
     }
   }
+
+  /**
+   * return the keep alive time value stored in record
+   * @return
+   */
+  public synchronized long getKeepAliveTime() {
+    if (isLazyEval() && keepAliveTime == LAZYINT) {
+      keepAliveTime = recordMap.getNameRecordFieldAsLong(name, KEEP_ALIVE_TIME);
+    }
+    return keepAliveTime;
+  }
+
+  /**
+   * @param keepAliveTime set keep alive time
+   */
+  public void setKeepAliveTime(long keepAliveTime) {
+    this.keepAliveTime = keepAliveTime;
+    if (isLazyEval() && keepAliveTime != LAZYINT) {
+      recordMap.updateNameRecordFieldAsLong(name, KEEP_ALIVE_TIME, keepAliveTime);
+    }
+  }
+
 
   //
   // Utilities that use the accessors
@@ -940,6 +998,7 @@ public class ReplicaControllerRecord {
     }
     return ACTIVE_STATE.BOTH_ACTIVE_RUNNING_ERROR; // both cannot be running.
   }
+
 
   /**
    *

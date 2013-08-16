@@ -16,14 +16,11 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import java.lang.String;
-import java.lang.String;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.HashMap;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
 /**
@@ -249,6 +246,23 @@ public class MongoRecords implements NoSQLRecords {
 
   @Override
   public void updateListValue(String collectionName, String guid, String key, ArrayList<String> value) {
+    db.requestStart();
+    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      BasicDBObject newValue = new BasicDBObject(key, value);
+      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+      collection.update(query, updateOperator);
+    } finally {
+      db.requestDone();
+    }
+  }
+
+
+  @Override
+  public void updateListValueInt(String collectionName, String guid, String key, Set<Integer> value) {
     db.requestStart();
     try {
       String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();

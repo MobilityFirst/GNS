@@ -40,7 +40,7 @@ public class ComputeNewActivesTask extends TimerTask
 
 		int count = 0;
 		for (ReplicaControllerRecord nameRecord : nameRecords) {
-			if (nameRecord.isMarkedForRemoval() == true) {
+			if (nameRecord.isMarkedForRemoval()) {
 				continue;
 			}
 			count++;
@@ -56,8 +56,8 @@ public class ComputeNewActivesTask extends TimerTask
 			Set<Integer> newActiveNameServers = getNewActiveNameServers(nameRecord, 
 					nameRecord.copyActiveNameServers(), replicationRound);
 
-			// TODO: uncomment this line
-//			if (!isActiveSetUnchanged(oldActiveNameServers, newActiveNameServers)) {
+
+			if (!isActiveSetUnchanged(oldActiveNameServers, newActiveNameServers)) {
 				if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + nameRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpadingOtherActives");
 				
 				String newActivePaxosID = ReplicaController.getActivePaxosID(nameRecord);
@@ -70,15 +70,21 @@ public class ComputeNewActivesTask extends TimerTask
 						PaxosPacketType.REQUEST, isStop);
 				PaxosManager.propose(paxosID, requestPacket);
 				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
-//			}
-//			else {
-//				if (StartNameServer.debugMode) GNRS.getLogger().fine("Old and new active name servers are same. No Operation.");
-//			}
+			}
+			else {
+				if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
+			}
 		}
 		
 	}
 
-
+  private boolean isActiveSetUnchanged(Set<Integer> oldActives, Set<Integer> newActives) {
+    if (oldActives.size() != newActives.size()) return  false;
+    for (int x: oldActives ) {
+      if (newActives.contains(x) == false) return false;
+    }
+    return true;
+  }
 
 	
 	/**
@@ -156,7 +162,7 @@ public class ComputeNewActivesTask extends TimerTask
 		if (replicaCount > StartNameServer.maxReplica) replicaCount = StartNameServer.maxReplica;
 		
 		GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t"
-		+ nameRecord.getName() +"\tLookup\t" + lookup + "\tUpdate\t" + update + 
+		+ nameRecord.getName() +"\tLookup\t" + lookup + "\tUpdateTrace\t" + update +
 		"\tReplicaCount\t" + replicaCount);
 		
 		return replicaCount;
@@ -170,7 +176,7 @@ public class ComputeNewActivesTask extends TimerTask
 		
 		try {
 			NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
-			ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(activeProposalPacket.getName());
+			ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(activeProposalPacket.getName());
             if (nameRecordPrimary == null) {
                 if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: PAXOS DECISION: " +
                         "BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
@@ -198,7 +204,7 @@ public class ComputeNewActivesTask extends TimerTask
 			
 			if (StartNameServer.debugMode) GNS.getLogger().fine("Name Record Now: = " + nameRecordPrimary.toString());
 //			nameRecord.replaceActiveNameServers(activeProposalPacket.getProposedActiveNameServers());
-			// Update Database.
+			// UpdateTrace Database.
             NameServer.updateNameRecordPrimary(nameRecordPrimary);
 //			NameServer.updateNameRecord(nameRecord);
 			// TODO: 2-3 update database operations, reduce them.

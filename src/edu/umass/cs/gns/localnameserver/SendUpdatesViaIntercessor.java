@@ -3,10 +3,8 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
-import edu.umass.cs.gns.packet.UpdateOperation;
-import edu.umass.cs.gns.util.Update;
+import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.util.UpdateTrace;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -16,84 +14,150 @@ import java.util.TimerTask;
 public class SendUpdatesViaIntercessor {
 
 //	private static ExponentialDistribution exponentialDistribution;
-	
-	public static void schdeduleAllUpdates() {
-		if (LocalNameServer.updateTrace == null) {
-			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Update trace is null. SendQueriesViaIntercessor thread quitting.");
-			return;
-		}
-		if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send update intercessor started. Number of queries. "
-				+ LocalNameServer.updateTrace.size());
+
+  public static void schdeduleAllUpdates() {
+    if (LocalNameServer.updateTrace == null) {
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UpdateTrace trace is null. SendQueriesViaIntercessor thread quitting.");
+      return;
+    }
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send update intercessor started. Number of queries. "
+            + LocalNameServer.updateTrace.size());
 //		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.updateRateRegular);
-		double delay = 0;
+    double delay = 0;
 
-		double expectedDurationSec = (LocalNameServer.updateTrace.size()
-				* StartLocalNameServer.updateRateRegular) / 1000;
-		String msg = "SendUpdateStart StartTime " + delay
-				+ " Expected-Duration " + expectedDurationSec
-				+ " Number-Queries " + LocalNameServer.updateTrace.size();
+    double expectedDurationSec = (LocalNameServer.updateTrace.size()
+            * StartLocalNameServer.updateRateRegular) / 1000;
+    String msg = "SendUpdateStart StartTime " + delay
+            + " Expected-Duration " + expectedDurationSec
+            + " Number-Queries " + LocalNameServer.updateTrace.size();
 
-		GNS.getStatLogger().fine(msg);
-		if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
-		int count = 0;
-		for (Update u : LocalNameServer.updateTrace) {
-			count++;
-			LocalNameServer.experimentSendRequestTimer.schedule(
-					new SendUpdateIntercessorTask(u.name, count), (long) delay);
-			delay += StartLocalNameServer.updateRateRegular;// exponentialDistribution.exponential();
-			if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send update scheduled: count " + count + " delay = " + delay);
-		}
-		if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
-	}
+    GNS.getStatLogger().fine(msg);
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
+    int count = 0;
+    for (UpdateTrace u : LocalNameServer.updateTrace) {
+      count++;
+      if (u.type == UpdateTrace.UPDATE) {
+        LocalNameServer.experimentSendRequestTimer.schedule(
+                new SendUpdateIntercessorTask(u.name, count), (long) delay);
+      }
+      else if (u.type == UpdateTrace.ADD) {
+        LocalNameServer.experimentSendRequestTimer.schedule(
+                new SendAddIntercessorTask(u.name, count), (long) delay);
+      } else if (u.type == UpdateTrace.REMOVE) {
+        LocalNameServer.experimentSendRequestTimer.schedule(
+                new SendRemoveIntercessorTask(u.name, count), (long) delay);
 
-	/**
-	 * Returns a 8-character string.
-	 *
-	 * @return
-	 */
-	public static String getRandomString() {
-		Random rand = new Random();
-		int intRange = 1000000;
-		Integer x = intRange + rand.nextInt(1000000);
-		return x.toString();
-	}
+      }
+
+      delay += StartLocalNameServer.updateRateRegular;// exponentialDistribution.exponential();
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send update scheduled: count " + count + " delay = " + delay);
+    }
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
+  }
+
+  /**
+   * Returns a 8-character string.
+   *
+   * @return
+   */
+  public static String getRandomString() {
+    Random rand = new Random();
+    int intRange = 1000000;
+    Integer x = intRange + rand.nextInt(1000000);
+    return x.toString();
+  }
 }
 
 
 class SendUpdateIntercessorTask extends TimerTask {
 
-	int updateCount;
-	String name;
+  int updateCount;
+  String name;
 
-	public SendUpdateIntercessorTask(String name, int updateCount) {
+  public SendUpdateIntercessorTask(String name, int updateCount) {
 
-		this.updateCount = updateCount;
-		this.name = name;
-	}
+    this.updateCount = updateCount;
+    this.name = name;
+  }
+
+  @Override
+  public void run() {
 
 
-	@Override
-	public void run() {
-        ArrayList<String> newValue = new ArrayList<String>();
-        newValue.add(SendUpdatesViaIntercessor.getRandomString());
 
-        UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
-                0, updateCount, updateCount, -1,
-                name, NameRecordKey.EdgeRecord, newValue, null,
-                UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1);
-        try {
-            LNSListener.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-	}
+    ArrayList<String> newValue = new ArrayList<String>();
+    newValue.add(SendUpdatesViaIntercessor.getRandomString());
+
+    UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
+            0, updateCount, updateCount, -1,
+            name, NameRecordKey.EdgeRecord, newValue, null,
+            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1);
+    try {
+      LNSListener.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+  }
 }
+
+class SendAddIntercessorTask extends TimerTask {
+
+  int requestCount;
+  String name;
+
+  public SendAddIntercessorTask(String name, int count) {
+
+    this.requestCount = count;
+    this.name = name;
+  }
+
+  @Override
+  public void run() {
+
+
+    ArrayList<String> newValue = new ArrayList<String>();
+    newValue.add(SendUpdatesViaIntercessor.getRandomString());
+    AddRecordPacket packet = new AddRecordPacket(requestCount,name,NameRecordKey.EdgeRecord, newValue, LocalNameServer.nodeID);
+
+    try {
+      LNSListener.demultiplexLNSPackets(packet.toJSONObject());
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+  }
+}
+
+
+class SendRemoveIntercessorTask extends TimerTask {
+
+  int requestCount;
+  String name;
+
+  public SendRemoveIntercessorTask(String name, int count) {
+
+    this.requestCount = count;
+    this.name = name;
+  }
+
+  @Override
+  public void run() {
+
+    RemoveRecordPacket packet = new RemoveRecordPacket(requestCount,name,LocalNameServer.nodeID);
+
+    try {
+      LNSListener.demultiplexLNSPackets(packet.toJSONObject());
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+  }
+}
+
 
 //class SendUpdateIntercessorTask extends TimerTask {
 //
 //  int updateCount;
 //  String name;
-//  int seqNumber;
+//  int type;
 //  ArrayList<String> oldValue;
 //  ArrayList<String> newValue;
 //
@@ -101,7 +165,7 @@ class SendUpdateIntercessorTask extends TimerTask {
 //          int sequenceNumber, ArrayList<String> oldValue, ArrayList<String> newValue) {
 //    this.name = name1;
 //    this.updateCount = count;
-//    this.seqNumber = sequenceNumber;
+//    this.type = sequenceNumber;
 //    this.oldValue = oldValue;
 //    this.newValue = newValue;
 //  }
@@ -115,7 +179,7 @@ class SendUpdateIntercessorTask extends TimerTask {
 //
 //  	LNSListenerUpdate.sendUpdatePacket(updateCount, updateAddressPacket);
 //
-////    LocalNameServer.myInter.sendUpdateWithSequenceNumber(name, 0, seqNumber, "edgeRecord", newValue);
+////    LocalNameServer.myInter.sendUpdateWithSequenceNumber(name, 0, type, "edgeRecord", newValue);
 ////    if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Intercessor sending update number " + updateCount + " for name " + name);
 //  }
 //}
@@ -123,19 +187,19 @@ class SendUpdateIntercessorTask extends TimerTask {
 //	{
 //		if (LocalNameServer.updateTrace == null)
 //		{
-//			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Update trace is null. SendUpdatesViaIntercessor thread quitting.");
+//			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("UpdateTrace trace is null. SendUpdatesViaIntercessor thread quitting.");
 //			return;
 //		}
 //		long startTime = System.currentTimeMillis();
 //		
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Send updates intercessor started. Number of queries."
-//						+ LocalNameServer.updateTrace.size() + 
-//						" Update rate regular " + StartLocalNameServer.updateRateRegular);
+//						+ LocalNameServer.updateTrace.size() +
+//						" UpdateTrace rate regular " + StartLocalNameServer.updateRateRegular);
 //		int count = 0;
 //		ArrayList<Long> queryTimes = new ArrayList<Long>();
 //		long tStart = 0;
 //		
-//		for( Update u : LocalNameServer.updateTrace) {
+//		for( UpdateTrace u : LocalNameServer.updateTrace) {
 //			String name = u.name;
 //			if (queryTimes.size() == 0) {
 //				tStart = System.currentTimeMillis();
@@ -146,13 +210,13 @@ class SendUpdateIntercessorTask extends TimerTask {
 //				}
 //			}
 //			count++;
-//			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Sending Update. count = "+ (count) +" name = "+ name);
+//			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Sending UpdateTrace. count = "+ (count) +" name = "+ name);
 //			
 //			ArrayList<String> oldValue = new ArrayList<String>();
 //			// Sending a random string value as new address.
 //			ArrayList<String> newValue = new ArrayList<String>();
 //			newValue.add(getRandomString());
-//			LocalNameServer.myInter.sendUpdateWithSequenceNumber(u.name, u.seqNumber, "edgeRecord", oldValue, newValue);
+//			LocalNameServer.myInter.sendUpdateWithSequenceNumber(u.name, u.type, "edgeRecord", oldValue, newValue);
 ////			if( !LocalNameServer.workloadContainsName( name ) ) continue;
 //			
 //			long tNow = System.currentTimeMillis();
@@ -179,7 +243,7 @@ class SendUpdateIntercessorTask extends TimerTask {
 //			queryTimes.remove(0);
 //			//Time (ms) between events selected from an exponential distribution	
 ////			int timeBetweenUpdate = Util.round( exponentialDistribution.exponential() );
-////			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Sending Update. count = "+ (count) +" waiting = "+ timeBetweenUpdate);
+////			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Sending UpdateTrace. count = "+ (count) +" waiting = "+ timeBetweenUpdate);
 ////			try
 ////			{
 ////				Thread.sleep(timeBetweenUpdate);

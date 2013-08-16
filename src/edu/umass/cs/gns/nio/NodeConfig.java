@@ -9,7 +9,7 @@ import java.net.InetAddress;
  * Time: 7:45 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract  class NodeConfig {
+public interface NodeConfig {
 
     public abstract boolean containsNodeInfo(int ID);
 

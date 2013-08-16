@@ -9,12 +9,14 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +24,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class NameServer {
 
@@ -37,7 +40,7 @@ public class NameServer {
   private static BasicRecordMap replicaController;
   public static ReplicationFramework replicationFramework;
   public static MovingAverage loadMonitor;
-  public static NioServer tcpTransport;
+  public static NioServer2 tcpTransport;
   public static Timer timer;
   public static NSPacketDemultiplexer nsDemultiplexer;
   public static ScheduledThreadPoolExecutor executorService;
@@ -120,8 +123,9 @@ public class NameServer {
     nsDemultiplexer = new NSPacketDemultiplexer();
     ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
 //    new Thread(worker).start();
-    tcpTransport = new NioServer(nodeID, ConfigFileInfo.getIPAddress(nodeID),
-            ConfigFileInfo.getStatsPort(nodeID), worker);
+//    tcpTransport = new NioServer(nodeID, ConfigFileInfo.getIPAddress(nodeID),
+//            ConfigFileInfo.getStatsPort(nodeID), worker);
+    tcpTransport = new NioServer2(nodeID, worker, new NSNodeConfig());
 
     new Thread(tcpTransport).start();
 
@@ -135,7 +139,7 @@ public class NameServer {
 
       // start paxos manager first.
       // this will recover state from paxos logs, if it exists
-      PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, new NSPaxosInterface(), executorService);
+      PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
 
       // Name server starts listening on UDP Port for messages.
       new NSListenerUDP().start();
@@ -154,14 +158,20 @@ public class NameServer {
       // schedule periodic computation of new active name servers.
       if (!(StartNameServer.staticReplication || StartNameServer.optimalReplication)) {
 
-        timer.schedule(new PushAccessFrequencyTask(),
+        executorService.scheduleAtFixedRate(new SendNameRecordStats(),
                 (new Random()).nextInt((int) StartNameServer.aggregateInterval),
-                StartNameServer.aggregateInterval);
+                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
-        timer.schedule(
-                new ComputeNewActivesTask(),
+        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(),
                 (new Random()).nextInt((int) StartNameServer.analysisInterval),
-                StartNameServer.analysisInterval);
+                StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
+
+        // commenting keep alive messages
+//        executorService.scheduleAtFixedRate(new SenderKeepAliveRC(),
+//                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC + (new Random()).nextInt(SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC),
+//                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC, TimeUnit.SECONDS);
+
+
       }
     } catch (IOException e) {
       e.printStackTrace();

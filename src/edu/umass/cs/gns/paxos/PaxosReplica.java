@@ -491,7 +491,9 @@ public class PaxosReplica {
   /********************* END: Methods for replica recovery from paxos logs ********************************/
 
   boolean replicaStarted = false;
+
   private final ReentrantLock startLock = new ReentrantLock();
+
   public  void startReplica( ) {
     synchronized (startLock) {
       if (replicaStarted) return;
@@ -560,7 +562,7 @@ public class PaxosReplica {
    * @param packetType
    * @param decisions
    */
-  private  void sendCurrentState(int receiverNode, int packetType, JSONObject decisions) {
+  private void sendCurrentState(int receiverNode, int packetType, JSONObject decisions) {
     Ballot currentBallot = null;
     try { acceptorLock.lock();
       if (acceptorBallot != null)
@@ -915,7 +917,7 @@ public class PaxosReplica {
         isStopped = true;
       }
       if (StartNameServer.debugMode) GNS.getLogger().fine(" Logging paxos stop " + req);
-      PaxosLogger2.logPaxosStop(paxosID, req);
+      PaxosLogger2.logPaxosStop(paxosID);
     }
     PaxosManager.handleDecision(paxosID, req);
 

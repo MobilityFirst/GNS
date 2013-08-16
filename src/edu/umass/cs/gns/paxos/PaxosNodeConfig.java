@@ -2,6 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nio.NodeConfig;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -17,7 +18,7 @@ import java.util.HashMap;
  * Time: 7:48 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PaxosNodeConfig extends edu.umass.cs.gns.nio.NodeConfig {
+public class PaxosNodeConfig implements NodeConfig {
 
     /**
      * Stores list of nodes, their IP address, and port numbers

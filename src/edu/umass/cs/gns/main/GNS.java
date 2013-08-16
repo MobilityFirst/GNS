@@ -53,7 +53,7 @@ public class GNS {
   /**
    * maximum query wait time in milliseconds
    */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 5000; // 100000 is too damn long... changed to 5 seconds - Westy
+  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 1000; // 100000 is too damn long... changed to 5 seconds - Westy
   /**
    * default number of transmissions
    */

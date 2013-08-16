@@ -114,9 +114,9 @@ experiment_run_time  = exp_config.experiment_run_time    # in seconds
 
 # retransmission parameters
 numberOfTransmissions = 3                         # maximum number of times a query is transmitted
-maxQueryWaitTime = 10000                         # maximum  Wait Time before query is  declared failed (milli-seconds)
-queryTimeout = 1000                              # query timeout interval
-adaptiveTimeout = True
+maxQueryWaitTime = 200                         # maximum  Wait Time before query is  declared failed (milli-seconds)
+queryTimeout = 50                              # query timeout interval
+adaptiveTimeout = False
 delta = 0.05;                                   # Weight assigned to latest sample in calculating moving average.
 mu = 1.0;                                       # Co-efficient of estimated RTT in calculating timeout.
 phi = 6.0;                                      # Co-efficient of deviation in calculating timeout.

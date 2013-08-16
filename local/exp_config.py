@@ -15,7 +15,7 @@ updateTrace = 'updateTrace10'
 num_ns = 80
 num_lns = 80
 
-ns_sleep = 0
+ns_sleep = 1
 
 failed_nodes = None
 load_balancing = False

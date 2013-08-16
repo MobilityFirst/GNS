@@ -56,8 +56,8 @@ public class StartupActiveSetTask extends TimerTask {
   public void run() {
 
 
-    //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
-    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(name);
+    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
+//    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(name);
     if (nameRecordPrimary == null) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name //+ " Record Key = " + nameRecordKey
@@ -67,13 +67,13 @@ public class StartupActiveSetTask extends TimerTask {
       return;
     }
 
-    if (newActivesQueried.size() == 0 && !ReplicaController.isSmallestPrimaryRunning(nameRecordPrimary.getPrimaryNameservers())) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" Node = " + NameServer.nodeID + " isn't the smallest primary active. will not proceed further.");
-      }
-      this.cancel();
-      return;
-    }
+//    if (newActivesQueried.size() == 0) {
+//      if (StartNameServer.debugMode) {
+//        GNS.getLogger().fine(" Node = " + NameServer.nodeID + " isn't the smallest primary active. will not proceed further.");
+//      }
+//      this.cancel();
+//      return;
+//    }
 
     if (!nameRecordPrimary.getActivePaxosID().equals(newActivePaxosID)) {
       if (StartNameServer.debugMode) {
@@ -120,7 +120,8 @@ public class StartupActiveSetTask extends TimerTask {
             NameServer.nodeID, selectedActive, newActiveNameServers, oldActiveNameServers,
             oldActivePaxosID, newActivePaxosID, PacketType.NEW_ACTIVE_START, initialValue, false);
     try {
-      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedActive, GNS.PortType.STATS_PORT);
+//      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedActive, GNS.PortType.STATS_PORT);
+      NameServer.tcpTransport.sendToID(selectedActive, packet.toJSONObject());
     } catch (IOException e) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("IO Exception in sending NewActiveSetStartupPacket: " + e.getMessage());

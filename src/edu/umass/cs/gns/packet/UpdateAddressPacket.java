@@ -3,12 +3,12 @@ package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.util.ArrayList;
-import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * ***********************************************************
@@ -100,11 +100,10 @@ public class UpdateAddressPacket extends BasicPacket {
    * @param name Name (service/host/domain or device name)
    * @param newValue Updated address
    * @param oldValue Old address to be replaced (if applicable, can be null)
-   * @param nameServerID Id of local or name server 
    */
   public UpdateAddressPacket(Packet.PacketType type, int sequenceNumber, int requestID, String name, NameRecordKey recordKey,
-          ArrayList<String> newValue, ArrayList<String> oldValue, UpdateOperation operation) {
-    this(type, sequenceNumber, requestID, -1, -1, name, recordKey, newValue, oldValue, operation, -1, -1);
+          ArrayList<String> newValue, ArrayList<String> oldValue, UpdateOperation operation, int localNameServerId) {
+    this(type, sequenceNumber, requestID, -1, -1, name, recordKey, newValue, oldValue, operation,localNameServerId, -1);
   }
   
   public UpdateAddressPacket(Packet.PacketType type, int sequenceNumber,
@@ -248,12 +247,12 @@ public class UpdateAddressPacket extends BasicPacket {
     return localNameServerId;
   }
 
-    /**
-     * @return the localNameServerId
-     */
-    public void setLocalNameServerId(int localNameServerId) {
-        this.localNameServerId = localNameServerId;
-    }
+//    /**
+//     * @return the localNameServerId
+//     */
+//    public void setLocalNameServerId(int localNameServerId) {
+//        this.localNameServerId = localNameServerId;
+//    }
 
     /**
    * @return the nameServerId

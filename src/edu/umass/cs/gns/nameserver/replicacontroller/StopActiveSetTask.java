@@ -1,20 +1,17 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
+import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.paxos.PaxosManager;
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
-
-
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.paxos.PaxosManager;
-import org.json.JSONException;
-
-import edu.umass.cs.gns.main.GNS;
-
-import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
-import edu.umass.cs.gns.packet.Packet.PacketType;
 
 
 /**
@@ -27,9 +24,7 @@ public class StopActiveSetTask extends TimerTask {
 
   int MAX_ATTEMPTS = 3;		 // number of actives contacted to start replica
   String name;
-  //NameRecordKey nameRecordKey;
   Set<Integer> oldActiveNameServers;
-  Set<Integer> newActiveNameServers;
   Set<Integer> oldActivesQueried;
   String oldPaxosID;
 
@@ -38,14 +33,12 @@ public class StopActiveSetTask extends TimerTask {
    *
    * @param name
    * @param oldActiveNameServers
-   * @param newActiveNameServers
    */
   public StopActiveSetTask(String name, //NameRecordKey nameRecordKey, 
-                           Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers, String oldPaxosID) {
+                           Set<Integer> oldActiveNameServers, String oldPaxosID) {
     this.name = name;
     //this.nameRecordKey = nameRecordKey;
     this.oldActiveNameServers = oldActiveNameServers;
-    this.newActiveNameServers = newActiveNameServers;
     this.oldActivesQueried = new HashSet<Integer>();
     this.oldPaxosID = oldPaxosID;
   }
@@ -54,7 +47,7 @@ public class StopActiveSetTask extends TimerTask {
   public void run() {
 
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
-    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(name);
+    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
 
     if (nameRecordPrimary == null) {
       if (StartNameServer.debugMode) {
@@ -65,13 +58,13 @@ public class StopActiveSetTask extends TimerTask {
       return;
     }
 
-    if (oldActivesQueried.size() == 0 && !ReplicaController.isSmallestPrimaryRunning(nameRecordPrimary.getPrimaryNameservers())) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" This node isnt the smallest primary active. will not proceed further.");
-      }
-      this.cancel();
-      return;
-    }
+//    if (oldActivesQueried.size() == 0) {
+//      if (StartNameServer.debugMode) {
+//        GNS.getLogger().fine(" This node isnt the smallest primary active. will not proceed further.");
+//      }
+//      this.cancel();
+//      return;
+//    }
 
     // is active with paxos ID have stopped return true
     if (nameRecordPrimary.isOldActiveStopped(oldPaxosID)) {
@@ -113,7 +106,8 @@ public class StopActiveSetTask extends TimerTask {
       GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
     }
     try {
-      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedOldActive, GNS.PortType.STATS_PORT);
+//      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedOldActive, GNS.PortType.STATS_PORT);
+      NameServer.tcpTransport.sendToID(selectedOldActive, packet.toJSONObject());
     } catch (IOException e) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("IO Exception in sending OldActiveSetSTOPPacket: " + e.getMessage());

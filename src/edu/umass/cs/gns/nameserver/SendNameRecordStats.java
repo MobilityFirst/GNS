@@ -19,7 +19,7 @@ import java.util.TimerTask;
  * @author Hardeep Uppal
  * **********************************************************
  */
-public class PushAccessFrequencyTask extends TimerTask {
+public class SendNameRecordStats extends TimerTask {
 
   int count = 0;
 
@@ -59,8 +59,8 @@ public class PushAccessFrequencyTask extends TimerTask {
           }
         }
         if (selectedPrimaryNS != -1 && selectedPrimaryNS != NameServer.nodeID) {
-          NameServer.tcpTransport.sendToID(json, selectedPrimaryNS,
-                  GNS.PortType.STATS_PORT);
+//          NameServer.tcpTransport.sendToID(json, selectedPrimaryNS,GNS.PortType.STATS_PORT);
+          NameServer.tcpTransport.sendToID(selectedPrimaryNS, json);
         } else if (selectedPrimaryNS == NameServer.nodeID) {
           // if same node, then directly call the function
           ListenerNameRecordStats.handleIncomingPacket(json);

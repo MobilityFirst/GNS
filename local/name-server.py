@@ -50,6 +50,9 @@ STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 PERSISTENT_DATA_STORE = '-persistentDataStore'
 MONGO_PORT = '-mongoPort'
 PAXOS_LOG_FOLDER = '-paxosLogFolder'
+QUIT_AFTER_TIME = '-quitAfterTime'
+FAILURE_DETECTION_MSG_INTERVAL = '-failureDetectionMsgInterval'
+FAILURE_DETECTION_TIMEOUT_INTERVAL = '-failureDetectionTimeoutInterval'
 
 #Parameters: Update as required
 name_server_jar = 'GNS.jar'
@@ -98,6 +101,9 @@ nsnsping_file = ''
 persistent_data_store = True
 mongo_port = 12345
 paxos_log_folder = exp_config.paxos_log_folder
+failure_detection_msg_interval = 1           # Interval (in sec) between two failure detection messages sent to a node                                                                         
+failure_detection_timeout_interval = 2       # Interval (in sec) after which a node is declared as failed if it does not responsd to failure messages                                            
+
 # logging related parameters:
 # values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
 file_logging_level = 'FINE'
@@ -105,8 +111,8 @@ console_output_level = 'FINE'
 stat_file_logging_level = 'FINE'
 stat_console_output_level = 'FINE'
 
-
-
+quit_after_time = -1 # if value >= 0, name server will quit after that time
+quit_node_id = 0     # which node will quit
 
 
 """ Prints usage message """
@@ -197,6 +203,8 @@ def run_name_server():
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
     
     command += ' ' + PAXOS_LOG_FOLDER + ' ' + paxos_log_folder + '/log_'  + str(node_id)
+    command += ' ' + FAILURE_DETECTION_MSG_INTERVAL + ' ' + str(failure_detection_msg_interval)
+    command += ' ' + FAILURE_DETECTION_TIMEOUT_INTERVAL + ' ' + str(failure_detection_timeout_interval)    
     
     if persistent_data_store:
         command += ' ' + PERSISTENT_DATA_STORE
@@ -204,11 +212,15 @@ def run_name_server():
         command += ' ' + MONGO_PORT + ' ' + str(mongo_port)
     if tiny_update:
         command += ' ' + TINY_UPDATE
+    # only node ID 0 is quitting
+    if node_id == quit_node_id and quit_after_time >= 0:
+        command += ' ' + QUIT_AFTER_TIME + ' ' + str(quit_after_time)
+        
     #if primary_paxos:
     #    command += ' ' + PRIMARY_PAXOS
     if is_experiment_mode:
         command += ' ' + EXPERIMENT_MODE
-        
+
     if is_debug_mode:
         command += ' ' + DEBUG_MODE
         command += ' > log_ns_' + str(node_id)

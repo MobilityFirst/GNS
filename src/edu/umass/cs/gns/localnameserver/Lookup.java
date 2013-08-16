@@ -40,8 +40,7 @@ public class Lookup {
                 System.currentTimeMillis(),
                 numQueries,
                 0,
-                new HashSet<Integer>(),
-                0);
+                new HashSet<Integer>());
         LocalNameServer.timer.schedule(queryTaskObject, 0);
         if (StartLocalNameServer.debugMode) {
             GNS.getLogger().fine("Scheduled this object.");
@@ -146,8 +145,7 @@ public class Lookup {
                     query.getLookupRecvdTime(),
                     query.id,
                     0,
-                    new HashSet<Integer>(),
-                    0);
+                    new HashSet<Integer>());
             PendingTasks.addToPendingRequests(query.qName, //query.qRecordKey,
                     queryTaskObject, 0,
                     query.senderAddress, query.senderPort, LNSQueryTask.getErrorPacket(query.incomingPacket));

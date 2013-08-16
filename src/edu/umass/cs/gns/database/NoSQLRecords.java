@@ -4,9 +4,10 @@
  */
 package edu.umass.cs.gns.database;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Set;
-import org.json.JSONObject;
 
 /**
  * Provides an interface insert, update, remove and lookup operations in a nosql database
@@ -20,6 +21,7 @@ public interface NoSQLRecords {
   public void insert(String collection, String guid, JSONObject value);
   public void update(String collection, String guid, JSONObject value);
   public void updateListValue(String collection, String guid, String key,  ArrayList<String> value);
+  public void updateListValueInt(String collection, String guid, String key,  Set<Integer> value);
   public void updateField(String collectionName, String guid, String key, String string);
   public boolean contains(String collection, String guid);
   public void remove(String collection, String guid);

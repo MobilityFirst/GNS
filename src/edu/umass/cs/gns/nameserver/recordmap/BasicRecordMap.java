@@ -9,14 +9,15 @@ import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -57,6 +58,20 @@ public abstract class BasicRecordMap implements RecordMapInterface {
     if (result != null) {
       try {
         return Integer.parseInt(result);
+      } catch (NumberFormatException e) {
+        GNS.getLogger().finer("Error parsing result " + name + " with key " + key + " :" + e);
+        return -1;
+      }
+    } else {
+      return -1;
+    }
+  }
+
+  public long getNameRecordFieldAsLong(String name, String key) {
+    String result = getNameRecordField(name, key);
+    if (result != null) {
+      try {
+        return Long.parseLong(result);
       } catch (NumberFormatException e) {
         GNS.getLogger().finer("Error parsing result " + name + " with key " + key + " :" + e);
         return -1;
@@ -130,12 +145,17 @@ public abstract class BasicRecordMap implements RecordMapInterface {
     updateNameRecordField(name, key, Integer.toString(value));
   }
 
+  public void updateNameRecordFieldAsLong(String name, String key, long value) {
+    updateNameRecordField(name, key, Long.toString(value));
+  }
+
   public void updateNameRecordFieldAsBoolean(String name, String key, boolean value) {
     updateNameRecordField(name, key, Boolean.toString(value));
   }
 
   public void updateNameRecordFieldAsIntegerSet(String name, String key, Set<Integer> value) {
-    updateNameRecordField(name, key, new JSONArray(value).toString());
+//    updateNameRecordListValue(name, key, value);
+    updateNameRecordListValueInt(name, key, value);
   }
 
   @Override

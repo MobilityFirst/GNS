@@ -47,7 +47,7 @@ public class NSPaxosInterface implements PaxosInterface {
                 ReplicaController.oldActiveStoppedWriteToNameRecord(req.value);
             }
             else if (req.clientID  == Packet.PacketType.REMOVE_RECORD_LNS.getInt()) {
-                ReplicaController.applyRemovedRecordPacket(req.value);
+                ReplicaController.applyMarkedForRemoval(req.value);
             }
             else if (req.clientID == Packet.PacketType.PRIMARY_PAXOS_STOP.getInt()) {
                 ReplicaController.applyStopPrimaryPaxos(req.value);

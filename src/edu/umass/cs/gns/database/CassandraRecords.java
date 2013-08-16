@@ -174,6 +174,13 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
+  public void updateListValueInt(String collection, String guid, String key, Set<Integer> value) {
+    // TODO not implemented
+    GNS.getLogger().fine(" Not implememented error!!!");
+    System.exit(2);
+  }
+
+  @Override
   public void updateField(String collection, String guid, String key, String string) {
     ColumnFamilyUpdater<String, String> updater = template.createUpdater(guid);
     updater.setString(key, string);

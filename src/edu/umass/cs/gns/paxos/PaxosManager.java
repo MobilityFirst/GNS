@@ -126,10 +126,11 @@ public class PaxosManager extends Thread{
     }
   }
 
-  public static void initializePaxosManager(int numberOfNodes, int nodeID, PaxosInterface outputHandler, ScheduledThreadPoolExecutor executorService) {
+  public static void initializePaxosManager(int numberOfNodes, int nodeID, NioServer2 tcpTransport, PaxosInterface outputHandler, ScheduledThreadPoolExecutor executorService) {
 
     PaxosManager.N = numberOfNodes;
     PaxosManager.nodeID = nodeID;
+    PaxosManager.tcpTransport = tcpTransport;
 
     PaxosManager.clientRequestHandler = outputHandler;
 
@@ -177,10 +178,8 @@ public class PaxosManager extends Thread{
 
     PaxosManager.nodeID = nodeID;
 
-    // initialize transport
-    initTransport(nodeConfig);
     // init paxos manager
-    initializePaxosManager(N, nodeID, outputHandler, new ScheduledThreadPoolExecutor(maxThreads));
+    initializePaxosManager(N, nodeID, initTransport(nodeConfig), outputHandler, new ScheduledThreadPoolExecutor(maxThreads));
 //
 //
 ////        ConcurrentHashMap<String, PaxosReplica> paxosInstances = PaxosLogger.initializePaxosLogger();
@@ -403,7 +402,8 @@ public class PaxosManager extends Thread{
           continue;
         PaxosReplica paxosReplica = new PaxosReplica(paxosID,nodeID,paxosInstancesStopped.get(paxosID),true, paxosInstaceStopRequests.get(paxosID));
         paxosInstances.put(paxosID, paxosReplica);
-        PaxosLogger2.logPaxosStop(paxosID, paxosInstaceStopRequests.get(paxosID));
+        PaxosLogger2.logPaxosStop(paxosID);
+//        PaxosLogger2.logPaxosStop(paxosID, paxosInstaceStopRequests.get(paxosID));
         clientRequestHandler.handlePaxosDecision(paxosID, paxosInstaceStopRequests.get(paxosID));
       }
     }
@@ -472,7 +472,7 @@ public class PaxosManager extends Thread{
    * initialize transport object during Paxos debugging/testing
    * @param configFile config file containing list of node ID, IP, port
    */
-  private static void initTransport(String configFile) {
+  private static NioServer2 initTransport(String configFile) {
 
     // create the worker object
     PaxosPacketDemultiplexer paxosDemux = new PaxosPacketDemultiplexer();
@@ -482,14 +482,16 @@ public class PaxosManager extends Thread{
 //        new Thread(worker).start();
 
     // start TCP transport thread
+    NioServer2 tcpTransportLocal = null;
     try {
-      tcpTransport = new NioServer2(nodeID, worker, new PaxosNodeConfig(configFile));
+      tcpTransportLocal = new NioServer2(nodeID, worker, new PaxosNodeConfig(configFile));
       if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED ... " );
-      new Thread(tcpTransport).start();
+      new Thread(tcpTransportLocal).start();
     } catch (IOException e) {
       GNS.getLogger().severe(" Could not initialize TCP socket at client");
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
+    return tcpTransportLocal;
   }
 
   public static void resetAll() {
@@ -528,7 +530,9 @@ public class PaxosManager extends Thread{
         return false;
       }
 
-      PaxosLogger2.logPaxosStart(paxosID, nodeIDs, new StatePacket(new Ballot(0,0),0, initialState));
+      if (initialState != null) {
+        PaxosLogger2.logPaxosStart(paxosID, nodeIDs, new StatePacket(new Ballot(0,0),0, initialState));
+      }
       if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tBefore creating replica.");
 
       r = new PaxosReplica(paxosID, nodeID, nodeIDs);
@@ -545,6 +549,12 @@ public class PaxosManager extends Thread{
 
     if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tExit create Paxos");
     return true;
+  }
+
+  public static void deletePaxosInstance(String paxosID) {
+    PaxosReplica replica = paxosInstances.remove(paxosID);
+    if (replica != null)
+      PaxosLogger2.logPaxosStop(paxosID);
   }
 
 //	/**
@@ -751,14 +761,11 @@ public class PaxosManager extends Thread{
   static void sendMessage(int destID, JSONObject json) {
     try
     {
-      if (debug) {
-        tcpTransport.sendToID(destID, json);
-      }
-      else {
-        // Add paxos packet type field so that packet can be routed to a paxos manager.
+      if (!debug) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
-        NameServer.tcpTransport.sendToID(json, destID, PortType.STATS_PORT);
+
       }
+      tcpTransport.sendToID(destID, json);
     } catch (IOException e)
     {
       if (StartNameServer.debugMode) GNS.getLogger().severe("Paxos: IO Exception in sending to ID. " + destID);
@@ -786,6 +793,8 @@ public class PaxosManager extends Thread{
     PaxosManager.setPaxosLogFolder(paxosLogFolder + "/paxoslog_" + myID);
     initializePaxosManagerDebugMode(nodeConfigFile, testConfig, myID, new DefaultPaxosInterface());
   }
+
+
 }
 
 
@@ -798,7 +807,7 @@ class PaxosPacketDemultiplexer extends PacketDemultiplexer {
       JSONObject json = (JSONObject)j;
       PaxosManager.handleIncomingPacket(json);
 //                int incomingPacketType = json.getInt(PaxosPacketType.ptype);
-//                if (incomingPacketType == PaxosPacketType.REQUEST) {
+//                if (incomingPacketType == PaxosPacketType.REMOVE) {
 //                    String paxosID = json.getString(PaxosManager.PAXOS_ID);
 //                    RequestPacket req = new RequestPacket(json);
 //                    PaxosManager.clientRequestHandler.proposeRequestToPaxos(paxosID, req);

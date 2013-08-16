@@ -114,7 +114,7 @@ public class KMediods  implements ReplicationFramework {
 			}
 			//System.out.println("; total latency: " + latency);
 			
-			//Update for each cluster
+			//UpdateTrace for each cluster
 			iterator_NS = kmedoids.iterator();
 			while(iterator_NS.hasNext()){
 				medoidNS = iterator_NS.next();

@@ -16,7 +16,7 @@ public class UpdateDistribution {
 	/** Size of the workload **/
 	private int size;
 	
-	/** Update Rate: number of updates per seconds **/
+	/** UpdateTrace Rate: number of updates per seconds **/
 	public double avgUpdateRate; 
 	
 	/** Average inter-arrival time (seconds) between updates **/
@@ -40,7 +40,7 @@ public class UpdateDistribution {
 	public UpdateDistribution( int size, int avgUpdateInterArrivalTime ) {
 		this.size = size;
 		this.avgUpdateInterArrivalTime = avgUpdateInterArrivalTime;		
-		this.avgUpdateRate = 1d / (double) avgUpdateInterArrivalTime;	//Update Rate = 1/interArrivalTime
+		this.avgUpdateRate = 1d / (double) avgUpdateInterArrivalTime;	//UpdateTrace Rate = 1/interArrivalTime
 		this.random = new Random( System.currentTimeMillis() );
 		this.updateInfoMap = new HashMap<String, UpdateInfo>();
 		
@@ -59,7 +59,7 @@ public class UpdateDistribution {
 			updateInterArrivalTime = 1 + random.nextInt( ( avgUpdateInterArrivalTime * 2 ) - 1 );
 			updateRate = 1d / (double) updateInterArrivalTime;
 			updateInfoMap.put( Integer.toString( rank ), new UpdateInfo( updateInterArrivalTime, updateRate) );
-			//Sume of Update Rates over all bame: Sum(over n) Ui
+			//Sume of UpdateTrace Rates over all bame: Sum(over n) Ui
 			denominator += updateRate;
 		}
 	}

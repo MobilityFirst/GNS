@@ -12,11 +12,8 @@ import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
-import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
-import edu.umass.cs.gns.util.Update;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.util.*;
+import edu.umass.cs.gns.util.UpdateTrace;
 
 import java.io.*;
 import java.net.DatagramSocket;
@@ -76,7 +73,7 @@ public class LocalNameServer {
    */
   public static ImmutableSet<String> workloadSet;
   public static List<String> lookupTrace;
-  public static List<Update> updateTrace;
+  public static List<UpdateTrace> updateTrace;
 //  public static Map<String, List<OptimalNameServerInfo>> optimalReplicationInfo;
 
   public static BeehiveDHTRouting beehiveDHTRouting;
@@ -232,8 +229,8 @@ public class LocalNameServer {
     return trace;
   }
 
-  private static List<Update> readUpdateTrace(String filename) throws IOException {
-    List<Update> trace = new ArrayList<Update>();
+  private static List<UpdateTrace> readUpdateTrace(String filename) throws IOException {
+    List<UpdateTrace> trace = new ArrayList<UpdateTrace>();
     BufferedReader br = new BufferedReader(new FileReader(filename));
     HashMap<String, Integer> updateCounts = new HashMap<String, Integer>();
     while (br.ready()) {
@@ -242,10 +239,10 @@ public class LocalNameServer {
         continue;
       }
       line = line.trim();
-      // name sequencenumber
-      String[] tokens = line.split("\t");
+      // name type (add/remove/update)
+      String[] tokens = line.split("\\s+");
       if (tokens.length == 2) {
-        trace.add(new Update(tokens[0], new Integer(tokens[1])));
+        trace.add(new UpdateTrace(tokens[0], new Integer(tokens[1])));
         continue;
       } else {
         int count = 1;
@@ -253,7 +250,7 @@ public class LocalNameServer {
           count = updateCounts.get(tokens[0]) + 1;
         }
         updateCounts.put(tokens[0], count);
-        trace.add(new Update(tokens[0], count));
+        trace.add(new UpdateTrace(tokens[0], count));
       }
 
     }
@@ -1100,12 +1097,12 @@ public class LocalNameServer {
    * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
    * ***********************************************************
    */
-  public static int getClosestPrimaryNameServer(String name, Set<Integer> nameserverQueried) {
+  public static int getClosestPrimaryNameServer(String name, Set<Integer> nameServersQueried) {
     try {
       Set<Integer> primary = getPrimaryNameServers(name);
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
-      int x = Util.getSmallestLatencyNS(primary, nameserverQueried);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Closest Primary Name Server: " + x + " nameserQuerie: " + nameserverQueried);
+      int x = Util.getSmallestLatencyNS(primary, nameServersQueried);
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
       return x;
     } catch (Exception e) {
       return -1;

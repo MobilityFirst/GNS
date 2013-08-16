@@ -3,12 +3,12 @@ package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.util.ArrayList;
-import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 public class AddRecordPacket extends BasicPacket {
 
@@ -43,8 +43,10 @@ public class AddRecordPacket extends BasicPacket {
    * Id of local nameserver handling this request *
    */
   private int localNameServerID;
-  
-  /// this will be filled in by the local nameserver
+
+  /**
+   * this will be filled in by the local nameserver
+   */
   private Set<Integer> primaryNameServers;
   
 
@@ -108,7 +110,7 @@ public class AddRecordPacket extends BasicPacket {
     json.put(NAME, getName());
     json.put(VALUE, new JSONArray(getValue()));
     json.put(LOCALNAMESERVERID, getLocalNameServerID());
-    json.put(PRIMARYNAMESERVERS, new JSONArray(getPrimaryNameServers()));
+    json.put(PRIMARYNAMESERVERS, new JSONArray(primaryNameServers));
     return json;
   }
 
@@ -153,11 +155,18 @@ public class AddRecordPacket extends BasicPacket {
   }
 
   /**
-   * @return the primaryNameServers
+   * @return the primaryNameserverId
    */
-  public Set<Integer> getPrimaryNameServers() {
-    return primaryNameServers;
+  public void setLocalNameServerID(int localNameServerID1) {
+    localNameServerID = localNameServerID1;
   }
+
+//  /**
+//   * @return the primaryNameServers
+//   */
+//  public Set<Integer> getPrimaryNameServers() {
+//    return primaryNameServers;
+//  }
 
   /**
    * @param primaryNameServers the primaryNameServers to set

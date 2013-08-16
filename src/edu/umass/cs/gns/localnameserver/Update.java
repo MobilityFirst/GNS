@@ -20,9 +20,10 @@ public class Update {
 
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(json);
 
-    GNS.getLogger().fine(" UPDATE ADDRESS PACKET RECEIVED. Operation: " + updateAddressPacket.getOperation());
+    GNS.getLogger().fine(" UPDATE PACKET RECVD. Operation: " + updateAddressPacket.getOperation());
 
     if (updateAddressPacket.getOperation().isUpsert()) {
+
       AddRemove.handleUpsert(updateAddressPacket, InetAddress.getByName(Transport.getReturnAddress(json)), Transport.getReturnPort(json));
     } else {
       LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName());
@@ -45,8 +46,8 @@ public class Update {
     numUpdateResponse++;
 
     if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("ListenerAddressUpdateConfirmation: Received ResponseNum: "
-              + (numUpdateResponse) + " --> " + confirmPkt.toString());
+      GNS.getLogger().fine("ConfirmUpdateLNS recvd: ResponseNum: " + numUpdateResponse
+              + " --> " + confirmPkt.toString());
     }
 
     if (confirmPkt.isSuccess()) {
@@ -59,7 +60,7 @@ public class Update {
       } else {
         // send the confirmation back to the originator of the update
         if (StartLocalNameServer.debugMode) {
-          GNS.getLogger().severe("LNSListenerUpdate CONFIRM (ns " + LocalNameServer.nodeID + ") to "
+          GNS.getLogger().severe("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
                   + updateInfo.senderAddress + ":" + updateInfo.senderPort + " : " + json.toString());
         }
         if (updateInfo.senderAddress != null && updateInfo.senderAddress.length() > 0 && updateInfo.senderPort > 0) {

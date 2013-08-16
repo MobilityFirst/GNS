@@ -172,6 +172,8 @@ public class ConfigFileInfo {
   }
 
   public static Set<Integer> getAllNameServerIDs() {
+//      HashSet<Integer> x  = new HashSet<Integer>();
+//    x.add(1);x.add(2);return x;
     return ImmutableSet.copyOf(nameServerMapping.keySet());
   }
 

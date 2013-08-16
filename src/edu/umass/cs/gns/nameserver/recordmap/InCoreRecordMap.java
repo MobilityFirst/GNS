@@ -3,14 +3,15 @@ package edu.umass.cs.gns.nameserver.recordmap;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Stores GUID, KEY, VALUE triples
@@ -99,6 +100,11 @@ public class InCoreRecordMap extends BasicRecordMap {
 
   @Override
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

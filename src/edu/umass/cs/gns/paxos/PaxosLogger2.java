@@ -522,19 +522,18 @@ public class PaxosLogger2 extends Thread{
    * TODO add doc here
    * @param paxosID
    */
-  static void logPaxosStop(String paxosID, RequestPacket requestPacket) {
+  static void logPaxosStop(String paxosID) {
 
     String paxosIDsFile1 = getPaxosIDsFile();
 
     synchronized (loggingLock) {
       String logString = null;
-      try {
-        logString = getLogString(paxosID, PaxosPacketType.STOP,
-                requestPacket.toJSONObject().toString());
-      } catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        return;
-      }
+//      try {
+        logString = getLogString(paxosID, PaxosPacketType.STOP,Integer.toString(PaxosPacketType.STOP));
+//      } catch (JSONException e) {
+//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        return;
+//      }
       appendToFile(paxosIDsFile1,logString);
     }
   }

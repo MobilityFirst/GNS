@@ -9,25 +9,26 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MongoRecordMap extends BasicRecordMap {
 
-  private String collectioName;
+  private String collectionName;
 
   public MongoRecordMap(String collectionName) {
-    this.collectioName = collectionName;
+    this.collectionName = collectionName;
   }
 
   @Override
   public String getNameRecordField(String name, String key) {
     MongoRecords records = MongoRecords.getInstance();
-    String result = records.lookup(collectioName, name, key);
+    String result = records.lookup(collectionName, name, key);
     if (result != null) {
       GNS.getLogger().fine(records.toString() + ":: Retrieved " + name + "/" + key + ": " + result);
       return result;
@@ -41,20 +42,27 @@ public class MongoRecordMap extends BasicRecordMap {
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().fine(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
-    records.updateListValue(collectioName, name, key, value);
+    records.updateListValue(collectionName, name, key, value);
+  }
+
+  @Override
+  public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
+    MongoRecords records = MongoRecords.getInstance();
+    GNS.getLogger().fine(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
+    records.updateListValueInt(collectionName, name, key, value);
   }
 
   @Override
   public void updateNameRecordField(String name, String key, String string) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().fine(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
-    records.updateField(collectioName, name, key, string);
+    records.updateField(collectionName, name, key, string);
   }
 
   @Override
   public Set<String> getAllRowKeys() {
     MongoRecords records = MongoRecords.getInstance();
-    return records.keySet(collectioName);
+    return records.keySet(collectionName);
   }
 
   @Override
@@ -62,7 +70,7 @@ public class MongoRecordMap extends BasicRecordMap {
     if (!containsName(name)) {
       try {
         MongoRecords records = MongoRecords.getInstance();
-        JSONObject json = records.lookup(collectioName, name);
+        JSONObject json = records.lookup(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
         GNS.getLogger().severe("Error updating json record: " + e);
@@ -75,7 +83,7 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public NameRecord getNameRecordLazy(String name) {
-    if (MongoRecords.getInstance().contains(collectioName, name)) {
+    if (MongoRecords.getInstance().contains(collectionName, name)) {
       //GNS.getLogger().info("Creating lazy name record for " + name);
       return new NameRecord(name, this);
     } else {
@@ -86,7 +94,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public NameRecord getNameRecord(String name) {
     try {
-      JSONObject json = MongoRecords.getInstance().lookup(collectioName, name);
+      JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -119,7 +127,7 @@ public class MongoRecordMap extends BasicRecordMap {
     MongoRecords records = MongoRecords.getInstance();
     try {
       String name = json.getString(NameRecord.NAME);
-      records.insert(collectioName, name, json);
+      records.insert(collectionName, name, json);
       GNS.getLogger().finer(records.toString() + ":: Added " + name);
     } catch (JSONException e) {
       GNS.getLogger().severe(records.toString() + ":: Error adding name record: " + e);
@@ -130,7 +138,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecord(NameRecord recordEntry) {
     try {
-      MongoRecords.getInstance().update(collectioName, recordEntry.getName(), recordEntry.toJSONObject());
+      MongoRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
@@ -138,20 +146,20 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public void removeNameRecord(String name) {
-    MongoRecords.getInstance().remove(collectioName, name);
+    MongoRecords.getInstance().remove(collectionName, name);
   }
 
   @Override
   public boolean containsName(String name) {
-    return MongoRecords.getInstance().contains(collectioName, name);
+    return MongoRecords.getInstance().contains(collectionName, name);
   }
 
   @Override
   public Set<NameRecord> getAllNameRecords() {
-    MongoRecords.getInstance().keySet(collectioName);
+    MongoRecords.getInstance().keySet(collectionName);
     MongoRecords records = MongoRecords.getInstance();
     Set<NameRecord> result = new HashSet<NameRecord>();
-    for (JSONObject json : records.retrieveAllEntries(collectioName)) {
+    for (JSONObject json : records.retrieveAllEntries(collectionName)) {
       try {
         result.add(new NameRecord(json));
       } catch (JSONException e) {
@@ -164,13 +172,13 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public void reset() {
-    MongoRecords.getInstance().reset(collectioName);
+    MongoRecords.getInstance().reset(collectionName);
   }
 
   @Override
   public ReplicaControllerRecord getNameRecordPrimary(String name) {
     try {
-      JSONObject json = MongoRecords.getInstance().lookup(collectioName, name);
+      JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -184,7 +192,7 @@ public class MongoRecordMap extends BasicRecordMap {
   
   @Override
   public ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
-    if (MongoRecords.getInstance().contains(collectioName, name)) {
+    if (MongoRecords.getInstance().contains(collectionName, name)) {
       //GNS.getLogger().info("Creating lazy name record for " + name);
       return new ReplicaControllerRecord(name, this);
     } else {
@@ -199,7 +207,7 @@ public class MongoRecordMap extends BasicRecordMap {
     }
 
     try {
-      MongoRecords.getInstance().insert(collectioName, recordEntry.getName(), recordEntry.toJSONObject());
+      MongoRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       return;
@@ -209,7 +217,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
     try {
-      MongoRecords.getInstance().update(collectioName, recordEntry.getName(), recordEntry.toJSONObject());
+      MongoRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
@@ -217,10 +225,10 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
-    MongoRecords.getInstance().keySet(collectioName);
+    MongoRecords.getInstance().keySet(collectionName);
     MongoRecords records = MongoRecords.getInstance();
     Set<ReplicaControllerRecord> result = new HashSet<ReplicaControllerRecord>();
-    for (JSONObject json : records.retrieveAllEntries(collectioName)) {
+    for (JSONObject json : records.retrieveAllEntries(collectionName)) {
       try {
         result.add(new ReplicaControllerRecord(json));
       } catch (JSONException e) {

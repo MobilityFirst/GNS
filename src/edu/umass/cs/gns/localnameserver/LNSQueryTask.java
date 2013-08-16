@@ -27,7 +27,7 @@ public class LNSQueryTask extends TimerTask {
   private int queryId;
   private HashSet<Integer> nameserverQueried;
   int latestNameServerQueried;
-  long totalTimerWait;
+//  long totalTimerWait;
 //	private long retransmission_timeout = StartLocalNameServer.queryTimeout;
   //private long maxQueryWaitTime = StartLocalNameServer.maxQueryWaitTime; // 100 seconds
   private static final boolean DISABLECACHE = false; // for testing - Westy
@@ -35,7 +35,7 @@ public class LNSQueryTask extends TimerTask {
   LNSQueryTask(DNSPacket incomingPacket, int transmissionCount,
           InetAddress senderAddress, int senderPort, long receivedTime,
           int lookupNumber, int queryId,
-          HashSet<Integer> nameserverQueried, long totalTimerWait) {
+          HashSet<Integer> nameserverQueried) {
     this.incomingPacket = incomingPacket;
     this.transmissionCount = transmissionCount;
     this.senderAddress = senderAddress;
@@ -45,7 +45,7 @@ public class LNSQueryTask extends TimerTask {
     this.queryId = queryId;
     this.nameserverQueried = nameserverQueried;
     latestNameServerQueried = -1;
-    this.totalTimerWait = totalTimerWait;
+//    this.totalTimerWait = totalTimerWait;
   }
 
   @Override
@@ -120,13 +120,9 @@ public class LNSQueryTask extends TimerTask {
     } else {
       if (StartLocalNameServer.debugMode) GNS.getLogger().warning("!!!! CACHE IS DISABLED !!!!");
     }
-    
-    // If no name server exists, create
-    
-    
+
     // exceeded numberOfRetransmissions ?  reply Failure to user.
-    if (transmissionCount > StartLocalNameServer.numberOfTransmissions ||
-            System.currentTimeMillis() - receivedTime > StartLocalNameServer.maxQueryWaitTime) {
+    if (System.currentTimeMillis() - receivedTime > StartLocalNameServer.maxQueryWaitTime) {
 
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Transmissions exceeded. " + incomingPacket.getQrecordKey() + " " + incomingPacket.getQname());
       errorResponse(incomingPacket, DNSRecordType.RCODE_ERROR, senderAddress, senderPort);
@@ -142,32 +138,38 @@ public class LNSQueryTask extends TimerTask {
       return;
     }
 
-    int result = sendDNSLookupToNameServer();
+    if (transmissionCount < StartLocalNameServer.numberOfTransmissions) {
+      int result = sendDNSLookupToNameServer();
+      if (result == 2) {
+        // 2 = new actives requested, cancel this query
+        return;
+      }
+      if (result == 1) { // no name servers remaining
+        // clear name servers and try again
+        nameserverQueried.clear();
+        result = sendDNSLookupToNameServer();
+        if (result == 2) {
+          // 2 = new actives requested, cancel this query
+          return;
+        }
+        if (result == 1) { // still no name servers
+          transmissionCount = StartLocalNameServer.numberOfTransmissions;
+        }
+      }
 
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tDNS-lookup-scheduled");
-    long retransmissionTimeout = 0;
-    if (result == 2) {
-        // 2 = new actives requested, cancel this query
-        return;
-    }
-    if (result == 1 || transmissionCount == StartLocalNameServer.numberOfTransmissions) {
-        // 1 = no
-      retransmissionTimeout = StartLocalNameServer.maxQueryWaitTime - totalTimerWait;
-      if (retransmissionTimeout < 0) {
-        retransmissionTimeout = 0;
-      }
-      transmissionCount = StartLocalNameServer.numberOfTransmissions;
-    } else {
-      if (StartLocalNameServer.adaptiveTimeout) {
-        retransmissionTimeout = AdaptiveRetransmission.getTimeoutInterval(latestNameServerQueried);
-        if (StartLocalNameServer.debugMode) GNS.getLogger().info("Retransmission-Timeout\t" + LocalNameServer.nodeID + "\t" + retransmissionTimeout + "\t");
-      } else {
-        retransmissionTimeout = StartLocalNameServer.queryTimeout;
-      }
+
     }
 
-    totalTimerWait += retransmissionTimeout;
+    long retransmissionTimeout;
+    if (StartLocalNameServer.adaptiveTimeout) {
+      retransmissionTimeout = AdaptiveRetransmission.getTimeoutInterval(latestNameServerQueried);
+      if (StartLocalNameServer.debugMode) GNS.getLogger().info("Retransmission-Timeout\t" + LocalNameServer.nodeID + "\t" + retransmissionTimeout + "\t");
+    } else {
+      retransmissionTimeout = StartLocalNameServer.queryTimeout;
+    }
+
     //if (StartLocalNameServer.debugMode) GNRS.getLogger().info("***RETRAN*** COUNT = " + transmissionCount + " NODE = " + LocalNameServer.nodeID + " timeout = " + retransmissionTimeout + " total timeout = " + totalTimerWait);
     LocalNameServer.timer.schedule(
             new LNSQueryTask(
@@ -178,8 +180,7 @@ public class LNSQueryTask extends TimerTask {
             receivedTime,
             lookupNumber,
             queryId,
-            nameserverQueried,
-            totalTimerWait),
+            nameserverQueried),
             retransmissionTimeout);
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tEnd-of-timer");
@@ -351,8 +352,7 @@ public class LNSQueryTask extends TimerTask {
   				receivedTime,
   				lookupNumber,
   				0,
-  				new HashSet<Integer>(),
-  				0);
+  				new HashSet<Integer>());
     	  PendingTasks.addToPendingRequests(name, //nameRecordKey, 
                   queryTaskObject, 0,
                   senderAddress, senderPort, getErrorPacket(incomingPacket));
