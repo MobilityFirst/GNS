@@ -31,20 +31,32 @@ public enum UpdateOperation {
   REMOVE(false),
   REPLACESINGLETON(false),
   APPEND(false),
-  APPEND_OR_CREATE(true),
-  REPLACE_ALL_OR_CREATE(true),
+  APPEND_OR_CREATE(true, APPEND),
+  REPLACE_ALL_OR_CREATE(true, REPLACE_ALL),
   APPEND_WITH_DUPLICATION(false),
   SUBSTITUTE(false);
   //
   boolean upsert;
+  UpdateOperation nonUpsertEquivalent = null;
 
   public boolean isUpsert() {
     return upsert;
   }
 
+  public UpdateOperation getNonUpsertEquivalent() {
+    return nonUpsertEquivalent;
+  }
+ 
   private UpdateOperation(boolean upsert) {
     this.upsert = upsert;
   }
+
+  private UpdateOperation(boolean upsert, UpdateOperation nonUpsertEquivalent) {
+    this.upsert = upsert;
+    this.nonUpsertEquivalent = nonUpsertEquivalent;
+  }
+  
+  
 
   /**
    * Updates a valuesMap object based on the parameters given.

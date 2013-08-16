@@ -336,11 +336,15 @@ public class ClientRequestWorker extends TimerTask {
         }
         if (activeID != -1) {
           // forward update to active NS
-          if (updatePacket.getOperation().equals(UpdateOperation.APPEND_OR_CREATE)) {
-            updatePacket.setOperation(UpdateOperation.APPEND);
-          } else if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL_OR_CREATE)) {
-            updatePacket.setOperation(UpdateOperation.REPLACE_ALL);
+          // updated to use a less kludgey operation - Westy
+          if (updatePacket.getOperation().isUpsert()) {
+            updatePacket.setOperation(updatePacket.getOperation().getNonUpsertEquivalent());
           }
+//          if (updatePacket.getOperation().equals(UpdateOperation.APPEND_OR_CREATE)) {
+//            updatePacket.setOperation(UpdateOperation.APPEND);
+//          } else if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL_OR_CREATE)) {
+//            updatePacket.setOperation(UpdateOperation.REPLACE_ALL);
+//          }
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine("UPSERT forwarded as UPDATE to active: " + activeID);
           }

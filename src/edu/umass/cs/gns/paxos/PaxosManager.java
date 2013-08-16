@@ -697,7 +697,7 @@ public class PaxosManager extends Thread{
 
     int incomingPacketType;
     try {
-      GNS.getLogger().fine("recvd msg: " + json.toString());
+      GNS.getLogger().finer("recvd msg: " + json.toString());
       incomingPacketType = json.getInt(PaxosPacketType.ptype);
     } catch (JSONException e) {
       e.printStackTrace();
