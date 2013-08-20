@@ -49,7 +49,10 @@ import org.apache.commons.cli.ParseException;
  *
  */
 /**
- *
+ * Typical use:
+ * 
+ * java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer -config "release-config" -update "release" 
+ * 
  * @author westy
  */
 public class EC2Installer {

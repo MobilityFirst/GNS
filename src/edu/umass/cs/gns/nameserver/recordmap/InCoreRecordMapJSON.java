@@ -75,10 +75,22 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public void updateNameRecordField(String name, String key, String string) {
+  public void updateNameRecordFieldAsString(String name, String key, String string) {
     if (containsName(name)) {
       try {
         recordMap.get(name).put(key, string);
+        //System.out.println("&&&&"+recordMap.get(name).toString());
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Error updating json record: " + e);
+      }
+    }
+  }
+  
+  @Override
+  public void updateNameRecordFieldAsObject(String name, String key, Object object) {
+    if (containsName(name)) {
+      try {
+        recordMap.get(name).put(key, object);
         //System.out.println("&&&&"+recordMap.get(name).toString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Error updating json record: " + e);

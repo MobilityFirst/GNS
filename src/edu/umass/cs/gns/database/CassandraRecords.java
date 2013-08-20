@@ -32,7 +32,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -176,12 +178,11 @@ public class CassandraRecords implements NoSQLRecords {
   @Override
   public void updateListValueInt(String collection, String guid, String key, Set<Integer> value) {
     // TODO not implemented
-    GNS.getLogger().fine(" Not implememented error!!!");
-    System.exit(2);
+    GNS.getLogger().severe(" Not implememented error!!!");
   }
 
   @Override
-  public void updateField(String collection, String guid, String key, String string) {
+  public void updateFieldAsString(String collection, String guid, String key, String string) {
     ColumnFamilyUpdater<String, String> updater = template.createUpdater(guid);
     updater.setString(key, string);
     try {
@@ -189,6 +190,16 @@ public class CassandraRecords implements NoSQLRecords {
     } catch (HectorException e) {
       GNS.getLogger().warning("Unable to update: " + e);
     }
+  }
+  
+  @Override
+  public void updateFieldAsMap(String collection, String guid, String key, Map map) {
+    GNS.getLogger().severe(" Not implememented error!!!");
+  }
+  
+  @Override
+  public void updateFieldAsCollection(String collection, String guid, String key, Collection list) {
+    GNS.getLogger().severe(" Not implememented error!!!");
   }
 
   public boolean contains(String collection, String guid, String key) {

@@ -456,10 +456,10 @@ public class NameRecordV1 {
     StatsInfo info = (nameServerStatsMap != null) ? nameServerStatsMap.remove(id) : null;
     if (info != null) {
       if (previousAggregateReadFrequency != 0) {
-        previousAggregateReadFrequency -= info.read;
+        previousAggregateReadFrequency -= info.getRead();
       }
       if (previousAggregateWriteFrequency != 0) {
-        previousAggregateWriteFrequency -= info.write;
+        previousAggregateWriteFrequency -= info.getWrite();
       }
     }
     return activeNameservers.remove(id);
@@ -628,7 +628,7 @@ public class NameRecordV1 {
   public synchronized double getReadStats() { // synchronized
     totalAggregateReadFrequency = totalLookupRequest;
     for (StatsInfo info : nameServerStatsMap.values()) {
-      totalAggregateReadFrequency += info.read;
+      totalAggregateReadFrequency += info.getRead();
     }
 
     int currentReadFrequency = totalAggregateReadFrequency - previousAggregateReadFrequency;
@@ -657,7 +657,7 @@ public class NameRecordV1 {
   public synchronized double getReadStats_Paxos() { // synchronized
     totalAggregateReadFrequency = 0;
     for (StatsInfo info : nameServerStatsMap.values()) {
-      totalAggregateReadFrequency += info.read;
+      totalAggregateReadFrequency += info.getRead();
     }
 
     if (StartNameServer.debugMode) {
@@ -685,7 +685,7 @@ public class NameRecordV1 {
   public synchronized double getWriteStats() { // synchronized
     totalAggregateWriteFrequency = totalUpdateRequest;
     for (StatsInfo info : nameServerStatsMap.values()) {
-      totalAggregateWriteFrequency += info.write;
+      totalAggregateWriteFrequency += info.getWrite();
     }
 
     int currentWriteFrequency = totalAggregateWriteFrequency - previousAggregateWriteFrequency;
@@ -714,7 +714,7 @@ public class NameRecordV1 {
   public synchronized double getWriteStats_Paxos() { // synchronized
     totalAggregateWriteFrequency = 0;
     for (StatsInfo info : nameServerStatsMap.values()) {
-      totalAggregateWriteFrequency += info.write;
+      totalAggregateWriteFrequency += info.getWrite();
     }
 
     if (StartNameServer.debugMode) {
@@ -987,8 +987,8 @@ public class NameRecordV1 {
           StatsInfo value = e.getValue();
           if (value != null) {
             JSONObject jsonStats = new JSONObject();
-            jsonStats.put("read", value.read);
-            jsonStats.put("write", value.write);
+            jsonStats.put("read", value.getRead());
+            jsonStats.put("write", value.getWrite());
             json.put(e.getKey().toString(), jsonStats);
           }
         }

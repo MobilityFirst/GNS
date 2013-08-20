@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -50,6 +51,10 @@ public class MovingAverage {
   
   public JSONArray toJSONArray () {
     return new JSONArray(window);
+  }
+  
+  public ArrayList<Integer> toArrayList() {
+    return new ArrayList<Integer>(this.window);
   }
 
   /*************************************************************

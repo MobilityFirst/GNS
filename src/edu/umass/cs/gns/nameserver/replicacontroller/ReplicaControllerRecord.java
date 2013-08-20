@@ -201,6 +201,7 @@ public class ReplicaControllerRecord {
     }
     this.markedForRemoval = json.getInt(MARKED_FOR_REMOVAL);
 
+    GNS.getLogger().fine("NAMESERVER_VOTES_MAP string:  " + json.get(NAMESERVER_VOTES_MAP));
     this.nameServerVotesMap = toIntegerMap(json.getJSONObject(NAMESERVER_VOTES_MAP));
     this.nameServerStatsMap = toStatsMap(json.getJSONObject(NAMESERVER_STATS_MAP));
 
@@ -211,9 +212,11 @@ public class ReplicaControllerRecord {
 
 
     if (json.has(MOVINGAGGREGATELOOKUPFREQUENCY)) {
+      GNS.getLogger().fine("MOVINGAGGREGATELOOKUPFREQUENCY string:  " + json.get(MOVINGAGGREGATELOOKUPFREQUENCY));
       this.movingAvgAggregateLookupFrequency = new MovingAverage(json.getJSONArray(MOVINGAGGREGATELOOKUPFREQUENCY), StartNameServer.movingAverageWindowSize);
     }
     if (json.has(MOVINGAGGREGATEUPDATEFREQUENCY)) {
+      GNS.getLogger().fine("MOVINGAGGREGATEUPDATEFREQUENCY string:  " + json.get(MOVINGAGGREGATEUPDATEFREQUENCY));
       this.movingAvgAggregateUpdateFrequency = new MovingAverage(json.getJSONArray(MOVINGAGGREGATEUPDATEFREQUENCY), StartNameServer.movingAverageWindowSize);
     }
     this.keepAliveTime = json.getLong(KEEP_ALIVE_TIME);
@@ -246,7 +249,7 @@ public class ReplicaControllerRecord {
     json.put(MARKED_FOR_REMOVAL, getMarkedForRemoval());
     //		json.put(key, value)
     json.put(NAMESERVER_VOTES_MAP, getNameServerVotesMap());
-    json.put(NAMESERVER_STATS_MAP, statsMapToJSONObject(getNameServerStatsMap()));
+    json.put(NAMESERVER_STATS_MAP, getNameServerStatsMap());
 
     json.put(TOTALAGGREGATEREADFREQUENCY, getTotalAggregateReadFrequency());
     json.put(TOTALAGGREGATEWRITEFREQUENCY, getTotalAggregateWriteFrequency());
@@ -394,7 +397,7 @@ public class ReplicaControllerRecord {
   public void setOldActivePaxosID(String oldActivePaxosID) {
     this.oldActivePaxosID = oldActivePaxosID;
     if (isLazyEval() && oldActivePaxosID != null) {
-      recordMap.updateNameRecordField(name, OLD_ACTIVE_PAXOS_ID, oldActivePaxosID);
+      recordMap.updateNameRecordFieldAsString(name, OLD_ACTIVE_PAXOS_ID, oldActivePaxosID);
     }
   }
 
@@ -416,7 +419,7 @@ public class ReplicaControllerRecord {
   public void setActivePaxosID(String activePaxosID) {
     this.activePaxosID = activePaxosID;
     if (isLazyEval() && activePaxosID != null) {
-      recordMap.updateNameRecordField(name, ACTIVE_PAXOS_ID, activePaxosID);
+      recordMap.updateNameRecordFieldAsString(name, ACTIVE_PAXOS_ID, activePaxosID);
     }
   }
 
@@ -530,7 +533,7 @@ public class ReplicaControllerRecord {
       nameServerStatsMap.put(id, new StatsInfo(readFrequency, writeFrequency));
     }
     if (isLazyEval() && nameServerStatsMap != null) {
-      recordMap.updateNameRecordField(name, NAMESERVER_STATS_MAP, statsMapToJSONObject(nameServerStatsMap).toString());
+      recordMap.updateNameRecordFieldAsMap(name, NAMESERVER_STATS_MAP, nameServerStatsMap);
     }
   }
 
@@ -560,7 +563,7 @@ public class ReplicaControllerRecord {
       nameServerVotesMap.put(id, vote);
     }
     if (isLazyEval()) {
-      recordMap.updateNameRecordField(name, NAMESERVER_VOTES_MAP, new JSONObject(nameServerVotesMap).toString());
+      recordMap.updateNameRecordFieldAsMap(name, NAMESERVER_VOTES_MAP, nameServerVotesMap);
     }
   }
 
@@ -585,8 +588,8 @@ public class ReplicaControllerRecord {
     }
     movingAvgAggregateLookupFrequency.add(value);
     if (isLazyEval()) {
-      recordMap.updateNameRecordField(name, MOVINGAGGREGATELOOKUPFREQUENCY,
-              movingAvgAggregateLookupFrequency.toJSONArray().toString());
+      recordMap.updateNameRecordFieldAsCollection(name, MOVINGAGGREGATELOOKUPFREQUENCY,
+              movingAvgAggregateLookupFrequency.toArrayList());
     }
   }
 
@@ -611,8 +614,8 @@ public class ReplicaControllerRecord {
     }
     movingAvgAggregateUpdateFrequency.add(value);
     if (isLazyEval()) {
-      recordMap.updateNameRecordField(name, MOVINGAGGREGATEUPDATEFREQUENCY,
-              movingAvgAggregateUpdateFrequency.toJSONArray().toString());
+      recordMap.updateNameRecordFieldAsCollection(name, MOVINGAGGREGATEUPDATEFREQUENCY,
+              movingAvgAggregateUpdateFrequency.toArrayList());
     }
   }
 
@@ -835,7 +838,7 @@ public class ReplicaControllerRecord {
   public synchronized double getReadStats_Paxos() {
     setTotalAggregateReadFrequency(0);
     for (StatsInfo info : getNameServerStatsMap().values()) {
-      setTotalAggregateReadFrequency(getTotalAggregateReadFrequency() + info.read);
+      setTotalAggregateReadFrequency(getTotalAggregateReadFrequency() + info.getRead());
     }
 
     if (StartNameServer.debugMode) {
@@ -858,7 +861,7 @@ public class ReplicaControllerRecord {
   public synchronized double getWriteStats_Paxos() {
     setTotalAggregateWriteFrequency(0);
     for (StatsInfo info : getNameServerStatsMap().values()) {
-      setTotalAggregateWriteFrequency(getTotalAggregateWriteFrequency() + info.write);
+      setTotalAggregateWriteFrequency(getTotalAggregateWriteFrequency() + info.getWrite());
     }
 
     if (StartNameServer.debugMode) {
@@ -907,8 +910,8 @@ public class ReplicaControllerRecord {
           StatsInfo value = e.getValue();
           if (value != null) {
             JSONObject jsonStats = new JSONObject();
-            jsonStats.put("read", value.read);
-            jsonStats.put("write", value.write);
+            jsonStats.put("read", value.getRead());
+            jsonStats.put("write", value.getWrite());
             json.put(e.getKey().toString(), jsonStats);
           }
         }
@@ -1033,6 +1036,14 @@ public class ReplicaControllerRecord {
     BasicRecordMap replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();
     ReplicaControllerRecord record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
+    record.addReplicaSelectionVote(1, 5);
+    record.addReplicaSelectionVote(1, 1);
+    record.addReplicaSelectionVote(2, 2);
+    record.addReplicaSelectionVote(3, 3);
+    record.addReplicaSelectionVote(4, 4);
+    record.addNameServerStats(1, 50, 75);
+    record.addNameServerStats(2, 50, 75);
+    System.out.println(record.toJSONObject().toString());
     replicaController.addNameRecordPrimary(record);
     // create the lazy record
     record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", replicaController);
@@ -1040,11 +1051,14 @@ public class ReplicaControllerRecord {
     System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
     record.addNameServerStats(10, 50, 75);
     System.out.println("READ STATS: " + record.getReadStats_Paxos());
-    record.addReplicaSelectionVote(1, 5);
-    record.addReplicaSelectionVote(1, 1);
-    record.addReplicaSelectionVote(2, 2);
-    record.addReplicaSelectionVote(3, 3);
-    record.addReplicaSelectionVote(4, 4);
+   
+    record.addReplicaSelectionVote(11, 5);
+    record.addReplicaSelectionVote(11, 1);
+    record.addReplicaSelectionVote(21, 2);
+    record.addReplicaSelectionVote(13, 3);
+    record.addReplicaSelectionVote(14, 4);
+    record.addNameServerStats(11, 50, 75);
+    record.addNameServerStats(12, 50, 75);
     System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(3));
     record.updateMovingAvgAggregateLookupFrequency(10);
     record.updateMovingAvgAggregateLookupFrequency(30);
@@ -1053,5 +1067,9 @@ public class ReplicaControllerRecord {
 
     MongoRecords instance = MongoRecords.getInstance();
     instance.printAllEntries(MongoRecords.DBREPLICACONTROLLER);
+    
+    record = replicaController.getNameRecordPrimary("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
+    System.out.println(record.toJSONObject().toString());
+    
   }
 }

@@ -7,6 +7,8 @@ package edu.umass.cs.gns.database;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -22,7 +24,9 @@ public interface NoSQLRecords {
   public void update(String collection, String guid, JSONObject value);
   public void updateListValue(String collection, String guid, String key,  ArrayList<String> value);
   public void updateListValueInt(String collection, String guid, String key,  Set<Integer> value);
-  public void updateField(String collectionName, String guid, String key, String string);
+  public void updateFieldAsString(String collectionName, String guid, String key, String string);
+  public void updateFieldAsMap(String collectionName, String guid, String key, Map map);
+  public void updateFieldAsCollection(String collectionName, String guid, String key, Collection collection);
   public boolean contains(String collection, String guid);
   public void remove(String collection, String guid);
   public ArrayList<JSONObject> retrieveAllEntries(String collection);

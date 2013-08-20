@@ -142,15 +142,15 @@ public abstract class BasicRecordMap implements RecordMapInterface {
   }
 
   public void updateNameRecordFieldAsInteger(String name, String key, int value) {
-    updateNameRecordField(name, key, Integer.toString(value));
+    updateNameRecordFieldAsString(name, key, Integer.toString(value));
   }
 
   public void updateNameRecordFieldAsLong(String name, String key, long value) {
-    updateNameRecordField(name, key, Long.toString(value));
+    updateNameRecordFieldAsString(name, key, Long.toString(value));
   }
 
   public void updateNameRecordFieldAsBoolean(String name, String key, boolean value) {
-    updateNameRecordField(name, key, Boolean.toString(value));
+    updateNameRecordFieldAsString(name, key, Boolean.toString(value));
   }
 
   public void updateNameRecordFieldAsIntegerSet(String name, String key, Set<Integer> value) {

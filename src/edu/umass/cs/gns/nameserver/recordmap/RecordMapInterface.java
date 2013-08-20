@@ -9,6 +9,8 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,7 +33,11 @@ public interface RecordMapInterface {
 
   public void updateNameRecordListValueInt(String name, String key, Set<Integer> value);
 
-  public void updateNameRecordField(String name, String key, String string);
+  public void updateNameRecordFieldAsString(String name, String key, String string);
+  
+  public void updateNameRecordFieldAsMap(String name, String key, Map map);
+  
+  public void updateNameRecordFieldAsCollection(String name, String key, Collection collection);
 
   public String getNameRecordField(String name, String key);
 

@@ -36,6 +36,8 @@ import org.apache.commons.cli.ParseException;
 
 /**
  *
+ * Typical use: java -cp GNS.jar edu.umass.cs.gns.httpserver.GnsHttpServer -nsfile ../scripts/test/name-server-info -lnsid 2
+ * 
  * @author westy
  */
 public class GnsHttpServer {

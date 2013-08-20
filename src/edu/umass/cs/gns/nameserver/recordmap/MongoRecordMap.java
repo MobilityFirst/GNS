@@ -14,7 +14,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class MongoRecordMap extends BasicRecordMap {
@@ -53,10 +55,24 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void updateNameRecordField(String name, String key, String string) {
+  public void updateNameRecordFieldAsString(String name, String key, String string) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().fine(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
-    records.updateField(collectionName, name, key, string);
+    records.updateFieldAsString(collectionName, name, key, string);
+  }
+  
+  @Override
+  public void updateNameRecordFieldAsMap(String name, String key, Map map) {
+    MongoRecords records = MongoRecords.getInstance();
+    GNS.getLogger().fine(records.toString() + ":: Writing object " + name + "/" + key + ": " + map);
+    records.updateFieldAsMap(collectionName, name, key, map);
+  }
+  
+  @Override
+  public void updateNameRecordFieldAsCollection(String name, String key, Collection collection) {
+    MongoRecords records = MongoRecords.getInstance();
+    GNS.getLogger().fine(records.toString() + ":: Writing object " + name + "/" + key + ": " + collection);
+    records.updateFieldAsCollection(collectionName, name, key, collection);
   }
 
   @Override

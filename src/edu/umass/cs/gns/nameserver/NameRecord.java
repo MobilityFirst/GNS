@@ -369,7 +369,7 @@ public class NameRecord implements Comparable<NameRecord> {
   public void setActivePaxosID(String activePaxosID) {
     this.activePaxosID = activePaxosID;
     if (isLazyEval() && activePaxosID != null) {
-      recordMap.updateNameRecordField(name, ACTIVE_PAXOS_ID, activePaxosID);
+      recordMap.updateNameRecordFieldAsString(name, ACTIVE_PAXOS_ID, activePaxosID);
     }
   }
 
@@ -399,7 +399,7 @@ public class NameRecord implements Comparable<NameRecord> {
   public void setOldActivePaxosID(String oldActivePaxosID) {
     this.oldActivePaxosID = oldActivePaxosID;
     if (isLazyEval() && oldActivePaxosID != null) {
-      recordMap.updateNameRecordField(name, OLD_ACTIVE_PAXOS_ID, oldActivePaxosID);
+      recordMap.updateNameRecordFieldAsString(name, OLD_ACTIVE_PAXOS_ID, oldActivePaxosID);
     }
   }
 
@@ -460,7 +460,7 @@ public class NameRecord implements Comparable<NameRecord> {
     this.oldValuesMap = oldValuesMap;
     if (isLazyEval() && oldValuesMap != null) {
       try {
-        recordMap.updateNameRecordField(name, OLDVALUESMAP, oldValuesMap.toJSONObject().toString());
+        recordMap.updateNameRecordFieldAsString(name, OLDVALUESMAP, oldValuesMap.toJSONObject().toString());
       } catch (JSONException e) {
         GNS.getLogger().severe("ERROR: problem convert oldValuesMap to JSONObject: " + e);
       }

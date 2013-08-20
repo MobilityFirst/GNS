@@ -277,7 +277,8 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
-  public void updateField(String collectionName, String guid, String key, String string) {
+  @Override
+  public void updateFieldAsString(String collectionName, String guid, String key, String string) {
     db.requestStart();
     try {
       String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
@@ -285,6 +286,38 @@ public class MongoRecords implements NoSQLRecords {
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject newValue = new BasicDBObject(key, string);
+      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+      collection.update(query, updateOperator);
+    } finally {
+      db.requestDone();
+    }
+  }
+  
+  @Override
+  public void updateFieldAsMap(String collectionName, String guid, String key, Map map) {
+    db.requestStart();
+    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      BasicDBObject newValue = new BasicDBObject(key, map);
+      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+      collection.update(query, updateOperator);
+    } finally {
+      db.requestDone();
+    }
+  }
+  
+  @Override
+  public void updateFieldAsCollection(String collectionName, String guid, String key, Collection list) {
+    db.requestStart();
+    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      BasicDBObject newValue = new BasicDBObject(key, list);
       BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
       collection.update(query, updateOperator);
     } finally {
