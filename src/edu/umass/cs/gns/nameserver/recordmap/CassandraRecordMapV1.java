@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
-import edu.umass.cs.gns.database.CassandraRecords;
+import edu.umass.cs.gns.database.CassandraRecordsV1;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
@@ -21,7 +21,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   @Override
   public NameRecordV1 getNameRecord(String name, NameRecordKey recordKey) {
     
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
 
     try {
       String string = records.lookup(COLLECTION_NAME, name, recordKey.getName());
@@ -39,7 +39,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
 
   @Override
   public void addNameRecord(NameRecordV1 record) {
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     try {
       records.insert(COLLECTION_NAME, record.getName(), record.toJSONObject().toString());
     } catch (JSONException e) {
@@ -50,7 +50,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
 
   @Override
   public void updateNameRecord(NameRecordV1 record) {
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     try {
       records.update(COLLECTION_NAME, record.getName(), record.toJSONObject());
     } catch (JSONException e) {
@@ -61,19 +61,19 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
 
   @Override
   public void removeNameRecord(String name, NameRecordKey recordKey) {
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     records.remove(name, recordKey.getName());
   }
 
   @Override
   public boolean containsName(String name, NameRecordKey recordKey) {
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     return records.contains(name, recordKey.getName());
   }
 
   @Override
   public Set<NameRecordV1> getAllNameRecords() {
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     Set<NameRecordV1> result = new HashSet();
     for (JSONObject json : records.retrieveAllEntries(COLLECTION_NAME)) {
       try {
@@ -88,7 +88,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   
   @Override
   public void reset() {
-   CassandraRecords.getInstance().resetKeySpace();
+   CassandraRecordsV1.getInstance().resetKeySpace();
   }
   
    public static void main(String[] args) throws Exception {

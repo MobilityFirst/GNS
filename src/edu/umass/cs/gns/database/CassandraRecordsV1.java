@@ -36,6 +36,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import me.prettyprint.cassandra.service.ColumnSliceIterator;
+import me.prettyprint.hector.api.query.SliceQuery;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -43,7 +45,7 @@ import java.util.Set;
  *
  * @author westy
  */
-public class CassandraRecords implements NoSQLRecords {
+public class CassandraRecordsV1 implements NoSQLRecords {
 
   private static final String DBROOTNAME = "gnrs";
   private static final String[] COLLECTIONS = null;
@@ -54,17 +56,17 @@ public class CassandraRecords implements NoSQLRecords {
   //SuperCfTemplate<String, String, String> superTemplate;
   private ColumnFamilyTemplate<String, String> template;
 
-  public static CassandraRecords getInstance() {
+  public static CassandraRecordsV1 getInstance() {
     return CassandraRecordCollectionHolder.INSTANCE;
   }
 
   private static class CassandraRecordCollectionHolder {
 
-    private static final CassandraRecords INSTANCE = new CassandraRecords();
+    private static final CassandraRecordsV1 INSTANCE = new CassandraRecordsV1();
   }
   private static final String GUIDCOLUMNFAMILY = "GUID";
 
-  private CassandraRecords() {
+  private CassandraRecordsV1() {
     dbName = DBROOTNAME + NameServer.nodeID;
     System.out.println("CASSANDRA: " + dbName + " INIT");
     cluster = HFactory.getOrCreateCluster("GNRScluster", "localhost:9160");
@@ -93,7 +95,6 @@ public class CassandraRecords implements NoSQLRecords {
       createSchema();
     }
     keyspace = HFactory.createKeyspace(dbName, cluster);
-
 
     template = new ThriftColumnFamilyTemplate<String, String>(keyspace, GUIDCOLUMNFAMILY, SS, SS);
 
@@ -135,7 +136,18 @@ public class CassandraRecords implements NoSQLRecords {
 
   @Override
   public JSONObject lookup(String collection, String guid) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    SliceQuery<String, String, String> query = HFactory.createSliceQuery(keyspace, StringSerializer.get(),
+            StringSerializer.get(), StringSerializer.get()).
+            setKey(guid);
+
+    ColumnSliceIterator<String, String, String> iterator =
+            new ColumnSliceIterator<String, String, String>(query, null, "", false);
+
+    JSONObject result = new JSONObject();
+    while (iterator.hasNext()) {
+      HColumn<String, String> column = iterator.next();
+    }
+    return result;
   }
 
   @Override
@@ -145,8 +157,8 @@ public class CassandraRecords implements NoSQLRecords {
 
   @Override
   public String lookup(String collection, String guid, String key) {
-    ColumnFamilyResult<String, String> CFresult = template.queryColumns(guid);
-    String value = CFresult.getString(key);
+    ColumnFamilyResult<String, String> CFResult = template.queryColumns(guid);
+    String value = CFResult.getString(key);
     return value;
   }
 
@@ -191,12 +203,12 @@ public class CassandraRecords implements NoSQLRecords {
       GNS.getLogger().warning("Unable to update: " + e);
     }
   }
-  
+
   @Override
   public void updateFieldAsMap(String collection, String guid, String key, Map map) {
     GNS.getLogger().severe(" Not implememented error!!!");
   }
-  
+
   @Override
   public void updateFieldAsCollection(String collection, String guid, String key, Collection list) {
     GNS.getLogger().severe(" Not implememented error!!!");
@@ -335,16 +347,16 @@ public class CassandraRecords implements NoSQLRecords {
   // test code
 
   public static void main(String[] args) throws Exception {
-    String collection = CassandraRecords.COLLECTIONS[0];
+    String collection = CassandraRecordsV1.COLLECTIONS[0];
     NameRecordV1 n = NameRecordV1.testCreateNameRecord();
-    CassandraRecords.getInstance().remove(collection, n.getName());
-    CassandraRecords.getInstance().insert(n.getName(), n.getRecordKey().getName(), n.toJSONObject().toString());
-    System.out.println("LOOKUP =>" + CassandraRecords.getInstance().lookup(n.getName(), n.getRecordKey().getName()));
-    System.out.println("BAD LOOKUP =>" + CassandraRecords.getInstance().lookup(n.getName(), "fred"));
-    System.out.println("BAD GUID LOOKUP =>" + CassandraRecords.getInstance().lookup("fred", "fred"));
-    System.out.println("CONTAINS =>" + CassandraRecords.getInstance().contains(n.getName(), n.getRecordKey().getName()));
-    System.out.println("BAD CONTAINS =>" + CassandraRecords.getInstance().contains(n.getName(), "fred"));
+    CassandraRecordsV1.getInstance().remove(collection, n.getName());
+    CassandraRecordsV1.getInstance().insert(n.getName(), n.getRecordKey().getName(), n.toJSONObject().toString());
+    System.out.println("LOOKUP =>" + CassandraRecordsV1.getInstance().lookup(n.getName(), n.getRecordKey().getName()));
+    System.out.println("BAD LOOKUP =>" + CassandraRecordsV1.getInstance().lookup(n.getName(), "fred"));
+    System.out.println("BAD GUID LOOKUP =>" + CassandraRecordsV1.getInstance().lookup("fred", "fred"));
+    System.out.println("CONTAINS =>" + CassandraRecordsV1.getInstance().contains(n.getName(), n.getRecordKey().getName()));
+    System.out.println("BAD CONTAINS =>" + CassandraRecordsV1.getInstance().contains(n.getName(), "fred"));
     System.out.println("DUMP vvvvv");
-    CassandraRecords.getInstance().printAllEntries(collection);
+    CassandraRecordsV1.getInstance().printAllEntries(collection);
   }
 }
