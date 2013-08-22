@@ -57,13 +57,13 @@ public class CassandraRecordsV1 implements NoSQLRecords {
   private ColumnFamilyTemplate<String, String> template;
 
   public static CassandraRecordsV1 getInstance() {
-    return CassandraRecordCollectionHolder.INSTANCE;
+    return CassandraRecordV1CollectionHolder.INSTANCE;
   }
 
-  private static class CassandraRecordCollectionHolder {
-
+  private static class CassandraRecordV1CollectionHolder {
     private static final CassandraRecordsV1 INSTANCE = new CassandraRecordsV1();
   }
+  
   private static final String GUIDCOLUMNFAMILY = "GUID";
 
   private CassandraRecordsV1() {
