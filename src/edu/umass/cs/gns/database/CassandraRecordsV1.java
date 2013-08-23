@@ -173,44 +173,11 @@ public class CassandraRecordsV1 implements NoSQLRecords {
   }
 
   public void updateSingleValue(String collection, String name, String key, String value) {
-    updateListValue(collection, name, key, new ArrayList(Arrays.asList(value)));
+    updateField(collection, name, key, new ArrayList(Arrays.asList(value)));
   }
 
   @Override
-  public void updateListValue(String collection, String guid, String key, ArrayList<String> value) {
-    ColumnFamilyUpdater<String, String> updater = template.createUpdater(guid);
-    updater.setString(key, new JSONArray(value).toString());
-    try {
-      template.update(updater);
-    } catch (HectorException e) {
-      GNS.getLogger().warning("Unable to update: " + e);
-    }
-  }
-
-  @Override
-  public void updateListValueInt(String collection, String guid, String key, Set<Integer> value) {
-    // TODO not implemented
-    GNS.getLogger().severe(" Not implememented error!!!");
-  }
-
-  @Override
-  public void updateFieldAsString(String collection, String guid, String key, String string) {
-    ColumnFamilyUpdater<String, String> updater = template.createUpdater(guid);
-    updater.setString(key, string);
-    try {
-      template.update(updater);
-    } catch (HectorException e) {
-      GNS.getLogger().warning("Unable to update: " + e);
-    }
-  }
-
-  @Override
-  public void updateFieldAsMap(String collection, String guid, String key, Map map) {
-    GNS.getLogger().severe(" Not implememented error!!!");
-  }
-
-  @Override
-  public void updateFieldAsCollection(String collection, String guid, String key, Collection list) {
+  public void updateField(String collection, String guid, String key, Object object) {
     GNS.getLogger().severe(" Not implememented error!!!");
   }
 

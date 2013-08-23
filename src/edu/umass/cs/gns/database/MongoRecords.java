@@ -255,86 +255,121 @@ public class MongoRecords implements NoSQLRecords {
     updateListValue(collectionName, name, key, new ArrayList(Arrays.asList(value)));
   }
 
-  @Override
+  public void updateField(String collectionName, String guid, String key, Object object) {  
+    db.requestStart();
+    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      BasicDBObject newValue = new BasicDBObject(key, object);
+      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+      collection.update(query, updateOperator);
+    } finally {
+      db.requestDone();
+    }
+  }
+  
   public void updateListValue(String collectionName, String guid, String key, ArrayList<String> value) {
-    db.requestStart();
-    try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject newValue = new BasicDBObject(key, value);
-      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-      collection.update(query, updateOperator);
-    } finally {
-      db.requestDone();
-    }
+    updateField(collectionName, guid, key, value);
   }
 
-
-  @Override
   public void updateListValueInt(String collectionName, String guid, String key, Set<Integer> value) {
-    db.requestStart();
-    try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject newValue = new BasicDBObject(key, value);
-      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-      collection.update(query, updateOperator);
-    } finally {
-      db.requestDone();
-    }
+   updateField(collectionName, guid, key, value);
   }
 
-  @Override
   public void updateFieldAsString(String collectionName, String guid, String key, String string) {
-    db.requestStart();
-    try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject newValue = new BasicDBObject(key, string);
-      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-      collection.update(query, updateOperator);
-    } finally {
-      db.requestDone();
-    }
+    updateField(collectionName, guid, key, string);
   }
   
-  @Override
   public void updateFieldAsMap(String collectionName, String guid, String key, Map map) {
-    db.requestStart();
-    try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject newValue = new BasicDBObject(key, map);
-      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-      collection.update(query, updateOperator);
-    } finally {
-      db.requestDone();
-    }
+    updateField(collectionName, guid, key, map);
   }
   
-  @Override
   public void updateFieldAsCollection(String collectionName, String guid, String key, Collection list) {
-    db.requestStart();
-    try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject newValue = new BasicDBObject(key, list);
-      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-      collection.update(query, updateOperator);
-    } finally {
-      db.requestDone();
-    }
+    updateField(collectionName, guid, key, list);
   }
+  
+//  @Override
+//  public void updateListValue(String collectionName, String guid, String key, ArrayList<String> value) {
+//    db.requestStart();
+//    try {
+//      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+//      db.requestEnsureConnection();
+//      DBCollection collection = db.getCollection(collectionName);
+//      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+//      BasicDBObject newValue = new BasicDBObject(key, value);
+//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+//      collection.update(query, updateOperator);
+//    } finally {
+//      db.requestDone();
+//    }
+//  }
+//
+//
+//  @Override
+//  public void updateListValueInt(String collectionName, String guid, String key, Set<Integer> value) {
+//    db.requestStart();
+//    try {
+//      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+//      db.requestEnsureConnection();
+//      DBCollection collection = db.getCollection(collectionName);
+//      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+//      BasicDBObject newValue = new BasicDBObject(key, value);
+//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+//      collection.update(query, updateOperator);
+//    } finally {
+//      db.requestDone();
+//    }
+//  }
+//
+//  @Override
+//  public void updateFieldAsString(String collectionName, String guid, String key, String string) {
+//    db.requestStart();
+//    try {
+//      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+//      db.requestEnsureConnection();
+//      DBCollection collection = db.getCollection(collectionName);
+//      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+//      BasicDBObject newValue = new BasicDBObject(key, string);
+//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+//      collection.update(query, updateOperator);
+//    } finally {
+//      db.requestDone();
+//    }
+//  }
+//  
+//  @Override
+//  public void updateFieldAsMap(String collectionName, String guid, String key, Map map) {
+//    db.requestStart();
+//    try {
+//      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+//      db.requestEnsureConnection();
+//      DBCollection collection = db.getCollection(collectionName);
+//      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+//      BasicDBObject newValue = new BasicDBObject(key, map);
+//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+//      collection.update(query, updateOperator);
+//    } finally {
+//      db.requestDone();
+//    }
+//  }
+//  
+//  @Override
+//  public void updateFieldAsCollection(String collectionName, String guid, String key, Collection list) {
+//    db.requestStart();
+//    try {
+//      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+//      db.requestEnsureConnection();
+//      DBCollection collection = db.getCollection(collectionName);
+//      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+//      BasicDBObject newValue = new BasicDBObject(key, list);
+//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+//      collection.update(query, updateOperator);
+//    } finally {
+//      db.requestDone();
+//    }
+//  }
 
   @Override
   public boolean contains(String collectionName, String guid) {
@@ -450,7 +485,7 @@ public class MongoRecords implements NoSQLRecords {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
     }
-    //runtest();
+    runtest();
     //printFieldsTest();
     //retrieveFieldTest();
     System.exit(0);

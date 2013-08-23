@@ -50,7 +50,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
     MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
+    GNS.getLogger().fine(records.toString() + ":: Writing int list " + name + "/" + key + ": " + value.toString());
     records.updateListValueInt(collectionName, name, key, value);
   }
 
@@ -64,14 +64,14 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecordFieldAsMap(String name, String key, Map map) {
     MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing object " + name + "/" + key + ": " + map);
+    GNS.getLogger().fine(records.toString() + ":: Writing map " + name + "/" + key + ": " + map);
     records.updateFieldAsMap(collectionName, name, key, map);
   }
   
   @Override
   public void updateNameRecordFieldAsCollection(String name, String key, Collection collection) {
     MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing object " + name + "/" + key + ": " + collection);
+    GNS.getLogger().fine(records.toString() + ":: Writing collection " + name + "/" + key + ": " + collection);
     records.updateFieldAsCollection(collectionName, name, key, collection);
   }
 
@@ -172,7 +172,7 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public Set<NameRecord> getAllNameRecords() {
-    MongoRecords.getInstance().keySet(collectionName);
+    //MongoRecords.getInstance().keySet(collectionName);
     MongoRecords records = MongoRecords.getInstance();
     Set<NameRecord> result = new HashSet<NameRecord>();
     for (JSONObject json : records.retrieveAllEntries(collectionName)) {
@@ -241,7 +241,7 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
-    MongoRecords.getInstance().keySet(collectionName);
+    //MongoRecords.getInstance().keySet(collectionName);
     MongoRecords records = MongoRecords.getInstance();
     Set<ReplicaControllerRecord> result = new HashSet<ReplicaControllerRecord>();
     for (JSONObject json : records.retrieveAllEntries(collectionName)) {

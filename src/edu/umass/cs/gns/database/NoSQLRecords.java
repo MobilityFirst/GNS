@@ -22,11 +22,7 @@ public interface NoSQLRecords {
   public String lookup(String collection, String guid, String key);
   public void insert(String collection, String guid, JSONObject value);
   public void update(String collection, String guid, JSONObject value);
-  public void updateListValue(String collection, String guid, String key,  ArrayList<String> value);
-  public void updateListValueInt(String collection, String guid, String key,  Set<Integer> value);
-  public void updateFieldAsString(String collectionName, String guid, String key, String string);
-  public void updateFieldAsMap(String collectionName, String guid, String key, Map map);
-  public void updateFieldAsCollection(String collectionName, String guid, String key, Collection collection);
+  public void updateField(String collection, String guid, String key, Object object);
   public boolean contains(String collection, String guid);
   public void remove(String collection, String guid);
   public ArrayList<JSONObject> retrieveAllEntries(String collection);
