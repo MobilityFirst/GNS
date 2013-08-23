@@ -1,5 +1,6 @@
 NumberOfReplicas 3
 NumberOfRequests 100
-TestDurationSeconds 100
+TestDurationSeconds 10
 EnableLogging true
 MaxThreads 5
+OutputFolder /Users/abhigyan/Documents/workspace/GNS/local/paxos_output

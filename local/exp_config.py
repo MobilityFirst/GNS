@@ -1,7 +1,7 @@
 import os, sys
 
 # SET
-experiment_run_time = 10
+experiment_run_time = 50
 
 # SET
 scheme = 'locality'
@@ -11,13 +11,27 @@ schemes = {'beehive':0, 'locality':1, 'uniform':2, 'static3':3, 'replicate_all':
 lookupTrace = 'lookupTrace10'
 updateTrace = 'updateTrace10'
 
-# SET
+#set
+regular_workload = 0
+mobile_workload = 0
+
+# SET: not used
 num_ns = 80
 num_lns = 80
 
-ns_sleep = 1
+
+queryTimeout = 300
+maxQueryWaitTime = 1100
+
+
+
+ns_sleep = 2
 
 failed_nodes = None
+
+
+
+
 load_balancing = False
 
 primary_name_server = 3
@@ -29,12 +43,17 @@ is_location_replication = False
 is_random_replication = False
 is_static_replication = False
 
+
+nslog = 'FINE'
+nslogstat = 'FINE'
+lnslog = 'FINE'
+lnslogstat = 'FINE'
+
+
 gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS/'
 
 paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS/local/paxoslog/'
 delete_paxos_log = True
-
-
 
 if scheme not in schemes:
     print 'ERROR: Scheme name not valid:', scheme, 'Valid scheme names:', schemes.keys()

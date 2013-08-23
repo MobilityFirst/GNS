@@ -60,7 +60,7 @@ public class NSPaxosInterface implements PaxosInterface {
             }
             else if (req.clientID == Packet.PacketType.UPDATE_ADDRESS_NS.getInt()) {
                 // address update is applied
-                ClientRequestWorker.handleIncomingPacket(new JSONObject(req.value));
+                ClientRequestWorker.handleIncomingPacket(new JSONObject(req.value), Packet.PacketType.UPDATE_ADDRESS_NS);
             }
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

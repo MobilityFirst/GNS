@@ -72,8 +72,8 @@ ttl_constant = 0.0            #Multiplied by inter-arrival update time to calcul
 default_ttl_regular_name = 0   # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
 default_ttl_mobile_name = 0    # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
 
-regular_workload = 0
-mobile_workload = 0
+regular_workload = exp_config.regular_workload
+mobile_workload = exp_config.mobile_workload
 
 is_optimal_replication = False              # Optimal
 
@@ -102,14 +102,14 @@ persistent_data_store = True
 mongo_port = 12345
 paxos_log_folder = exp_config.paxos_log_folder
 failure_detection_msg_interval = 1           # Interval (in sec) between two failure detection messages sent to a node                                                                         
-failure_detection_timeout_interval = 2       # Interval (in sec) after which a node is declared as failed if it does not responsd to failure messages                                            
+failure_detection_timeout_interval = 4       # Interval (in sec) after which a node is declared as failed if it does not responsd to failure messages
 
 # logging related parameters:
 # values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
-file_logging_level = 'FINE'
-console_output_level = 'FINE'
-stat_file_logging_level = 'FINE'
-stat_console_output_level = 'FINE'
+file_logging_level = exp_config.nslog
+console_output_level = exp_config.nslog
+stat_file_logging_level = exp_config.nslogstat
+stat_console_output_level = exp_config.nslogstat
 
 quit_after_time = -1 # if value >= 0, name server will quit after that time
 quit_node_id = 0     # which node will quit

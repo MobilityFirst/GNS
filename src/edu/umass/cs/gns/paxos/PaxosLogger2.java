@@ -91,7 +91,7 @@ public class PaxosLogger2 extends Thread{
   /**
    * after writing {@code MSG_MAX} messages to a file, a new log file is used
    */
-  private static  int MSG_MAX = 20;
+  private static  int MSG_MAX = 100000;
 
   /**
    * name of file which stores
@@ -234,7 +234,7 @@ public class PaxosLogger2 extends Thread{
   private static void recoverMostRecentStateOfPaxosInstances(ConcurrentHashMap<String, PaxosReplica>  paxosInstances) {
     File f = new File(getPaxosStateFolder());
     if (f.exists() == false) {
-      GNS.getLogger().fine(" ");
+      if (StartNameServer.debugMode) GNS.getLogger().fine(" ");
       return;
     }
     File[] files = f.listFiles();
@@ -309,7 +309,7 @@ public class PaxosLogger2 extends Thread{
           if (line == null) {
             break;
           }
-          GNS.getLogger().fine("Recovering line: " + line);
+          if (StartNameServer.debugMode) GNS.getLogger().fine("Recovering line: " + line);
           parseLine(paxosInstances, line);
         }
         br.close();
@@ -452,9 +452,9 @@ public class PaxosLogger2 extends Thread{
    * @param initialState
    */
   static void logPaxosStart(String paxosID, Set<Integer> nodeIDs, StatePacket initialState) {
-    GNS.getLogger().fine(" Paxos ID = " + paxosID);
-    GNS.getLogger().fine(" Node IDs = " + nodeIDs);
-    GNS.getLogger().fine(" Initial state = " + initialState.state);
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Paxos ID = " + paxosID);
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Node IDs = " + nodeIDs);
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Initial state = " + initialState.state);
     String paxosIDsFile1 = getPaxosIDsFile();
     if (paxosIDsFile1 != null) {
       synchronized (loggingLock) {
@@ -499,7 +499,7 @@ public class PaxosLogger2 extends Thread{
   }
 
   private static Set<Integer> stringToSetInteger(String string) {
-    System.out.println(string);
+//    System.out.println(string);
     Set<Integer> integerSet = new HashSet<Integer>();
     String[] tokens = string.split(":");
     for (String s : tokens) {
@@ -583,7 +583,7 @@ public class PaxosLogger2 extends Thread{
       BufferedReader br = new BufferedReader(new FileReader(f));
       String x = br.readLine();
       int size = Integer.parseInt(x);
-      GNS.getLogger().fine(" Size = " + size);
+      if (StartNameServer.debugMode) GNS.getLogger().fine(" Size = " + size);
       int lc = 0; // line count
       while(true) {
         String s = br.readLine();
@@ -593,13 +593,13 @@ public class PaxosLogger2 extends Thread{
         lc++;
       }
       br.close();
-      GNS.getLogger().fine(" String = " + sb.toString());
+      if (StartNameServer.debugMode) GNS.getLogger().fine(" String = " + sb.toString());
       if (sb.length() == size) return sb.toString();
       else {
-        GNS.getLogger().severe(" Size mismatch in reading paxos state. Msg size = " + size + " Actual size = " + sb.length());
+        if (StartNameServer.debugMode) GNS.getLogger().severe(" Size mismatch in reading paxos state. Msg size = " + size + " Actual size = " + sb.length());
       }
     } catch (Exception e) {
-      GNS.getLogger().severe("Exception in reading paxos state from file. File:" + f.getAbsolutePath() );
+      if (StartNameServer.debugMode) GNS.getLogger().severe("Exception in reading paxos state from file. File:" + f.getAbsolutePath() );
       e.printStackTrace();
     }
 
@@ -826,7 +826,7 @@ public class PaxosLogger2 extends Thread{
           // TODO How is BufferedWriter different from FileWriter? what should we use?
 
           String s = getLogString(cmd.getPaxosID(), cmd.getLogJson());
-          GNS.getLogger().fine("Logging this now: " + s);
+          if (StartNameServer.debugMode) GNS.getLogger().fine("Logging this now: " + s);
           fileWriter.write(s);
         }
         fileWriter.flush();

@@ -30,7 +30,8 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
   public void handleJSONObject(JSONObject json) {
 
     try {
-      switch(Packet.getPacketType(json)) {
+      Packet.PacketType type = Packet.getPacketType(json);
+      switch(type) {
         // client requests: ADD/REMOVE/UPDATE/LOOKUP
 
         case ADD_RECORD_LNS:
@@ -41,7 +42,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case REQUEST_ACTIVES:
         case UPDATE_ADDRESS_LNS:
         case DNS:
-          ClientRequestWorker.handleIncomingPacket(json);
+          ClientRequestWorker.handleIncomingPacket(json, type);
           break;
 
         // Statistics: Read/write rate, votes for name record

@@ -484,8 +484,9 @@ public class PaxosManager extends Thread{
     // start TCP transport thread
     NioServer2 tcpTransportLocal = null;
     try {
+      GNS.getLogger().fine(" Node ID is " + nodeID);
       tcpTransportLocal = new NioServer2(nodeID, worker, new PaxosNodeConfig(configFile));
-      if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED ... " );
+      if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID);
       new Thread(tcpTransportLocal).start();
     } catch (IOException e) {
       GNS.getLogger().severe(" Could not initialize TCP socket at client");
@@ -697,7 +698,9 @@ public class PaxosManager extends Thread{
 
     int incomingPacketType;
     try {
-      GNS.getLogger().finer("recvd msg: " + json.toString());
+
+      if (StartNameServer.debugMode) GNS.getLogger().finer("recvd msg: " + json.toString());
+
       incomingPacketType = json.getInt(PaxosPacketType.ptype);
     } catch (JSONException e) {
       e.printStackTrace();

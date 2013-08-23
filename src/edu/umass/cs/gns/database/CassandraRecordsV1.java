@@ -9,6 +9,7 @@ import edu.umass.cs.gns.nameserver.NameRecordV1;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.util.ThreadUtils;
 import me.prettyprint.cassandra.serializers.StringSerializer;
+import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.cassandra.service.ThriftKsDef;
 import me.prettyprint.cassandra.service.template.ColumnFamilyResult;
 import me.prettyprint.cassandra.service.template.ColumnFamilyTemplate;
@@ -26,18 +27,14 @@ import me.prettyprint.hector.api.exceptions.HectorException;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
-import org.json.JSONArray;
+import me.prettyprint.hector.api.query.SliceQuery;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
-import me.prettyprint.hector.api.query.SliceQuery;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -160,6 +157,11 @@ public class CassandraRecordsV1 implements NoSQLRecords {
     ColumnFamilyResult<String, String> CFResult = template.queryColumns(guid);
     String value = CFResult.getString(key);
     return value;
+  }
+
+  @Override
+  public ArrayList<String> lookup(String collection, String guid, ArrayList<String> key) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   public void insert(String guid, String key, String value) {

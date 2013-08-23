@@ -40,7 +40,7 @@ public class StartNameServer {
   public static int defaultTTLMobileName;
   public static int nameServerVoteSize;
   //public static boolean isPlanetlab = false;
-  public static boolean debugMode = true;
+  public static boolean debugMode = false;
   public static boolean persistentDataStore = false;
   public static int mongoPort = -1;
   public static boolean simpleDiskStore = true;

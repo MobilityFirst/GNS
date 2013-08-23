@@ -114,8 +114,8 @@ experiment_run_time  = exp_config.experiment_run_time    # in seconds
 
 # retransmission parameters
 numberOfTransmissions = 3                         # maximum number of times a query is transmitted
-maxQueryWaitTime = 200                         # maximum  Wait Time before query is  declared failed (milli-seconds)
-queryTimeout = 50                              # query timeout interval
+maxQueryWaitTime = exp_config.maxQueryWaitTime    # maximum  Wait Time before query is  declared failed (milli-seconds)
+queryTimeout = exp_config.queryTimeout            # timeout interval
 adaptiveTimeout = False
 delta = 0.05;                                   # Weight assigned to latest sample in calculating moving average.
 mu = 1.0;                                       # Co-efficient of estimated RTT in calculating timeout.
@@ -123,10 +123,12 @@ phi = 6.0;                                      # Co-efficient of deviation in c
 
 # logging related parameters:
 ## values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
-file_logging_level = 'FINE'
-console_output_level = 'FINE'
-stat_file_logging_level = 'FINE'
-stat_console_output_level = 'FINE'
+# logging related parameters:
+file_logging_level = exp_config.lnslog
+console_output_level = exp_config.lnslog
+stat_file_logging_level = exp_config.lnslogstat
+stat_console_output_level = exp_config.lnslogstat
+
 
 """ Prints Usage Message """
 def usage():

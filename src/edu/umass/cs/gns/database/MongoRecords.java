@@ -4,12 +4,7 @@
  */
 package edu.umass.cs.gns.database;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.main.GNS;
@@ -21,18 +16,11 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -191,6 +179,56 @@ public class MongoRecords implements NoSQLRecords {
     return lookup(collectionName, guid, key, false);
   }
 
+  @Override
+  public ArrayList<String> lookup(String collectionName, String guid, ArrayList<String> keys) {
+    return lookup(collectionName, guid, keys, false);
+  }
+
+  private ArrayList<String> lookup(String collectionName, String guid, ArrayList<String> keys, boolean explain) {
+    db.requestStart();
+    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+//      BasicDBObject projection = new BasicDBObject(key, 1).append("_id", 0);
+      BasicDBObject projection = new BasicDBObject().append("_id", 0);
+      for (String key: keys) {
+        projection.append(key,1);
+      }
+      //System.out.println("Query: " + query.toString() + " Projection: " + projection);
+//      DBObject dbObject = new BasicDBList();
+
+      DBCursor cursor = collection.find(query, projection);
+      if (explain) {
+        System.out.println(cursor.explain().toString());
+      }
+      ArrayList<String> values = new ArrayList<String>();
+
+      if (cursor.hasNext()) {
+        DBObject obj = cursor.next();
+
+        for (String key: keys) {
+          Object field = obj.get(key);
+          if (field == null) values.add(null);
+          else values.add(field.toString());
+//          values.add(obj.get(key).toString());
+//          System.out.println("X----> " + obj.get(key));
+        }
+//        return new JSONObject(obj.toString());
+      } else {
+        return null;
+      }
+      return values;
+//    } catch (JSONException e) {
+//      GNS.getLogger().warning("Unable to parse JSON: " + e);
+//      return null;
+    } finally {
+      db.requestDone();
+    }
+
+  }
   private String lookup(String collectionName, String guid, String key, boolean explain) {
     db.requestStart();
     try {
@@ -548,12 +586,14 @@ public class MongoRecords implements NoSQLRecords {
 
   public static void runtest() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+//    ConfigFileInfo.readHostInfo("/Users/abhigyan/Documents/workspace/GNS/local/local_config", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
     instance.reset(collectionSpecs.get(0).getName());
     for (CollectionSpec spec : collectionSpecs) {
       //for (String collectionName : COLLECTIONS) {
       String collectionName = spec.getName();
+
       List<DBObject> list = instance.db.getCollection(collectionName).getIndexInfo();
       for (DBObject o : list) {
         System.out.println(o);
@@ -575,12 +615,25 @@ public class MongoRecords implements NoSQLRecords {
 //    System.out.println("LOOKUP AFTER 777 =>" + instance.lookup(n.getName(), true));
 //    instance.update(n.getName(), "FRANK", "777");
 //    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookup(n.getName(), true));
-//    
+//
     JSONObject json = instance.lookup(collectionSpecs.get(0).getName(), n.getName(), true);
     System.out.println("LOOKUP BY GUID => " + json);
     NameRecord record = new NameRecord(json);
     record.updateField("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
     System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
+    System.out.println("READ FIELD " + NameRecord.ACTIVE_NAMESERVERS + " Value = " +
+            MongoRecords.getInstance().lookup(collectionSpecs.get(0).getName(),record.getName(), NameRecord.ACTIVE_NAMESERVERS));
+
+    // reading multiple fields
+    ArrayList<String> fields = new ArrayList<String>();
+    fields.add(NameRecord.ACTIVE_NAMESERVERS);
+    fields.add(NameRecord.ACTIVE_PAXOS_ID);
+    fields.add(NameRecord.TIME_TO_LIVE);
+    fields.add(NameRecord.KEY);
+    System.out.println("READ MULTIPLE FIELDS. FIELDS => " + fields);
+    System.out.println("READ MULTIPLE FIELDS. VALUES => "  + MongoRecords.getInstance().lookup(collectionSpecs.get(0).getName(),record.getName(),
+            fields, false));
+
     instance.update(collectionSpecs.get(0).getName(), record.getName(), record.toJSONObject());
     JSONObject json2 = instance.lookup(collectionSpecs.get(0).getName(), n.getName(), true);
     System.out.println("2ND LOOKUP BY GUID => " + json2);
@@ -595,4 +648,5 @@ public class MongoRecords implements NoSQLRecords {
     json2 = instance.lookup(collectionSpecs.get(0).getName(), n.getName(), true);
     System.out.println("SHOULD BE EMPTY => " + json2);
   }
+
 }

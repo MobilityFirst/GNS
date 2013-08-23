@@ -41,11 +41,15 @@ public interface RecordMapInterface {
 
   public String getNameRecordField(String name, String key);
 
+  public ArrayList<String> getNameRecordFields(String name, ArrayList<String> keys);
+
   public String tableToString();
 
   public void reset();
 
   public NameRecord getNameRecordLazy(String name);
+
+  public NameRecord getNameRecordLazy(String name, ArrayList<String> keys);
 
   //
   // OLD Style

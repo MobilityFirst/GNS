@@ -22,12 +22,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Transport {
 
   public static int MAXPACKETSIZE = 15000; // 1500 isn't big enough - data lengths of records will be bigger than 1500 - Westy
-  public static int MAXRETRANSMISSIONS = 2;
-  public static int TIMEOUT_MS = 500;
-  public static int RECENTPACKETSIZE = 1000;
-  public static final String T_PACKETID = "tP";
-  public static final String T_ACK = "tA";
-  public static final String T_HOSTID = "tH";
+//  public static int MAXRETRANSMISSIONS = 2;
+//  public static int TIMEOUT_MS = 500;
+//  public static int RECENTPACKETSIZE = 1000;
+//  public static final String T_PACKETID = "tP";
+//  public static final String T_ACK = "tA";
+//  public static final String T_HOSTID = "tH";
+
   public static final String T_PORT = "tR";
   
   /**
@@ -110,12 +111,12 @@ public class Transport {
   public void sendPacket(JSONObject json, InetAddress address, int port) throws JSONException {
 
 //    JSONObject json = new JSONObject(originalJSON.toString());
-    int packetID = r.nextInt();
+//    int packetID = r.nextInt();
     //GNRS.getLogger().finer("Sending packet. packetID " + packetID + " destID " + address);
-    json.put(T_PACKETID, packetID);
-    json.put(T_ACK, false);
-    json.put(T_HOSTID, myID);
-    json.put(T_PORT, myPort);
+//    json.put(T_PACKETID, packetID);
+//    json.put(T_ACK, false);
+//    json.put(T_HOSTID, myID);
+//    json.put(T_PORT, myPort);
 
       try {
           Packet.sendUDPPacket(socket, json, address, port);
@@ -173,6 +174,7 @@ public class Transport {
         //GNRS.getLogger().finer("Created json object. " + json.toString());
         // record this so we can send to the return address
         json.put(T_ADDRESS, packet.getAddress().getHostAddress());
+        json.put(T_PORT, packet.getPort());
       } catch (JSONException e) {
         GNS.getLogger().severe("Error constructing JSONObject from packet.");
         e.printStackTrace();
@@ -233,25 +235,25 @@ public class Transport {
     }
   }
 
-  private void sendAck(JSONObject json) throws JSONException, IOException {
-    JSONObject jsonAck = new JSONObject();
-    jsonAck.put(T_PACKETID, json.getInt(T_PACKETID));
-    jsonAck.put(T_ACK, true);
-    //GNRS.getLogger().finer("Ack packet prepared. " + jsonAck.toString());
-    int hostID = json.getInt(T_HOSTID);
-    InetAddress add;
-    if (hostID == -1) {
-      add = InetAddress.getByName(json.getString(T_ADDRESS));
-    } else {
-      add = ConfigFileInfo.getIPAddress(hostID);
-    }
-    int port = json.getInt(T_PORT);
-    //GNRS.getLogger().finer("Address : " + add.toString());
-    //GNRS.getLogger().finer("Port : " + port);
-    Packet.sendUDPPacket(socket, jsonAck, add, port);
-    //GNRS.getLogger().info("Ack packet sent. to " + add + ":" + port);
-    //GNRS.getLogger().finer("Packet sent. to " + json.getInt(T_HOSTID) + " at port " + port);
-  }
+//  private void sendAck(JSONObject json) throws JSONException, IOException {
+//    JSONObject jsonAck = new JSONObject();
+//    jsonAck.put(T_PACKETID, json.getInt(T_PACKETID));
+//    jsonAck.put(T_ACK, true);
+//    //GNRS.getLogger().finer("Ack packet prepared. " + jsonAck.toString());
+//    int hostID = json.getInt(T_HOSTID);
+//    InetAddress add;
+//    if (hostID == -1) {
+//      add = InetAddress.getByName(json.getString(T_ADDRESS));
+//    } else {
+//      add = ConfigFileInfo.getIPAddress(hostID);
+//    }
+//    int port = json.getInt(T_PORT);
+//    //GNRS.getLogger().finer("Address : " + add.toString());
+//    //GNRS.getLogger().finer("Port : " + port);
+//    Packet.sendUDPPacket(socket, jsonAck, add, port);
+//    //GNRS.getLogger().info("Ack packet sent. to " + add + ":" + port);
+//    //GNRS.getLogger().finer("Packet sent. to " + json.getInt(T_HOSTID) + " at port " + port);
+//  }
   
   public static String getReturnAddress(JSONObject json) {
     try {

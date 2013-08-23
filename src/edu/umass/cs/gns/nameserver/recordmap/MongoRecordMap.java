@@ -41,6 +41,19 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public ArrayList<String> getNameRecordFields(String name, ArrayList<String> keys) {
+    MongoRecords records = MongoRecords.getInstance();
+    ArrayList<String> result = records.lookup(collectionName, name, keys);
+    if (result != null) {
+      GNS.getLogger().fine(records.toString() + ":: Retrieved " + name + "/" + keys + ": " + result);
+      return result;
+    } else {
+      GNS.getLogger().fine(records.toString() + ":: No record named " + name + " with key " + result);
+      return null;
+    }
+  }
+
+  @Override
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().fine(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
@@ -105,6 +118,14 @@ public class MongoRecordMap extends BasicRecordMap {
     } else {
       return null;
     }
+  }
+
+  @Override
+  public NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
+    ArrayList<String> values = MongoRecords.getInstance().lookup(collectionName,name,keys);
+    if (values == null) return null;
+    return new NameRecord(name, this, keys,values);
+
   }
 
   @Override

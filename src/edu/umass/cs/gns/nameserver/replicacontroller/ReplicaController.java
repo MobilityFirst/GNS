@@ -147,12 +147,16 @@ public class ReplicaController {
 //        if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName() +
 //                "\tBefore Paxos instance created for name: " + recordEntry.getName()
 //                        + " Primaries: " + primaries);
-    GNS.getLogger().fine(" before creating paxos instance: " + recordEntry.getName());
-    PaxosManager.createPaxosInstance(getPrimaryPaxosID(recordEntry), recordEntry.getPrimaryNameservers(), recordEntry.toString());
-    GNS.getLogger().fine(" after creating paxos instance: " + recordEntry.getName());
+
+    PaxosManager.createPaxosInstance(getPrimaryPaxosID(recordEntry), recordEntry.getPrimaryNameservers(),
+            recordEntry.toString());
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Primary-paxos created: Name = " + recordEntry.getName());
+
 //		if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName()  +
-    ListenerReplicationPaxos.addNameRecordLocal(recordEntry.getName(),recordEntry.getActiveNameservers(),recordEntry.getActivePaxosID(),valuesMap);
-    GNS.getLogger().fine(" after running add name record local: " + recordEntry.getName() );
+    ListenerReplicationPaxos.addNameRecordLocal(recordEntry.getName(),recordEntry.getActiveNameservers(),
+            recordEntry.getActivePaxosID(),valuesMap);
+
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Active-paxos and name record created. Name = " + recordEntry.getName());
 //				"\tPaxos instance created for name: " + recordEntry.getName()
 //						+ " Primaries: " + primaries);
 //    if (startActives) {

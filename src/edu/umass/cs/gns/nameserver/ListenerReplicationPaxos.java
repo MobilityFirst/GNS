@@ -320,7 +320,6 @@ class ReplicationWorkerPaxos extends TimerTask {
 
         NameServer.addNameRecord(nameRecord);
 
-        //DBNameRecord.addNameRecord(nameRecord);
         GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: "
                 + "name record = " + nameRecord);
       } else {

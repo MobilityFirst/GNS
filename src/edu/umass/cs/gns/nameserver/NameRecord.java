@@ -105,6 +105,28 @@ public class NameRecord implements Comparable<NameRecord> {
     this.totalUpdateRequest = LAZYINT;
   }
 
+
+  public NameRecord(String name, BasicRecordMap recordMap, ArrayList<String> keys, ArrayList<String> values) {
+    if (recordMap == null) {
+      throw new RuntimeException("Record map cannot be null!");
+    }
+    //GNS.getLogger().info("Creating lazy name record for " + name);
+    this.recordMap = recordMap;
+    this.lazyEval = true;
+    // TODO if any field is in 'keys', then assign the value for that key from 'values'
+    this.name = name;
+    this.valuesMap = new ValuesMap(); // set this to a default value - it's handled specially
+    // set these to sentinel values which tells us the should be loaded on demand
+    this.oldValuesMap = null;
+    this.timeToLive = LAZYINT;
+    this.primaryNameservers = null;
+    this.activeNameservers = null;
+    this.activePaxosID = null;
+    this.oldActivePaxosID = null;
+    this.totalLookupRequest = LAZYINT;
+    this.totalUpdateRequest = LAZYINT;
+  }
+
   public NameRecord(String name) {
     this.name = name;
     //Initialize the entry in the map
@@ -336,6 +358,7 @@ public class NameRecord implements Comparable<NameRecord> {
     if (isLazyEval() && activeNameservers == null) {
       activeNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS);
     }
+
     return activeNameservers;
   }
 

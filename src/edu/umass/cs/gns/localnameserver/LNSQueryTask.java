@@ -25,7 +25,7 @@ public class LNSQueryTask extends TimerTask {
   private int transmissionCount;
   private int lookupNumber;
   private int queryId;
-  private HashSet<Integer> nameserverQueried;
+  private HashSet<Integer> nameserversQueried;
   int latestNameServerQueried;
 //  long totalTimerWait;
 //	private long retransmission_timeout = StartLocalNameServer.queryTimeout;
@@ -35,7 +35,7 @@ public class LNSQueryTask extends TimerTask {
   LNSQueryTask(DNSPacket incomingPacket, int transmissionCount,
           InetAddress senderAddress, int senderPort, long receivedTime,
           int lookupNumber, int queryId,
-          HashSet<Integer> nameserverQueried) {
+          HashSet<Integer> nameserversQueried) {
     this.incomingPacket = incomingPacket;
     this.transmissionCount = transmissionCount;
     this.senderAddress = senderAddress;
@@ -43,7 +43,7 @@ public class LNSQueryTask extends TimerTask {
     this.receivedTime = receivedTime;
     this.lookupNumber = lookupNumber;
     this.queryId = queryId;
-    this.nameserverQueried = nameserverQueried;
+    this.nameserversQueried = nameserversQueried;
     latestNameServerQueried = -1;
 //    this.totalTimerWait = totalTimerWait;
   }
@@ -139,29 +139,32 @@ public class LNSQueryTask extends TimerTask {
     }
 
     if (transmissionCount < StartLocalNameServer.numberOfTransmissions) {
+
       int result = sendDNSLookupToNameServer();
       if (result == 2) {
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("New actives request sent. Name = " + incomingPacket.getQname());
         // 2 = new actives requested, cancel this query
         return;
       }
       if (result == 1) { // no name servers remaining
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("No name servers remaining. Previous NS Queried = " + nameserversQueried + " Trying again .. Name = " + incomingPacket.getQname());
         // clear name servers and try again
-        nameserverQueried.clear();
+        nameserversQueried.clear();
         result = sendDNSLookupToNameServer();
         if (result == 2) {
+          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("New actives request sent. Name = " + incomingPacket.getQname());
           // 2 = new actives requested, cancel this query
           return;
         }
         if (result == 1) { // still no name servers
+          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Again no name servers remaining. Quit sending request. Name = " + incomingPacket.getQname());
           transmissionCount = StartLocalNameServer.numberOfTransmissions;
         }
       }
-
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tDNS-lookup-scheduled");
-
     }
-
+    GNS.getLogger().fine(" HECHED ...");
     long retransmissionTimeout;
     if (StartLocalNameServer.adaptiveTimeout) {
       retransmissionTimeout = AdaptiveRetransmission.getTimeoutInterval(latestNameServerQueried);
@@ -169,7 +172,7 @@ public class LNSQueryTask extends TimerTask {
     } else {
       retransmissionTimeout = StartLocalNameServer.queryTimeout;
     }
-
+    GNS.getLogger().fine(" asdfas ...");
     //if (StartLocalNameServer.debugMode) GNRS.getLogger().info("***RETRAN*** COUNT = " + transmissionCount + " NODE = " + LocalNameServer.nodeID + " timeout = " + retransmissionTimeout + " total timeout = " + totalTimerWait);
     LocalNameServer.timer.schedule(
             new LNSQueryTask(
@@ -180,7 +183,7 @@ public class LNSQueryTask extends TimerTask {
             receivedTime,
             lookupNumber,
             queryId,
-            nameserverQueried),
+                    nameserversQueried),
             retransmissionTimeout);
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tEnd-of-timer");
@@ -251,7 +254,7 @@ public class LNSQueryTask extends TimerTask {
               + incomingPacket.getQname() + "\t"
               + transmissionCount + "\t"
               + receivedTime + "\t"
-              + nameserverQueried.toString());
+              + nameserversQueried.toString());
 
       //The packet contains error. Respond back with an error
       errorResponse(incomingPacket, DNSRecordType.RCODE_ERROR, senderAddress, senderPort);
@@ -323,19 +326,19 @@ public class LNSQueryTask extends TimerTask {
     String queryStatus = null;
     while (true) {
 
-        nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, nameserverQueried);
+        nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, nameserversQueried);
     	// ACTIVE IN CACHE.
 //      if (LocalNameServer.isValidNameserverInCache(name, nameRecordKey)) {
 //        // Active name server information available in cache.s
 //        // Send a lookup query to the closest active name server.
 //        if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Name: " + name + " / " + nameRecordKey.getName() + " Address invalid in cache" + "TimeAddress:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
 //        if (StartLocalNameServer.beehiveReplication && StartLocalNameServer.loadDependentRedirection) {
-//        	nameServerID = LocalNameServer.getLoadAwareBeehiveNameServerFromCache(name, nameRecordKey, nameserverQueried);
+//        	nameServerID = LocalNameServer.getLoadAwareBeehiveNameServerFromCache(name, nameRecordKey, nameserversQueried);
 //        }
 //        else if (StartLocalNameServer.beehiveReplication) {
-//          nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, nameRecordKey, nameserverQueried);
+//          nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, nameRecordKey, nameserversQueried);
 //        } else if (StartLocalNameServer.loadDependentRedirection) {
-//          nameServerID = LocalNameServer.getBestActiveNameServerFromCache(name, nameRecordKey, nameserverQueried);
+//          nameServerID = LocalNameServer.getBestActiveNameServerFromCache(name, nameRecordKey, nameserversQueried);
 //        } else {
 //
 //        }
@@ -378,7 +381,7 @@ public class LNSQueryTask extends TimerTask {
       //Save query information at the local name server to match response
       if (transmissionCount == 1) {
     	  
-    	nameserverQueried.add(nameServerID);
+    	nameserversQueried.add(nameServerID);
         queryStatus = (queryStatus == null) ? QueryInfo.SINGLE_TRANSMISSION : queryStatus + "-" + QueryInfo.SINGLE_TRANSMISSION;
         //Get a unique id for this query
         queryId = LocalNameServer.addQueryInfo(name, nameRecordKey, nameServerID,
@@ -393,7 +396,7 @@ public class LNSQueryTask extends TimerTask {
 
       } else {
         queryStatus = (queryStatus == null) ? QueryInfo.MULTIPLE_TRANSMISSION : queryStatus + "-" + QueryInfo.MULTIPLE_TRANSMISSION;
-        nameserverQueried.add(nameServerID);
+        nameserversQueried.add(nameServerID);
         //Re-transmit the query to another active name server.
         if (LocalNameServer.addNameServerQueried(queryId, nameServerID, queryStatus)) {
           break;
@@ -405,7 +408,7 @@ public class LNSQueryTask extends TimerTask {
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tAfter-while-loop");
     //store the id of the active name server being queried
-//		nameserverQueried.add(nameServerID);
+//		nameserversQueried.add(nameServerID);
 
     //Create a DNS packet and send the query to the name server
     Header header = new Header(queryId, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
@@ -457,7 +460,7 @@ public class LNSQueryTask extends TimerTask {
   private void logFailureMessage(QueryInfo query) {
 
     String failureCode = "Failed-LookupNoResponseReceived";
-    if (nameserverQueried.isEmpty()) {
+    if (nameserversQueried.isEmpty()) {
       failureCode = "Failed-LookupNoNameServer";
     }
     String queryStatus = "";
@@ -471,7 +474,7 @@ public class LNSQueryTask extends TimerTask {
             + transmissionCount + "\t"
             + receivedTime + "\t"
             + queryStatus + "\t"
-            + nameserverQueried.toString());
+            + nameserversQueried.toString());
   }
 }
 

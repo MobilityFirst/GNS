@@ -8,7 +8,6 @@ import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
@@ -20,6 +19,7 @@ import edu.umass.cs.gns.util.MovingAverage;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
@@ -150,9 +150,9 @@ public class NameServer {
 
       if (StartNameServer.experimentMode) {
         // Name Records added for experiments
-        GenerateSyntheticRecordTable.generateRecordTable(
-                StartNameServer.regularWorkloadSize, StartNameServer.mobileWorkloadSize,
-                StartNameServer.defaultTTLRegularName, StartNameServer.defaultTTLMobileName);
+        GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
+                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
+                StartNameServer.defaultTTLMobileName);
       }
 
       // schedule periodic computation of new active name servers.
@@ -244,6 +244,11 @@ public class NameServer {
   public static NameRecord getNameRecordLazy(String name) {
     GNS.getLogger().info("Creating lazy name record for " + name);
     return recordMap.getNameRecordLazy(name);
+  }
+
+  public static NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
+    GNS.getLogger().info("Creating lazy name record for " + name);
+    return recordMap.getNameRecordLazy(name, keys);
   }
 
   public static void addNameRecord(NameRecord record) {

@@ -31,7 +31,7 @@ def main():
         os.system(cmd)
     #sys.exit(2)    
     import time
-    time.sleep(5)
+    time.sleep(3)
     # run a client
     workdir = experiment_folder + '/log/clientlog_' + str(replica_count)
     os.system('mkdir -p ' + workdir)

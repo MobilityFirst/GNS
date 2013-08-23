@@ -12,6 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * An implementation of the paxos protocol.
+ *
+ * Implementation is based on the document "Paxos Made Moderately Complex" by R van Renesse.
+ * We have added the extension to the protocol made by Lamport in "Stoppable Paxos" to
+ * be able to stop a paxos instance.
  * Created with IntelliJ IDEA.
  * User: abhigyan
  * Date: 6/26/13
@@ -223,7 +228,7 @@ public class PaxosReplica {
    * @param nodeIDs set of IDs of nodes in this paxos group
    */
   public PaxosReplica(String paxosID, int ID, Set<Integer> nodeIDs) {
-    System.out.println("In constructor...");
+//    System.out.println("In constructor...");
     this.paxosID = paxosID;
     this.nodeID = ID;
     this.nodeIDs = nodeIDs;
@@ -1970,8 +1975,8 @@ public class PaxosReplica {
    *
    */
   private void deletePValuesDecided(int slotNumber) {
-    GNS.getLogger().fine("Size of pvalues = " + pValuesAccepted.size());
-    System.out.println("Size of pvalues = " + pValuesAccepted.size());
+    if (StartNameServer.debugMode) GNS.getLogger().fine("Size of pvalues = " + pValuesAccepted.size());
+//    System.out.println("Size of pvalues = " + pValuesAccepted.size());
 
     if (slotNumber == -1) {
       if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\t" +" Returning DELETE P values slot number = " + slotNumber);

@@ -245,12 +245,12 @@ public class LocalNameServer {
         trace.add(new UpdateTrace(tokens[0], new Integer(tokens[1])));
         continue;
       } else {
-        int count = 1;
-        if (updateCounts.containsKey(tokens[0])) {
-          count = updateCounts.get(tokens[0]) + 1;
-        }
-        updateCounts.put(tokens[0], count);
-        trace.add(new UpdateTrace(tokens[0], count));
+//        int count = 0;
+//        if (updateCounts.containsKey(tokens[0])) {
+//          count = updateCounts.get(tokens[0]) + 1;
+//        }
+//        updateCounts.put(tokens[0], count);
+        trace.add(new UpdateTrace(tokens[0], UpdateTrace.UPDATE));
       }
 
     }

@@ -125,6 +125,11 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
+  public ArrayList<String> getNameRecordFields(String name, ArrayList<String> key) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
   public Set<String> getAllRowKeys() {
     return recordMap.keySet();
   }
@@ -146,6 +151,11 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   @Override
   public NameRecord getNameRecordLazy(String name) {
    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   //

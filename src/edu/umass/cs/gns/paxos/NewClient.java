@@ -2,6 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nio.NodeConfig;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
@@ -10,10 +11,9 @@ import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.TimerTask;
@@ -90,8 +90,11 @@ public class NewClient  extends PacketDemultiplexer{
 //     */
   ReentrantLock lock = new ReentrantLock();
 
+  FileWriter outputWriter = null;
+
   private static Random rand = new Random();
 
+  private String outputFolder;
   /**
    *
    * @param ID
@@ -102,6 +105,7 @@ public class NewClient  extends PacketDemultiplexer{
     this.ID = ID;
     this.nodeConfigFile = nodeConfigFile;
     this.testConfig = testConfig;
+
   }
 
   /**
@@ -122,7 +126,11 @@ public class NewClient  extends PacketDemultiplexer{
   private void initTransport() {
 
     try {
-      nioServer2 = new NioServer2(ID, new ByteStreamToJSONObjects(this), new PaxosNodeConfig(nodeConfigFile));
+      System.out.println(" ID is " + ID);
+      NodeConfig nodeConfig = new PaxosNodeConfig(nodeConfigFile);
+      InetAddress add = nodeConfig.getNodeAddress(ID);
+      System.out.println(" Address  is " + add);
+      nioServer2 = new NioServer2(ID, new ByteStreamToJSONObjects(this), nodeConfig);
     } catch (IOException e) {
       GNS.getLogger().severe(" Could not initialize TCP socket at client");
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -174,14 +182,36 @@ public class NewClient  extends PacketDemultiplexer{
 
     try {
       lock.lock();
-      System.out.println(" Requests sent = " + numberRequests + " Response received = " + responseCount);
+      double latency = LatencyCalculator.getAverageLatency();
+      LatencyCalculator.resetCalculation();
+      writeKeyValueOutput("RequestSent", Integer.toString(numberRequests));
+      writeKeyValueOutput("ResponseReceived", Integer.toString(responseCount));
+      writeKeyValueOutput("Failure", Double.toString((numberRequests - responseCount)*100/numberRequests));
+      System.out.println(" Requests sent = " + numberRequests + " Response received = " + responseCount + " Avg Latency = " + latency);
     } finally {
       lock.unlock();
     }
+    closeOutputWriter();
     System.out.println(" Client is quitting. Client ID = " + ID  );
     System.exit(2);
   }
 
+  private void closeOutputWriter() {
+    try {
+      outputWriter.close();
+    } catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+  }
+  private void writeKeyValueOutput(String key, String value) {
+    if (outputWriter!= null) {
+      try {
+        outputWriter.write(key + "\t" + value + "\n");
+      } catch (IOException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    }
+  }
   /**
    * client received paxos decision (server echoes back the request it sent)
    */
@@ -190,8 +220,12 @@ public class NewClient  extends PacketDemultiplexer{
       lock.lock();
       responseCount ++;
       if (responseCount%printsize == 0) {
-        System.out.println(" Received response " + responseCount + " ");
+        double latency = LatencyCalculator.getAverageLatency();
+        LatencyCalculator.resetCalculation();
+        writeKeyValueOutput("Latency", Double.toString(latency));
+        System.out.println(" Received response " + responseCount + "\tAvg Latency = " + latency);
       }
+      LatencyCalculator.addResponseReceivedTime();
     }finally{
       lock.unlock();
     }
@@ -225,18 +259,41 @@ public class NewClient  extends PacketDemultiplexer{
         }
         else if (tokens[0].equals("TestDurationSeconds")) testDurationSeconds = Integer.parseInt(tokens[1]);
         else if (tokens[0].equals("NumberOfReplicas")) numberOfReplicas = Integer.parseInt(tokens[1]);
+        else if (tokens[0].equals("OutputFolder"))  {
+          outputFolder = tokens[1];
+          initOutputWriter();
+
+
+        }
       }
     } catch (IOException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
 
+  public void initOutputWriter() {
+    if (outputFolder == null) {
+      System.out.println(" Output Folder is NULL.");
+      return;
+    }
+    File f = new File(outputFolder);
+    if (f.exists() == false) {
+      f.mkdirs();
+    }
+    try {
+      outputWriter = new FileWriter(outputFolder + "/paxos_output");
+    } catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+  }
   @Override
   public void handleJSONObjects(ArrayList jsonObjects) {
     for (Object j: jsonObjects) {
       handlePaxosDecision();
     }
   }
+
+
 
   /**
    *
@@ -300,6 +357,7 @@ class SendRequestTask extends TimerTask {
         JSONObject json = requestPacket.toJSONObject();
         json.put(PaxosManager.PAXOS_ID, defaultPaxosID); // send request to paxos instance with ID = 0.
         nioServer2.sendToID(replica, json);
+        LatencyCalculator.addRequestSendTime();
 //                System.out.println(" XXXXXXXXXSent " + requestPacket + " to " + replica);
       } catch (IOException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -314,4 +372,40 @@ class SendRequestTask extends TimerTask {
   }
 
 
+}
+
+
+class LatencyCalculator {
+
+  private static long totalLatency = 0;
+  private static  int requestCount = 0;
+
+  private static ArrayList<Long> requestSendTimes = new ArrayList<Long>();
+
+  static synchronized void  addRequestSendTime() {
+    requestSendTimes.add(System.currentTimeMillis());
+    requestCount++;
+  }
+
+  static synchronized void addResponseReceivedTime() {
+    if (requestSendTimes.size() == 0) {
+      System.out.println(" ERROR: More responses received than request sent: " + requestCount);
+      return;
+    }
+    long sendTime = requestSendTimes.remove(0);
+    totalLatency += System.currentTimeMillis() - sendTime;
+
+  }
+
+  static synchronized double getAverageLatency() {
+    if (requestCount == 0) return 0;
+    return totalLatency*1.0/requestCount;
+
+  }
+
+  static synchronized void resetCalculation() {
+    totalLatency = 0;
+    requestCount = 0;
+//    requestSendTimes.clear();
+  }
 }

@@ -12,7 +12,7 @@ def main():
     kill_local_gnrs()
     config_file = join(gnrs_dir, 'local/local_config')
     working_dir = join(gnrs_dir, 'local/log_local/')
-    
+    print 'Clearing old GNS logs ..'
     if not os.path.exists(working_dir): 
         os.system('mkdir -p ' + working_dir)
     os.system('rm -rf ' + working_dir + '/*')
