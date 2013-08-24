@@ -15,7 +15,6 @@ import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
@@ -64,6 +63,12 @@ public class NameServer {
     NameServer.recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
     // Ditto for the replica controller records
     NameServer.replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
+
+    // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
+    //NameServer.recordMap = new CassandraRecordMap(CassandraRecords.DBNAMERECORD);
+    // Ditto for the replica controller records
+    //NameServer.replicaController = new CassandraRecordMap(CassandraRecords.DBREPLICACONTROLLER);
+    
 
     // will need to add back some form of the code to select the appropriate one
     // probably make persistentDataStore a selector

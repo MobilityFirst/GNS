@@ -173,7 +173,7 @@ public class CassandraRecords implements NoSQLRecords {
 
     }
   }
-  
+
 //  private String retrieveUserKeysString(String tableName, String guid) throws JSONException {
 //    StringBuffer result = new StringBuffer();
 //    String values = lookup(tableName, guid, NameRecord.USER_KEYS);
@@ -185,7 +185,6 @@ public class CassandraRecords implements NoSQLRecords {
 //    }
 //    return result.toString();
 //  }
-
   private JSONObject retrieveJSONObject(String tableName, String guid) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
@@ -194,9 +193,9 @@ public class CassandraRecords implements NoSQLRecords {
       ResultSet results = session.execute(query);
       Row row = results.one();
       if (row != null) {
-      JSONObject json = retrieveJSONObjectFromRow(row);
-      System.out.println(json.toString());
-      return json;
+        JSONObject json = retrieveJSONObjectFromRow(row);
+        System.out.println(json.toString());
+        return json;
       } else {
         return null;
       }
@@ -250,7 +249,8 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "TRUNCATE " + CSI(tableName) + ";";
-      //createSchema(tableName, spec.getPrimaryKey());
+      System.out.println("Executing query " + query);
+      session.execute(query);
       GNS.getLogger().info("CASSANDRA DB RESET. DBNAME: " + dbName + " Table name: " + tableName);
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);

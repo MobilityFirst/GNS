@@ -18,11 +18,11 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class CassandraRecordMapNew extends BasicRecordMap {
+public class CassandraRecordMap extends BasicRecordMap {
 
   private String collectionName;
 
-  public CassandraRecordMapNew(String collectionName) {
+  public CassandraRecordMap(String collectionName) {
     this.collectionName = collectionName;
   }
 
@@ -278,7 +278,7 @@ public class CassandraRecordMapNew extends BasicRecordMap {
 
   // test code
   public static void main(String[] args) throws Exception {
-    NameServer.nodeID = 2;
+    NameServer.nodeID = 4;
     retrieveFieldTest();
     //System.exit(0);
   }
@@ -286,7 +286,7 @@ public class CassandraRecordMapNew extends BasicRecordMap {
   private static void retrieveFieldTest() throws Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
-    BasicRecordMap recordMap = new CassandraRecordMapNew(CassandraRecords.DBNAMERECORD);
+    BasicRecordMap recordMap = new CassandraRecordMap(CassandraRecords.DBNAMERECORD);
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS));
     recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
