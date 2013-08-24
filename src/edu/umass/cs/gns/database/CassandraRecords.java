@@ -17,10 +17,12 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
+import org.json.JSONArray;
 
 /**
  *
@@ -28,9 +30,9 @@ import java.util.*;
  */
 public class CassandraRecords implements NoSQLRecords {
 
-  private static final String DBROOTNAME = "CGNS";
-  public static final String DBNAMERECORD = "CNameRecord";
-  public static final String DBREPLICACONTROLLER = "CReplicaControllerRecord";
+  private static final String DBROOTNAME = "GNS";
+  public static final String DBNAMERECORD = "NameRecord";
+  public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
   private String dbName;
   private Cluster cluster;
   private Session session;
@@ -98,14 +100,24 @@ public class CassandraRecords implements NoSQLRecords {
     cluster.shutdown();
   }
 
+  /**
+   * CREATE A C_ase S_ensitive I_dentifier
+   *
+   * @param string
+   * @return
+   */
+  private String CSI(String string) {
+    return "\"" + string + "\"";
+  }
+
   public void createKeyspace() {
     try {
-      session.execute("CREATE KEYSPACE " + dbName + " WITH replication "
+      session.execute("CREATE KEYSPACE " + CSI(dbName) + " WITH replication "
               + "= {'class':'SimpleStrategy', 'replication_factor':1};");
     } catch (AlreadyExistsException e) {
     }
 
-    session.execute("USE " + dbName);
+    session.execute("USE " + CSI(dbName));
   }
 
   private void createSchemas() {
@@ -122,9 +134,9 @@ public class CassandraRecords implements NoSQLRecords {
 //      session.execute(query);
 //    } catch (InvalidQueryException e) {
 //    }
-    String query = "CREATE TABLE " + tableName + " ("
-            + key + " text"
-            + ",PRIMARY KEY (" + key + ")"
+    String query = "CREATE TABLE " + CSI(tableName) + " ("
+            + CSI(key) + " text"
+            + ",PRIMARY KEY (" + CSI(key) + ")"
             + ");";
     System.out.println("Executing query " + query);
     try {
@@ -145,13 +157,13 @@ public class CassandraRecords implements NoSQLRecords {
   private void insertColumn(String tableName, String keyColumn, String guid, String columnName, String value) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
-      String query = "ALTER TABLE " + tableName + " ADD " + columnName + " text;";
+      String query = "ALTER TABLE " + CSI(tableName) + " ADD " + CSI(columnName) + " text;";
       System.out.println("Executing query " + query);
       try {
         session.execute(query);
       } catch (InvalidQueryException e) {
       }
-      query = "INSERT INTO " + tableName + " (" + keyColumn + ", " + columnName + ") "
+      query = "INSERT INTO " + CSI(tableName) + " (" + CSI(keyColumn) + ", " + CSI(columnName) + ") "
               + "VALUES ("
               + "'" + guid + "'"
               + ",'" + value + "'"
@@ -161,19 +173,33 @@ public class CassandraRecords implements NoSQLRecords {
 
     }
   }
+  
+//  private String retrieveUserKeysString(String tableName, String guid) throws JSONException {
+//    StringBuffer result = new StringBuffer();
+//    String values = lookup(tableName, guid, NameRecord.USER_KEYS);
+//    String prefix = "";
+//    for (String key : JSONUtils.JSONArrayToArrayList(new JSONArray(values))) {
+//      result.append(prefix);
+//      result.append(CSI(key));
+//      prefix = ",";
+//    }
+//    return result.toString();
+//  }
 
   private JSONObject retrieveJSONObject(String tableName, String guid) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
-      String query = "SELECT * FROM " + tableName + " WHERE " + spec.getPrimaryKey() + " = '" + guid + "';";
+      String query = "SELECT * FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
       System.out.println("Executing query " + query);
       ResultSet results = session.execute(query);
-      JSONObject json = new JSONObject();
-      for (Row row : results) {
-        json = retrieveJSONObjectFromRow(row);
-        System.out.println(json.toString());
-      }
+      Row row = results.one();
+      if (row != null) {
+      JSONObject json = retrieveJSONObjectFromRow(row);
+      System.out.println(json.toString());
       return json;
+      } else {
+        return null;
+      }
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
       return null;
@@ -181,25 +207,50 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   private JSONObject retrieveJSONObjectFromRow(Row row) {
-    JSONObject json = new JSONObject();
+    //JSONObject json = new JSONObject();
+    StringBuilder result = new StringBuilder();
+    result.append("{");
+    String prefix = "";
     for (Definition def : row.getColumnDefinitions().asList()) {
       String name = def.getName();
-      try {
-        // NEW WAY TO DO THIS
-        json.put(name, row.getString(name));
-      } catch (JSONException e) {
-        GNS.getLogger().warning("Problem creating JSON object: " + e);
+      String value = row.getString(name);
+      if (value != null) {
+        // Building the JSON string here
+        System.out.println("Name = " + name + " value = " + value);
+        result.append(prefix);
+        result.append("\"");
+        result.append(name);
+        result.append("\"");
+        result.append(":");
+        // Only quote them if they aren't a JSON array or object
+        if (!value.startsWith("[") && !value.startsWith("{")) {
+          result.append("\"");
+        }
+        result.append(value);
+        // Only quote them if they aren't a JSON array or object
+        if (!value.startsWith("[") && !value.startsWith("{")) {
+          result.append("\"");
+        }
+        prefix = ",";
       }
     }
-    return json;
+    result.append("}");
+    System.out.println(result);
+    try {
+      return new JSONObject(result.toString());
+    } catch (JSONException e) {
+      GNS.getLogger().warning("Problem creating JSON object: " + e);
+      return null;
+    }
+    //return json;
   }
 
   @Override
   public void reset(String tableName) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
-      String query = "DROP TABLE " + tableName + ";";
-      createSchema(tableName, spec.getPrimaryKey());
+      String query = "TRUNCATE " + CSI(tableName) + ";";
+      //createSchema(tableName, spec.getPrimaryKey());
       GNS.getLogger().info("CASSANDRA DB RESET. DBNAME: " + dbName + " Table name: " + tableName);
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
@@ -216,7 +267,7 @@ public class CassandraRecords implements NoSQLRecords {
   @Override
   public ArrayList<JSONObject> retrieveAllEntries(String tableName) {
     ArrayList<JSONObject> result = new ArrayList<JSONObject>();
-    String query = "SELECT * FROM " + tableName + ";";
+    String query = "SELECT * FROM " + CSI(tableName) + ";";
     System.out.println("Executing query " + query);
     ResultSet results = session.execute(query);
     JSONObject json = new JSONObject();
@@ -235,7 +286,7 @@ public class CassandraRecords implements NoSQLRecords {
   public void remove(String tableName, String guid) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
-      String query = "DELETE FROM " + tableName + " WHERE " + spec.getPrimaryKey() + " = '" + guid + "';";
+      String query = "DELETE FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
       System.out.println("Executing query " + query);
       ResultSet results = session.execute(query);
     } else {
@@ -247,11 +298,11 @@ public class CassandraRecords implements NoSQLRecords {
   public boolean contains(String tableName, String guid) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
-      String query = "SELECT " + spec.getPrimaryKey() + " FROM " + tableName
-              + " WHERE " + spec.getPrimaryKey() + " = '" + guid + "';";
+      String query = "SELECT " + CSI(spec.getPrimaryKey()) + " FROM " + CSI(tableName)
+              + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
       System.out.println("Executing query " + query);
       ResultSet results = session.execute(query);
-      return results.isExhausted();
+      return !results.isExhausted();
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
       return false;
@@ -276,7 +327,7 @@ public class CassandraRecords implements NoSQLRecords {
             String value = json.getString(key);
             insertColumn(tableName, primaryKey, guid, key, value);
           } catch (JSONException e) {
-            GNS.getLogger().warning("Problem extracting feild from JSON object: " + e);
+            GNS.getLogger().warning("Problem extracting field from JSON object: " + e);
           }
         }
       }
@@ -289,7 +340,7 @@ public class CassandraRecords implements NoSQLRecords {
   public String lookup(String tableName, String guid, String key) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
-      String query = "SELECT " + key + " FROM " + tableName + " WHERE " + spec.getPrimaryKey() + " = '" + guid + "';";
+      String query = "SELECT " + CSI(key) + " FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
       System.out.println("Executing query " + query);
       ResultSet results = session.execute(query);
       Row row = results.one();
@@ -327,8 +378,8 @@ public class CassandraRecords implements NoSQLRecords {
   private void loadTestData(String tableName, String guid) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
-      insertColumn(tableName, guid, "value", "SAM");
-      insertColumn(tableName, guid, "spank", "UMM");
+      insertColumn(tableName, guid, "KEY_1", "VALUE_1");
+      insertColumn(tableName, guid, "KEY_2", "VALUE_2");
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
     }
@@ -338,7 +389,6 @@ public class CassandraRecords implements NoSQLRecords {
   private static NameRecord createNameRecord(String name, String key, String value) throws Exception {
     return new NameRecord(name, new NameRecordKey(key), new ArrayList(Arrays.asList(value)));
   }
-  
   //
   // UTILS
   //
@@ -353,20 +403,22 @@ public class CassandraRecords implements NoSQLRecords {
     return sb.toString();
   }
 
-  public static void runTest() throws Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
-    CassandraRecords instance = CassandraRecords.getInstance();
-    instance.reset(DBNAMERECORD);
-    Random random = new Random();
-    NameRecord n = null;
-    for (int i = 0; i < 10; i++) {
-      NameRecord x = createNameRecord(randomString(6), randomString(6), randomString(6));
-      if (i == 5) {
-        n = x;
+  public static void runTest() {
+    try {
+      ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+      HashFunction.initializeHashFunction();
+      CassandraRecords instance = CassandraRecords.getInstance();
+      //instance.reset(DBNAMERECORD);
+      Random random = new Random();
+      NameRecord n = null;
+      for (int i = 0; i < 100; i++) {
+        NameRecord x = createNameRecord("GUID_" + randomString(8), "KEY_" + randomString(8), "VALUE_" + randomString(3));
+        if (i == 50) {
+          n = x;
+        }
+        System.out.println(x.toString());
+        instance.insert(DBNAMERECORD, x.getName(), x.toJSONObject());
       }
-      instance.insert(DBNAMERECORD, x.getName(), x.toJSONObject());
-    }
 
 //    System.out.println("LOOKUP BY GUID =>" + instance.lookup(n.getName(), true));
 //    instance.update(n.getName(), "timeToLive", "777");
@@ -374,31 +426,41 @@ public class CassandraRecords implements NoSQLRecords {
 //    instance.update(n.getName(), "FRANK", "777");
 //    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookup(n.getName(), true));
 //    
-    JSONObject json = instance.lookup(DBNAMERECORD, n.getName());
-    System.out.println("LOOKUP BY GUID => " + json);
-    NameRecord record = new NameRecord(json);
-    record.updateField("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
-    System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
-    instance.update(DBNAMERECORD, record.getName(), record.toJSONObject());
-    JSONObject json2 = instance.lookup(DBNAMERECORD, n.getName());
-    System.out.println("2ND LOOKUP BY GUID => " + json2);
-    //
-    //System.out.println("LOOKUP BY KEY =>" + instance.lookup(n.getName(), n.getRecordKey().getName(), true));
+      JSONObject json = instance.lookup(DBNAMERECORD, n.getName());
+      System.out.println("LOOKUP BY GUID => " + json);
+      System.out.println("CONTAINS = (should be true) " + instance.contains(DBNAMERECORD, n.getName()));
+      System.out.println("CONTAINS = (should be false) " + instance.contains(DBNAMERECORD, "BLAH BLAH"));
+      NameRecord record = new NameRecord(json);
+      record.updateField("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
+      System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
+      instance.update(DBNAMERECORD, record.getName(), record.toJSONObject());
+      JSONObject json2 = instance.lookup(DBNAMERECORD, n.getName());
+      System.out.println("2ND LOOKUP BY GUID => " + json2);
+      //
+      //System.out.println("LOOKUP BY KEY =>" + instance.lookup(n.getName(), n.getRecordKey().getName(), true));
 
 //    System.out.println("DUMP =v");
 //    instance.printAllEntries();
 //    System.out.println(MongoRecordsV2.getInstance().db.getCollection(COLLECTIONNAME).getStats().toString());
-    //
-    instance.remove(DBNAMERECORD, n.getName());
-    json2 = instance.lookup(DBNAMERECORD, n.getName());
-    System.out.println("SHOULD BE EMPTY => " + json2);
+      //
+      instance.updateField(DBNAMERECORD, n.getName(), NameRecord.ACTIVE_NAMESERVERS, Arrays.asList(97, 98, 99));
+      json2 = instance.lookup(DBNAMERECORD, n.getName());
+      System.out.println("JSON AFTER FIELD UPDATE => " + json2);
+      instance.remove(DBNAMERECORD, n.getName());
+      json2 = instance.lookup(DBNAMERECORD, n.getName());
+      System.out.println("SHOULD BE EMPTY => " + json2);
+      System.exit(0);
+    } catch (Exception e) {
+      System.out.println("Error during main test execution: " + e);
+      e.printStackTrace();
+    }
   }
 
   private static void runBasicTest() {
     try {
       CassandraRecords client = CassandraRecords.getInstance();
-      client.loadTestData(DBREPLICACONTROLLER, "FRED");
-      System.out.println(client.retrieveJSONObject(DBREPLICACONTROLLER, "FRED"));
+      client.loadTestData(DBREPLICACONTROLLER, "GUID_XYZ");
+      System.out.println(client.retrieveJSONObject(DBREPLICACONTROLLER, "GUID_XYZ"));
       //client.queryTestSchema(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
       //client.close();
       System.exit(0);

@@ -17,14 +17,17 @@ import java.util.Set;
  * @author westy
  */
 public class CassandraRecordMapV1 extends BasicRecordMapV1 {
-  String COLLECTION_NAME = MongoRecords.DBNAMERECORD;
+  private String collectionName;
+
+  public CassandraRecordMapV1(String collectionName) {
+    this.collectionName = collectionName;
+  }
+  
   @Override
   public NameRecordV1 getNameRecord(String name, NameRecordKey recordKey) {
-    
     CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
-
     try {
-      String string = records.lookup(COLLECTION_NAME, name, recordKey.getName());
+      String string = records.lookup(collectionName, name, recordKey.getName());
       if (string != null) {
         return new NameRecordV1(new JSONObject(string));
       } else {
@@ -41,7 +44,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   public void addNameRecord(NameRecordV1 record) {
     CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     try {
-      records.insert(COLLECTION_NAME, record.getName(), record.toJSONObject().toString());
+      records.insert(collectionName, record.getName(), record.toJSONObject().toString());
     } catch (JSONException e) {
       GNS.getLogger().severe("Error adding name record: " + e);
       e.printStackTrace();
@@ -52,7 +55,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   public void updateNameRecord(NameRecordV1 record) {
     CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     try {
-      records.update(COLLECTION_NAME, record.getName(), record.toJSONObject());
+      records.update(collectionName, record.getName(), record.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().severe("Error updating name record: " + e);
       e.printStackTrace();
@@ -75,7 +78,7 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   public Set<NameRecordV1> getAllNameRecords() {
     CassandraRecordsV1 records = CassandraRecordsV1.getInstance();
     Set<NameRecordV1> result = new HashSet();
-    for (JSONObject json : records.retrieveAllEntries(COLLECTION_NAME)) {
+    for (JSONObject json : records.retrieveAllEntries(collectionName)) {
       try {
         result.add(new NameRecordV1(json));
       } catch (JSONException e) {
@@ -90,11 +93,4 @@ public class CassandraRecordMapV1 extends BasicRecordMapV1 {
   public void reset() {
    CassandraRecordsV1.getInstance().resetKeySpace();
   }
-  
-   public static void main(String[] args) throws Exception {
-     for (NameRecordV1 record : new CassandraRecordMapV1().getAllNameRecords()) {
-       System.out.println(record);
-     }
-       
-   }
 }

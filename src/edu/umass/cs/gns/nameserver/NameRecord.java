@@ -22,8 +22,8 @@ import java.util.*;
  */
 public class NameRecord implements Comparable<NameRecord> {
 
-  private final static String USER_KEYS = "nr_user_keys";
-  private final static String OLDVALUESMAP = "nr_oldValuesMap";
+  public final static String USER_KEYS = "nr_user_keys";
+  public final static String OLDVALUESMAP = "nr_oldValuesMap";
   //
   public final static String NAME = "nr_name";
   public final static String KEY = "nr_key"; // legacy use
