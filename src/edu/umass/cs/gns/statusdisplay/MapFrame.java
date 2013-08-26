@@ -8,7 +8,6 @@ import edu.umass.cs.gns.packet.TrafficStatusPacket;
 import edu.umass.cs.gns.statusdisplay.StatusModel.SendNotation;
 import edu.umass.cs.gns.util.Colors;
 import edu.umass.cs.gns.util.Format;
-import edu.umass.cs.gns.util.MoreUtils;
 import edu.umass.cs.gns.util.ScreenUtils;
 import edu.umass.cs.gns.util.ThreadUtils;
 import java.awt.BasicStroke;

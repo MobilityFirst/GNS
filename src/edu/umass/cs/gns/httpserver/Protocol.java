@@ -12,8 +12,9 @@ import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.MoreUtils;
+import edu.umass.cs.gns.util.Util;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -411,7 +412,7 @@ public class Protocol {
 
   private String createGuidFromPublicKey(String publicKey) {
     byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(publicKey.getBytes());
-    return MoreUtils.toHex(publicKeyDigest);
+    return ByteUtils.toHex(publicKeyDigest);
   }
 
   public String processRegisterAccountWithGuid(String name, String guid, String publicKey, String password) {
@@ -834,7 +835,7 @@ public class Protocol {
    */
   public String processQuery(String host, String action, String queryString) {
     String fullString = action + QUERYPREFIX + queryString; // for signature check
-    Map<String, String> queryMap = MoreUtils.parseURIQueryString(queryString);
+    Map<String, String> queryMap = Util.parseURIQueryString(queryString);
     //String action = queryMap.get(ACTION);
     try {
       // HELP
@@ -1175,7 +1176,7 @@ public class Protocol {
     Signature sig = Signature.getInstance(Protocol.SIGNATUREALGORITHM);
     sig.initVerify(publicKey);
     sig.update(messageDigest);
-    boolean result = sig.verify(MoreUtils.hexStringToByteArray(signature));
+    boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
     GNS.getLogger().fine("User " + userInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;
   }

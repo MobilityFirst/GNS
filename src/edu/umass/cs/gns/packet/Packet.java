@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.Util;
 import java.io.IOException;
@@ -556,7 +557,7 @@ public class Packet {
     
     do {
       attempt++;
-      id = Util.getSmallestLatencyNS(nameServerIds, excludeNameServer);
+      id = BestServerSelection.getSmallestLatencyNS(nameServerIds, excludeNameServer);
       excludeNameServer.add(id);
       try {
         return Packet.sendTCPPacket(json, id, portType);

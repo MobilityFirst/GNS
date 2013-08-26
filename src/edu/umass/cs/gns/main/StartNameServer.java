@@ -41,7 +41,7 @@ public class StartNameServer {
   public static int nameServerVoteSize;
   //public static boolean isPlanetlab = false;
   public static boolean debugMode = false;
-  public static boolean persistentDataStore = false;
+  public static DataStoreType dataStore = DataStoreType.MONGO;
   public static int mongoPort = -1;
   public static boolean simpleDiskStore = true;
   // incore with disk backup
@@ -62,7 +62,6 @@ public class StartNameServer {
   public static int maxReplica = 100;
   public static String specifiedActives = "specifiedActive.txt";
   public static int loadMonitorWindow = 100;
-
   private static int quitAfterTime = -1; // only for testing: local name server will quit after this time
 
   @SuppressWarnings("static-access")
@@ -96,7 +95,10 @@ public class StartNameServer {
 
     Option debugMode = new Option("debugMode", "Run in debug mode");
     Option experimentMode = new Option("experimentMode", "Run in experiment mode");
-    Option persistentDataStore = new Option("persistentDataStore", "Use a persistent data store for name records");
+
+    Option dataStore = new Option("dataStore", true, "Which persistent data store to use for name records");
+
+    //Option persistentDataStore = new Option("persistentDataStore", "Use a persistent data store for name records");
     Option simpleDiskStore = new Option("simpleDiskStore", "Use a simple disk store for name records");
     Option dataFolder = new Option("dataFolder", true, "dataFolder");
     Option mongoPort = new Option("mongoPort", true, "Which port number to use for MongoDB.");
@@ -191,7 +193,7 @@ public class StartNameServer {
     Option signatureCheck = new Option("signatureCheck",
             "whether an update operation checks signature or not");
     // used for testing only
-    Option quitAfterTime = new Option("quitAfterTime",true,
+    Option quitAfterTime = new Option("quitAfterTime", true,
             "name server will quit after this time");
 
     commandLineOptions = new Options();
@@ -220,7 +222,7 @@ public class StartNameServer {
     commandLineOptions.addOption(alpha);
     commandLineOptions.addOption(debugMode);
     commandLineOptions.addOption(experimentMode);
-    commandLineOptions.addOption(persistentDataStore);
+    commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(simpleDiskStore);
     commandLineOptions.addOption(dataFolder);
     commandLineOptions.addOption(mongoPort);
@@ -272,6 +274,7 @@ public class StartNameServer {
   private static final String DEFAULTREGULARWORKLOADSIZE = "0";
   private static final String DEFAULTMOBILEMOBILEWORKLOADSIZE = "0";
   private static final String DEFAULTPAXOSLOGPATHNAME = "log/paxos_log";
+  private static final DataStoreType DEFAULTDATASTORETYPE = DataStoreType.MONGO;
 
   public static void main(String[] args) {
     int id = 0;					//node id
@@ -324,15 +327,25 @@ public class StartNameServer {
 
       debugMode = parser.hasOption("debugMode");
       experimentMode = parser.hasOption("experimentMode");
-      persistentDataStore = parser.hasOption("persistentDataStore");
+      String dataStoreString = parser.getOptionValue("dataStore");
+      if (dataStoreString == null) {
+        dataStore = DEFAULTDATASTORETYPE;
+      } else {
+        try {
+          dataStore = DataStoreType.valueOf(dataStoreString);
+        } catch (IllegalArgumentException e) {
+          dataStore = DEFAULTDATASTORETYPE;
+        }
+      }
       simpleDiskStore = parser.hasOption("simpleDiskStore");
 
 
       if (simpleDiskStore && parser.hasOption("dataFolder")) {
         dataFolder = parser.getOptionValue("dataFolder");
       }
-      if (parser.hasOption("mongoPort"))
+      if (parser.hasOption("mongoPort")) {
         mongoPort = Integer.parseInt(parser.getOptionValue("mongoPort"));
+      }
 
 //      primaryPaxos = parser.hasOption("primaryPaxos");
 //      PaxosManager.writeStateToDisk = parser.hasOption("paxosDiskBackup");
@@ -384,12 +397,11 @@ public class StartNameServer {
         quitAfterTime = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
         if (quitAfterTime >= 0) {
           Thread t = new Thread() {
-
             @Override
             public void run() {
               System.out.println("Sleeping for " + quitAfterTime + " sec before quitting ...");
               try {
-                Thread.sleep(quitAfterTime*1000);
+                Thread.sleep(quitAfterTime * 1000);
               } catch (InterruptedException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
               }
@@ -416,7 +428,7 @@ public class StartNameServer {
     println("Id: " + id, debugMode);
     println("NS File: " + nsFile, debugMode);
     println("Local: " + isLocal, debugMode);
-    println("Persistant Data Store: " + persistentDataStore, debugMode);
+    println("Data Store: " + dataStore, debugMode);
     println("Regular Workload Size: " + regularWorkloadSize, debugMode);
     println("Mobile Workload Size: " + mobileWorkloadSize, debugMode);
     println("Primary: " + GNS.numPrimaryReplicas, debugMode);

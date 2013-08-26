@@ -914,7 +914,7 @@ public class LocalNameServer {
     if (cacheEntry == null || cacheEntry.getActiveNameServers() == null) {
       return -1;
     }
-    return Util.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserverQueried);
+    return BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserverQueried);
   }
 
   /**
@@ -1069,7 +1069,7 @@ public class LocalNameServer {
     CacheEntry cacheEntry = cache.getIfPresent(name);
 //      if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" Name " + name + "ACTIVE NAME SERVERS " + cacheEntry.getActiveNameServers());
     return (cacheEntry != null && cacheEntry.getActiveNameServers() != null)
-            ? Util.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserverQueried) : -1;
+            ? BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserverQueried) : -1;
   }
 
   /**
@@ -1101,7 +1101,7 @@ public class LocalNameServer {
     try {
       Set<Integer> primary = getPrimaryNameServers(name);
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
-      int x = Util.getSmallestLatencyNS(primary, nameServersQueried);
+      int x = BestServerSelection.getSmallestLatencyNS(primary, nameServersQueried);
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
       return x;
     } catch (Exception e) {

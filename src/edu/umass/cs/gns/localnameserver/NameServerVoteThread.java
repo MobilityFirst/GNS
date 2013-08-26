@@ -167,10 +167,10 @@ public class NameServerVoteThread extends Thread {
 			excludeNS.add(ConfigFileInfo.getClosestNameServer());
 			
 			while (excludeNS.size()  + 1 < closestK) {
-				int x = Util.getSmallestLatencyNS(allNS, excludeNS);
+				int x = BestServerSelection.getSmallestLatencyNS(allNS, excludeNS);
 				excludeNS.add(x);
 			}
-			return Util.getSmallestLatencyNS(allNS, excludeNS);
+			return BestServerSelection.getSmallestLatencyNS(allNS, excludeNS);
 		}
 	}
 

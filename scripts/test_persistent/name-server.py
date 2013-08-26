@@ -45,7 +45,7 @@ CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
 STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
 STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 
-PERSISTENT_DATA_STORE = '-persistentDataStore'
+DATA_STORE = '-dataStore'
 
 #PRIMARY_PAXOS = '-primaryPaxos'
 
@@ -99,7 +99,7 @@ console_output_level = 'FINE'
 stat_file_logging_level = 'INFO'
 stat_console_output_level = 'INFO'
 
-persistent_data_store = True
+data_store = 'MONGO'
 
 """ Prints usage message """
 def usage():
@@ -188,8 +188,8 @@ def run_name_server():
     command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
 
-    if persistent_data_store:
-        command += ' ' + PERSISTENT_DATA_STORE
+    if data_store:
+        command += ' ' + DATA_STORE + ' ' + data_store
 
     if tiny_update:
         command += ' ' + TINY_UPDATE

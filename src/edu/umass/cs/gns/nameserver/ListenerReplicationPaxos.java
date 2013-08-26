@@ -10,6 +10,7 @@ import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -466,7 +467,7 @@ class CopyStateFromOldActiveTask extends TimerTask {
       // make a copy
       NewActiveSetStartupPacket packet2 = new NewActiveSetStartupPacket(packet.toJSONObject());
       // select old active to send request to
-      int oldActive = Util.getSmallestLatencyNS(packet.getOldActiveNameServers(), oldActivesQueried);
+      int oldActive = BestServerSelection.getSmallestLatencyNS(packet.getOldActiveNameServers(), oldActivesQueried);
 
       if (oldActive == -1) {
         GNS.getLogger().fine(" ERROR:  No More Actives Left To Query. Cancel Task!!!");

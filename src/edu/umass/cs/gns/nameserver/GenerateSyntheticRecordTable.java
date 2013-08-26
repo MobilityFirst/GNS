@@ -5,6 +5,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.Util;
@@ -64,7 +65,7 @@ public class GenerateSyntheticRecordTable {
         if (StartNameServer.optimalReplication) {
           //Use the SHA-1 hash of the name as its address
           byte[] hash = HashFunction.SHA(strName, sha1);
-          int address = Util.BAToInt(hash);
+          int address = ByteUtils.BAToInt(hash);
 
           //Generate an entry for the name and add its record to the name server record table
           ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
@@ -81,7 +82,7 @@ public class GenerateSyntheticRecordTable {
         } else if (primaryNameServer.contains(NameServer.nodeID)) {
           //Use the SHA-1 hash of the name as its address
           byte[] hash = HashFunction.SHA(strName, sha1);
-          int address = Util.ByteArrayToInt(hash);
+          int address = ByteUtils.ByteArrayToInt(hash);
           if (StartNameServer.debugMode) GNS.getLogger().fine("RecordAdded\tName:\t" + name);
           //Generate an entry for the name and add its record to the name server record table
           ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);

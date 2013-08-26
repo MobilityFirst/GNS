@@ -95,7 +95,7 @@ public class HashFunction {
 
 		for (int i = 0; i < GNS.numPrimaryReplicas; i++) {
 		  byte[] buff = SHA(name, hashFunctions.get(i%hashFunctions.size()));
-		  int id = Util.ByteArrayToInt(buff);
+		  int id = ByteUtils.ByteArrayToInt(buff);
 		  id = (id < 0) ? id * -1 : id;
 		  Integer nameServerID = new Integer(id % ConfigFileInfo.getNumberOfNameServers());
 
@@ -127,22 +127,22 @@ public class HashFunction {
       HashFunction.initializeHashFunction();
 
       ConfigFileInfo.setNumberOfNameServers(6);
-      System.out.println(Util.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-1"))));
+      System.out.println(ByteUtils.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-1"))));
       String s = new String(SHA("www.google.com", MessageDigest.getInstance("SHA-1")));
       System.out.println(s);
       byte[] t = s.getBytes();
-      System.out.println(Util.convertToHex(t));
+      System.out.println(ByteUtils.convertToHex(t));
 
 
       System.out.println(SHA("www.google.com", MessageDigest.getInstance("SHA-1")).length);
-      System.out.println(Util.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-256"))));
+      System.out.println(ByteUtils.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-256"))));
       System.out.println(SHA("www.google.com", MessageDigest.getInstance("SHA-256")).length);
-      System.out.println(Util.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-512"))));
+      System.out.println(ByteUtils.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-512"))));
       System.out.println(SHA("www.google.com", MessageDigest.getInstance("SHA-512")).length);
 
-      System.out.println("\n" + Util.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-1"))));
-      System.out.println(Util.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-256"))));
-      System.out.println(Util.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-512"))));
+      System.out.println("\n" + ByteUtils.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-1"))));
+      System.out.println(ByteUtils.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-256"))));
+      System.out.println(ByteUtils.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-512"))));
 
 //      ConfigFileInfo.readHostInfo("ns1", 1);
       GNS.numPrimaryReplicas = 3;//GNRS.DEFAULTNUMPRIMARYREPLICAS;

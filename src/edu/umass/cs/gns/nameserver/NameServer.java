@@ -15,6 +15,7 @@ import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
+import edu.umass.cs.gns.util.Util;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
@@ -58,11 +59,19 @@ public class NameServer {
     NameServer.dnsSocket = new DatagramSocket(ConfigFileInfo.getDnsPort(nodeID));
 
 //    NameServer.updateSocket = new DatagramSocket(ConfigFileInfo.getUpdatePort(nodeID));
-
+    
+     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
-    NameServer.recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
+    NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
+            MongoRecords.DBNAMERECORD);
     // Ditto for the replica controller records
-    NameServer.replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
+    NameServer.replicaController = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(), 
+            MongoRecords.DBREPLICACONTROLLER);
+//
+//    // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
+//    NameServer.recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
+//    // Ditto for the replica controller records
+//    NameServer.replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
 
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     //NameServer.recordMap = new CassandraRecordMap(CassandraRecords.DBNAMERECORD);

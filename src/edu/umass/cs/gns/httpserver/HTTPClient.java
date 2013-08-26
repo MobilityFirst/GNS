@@ -4,9 +4,8 @@ import edu.umass.cs.gns.client.AclAccess.AccessType;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.EC2Installer;
 import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Logging;
-import edu.umass.cs.gns.util.MoreUtils;
-import edu.umass.cs.gns.util.ThreadUtils;
 import edu.umass.cs.gns.util.URIEncoderDecoder;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -539,7 +538,7 @@ public class HTTPClient {
     instance.update(messageDigest);
     byte[] signature = instance.sign();
 
-    return MoreUtils.toHex(signature);
+    return ByteUtils.toHex(signature);
   }
 
   /**
@@ -549,8 +548,8 @@ public class HTTPClient {
    * @param keyPair
    */
   private void saveKeyPairToPreferences(String username, KeyPair keyPair) {
-    String publicString = MoreUtils.toHex(keyPair.getPublic().getEncoded());
-    String privateString = MoreUtils.toHex(keyPair.getPrivate().getEncoded());
+    String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
+    String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
     getLogger().finer("Save public key: " + publicString);
     getLogger().finer("Save private key: " + privateString);
     userPreferencess.put(username + "-public", publicString);
@@ -570,8 +569,8 @@ public class HTTPClient {
     getLogger().finer("Retrieved private key: " + privateString);
     if (!publicString.isEmpty() && !privateString.isEmpty()) {
       try {
-        byte[] encodedPublicKey = MoreUtils.hexStringToByteArray(publicString);
-        byte[] encodedPrivateKey = MoreUtils.hexStringToByteArray(privateString);
+        byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
+        byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
 
         KeyFactory keyFactory = KeyFactory.getInstance(Protocol.RASALGORITHM);
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);

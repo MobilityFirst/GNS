@@ -68,7 +68,7 @@ public class BeehiveReplication {
 				break;
 		}
 		
-		int numActives = Util.round( ConfigFileInfo.getNumberOfNameServers() / Math.pow( base, level ) );
+		int numActives = Util.roundToInt( ConfigFileInfo.getNumberOfNameServers() / Math.pow( base, level ) );
 		if( numActives < 1 )
 			numActives = 1;
 		

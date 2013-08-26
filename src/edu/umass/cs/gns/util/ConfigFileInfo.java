@@ -344,6 +344,6 @@ public class ConfigFileInfo {
     nameservers.add(59);
     Set<Integer> nameserverQueried = new HashSet<Integer>();
     nameserverQueried.add(8);
-    System.out.println(Util.getSmallestLatencyNS(nameservers, null));
+    System.out.println(BestServerSelection.getSmallestLatencyNS(nameservers, null));
   }
 }

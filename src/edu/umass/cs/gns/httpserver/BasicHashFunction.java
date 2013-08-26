@@ -4,7 +4,7 @@
  */
 package edu.umass.cs.gns.httpserver;
 
-import edu.umass.cs.gns.util.MoreUtils;
+import edu.umass.cs.gns.util.ByteUtils;
 
 /**
  *
@@ -15,7 +15,7 @@ public abstract class BasicHashFunction implements HashFunction {
   @Override
   public long hashToLong(String key) {
     // assumes the first byte is the most significant
-    return MoreUtils.byteArrayToLong(hash(key));
+    return ByteUtils.byteArrayToLong(hash(key));
   }
   
 }
