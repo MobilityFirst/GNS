@@ -847,7 +847,7 @@ public class PaxosReplica {
 //                    perform(decisions.get(slotNumber), slotNumber);
 //                    slotNumber++;
 //                    PaxosLogger.logCurrentSlotNumber(paxosID, slotNumber);
-////                    GNS.getLogger().severe("XXX " + slotNumber);
+////                    GNS.getLogger().info("XXX " + slotNumber);
 //                }
 //                else {
 //                    break;
@@ -910,7 +910,7 @@ public class PaxosReplica {
    * @throws JSONException
    */
   private void perform(RequestPacket req, int slotNumber) throws JSONException{
-    if (StartNameServer.debugMode) GNS.getLogger().severe("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
+    if (StartNameServer.debugMode) GNS.getLogger().info("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
     if (req.value.equals(NO_OP) ) {
 
       if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\t" +nodeID + " " + NO_OP + " decided in slot = " + slotNumber);
@@ -926,7 +926,7 @@ public class PaxosReplica {
     }
     PaxosManager.handleDecision(paxosID, req);
 
-//        if (StartNameServer.debugMode) GNS.getLogger().severe("\tPAXOS-COMMIT\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
+//        if (StartNameServer.debugMode) GNS.getLogger().info("\tPAXOS-COMMIT\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
 
   }
 

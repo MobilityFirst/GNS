@@ -89,9 +89,9 @@ public class CassandraRecords implements NoSQLRecords {
   private void connect(String node) {
     cluster = Cluster.builder().addContactPoint(node).build();
     Metadata metadata = cluster.getMetadata();
-    GNS.getLogger().info("Connected to cluster: " + metadata.getClusterName() + "\n");
+    GNS.getLogger().info("Connected to cluster: " + metadata.getClusterName());
     for (Host host : metadata.getAllHosts()) {
-      GNS.getLogger().info("Datacenter: " + host.getDatacenter() + " Host: " + host.getAddress() + " Rack: " + host.getRack() + "\n");
+      GNS.getLogger().info("Datacenter: " + host.getDatacenter() + " Host: " + host.getAddress() + " Rack: " + host.getRack());
     }
     session = cluster.connect();
   }

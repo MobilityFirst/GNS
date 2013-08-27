@@ -183,10 +183,10 @@ public class ReplicaControllerRecord {
   public ReplicaControllerRecord(JSONObject json) throws JSONException {
 
     this.name = json.getString(NAME);
-    GNS.getLogger().fine(" JSON = " + json);
+    GNS.getLogger().finer(" JSON = " + json);
     this.primaryNameservers = (HashSet<Integer>) JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARY_NAMESERVERS));
-      GNS.getLogger().fine(" THIS IS ACTIVE:  " + json.getJSONArray(ACTIVE_NAMESERVERS));
-    GNS.getLogger().fine(" TO SET INTEGER:  " + JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS)));
+      GNS.getLogger().finer(" THIS IS ACTIVE:  " + json.getJSONArray(ACTIVE_NAMESERVERS));
+    GNS.getLogger().finer(" TO SET INTEGER:  " + JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS)));
     this.activeNameservers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
 
     // New fields
@@ -201,7 +201,7 @@ public class ReplicaControllerRecord {
     }
     this.markedForRemoval = json.getInt(MARKED_FOR_REMOVAL);
 
-    GNS.getLogger().fine("NAMESERVER_VOTES_MAP string:  " + json.get(NAMESERVER_VOTES_MAP));
+    GNS.getLogger().finer("NAMESERVER_VOTES_MAP string:  " + json.get(NAMESERVER_VOTES_MAP));
     this.nameServerVotesMap = toIntegerMap(json.getJSONObject(NAMESERVER_VOTES_MAP));
     this.nameServerStatsMap = toStatsMap(json.getJSONObject(NAMESERVER_STATS_MAP));
 
@@ -212,11 +212,11 @@ public class ReplicaControllerRecord {
 
 
     if (json.has(MOVINGAGGREGATELOOKUPFREQUENCY)) {
-      GNS.getLogger().fine("MOVINGAGGREGATELOOKUPFREQUENCY string:  " + json.get(MOVINGAGGREGATELOOKUPFREQUENCY));
+      GNS.getLogger().finer("MOVINGAGGREGATELOOKUPFREQUENCY string:  " + json.get(MOVINGAGGREGATELOOKUPFREQUENCY));
       this.movingAvgAggregateLookupFrequency = new MovingAverage(json.getJSONArray(MOVINGAGGREGATELOOKUPFREQUENCY), StartNameServer.movingAverageWindowSize);
     }
     if (json.has(MOVINGAGGREGATEUPDATEFREQUENCY)) {
-      GNS.getLogger().fine("MOVINGAGGREGATEUPDATEFREQUENCY string:  " + json.get(MOVINGAGGREGATEUPDATEFREQUENCY));
+      GNS.getLogger().finer("MOVINGAGGREGATEUPDATEFREQUENCY string:  " + json.get(MOVINGAGGREGATEUPDATEFREQUENCY));
       this.movingAvgAggregateUpdateFrequency = new MovingAverage(json.getJSONArray(MOVINGAGGREGATEUPDATEFREQUENCY), StartNameServer.movingAverageWindowSize);
     }
     this.keepAliveTime = json.getLong(KEEP_ALIVE_TIME);
@@ -842,7 +842,7 @@ public class ReplicaControllerRecord {
     }
 
     if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("TotalAggregateRead: " + getTotalAggregateReadFrequency()
+      GNS.getLogger().finer("TotalAggregateRead: " + getTotalAggregateReadFrequency()
               + " Previous: " + getPreviousAggregateReadFrequency()
               + " Current: " + (getTotalAggregateReadFrequency() - getPreviousAggregateReadFrequency()));
     }
@@ -865,7 +865,7 @@ public class ReplicaControllerRecord {
     }
 
     if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("TotalAggregateWrite: " + getTotalAggregateWriteFrequency()
+      GNS.getLogger().finer("TotalAggregateWrite: " + getTotalAggregateWriteFrequency()
               + " Previous: " + getPreviousAggregateWriteFrequency()
               + " Current: " + (getTotalAggregateWriteFrequency() - getPreviousAggregateWriteFrequency()));
     }

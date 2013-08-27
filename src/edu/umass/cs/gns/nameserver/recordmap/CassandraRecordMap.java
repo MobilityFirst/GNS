@@ -31,10 +31,10 @@ public class CassandraRecordMap extends BasicRecordMap {
     CassandraRecords records = CassandraRecords.getInstance();
     String result = records.lookup(collectionName, name, key);
     if (result != null) {
-      GNS.getLogger().fine(records.toString() + ":: Retrieved " + name + "/" + key + ": " + result);
+      GNS.getLogger().finer(records.toString() + ":: Retrieved " + name + "/" + key + ": " + result);
       return result;
     } else {
-      GNS.getLogger().fine(records.toString() + ":: No record named " + name + " with key " + key);
+      GNS.getLogger().finer(records.toString() + ":: No record named " + name + " with key " + key);
       return null;
     }
   }
@@ -44,10 +44,10 @@ public class CassandraRecordMap extends BasicRecordMap {
     CassandraRecords records = CassandraRecords.getInstance();
     ArrayList<String> result = records.lookup(collectionName, name, keys);
     if (result != null) {
-      GNS.getLogger().fine(records.toString() + ":: Retrieved " + name + "/" + keys + ": " + result);
+      GNS.getLogger().finer(records.toString() + ":: Retrieved " + name + "/" + keys + ": " + result);
       return result;
     } else {
-      GNS.getLogger().fine(records.toString() + ":: No record named " + name + " with key " + result);
+      GNS.getLogger().finer(records.toString() + ":: No record named " + name + " with key " + keys);
       return null;
     }
   }
@@ -55,35 +55,35 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     CassandraRecords records = CassandraRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
+    GNS.getLogger().finer(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
     records.updateField(collectionName, name, key, value);
   }
 
   @Override
   public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
     CassandraRecords records = CassandraRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing int list " + name + "/" + key + ": " + value.toString());
+    GNS.getLogger().finer(records.toString() + ":: Writing int list " + name + "/" + key + ": " + value.toString());
     records.updateField(collectionName, name, key, value);
   }
 
   @Override
   public void updateNameRecordFieldAsString(String name, String key, String string) {
     CassandraRecords records = CassandraRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
+    GNS.getLogger().finer(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
     records.updateField(collectionName, name, key, string);
   }
   
   @Override
   public void updateNameRecordFieldAsMap(String name, String key, Map map) {
     CassandraRecords records = CassandraRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing map " + name + "/" + key + ": " + map);
+    GNS.getLogger().finer(records.toString() + ":: Writing map " + name + "/" + key + ": " + map);
     records.updateField(collectionName, name, key, map);
   }
   
   @Override
   public void updateNameRecordFieldAsCollection(String name, String key, Collection collection) {
     CassandraRecords records = CassandraRecords.getInstance();
-    GNS.getLogger().fine(records.toString() + ":: Writing collection " + name + "/" + key + ": " + collection);
+    GNS.getLogger().finer(records.toString() + ":: Writing collection " + name + "/" + key + ": " + collection);
     records.updateField(collectionName, name, key, collection);
   }
 
