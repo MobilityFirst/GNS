@@ -80,7 +80,7 @@ public class CassandraRecords implements NoSQLRecords {
 
   public CassandraRecords() {
     dbName = DBROOTNAME + NameServer.nodeID;
-    System.out.println("CASSANDRA: " + dbName + " INIT");
+    GNS.getLogger().info("CASSANDRA: " + dbName + " INIT");
     this.connect("localhost");
     this.createKeyspace();
     this.createSchemas();
@@ -89,9 +89,9 @@ public class CassandraRecords implements NoSQLRecords {
   private void connect(String node) {
     cluster = Cluster.builder().addContactPoint(node).build();
     Metadata metadata = cluster.getMetadata();
-    System.out.printf("Connected to cluster: %s\n", metadata.getClusterName());
+    GNS.getLogger().info("Connected to cluster: " + metadata.getClusterName() + "\n");
     for (Host host : metadata.getAllHosts()) {
-      System.out.printf("Datacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(), host.getRack());
+      GNS.getLogger().info("Datacenter: " + host.getDatacenter() + " Host: " + host.getAddress() + " Rack: " + host.getRack() + "\n");
     }
     session = cluster.connect();
   }
@@ -129,7 +129,7 @@ public class CassandraRecords implements NoSQLRecords {
 
   private void createSchema(String tableName, String key) {
 //    String query = "DROP TABLE " + tableName + ";";
-//    System.out.println("Executing query " + query);
+//    GNS.getLogger().finer("Executing query " + query);
 //    try {
 //      session.execute(query);
 //    } catch (InvalidQueryException e) {
@@ -138,7 +138,7 @@ public class CassandraRecords implements NoSQLRecords {
             + CSI(key) + " text"
             + ",PRIMARY KEY (" + CSI(key) + ")"
             + ");";
-    System.out.println("Executing query " + query);
+    GNS.getLogger().finer("Executing query " + query);
     try {
       session.execute(query);
     } catch (AlreadyExistsException e) {
@@ -158,7 +158,7 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "ALTER TABLE " + CSI(tableName) + " ADD " + CSI(columnName) + " text;";
-      System.out.println("Executing query " + query);
+      GNS.getLogger().finer("Executing query " + query);
       try {
         session.execute(query);
       } catch (InvalidQueryException e) {
@@ -168,7 +168,7 @@ public class CassandraRecords implements NoSQLRecords {
               + "'" + guid + "'"
               + ",'" + value + "'"
               + ");";
-      System.out.println("Executing query " + query);
+      GNS.getLogger().finer("Executing query " + query);
       session.execute(query);
 
     }
@@ -189,12 +189,12 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "SELECT * FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      System.out.println("Executing query " + query);
+      GNS.getLogger().finer("Executing query " + query);
       ResultSet results = session.execute(query);
       Row row = results.one();
       if (row != null) {
         JSONObject json = retrieveJSONObjectFromRow(row);
-        System.out.println(json.toString());
+        GNS.getLogger().finest(json.toString());
         return json;
       } else {
         return null;
@@ -215,7 +215,7 @@ public class CassandraRecords implements NoSQLRecords {
       String value = row.getString(name);
       if (value != null) {
         // Building the JSON string here
-        System.out.println("Name = " + name + " value = " + value);
+        GNS.getLogger().finer("Name = " + name + " value = " + value);
         result.append(prefix);
         result.append("\"");
         result.append(name);
@@ -234,7 +234,7 @@ public class CassandraRecords implements NoSQLRecords {
       }
     }
     result.append("}");
-    System.out.println(result);
+    //System.out.println(result);
     try {
       return new JSONObject(result.toString());
     } catch (JSONException e) {
@@ -249,7 +249,7 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "TRUNCATE " + CSI(tableName) + ";";
-      System.out.println("Executing query " + query);
+      GNS.getLogger().finer("Executing query " + query);
       session.execute(query);
       GNS.getLogger().info("CASSANDRA DB RESET. DBNAME: " + dbName + " Table name: " + tableName);
     } else {
@@ -268,7 +268,7 @@ public class CassandraRecords implements NoSQLRecords {
   public ArrayList<JSONObject> retrieveAllEntries(String tableName) {
     ArrayList<JSONObject> result = new ArrayList<JSONObject>();
     String query = "SELECT * FROM " + CSI(tableName) + ";";
-    System.out.println("Executing query " + query);
+    GNS.getLogger().finer("Executing query " + query);
     ResultSet results = session.execute(query);
     JSONObject json = new JSONObject();
     for (Row row : results) {
@@ -287,7 +287,7 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "DELETE FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      System.out.println("Executing query " + query);
+      GNS.getLogger().finer("Executing query " + query);
       ResultSet results = session.execute(query);
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
@@ -300,7 +300,7 @@ public class CassandraRecords implements NoSQLRecords {
     if (spec != null) {
       String query = "SELECT " + CSI(spec.getPrimaryKey()) + " FROM " + CSI(tableName)
               + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      System.out.println("Executing query " + query);
+      GNS.getLogger().finer("Executing query " + query);
       ResultSet results = session.execute(query);
       return !results.isExhausted();
     } else {
@@ -341,12 +341,24 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "SELECT " + CSI(key) + " FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      System.out.println("Executing query " + query);
-      ResultSet results = session.execute(query);
-      Row row = results.one();
-      return row.getString(key);
+      GNS.getLogger().finer("Executing query " + query);
+      ResultSet results;
+      try {
+        results = session.execute(query);
+      } catch (InvalidQueryException e) {
+        // this will happen if the column does not exist
+        return null;
+      }
+      if (!results.isExhausted()) {
+        Row row = results.one();
+        return row.getString(key);
+      } else {
+        // this will happen if the row does not exist
+        return null;
+      }
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      // this will happen if the table does not exist
       return null;
     }
   }

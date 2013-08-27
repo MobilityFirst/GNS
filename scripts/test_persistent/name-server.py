@@ -99,7 +99,7 @@ console_output_level = 'FINE'
 stat_file_logging_level = 'INFO'
 stat_console_output_level = 'INFO'
 
-data_store = 'MONGO'
+data_store = 'CASSANDRA'
 
 """ Prints usage message """
 def usage():
