@@ -203,6 +203,7 @@ public class CassandraRecordMap extends BasicRecordMap {
         e.printStackTrace();
       }
     }
+    
     return result;
   }
 

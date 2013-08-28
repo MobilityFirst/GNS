@@ -12,7 +12,6 @@ package edu.umass.cs.gns.main;
 public enum DataStoreType {
  
   MONGO("edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap"),
-  MONGODB("edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap"),
   CASSANDRA("edu.umass.cs.gns.nameserver.recordmap.CassandraRecordMap"),
   IN_CORE_JSON("edu.umass.cs.gns.nameserver.recordmap.InCoreRecordMapJSON");
   

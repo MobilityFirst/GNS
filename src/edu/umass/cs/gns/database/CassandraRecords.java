@@ -5,8 +5,13 @@
  */
 package edu.umass.cs.gns.database;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gns.main.GNS;
@@ -17,12 +22,16 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import edu.umass.cs.gns.util.JSONUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.*;
-import org.json.JSONArray;
 
 /**
  *
@@ -37,6 +46,15 @@ public class CassandraRecords implements NoSQLRecords {
   private Cluster cluster;
   private Session session;
   private static Map<String, CassandraRecords.CollectionSpec> collectionSpecMap = new HashMap<String, CassandraRecords.CollectionSpec>();
+
+  public static CassandraRecords getInstance() {
+    return CassandraRecordCollectionHolder.INSTANCE;
+  }
+
+  private static class CassandraRecordCollectionHolder {
+
+    private static final CassandraRecords INSTANCE = new CassandraRecords();
+  }
 
   public CassandraRecords.CollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
@@ -68,15 +86,6 @@ public class CassandraRecords implements NoSQLRecords {
           Arrays.asList(
           new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME),
           new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME));
-
-  public static CassandraRecords getInstance() {
-    return CassandraRecordCollectionHolder.INSTANCE;
-  }
-
-  private static class CassandraRecordCollectionHolder {
-
-    private static final CassandraRecords INSTANCE = new CassandraRecords();
-  }
 
   public CassandraRecords() {
     dbName = DBROOTNAME + NameServer.nodeID;

@@ -50,9 +50,9 @@ import org.apache.commons.cli.ParseException;
  */
 /**
  * Typical use:
- * 
- * java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer -config "release-config" -update "release" 
- * 
+ *
+ * java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer -config "release-config" -update "release"
+ *
  * @author westy
  */
 public class EC2Installer {
@@ -76,8 +76,8 @@ public class EC2Installer {
   private static ConcurrentHashMap<Integer, InstanceInfo> idTable = new ConcurrentHashMap<Integer, InstanceInfo>();
   //
   private static final int STARTINGNODENUMBER = 0;
-  
   private static ConcurrentHashMap<Integer, Integer> hostsThatDidNotStart = new ConcurrentHashMap<Integer, Integer>();
+  private static DataStoreType dataStoreType = DataStoreType.MONGO;
 
   /**
    * Information read from config file on what hosts we are trying to start.
@@ -236,11 +236,12 @@ public class EC2Installer {
   private static final String GNSJar = "/Users/westy/Documents/Code/GNS/build/jars/GNS.jar";
   private static String GNSFile = new File(GNSJar).getName();
   // this one installs mondoDB
-  private static final String installScript = "#!/bin/bash\n"
+  private static final String baseInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
-          + "yum --quiet --assumeyes install emacs\n" // for debugging
-          + "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
+          + "yum --quiet --assumeyes install emacs\n"; // for debugging
+  private static final String mongoInstallScript =
+          "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
           + "name=10gen Repository\n"
           + "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n"
           + "gpgcheck=0\n"
@@ -248,15 +249,23 @@ public class EC2Installer {
           + "mv 10gen.repo /etc/yum.repos.d/10gen.repo\n"
           + "yum --quiet --assumeyes install mongo-10gen mongo-10gen-server\n"
           + "service mongod start";
+  private static final String cassandraInstallScript =
+          "echo \\\"[datastax]\n"
+          + "name = DataStax Repo for Apache Cassandra\n"
+          + "baseurl = http://rpm.datastax.com/community\n"
+          + "enabled = 1\n"
+          + "gpgcheck = 0\n\\\" > /etc/yum.repos.d/datastax.repo\n"
+          + "yum --quiet --assumeyes install dsc12\n"
+          + "cassandra\n";
   // older one used to install mySQL
-  private static final String mySQLinstallScript = "#!/bin/bash\n"
-          + "cd /home/ec2-user\n"
-          + "yum --quiet --assumeyes update\n"
-          + "yum --quiet --assumeyes install mysql mysql-server\n"
+  private static final String mySQLInstallScript =
+          "yum --quiet --assumeyes install mysql mysql-server\n"
           + "/etc/init.d/mysqld start\n"
           + "/usr/bin/mysql_install_db \n"
           + "/usr/bin/mysqladmin -u root password 'toorbar'\n"
           + "mysqladmin -u root --password=toorbar -v create gns";
+ 
+  //private static final String installScript = baseInstallScript + mongoInstallScript + cassandraInstallScript;
 
   /**
    * This is called to initialize an EC2 host for use as A GNS server in a region. It starts the host, loads all the necessary
@@ -268,6 +277,11 @@ public class EC2Installer {
    * @param id - the GNS ID of this server
    */
   public static void installPhaseOne(RegionRecord region, String runSetName, int id, String elasticIP) {
+    String installScript = baseInstallScript + 
+            (dataStoreType == DataStoreType.MONGO ? 
+            mongoInstallScript : 
+            cassandraInstallScript);
+            
     String idString = Integer.toString(id);
     StatusModel.getInstance().queueAddEntry(id); // for the gui
     StatusModel.getInstance().queueUpdate(id, region.name() + ": [Unknown hostname]", null, null);
@@ -333,16 +347,15 @@ public class EC2Installer {
     StatusModel.getInstance().queueUpdate(id, "Copying jar files");
     SSHClient.scpTo(EC2USERNAME, hostname, keyFile, GNSJar, GNSFile);
   }
-  
-   private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
-   
+  private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
+  private static final String CassandraRecordsClass = "edu.umass.cs.gns.database.CassandraRecords";
+
   private static void deleteDatabase(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     AWSEC2.executeBashScript(hostname, keyFile, "deleteDatabase.sh",
-             "#!/bin/bash\n" 
+            "#!/bin/bash\n"
             + "java -cp " + GNSFile + " " + MongoRecordsClass + " -clear");
   }
-  
   private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
   private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
   private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
@@ -382,7 +395,8 @@ public class EC2Installer {
             + " -rworkload 0 -mworkload 0"
             + " -location -nsVoteSize 5 "
             + " -fileLoggingLevel FINE -consoleOutputLevel FINE -statFileLoggingLevel INFO -statConsoleOutputLevel INFO"
-            + " -persistentDataStore -debugMode "
+            + " -dataStore " + dataStoreType.name()
+            + " -debugMode "
             + " -nsfile name-server-info "
             + "> NSlogfile 2>&1 &");
     StatusModel.getInstance().queueUpdate(id, "Starting HTTP servers");
@@ -474,10 +488,12 @@ public class EC2Installer {
   }
 
   public enum UpdateAction {
+
     UPDATE,
     RESTART,
     DELETE_DATABASE
-    };
+  };
+
   /**
    * Copies the latest version of the JAR files to the all the hosts in the runset given by name and restarts all the servers.
    *
@@ -578,7 +594,7 @@ public class EC2Installer {
     Option restart = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("restart a runset")
             .create("restart");
-     Option deleteDatabase = OptionBuilder.withArgName("runSet name").hasArg()
+    Option deleteDatabase = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("delete the databases in a runset")
             .create("deleteDatabase");
     Option describe = OptionBuilder.withArgName("runSet name").hasArg()
@@ -587,6 +603,9 @@ public class EC2Installer {
     Option configName = OptionBuilder.withArgName("config name").hasArg()
             .withDescription("configuration file name")
             .create("config");
+    Option dataStore = OptionBuilder.withArgName("data store type").hasArg()
+            .withDescription("data store type")
+            .create("datastore");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(terminate);
@@ -599,6 +618,7 @@ public class EC2Installer {
     //commandLineOptions.addOption(updateCurrent);
     commandLineOptions.addOption(describe);
     commandLineOptions.addOption(configName);
+    commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(help);
 
     CommandLineParser parser = new GnuParser();
@@ -651,6 +671,17 @@ public class EC2Installer {
       String runsetDeleteDatabase = parser.getOptionValue("deleteDatabase");
       String runsetDescribe = parser.getOptionValue("describe");
       String configName = parser.getOptionValue("config");
+      String dataStoreName = parser.getOptionValue("datastore");
+
+      if (dataStoreName != null) {
+        try {
+          dataStoreType = DataStoreType.valueOf(dataStoreName);
+        } catch (IllegalArgumentException e) {
+          System.out.println("Unknown data store type " + dataStoreName + "; exiting.");
+          System.exit(1);
+        }
+      }
+
 
       if (configName != null) {
         loadConfig(configName);
