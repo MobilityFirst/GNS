@@ -120,7 +120,7 @@ public class StartupActiveSetTask extends TimerTask {
             NameServer.nodeID, selectedActive, newActiveNameServers, oldActiveNameServers,
             oldActivePaxosID, newActivePaxosID, PacketType.NEW_ACTIVE_START, initialValue, false);
     try {
-//      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedActive, GNS.PortType.STATS_PORT);
+//      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedActive, GNS.PortType.PERSISTENT_TCP_PORT);
       NameServer.tcpTransport.sendToID(selectedActive, packet.toJSONObject());
     } catch (IOException e) {
       if (StartNameServer.debugMode) {

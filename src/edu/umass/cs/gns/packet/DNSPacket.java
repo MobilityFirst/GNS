@@ -86,20 +86,24 @@ public class DNSPacket extends BasicPacket {
     return sender;
   }
 
-  /**
-   * ***********************************************************
-   * Constructs a packet for querying a name server for name information.
-   *
-   * @param header Packet header
-   * @param qname Host name in the query
-   **********************************************************
-   */
-  public DNSPacket(Header header, String qname, NameRecordKey recordKey) {
-    this.header = header;
-    this.qrecordKey = recordKey;
-    this.qname = qname;
-    this.sender = -1;
+  public void setSender(int sender) {
+    this.sender = sender;
   }
+
+//  /**
+//   * ***********************************************************
+//   * Constructs a packet for querying a name server for name information.
+//   *
+//   * @param header Packet header
+//   * @param qname Host name in the query
+//   **********************************************************
+//   */
+//  public DNSPacket(Header header, String qname, NameRecordKey recordKey) {
+//    this.header = header;
+//    this.qrecordKey = recordKey;
+//    this.qname = qname;
+//    this.sender = -1;
+//  }
 
   public DNSPacket(Header header, String qname, NameRecordKey recordKey, int sender) {
     this.header = header;
@@ -271,7 +275,7 @@ public class DNSPacket extends BasicPacket {
     long t1 = System.currentTimeMillis();
     Header header = new Header(100000, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
     long t2 = System.currentTimeMillis();
-    DNSPacket pkt = new DNSPacket(header, "name1", NameRecordKey.EdgeRecord);
+    DNSPacket pkt = new DNSPacket(header, "name1", NameRecordKey.EdgeRecord, -1);
     long t3 = System.currentTimeMillis();
     JSONObject pktJson = pkt.toJSONObjectQuestion();
     long t4 = System.currentTimeMillis();
@@ -317,7 +321,7 @@ public class DNSPacket extends BasicPacket {
 
 
     Header h = new Header(100000, DNSRecordType.RESPONSE, DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
-    DNSPacket p = new DNSPacket(h, "name1", NameRecordKey.EdgeRecord);
+    DNSPacket p = new DNSPacket(h, "name1", NameRecordKey.EdgeRecord, -1);
 //    p.setRecordValue(record);
     JSONObject json = p.toJSONObject();
     System.out.println(json.toString());

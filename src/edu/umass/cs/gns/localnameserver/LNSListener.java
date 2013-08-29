@@ -2,6 +2,10 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nameserver.NSNodeConfig;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Transport;
@@ -9,23 +13,32 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 /**
  * Listens on a UDP port for requests from end-users, and responses from name servers.
  * @author abhigyan
  *
  */
-public class LNSListener extends Thread 
+public class LNSListener extends Thread
 {
 	public static Transport udpTransport;
+
+  public static NioServer2 tcpTransport;
 	
-	public LNSListener() {
+	public LNSListener() throws IOException{
 		super("LNSListener");
-		udpTransport = new Transport(LocalNameServer.nodeID,
-				ConfigFileInfo.getLNSUpdatePort(LocalNameServer.nodeID), LocalNameServer.timer);
+		udpTransport = new Transport(LocalNameServer.nodeID, ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
+//    tcpTransport = new NioServer2(LocalNameServer.nodeID,new ByteStreamToJSONObjects(this));
+
+    tcpTransport = new NioServer2(LocalNameServer.nodeID,new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()),new NSNodeConfig());
+    new Thread(tcpTransport).start();
+
+
 	}
 	
 	@Override
@@ -120,6 +133,19 @@ public class LNSListener extends Thread
 		}
 	}
 
+
+}
+
+
+class LNSPacketDemultiplexer extends PacketDemultiplexer {
+
+
+  @Override
+  public void handleJSONObjects(ArrayList jsonObjects) {
+    for (Object o: jsonObjects) {
+      LNSListener.demultiplexLNSPackets((JSONObject) o);
+    }
+  }
 }
 
 

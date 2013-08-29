@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nameserver.replicacontroller;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NSListenerUDP;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.NameRecordStatsPacket;
 import edu.umass.cs.gns.packet.NameServerSelectionPacket;
@@ -15,10 +14,12 @@ import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 public class ListenerNameRecordStats extends Thread {
 
 
-    public static void handleIncomingPacket(JSONObject json) throws JSONException {
+    public static void handleIncomingPacket(JSONObject json) throws JSONException, IOException {
         switch (Packet.getPacketType(json)) {
             case NAME_RECORD_STATS_RESPONSE:
                 handleNameRecordStatsPacket(json);
@@ -31,15 +32,16 @@ public class ListenerNameRecordStats extends Thread {
         }
     }
 
-    public static void handleNameserverSelectionPacket(JSONObject incomingJSON) throws JSONException {
+    public static void handleNameserverSelectionPacket(JSONObject incomingJSON) throws JSONException, IOException {
         String msg = "NS: received  NAMESERVER_SELECTION " + incomingJSON.toString();
         if (StartNameServer.debugMode) GNS.getLogger().fine(msg);
 //        GNS.getStatLogger().fine(msg);
 //		if (StartNameSer)
         NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(incomingJSON);
         // Send ACK to local name server immediately, that vote is received.
-        NSListenerUDP.udpTransport.sendPacket(incomingJSON, selectionPacket.getLocalnameserverID(),
-                GNS.PortType.LNS_UPDATE_PORT);
+      NameServer.tcpTransport.sendToID(selectionPacket.getLocalnameserverID(),incomingJSON);
+//        NSListenerUDP.udpTransport.sendPacket(incomingJSON, selectionPacket.getLocalnameserverID(),
+//                GNS.PortType.LNS_UDP_PORT);
 
         //Add vote for the name record if your the primary name server for this name record
         //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(selectionPacket.getName());
@@ -134,7 +136,7 @@ public class ListenerNameRecordStats extends Thread {
 //	@Override
 //	public void run() {
 //		GNRS.getLogger().info("NS Node " + NameServer.nodeID + " starting Name Record Stats Server on port " 
-//				+ ConfigFileInfo.getStatsPort(NameServer.nodeID));
+//				+ ConfigFileInfo.getNSTcpPort(NameServer.nodeID));
 //		int numberMessages = 0;
 //		while (true) {
 //			try {
@@ -187,7 +189,7 @@ public class ListenerNameRecordStats extends Thread {
 //	public ListenerNameRecordStats() throws IOException {
 //		super("ListenerNameRecordStats");
 //		transport = new Transport(NameServer.nodeID, 
-//				ConfigFileInfo.getStatsPort(NameServer.nodeID), NameServer.timer);
+//				ConfigFileInfo.getNSTcpPort(NameServer.nodeID), NameServer.timer);
 //	}
 //
 //	/*************************************************************
@@ -196,7 +198,7 @@ public class ListenerNameRecordStats extends Thread {
 //	@Override
 //	public void run() {
 //		GNRS.getLogger().info("NS Node " + NameServer.nodeID + " starting Name Record Stats Server on port " 
-//				+ ConfigFileInfo.getStatsPort(NameServer.nodeID));
+//				+ ConfigFileInfo.getNSTcpPort(NameServer.nodeID));
 //		int numberMessages = 0;
 //		while (true) {
 //			try {

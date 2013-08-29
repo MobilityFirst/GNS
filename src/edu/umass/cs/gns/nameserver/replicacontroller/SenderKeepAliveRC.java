@@ -43,7 +43,7 @@ public class SenderKeepAliveRC extends TimerTask{
           KeepAlivePacket packet = new KeepAlivePacket(record.getName(), null, NameServer.nodeID,
                   Packet.PacketType.KEEP_ALIVE_PRIMARY);
 //          NameServer.tcpTransport.sendToAll(packet.toJSONObject(),record.getPrimaryNameservers(),
-//                  GNS.PortType.STATS_PORT,NameServer.nodeID);
+//                  GNS.PortType.PERSISTENT_TCP_PORT,NameServer.nodeID);
           NameServer.tcpTransport.sendToIDs(record.getPrimaryNameservers(), packet.toJSONObject(),NameServer.nodeID);
         } else {
           GNS.getLogger().fine(" NOT Sending keep alive for record. " + record.getName() +

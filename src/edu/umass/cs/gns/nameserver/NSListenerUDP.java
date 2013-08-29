@@ -1,11 +1,8 @@
 package edu.umass.cs.gns.nameserver;
 
-import org.json.JSONObject;
-
-
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.Transport;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONObject;
 
 /**
  * This class listens on a UDP port for messages (Lookups, Updates, Add, Remove)
@@ -20,9 +17,9 @@ public class NSListenerUDP extends Thread
 
 	public NSListenerUDP()
 	{
-		udpTransport = new Transport(NameServer.nodeID,
-				ConfigFileInfo.getUpdatePort(NameServer.nodeID),
-				NameServer.timer);
+//		udpTransport = new Transport(NameServer.nodeID,
+//				ConfigFileInfo.getLNSUdpPort(NameServer.nodeID),
+//				NameServer.timer);
 	}
 	
 	@Override

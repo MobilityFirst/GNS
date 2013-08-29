@@ -78,7 +78,7 @@ class SendQueryIntercessorTask extends TimerTask {
             int id = count;
 
             Header header = new Header(id, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
-            DNSPacket queryRecord = new DNSPacket(header, name, NameRecordKey.EdgeRecord);
+            DNSPacket queryRecord = new DNSPacket(header, name, NameRecordKey.EdgeRecord, LocalNameServer.nodeID);
             JSONObject json;
             try {
                 json = queryRecord.toJSONObjectQuestion();

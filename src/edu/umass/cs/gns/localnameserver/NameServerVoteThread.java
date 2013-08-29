@@ -2,15 +2,13 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nameserver.NameAndRecordKey;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.NameServerSelectionPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -240,14 +238,12 @@ class CheckVoteStatus extends TimerTask{
 		if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" VOTE THREAD: sent vote to primary ID :" + destID + " VoteID = " + voteID);
 		try
 		{
-			LNSListener.udpTransport.sendPacket(json, destID, ConfigFileInfo.getUpdatePort(destID));
-		} catch (JSONException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+			LNSListener.tcpTransport.sendToID(destID, json);
+		} catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+
+  }
 	
 	
 }

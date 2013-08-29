@@ -8,6 +8,7 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
@@ -45,13 +46,16 @@ public class LNSSendTinyQuery {
 		else {
 			
 			try {
-				LNSListener.udpTransport.sendPacket(query.toJSONObject(), nameServer, GNS.PortType.UPDATE_PORT);
+
+				LNSListener.tcpTransport.sendToID(nameServer, query.toJSONObject());
 				if (StartLocalNameServer.debugMode) GNS.getLogger().fine("TINYQUERY SEND " + name + " count " + count + "\t");
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
+			} catch (IOException e) {
+//				TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-		}
+			} catch (JSONException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    }
 		
 	}
 	
@@ -133,14 +137,13 @@ class SendQueryWithDelay extends TimerTask {
 	public void run() {
 		// send packet
 		try {
-			LNSListener.udpTransport.sendPacket(json, nameserver, GNS.PortType.UPDATE_PORT);
+			LNSListener.tcpTransport.sendToID(nameserver, json);
 //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("TINYQUERY SEND " + name + " count " + count + "\t");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+		} catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+
+  }
 	
 	
 }

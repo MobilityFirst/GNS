@@ -47,7 +47,7 @@ CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
 STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
 STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 
-PERSISTENT_DATA_STORE = '-persistentDataStore'
+#PERSISTENT_DATA_STORE = '-persistentDataStore'
 MONGO_PORT = '-mongoPort'
 PAXOS_LOG_FOLDER = '-paxosLogFolder'
 QUIT_AFTER_TIME = '-quitAfterTime'
@@ -98,7 +98,7 @@ num_local_name_server = exp_config.num_lns
 lnsnsping_file = ''
 nsnsping_file = ''
 
-persistent_data_store = True
+#persistent_data_store = False
 mongo_port = 12345
 paxos_log_folder = exp_config.paxos_log_folder
 failure_detection_msg_interval = 1           # Interval (in sec) between two failure detection messages sent to a node                                                                         
@@ -206,8 +206,8 @@ def run_name_server():
     command += ' ' + FAILURE_DETECTION_MSG_INTERVAL + ' ' + str(failure_detection_msg_interval)
     command += ' ' + FAILURE_DETECTION_TIMEOUT_INTERVAL + ' ' + str(failure_detection_timeout_interval)    
     
-    if persistent_data_store:
-        command += ' ' + PERSISTENT_DATA_STORE
+    #if persistent_data_store:
+    #    command += ' ' + PERSISTENT_DATA_STORE
     if mongo_port > 0:
         command += ' ' + MONGO_PORT + ' ' + str(mongo_port)
     if tiny_update:

@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nameserver.replicacontroller;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.ListenerReplicationPaxos;
-import edu.umass.cs.gns.nameserver.NSListenerUDP;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.*;
@@ -15,6 +14,7 @@ import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -170,7 +170,7 @@ public class ReplicaController {
 //    }
   }
 
-  public static void handleNameRecordRemoveRequestAtPrimary(JSONObject json) throws JSONException {
+  public static void handleNameRecordRemoveRequestAtPrimary(JSONObject json) throws JSONException, IOException {
     // 1. stop current actives
     // 2. stop current primaries
     // 3. send confirmation to client.
@@ -183,9 +183,9 @@ public class ReplicaController {
       if (nameRecordPrimary.isRemoved()) { // if removed, send confirm to client
         ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NameServer.nodeID,
                 true, removeRecord);
-
-        NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
-                confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+        NameServer.tcpTransport.sendToID(confirmPacket.getLocalNameServerId(),confirmPacket.toJSONObject());
+//        NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
+//                confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("Record already remove. Sent confirmation to client. Name = " + removeRecord.getName());
         }
@@ -211,8 +211,9 @@ public class ReplicaController {
       // return failure, because record was not even found in deleted state
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NameServer.nodeID,
               false, removeRecord);
-      NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
-              confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+      NameServer.tcpTransport.sendToID(confirmPacket.getLocalNameServerId(),confirmPacket.toJSONObject());
+//      NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
+//              confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
       }
@@ -495,7 +496,7 @@ public class ReplicaController {
     NameServer.timer.schedule(stopTask, 0, TIMEOUT_INTERVAL);
   }
 
-  public static void applyStopPrimaryPaxos(String value) throws JSONException {
+  public static void applyStopPrimaryPaxos(String value) throws JSONException, IOException {
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine("PAXOS DECISION stop primary paxos decision received.");
     }
@@ -521,8 +522,9 @@ public class ReplicaController {
     if (removeRecordPacket != null) {
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NameServer.nodeID,
               true, removeRecordPacket);
-      NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
-              confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+      NameServer.tcpTransport.sendToID(confirmPacket.getLocalNameServerId(),confirmPacket.toJSONObject());
+//      NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
+//              confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("REMOVE RECORD SENT RESPONSE TO LNS");
       }

@@ -106,7 +106,7 @@ public class StopActiveSetTask extends TimerTask {
       GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
     }
     try {
-//      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedOldActive, GNS.PortType.STATS_PORT);
+//      NameServer.tcpTransport.sendToID(packet.toJSONObject(), selectedOldActive, GNS.PortType.PERSISTENT_TCP_PORT);
       NameServer.tcpTransport.sendToID(selectedOldActive, packet.toJSONObject());
     } catch (IOException e) {
       if (StartNameServer.debugMode) {

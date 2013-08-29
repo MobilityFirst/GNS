@@ -9,15 +9,12 @@ public class GNS {
   
   // This is designed so we can run LNS and NS on the same host if needed
   public enum PortType {
-    DNS_PORT(0),
-    REPLICATION_PORT(1),
-    UPDATE_PORT(2),
-    STATS_PORT(3), 
-    NS_ADMIN_PORT(4),
-    LNS_DNS_PORT(5), 
-    LNS_UPDATE_PORT(6), 
-    DUMP_RESPONSE_PORT(7), 
-    LNS_ADMIN_PORT(8);
+    NS_TCP_PORT(0), // TCP port at name servers
+    LNS_TCP_PORT(1), // TCP port at local name servers
+    LNS_UDP_PORT(2), // UDP port at local name servers
+    NS_ADMIN_PORT(3),
+    DUMP_RESPONSE_PORT(4),
+    LNS_ADMIN_PORT(5);
     
     int offset;
     

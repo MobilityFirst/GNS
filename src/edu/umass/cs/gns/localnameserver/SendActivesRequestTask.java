@@ -1,15 +1,14 @@
 package edu.umass.cs.gns.localnameserver;
 
-import java.util.HashSet;
-import java.util.TimerTask;
-
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.packet.RequestActivesPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.TimerTask;
 
 public class SendActivesRequestTask extends TimerTask
 {
@@ -76,15 +75,18 @@ public class SendActivesRequestTask extends TimerTask
                         LocalNameServer.nodeID);
 		try
 		{
-			LNSListener.udpTransport.sendPacket(packet.toJSONObject(), primaryID, GNS.PortType.UPDATE_PORT);
+      LNSListener.tcpTransport.sendToID(primaryID,packet.toJSONObject());
+//			LNSListener.udpTransport.sendPacket(packet.toJSONObject(), primaryID, GNS.PortType.UPDATE_PORT);
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID);
 		} catch (JSONException e)
 		{
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("JSON Exception in sending packet");
 			e.printStackTrace();
-		}
+		} catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
 
-	}
+  }
 
 	/**
 	 * Recvd reply from primary with current actives, update the cache.

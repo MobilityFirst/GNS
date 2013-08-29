@@ -3,7 +3,9 @@ package edu.umass.cs.gns.packet;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -12,13 +14,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.*;
 
 public class Packet {
 
@@ -357,7 +353,7 @@ public class Packet {
    * ***********************************************************
    * Send a response to a name server using UDP
    *
-   * @param id Name server id
+//   * @param id Name server id
    * @param socket DatagramSocket over which the packet is sent
    * @param json JsonObject representing the packet
    * @throws IOException **********************************************************
@@ -396,22 +392,24 @@ public class Packet {
    * Returns port number for the specified port type. Return -1 if the specified port type does not exist.
    *
    * @param nameServerId Name server id
-   * @param port	Port Number **********************************************************
+//   * @param port	Port Number **********************************************************
    */
   public static int getPort(int nameServerId, GNS.PortType portType) {
     switch (portType) {
-      case DNS_PORT:
-        return ConfigFileInfo.getDnsPort(nameServerId);
-      case LNS_DNS_PORT:
-        return ConfigFileInfo.getLNSDnsPort(nameServerId);
-      case REPLICATION_PORT:
-        return ConfigFileInfo.getReplicationPort(nameServerId);
-      case UPDATE_PORT:
-        return ConfigFileInfo.getUpdatePort(nameServerId);
-      case LNS_UPDATE_PORT:
-        return ConfigFileInfo.getLNSUpdatePort(nameServerId);
-      case STATS_PORT:
-        return ConfigFileInfo.getStatsPort(nameServerId);
+//      case DNS_PORT:
+//        return ConfigFileInfo.getDnsPort(nameServerId);
+//      case LNS_DNS_PORT:
+//        return ConfigFileInfo.getLNSDnsPort(nameServerId);
+//      case REPLICATION_PORT:
+//        return ConfigFileInfo.getReplicationPort(nameServerId);
+//      case UPDATE_PORT:
+//        return ConfigFileInfo.getUpdatePort(nameServerId);
+      case NS_TCP_PORT:
+        return ConfigFileInfo.getNSTcpPort(nameServerId);
+      case LNS_TCP_PORT:
+        return ConfigFileInfo.getLNSTcpPort(nameServerId);
+      case LNS_UDP_PORT:
+        return ConfigFileInfo.getLNSUdpPort(nameServerId);
       case NS_ADMIN_PORT:
         return ConfigFileInfo.getNSAdminRequestPort(nameServerId);
       case LNS_ADMIN_PORT:
@@ -455,7 +453,7 @@ public class Packet {
    * Sends a Packet to a name server using TCP.
    *
    * @param json JsonObject representing the packet
-   * @param nameserverId Name server id
+//   * @param nameserverId Name server id
    * @throws IOException **********************************************************
    */
   public static void sendTCPPacket(JSONObject json, Socket socket) throws IOException {

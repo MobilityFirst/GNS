@@ -11,8 +11,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Reliable UDP send and receive
@@ -41,28 +41,29 @@ public class Transport {
   int myID;
   int myPort;
   DatagramSocket socket;
-  ConcurrentHashMap<Integer, Integer> sentPackets = new ConcurrentHashMap<Integer, Integer>();
+
+//  ConcurrentHashMap<Integer, Integer> sentPackets = new ConcurrentHashMap<Integer, Integer>();
 //  LinkedList<Integer> recvdPacketsQueue = new LinkedList<Integer>();
 //  HashSet<Integer> recvdPackets = new HashSet<Integer>();
-  Random r = new Random();
-  Timer timer;
+//  Random r = new Random();
+//  Timer timer;
 
-  /**
-   * Note: You can specify -1 for the ID and it will use IP addresses instead.
-   * @param myID1
-   * @param myPort1 
-   */
-  public Transport(int myID1, int myPort1) {
-    this(myID1, myPort1, new Timer());
-  }
+//  /**
+//   * Note: You can specify -1 for the ID and it will use IP addresses instead.
+//   * @param myID1
+//   * @param myPort1
+//   */
+//  public Transport(int myID1, int myPort1) {
+//    this(myID1, myPort1);
+//  }
 
   /**
    * Note: You can specify -1 for the ID and it will use IP addresses instead.
    * @param myID1
    * @param myPort1
-   * @param t 
+//   * @param t
    */
-  public Transport(int myID1, int myPort1, Timer t) {
+  public Transport(int myID1, int myPort1) {
     this.myID = myID1;
     this.myPort = myPort1;
     while (true) {
@@ -75,7 +76,7 @@ public class Transport {
         ThreadUtils.sleep(3000);
       }
     }
-    this.timer = t;
+//    this.timer = t;
   }
 
   /**
@@ -95,7 +96,7 @@ public class Transport {
       }
     }
     this.myPort = socket.getLocalPort();
-    this.timer = new Timer();
+//    this.timer = new Timer();
   }
 
   public void sendPacket(JSONObject json, int destID, GNS.PortType portType) throws JSONException {

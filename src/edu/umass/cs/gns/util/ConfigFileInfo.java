@@ -49,6 +49,10 @@ public class ConfigFileInfo {
     return numberOfNameServers;
   }
 
+  public static int getNumberOfHosts() {
+    return hostInfoMapping.size();
+  }
+
   /**
    * @return the closestNameServer
    */
@@ -193,17 +197,17 @@ public class ConfigFileInfo {
     return hostInfoMapping.get(id);
   }
 
-  /**
-   * ***********************************************************
-   * Returns the DNS port of a nameserver
-   *
-   * @param id Nameserver id
-   * @return the DNS port of a nameserver *********************************************************
-   */
-  public static int getDnsPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.DNS_PORT.getOffset();
-  }
+//  /**
+//   * ***********************************************************
+//   * Returns the DNS port of a nameserver
+//   *
+//   * @param id Nameserver id
+//   * @return the DNS port of a nameserver *********************************************************
+//   */
+//  public static int getDnsPort(int id) {
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.DNS_PORT.getOffset();
+//  }
 
   /**
    * ***********************************************************
@@ -212,10 +216,10 @@ public class ConfigFileInfo {
    * @param id Nameserver id
    * @return the replication port for a nameserver *********************************************************
    */
-  public static int getReplicationPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.REPLICATION_PORT.getOffset();
-  }
+//  public static int getReplicationPort(int id) {
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.REPLICATION_PORT.getOffset();
+//  }
 
   /**
    * ***********************************************************
@@ -224,9 +228,21 @@ public class ConfigFileInfo {
    * @param id Nameserver id
    * @return the update port for a nameserver *********************************************************
    */
-  public static int getUpdatePort(int id) {
+//  public static int getUpdatePort(int id) {
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.UPDATE_PORT.getOffset();
+//  }
+
+  /**
+   * ***********************************************************
+   * Returns the stats port for a nameserver
+   *
+   * @param id Nameserver id
+   * @return the stats port for a nameserver *********************************************************
+   */
+  public static int getNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.UPDATE_PORT.getOffset();
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
   }
 
   /**
@@ -236,10 +252,16 @@ public class ConfigFileInfo {
    * @param id Nameserver id
    * @return the stats port for a nameserver *********************************************************
    */
-  public static int getStatsPort(int id) {
+  public static int getLNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.STATS_PORT.getOffset();
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_TCP_PORT.getOffset();
   }
+
+  public static int getLNSUdpPort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UDP_PORT.getOffset();
+  }
+
 
   /**
    * ***********************************************************
@@ -260,10 +282,10 @@ public class ConfigFileInfo {
    * @param id
    * @return
    */
-  public static int getLNSDnsPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_DNS_PORT.getOffset();
-  }
+//  public static int getLNSDnsPort(int id) {
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_DNS_PORT.getOffset();
+//  }
 
   /**
    * Returns the Update port of a local nameserver
@@ -271,10 +293,10 @@ public class ConfigFileInfo {
    * @param id
    * @return
    */
-  public static int getLNSUpdatePort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UPDATE_PORT.getOffset();
-  }
+//  public static int getLNSUpdatePort(int id) {
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UDP_PORT.getOffset();
+//  }
 
   /**
    * Returns the Admin port of a local nameserver

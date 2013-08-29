@@ -1,21 +1,18 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.HashFunction;
 import org.json.JSONException;
 import org.json.JSONObject;
-import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -142,12 +139,11 @@ public class ClientRequestWorker extends TimerTask {
       if (rcRecord.isAdded() ||  rcRecord.isMarkedForRemoval()) {
       GNS.getLogger().info(" ADD (ns " + NameServer.nodeID+ ") : Record already exists");
 
+
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(
               NameServer.nodeID, false, addRecordPacket);
       JSONObject jsonConfirm = confirmPacket.toJSONObject();
-      NSListenerUDP.udpTransport.sendPacket(jsonConfirm,
-              addRecordPacket.getLocalNameServerID(),
-              PortType.LNS_UPDATE_PORT);
+      NameServer.tcpTransport.sendToID(addRecordPacket.getLocalNameServerID(), jsonConfirm);
       return;
       }
 
@@ -172,7 +168,7 @@ public class ClientRequestWorker extends TimerTask {
 
     // send to other replica controllers
 //    NameServer.tcpTransport.sendToAll(addRecordPacket.toJSONObject(), primaryNameServers,
-//            PortType.STATS_PORT, NameServer.nodeID);
+//            PortType.PERSISTENT_TCP_PORT, NameServer.nodeID);
     NameServer.tcpTransport.sendToIDs(primaryNameServers, addRecordPacket.toJSONObject(), NameServer.nodeID);
 
     GNS.getLogger().info("ADD REQUEST FROM LNS (ns " + NameServer.nodeID + ") : "
@@ -245,7 +241,7 @@ public class ClientRequestWorker extends TimerTask {
     ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap);
 
     ConfirmAddNSPacket pkt = new ConfirmAddNSPacket(addRecordPacket.getLNSRequestID(), NameServer.nodeID);
-//    NameServer.tcpTransport.sendToID( pkt.toJSONObject(), addRecordPacket.getLocalNameServerID(), PortType.STATS_PORT);
+//    NameServer.tcpTransport.sendToID( pkt.toJSONObject(), addRecordPacket.getLocalNameServerID(), PortType.PERSISTENT_TCP_PORT);
     NameServer.tcpTransport.sendToID(addRecordPacket.getLocalNameServerID(), pkt.toJSONObject());
   }
 
@@ -267,13 +263,11 @@ public class ClientRequestWorker extends TimerTask {
     GNS.getLogger().info("Sending ADD REQUEST CONFIRM (ns " + NameServer.nodeID+ ") : to "
             +  + status.getConfirmUpdateLNSPacket().getLocalNameServerId());
     GNS.getLogger().info("Sending ADD REQUEST CONFIRM to LNS " + jsonConfirm);
-    NSListenerUDP.udpTransport.sendPacket(jsonConfirm,
-            status.getLocalNameServerID(),
-            GNS.PortType.LNS_UPDATE_PORT);
+    NameServer.tcpTransport.sendToID(status.getLocalNameServerID(), jsonConfirm);
 
     // confirm to every one that add is complete
     AddCompletePacket pkt2 = new AddCompletePacket(status.getConfirmUpdateLNSPacket().getName());
-//    NameServer.tcpTransport.sendToAll(pkt2.toJSONObject(),status.getAllNameServers(),PortType.STATS_PORT);
+//    NameServer.tcpTransport.sendToAll(pkt2.toJSONObject(),status.getAllNameServers(),PortType.PERSISTENT_TCP_PORT);
     NameServer.tcpTransport.sendToIDs(status.getAllNameServers(), pkt2.toJSONObject());
     GNS.getLogger().info("Sending AddCompletePacket to all NS" + jsonConfirm);
 
@@ -312,8 +306,7 @@ public class ClientRequestWorker extends TimerTask {
         // send failure to client
         ConfirmUpdateLNSPacket failConfirmPacket =
                 ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NameServer.nodeID);
-        NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
-                updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+        NameServer.tcpTransport.sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
         if (StartNameServer.debugMode)  GNS.getLogger().fine(" UPSERT-FAILED because name record deleted already\t" + updatePacket.getName()
                 + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId() + "\t" + updatePacket.getSequenceNumber());
       }
@@ -352,15 +345,16 @@ public class ClientRequestWorker extends TimerTask {
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine("UPSERT forwarded as UPDATE to active: " + activeID);
           }
-//          NameServer.tcpTransport.sendToID(updatePacket.toJSONObject(), activeID, PortType.STATS_PORT);
+//          NameServer.tcpTransport.sendToID(updatePacket.toJSONObject(), activeID, PortType.PERSISTENT_TCP_PORT);
           NameServer.tcpTransport.sendToID(activeID, updatePacket.toJSONObject());
           // could not find activeNS for this name
         } else {
           // send error to LNS
           ConfirmUpdateLNSPacket failConfirmPacket =
                   ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NameServer.nodeID);
-          NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
-                  updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+          NameServer.tcpTransport.sendToID(updatePacket.getLocalNameServerId(),failConfirmPacket.toJSONObject());
+//          NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
+//                  updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
           String msg = " UPSERT-FAILED\t" + updatePacket.getName()
                   + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId() + "\t" + updatePacket.getSequenceNumber();
           if (StartNameServer.debugMode) {
@@ -380,8 +374,9 @@ public class ClientRequestWorker extends TimerTask {
         ConfirmUpdateLNSPacket failConfirmPacket =
                 ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NameServer.nodeID);
         // inform LNS of failed request
-        NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
-                updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+        NameServer.tcpTransport.sendToID(updatePacket.getLocalNameServerId(),failConfirmPacket.toJSONObject());
+//        NSListenerUDP.udpTransport.sendPacket(failConfirmPacket.toJSONObject(),
+//                updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
         String msg = " UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
                 + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId() + "\t" + updatePacket.getSequenceNumber();
         if (StartNameServer.debugMode) {
@@ -425,7 +420,7 @@ public class ClientRequestWorker extends TimerTask {
     }
   }
 
-  private void handleUpdateAddressNS() throws JSONException {
+  private void handleUpdateAddressNS() throws JSONException, IOException {
 
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine("PAXOS DECISION: Update Confirmed... going LAZY  " + incomingJSON);
@@ -452,9 +447,7 @@ public class ClientRequestWorker extends TimerTask {
 
           confirmUpdateLNSPacket.convertToFailPacket();
 
-
-          NSListenerUDP.udpTransport.sendPacket(confirmUpdateLNSPacket.toJSONObject(),
-                  updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+          NameServer.tcpTransport.sendToID(updatePacket.getLocalNameServerId(),confirmUpdateLNSPacket.toJSONObject());
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine("Error msg sent to client for failed update " + incomingJSON);
           }
@@ -482,8 +475,9 @@ public class ClientRequestWorker extends TimerTask {
 
         if (confirmPacket != null) {
           // send confirmation to
-          NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
-                  confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UPDATE_PORT);
+          NameServer.tcpTransport.sendToID(confirmPacket.getLocalNameServerId(),confirmPacket.toJSONObject());
+//          NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
+//                  confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine("NS Sent confirmation to local name server. Sent packet: " + confirmPacket.toJSONObject());
           }
@@ -509,7 +503,7 @@ public class ClientRequestWorker extends TimerTask {
   private static ConcurrentHashMap<Integer, Long> proposedUpdatesTime = new ConcurrentHashMap<Integer, Long>();
 
 
-  private void handleDNSPacket() throws UnknownHostException, JSONException {
+  private void handleDNSPacket() throws IOException, JSONException {
 
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine("NS recvd DNS lookup request: " + incomingJSON);
@@ -517,12 +511,13 @@ public class ClientRequestWorker extends TimerTask {
 //    long requestRecvdTime = System.currentTimeMillis();
 //    long t1 = System.currentTimeMillis();
 
-    InetAddress address = InetAddress.getByName(Transport.getReturnAddress(incomingJSON));    //Sender's address
-    int port = Transport.getReturnPort(incomingJSON);                //Sender's port
+//    InetAddress address = InetAddress.getByName(Transport.getReturnAddress(incomingJSON));    //Sender's address
+//    int port = Transport.getReturnPort(incomingJSON);                //Sender's port
 
 //    long t2 = System.currentTimeMillis();
 
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
+    int sender = dnsPacket.getSender();
 
 //    long t3 = System.currentTimeMillis();
     NameRecord nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
@@ -538,7 +533,9 @@ public class ClientRequestWorker extends TimerTask {
       dnsPacket = NameServer.makeResponseFromRecord(dnsPacket, nameRecord);
 //      t5 = System.currentTimeMillis();
       JSONObject outgoingJSON = dnsPacket.toJSONObject();
-      NSListenerUDP.udpTransport.sendPacket(outgoingJSON, address, port);
+//      NameServer.tcpTransport.sendToID()
+      NameServer.tcpTransport.sendToID(sender,outgoingJSON);
+//      NSListenerUDP.udpTransport.sendPacket(outgoingJSON, address, port);
 //      t7 = System.currentTimeMillis();
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("NS sent DNS lookup response: Name = " + dnsPacket.getQname());
@@ -554,7 +551,7 @@ public class ClientRequestWorker extends TimerTask {
 
       dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
       dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
-      NSListenerUDP.udpTransport.sendPacket(dnsPacket.toJSONObject(), address, port);
+      NameServer.tcpTransport.sendToID(sender,dnsPacket.toJSONObject());
     }
 
 //    long responseTime = System.currentTimeMillis() - requestRecvdTime;
@@ -572,7 +569,7 @@ public class ClientRequestWorker extends TimerTask {
   /**
    * @throws JSONException
    */
-  private void handleRequestActivesPacket() throws JSONException {
+  private void handleRequestActivesPacket() throws JSONException, IOException {
     if (StartNameServer.debugMode) GNS.getLogger().fine("NS recvd request actives packet " + incomingJSON);
 
     RequestActivesPacket packet = new RequestActivesPacket(incomingJSON);
@@ -584,7 +581,7 @@ public class ClientRequestWorker extends TimerTask {
 //    GNS.getLogger().fine("Values: " + rcRecord.isPrimaryReplica());
     if (rcRecord != null && rcRecord.isMarkedForRemoval() == false && rcRecord.isPrimaryReplica()) {
       packet.setActiveNameServers(rcRecord.copyActiveNameServers());
-      NSListenerUDP.udpTransport.sendPacket(packet.toJSONObject(), packet.getLNSID(), PortType.LNS_UPDATE_PORT);
+      NameServer.tcpTransport.sendToID(packet.getLNSID(), packet.toJSONObject());
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Sent actives for " + packet.getName() //+ " " + packet.getRecordKey()
                 + " Actives = " + rcRecord.copyActiveNameServers());
@@ -592,7 +589,7 @@ public class ClientRequestWorker extends TimerTask {
     } else {
       // if active == null, then name record does not exist.
       packet.setActiveNameServers(null);
-      NSListenerUDP.udpTransport.sendPacket(packet.toJSONObject(), packet.getLNSID(), PortType.LNS_UPDATE_PORT);
+      NameServer.tcpTransport.sendToID(packet.getLNSID(), packet.toJSONObject());
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Error: Record does not exist for " + packet.getName());
       }

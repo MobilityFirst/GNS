@@ -59,14 +59,14 @@ public class SendNameRecordStats extends TimerTask {
           }
         }
         if (selectedPrimaryNS != -1 && selectedPrimaryNS != NameServer.nodeID) {
-//          NameServer.tcpTransport.sendToID(json, selectedPrimaryNS,GNS.PortType.STATS_PORT);
+//          NameServer.tcpTransport.sendToID(json, selectedPrimaryNS,GNS.PortType.PERSISTENT_TCP_PORT);
           NameServer.tcpTransport.sendToID(selectedPrimaryNS, json);
         } else if (selectedPrimaryNS == NameServer.nodeID) {
           // if same node, then directly call the function
           ListenerNameRecordStats.handleIncomingPacket(json);
         }
 
-//				NameServer.nio.sendToID(json, nameRecord.getMainPrimary(), GNRS.PortType.STATS_PORT);
+//				NameServer.nio.sendToID(json, nameRecord.getMainPrimary(), GNRS.PortType.PERSISTENT_TCP_PORT);
       } catch (JSONException e) {
         e.printStackTrace();
       } catch (IOException e) {
@@ -74,7 +74,7 @@ public class SendNameRecordStats extends TimerTask {
       }
 
       StatusClient.sendTrafficStatus(NameServer.nodeID, nameRecord.getPrimaryNameservers(),
-              GNS.PortType.STATS_PORT, statsPacket.getType(), nameRecord.getName());
+              GNS.PortType.NS_TCP_PORT, statsPacket.getType(), nameRecord.getName());
 
     }
   }
@@ -154,7 +154,7 @@ public class SendNameRecordStats extends TimerTask {
 //					JSONObject json = statsPacket.toJSONObject();
 //					GNRS.getLogger().fine("PUSH_STATS: Round " + count + " Name " + nameRecord.getName() + 
 //							" To nodes: " + nameRecord.getMainPrimary() + " --> " + json);
-//					NameServer.nio.sendToID(json, nameRecord.getMainPrimary(), GNRS.PortType.STATS_PORT);
+//					NameServer.nio.sendToID(json, nameRecord.getMainPrimary(), GNRS.PortType.PERSISTENT_TCP_PORT);
 //				} catch (JSONException e) {
 //					e.printStackTrace();
 //				} catch (IOException e) {
@@ -162,7 +162,7 @@ public class SendNameRecordStats extends TimerTask {
 //				}
 //				
 //				StatusClient.sendTrafficStatus(NameServer.nodeID, nameRecord.getMainPrimary(),  
-//						GNRS.PortType.STATS_PORT, statsPacket.getType(), nameRecord.getName(), nameRecord.getRecordKey());
+//						GNRS.PortType.PERSISTENT_TCP_PORT, statsPacket.getType(), nameRecord.getName(), nameRecord.getRecordKey());
 //				
 //				//Push access frequencies to primary name servers
 //
@@ -173,7 +173,7 @@ public class SendNameRecordStats extends TimerTask {
 //				//          continue;
 //				//        }
 //				//        destIDs.add(x);
-//				//        portNumbers.add(ConfigFileInfo.getStatsPort(x));
+//				//        portNumbers.add(ConfigFileInfo.getNSTcpPort(x));
 //				//      }
 //				//    try {
 //				//    transport.sendPacketToAll(json, destIDs, portNumbers);

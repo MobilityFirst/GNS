@@ -4,7 +4,6 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
@@ -16,8 +15,8 @@ import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
+
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -35,7 +34,7 @@ public class NameServer {
   /**
    * UDP socket over which DNSPackets are received and sent *
    */
-  public static DatagramSocket dnsSocket;
+//  public static DatagramSocket dnsSocket;
   private static BasicRecordMap recordMap;
   private static BasicRecordMap replicaController;
   public static ReplicationFramework replicationFramework;
@@ -56,7 +55,7 @@ public class NameServer {
   public NameServer(int nodeID) throws IOException {
     NameServer.nodeID = nodeID;
 
-    NameServer.dnsSocket = new DatagramSocket(ConfigFileInfo.getDnsPort(nodeID));
+//    NameServer.dnsSocket = new DatagramSocket(ConfigFileInfo.getDnsPort(nodeID));
 
 //    NameServer.updateSocket = new DatagramSocket(ConfigFileInfo.getUpdatePort(nodeID));
     
@@ -138,7 +137,7 @@ public class NameServer {
     ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
 //    new Thread(worker).start();
 //    tcpTransport = new NioServer(nodeID, ConfigFileInfo.getIPAddress(nodeID),
-//            ConfigFileInfo.getStatsPort(nodeID), worker);
+//            ConfigFileInfo.getNSTcpPort(nodeID), worker);
     tcpTransport = new NioServer2(nodeID, worker, new NSNodeConfig());
 
     new Thread(tcpTransport).start();
@@ -156,7 +155,7 @@ public class NameServer {
       PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
 
       // Name server starts listening on UDP Port for messages.
-      new NSListenerUDP().start();
+//      new NSListenerUDP().start();
 
       // admin thread started
       new NSListenerAdmin().start(); // westy

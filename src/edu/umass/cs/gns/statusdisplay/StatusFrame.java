@@ -95,10 +95,10 @@ public class StatusFrame extends javax.swing.JFrame implements UpdateListener {
     ThreadUtils.sleep(1000);
     StatusModel.getInstance().queueUpdate(1, StatusEntry.State.RUNNING);
     
-     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(1, 5, GNS.PortType.DNS_PORT, Packet.PacketType.DNS_RESPONSE,  null, null));
-     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(4, 3, GNS.PortType.DNS_PORT, Packet.PacketType.DNS_ERROR_RESPONSE,  "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(1, 5, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE,  null, null));
+     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(4, 3, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE,  "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
           
 //    StatusModel.getInstance().addSendNotation(1, 2, GNRS.PortType.DNS_PORT, Packet.PacketType.DNS, new Date());
-//    StatusModel.getInstance().addSendNotation(2, 3, GNRS.PortType.LNS_UPDATE_PORT, Packet.PacketType.UPDATE_ADDRESS_LNS, new Date());
+//    StatusModel.getInstance().addSendNotation(2, 3, GNRS.PortType.LNS_UDP_PORT, Packet.PacketType.UPDATE_ADDRESS_LNS, new Date());
   }
 }

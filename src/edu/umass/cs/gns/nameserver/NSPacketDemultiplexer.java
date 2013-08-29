@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.paxos.PaxosManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -84,6 +85,8 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
     } catch (JSONException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
 

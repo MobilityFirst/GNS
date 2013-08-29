@@ -289,10 +289,10 @@ public class ComputeNewActivesTask extends TimerTask
 //			//Send name record information to the new active nameservers
 //			ReplicateRecordPacket recordPacket = new ReplicateRecordPacket(nameRecord, NameServer.nodeID);
 //			NameServer.tcpTransport.sendToAll(recordPacket.toJSONObject(), idReplicateRecords,
-//					GNS.PortType.STATS_PORT, excludePrimaryNS);
+//					GNS.PortType.PERSISTENT_TCP_PORT, excludePrimaryNS);
 //
 //			StatusClient.sendTrafficStatus(NameServer.nodeID, idReplicateRecords, excludePrimaryNS,
-//					GNS.PortType.STATS_PORT, recordPacket.getType());
+//					GNS.PortType.PERSISTENT_TCP_PORT, recordPacket.getType());
 //		}
 //
 //		if (idRemoveRecords.size() != 0) {
@@ -303,10 +303,10 @@ public class ComputeNewActivesTask extends TimerTask
 //					//nameRecord.getRecordKey(),
 //                                nameRecord.getName(), NameServer.nodeID);
 //			NameServer.tcpTransport.sendToAll(removePacket.toJSONObject(), idRemoveRecords,
-//					GNS.PortType.STATS_PORT, excludePrimaryNS);
+//					GNS.PortType.PERSISTENT_TCP_PORT, excludePrimaryNS);
 //
 //			StatusClient.sendTrafficStatus(NameServer.nodeID, idRemoveRecords, excludePrimaryNS,
-//					GNS.PortType.STATS_PORT, removePacket.getType(), nameRecord.getName()
+//					GNS.PortType.PERSISTENT_TCP_PORT, removePacket.getType(), nameRecord.getName()
 //                                //, nameRecord.getRecordKey()
 //                                );
 //		}
@@ -323,10 +323,10 @@ public class ComputeNewActivesTask extends TimerTask
 //                                nameRecord.getName(), idReplicateRecords, idRemoveRecords);
 //
 //			NameServer.tcpTransport.sendToAll(updatePacket.toJSONObject(),
-//					idUpdateRecords, GNS.PortType.STATS_PORT, excludePrimaryNS);
+//					idUpdateRecords, GNS.PortType.PERSISTENT_TCP_PORT, excludePrimaryNS);
 //
 //			StatusClient.sendTrafficStatus(NameServer.nodeID, idUpdateRecords, excludePrimaryNS,
-//					GNS.PortType.STATS_PORT, Packet.PacketType.ACTIVE_NAMESERVER_UPDATE,
+//					GNS.PortType.PERSISTENT_TCP_PORT, Packet.PacketType.ACTIVE_NAMESERVER_UPDATE,
 //					nameRecord.getName()//, nameRecord.getRecordKey()
 //                                );
 //		}

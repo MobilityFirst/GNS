@@ -12,6 +12,8 @@ import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 /**
  * Created with IntelliJ IDEA.
  * User: abhigyan
@@ -64,6 +66,8 @@ public class NSPaxosInterface implements PaxosInterface {
             }
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
     }

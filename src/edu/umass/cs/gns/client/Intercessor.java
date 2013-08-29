@@ -5,6 +5,7 @@
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.httpserver.Protocol;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -75,7 +76,7 @@ public class Intercessor {
 
     GNS.getLogger().info("Local server id: " + localServerID
             + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
-            + " Port: " + ConfigFileInfo.getLNSDnsPort(localServerID));
+            + " Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
   }
 
 //  /**
@@ -188,12 +189,12 @@ public class Intercessor {
       id = randomID.nextInt();
     }
     Header header = new Header(id, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
-    DNSPacket queryrecord = new DNSPacket(header, name, new NameRecordKey(key));
+    DNSPacket queryrecord = new DNSPacket(header, name, new NameRecordKey(key), LocalNameServer.nodeID);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
       // ABHIGYAN: sending query (lookup) using transport object to Update port
-      transport.sendPacket(json, localServerID, PortType.LNS_UPDATE_PORT);
+      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
     } catch (JSONException e) {
       e.printStackTrace();
       return null;
@@ -239,11 +240,11 @@ public class Intercessor {
       id = randomID.nextInt();
     }
     Header header = new Header(id, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
-    DNSPacket queryrecord = new DNSPacket(header, name, new NameRecordKey(key));
+    DNSPacket queryrecord = new DNSPacket(header, name, new NameRecordKey(key), LocalNameServer.nodeID);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      transport.sendPacket(json, localServerID, PortType.LNS_UPDATE_PORT);
+      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
     } catch (JSONException e) {
       e.printStackTrace();
       return false;
@@ -263,7 +264,7 @@ public class Intercessor {
     AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
-      transport.sendPacket(json, localServerID, PortType.LNS_UPDATE_PORT);
+      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -284,7 +285,7 @@ public class Intercessor {
     RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
-      transport.sendPacket(json, localServerID, PortType.LNS_UPDATE_PORT);
+      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -340,7 +341,7 @@ public class Intercessor {
             operation, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
-      transport.sendPacket(json, localServerID, PortType.LNS_UPDATE_PORT);
+      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
     } catch (JSONException e) {
       e.printStackTrace();
     }

@@ -16,12 +16,12 @@ public class NSNodeConfig implements NodeConfig {
 
   @Override
   public boolean containsNodeInfo(int ID) {
-    return ConfigFileInfo.isNameServer(ID);
+    return ID < ConfigFileInfo.getNumberOfHosts();
   }
 
   @Override
   public int getNodeCount() {
-    return ConfigFileInfo.getNumberOfNameServers();
+    return ConfigFileInfo.getNumberOfHosts();
   }
 
   @Override
@@ -31,6 +31,7 @@ public class NSNodeConfig implements NodeConfig {
 
   @Override
   public int getNodePort(int ID) {
-    return ConfigFileInfo.getStatsPort(ID);
+    if (ConfigFileInfo.isNameServer(ID)) return  ConfigFileInfo.getNSTcpPort(ID);
+    return ConfigFileInfo.getLNSTcpPort(ID);
   }
 }

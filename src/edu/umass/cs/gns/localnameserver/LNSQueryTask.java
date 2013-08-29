@@ -10,6 +10,7 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Random;
@@ -411,6 +412,7 @@ public class LNSQueryTask extends TimerTask {
 //		nameserversQueried.add(nameServerID);
 
     //Create a DNS packet and send the query to the name server
+
     Header header = new Header(queryId, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
     DNSPacket queryrecord = new DNSPacket(header, name, nameRecordKey, LocalNameServer.nodeID);
 
@@ -435,22 +437,27 @@ public class LNSQueryTask extends TimerTask {
 			LocalNameServer.timer.schedule(new SendQueryWithDelay2(json, nameServerID), timerDelay);
 		}
 		else {
-			LNSListener.udpTransport.sendPacket(json, nameServerID, GNS.PortType.UPDATE_PORT);
+        LNSListener.tcpTransport.sendToID(nameServerID, json);
+//			LNSListener.udpTransport.sendPacket(json, nameServerID, GNS.PortType.UPDATE_PORT);
 //			Packet.sendUDPPacket(nameServerID, LocalNameServer.socket, json, GNRS.PortType.DNS_PORT);
 		}
     	
     	int sentPacketSize = json.toString().getBytes().length;
       if (StartLocalNameServer.debugMode) GNS.getLogger().info("LNS-SentPkt\t" + lookupNumber + "\t" + sentPacketSize + "\t");
       
-      StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.DNS_PORT, Packet.PacketType.DNS, name
+      StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, Packet.PacketType.DNS, name
               //, nameRecordKey
               );
       
-    } catch (JSONException e)
-	{
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+    }
+//    catch (JSONException e)
+//	{
+//
+//		e.printStackTrace();
+//	}
+  catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tAfter-send-packet");
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sent Lookup to NS:" + nameServerID + " --> " + json.toString());
@@ -490,19 +497,10 @@ class SendQueryWithDelay2 extends TimerTask {
 		// send packet
 		try
 		{
-			LNSListener.udpTransport.sendPacket(json, nameserver, GNS.PortType.UPDATE_PORT);
-		} catch (JSONException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-//		try {
-//			Packet.sendUDPPacket(nameserver, LocalNameServer.socket, json, GNRS.PortType.DNS_PORT);
-//		}catch (IOException e)
-//		{
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+			LNSListener.tcpTransport.sendToID(nameserver, json);
+		} catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
 		
 	}
 	

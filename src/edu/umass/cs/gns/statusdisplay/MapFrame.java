@@ -10,46 +10,7 @@ import edu.umass.cs.gns.util.Colors;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.ScreenUtils;
 import edu.umass.cs.gns.util.ThreadUtils;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.geom.Point2D;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeSet;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.westy.jmapviewer.Coordinate;
-import org.westy.jmapviewer.JMapViewer;
-import org.westy.jmapviewer.MapMarkerLabeledDot;
-import org.westy.jmapviewer.MapPolylineImpl;
-import org.westy.jmapviewer.OsmFileCacheTileLoader;
-import org.westy.jmapviewer.OsmTileLoader;
+import org.westy.jmapviewer.*;
 import org.westy.jmapviewer.events.JMVCommandEvent;
 import org.westy.jmapviewer.interfaces.JMapViewerEventListener;
 import org.westy.jmapviewer.interfaces.TileLoader;
@@ -58,6 +19,16 @@ import org.westy.jmapviewer.tilesources.BingAerialTileSource;
 import org.westy.jmapviewer.tilesources.MapQuestOpenAerialTileSource;
 import org.westy.jmapviewer.tilesources.MapQuestOsmTileSource;
 import org.westy.jmapviewer.tilesources.OsmTileSource;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.Point2D;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 /**
  * TODO add marker with label fix color and line issues
@@ -213,24 +184,24 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
       return pg.getColor();
     }
     switch (portType) {
-      case DNS_PORT:
+      case NS_TCP_PORT:
         return Color.RED;
       case DUMP_RESPONSE_PORT:
         return Colors.Magenta;
       case LNS_ADMIN_PORT:
         return Colors.Yellow;
-      case LNS_DNS_PORT:
+      case LNS_TCP_PORT:
         return Colors.DeepPink;
-      case LNS_UPDATE_PORT:
+      case LNS_UDP_PORT:
         return Colors.Cyan;
       case NS_ADMIN_PORT:
         return Colors.DarkGoldenrod;
-      case REPLICATION_PORT:
-        return Colors.Brown;
-      case STATS_PORT:
-        return Colors.Orange;
-      case UPDATE_PORT:
-        return Colors.Blue;
+//      case REPLICATION_PORT:
+//        return Colors.Brown;
+//      case PERSISTENT_TCP_PORT:
+//        return Colors.Orange;
+//      case UPDATE_PORT:
+//        return Colors.Blue;
       default:
         return Color.BLACK;
     }
@@ -455,27 +426,27 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
       int to = rand.nextInt(50) + 1;
       switch (rand.nextInt(7)) {
         case 0:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.REPLICATION_PORT, Packet.PacketType.REPLICATE_RECORD, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.REPLICATE_RECORD, null, null));
           break;
         case 1:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.DNS_PORT, Packet.PacketType.DNS, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.DNS_PORT, Packet.PacketType.DNS_ERROR_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.DNS_PORT, Packet.PacketType.DNS_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
           break;
         case 2:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.DNS_PORT, Packet.PacketType.DNS_RESPONSE, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE, null, null));
           break;
         case 3:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.UPDATE_PORT, Packet.PacketType.UPDATE_ADDRESS_NS, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.UPDATE_ADDRESS_NS, null, null));
           break;
         case 4:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.STATS_PORT, Packet.PacketType.NAME_RECORD_STATS_RESPONSE, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.NAME_RECORD_STATS_RESPONSE, null, null));
           break;
         case 5:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.REPLICATION_PORT, Packet.PacketType.ADD_RECORD_LNS, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.ADD_RECORD_LNS, null, null));
           break;
         case 6:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.DNS_PORT, Packet.PacketType.DNS_ERROR_RESPONSE, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE, null, null));
           break;
       }
       ThreadUtils.sleep(100);

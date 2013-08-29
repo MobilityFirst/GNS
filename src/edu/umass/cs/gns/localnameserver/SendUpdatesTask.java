@@ -9,6 +9,7 @@ import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
@@ -117,10 +118,9 @@ public class SendUpdatesTask extends TimerTask
       // and send it off
       try {
         JSONObject jsonToSend = pkt.toJSONObject();
-        LNSListener.udpTransport.sendPacket(jsonToSend, nameServerID,
-                GNS.PortType.UPDATE_PORT);
+        LNSListener.tcpTransport.sendToID(nameServerID, jsonToSend);
         // remote status
-        StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.UPDATE_PORT, pkt.getType(), name,
+        StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, pkt.getType(), name,
                 //nameRecordKey.getName(),
                 updateAddressPacket.getUpdateValue().toString());
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("LNSListenerUpdate: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID
@@ -128,6 +128,8 @@ public class SendUpdatesTask extends TimerTask
                 + " --> " + jsonToSend.toString());
       } catch (JSONException e) {
         e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
     }
     else {

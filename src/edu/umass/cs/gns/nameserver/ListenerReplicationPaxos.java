@@ -123,7 +123,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           GNS.getLogger().fine("NEW_ACTIVE_START: forwarded msg to nodes; "
                   + packet.getNewActiveNameServers());
 //          NameServer.tcpTransport.sendToAll(packet.toJSONObject(), packet.getNewActiveNameServers(),
-//                  GNS.PortType.STATS_PORT, NameServer.nodeID);
+//                  GNS.PortType.PERSISTENT_TCP_PORT, NameServer.nodeID);
           NameServer.tcpTransport.sendToIDs(packet.getNewActiveNameServers(),packet.toJSONObject(), NameServer.nodeID);
 
           if (packet.getPreviousValue() != null  && packet.getPreviousValue().isEmpty() == false) {
@@ -176,7 +176,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           packet.changePacketTypeToPreviousValueResponse();
           GNS.getLogger().fine(" NEW_ACTIVE_START_PREV_VALUE_REQUEST reply sent to: " + packet.getSendingActive());
           // reply to sending active
-//          NameServer.tcpTransport.sendToID(packet.toJSONObject(), packet.getSendingActive(), GNS.PortType.STATS_PORT);
+//          NameServer.tcpTransport.sendToID(packet.toJSONObject(), packet.getSendingActive(), GNS.PortType.PERSISTENT_TCP_PORT);
           NameServer.tcpTransport.sendToID(packet.getSendingActive(), packet.toJSONObject());
           // send current value to
           break;
@@ -207,7 +207,7 @@ class ReplicationWorkerPaxos extends TimerTask {
               GNS.getLogger().fine("NEW_ACTIVE_START: received confirmation from majority. ");
               info.packet.changePacketTypeToConfirmation();
 //              NameServer.tcpTransport.sendToID(info.packet.toJSONObject(),
-//                      info.packet.getSendingPrimary(), GNS.PortType.STATS_PORT);
+//                      info.packet.getSendingPrimary(), GNS.PortType.PERSISTENT_TCP_PORT);
               NameServer.tcpTransport.sendToID(info.packet.getSendingPrimary(),info.packet.toJSONObject());
               ListenerReplicationPaxos.activeStartupInProgress.remove(packet.getID());
             }
@@ -292,7 +292,7 @@ class ReplicationWorkerPaxos extends TimerTask {
       oldActiveStopPacket.changePacketTypeToConfirm();
 //      NameServer.tcpTransport.sendToID(oldActiveStopPacket.toJSONObject(),
 //              oldActiveStopPacket.getPrimarySender(),
-//              GNS.PortType.STATS_PORT);
+//              GNS.PortType.PERSISTENT_TCP_PORT);
       NameServer.tcpTransport.sendToID(oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
 
       GNS.getLogger().fine("OLD ACTIVE STOP: Name Record Updated. Sent confirmation to primary."
@@ -348,7 +348,7 @@ class ReplicationWorkerPaxos extends TimerTask {
       originalPacket.changeSendingActive(NameServer.nodeID);
       GNS.getLogger().fine("NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
 //      NameServer.tcpTransport.sendToID(originalPacket.toJSONObject(), sendingActive,
-//              GNS.PortType.STATS_PORT);
+//              GNS.PortType.PERSISTENT_TCP_PORT);
       NameServer.tcpTransport.sendToID(sendingActive, originalPacket.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().fine(" Exception Exception Exception: ****************");
@@ -384,7 +384,7 @@ class ReplicationWorkerPaxos extends TimerTask {
 //		// send this packet to obtain previous value.
 //		try
 //		{
-//			NameServer.tcpTransport.sendToID(packet2.toJSONObject(), oldActive, GNRS.PortType.STATS_PORT);
+//			NameServer.tcpTransport.sendToID(packet2.toJSONObject(), oldActive, GNRS.PortType.PERSISTENT_TCP_PORT);
 //		} catch (IOException e)
 //		{
 //			GNRS.getLogger().fine(" IOException here: " + e.getMessage());
@@ -482,7 +482,7 @@ class CopyStateFromOldActiveTask extends TimerTask {
       packet2.changeSendingActive(NameServer.nodeID);
 
       try {
-//        NameServer.tcpTransport.sendToID(packet2.toJSONObject(), oldActive, GNS.PortType.STATS_PORT);
+//        NameServer.tcpTransport.sendToID(packet2.toJSONObject(), oldActive, GNS.PortType.PERSISTENT_TCP_PORT);
         NameServer.tcpTransport.sendToID(oldActive, packet2.toJSONObject());
       } catch (IOException e) {
         GNS.getLogger().fine(" IOException here: " + e.getMessage());

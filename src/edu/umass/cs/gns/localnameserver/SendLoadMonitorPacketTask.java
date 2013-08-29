@@ -1,13 +1,12 @@
 package edu.umass.cs.gns.localnameserver;
 
-import java.io.IOException;
-import java.util.TimerTask;
-
-import org.json.JSONException;
-
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.packet.Packet;
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.TimerTask;
 
 public class SendLoadMonitorPacketTask extends TimerTask
 {
@@ -24,7 +23,7 @@ public class SendLoadMonitorPacketTask extends TimerTask
 	{
 		try
 		{
-			Packet.sendUDPPacket(nameServerID, LocalNameServer.socket, nsLoad.toJSONObject(), GNS.PortType.UPDATE_PORT);
+			Packet.sendUDPPacket(nameServerID, LocalNameServer.socket, nsLoad.toJSONObject(), GNS.PortType.LNS_UDP_PORT);
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block

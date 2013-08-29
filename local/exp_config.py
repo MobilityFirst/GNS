@@ -50,9 +50,9 @@ lnslog = 'FINE'
 lnslogstat = 'FINE'
 
 
-gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS/'
+gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS2/'
 
-paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS/local/paxoslog/'
+paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS2/local/paxoslog/'
 delete_paxos_log = True
 
 if scheme not in schemes:
