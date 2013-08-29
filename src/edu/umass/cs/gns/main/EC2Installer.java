@@ -6,6 +6,7 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
+import edu.umass.cs.amazontools.AMIRecord;
 import edu.umass.cs.amazontools.AWSEC2;
 import edu.umass.cs.amazontools.InstanceStateRecord;
 import edu.umass.cs.amazontools.RegionRecord;
@@ -58,7 +59,7 @@ import org.apache.commons.cli.ParseException;
 public class EC2Installer {
 
   private static final String NEWLINE = System.getProperty("line.separator");
-  private static final String EC2USERNAME = "ec2-user";
+  private static String EC2USERNAME = "ec2-user";
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String PRIVATEKEYFILEEXTENSION = ".pem";
   //private static final String PUBLICKEYFILEEXTENSION = ".pub";
@@ -236,12 +237,11 @@ public class EC2Installer {
   private static final String GNSJar = "/Users/westy/Documents/Code/GNS/build/jars/GNS.jar";
   private static String GNSFile = new File(GNSJar).getName();
   // this one installs mondoDB
-  private static final String baseInstallScript = "#!/bin/bash\n"
+  private static final String mongoInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
-          + "yum --quiet --assumeyes install emacs\n"; // for debugging
-  private static final String mongoInstallScript =
-          "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
+          + "yum --quiet --assumeyes install emacs\n" // for debugging
+          + "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
           + "name=10gen Repository\n"
           + "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n"
           + "gpgcheck=0\n"
@@ -249,14 +249,15 @@ public class EC2Installer {
           + "mv 10gen.repo /etc/yum.repos.d/10gen.repo\n"
           + "yum --quiet --assumeyes install mongo-10gen mongo-10gen-server\n"
           + "service mongod start";
-  private static final String cassandraInstallScript =
-          "echo \\\"[datastax]\n"
-          + "name = DataStax Repo for Apache Cassandra\n"
-          + "baseurl = http://rpm.datastax.com/community\n"
-          + "enabled = 1\n"
-          + "gpgcheck = 0\n\\\" > /etc/yum.repos.d/datastax.repo\n"
-          + "yum --quiet --assumeyes install dsc12\n"
-          + "cassandra\n";
+  private static final String cassandraInstallScript = "#!/bin/bash\n"
+          + "cd /home/ubuntu\n" //          + "echo \\\"[datastax]\n"
+          //          + "name = DataStax Repo for Apache Cassandra\n"
+          //          + "baseurl = http://rpm.datastax.com/community\n"
+          //          + "enabled = 1\n"
+          //          + "gpgcheck = 0\n\\\" > /etc/yum.repos.d/datastax.repo\n"
+          //          + "yum --quiet --assumeyes install dsc12\n"
+          //          + "cassandra\n"
+          ;
   // older one used to install mySQL
   private static final String mySQLInstallScript =
           "yum --quiet --assumeyes install mysql mysql-server\n"
@@ -264,9 +265,8 @@ public class EC2Installer {
           + "/usr/bin/mysql_install_db \n"
           + "/usr/bin/mysqladmin -u root password 'toorbar'\n"
           + "mysqladmin -u root --password=toorbar -v create gns";
- 
-  //private static final String installScript = baseInstallScript + mongoInstallScript + cassandraInstallScript;
 
+  //private static final String installScript = baseInstallScript + mongoInstallScript + cassandraInstallScript;
   /**
    * This is called to initialize an EC2 host for use as A GNS server in a region. It starts the host, loads all the necessary
    * software and copies the JAR files over. We also collect info about this host, like it's IP address and geographic location.
@@ -277,11 +277,25 @@ public class EC2Installer {
    * @param id - the GNS ID of this server
    */
   public static void installPhaseOne(RegionRecord region, String runSetName, int id, String elasticIP) {
-    String installScript = baseInstallScript + 
-            (dataStoreType == DataStoreType.MONGO ? 
-            mongoInstallScript : 
-            cassandraInstallScript);
-            
+    String installScript;
+    AMIRecord ami;
+    switch (dataStoreType) {
+      case MONGO:
+        installScript = mongoInstallScript;
+        EC2USERNAME = "ec2-user";
+        ami = region.getDefaultAMI();
+        break;
+      case CASSANDRA:
+        installScript = cassandraInstallScript;
+        EC2USERNAME = "ubuntu";
+        ami = region.getCassandraAMI();
+        break;
+      default:
+        installScript = mongoInstallScript;
+        EC2USERNAME = "ec2-user";
+        ami = region.getDefaultAMI();
+    }
+
     String idString = Integer.toString(id);
     StatusModel.getInstance().queueAddEntry(id); // for the gui
     StatusModel.getInstance().queueUpdate(id, region.name() + ": [Unknown hostname]", null, null);
@@ -296,7 +310,7 @@ public class EC2Installer {
       tags.put("id", idString);
       StatusModel.getInstance().queueUpdate(id, "Creating instance");
       // create an instance
-      Instance instance = AWSEC2.createAndInitInstance(ec2, region, nodeName, keyName, installScript, tags, elasticIP);
+      Instance instance = AWSEC2.createAndInitInstance(ec2, region, ami, nodeName, keyName, installScript, tags, elasticIP);
       if (instance != null) {
         StatusModel.getInstance().queueUpdate(id, "Instance created");
         StatusModel.getInstance().queueUpdate(id, StatusEntry.State.INITIALIZING);

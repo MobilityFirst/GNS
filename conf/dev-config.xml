@@ -6,6 +6,6 @@
   <region name="SA_EAST_1"      cnt="1" />
   <region name="AP_SOUTHEAST_1" cnt="1" />
   <region name="AP_NORTHEAST_1" cnt="1" />
-  <region name="AP_SOUTHEAST_2" cnt="1" />
+  <!-- <region name="AP_SOUTHEAST_2" cnt="1" /> -->
   <region name="EU_WEST_1"      cnt="1" />
 </regions>
