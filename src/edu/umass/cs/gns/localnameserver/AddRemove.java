@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.*;
@@ -109,6 +110,8 @@ public class AddRemove {
               + addInfo.senderAddress + ":" + addInfo.senderPort + " : " + jsonConfirm.toString());
       if (addInfo.senderAddress != null && addInfo.senderPort > 0) {
         LNSListener.udpTransport.sendPacket(json, InetAddress.getByName(addInfo.senderAddress), addInfo.senderPort);
+      } else if (StartLocalNameServer.runHttpServer) {
+        Intercessor.getInstance().checkForResult(json);
       }
 
     }
@@ -134,6 +137,8 @@ public class AddRemove {
               + removeInfo.senderAddress + ":" + removeInfo.senderPort + " : " + jsonConfirm.toString());
       if (removeInfo.senderAddress != null && removeInfo.senderPort > 0) {
         LNSListener.udpTransport.sendPacket(json, InetAddress.getByName(removeInfo.senderAddress), removeInfo.senderPort);
+      } else if (StartLocalNameServer.runHttpServer) {
+        Intercessor.getInstance().checkForResult(json);
       }
       // update our cache
 

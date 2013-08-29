@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.DNSPacket;
@@ -156,8 +157,11 @@ public class Lookup {
         }
         else {      // other types of errors, send error response to client
             try {
-
+                if (query.senderAddress != null && query.senderPort > 0) {
                 LNSListener.udpTransport.sendPacket(LNSQueryTask.getErrorPacket(query.incomingPacket), query.senderAddress, query.senderPort);
+                } else if (StartLocalNameServer.runHttpServer) {
+                  Intercessor.getInstance().checkForResult(LNSQueryTask.getErrorPacket(query.incomingPacket));
+                }
                 if (StartLocalNameServer.debugMode) GNS.getLogger().fine("other error sent to client --> " + jsonObject + " query ID = " + query.incomingPacket.getQueryId());
             }  catch (JSONException e) {
                 e.printStackTrace();
@@ -189,6 +193,8 @@ public class Lookup {
 
             if (query.senderAddress != null && query.senderPort > 0) {
                 LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), query.senderAddress, query.senderPort);
+            } else  if (StartLocalNameServer.runHttpServer) {
+              Intercessor.getInstance().checkForResult(outgoingPacket.toJSONObject());
             }
         } catch (Exception e) {
             e.printStackTrace();

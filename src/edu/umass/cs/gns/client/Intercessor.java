@@ -5,6 +5,7 @@
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.httpserver.Protocol;
+import edu.umass.cs.gns.localnameserver.LNSListener;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
@@ -19,8 +20,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -51,8 +50,7 @@ public class Intercessor {
     private static final Intercessor INSTANCE = new Intercessor();
   }
   private int localServerID = 0;
-  /* Used for sending queries and receive respones from LNSListenerQuery */
-  private DatagramSocket socket;
+
   private static Options commandLineOptions;
   /**
    * Used by the wait/notify calls *
@@ -93,15 +91,18 @@ public class Intercessor {
     randomID = new Random();
     queryResult = new ConcurrentHashMap<Integer, QueryResultValue>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
-    try {
-      StartLocalNameServer.debugMode = true;
-      socket = new DatagramSocket();
-    } catch (IOException e) {
-      e.printStackTrace();
+    StartLocalNameServer.debugMode = true;
+//    try {
+//
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
+
+    if (StartLocalNameServer.runHttpServer == false) {
+      transport = new Transport(-1, PORT); // -1 means use address instead of Host ID
+      startCheckForResultThread();
     }
 
-    transport = new Transport(-1, PORT); // -1 means use address instead of Host ID
-    startCheckForResultThread();
 //    startCheckForQueryResultThread();
 //    startCheckForUpdateResultThread();
   }
@@ -115,15 +116,16 @@ public class Intercessor {
       public void run() {
         GNS.getLogger().info("Intercessor update result thread started.");
         while (true) {
-          checkForResult();
+          JSONObject json = transport.readPacket();
+          checkForResult(json);
         }
       }
     }.start();
   }
 
-  private void checkForResult() {
+  public void checkForResult(JSONObject json) {
     try {
-      JSONObject json = transport.readPacket();
+
       if (StartLocalNameServer.debugMode) {
 //        GNS.getLogger().fine("Intercessor Recvd result: " + json);
       }
@@ -193,8 +195,9 @@ public class Intercessor {
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      // ABHIGYAN: sending query (lookup) using transport object to Update port
-      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
+
+      sendPacket(json);
+
     } catch (JSONException e) {
       e.printStackTrace();
       return null;
@@ -244,7 +247,8 @@ public class Intercessor {
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
+      sendPacket(json);
+
     } catch (JSONException e) {
       e.printStackTrace();
       return false;
@@ -264,7 +268,8 @@ public class Intercessor {
     AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
-      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
+      sendPacket(json);
+
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -285,7 +290,7 @@ public class Intercessor {
     RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
-      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
+      sendPacket(json);
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -341,7 +346,8 @@ public class Intercessor {
             operation, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
-      transport.sendPacket(json, localServerID, PortType.LNS_UDP_PORT);
+      sendPacket(json);
+
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -551,6 +557,19 @@ public class Intercessor {
         GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);
       }
     }
+  }
+
+  private void sendPacket(JSONObject jsonObject) {
+    if (StartLocalNameServer.runHttpServer) {
+      LNSListener.demultiplexLNSPackets(jsonObject);
+    } else  {
+      try {
+        transport.sendPacket(jsonObject, localServerID, PortType.LNS_UDP_PORT);
+      } catch (JSONException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    }
+
   }
   
 }

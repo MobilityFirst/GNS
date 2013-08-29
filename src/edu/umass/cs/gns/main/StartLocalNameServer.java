@@ -100,6 +100,8 @@ public class StartLocalNameServer {
   public static boolean delayScheduling = false;
   
   public static double variation = 0.1;
+
+  public static boolean runHttpServer = false;
   
   @SuppressWarnings("static-access")
   /**
@@ -220,6 +222,7 @@ public class StartLocalNameServer {
             .withDescription("Optimal trace file")
             .create("optimalTrace");
 
+    Option runHttpServer = new Option("runHttpServer", "run the http server in the same process as local name server.");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(nodeId);
@@ -275,6 +278,8 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(tinyQuery);
     commandLineOptions.addOption(delayScheduling);
     commandLineOptions.addOption(variation);
+
+    commandLineOptions.addOption(runHttpServer);
     
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
@@ -406,7 +411,9 @@ public class StartLocalNameServer {
 	      if(delayScheduling && parser.hasOption("variation")) 
 	      	variation = Double.parseDouble(parser.getOptionValue("variation"));
       }
-      
+      if (parser.hasOption("runHttpServer")) {
+        runHttpServer = true;
+      }
     } catch (Exception e1) {
       e1.printStackTrace();
       printUsage();

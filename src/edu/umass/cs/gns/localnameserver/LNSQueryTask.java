@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
@@ -218,7 +219,11 @@ public class LNSQueryTask extends TimerTask {
     try {
 //      Packet.sendUDPPacket(LocalNameServer.socket, dnsPacket.questionToJSONObject(),
 //              address, port);
-    	LNSListener.udpTransport.sendPacket(dnsPacket.toJSONObject(), address, port);
+      if (address!= null && port > 0){
+    	  LNSListener.udpTransport.sendPacket(dnsPacket.toJSONObject(), address, port);
+      } else if (StartLocalNameServer.runHttpServer) {
+        Intercessor.getInstance().checkForResult(dnsPacket.toJSONObject());
+      }
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("error sent --> " + dnsPacket.toJSONObjectQuestion().toString());
     }  catch (JSONException e) {
       e.printStackTrace();
@@ -301,6 +306,8 @@ public class LNSQueryTask extends TimerTask {
     try {
         if (senderAddress != null && senderPort > 0) {
     	    LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), senderAddress, senderPort);
+        } else if (StartLocalNameServer.runHttpServer) {
+          Intercessor.getInstance().checkForResult(outgoingPacket.toJSONObject());
         }
 //      Packet.sendUDPPacket(LocalNameServer.socket, outgoingPacket.responseToJSONObject(), senderAddress, senderPort);
     } catch (Exception e) {

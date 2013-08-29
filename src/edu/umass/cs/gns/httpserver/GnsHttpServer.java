@@ -8,31 +8,23 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.RecordAccess;
-import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.main.GNS;
-import static edu.umass.cs.gns.main.StartLocalNameServer.debugMode;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.apache.commons.cli.*;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+
+import static edu.umass.cs.gns.main.StartLocalNameServer.debugMode;
 
 /**
  *
@@ -104,6 +96,12 @@ public class GnsHttpServer {
       // tell the Intercessor what local name server to contact to
       Intercessor.getInstance().setLocalServerID(localNameServerID);
     }
+    runServer();
+  }
+
+  public static void runHttp(int localNameServerID) {
+    GnsHttpServer.localNameServerID = localNameServerID;
+    Intercessor.getInstance().setLocalServerID(localNameServerID);
     runServer();
   }
 

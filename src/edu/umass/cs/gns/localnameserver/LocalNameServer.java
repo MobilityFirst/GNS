@@ -3,6 +3,7 @@ package edu.umass.cs.gns.localnameserver;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
+import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameAndRecordKey;
@@ -322,6 +323,10 @@ public class LocalNameServer {
 
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Scheduling all updates via intercessor.");
       SendUpdatesViaIntercessor.schdeduleAllUpdates();
+    }
+
+    if (StartLocalNameServer.runHttpServer) {
+      GnsHttpServer.runHttp(LocalNameServer.nodeID);
     }
 
     //Start sending lookups and updates

@@ -1,15 +1,15 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartLocalNameServer;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class PendingTasks
 {
@@ -97,7 +97,11 @@ public class PendingTasks
 
             if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Running pending tasks. Sending error messages: Count " + runTasks.size());
             for (PendingTask task: runTasks) {
+              if (task.address != null && task.port > 0) {
                 LNSListener.udpTransport.sendPacket(task.errorMsg,task.address, task.port);
+              } else if (StartLocalNameServer.runHttpServer) {
+                Intercessor.getInstance().checkForResult(task.errorMsg);
+              }
             }
         }
     }

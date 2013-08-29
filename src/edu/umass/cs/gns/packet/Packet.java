@@ -342,7 +342,7 @@ public class Packet {
 
     sendUDPPacket(socket, json, address, port);
 
-//  
+//
 //
 //    byte[] buffer = json.toString().getBytes();
 //    DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
@@ -363,7 +363,7 @@ public class Packet {
       GNS.getLogger().warning("sendUDPPacket:: FAIL! address: " + address + " port: " + port + " json: " + json.toString());
       return;
     }
-    
+
 //    GNRS.getLogger().finer("sendUDPPacket:: address: " + address.getHostName() + " port: " + port + " json: " + json.toString());
 
     byte[] buffer = json.toString().getBytes();

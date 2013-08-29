@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
@@ -69,6 +70,8 @@ public class SendUpdatesTask extends TimerTask
         if (updateInfo.senderAddress != null && updateInfo.senderAddress.length() > 0 && updateInfo.senderPort > 0) {
           LNSListener.udpTransport.sendPacket(confirmPkt.toJSONObject(),
                   InetAddress.getByName(updateInfo.senderAddress), updateInfo.senderPort);
+        } else if (StartLocalNameServer.runHttpServer) {
+          Intercessor.getInstance().checkForResult(confirmPkt.toJSONObject());
         }
       } catch (JSONException e) {
         e.printStackTrace();

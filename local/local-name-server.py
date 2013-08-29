@@ -53,10 +53,14 @@ DELTA = '-delta'
 MU = '-mu'
 PHI = '-phi'
 
+RUN_HTTP_SERVER = '-runHttpServer'
+
 FILE_LOGGING_LEVEL =  '-fileLoggingLevel'
 CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
 STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
 STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
+
+
 
 #Parameter: Update as required
 
@@ -120,6 +124,8 @@ adaptiveTimeout = False
 delta = 0.05;                                   # Weight assigned to latest sample in calculating moving average.
 mu = 1.0;                                       # Co-efficient of estimated RTT in calculating timeout.
 phi = 6.0;                                      # Co-efficient of deviation in calculating timeout.
+
+run_http_server = True
 
 # logging related parameters:
 ## values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
@@ -261,7 +267,10 @@ def run_local_name_server():
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level
     command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
-    
+
+    if run_http_server:
+        command += ' ' + RUN_HTTP_SERVER
+
     if is_experiment_mode:
         command += ' ' + EXPERIMENT_MODE
     if is_debug_mode:
