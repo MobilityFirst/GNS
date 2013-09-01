@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class LNSSendTinyQuery {
 	public static Random r= new Random();
@@ -37,7 +38,7 @@ public class LNSSendTinyQuery {
 					( 1 + r.nextDouble() * StartLocalNameServer.variation);
 			long timerDelay = (long) latency;
 			try {
-				LocalNameServer.timer.schedule(new SendQueryWithDelay(query.toJSONObject(), nameServer), timerDelay);
+				LocalNameServer.executorService.schedule(new SendQueryWithDelay(query.toJSONObject(), nameServer), timerDelay, TimeUnit.MILLISECONDS);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

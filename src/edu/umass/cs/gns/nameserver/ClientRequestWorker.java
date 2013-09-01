@@ -502,13 +502,30 @@ public class ClientRequestWorker extends TimerTask {
 
   private static ConcurrentHashMap<Integer, Long> proposedUpdatesTime = new ConcurrentHashMap<Integer, Long>();
 
+//  private static Object lock = new ReentrantLock();
+
+  // code written to test local name server: return same response everytime
+  private static DNSPacket response = null;
+  private static void setDNSPacket(DNSPacket resp1) {
+    synchronized (lock) {
+      response = resp1;
+    }
+  }
+
+  // code written to test local name server: return same response each time
+  private static DNSPacket getDNSPacket() {
+    synchronized (lock) {
+      return  response;
+    }
+  }
 
   private void handleDNSPacket() throws IOException, JSONException {
+
 
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine("NS recvd DNS lookup request: " + incomingJSON);
     }
-//    long requestRecvdTime = System.currentTimeMillis();
+    long requestRecvdTime = System.currentTimeMillis();
 //    long t1 = System.currentTimeMillis();
 
 //    InetAddress address = InetAddress.getByName(Transport.getReturnAddress(incomingJSON));    //Sender's address
@@ -517,7 +534,18 @@ public class ClientRequestWorker extends TimerTask {
 //    long t2 = System.currentTimeMillis();
 
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
-    int sender = dnsPacket.getSender();
+
+//    DNSPacket resp = getDNSPacket();
+
+//    if (resp!= null) {
+//      resp = new DNSPacket(resp.toJSONObject());
+//      resp.getHeader().setId(dnsPacket.getQueryId());
+//
+//      NameServer.tcpTransport.sendToID(resp.getLnsId(), resp.toJSONObject());
+//      return;
+//    }
+
+    int lnsId = dnsPacket.getLnsId();
 
 //    long t3 = System.currentTimeMillis();
     NameRecord nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
@@ -534,7 +562,8 @@ public class ClientRequestWorker extends TimerTask {
 //      t5 = System.currentTimeMillis();
       JSONObject outgoingJSON = dnsPacket.toJSONObject();
 //      NameServer.tcpTransport.sendToID()
-      NameServer.tcpTransport.sendToID(sender,outgoingJSON);
+      NameServer.tcpTransport.sendToID(lnsId,outgoingJSON);
+//      setDNSPacket(dnsPacket);
 //      NSListenerUDP.udpTransport.sendPacket(outgoingJSON, address, port);
 //      t7 = System.currentTimeMillis();
       if (StartNameServer.debugMode) {
@@ -543,7 +572,6 @@ public class ClientRequestWorker extends TimerTask {
 //      NameServer.updateNameRecord(nameRecord);
       //DBNameRecord.updateNameRecord(nameRecord);
 
-
     } else { // send error msg.
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Invalid actives. Name: " + dnsPacket.getQname());
@@ -551,18 +579,20 @@ public class ClientRequestWorker extends TimerTask {
 
       dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
       dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
-      NameServer.tcpTransport.sendToID(sender,dnsPacket.toJSONObject());
+      NameServer.tcpTransport.sendToID(lnsId,dnsPacket.toJSONObject());
+
     }
 
-//    long responseTime = System.currentTimeMillis() - requestRecvdTime;
+    long responseTime = System.currentTimeMillis() - requestRecvdTime;
     // TODO update average response time for load balancing
-//    if (responseTime > 100) {
+    if (responseTime > 10) {
+      GNS.getLogger().severe("respTime\t" + responseTime + "\t");
 //      if (StartNameServer.debugMode) {
 //        GNS.getLogger().severe("respTime\t" + responseTime + "\t"
 //                + "\tt2-t1\t" + (t2 - t1) + "\tt3-t2\t" + (t3 - t2) + "\tt4-t3\t" + (t4 - t3) + "\tt5-t4\t" + (t5 - t4)
 //                + "\tt6-t5\t" + (t6 - t5) + "\tt7-t6\t" + (t7 - t6));
 //      }
-//    }
+    }
 
   }
 

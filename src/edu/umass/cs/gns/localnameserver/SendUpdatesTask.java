@@ -52,8 +52,7 @@ public class SendUpdatesTask extends TimerTask
 
     if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
-      this.cancel();
-      return;
+      throw  new RuntimeException();
     }
 
     if (timeoutCount > 0 && System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
@@ -61,8 +60,7 @@ public class SendUpdatesTask extends TimerTask
 
       if (updateInfo == null) {
         GNS.getLogger().fine("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + updateAddressPacket);
-        this.cancel();
-        return;
+        throw  new RuntimeException();
       }
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
       ConfirmUpdateLNSPacket confirmPkt = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, 0);
@@ -81,8 +79,7 @@ public class SendUpdatesTask extends TimerTask
       String updateStats = updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.nodeID, updateAddressPacket.getRequestID());
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine(updateStats);
       GNS.getStatLogger().fine(updateStats);
-      this.cancel();
-      return;
+      throw  new RuntimeException();
     }
 
     int nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, activesQueried);
@@ -154,7 +151,7 @@ public class SendUpdatesTask extends TimerTask
 
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Created a request actives task.");
       // cancel this task
-      this.cancel();
+      throw  new RuntimeException();
 
 
     }

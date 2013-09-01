@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.TimerTask;
 
 /**
  * Listens on a UDP port for requests from end-users, and responses from name servers.
@@ -65,6 +66,22 @@ public class LNSListener extends Thread
 
 			
 			switch (Packet.getPacketType(json)) {
+        case DNS:
+          DNSPacket dnsPacket = new DNSPacket(json);
+          Packet.PacketType incomingPacketType = Packet.getDNSPacketType(dnsPacket);
+          switch (incomingPacketType) {
+            // Lookup
+            case DNS:
+              Lookup.handlePacketLookupRequest(json, dnsPacket);
+              break;
+            case DNS_RESPONSE:
+              Lookup.handlePacketLookupResponse(json,dnsPacket);
+              break;
+            case DNS_ERROR_RESPONSE:
+              Lookup.handlePacketLookupErrorResponse(json,dnsPacket);
+              break;
+          }
+          break;
 			// Add/remove 
 			case ADD_RECORD_LNS:
 				AddRemove.handlePacketAddRecordLNS(json);
@@ -95,22 +112,6 @@ public class LNSListener extends Thread
 			case TINY_QUERY:
 				LNSRecvTinyQuery.logQueryResponse(json);
 				// LNSRecvTinyQuery.recvdQueryResponse(new TinyQuery(json));
-				break;
-			case DNS:
-                DNSPacket dnsPacket = new DNSPacket(json);
-                Packet.PacketType incomingPacketType = Packet.getDNSPacketType(dnsPacket);
-                switch (incomingPacketType) {
-                    // Lookup
-                    case DNS:
-                        Lookup.handlePacketLookupRequest(json, dnsPacket);
-                        break;
-                    case DNS_RESPONSE:
-                        Lookup.handlePacketLookupResponse(json,dnsPacket);
-                        break;
-                    case DNS_ERROR_RESPONSE:
-                        Lookup.handlePacketLookupErrorResponse(json,dnsPacket);
-                        break;
-                }
 				break;
 
 			}
@@ -143,8 +144,25 @@ class LNSPacketDemultiplexer extends PacketDemultiplexer {
   @Override
   public void handleJSONObjects(ArrayList jsonObjects) {
     for (Object o: jsonObjects) {
-      LNSListener.demultiplexLNSPackets((JSONObject) o);
+      LocalNameServer.executorService.submit(new MyTask((JSONObject)o));
     }
+  }
+}
+
+class MyTask extends TimerTask {
+  JSONObject json;
+  public MyTask(JSONObject jsonObject) {
+    this.json = jsonObject;
+  }
+
+  @Override
+  public void run() {
+//    long t0 = System.currentTimeMillis();
+    LNSListener.demultiplexLNSPackets(json);
+//    long t1 = System.currentTimeMillis();
+//    if (t1 - t0 > 10) {
+//      GNS.getLogger().severe("LNS-long-response\t" + (t1-t0)+"\t"+ System.currentTimeMillis());
+//    }
   }
 }
 

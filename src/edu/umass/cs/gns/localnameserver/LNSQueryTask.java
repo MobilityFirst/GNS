@@ -4,9 +4,9 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.*;
-import edu.umass.cs.gns.statusdisplay.StatusClient;
-import edu.umass.cs.gns.util.AdaptiveRetransmission;
+import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.DNSRecordType;
+import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +16,7 @@ import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class LNSQueryTask extends TimerTask {
@@ -24,46 +25,57 @@ public class LNSQueryTask extends TimerTask {
   InetAddress senderAddress;
   int senderPort;
   long receivedTime; // overall latency
-  private int transmissionCount;
+  private int transmissionCount  = 0;
   private int lookupNumber;
-  private int queryId;
+  private int queryId = 0;
   private HashSet<Integer> nameserversQueried;
-  int latestNameServerQueried;
+//  int latestNameServerQueried;
 //  long totalTimerWait;
 //	private long retransmission_timeout = StartLocalNameServer.queryTimeout;
   //private long maxQueryWaitTime = StartLocalNameServer.maxQueryWaitTime; // 100 seconds
   private static final boolean DISABLECACHE = false; // for testing - Westy
 
-  LNSQueryTask(DNSPacket incomingPacket, int transmissionCount,
+  LNSQueryTask(DNSPacket incomingPacket,
           InetAddress senderAddress, int senderPort, long receivedTime,
           int lookupNumber, int queryId,
           HashSet<Integer> nameserversQueried) {
     this.incomingPacket = incomingPacket;
-    this.transmissionCount = transmissionCount;
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
     this.receivedTime = receivedTime;
     this.lookupNumber = lookupNumber;
-    this.queryId = queryId;
+//    this.queryId = queryId;
     this.nameserversQueried = nameserversQueried;
-    latestNameServerQueried = -1;
+//    latestNameServerQueried = -1;
 //    this.totalTimerWait = totalTimerWait;
   }
 
   @Override
   public void run() {
+    transmissionCount++;
+//    long t0 = System.currentTimeMillis();
+//    long delay = System.currentTimeMillis() - receivedTime;
+//    if (transmissionCount == 1 && delay > 10) {
+//      GNS.getLogger().severe("LNS-delayed-start\t" + delay+"\t"+ System.currentTimeMillis());
+//    }
     // if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"  + incomingPacket.qname + "\tTimer-running");
     // new DNS query?
-    if (transmissionCount <= 1) {
-        transmissionCount = 1;
-      if (!checkIncomingPacketOkay()) {
-        if (StartLocalNameServer.debugMode) GNS.getLogger().info("Incoming dns packet not okay. Packet:" + incomingPacket.toString());
-        return;
-      }
+//    long t1,t2,t3;
+//    t1 = t2 = t3 = 0;
+    if (transmissionCount == 1) {
+//        transmissionCount = 1;
+//      if (!checkIncomingPacketOkay()) {
+//        if (StartLocalNameServer.debugMode) GNS.getLogger().info("Incoming dns packet not okay. Packet:" + incomingPacket.toString());
+//        throw new RuntimeException();
+////        return;
+//      }
+
+//      t1 = System.currentTimeMillis();
 //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //	        + incomingPacket.qname + "\tPacket-okay");
 //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("1. Packet Okay." + incomingPacket.qrecordKey + " " + incomingPacket.qname);
       newDNSRequestBookkeeping();
+//      t2 = System.currentTimeMillis();
 //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //	        + incomingPacket.qname + "\tDNS-bookkeeping-done");
 //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("1.1 Bookkeeping Done." + incomingPacket.qrecordKey + " " + incomingPacket.qname);
@@ -75,53 +87,52 @@ public class LNSQueryTask extends TimerTask {
               if (value != null) {
                   loggingForAddressInCache();
                   sendReplyToUser(value, cacheEntry.getTTL());
-                  return;
+
+                throw new RuntimeException();
+//                  return;
               }
           }
       } else {
         if (StartLocalNameServer.debugMode) GNS.getLogger().warning("!!!! CACHE IS DISABLED !!!!");
       }
+//      t3 = System.currentTimeMillis();
     }
-    else  if (LocalNameServer.getQueryInfo(queryId) == null) {
-    	if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query ID does not exist. Removed due to Invalid Active NS. Query ID = " + queryId);
-    	return;
-    }
-    
-    // received DNS response for query ? 
-    if (transmissionCount > 1 && LocalNameServer.hasDataToProceed(queryId)) {
-      QueryInfo query = LocalNameServer.removeQueryInfo(queryId);
-      if (query != null) {
-        query.setRecvTime(System.currentTimeMillis());
-        String stats = query.getLookupStats();
-        GNS.getStatLogger().info("Success-LookupRequest\t" + stats);
-        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
-                + incomingPacket.getQname() + "\tEnd-of-processing");
-        return;
-      }
+    else  if (transmissionCount > 1 && LocalNameServer.containsQueryInfo(queryId) == false) {
+    	if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query ID does not exist. Removed due to Invalid Active NS or response recvd Query ID = " + queryId + " \t " + transmissionCount + "\t" + nameserversQueried + "\t");
+      throw new RuntimeException();
+//    	return;
     }
     
-    if (!DISABLECACHE) {
-      // for retransmissions: is address already in cache?
-        CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
-        if (entry != null) {
-            QueryResultValue value = entry.getValue(incomingPacket.getQrecordKey());
-            if (value != null) {
-                QueryInfo query = LocalNameServer.removeQueryInfo(queryId);
-                if (query != null) {
-                    query.setRecvTime(System.currentTimeMillis());
-                    String stats = query.getLookupStats();
-                    GNS.getStatLogger().info(stats);
-                } else {
-                    loggingForAddressInCache();
-
-                }
-                sendReplyToUser(value,entry.getTTL());
-            }
-
-        }
-    } else {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().warning("!!!! CACHE IS DISABLED !!!!");
-    }
+//    // received DNS response for query ?
+//    if (transmissionCount > 1 && LocalNameServer.containsQueryInfo(queryId) == false) {
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query not found Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t");
+//    }
+//
+//    if (!DISABLECACHE) {
+//      // for retransmissions: is address already in cache?
+//        CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
+//        if (entry != null) {
+//            QueryResultValue value = entry.getValue(incomingPacket.getQrecordKey());
+//            if (value != null) {
+//                QueryInfo query = LocalNameServer.removeQueryInfo(queryId);
+//                if (query != null) {
+//                    query.setRecvTime(System.currentTimeMillis());
+//                    String stats = query.getLookupStats();
+//                    GNS.getStatLogger().info(stats);
+//                } else {
+//                    loggingForAddressInCache();
+//
+//                }
+//                sendReplyToUser(value,entry.getTTL());
+//
+//              throw new RuntimeException();
+////              return;
+//            }
+//
+//        }
+//    } else {
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().warning("!!!! CACHE IS DISABLED !!!!");
+//    }
 
     // exceeded numberOfRetransmissions ?  reply Failure to user.
     if (System.currentTimeMillis() - receivedTime > StartLocalNameServer.maxQueryWaitTime) {
@@ -136,19 +147,23 @@ public class LNSQueryTask extends TimerTask {
       } else {
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("3.2.2 Query Info Does not exist.");
       }
-
-      return;
+      throw new RuntimeException();
+//      return;
     }
 
     if (transmissionCount < StartLocalNameServer.numberOfTransmissions) {
 
       int result = sendDNSLookupToNameServer();
-      if (result == 2) {
-        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("New actives request sent. Name = " + incomingPacket.getQname());
-        // 2 = new actives requested, cancel this query
+      if (result == 0) {
         return;
       }
-      if (result == 1) { // no name servers remaining
+      else if (result == 2) {
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("New actives request sent. Name = " + incomingPacket.getQname());
+        // 2 = new actives requested, cancel this query
+        throw new RuntimeException();
+//        return;
+      }
+      else if (result == 1) { // no name servers remaining
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("No name servers remaining. Previous NS Queried = " + nameserversQueried + " Trying again .. Name = " + incomingPacket.getQname());
         // clear name servers and try again
         nameserversQueried.clear();
@@ -156,37 +171,47 @@ public class LNSQueryTask extends TimerTask {
         if (result == 2) {
           if (StartLocalNameServer.debugMode) GNS.getLogger().fine("New actives request sent. Name = " + incomingPacket.getQname());
           // 2 = new actives requested, cancel this query
-          return;
+          throw new RuntimeException();
+//          return;
         }
         if (result == 1) { // still no name servers
           if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Again no name servers remaining. Quit sending request. Name = " + incomingPacket.getQname());
           transmissionCount = StartLocalNameServer.numberOfTransmissions;
+          throw new RuntimeException();
+//          return;
         }
       }
+
+//      long
+//      if (t3 - t0 > 10) {
+//        GNS.getLogger().severe(" Method-processing-long\t" + (t1 - t0) + "\t" + (t2 - t1) + "\t" + (t3 - t2));
+//      }
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tDNS-lookup-scheduled");
     }
-    GNS.getLogger().fine(" HECHED ...");
-    long retransmissionTimeout;
-    if (StartLocalNameServer.adaptiveTimeout) {
-      retransmissionTimeout = AdaptiveRetransmission.getTimeoutInterval(latestNameServerQueried);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().info("Retransmission-Timeout\t" + LocalNameServer.nodeID + "\t" + retransmissionTimeout + "\t");
-    } else {
-      retransmissionTimeout = StartLocalNameServer.queryTimeout;
-    }
-    GNS.getLogger().fine(" asdfas ...");
+//    GNS.getLogger().fine(" HECHED ...");
+
+//    long retransmissionTimeout;
+//    if (StartLocalNameServer.adaptiveTimeout) {
+//      retransmissionTimeout = AdaptiveRetransmission.getTimeoutInterval(latestNameServerQueried);
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().info("Retransmission-Timeout\t" + LocalNameServer.nodeID + "\t" + retransmissionTimeout + "\t");
+//    } else {
+//      retransmissionTimeout = StartLocalNameServer.queryTimeout;
+//    }
+
+//    GNS.getLogger().fine(" asdfas ...");
     //if (StartLocalNameServer.debugMode) GNRS.getLogger().info("***RETRAN*** COUNT = " + transmissionCount + " NODE = " + LocalNameServer.nodeID + " timeout = " + retransmissionTimeout + " total timeout = " + totalTimerWait);
-    LocalNameServer.timer.schedule(
-            new LNSQueryTask(
-            incomingPacket,
-            transmissionCount + 1,
-            senderAddress,
-            senderPort,
-            receivedTime,
-            lookupNumber,
-            queryId,
-                    nameserversQueried),
-            retransmissionTimeout);
+//    LocalNameServer.executorService.schedule(
+//            new LNSQueryTask(
+//            incomingPacket,
+//            transmissionCount + 1,
+//            senderAddress,
+//            senderPort,
+//            receivedTime,
+//            lookupNumber,
+//            queryId,
+//                    nameserversQueried),
+//            retransmissionTimeout, TimeUnit.MILLISECONDS);
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tEnd-of-timer");
     // send DNS requests to NameServer
@@ -285,7 +310,7 @@ public class LNSQueryTask extends TimerTask {
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Valid Address in cache... "
             + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
     LocalNameServer.incrementLookupResponse(name);
-    QueryInfo tempQueryInfo = new QueryInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, QueryInfo.CACHE, lookupNumber,
+    QueryInfo tempQueryInfo = new QueryInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
             incomingPacket, senderAddress, senderPort);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();
@@ -332,9 +357,52 @@ public class LNSQueryTask extends TimerTask {
 //        + incomingPacket.qname + "\tSend-dns-lookup-enter");
     int nameServerID = -1;
     String queryStatus = null;
+
+    if (LocalNameServer.isValidNameserverInCache(name) == false) {
+      // NO ACTIVE IN CACHE
+      LocalNameServer.removeQueryInfo(queryId);
+      LNSQueryTask queryTaskObject = new LNSQueryTask(
+              incomingPacket,
+              senderAddress,
+              senderPort,
+              receivedTime,
+              lookupNumber,
+              0,
+              new HashSet<Integer>());
+      PendingTasks.addToPendingRequests(name,
+              queryTaskObject, StartLocalNameServer.queryTimeout,
+              senderAddress, senderPort, getErrorPacket(incomingPacket));
+      SendActivesRequestTask.requestActives(name);
+      return 2;
+    }
+
     while (true) {
 
         nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, nameserversQueried);
+      if (nameServerID == -1) {
+        if (LocalNameServer.isValidNameserverInCache(name) == false) {
+          // NO ACTIVE IN CACHE
+          LocalNameServer.removeQueryInfo(queryId);
+          LNSQueryTask queryTaskObject = new LNSQueryTask(
+                  incomingPacket,
+                  senderAddress,
+                  senderPort,
+                  receivedTime,
+                  lookupNumber,
+                  0,
+                  new HashSet<Integer>());
+          PendingTasks.addToPendingRequests(name,
+                  queryTaskObject, StartLocalNameServer.queryTimeout,
+                  senderAddress, senderPort, getErrorPacket(incomingPacket));
+          SendActivesRequestTask.requestActives(name);
+          return 2;
+        }
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("LNSListenerQuery: NO NAME SERVER FOR " +
+                name + " / " + nameRecordKey.getName());
+        //      errorResponse(incomingPacket, RecordType.RCODE_ERROR, senderAddress, senderPort);
+
+        return 1;
+      }
     	// ACTIVE IN CACHE.
 //      if (LocalNameServer.isValidNameserverInCache(name, nameRecordKey)) {
 //        // Active name server information available in cache.s
@@ -352,45 +420,17 @@ public class LNSQueryTask extends TimerTask {
 //        }
 
 //      }
-      if (nameServerID == -1) {
-    	  // NO ACTIVE IN CACHE
-    	  LocalNameServer.removeQueryInfo(queryId);
-    	  LNSQueryTask queryTaskObject = new LNSQueryTask(
-  				incomingPacket,
-  				1, // number of transmissions = 0
-  				senderAddress,
-  				senderPort,
-  				receivedTime,
-  				lookupNumber,
-  				0,
-  				new HashSet<Integer>());
-    	  PendingTasks.addToPendingRequests(name, //nameRecordKey, 
-                  queryTaskObject, 0,
-                  senderAddress, senderPort, getErrorPacket(incomingPacket));
-    	  SendActivesRequestTask.requestActives(name);
-    	  return 2;
-      }
-        else {
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Contacting closest active. Name:" + name + " / " + nameRecordKey.getName() + " ClosestNS:" + nameServerID);
-      }
-      
-      //No name server available to query. Ignore this query.
-      if (nameServerID == -1) {
-        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("LNSListenerQuery: NO NAME SERVER FOR " +
-                name + " / " + nameRecordKey.getName());
-        //      errorResponse(incomingPacket, RecordType.RCODE_ERROR, senderAddress, senderPort);
 
-        return 1;
-      }
 
-      latestNameServerQueried = nameServerID;
+//      latestNameServerQueried = nameServerID;
 //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //	        + incomingPacket.qname + "\tSelected-name-server");
+      nameserversQueried.add(nameServerID);
       //Save query information at the local name server to match response
       if (transmissionCount == 1) {
     	  
-    	nameserversQueried.add(nameServerID);
-        queryStatus = (queryStatus == null) ? QueryInfo.SINGLE_TRANSMISSION : queryStatus + "-" + QueryInfo.SINGLE_TRANSMISSION;
+
+//        queryStatus = (queryStatus == null) ? QueryInfo.SINGLE_TRANSMISSION : queryStatus + "-" + QueryInfo.SINGLE_TRANSMISSION;
         //Get a unique id for this query
         queryId = LocalNameServer.addQueryInfo(name, nameRecordKey, nameServerID,
                 receivedTime, queryStatus, (int) lookupNumber,
@@ -403,12 +443,13 @@ public class LNSQueryTask extends TimerTask {
         break;
 
       } else {
-        queryStatus = (queryStatus == null) ? QueryInfo.MULTIPLE_TRANSMISSION : queryStatus + "-" + QueryInfo.MULTIPLE_TRANSMISSION;
-        nameserversQueried.add(nameServerID);
+//        queryStatus = (queryStatus == null) ? QueryInfo.MULTIPLE_TRANSMISSION : queryStatus + "-" + QueryInfo.MULTIPLE_TRANSMISSION;
+//        nameserversQueried.add(nameServerID);
         //Re-transmit the query to another active name server.
-        if (LocalNameServer.addNameServerQueried(queryId, nameServerID, queryStatus)) {
-          break;
-        }
+
+//        if (LocalNameServer.addNameServerQueried(queryId, nameServerID, queryStatus)) {
+//          break;
+//        }
 
       }
     }
@@ -420,41 +461,56 @@ public class LNSQueryTask extends TimerTask {
 
     //Create a DNS packet and send the query to the name server
 
-    Header header = new Header(queryId, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
-    DNSPacket queryrecord = new DNSPacket(header, name, nameRecordKey, LocalNameServer.nodeID);
+
+
+//    Header header = new Header(queryId, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
+//    DNSPacket queryrecord = new DNSPacket(header, name, nameRecordKey, LocalNameServer.nodeID);
 
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + lookupNumber + "\t" + System.currentTimeMillis() + "\t"
 //        + incomingPacket.qname + "\tBefore-send-packet");
+
+    int clientQueryID = incomingPacket.getQueryId();
+    incomingPacket.setLnsId(LocalNameServer.nodeID);
+    incomingPacket.getHeader().setId(queryId);
+
+
     JSONObject json;
 
     try {
-      json = queryrecord.toJSONObjectQuestion();
+      json = incomingPacket.toJSONObjectQuestion();
     } catch (JSONException e) {
       e.printStackTrace();
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Error Converting Query to JSON Object.");
       return 0;
     }
-    Random r = new Random();
+
+    incomingPacket.getHeader().setId(clientQueryID);
+
+
     try {
     	if (StartLocalNameServer.delayScheduling) {
-			double latency = ConfigFileInfo.getPingLatency(nameServerID) * 
-					( 1 + r.nextDouble() * StartLocalNameServer.variation);
-			long timerDelay = (long) latency;
-			
-			LocalNameServer.timer.schedule(new SendQueryWithDelay2(json, nameServerID), timerDelay);
-		}
-		else {
-        LNSListener.tcpTransport.sendToID(nameServerID, json);
-//			LNSListener.udpTransport.sendPacket(json, nameServerID, GNS.PortType.UPDATE_PORT);
-//			Packet.sendUDPPacket(nameServerID, LocalNameServer.socket, json, GNRS.PortType.DNS_PORT);
-		}
-    	
-    	int sentPacketSize = json.toString().getBytes().length;
-      if (StartLocalNameServer.debugMode) GNS.getLogger().info("LNS-SentPkt\t" + lookupNumber + "\t" + sentPacketSize + "\t");
+        Random r = new Random();
+        double latency = ConfigFileInfo.getPingLatency(nameServerID) *
+            ( 1 + r.nextDouble() * StartLocalNameServer.variation);
+        long timerDelay = (long) latency;
+        LocalNameServer.executorService.schedule(new SendQueryWithDelay2(json, nameServerID), timerDelay, TimeUnit.MILLISECONDS);
+      }
+      else {
+          LNSListener.tcpTransport.sendToID(nameServerID, json);
+  //			LNSListener.udpTransport.sendPacket(json, nameServerID, GNS.PortType.UPDATE_PORT);
+  //			Packet.sendUDPPacket(nameServerID, LocalNameServer.socket, json, GNRS.PortType.DNS_PORT);
+      }
+    	long delay = System.currentTimeMillis() - receivedTime;
+      if (delay > 10) {
+        GNS.getLogger().severe("LNS-long-delay\t" + delay+"\t"+ System.currentTimeMillis());
+      }
+//    	int sentPacketSize = json.toString().getBytes().length;
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().info("LNS-SentPkt\t" + lookupNumber + "\t" + sentPacketSize + "\t");
       
-      StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, Packet.PacketType.DNS, name
-              //, nameRecordKey
-              );
+//      StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, Packet.PacketType.DNS, name
+//              //, nameRecordKey
+//              );
+
       
     }
 //    catch (JSONException e)
@@ -477,10 +533,10 @@ public class LNSQueryTask extends TimerTask {
     if (nameserversQueried.isEmpty()) {
       failureCode = "Failed-LookupNoNameServer";
     }
-    String queryStatus = "";
-    if (query != null && query.getQueryStatus() != null) {
-      queryStatus = query.getQueryStatus();
-    }
+    String queryStatus = "NA";
+//    if (query != null && query.getQueryStatus() != null) {
+//      queryStatus = query.getQueryStatus();
+//    }
     GNS.getStatLogger().fine(failureCode + "\t"
             + lookupNumber + "\t"
             + incomingPacket.getQrecordKey() + "\t"

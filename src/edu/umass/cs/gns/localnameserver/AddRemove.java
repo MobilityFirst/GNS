@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 public class AddRemove {
 
@@ -35,7 +36,7 @@ public class AddRemove {
 
     SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
             senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
-    LocalNameServer.timer.schedule(addTask, 0, StartLocalNameServer.queryTimeout);
+    LocalNameServer.executorService.scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
                         addRecordPacket.getLocalNameServerID();
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Add  Task Scheduled. " +
             "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
@@ -55,7 +56,7 @@ public class AddRemove {
 
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
             address, port, System.currentTimeMillis(), new HashSet<Integer>());
-    LocalNameServer.timer.schedule(upsertTask, 0, StartLocalNameServer.queryTimeout);
+    LocalNameServer.executorService.scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Upsert Task Scheduled. " +
             "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
@@ -84,7 +85,7 @@ public class AddRemove {
 
     SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
             senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
-    LocalNameServer.timer.schedule(task, 0, StartLocalNameServer.queryTimeout);
+    LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout,TimeUnit.MILLISECONDS);
 
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Remove  Task Scheduled. " +
             "Name: " + removeRecord.getName() + " Request: " + removeRecord.getRequestID());

@@ -10,6 +10,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class SendUpdatesViaIntercessor {
 
@@ -37,15 +38,15 @@ public class SendUpdatesViaIntercessor {
     for (UpdateTrace u : LocalNameServer.updateTrace) {
       count++;
       if (u.type == UpdateTrace.UPDATE) {
-        LocalNameServer.experimentSendRequestTimer.schedule(
-                new SendUpdateIntercessorTask(u.name, count), (long) delay);
+        LocalNameServer.executorService.schedule(
+                new SendUpdateIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
       }
       else if (u.type == UpdateTrace.ADD) {
-        LocalNameServer.experimentSendRequestTimer.schedule(
-                new SendAddIntercessorTask(u.name, count), (long) delay);
+        LocalNameServer.executorService.schedule(
+                new SendAddIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
       } else if (u.type == UpdateTrace.REMOVE) {
-        LocalNameServer.experimentSendRequestTimer.schedule(
-                new SendRemoveIntercessorTask(u.name, count), (long) delay);
+        LocalNameServer.executorService.schedule(
+                new SendRemoveIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
 
       }
 

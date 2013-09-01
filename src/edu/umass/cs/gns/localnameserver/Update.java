@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 public class Update {
 
@@ -37,17 +38,17 @@ public class Update {
       }
       SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
               senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
-      LocalNameServer.timer.schedule(updateTask, 0, StartLocalNameServer.queryTimeout);
+      LocalNameServer.executorService.scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     }
   }
-  static int numUpdateResponse = 0;
+//  static int numUpdateResponse = 0;
 
   public static void handlePacketConfirmUpdateLNS(JSONObject json) throws UnknownHostException, JSONException {
     ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(json);
-    numUpdateResponse++;
+//    numUpdateResponse++;
 
     if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("ConfirmUpdateLNS recvd: ResponseNum: " + numUpdateResponse
+      GNS.getLogger().fine("ConfirmUpdateLNS recvd: ResponseNum: "
               + " --> " + confirmPkt.toString());
     }
 
@@ -70,23 +71,25 @@ public class Update {
         } else if (StartLocalNameServer.runHttpServer) {
           Intercessor.getInstance().checkForResult(json);
         }
-          GNS.getLogger().severe("this is the key: " + confirmPkt.getRecordKey().toString());
+          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("this is the key: " + confirmPkt.getRecordKey().toString());
         LocalNameServer.updateCacheEntry(confirmPkt);
+
         // record some stats
-        LocalNameServer.incrementUpdateResponse(confirmPkt.getName() //, confirmPkt.getRecordKey()
-                );
-        String msg = updateInfo.getUpdateStats(confirmPkt);
-        if (StartLocalNameServer.debugMode) {
-          GNS.getLogger().info(msg);
+//        LocalNameServer.incrementUpdateResponse(confirmPkt.getName());
+
+        if (LocalNameServer.r.nextDouble() < StartLocalNameServer.outputSampleRate) {
+          String msg = updateInfo.getUpdateStats(confirmPkt);
+          if (StartLocalNameServer.debugMode) {
+            GNS.getLogger().info(msg);
+          }
+          GNS.getStatLogger().info(msg);
         }
-        GNS.getStatLogger().info(msg);
       }
     } else {
       // if update failed, invalidate active name servers
       // SendUpdatesTask will create a task to get new actives
       // TODO: create SendActivesRequestTask here and delete update info.
-      LocalNameServer.invalidateActiveNameServer(confirmPkt.getName()//, confirmPkt.getRecordKey()
-              );
+      LocalNameServer.invalidateActiveNameServer(confirmPkt.getName());
       GNS.getLogger().fine(" Update Request Sent To An Invalid Active Name Server. ERROR!! Actives Invalidated");
 
     }

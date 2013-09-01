@@ -30,7 +30,7 @@ public class DNSPacket extends BasicPacket {
 //  public final static String RECORD_VALUE = "recordValue";
 //  public final static String PRIMARY_NAME_SERVERS = "Primary";
 //  public final static String ACTIVE_NAME_SERVERS = "Active";
-  public final static String SENDER = "sender";
+  public final static String LNS_ID = "lnsId";
 
   /**
    * @return the MAX_PACKET_SIZE
@@ -45,7 +45,7 @@ public class DNSPacket extends BasicPacket {
   /**
    * Name in the query *
    */
-  private final String qname;
+  private  String qname;
   /**
    * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord. *
    */
@@ -80,14 +80,14 @@ public class DNSPacket extends BasicPacket {
   /**
    * Used by traffic status *
    */
-  private int sender = -1;
+  private int lnsId = -1;
 
-  public int getSender() {
-    return sender;
+  public int getLnsId() {
+    return lnsId;
   }
 
-  public void setSender(int sender) {
-    this.sender = sender;
+  public void setLnsId(int lnsId) {
+    this.lnsId = lnsId;
   }
 
 //  /**
@@ -102,14 +102,14 @@ public class DNSPacket extends BasicPacket {
 //    this.header = header;
 //    this.qrecordKey = recordKey;
 //    this.qname = qname;
-//    this.sender = -1;
+//    this.lnsId = -1;
 //  }
 
   public DNSPacket(Header header, String qname, NameRecordKey recordKey, int sender) {
     this.header = header;
     this.qrecordKey = recordKey;
     this.qname = qname;
-    this.sender = sender;
+    this.lnsId = sender;
   }
 
   /**
@@ -134,7 +134,7 @@ public class DNSPacket extends BasicPacket {
 //        this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
       }
     }
-    this.sender = json.getInt(SENDER);
+    this.lnsId = json.getInt(LNS_ID);
   }
 
   public DNSPacket(int id, String name, NameRecordKey key, QueryResultValue fieldValue, int TTL) {
@@ -149,7 +149,7 @@ public class DNSPacket extends BasicPacket {
 //    this.primaryNameServers = entry.getPrimaryNameServer();
 //    this.activeNameServers = entry.getActiveNameServers();
 
-    this.sender = -1;
+    this.lnsId = -1;
   }
 
   /**
@@ -165,7 +165,7 @@ public class DNSPacket extends BasicPacket {
     json.put(HEADER, getHeader().toJSONObject());
     json.put(QRECORDKEY, getQrecordKey().getName());
     json.put(QNAME, getQname());
-    json.put(SENDER, sender);
+    json.put(LNS_ID, lnsId);
 
     return json;
   }
@@ -193,7 +193,7 @@ public class DNSPacket extends BasicPacket {
 //    }
 //    json.put(PRIMARY_NAME_SERVERS, new JSONArray(getPrimaryNameServers()));
 //    json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
-    json.put(SENDER, sender);
+    json.put(LNS_ID, lnsId);
     return json;
   }
 
@@ -359,6 +359,9 @@ public class DNSPacket extends BasicPacket {
     return qname;
   }
 
+  public void setQname(String name) {
+    this.qname = name;
+  }
   /**
    * @return the qrecordKey
    */

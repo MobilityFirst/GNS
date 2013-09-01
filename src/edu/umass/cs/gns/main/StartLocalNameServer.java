@@ -48,7 +48,8 @@ public class StartLocalNameServer {
   public static boolean optimalReplication = false;
   public static String optimalTrace = null;
   public static int replicationInterval = 0;
-  
+
+  public static double outputSampleRate = 0.05;
   /**
    * Variant of voting, in which votes are sent not for closest but for a random node among k-closest.
    * Name server chosen for a name is the (name modulo k)-th closest node.
@@ -163,6 +164,7 @@ public class StartLocalNameServer {
     Option mobileWorkload = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Mobile workload size")
             .create("mworkload");
+
     Option workloadFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("List of names that are queried by the local name server")
             .create("wfile");
@@ -174,6 +176,7 @@ public class StartLocalNameServer {
     Option updateTraceFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("Update Trace")
             .create("updateTrace");
+    Option outputSampleRate = new Option("outputSampleRate",true, "fraction of requests whose response time will be sampled");
 
     Option primaryReplicas = OptionBuilder.withArgName("#primaries").hasArg()
             .withDescription("Number of primary nameservers")
@@ -222,6 +225,8 @@ public class StartLocalNameServer {
             .withDescription("Optimal trace file")
             .create("optimalTrace");
 
+
+
     Option runHttpServer = new Option("runHttpServer", "run the http server in the same process as local name server.");
 
     commandLineOptions = new Options();
@@ -234,6 +239,7 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(workloadFile);
     commandLineOptions.addOption(lookupTraceFile);
     commandLineOptions.addOption(updateTraceFile);
+    commandLineOptions.addOption(outputSampleRate);
     commandLineOptions.addOption(primaryReplicas);
     commandLineOptions.addOption(alpha);
     commandLineOptions.addOption(numLookups);
@@ -280,7 +286,7 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(variation);
 
     commandLineOptions.addOption(runHttpServer);
-    
+
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
   }
@@ -385,6 +391,8 @@ public class StartLocalNameServer {
       lookupRate = Double.parseDouble(parser.getOptionValue("lookupRate", "0"));
       updateRateMobile = Double.parseDouble(parser.getOptionValue("updateRateMobile", "0"));
       updateRateRegular = Double.parseDouble(parser.getOptionValue("updateRateRegular", "0"));
+      outputSampleRate = Double.parseDouble(parser.getOptionValue("outputSampleRate", "1.0"));
+
       debugMode = parser.hasOption("debugMode");
       experimentMode = parser.hasOption("experimentMode");
       

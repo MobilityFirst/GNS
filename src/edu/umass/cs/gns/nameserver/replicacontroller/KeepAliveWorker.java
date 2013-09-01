@@ -83,7 +83,7 @@ public class KeepAliveWorker extends TimerTask{
 
     if (record.isMarkedForRemoval()) {
       KeepAlivePacket reply = new KeepAlivePacket(packet.getName(),null,NameServer.nodeID, Packet.PacketType.DELETE_PRIMARY);
-//      NameServer.tcpTransport.sendToID(reply.toJSONObject(), packet.getSender(), GNS.PortType.PERSISTENT_TCP_PORT);
+//      NameServer.tcpTransport.sendToID(reply.toJSONObject(), packet.getLnsId(), GNS.PortType.PERSISTENT_TCP_PORT);
       NameServer.tcpTransport.sendToID(packet.getSender(), reply.toJSONObject());
       // send delete req
     }

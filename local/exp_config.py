@@ -1,7 +1,7 @@
 import os, sys
 
 # SET
-experiment_run_time = 50
+experiment_run_time = 20
 
 # SET
 scheme = 'locality'
@@ -20,8 +20,8 @@ num_ns = 80
 num_lns = 80
 
 
-queryTimeout = 300
-maxQueryWaitTime = 1100
+queryTimeout = 1000
+maxQueryWaitTime = 2100
 
 
 

@@ -151,7 +151,7 @@ public class StartNameServer {
             "Interval (in sec) after which a node is declared as failed");
 
     Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Size of window to calculat the "
+            .withDescription("Size of window to calculate the "
             + "moving average of update inter-arrival time")
             .create("mavg");
 

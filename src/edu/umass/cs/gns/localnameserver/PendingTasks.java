@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class PendingTasks
 {
@@ -62,11 +63,13 @@ public class PendingTasks
 				// 
 				if (task.period > 0) {
 					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. REPEAT!!" );
-					LocalNameServer.timer.schedule(task.timerTask, 0, task.period);
+          LocalNameServer.executorService.scheduleAtFixedRate(task.timerTask,0,task.period, TimeUnit.MILLISECONDS);
+//					LocalNameServer.timer.schedule(task.timerTask, 0, task.period);
 				}
 				else {
 					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. No repeat." );
-					LocalNameServer.timer.schedule(task.timerTask, 0);
+          LocalNameServer.executorService.schedule(task.timerTask,0, TimeUnit.MILLISECONDS);
+//					LocalNameServer.timer.schedule(task.timerTask, 0);
 				}
 			}
 		}

@@ -13,7 +13,9 @@ import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
-import edu.umass.cs.gns.util.*;
+import edu.umass.cs.gns.util.BestServerSelection;
+import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.UpdateTrace;
 
 import java.io.*;
@@ -23,6 +25,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ************************************************************
@@ -32,9 +36,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class LocalNameServer {
 
-  public static Timer timer = new Timer();
-
-  public static Timer experimentSendRequestTimer = new Timer();
+//  public static Timer timer = new Timer();
+  public  static ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
+//  public static Timer experimentSendRequestTimer = new Timer();
   /**
    * Local Name Server ID *
    */
@@ -143,7 +147,7 @@ public class LocalNameServer {
       // Query NS at different times to avoid synchronization among local name servers.
       // synchronization may cause oscillations in name server loads.
       long offset = (long) (r.nextDouble() * interval);
-      timer.scheduleAtFixedRate(loadMonitorTask, offset, interval);
+      LocalNameServer.executorService.scheduleAtFixedRate(loadMonitorTask, offset, interval, TimeUnit.MILLISECONDS);
     }
   }
 
@@ -310,7 +314,7 @@ public class LocalNameServer {
 //          }
 
     if (StartLocalNameServer.experimentMode) {
-        experimentSendRequestTimer = new Timer();
+//        experimentSendRequestTimer = new Timer();
       //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Testing in experiment mode.");
 //    	if (StartLocalNameServer.tinyQuery == false) {
 //    		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("");
@@ -563,24 +567,24 @@ public class LocalNameServer {
    * @param id Query Id
    * @param status Query status ***********************************************************
    */
-  public static void appendQueryInfoStatus(int id, String status) {
-    QueryInfo info = queryTransmittedMap.get(id);
-    if (info != null) {
-      info.appendQueryStatus(status);
-      //			info.queryStatus = (info.queryStatus == null
-      //					|| (info.queryStatus.equals(QueryInfo.SINGLE_TRANSMISSION)
-      //							&& status.equals(QueryInfo.MULTIPLE_TRANSMISSION)))
-      //							? status : info.queryStatus + "-" + status;
-    }
-  }
+//  public static void appendQueryInfoStatus(int id, String status) {
+//    QueryInfo info = queryTransmittedMap.get(id);
+//    if (info != null) {
+//      info.appendQueryStatus(status);
+//      //			info.queryStatus = (info.queryStatus == null
+//      //					|| (info.queryStatus.equals(QueryInfo.SINGLE_TRANSMISSION)
+//      //							&& status.equals(QueryInfo.MULTIPLE_TRANSMISSION)))
+//      //							? status : info.queryStatus + "-" + status;
+//    }
+//  }
 
-  public static boolean addNameServerQueried(int queryID, int nameServerID, String queryStatus) {
-    QueryInfo info = queryTransmittedMap.get(queryID);
-    if (info == null) {
-      return false;
-    }
-    return info.addNameServerQueried(nameServerID, queryStatus);
-  }
+//  public static boolean addNameServerQueried(int queryID, int nameServerID, String queryStatus) {
+//    QueryInfo info = queryTransmittedMap.get(queryID);
+//    if (info == null) {
+//      return false;
+//    }
+//    return info.addNameServerQueried(nameServerID, queryStatus);
+//  }
 
   /**
    * ************************************************************
@@ -621,25 +625,25 @@ public class LocalNameServer {
    * ************************************************************
    * Signal sender that listener has the data and the sender can proceed.
    *
-   * @param queryId
+//   * @param queryId
    * @return ***********************************************************
    */
-  public static boolean hasDataToProceed(int queryId) {
-    QueryInfo info = queryTransmittedMap.get(queryId);
-    return info == null || info.hasDataToProceed();
-  }
+//  public static boolean hasDataToProceed(int queryId) {
+//    QueryInfo info = queryTransmittedMap.get(queryId);
+//    return info == null || info.hasDataToProceed();
+//  }
 
 //  public static boolean waitUntilHasDataToProceedOrTimeout(int queryId, long waitingTime) {
 //    QueryInfo info = queryTransmittedMap.get(queryId);
 //    return info.waitUntilHasDataToProceedOrTimeout(waitingTime);
 //  }
 
-  public static void setDataToProceed(int queryId, boolean hasData) {
-    QueryInfo info = queryTransmittedMap.get(queryId);
-    if (info != null) {
-      info.setHasDataToProceed(hasData);
-    }
-  }
+//  public static void setDataToProceed(int queryId, boolean hasData) {
+//    QueryInfo info = queryTransmittedMap.get(queryId);
+//    if (info != null) {
+//      info.setHasDataToProceed(hasData);
+//    }
+//  }
 
   public static void invalidateCache() {
     cache.invalidateAll();
@@ -804,7 +808,7 @@ public class LocalNameServer {
 	      return;
 	    }
 	    entry.updateCacheEntry(packet);
-  	}
+  }
 	  
 
 

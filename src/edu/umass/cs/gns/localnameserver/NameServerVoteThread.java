@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**************************************************************
  * This class implements the thread that periodically multicast 
@@ -116,8 +117,7 @@ public class NameServerVoteThread extends Thread {
 					Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name//, recordKey
                                                 );
 					
-					LocalNameServer.timer.schedule(
-							new CheckVoteStatus(json, uniqueVoteID, primaryNameServers), 0, TIMEOUT);
+					LocalNameServer.executorService.scheduleAtFixedRate(new CheckVoteStatus(json, uniqueVoteID, primaryNameServers), 0, TIMEOUT, TimeUnit.MILLISECONDS);
 					if (StartLocalNameServer.debugMode) GNS.getLogger().fine("VOTE THREAD: CheckVoteStatus Object created.  ID = " + uniqueVoteID);
 					
 					

@@ -53,8 +53,8 @@ public class SendAddRemoveUpsertTask extends TimerTask{
 
     if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
-      this.cancel();
-      return;
+      throw  new RuntimeException();
+//      return;
     }
 
     if (timeoutCount > 0 && System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
@@ -63,8 +63,7 @@ public class SendAddRemoveUpsertTask extends TimerTask{
       if (updateInfo == null) {
         if (StartLocalNameServer.debugMode)
           GNS.getLogger().fine("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
-        this.cancel();
-        return;
+        throw  new RuntimeException();
       }
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
       ConfirmUpdateLNSPacket confirmPkt = getConfirmPacket(packet);
@@ -88,8 +87,7 @@ public class SendAddRemoveUpsertTask extends TimerTask{
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine(updateStats);
       GNS.getStatLogger().fine(updateStats);
 
-      this.cancel();
-      return;
+      throw  new RuntimeException();
     }
     if (primariesQueried.size() == GNS.numPrimaryReplicas) primariesQueried.clear();
     int nameServerID = LocalNameServer.getClosestPrimaryNameServer(name, primariesQueried);
