@@ -171,7 +171,7 @@ public class Lookup {
                     new HashSet<Integer>());
             PendingTasks.addToPendingRequests(query.qName, //query.qRecordKey,
                     queryTaskObject, StartLocalNameServer.queryTimeout,
-                    query.senderAddress, query.senderPort, LNSQueryTask.getErrorPacket(query.incomingPacket));
+                    query.senderAddress, query.senderPort, LNSQueryTask2.getErrorPacket(query.incomingPacket));
             SendActivesRequestTask.requestActives(query.qName);
             if (StartLocalNameServer.debugMode) {
                 GNS.getLogger().fine(" Scheduled lookup task.");
@@ -180,9 +180,9 @@ public class Lookup {
         else {      // other types of errors, send error response to client
             try {
                 if (query.senderAddress != null && query.senderPort > 0) {
-                LNSListener.udpTransport.sendPacket(LNSQueryTask.getErrorPacket(query.incomingPacket), query.senderAddress, query.senderPort);
+                LNSListener.udpTransport.sendPacket(LNSQueryTask2.getErrorPacket(query.incomingPacket), query.senderAddress, query.senderPort);
                 } else if (StartLocalNameServer.runHttpServer) {
-                  Intercessor.getInstance().checkForResult(LNSQueryTask.getErrorPacket(query.incomingPacket));
+                  Intercessor.getInstance().checkForResult(LNSQueryTask2.getErrorPacket(query.incomingPacket));
                 }
                 if (StartLocalNameServer.debugMode) GNS.getLogger().fine("other error sent to client --> " + jsonObject + " query ID = " + query.incomingPacket.getQueryId());
             }  catch (JSONException e) {

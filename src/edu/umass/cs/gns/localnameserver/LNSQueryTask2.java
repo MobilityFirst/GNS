@@ -294,3 +294,22 @@ public class LNSQueryTask2 extends TimerTask {
             + nameserversQueried.toString());
   }
 }
+
+class SendQueryWithDelay2 extends TimerTask {
+  JSONObject json;
+  int nameserver;
+  public SendQueryWithDelay2(JSONObject json, int nameserver) {
+    this.json = json;
+    this.nameserver = nameserver;
+  }
+  @Override
+  public void run() {
+    try {
+      LNSListener.tcpTransport.sendToID(nameserver,json);
+    } catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+  }
+
+
+}
