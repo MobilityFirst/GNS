@@ -56,6 +56,8 @@ CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
 STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
 STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 
+RUN_HTTP_SERVER = '-runHttpServer'
+
 #Parameter: Update as required
 local_name_server_jar = '../../build/jars/GNS.jar'              #Local name server jar
 node_id = -1                                        #Node Id. Selected from name_server_file when running on planetlab
@@ -125,6 +127,8 @@ console_output_level = 'FINE'
 stat_file_logging_level = 'INFO'
 stat_console_output_level = 'INFO'
 
+is_Run_Http_Server = False 
+
 """ Prints Usage Message """
 def usage():
     print 'USAGE: local-name-server.py [options...]' 
@@ -162,6 +166,7 @@ def usage():
     print '--updateRateRegular <ms>\t\tInter-arrival ti (in ms) me between updates for regular name'
     print '--expRunTime <sec>\t\tNumber of seconds the experiment is executed'
     print '--debugMode\t\tRun in debug mode. Generates log in file log_lns_id'
+    print '--runHttpServer\t\t\tRun the HTTP server in the LNS process'
     print '--help\t\t\tPrints usage messages'
 
 
@@ -255,6 +260,9 @@ def run_local_name_server():
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level
     command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
+
+    if is_Run_Http_Server:
+        command += ' ' + RUN_HTTP_SERVER
     
     if is_experiment_mode:
         command += ' ' + EXPERIMENT_MODE
@@ -327,6 +335,7 @@ def print_options():
         print "Optimal Replication: " + str(is_optimal_replication)
 	print "Replication Interval: " + str(replication_interval) + "str"
 	print "Optimal Trace File: " + optimal_trace_file
+        print "Run HTTP Server: " + str(is_Run_Http_Server) 
         print "Debug Mode: " + str(is_debug_mode) 
 
 def main(argv):
@@ -340,7 +349,7 @@ def main(argv):
                                     'numUpdate=', 'workloadFile=', 'debugMode',
                                     'jar=', 'help', 'planetlab', 'lookupRate=', 'updateRateMobile=', 
                                     'updateRateRegular=', 'lookupTrace=', 'updateTrace=',
-                                    'expRunTime=' , 'rInterval=', 'optimalTrace=', 'optimal'])
+                                    'expRunTime=' , 'rInterval=', 'optimalTrace=', 'optimal', 'runHttpServer'])
     except getopt.GetoptError:   
         print 'Incorrect option'      
         usage()                         
@@ -372,6 +381,7 @@ def main(argv):
     global optimal_trace_file
     global is_optimal_replication
     global replication_interval
+    global is_Run_Http_Server 
     global is_debug_mode
     
     for opt, arg in opts:
@@ -429,6 +439,8 @@ def main(argv):
 	    replication_interval = int(arg)
         elif opt == '--optimalTrace':
 	    optimal_trace_file = arg
+        elif opt == '--runHttpServer':
+            is_Run_Http_Server = True
         elif opt == '--help':
             usage()
             sys.exit(1)

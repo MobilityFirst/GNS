@@ -65,6 +65,10 @@ public class EC2Installer {
   //private static final String PUBLICKEYFILEEXTENSION = ".pub";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
+  
+  
+  private static final String DEFAULT_LOG_LEVEL = "INFO";
+  private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   //private static AmazonEC2 ec2;
   private static Preferences preferences = Preferences.userRoot().node(EC2Installer.class.getName());
   /**
@@ -78,7 +82,8 @@ public class EC2Installer {
   //
   private static final int STARTINGNODENUMBER = 0;
   private static ConcurrentHashMap<Integer, Integer> hostsThatDidNotStart = new ConcurrentHashMap<Integer, Integer>();
-  private static DataStoreType dataStoreType = DataStoreType.MONGO;
+  private static DataStoreType dataStoreType = DEFAULT_DATA_STORE_TYPE;
+  
 
   /**
    * Information read from config file on what hosts we are trying to start.
@@ -394,7 +399,8 @@ public class EC2Installer {
             + " -chooseFromClosestK 1 -lookupRate 10000 -updateRateMobile 0 -updateRateRegular 10000 "
             + " -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100 "
             //+ " -adaptiveTimeout -delta 0.05 -mu 1.0 -phi 6.0 "
-            + " -fileLoggingLevel FINE -consoleOutputLevel FINE -statFileLoggingLevel INFO -statConsoleOutputLevel INFO "
+            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
+            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO "
             + " -debugMode "
             + " -nsfile name-server-info  > LNSlogfile 2>&1 &");
 
@@ -408,7 +414,8 @@ public class EC2Installer {
             + " -primary 3 -aInterval 1000 -rInterval 1000 -nconstant 0.1 -mavg 20 -ttlconstant 0.0 -rttl 0 -mttl 0"
             + " -rworkload 0 -mworkload 0"
             + " -location -nsVoteSize 5 "
-            + " -fileLoggingLevel FINE -consoleOutputLevel FINE -statFileLoggingLevel INFO -statConsoleOutputLevel INFO"
+            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
+            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO"
             + " -dataStore " + dataStoreType.name()
             + " -debugMode "
             + " -nsfile name-server-info "

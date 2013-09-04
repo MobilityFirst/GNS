@@ -99,7 +99,7 @@ console_output_level = 'FINE'
 stat_file_logging_level = 'INFO'
 stat_console_output_level = 'INFO'
 
-data_store = 'CASSANDRA'
+data_store = 'MONGO'
 
 """ Prints usage message """
 def usage():
@@ -133,7 +133,7 @@ def usage():
     print '--location\t\tLocation Based selection of active name servers.' 
     print '--nsSelectionVoteSize <size> Size of name server select vote'
     print '--debugMode\t\tRun in debug mode. Generates log in file log_lns_id'
-#    print '--experimentMode\t\tRun in experiment mode with GNRS-Westy'
+    print '--dataStore [MONGO|CASSANDRA]\t\t Which backing store to use.'
     print '--help\t\t\tPrints usage messages'
     #Xiaozheng
     print '--kmedoids\t\tKmedoids clustering for replication'
@@ -188,8 +188,7 @@ def run_name_server():
     command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
 
-    if data_store:
-        command += ' ' + DATA_STORE + ' ' + data_store
+    command += ' ' + DATA_STORE + ' ' + data_store
 
     if tiny_update:
         command += ' ' + TINY_UPDATE
@@ -262,6 +261,7 @@ def print_options():
         print "Location Replication: " + str(is_location_replication)
         print "Name Server Selection Vote Size: " + str(name_server_selection_vote_size)
         print "Beehive Replication: " + str(is_beehive_replication)
+        print "Data Store: " + str(data_store)
         print "C: " + str(c_hop)
         print "Base: " + str(base)
         print "Alpha: " + str(alpha)
@@ -279,7 +279,7 @@ def main(argv):
                                     'mTTL=', 'nTTL=', 'rWorkload=', 
                                     'mWorkload=', 'static', 'random',
                                     'location', 'nsSelectionVoteSize=', 'debugMode', 'help', 'planetlab',
-                                    'beehive', 'hop=', 'base=', 'alpha=', 'optimal'])
+                                    'beehive', 'hop=', 'base=', 'alpha=', 'optimal', "dataStore="])
     except getopt.GetoptError:    
         print 'Incorrect option'      
         usage()                         
@@ -305,6 +305,7 @@ def main(argv):
     global is_location_replication 
     global name_server_selection_vote_size
     global is_beehive_replication
+    global data_store
     global c_hop
     global base
     global alpha
@@ -403,6 +404,8 @@ def main(argv):
             lnsnsping_file = arg
         elif opt == '-nsnsping':
             nsnsping_file = arg
+        elif opt == '--dataStore':
+            data_store = arg
         elif opt == '--help':
             usage()
             sys.exit(1)
