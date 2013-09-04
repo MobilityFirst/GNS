@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 
 import static edu.umass.cs.gns.main.StartLocalNameServer.debugMode;
+import java.net.HttpURLConnection;
 
 /**
  *
@@ -122,7 +123,7 @@ public class GnsHttpServer {
           String host = requestHeaders.getFirst("Host");
           Headers responseHeaders = exchange.getResponseHeaders();
           responseHeaders.set("Content-Type", "text/plain");
-          exchange.sendResponseHeaders(200, 0);
+          exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
 
           OutputStream responseBody = exchange.getResponseBody();
 

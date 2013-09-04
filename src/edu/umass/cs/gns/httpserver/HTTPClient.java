@@ -644,6 +644,13 @@ public class HTTPClient {
           getLogger().info("Get Response timed out. Trying " + cnt + " more times.");
         }
       } while (cnt-- > 0);
+      try {
+        // in theory this close should allow the keepalive mechanism to operate correctly
+        // http://docs.oracle.com/javase/6/docs/technotes/guides/net/http-keepalive.html
+        rd.close();
+      } catch (IOException e) {
+        getLogger().warning("Problem closing the HttpURLConnection's stream.");
+      }
       getLogger().fine("Received: " + response);
       if (response != null) {
         return response;
