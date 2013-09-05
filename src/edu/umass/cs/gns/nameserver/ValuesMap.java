@@ -7,12 +7,15 @@ package edu.umass.cs.gns.nameserver;
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
 import edu.umass.cs.gns.util.JSONUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.

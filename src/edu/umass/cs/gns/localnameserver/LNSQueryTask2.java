@@ -12,6 +12,7 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
 //import edu.umass.cs.gns.packet.QueryResultValue;
@@ -103,7 +104,7 @@ public class LNSQueryTask2 extends TimerTask {
       ArrayList<String> value = cacheEntry.getValue(incomingPacket.getQrecordKey());
       if (value != null) {
         loggingForAddressInCache();
-        sendReplyToUser(value, cacheEntry.getTTL());
+        sendCachedReplyToUser(value, cacheEntry.getTTL());
 
         throw new RuntimeException();
 //                  return;
@@ -260,10 +261,10 @@ public class LNSQueryTask2 extends TimerTask {
   /**
    * Send DNS Query reply to User
    */
-  private void sendReplyToUser(ArrayList<String> value, int TTL) {
+  private void sendCachedReplyToUser(ArrayList<String> value, int TTL) {
 //    CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + incomingPacket.getQname());
-    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getQname(),incomingPacket.getQrecordKey(),value,TTL);
+    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getQname(),incomingPacket.getQrecordKey(),value, TTL);
     try {
       if (senderAddress != null && senderPort > 0) {
         LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), senderAddress, senderPort);

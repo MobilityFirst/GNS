@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
@@ -11,6 +12,7 @@ import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,19 +62,16 @@ public class CacheEntry {
     this.name = packet.getQname();
     // this will depend on TTL sent by NS. UPDATE: NEVER LET IT BE -1 which means infinite
     this.timeToLive = packet.getTTL() == -1 ? DEFAULTTTLINSECONDS : packet.getTTL();
-//    this.value = new ValuesMap(packet.getRecordValue());
-    // adding the value of the field queried by DNSPacket into cache
-    this.value.put(packet.getQrecordKey().getName(), new ArrayList<String>(packet.getFieldValue()));
-    // set the timestamp for that field
-    this.timestampAddress.put(packet.getQrecordKey().getName(), System.currentTimeMillis());
-    //this.ipAddressList = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>(packet.rdata.size(), 0.75f, 3));
-
-//    this.primaryNameServer = packet.getPrimaryNameServers();
+    // pull all the keys and values out of the returned value and cache them
+    for (Entry<String, ArrayList<String>> entry : packet.getRecordValue().entrySet()) {
+      String fieldKey = entry.getKey();
+      ArrayList<String> fieldValue = entry.getValue();
+      this.value.put(fieldKey, fieldValue);
+      // set the timestamp for that field
+      this.timestampAddress.put(fieldKey, System.currentTimeMillis());
+    }
+    // Also update this
     this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
-
-//    this.activeNameServer = new HashSet<Integer>(packet.getActiveNameServers());
-
-
   }
 
   public CacheEntry(RequestActivesPacket packet) {
@@ -98,7 +97,7 @@ public class CacheEntry {
     this.timestampAddress.put(NameRecordKey.EdgeRecord.getName(), System.currentTimeMillis());
   }
 
-  public synchronized  int getTTL() {
+  public synchronized int getTTL() {
     return timeToLive;
   }
 
@@ -108,11 +107,11 @@ public class CacheEntry {
 //  public  boolean isValidValue(NameRecordKey recordKey) {
 //    return isValidAddress(false, recordKey.getName());
 //  }
-  public synchronized  Set<Integer> getActiveNameServers() {
+  public synchronized Set<Integer> getActiveNameServers() {
     return activeNameServer;
   }
 
-  public synchronized  ArrayList<String> getValue(NameRecordKey key) {
+  public synchronized ArrayList<String> getValue(NameRecordKey key) {
     if (isValidAddress(key.getName())) {
       return value.get(key.getName());
     }
@@ -124,7 +123,7 @@ public class CacheEntry {
    * Returns true if the ttl associated with address has not expired in the cache. Returns false if the ttl has expired.
    * ***********************************************************
    */
-  private synchronized  boolean isValidAddress(String key) {
+  private synchronized boolean isValidAddress(String key) {
     // NULL MEANS THE VALUE IS INVALID
     if (value == null || value.containsKey(key) == false) {
       return false;
@@ -147,15 +146,20 @@ public class CacheEntry {
 
   }
 
-  public synchronized  void updateCacheEntry(DNSPacket packet) {
+  public synchronized void updateCacheEntry(DNSPacket packet) {
 //    activeNameServer = new HashSet<Integer>(packet.getActiveNameServers());
-    value.put(packet.getQrecordKey().getName(), packet.getFieldValue());// = packet.getRecordValue();
-    //value = packet.getRdata();
+    String key = packet.getQrecordKey().getName();
+    for (Entry<String, ArrayList<String>> entry : packet.getRecordValue().entrySet()) {
+      String fieldKey = entry.getKey();
+      ArrayList<String> fieldValue = entry.getValue();
+      this.value.put(fieldKey, fieldValue);
+      // set the timestamp for that field
+      this.timestampAddress.put(fieldKey, System.currentTimeMillis());
+    }
     timeToLive = packet.getTTL();
-    timestampAddress.put(packet.getQrecordKey().getName(), System.currentTimeMillis());
   }
 
-  public synchronized  void updateCacheEntry(TinyQuery tinyQuery) {
+  public synchronized void updateCacheEntry(TinyQuery tinyQuery) {
     //Update the list of active name servers
     activeNameServer = new HashSet<Integer>(tinyQuery.getActives());
     //Check for updates in IP address
@@ -167,11 +171,11 @@ public class CacheEntry {
 
   }
 
-  public synchronized  void updateCacheEntry(RequestActivesPacket packet) {
+  public synchronized void updateCacheEntry(RequestActivesPacket packet) {
     activeNameServer = packet.getActiveNameServers();
   }
 
-  public synchronized  void updateCacheEntry(ConfirmUpdateLNSPacket packet) {
+  public synchronized void updateCacheEntry(ConfirmUpdateLNSPacket packet) {
     // DEAL WITH THIS MESS LATER
 //    String oldValueString;
 //    if (value == null) {
@@ -233,12 +237,12 @@ public class CacheEntry {
    * returns true if a non-empty set of active name servers is stored in cache
    * ***********************************************************
    */
-  public synchronized  boolean isValidNameserver() {
+  public synchronized boolean isValidNameserver() {
 //    GNS.getLogger().severe("Active name servers in cache: " + activeNameServer);
     return activeNameServer != null && activeNameServer.size() != 0;
   }
 
-  public synchronized  int timeSinceAddressCached(NameRecordKey nameRecordKey) {
+  public synchronized int timeSinceAddressCached(NameRecordKey nameRecordKey) {
     Long ts = timestampAddress.get(nameRecordKey.getName());
     if (ts == null) {
       return -1;
@@ -246,7 +250,7 @@ public class CacheEntry {
     return (int) (System.currentTimeMillis() - ts);
   }
 
-  public synchronized  void invalidateActiveNameServer() {
+  public synchronized void invalidateActiveNameServer() {
     activeNameServer = null;
   }
 
@@ -255,7 +259,7 @@ public class CacheEntry {
    * Returns a string representation of a cache entry ***********************************************************
    */
   @Override
-  public  synchronized String toString() {
+  public synchronized String toString() {
     StringBuilder entry = new StringBuilder();
 
     entry.append("Name:" + getName());

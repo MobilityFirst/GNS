@@ -12,6 +12,7 @@ import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -31,7 +32,6 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.packet.Packet.*;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
-
 /**
  *
  * @author westy
@@ -51,14 +51,13 @@ public class Intercessor {
     private static final Intercessor INSTANCE = new Intercessor();
   }
   private int localServerID = 0;
-
   private static Options commandLineOptions;
   /**
    * Used by the wait/notify calls *
    */
   private final Object monitor = new Object();
-  private static ConcurrentMap<Integer, ArrayList<String>> queryResult;
-  private static final ArrayList<String> ERRORQUERYRESULT = new ArrayList<String>();
+  private static ConcurrentMap<Integer, ValuesMap> queryResult;
+  private static final ValuesMap ERRORQUERYRESULT = new ValuesMap();
   private static Random randomID;
   /* Used for sending updates and getting confirmations */
   public static Transport transport;
@@ -86,11 +85,10 @@ public class Intercessor {
 //    transport = new Transport(-1, port); // -1 means use address instead of Host ID
 //
 //  }
-
   private Intercessor() {
 
     randomID = new Random();
-    queryResult = new ConcurrentHashMap<Integer, ArrayList<String>>(10, 0.75f, 3);
+    queryResult = new ConcurrentHashMap<Integer, ValuesMap>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
     StartLocalNameServer.debugMode = true;
 //    try {
@@ -147,24 +145,24 @@ public class Intercessor {
           }
           break;
         case DNS:
-          DNSPacket nameRecordPacket = new DNSPacket(json);
-          id = nameRecordPacket.getQueryId();
+          DNSPacket dnsResponsePacket = new DNSPacket(json);
+          id = dnsResponsePacket.getQueryId();
 //              if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Intercessor: RECVD LOOKUP CONFIRM PACKET");
-          if (nameRecordPacket.isResponse() && !nameRecordPacket.containsAnyError()) {
+          if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
             if (StartLocalNameServer.debugMode) {
               GNS.getLogger().fine("Query (" + id + "): "
-                      + nameRecordPacket.getQname() + "/" + nameRecordPacket.getQrecordKey()
+                      + dnsResponsePacket.getQname() + "/" + dnsResponsePacket.getQrecordKey()
                       + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             }
             synchronized (monitor) {
-              queryResult.put(id, nameRecordPacket.getFieldValue());
+              queryResult.put(id, dnsResponsePacket.getRecordValue());
               monitor.notifyAll();
             }
           } else {
             if (StartLocalNameServer.debugMode) {
               GNS.getLogger().fine("Intercessor: Query (" + id + "): "
-                      + nameRecordPacket.getQname() + "/" + nameRecordPacket.getQrecordKey()
+                      + dnsResponsePacket.getQname() + "/" + dnsResponsePacket.getQrecordKey()
                       + " Error Received. ");// + nameRecordPacket.toJSONObject().toString());
             }
             synchronized (monitor) {
@@ -186,7 +184,7 @@ public class Intercessor {
   // QUERYING
   public ArrayList<String> sendQuery(String name, String key) {
     int id = randomID.nextInt();
-      GNS.getLogger().fine("sending query ... " + name + " " + key);
+    GNS.getLogger().fine("sending query ... " + name + " " + key);
     //Generate unique id for the query
     while (queryResult.containsKey(id)) {
       id = randomID.nextInt();
@@ -206,26 +204,30 @@ public class Intercessor {
 
     // now we wait until the correct packet comes back
     try {
-        GNS.getLogger().fine("waiting for query id ... " + id);
+      GNS.getLogger().fine("waiting for query id ... " + id);
       synchronized (monitor) {
         while (!queryResult.containsKey(id)) {
 
           monitor.wait();
         }
       }
-        GNS.getLogger().fine("query id response received ... " + id);
+      GNS.getLogger().fine("query id response received ... " + id);
     } catch (InterruptedException x) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().severe("Wait for return packet was interrupted " + x);
       }
     }
-    ArrayList<String> result = queryResult.get(id);
+    ValuesMap result = queryResult.get(id);
     queryResult.remove(id);
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
     }
-
-    return result == ERRORQUERYRESULT ? null : result;
+    
+    if (result == ERRORQUERYRESULT) {
+      return null;
+    } else {
+      return result.get(key);
+    }
   }
 
   /**
@@ -568,7 +570,7 @@ public class Intercessor {
   private void sendPacket(JSONObject jsonObject) {
     if (StartLocalNameServer.runHttpServer) {
       LNSListener.demultiplexLNSPackets(jsonObject);
-    } else  {
+    } else {
       try {
         transport.sendPacket(jsonObject, localServerID, PortType.LNS_UDP_PORT);
       } catch (JSONException e) {
@@ -577,5 +579,4 @@ public class Intercessor {
     }
 
   }
-  
 }

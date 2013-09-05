@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
@@ -56,15 +57,13 @@ public class NameServer {
     NameServer.nodeID = nodeID;
 
 //    NameServer.dnsSocket = new DatagramSocket(ConfigFileInfo.getDnsPort(nodeID));
-
 //    NameServer.updateSocket = new DatagramSocket(ConfigFileInfo.getUpdatePort(nodeID));
-    
-     if (StartNameServer.debugMode) GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
+    GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
             MongoRecords.DBNAMERECORD);
     // Ditto for the replica controller records
-    NameServer.replicaController = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(), 
+    NameServer.replicaController = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
             MongoRecords.DBREPLICACONTROLLER);
 //
 //    // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
@@ -76,7 +75,7 @@ public class NameServer {
     //NameServer.recordMap = new CassandraRecordMap(CassandraRecords.DBNAMERECORD);
     // Ditto for the replica controller records
     //NameServer.replicaController = new CassandraRecordMap(CassandraRecords.DBREPLICACONTROLLER);
-    
+
 
     // will need to add back some form of the code to select the appropriate one
     // probably make persistentDataStore a selector
@@ -287,11 +286,10 @@ public class NameServer {
     recordMap.removeNameRecord(name);
   }
 
-//
-//  public static boolean containsName(String name) {
-//    return recordMap.containsName(name);
-//  }
-//
+  public static boolean containsName(String name) {
+    return recordMap.containsName(name);
+  }
+
   public static Set<NameRecord> getAllNameRecords() {
     return recordMap.getAllNameRecords();
   }
@@ -313,7 +311,6 @@ public class NameServer {
     replicaController.removeNameRecord(name);
   }
 
-
   public static void updateNameRecordPrimary(ReplicaControllerRecord record) {
     if (!record.isLazyEval()) {
       replicaController.updateNameRecordPrimary(record);
@@ -330,7 +327,7 @@ public class NameServer {
     // reset them both
     replicaController.reset();
   }
-  
+
   //  the nuclear option
   public static void deleteAllDatabases() {
     recordMap.reset();
@@ -388,33 +385,4 @@ public class NameServer {
 //    public static Set<NameRecord> getAllActiveNameRecords() {
 //        return recordMap.getAllNameRecords();
 //    }
-
-//  public static DNSPacket makeResponseFromRecord(DNSPacket dnsPacket, NameRecord nameRecord) {
-//    if (dnsPacket.getQname() == null || !dnsPacket.isQuery() //|| !DBNameRecord.containsName(dnsPacket.getQname())
-//            // shouldn't be called with a null namerecord, but just to be sure
-//            || nameRecord == null || !nameRecord.containsKey(dnsPacket.getQrecordKey().getName())) {
-//      dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
-//      dnsPacket.getHeader().setQr(1);
-//      return dnsPacket;
-//    }
-//
-//    //NameRecord nameRecord = getNameRecord(dnsPacket.qname, dnsPacket.qrecordKey);
-//    //Generate the respose packet
-//    dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
-//    dnsPacket.getHeader().setQr(1);
-//    dnsPacket.setTTL(nameRecord.getTimeToLive());
-////    dnsPacket.setRecordValue(nameRecord.getValuesMap());
-//    // this is redundant with above, but for now we keep both
-//    dnsPacket.setFieldValue(nameRecord.get(dnsPacket.getQrecordKey().getName()));
-////    dnsPacket.setPrimaryNameServers(nameRecord.getPrimaryNameservers());
-////    dnsPacket.setActiveNameServers(nameRecord.copyActiveNameServers());
-//
-//    //update lookup frequency
-//    nameRecord.incrementLookupRequest();
-//    return dnsPacket;
-//  }
-
-//  public static String tableToString() {
-//    return recordMap.tableToString();
-//  }
 }

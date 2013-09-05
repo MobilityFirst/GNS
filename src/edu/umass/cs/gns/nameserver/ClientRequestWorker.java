@@ -602,8 +602,7 @@ public class ClientRequestWorker extends TimerTask {
           dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
           dnsPacket.getHeader().setQr(1);
           dnsPacket.setTTL(nameRecord.getTimeToLive());
-          // this is redundant with above, but for now we keep both
-          dnsPacket.setFieldValue(nameRecord.getKey(dnsPacket.getQrecordKey().getName()));
+          dnsPacket.setSingleReturnValue(nameRecord.getKey(dnsPacket.getQrecordKey().getName()));
 
           //update lookup frequency
           nameRecord.incrementLookupRequest();
