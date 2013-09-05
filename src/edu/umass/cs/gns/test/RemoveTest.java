@@ -9,12 +9,13 @@ import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.ThreadUtils;
 import javax.swing.JOptionPane;
+import java.util.ArrayList;
 
 /**
  *
@@ -55,7 +56,7 @@ public class RemoveTest {
 //    QueryResultValue guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
 //    GNS.getLogger().info(guid + ": " + AccountAccess.GUID_INFO + " -> " + new GuidInfo(guidResult).toJSONObject().toString());
 
-    QueryResultValue result = client.sendQuery(guid, GroupAccess.GROUPV2);
+    ArrayList<String> result = client.sendQuery(guid, GroupAccess.GROUPV2);
     GNS.getLogger().info(guid + ": " + GroupAccess.GROUPV2 + " -> " + result);
 
     client.sendUpdateRecordWithConfirmation(guid, GroupAccess.GROUPV2, memberGuid, null, UpdateOperation.REMOVE);

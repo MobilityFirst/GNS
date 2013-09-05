@@ -12,6 +12,7 @@ import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -56,8 +57,8 @@ public class Intercessor {
    * Used by the wait/notify calls *
    */
   private final Object monitor = new Object();
-  private static ConcurrentMap<Integer, QueryResultValue> queryResult;
-  private static final QueryResultValue ERRORQUERYRESULT = new QueryResultValue();
+  private static ConcurrentMap<Integer, ArrayList<String>> queryResult;
+  private static final ArrayList<String> ERRORQUERYRESULT = new ArrayList<String>();
   private static Random randomID;
   /* Used for sending updates and getting confirmations */
   public static Transport transport;
@@ -89,7 +90,7 @@ public class Intercessor {
   private Intercessor() {
 
     randomID = new Random();
-    queryResult = new ConcurrentHashMap<Integer, QueryResultValue>(10, 0.75f, 3);
+    queryResult = new ConcurrentHashMap<Integer, ArrayList<String>>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
     StartLocalNameServer.debugMode = true;
 //    try {
@@ -183,7 +184,7 @@ public class Intercessor {
   }
 
   // QUERYING
-  public QueryResultValue sendQuery(String name, String key) {
+  public ArrayList<String> sendQuery(String name, String key) {
     int id = randomID.nextInt();
       GNS.getLogger().fine("sending query ... " + name + " " + key);
     //Generate unique id for the query
@@ -218,7 +219,7 @@ public class Intercessor {
         GNS.getLogger().severe("Wait for return packet was interrupted " + x);
       }
     }
-    QueryResultValue result = queryResult.get(id);
+    ArrayList<String> result = queryResult.get(id);
     queryResult.remove(id);
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
@@ -442,20 +443,25 @@ public class Intercessor {
       result.append("Nameserver: " + entry.getKey() + " (" + ConfigFileInfo.getIPAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
-        result.append("  NAME: ");
-        result.append(record.getName());
+        try {
+          result.append("  NAME: ");
+          result.append(record.getName());
 //        result.append(" / KEY: ");
 //        result.append(record.getRecordKey().getName());
-        result.append(" P: ");
-        result.append(record.getPrimaryNameservers().toString());
-        result.append(" A: ");
-        result.append(record.copyActiveNameServers().toString());
-        result.append(" TTL: ");
-        result.append(record.getTimeToLive());
-        result.append(LINE_SEPARATOR);
-        result.append("    VALUE: ");
-        result.append(record.getValuesMap());
-        result.append(LINE_SEPARATOR);
+          result.append(" P: ");
+          result.append(record.getPrimaryNameservers().toString());
+          result.append(" A: ");
+          result.append(record.getActiveNameServers().toString());
+          result.append(" TTL: ");
+          result.append(record.getTimeToLive());
+          result.append(LINE_SEPARATOR);
+          result.append("    VALUE: ");
+          result.append(record.getValuesMap());
+          result.append(LINE_SEPARATOR);
+        } catch (FieldNotFoundException e) {
+          GNS.getLogger().severe(" FieldNotFoundException. " + e.getMessage());
+          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
       }
     }
     return result.toString();

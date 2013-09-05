@@ -1,7 +1,7 @@
 import os, sys
 
 # SET
-experiment_run_time = 20
+experiment_run_time = -1
 
 # SET
 scheme = 'locality'

@@ -4,12 +4,13 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer2;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -17,7 +18,6 @@ import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
@@ -35,7 +35,7 @@ public class NameServer {
    * UDP socket over which DNSPackets are received and sent *
    */
 //  public static DatagramSocket dnsSocket;
-  private static BasicRecordMap recordMap;
+  public static BasicRecordMap recordMap;
   private static BasicRecordMap replicaController;
   public static ReplicationFramework replicationFramework;
   public static MovingAverage loadMonitor;
@@ -59,7 +59,7 @@ public class NameServer {
 
 //    NameServer.updateSocket = new DatagramSocket(ConfigFileInfo.getUpdatePort(nodeID));
     
-     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
+     if (StartNameServer.debugMode) GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
             MongoRecords.DBNAMERECORD);
@@ -128,9 +128,7 @@ public class NameServer {
 
     // Executor service created.
     int maxThreads = 5;
-
-    executorService =
-            new ScheduledThreadPoolExecutor(maxThreads);
+    executorService = new ScheduledThreadPoolExecutor(maxThreads);
 
     // Non-blocking IO created
     nsDemultiplexer = new NSPacketDemultiplexer();
@@ -163,6 +161,7 @@ public class NameServer {
 
       if (StartNameServer.experimentMode) {
         // Name Records added for experiments
+//        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,StartNameServer.mobileWorkloadSize);
         GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
                 StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
                 StartNameServer.defaultTTLMobileName);
@@ -187,9 +186,6 @@ public class NameServer {
 
       }
     } catch (IOException e) {
-      e.printStackTrace();
-    } catch (NoSuchAlgorithmException e) {
-      GNS.getLogger().severe("Error generating synthetic data " + e);
       e.printStackTrace();
     }
   }
@@ -244,45 +240,58 @@ public class NameServer {
 //
 //  }
   // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
-  public static NameRecord getNameRecord(String name) {
+
+  public static NameRecord getNameRecord(String name) throws RecordNotFoundException{
     return recordMap.getNameRecord(name);
   }
 
-  /**
-   * Creates a name record that loads reads and writes fields on demand.
-   *
-   * @param name
-   * @return
-   */
-  public static NameRecord getNameRecordLazy(String name) {
-    GNS.getLogger().info("Creating lazy name record for " + name);
-    return recordMap.getNameRecordLazy(name);
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, ArrayList<Field> userFields)
+          throws RecordNotFoundException{
+    return recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFields);
   }
 
-  public static NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
-    GNS.getLogger().info("Creating lazy name record for " + name);
-    return recordMap.getNameRecordLazy(name, keys);
-  }
+//
+//
+//
+//
+//  /**
+//   * Creates a name record that loads reads and writes fields on demand.
+//   *
+//   * @param name
+//   * @return
+//   */
+//  public static NameRecord getNameRecordLazy(String name) {
+//    GNS.getLogger().info("Creating lazy name record for " + name);
+//    return recordMap.getNameRecordLazy(name);
+//  }
+//
+//  public static NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
+//    GNS.getLogger().info("Creating lazy name record for " + name);
+//    return recordMap.getNameRecordLazy(name, keys);
+//  }
+//
 
-  public static void addNameRecord(NameRecord record) {
+  public static void addNameRecord(NameRecord record) throws RecordExistsException{
     recordMap.addNameRecord(record);
   }
 
+
   public static void updateNameRecord(NameRecord record) {
-    if (!record.isLazyEval()) {
-      recordMap.updateNameRecord(record);
-    }
+    recordMap.updateNameRecord(record);
+//    if (!record.isLazyEval()) {
+//
+//    }
   }
 
   public static void removeNameRecord(String name) {
     recordMap.removeNameRecord(name);
   }
 
-
-  public static boolean containsName(String name) {
-    return recordMap.containsName(name);
-  }
-
+//
+//  public static boolean containsName(String name) {
+//    return recordMap.containsName(name);
+//  }
+//
   public static Set<NameRecord> getAllNameRecords() {
     return recordMap.getAllNameRecords();
   }
@@ -379,30 +388,32 @@ public class NameServer {
 //    public static Set<NameRecord> getAllActiveNameRecords() {
 //        return recordMap.getAllNameRecords();
 //    }
-  public static DNSPacket makeResponseFromRecord(DNSPacket dnsPacket, NameRecord nameRecord) {
-    if (dnsPacket.getQname() == null || !dnsPacket.isQuery() //|| !DBNameRecord.containsName(dnsPacket.getQname())
-            // shouldn't be called with a null namerecord, but just to be sure
-            || nameRecord == null || !nameRecord.containsKey(dnsPacket.getQrecordKey().getName())) {
-      dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
-      dnsPacket.getHeader().setQr(1);
-      return dnsPacket;
-    }
 
-    //NameRecord nameRecord = getNameRecord(dnsPacket.qname, dnsPacket.qrecordKey);
-    //Generate the respose packet
-    dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
-    dnsPacket.getHeader().setQr(1);
-    dnsPacket.setTTL(nameRecord.getTimeToLive());
-//    dnsPacket.setRecordValue(nameRecord.getValuesMap());
-    // this is redundant with above, but for now we keep both
-    dnsPacket.setFieldValue(nameRecord.get(dnsPacket.getQrecordKey().getName()));
-//    dnsPacket.setPrimaryNameServers(nameRecord.getPrimaryNameservers());
-//    dnsPacket.setActiveNameServers(nameRecord.copyActiveNameServers());
+//  public static DNSPacket makeResponseFromRecord(DNSPacket dnsPacket, NameRecord nameRecord) {
+//    if (dnsPacket.getQname() == null || !dnsPacket.isQuery() //|| !DBNameRecord.containsName(dnsPacket.getQname())
+//            // shouldn't be called with a null namerecord, but just to be sure
+//            || nameRecord == null || !nameRecord.containsKey(dnsPacket.getQrecordKey().getName())) {
+//      dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
+//      dnsPacket.getHeader().setQr(1);
+//      return dnsPacket;
+//    }
+//
+//    //NameRecord nameRecord = getNameRecord(dnsPacket.qname, dnsPacket.qrecordKey);
+//    //Generate the respose packet
+//    dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
+//    dnsPacket.getHeader().setQr(1);
+//    dnsPacket.setTTL(nameRecord.getTimeToLive());
+////    dnsPacket.setRecordValue(nameRecord.getValuesMap());
+//    // this is redundant with above, but for now we keep both
+//    dnsPacket.setFieldValue(nameRecord.get(dnsPacket.getQrecordKey().getName()));
+////    dnsPacket.setPrimaryNameServers(nameRecord.getPrimaryNameservers());
+////    dnsPacket.setActiveNameServers(nameRecord.copyActiveNameServers());
+//
+//    //update lookup frequency
+//    nameRecord.incrementLookupRequest();
+//    return dnsPacket;
+//  }
 
-    //update lookup frequency
-    nameRecord.incrementLookupRequest();
-    return dnsPacket;
-  }
 //  public static String tableToString() {
 //    return recordMap.tableToString();
 //  }

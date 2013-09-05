@@ -1,600 +1,338 @@
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.fields.FieldType;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.packet.UpdateOperation;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
+//import edu.umass.cs.gns.packet.QueryResultValue;
 
 /**
- * Created with IntelliJ IDEA. User: abhigyan Date: 7/26/13 Time: 12:46 PM To change this template use File | Settings | File
- * Templates.
+ * Created with IntelliJ IDEA.
+ * User: abhigyan
+ * Date: 9/2/13
+ * Time: 1:17 AM
+ * To change this template use File | Settings | File Templates.
  */
-public class NameRecord implements Comparable<NameRecord> {
+public class NameRecord {
 
-  public final static String USER_KEYS = "nr_user_keys";
-  public final static String OLDVALUESMAP = "nr_oldValuesMap";
-  //
-  public final static String NAME = "nr_name";
-  public final static String KEY = "nr_key"; // legacy use
-  public final static String TIME_TO_LIVE = "nr_timeToLive";
-  public final static String PRIMARY_NAMESERVERS = "nr_primary";
-  public final static String ACTIVE_NAMESERVERS = "nr_active";
-  public final static String ACTIVE_PAXOS_ID = "nr_activePaxosID";
-  public final static String OLD_ACTIVE_PAXOS_ID = "nr_oldActivePaxosID";
-  public final static String TOTALLOOKUPREQUEST = "nr_totalLookupRequest";
-  public final static String TOTALUPDATEREQUEST = "nr_totalUpdateRequest";
-  //
-  private final static int LAZYINT = -9999;
-  /**
-   * Name (host/domain) *
-   */
-  private String name;
-  /**
-   * Map of values of this record *
-   */
-  private ValuesMap valuesMap;
-  /**
-   * Map of values from old active name servers *
-   */
-  private ValuesMap oldValuesMap;
-  /**
-   * TTL: time to live IN SECONDS*
-   */
-  private int timeToLive = 0; // 0 means TTL - 0 (no caching), -1 means the record will never expire if it gets into a cache
-  /**
-   * Set of primary nameservers *
-   */
-  private HashSet<Integer> primaryNameservers;
-  /**
-   * Set of active nameservers most recently computed.
-   */
-  private Set<Integer> activeNameservers;
-  /**
-   * Paxos instance ID of the new active name server set.
-   */
-  private String activePaxosID;
-  /**
-   * Paxos instance ID of the old active name server set
-   */
-  private String oldActivePaxosID;
-  /**
-   * Number of lookups *
-   */
-  private int totalLookupRequest;
-  /**
-   * Number of updates *
-   */
-  private int totalUpdateRequest;
-  /**
-   * Indicates if we're using new load-as-you-go-scheme
-   */
-  private boolean lazyEval = false;
-  /**
-   * When we're loading values on demand this is the recordMap we use.
-   */
-  private BasicRecordMap recordMap;
+  public final static Field NAME = new Field("nr_name", FieldType.STRING);
 
-  public NameRecord(String name, BasicRecordMap recordMap) {
-    if (recordMap == null) {
-      throw new RuntimeException("Record map cannot be null!");
-    }
-    //GNS.getLogger().info("Creating lazy name record for " + name);
-    this.recordMap = recordMap;
-    this.lazyEval = true;
-    this.name = name;
-    this.valuesMap = new ValuesMap(); // set this to a default value - it's handled specially
-    // set these to sentinel values which tells us the should be loaded on demand
-    this.oldValuesMap = null;
-    this.timeToLive = LAZYINT;
-    this.primaryNameservers = null;
-    this.activeNameservers = null;
-    this.activePaxosID = null;
-    this.oldActivePaxosID = null;
-    this.totalLookupRequest = LAZYINT;
-    this.totalUpdateRequest = LAZYINT;
-  }
+  public final static Field ACTIVE_NAMESERVERS = new Field("nr_active", FieldType.SET_INTEGER);
 
+  public final static Field PRIMARY_NAMESERVERS = new Field("nr_primary", FieldType.SET_INTEGER);
 
-  public NameRecord(String name, BasicRecordMap recordMap, ArrayList<String> keys, ArrayList<String> values) {
-    if (recordMap == null) {
-      throw new RuntimeException("Record map cannot be null!");
-    }
-    //GNS.getLogger().info("Creating lazy name record for " + name);
-    this.recordMap = recordMap;
-    this.lazyEval = true;
-    // TODO if any field is in 'keys', then assign the value for that key from 'values'
-    this.name = name;
-    this.valuesMap = new ValuesMap(); // set this to a default value - it's handled specially
-    // set these to sentinel values which tells us the should be loaded on demand
-    this.oldValuesMap = null;
-    this.timeToLive = LAZYINT;
-    this.primaryNameservers = null;
-    this.activeNameservers = null;
-    this.activePaxosID = null;
-    this.oldActivePaxosID = null;
-    this.totalLookupRequest = LAZYINT;
-    this.totalUpdateRequest = LAZYINT;
-  }
+  public final static Field ACTIVE_PAXOS_ID = new Field("nr_activePaxosID", FieldType.STRING);
 
-  public NameRecord(String name) {
-    this.name = name;
-    //Initialize the entry in the map
-    primaryNameservers = (HashSet<Integer>) HashFunction.getPrimaryReplicas(name);
-    this.valuesMap = new ValuesMap();
-    this.oldValuesMap = new ValuesMap();
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().finer("Constructor Primaries: " + primaryNameservers);
-    }
+  public final static Field OLD_ACTIVE_PAXOS_ID = new Field("nr_oldActivePaxosID", FieldType.STRING);
 
-    this.activeNameservers = new HashSet<Integer>(primaryNameservers);//initializeInitialActives(primaryNameservers, StartNameServer.minReplica, name);
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().finer(" Name Record INITIAL ACTIVES ARE: " + activeNameservers);
-    }
-    this.oldActivePaxosID = name + "-1"; // initialized uniformly among primaries
-    this.activePaxosID = name + "-2";
+  public final static Field TIME_TO_LIVE = new Field("nr_ttl", FieldType.INTEGER);
 
-    this.totalLookupRequest = 0;
-    this.totalUpdateRequest = 0;
-  }
+  public final static Field VALUES_MAP = new Field("nr_valuesMap", FieldType.MAP);
 
-  public NameRecord(JSONObject json) throws JSONException {
-    this.valuesMap = new ValuesMap();
-    // extract the user keys out of the json object
-    for (String key : JSONUtils.JSONArrayToArrayList(json.getJSONArray(USER_KEYS))) {
-      this.valuesMap.put(key, new QueryResultValue(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
-    }
-    this.oldValuesMap = new ValuesMap(json.getJSONObject(OLDVALUESMAP));
+  public final static Field OLD_VALUES_MAP = new Field("nr_oldValuesMap", FieldType.MAP);
 
-    this.name = json.getString(NAME);
-    this.timeToLive = json.getInt(TIME_TO_LIVE);
+  public final static Field TOTAL_UPDATE_REQUEST = new Field("nr_totalUpdateRequest", FieldType.INTEGER);
 
-    this.primaryNameservers = (HashSet<Integer>) JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARY_NAMESERVERS));
-    this.activeNameservers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
-
-    this.oldActivePaxosID = json.getString(OLD_ACTIVE_PAXOS_ID);
-    if (!json.has(ACTIVE_PAXOS_ID)) {
-      this.activePaxosID = null;
-    } else {
-      this.activePaxosID = json.getString(ACTIVE_PAXOS_ID);
-    }
-    this.totalLookupRequest = json.getInt(TOTALLOOKUPREQUEST);
-    this.totalUpdateRequest = json.getInt(TOTALUPDATEREQUEST);
-  }
+  public final static Field TOTAL_LOOKUP_REQUEST = new Field("nr_totalLookupRequest", FieldType.INTEGER);
 
   /**
-   * Only use for testing.
-   *
+   * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
+   */
+  private HashMap<Field, Object> hashMap;
+
+
+  /********************************************
+   * CONSTRUCTORS
+   * ******************************************/
+
+  /**
+   * Creates a <code>NameRecord</code> object initialized with given fields. The record is in memory and not written to DB.
    * @param name
-   * @param nameRecordKey
+   * @param activeNameServers
+   * @param activePaxosID
    * @param values
-   */
-  public NameRecord(String name, NameRecordKey nameRecordKey, ArrayList<String> values) {
-    this(name);
-    this.valuesMap.put(nameRecordKey.getName(), new QueryResultValue(values));
-    this.oldValuesMap.put(nameRecordKey.getName(), new QueryResultValue(values));
-  }
-
-  public synchronized JSONObject toJSONObject() throws JSONException {
-    if (isLazyEval()) {
-      throw new RuntimeException("Attempting to convert a lazy NameRecord to JSON");
-    }
-    JSONObject json = new JSONObject();
-    // the reason we're putting the "user level" keys "inline" with all the other keys is
-    // so that we can later access the metadata and the data using the same mechanism, namely a
-    // lookup of the fields in the database. Alternatively, we could have separate storage and lookup
-    // of data and metadata.
-    valuesMap.addToJSONObject(json);
-    json.put(USER_KEYS, new JSONArray(valuesMap.keySet()));
-
-    json.put(OLDVALUESMAP, getOldValuesMap().toJSONObject());
-    //
-    json.put(NAME, getName());
-    json.put(TIME_TO_LIVE, getTimeToLive());
-    json.put(PRIMARY_NAMESERVERS, new JSONArray(getPrimaryNameservers()));
-    json.put(ACTIVE_NAMESERVERS, new JSONArray(getActiveNameservers()));
-
-    // new fields
-    json.put(ACTIVE_PAXOS_ID, getActivePaxosID());
-    json.put(OLD_ACTIVE_PAXOS_ID, getOldActivePaxosID());
-
-    json.put(TOTALLOOKUPREQUEST, getTotalLookupRequest());
-    json.put(TOTALUPDATEREQUEST, getTotalUpdateRequest());
-
-    return json;
-  }
-
-  private static Set<Integer> initializeInitialActives(Set<Integer> primaryNameservers, int count, String name) {
-    // choose three actives which are different from primaries
-    Set<Integer> newActives = new HashSet<Integer>();
-    Random r = new Random(name.hashCode());
-
-    for (int j = 0; j < count; j++) {
-      while (true) {
-        int id = r.nextInt(ConfigFileInfo.getNumberOfNameServers());
-        //            int active = (j + id)% ConfigFileInfo.getNumberOfNameServers();
-        if (!primaryNameservers.contains(id) && !newActives.contains(id)) {
-          GNS.getLogger().finer("ID " + id);
-          newActives.add(id);
-          break;
-        }
-      }
-    }
-    if (newActives.size() < count) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().warning(" ERROR: initial actives < " + count + " Initial Actives: " + newActives);
-      }
-    }
-    return newActives;
-  }
-
-  /**
-   * Return the name.
-   *
-   * @return the name
-   */
-  public synchronized String getName() {
-    return name;
-  }
-
-  /**
-   * @return the lazyEval
-   */
-  public boolean isLazyEval() {
-    return lazyEval;
-  }
-
-  /**
-   * Implements the updating of values in the namerecord for a given key.
-   *
-   * Note: If the key doesn't exist the underlying calls will create it.
-   *
-   * That notwithstanding, code that calls this should still check for the key existing in the name record so that we can return
-   * error values to the client for non-upsert situations.
-   *
-   * @param key
-   * @param newValues - a list of the new values
-   * @param oldValues - a list of the old values, can be null
-   * @param operation
    * @return
    */
-  public synchronized boolean updateField(String key, ArrayList<String> newValues,
-          ArrayList<String> oldValues, UpdateOperation operation) {
-    if (isLazyEval()) {
-      //get a fresh copy of this value in case it changed elsewhere
-      ArrayList<String> freshValue = recordMap.getNameRecordFieldAsArrayList(name, key);
-      if (freshValue != null) {
-        this.valuesMap.put(key, new QueryResultValue(freshValue));
-      }
-    }
-    // butter our bread here - actually do the update
-    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation);
-    //
-    if (updated) {
-      if (isLazyEval()) {
-        recordMap.updateNameRecordListValue(name, key, new ArrayList<String>(this.valuesMap.get(key)));
-        // make sure the key is in the user keys
-        ArrayList<String> keys = recordMap.getNameRecordFieldAsArrayList(name, USER_KEYS);
-        if (!keys.contains(key)) {
-          keys.add(key);
-          recordMap.updateNameRecordListValue(name, USER_KEYS, keys);
-        }
-      }
-      return true;
-    } else {
-      return false;
-    }
+  public NameRecord(String name, Set<Integer> activeNameServers, String activePaxosID,
+                                ValuesMap values) {
+    hashMap = new HashMap<Field, Object>();
+    hashMap.put(NAME,name);
+    hashMap.put(ACTIVE_NAMESERVERS, activeNameServers);
+    hashMap.put(PRIMARY_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
+    hashMap.put(ACTIVE_PAXOS_ID, activePaxosID);
+    hashMap.put(OLD_ACTIVE_PAXOS_ID, name + "-1");
+    hashMap.put(TIME_TO_LIVE, 0);
+    hashMap.put(VALUES_MAP, values);
+    hashMap.put(OLD_VALUES_MAP, new ValuesMap());
+    hashMap.put(TOTAL_LOOKUP_REQUEST, 0);
+    hashMap.put(TOTAL_UPDATE_REQUEST, 0);
   }
 
-  public synchronized QueryResultValue get(String key) {
-    if (isLazyEval()) {
-      ArrayList<String> result = recordMap.getNameRecordFieldAsArrayList(name, key);
-      if (result != null) {
-        QueryResultValue value = new QueryResultValue(result);
-        this.valuesMap.put(key, value);
-        return value;
-      } else {
-        return null;
-      }
-    } else {
-      return getValuesMap().get(key);
-    }
-  }
-
-  public synchronized boolean containsKey(String key) {
-    if (isLazyEval()) {
-      ArrayList<String> keys = recordMap.getNameRecordFieldAsArrayList(name, USER_KEYS);
-      return keys.contains(key);
-    } else {
-      return getValuesMap().containsKey(key);
-    }
-  }
-
-  // these might be special
-  public synchronized ValuesMap getValuesMap() {
-    if (isLazyEval()) {
-      // extract the user keys out of the json object
-      ArrayList<String> keys = recordMap.getNameRecordFieldAsArrayList(name, USER_KEYS);
-      for (String key : keys) {
-        this.valuesMap.put(key, new QueryResultValue(recordMap.getNameRecordFieldAsArrayList(name, key)));
-      }
-    }
-    return valuesMap;
-  }
+//  private static Object getObject(Field field, JSONObject jsonObject) throws JSONException{
+//    if (jsonObject.has(field.getFieldName())) {
+//      switch (field.type()) {
+//        case INTEGER:
+//          return jsonObject.getInt(field.getFieldName());
+//        case STRING:
+//          return jsonObject.getString(field.getFieldName());
+//        case SET_INTEGER:
+//          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getFieldName()));
+//        case LIST_STRING:
+//          return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getFieldName()));
+//        case MAP:
+//          return new ValuesMap(jsonObject.getJSONObject(field.getFieldName()));
+//      }
+//    }
+//    return null;
+//  }
 
   /**
-   * @param valuesMap the valuesMap to set
+   * Creates a <code>NameRecord</code> object by reading fields from the JSONObject.
+   * @param jsonObject
+   * @return
+   * @throws JSONException
    */
-  public void setValuesMap(ValuesMap valuesMap) {
-    this.valuesMap = valuesMap;
-    if (isLazyEval()) {
-      for (Map.Entry<String, QueryResultValue> entry : this.valuesMap.entrySet()) {
-        recordMap.updateNameRecordListValue(name, entry.getKey(), new ArrayList<String>(entry.getValue()));
-      }
-      recordMap.updateNameRecordListValue(name, USER_KEYS, new ArrayList<String>(valuesMap.keySet()));
+  public NameRecord(JSONObject jsonObject) throws JSONException{
+
+    hashMap = new HashMap<Field, Object>();
+    if (jsonObject.has(NAME.getFieldName())) {
+      hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
     }
+
+    if (jsonObject.has(ACTIVE_NAMESERVERS.getFieldName())) {
+      hashMap.put(ACTIVE_NAMESERVERS, JSONUtils.getObject(ACTIVE_NAMESERVERS, jsonObject));
+    }
+
+    if (jsonObject.has(PRIMARY_NAMESERVERS.getFieldName())) {
+      hashMap.put(PRIMARY_NAMESERVERS, JSONUtils.getObject(PRIMARY_NAMESERVERS, jsonObject));
+    }
+
+    if (jsonObject.has(ACTIVE_PAXOS_ID.getFieldName())) {
+      hashMap.put(ACTIVE_PAXOS_ID, JSONUtils.getObject(ACTIVE_PAXOS_ID, jsonObject));
+    }
+
+    if (jsonObject.has(OLD_ACTIVE_PAXOS_ID.getFieldName())) {
+      hashMap.put(OLD_ACTIVE_PAXOS_ID, JSONUtils.getObject(OLD_ACTIVE_PAXOS_ID, jsonObject));
+    }
+
+    if (jsonObject.has(TIME_TO_LIVE.getFieldName())) {
+      hashMap.put(TIME_TO_LIVE, JSONUtils.getObject(TIME_TO_LIVE, jsonObject));
+    }
+
+    if (jsonObject.has(VALUES_MAP.getFieldName())) {
+      hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
+    }
+
+    if (jsonObject.has(OLD_VALUES_MAP.getFieldName())) {
+      hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
+    }
+
+    if (jsonObject.has(TOTAL_LOOKUP_REQUEST.getFieldName())) {
+      hashMap.put(TOTAL_LOOKUP_REQUEST, JSONUtils.getObject(TOTAL_LOOKUP_REQUEST, jsonObject));
+    }
+
+    if (jsonObject.has(TOTAL_UPDATE_REQUEST.getFieldName())) {
+      hashMap.put(TOTAL_UPDATE_REQUEST, JSONUtils.getObject(TOTAL_UPDATE_REQUEST, jsonObject));
+    }
+
+
+//    NameRecord record = new NameRecord(new HashMap<Field, Object>());
+//    return record;
   }
 
-  //
-  // lazified accessors
-  //
-  // NOTE THAT ALL OF THESE (WITH EXCEPTIONS OF THE ONES THAT EXPLICITLY UPDATE AN OBJECT) READ THE VALUE FROM THE
-  // DATABASE ONCE! WHICH MEANS THEY ASSUME THERE ARE NO INTERLEAVED CALLS THAT UPDATE THE DATABASE
-  //
   /**
-   * @return the activeNameservers
+   * Constructor used by the initialize values read from database
+   * @param allValues
    */
-  public Set<Integer> getActiveNameservers() {
-    if (isLazyEval() && activeNameservers == null) {
-      activeNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS);
-    }
-
-    return activeNameservers;
+  public NameRecord(HashMap<Field,Object> allValues) {
+    this.hashMap = allValues;
   }
 
   /**
-   * @param activeNameservers the activeNameservers to set
+   * Creates an empty name record without checking if name exists in database.
+   * @param name
    */
-  public void setActiveNameservers(Set<Integer> activeNameservers) {
-    this.activeNameservers = activeNameservers;
-    if (isLazyEval() && activeNameservers != null) {
-      recordMap.updateNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS, activeNameservers);
-    }
+  public NameRecord(String name) {
+    hashMap = new HashMap<Field, Object>();
+    hashMap.put(NAME,name);
   }
 
-  public HashSet<Integer> getPrimaryNameservers() {
-    if (isLazyEval() && primaryNameservers == null) {
-      primaryNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, PRIMARY_NAMESERVERS);
+  @Override
+  public String toString() {
+    try {
+      return toJSONObject().toString();
+    } catch (JSONException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-    return primaryNameservers;
+    return null;
   }
 
-  public synchronized String getActivePaxosID() {
-    if (isLazyEval() && activePaxosID == null) {
-      activePaxosID = recordMap.getNameRecordField(name, ACTIVE_PAXOS_ID);
+  public JSONObject toJSONObject() throws JSONException{
+    JSONObject jsonObject = new JSONObject();
+    for (Field f: hashMap.keySet()) {
+      JSONUtils.putFieldInJsonObject(f, hashMap.get(f),jsonObject);
     }
-    return activePaxosID;
+    return jsonObject;
   }
 
-  /**
-   * @param activePaxosID the activePaxosID to set
-   */
-  public void setActivePaxosID(String activePaxosID) {
-    this.activePaxosID = activePaxosID;
-    if (isLazyEval() && activePaxosID != null) {
-      recordMap.updateNameRecordFieldAsString(name, ACTIVE_PAXOS_ID, activePaxosID);
-    }
+
+//  /**
+//   * Reads the complete record from database if fullRecord == true.
+//   * if fullRecord == false, still reads the database to see if name record exists.
+//   * Throws <code>RecordNotFoundException</code> if the name does not exist in database.
+//   * @param name
+//   * @param fullRecord
+//   */
+//  public NameRecord(String name, boolean fullRecord) throws RecordNotFoundException{
+//
+//  }
+
+
+  /********************************************
+   * GETTER methods for each field in name record
+   * ******************************************/
+
+  public String getName() throws FieldNotFoundException {
+    if (hashMap.containsKey(NAME)) return (String) hashMap.get(NAME);
+    throw new FieldNotFoundException(NAME);
+  }
+  public Set<Integer> getActiveNameServers() throws FieldNotFoundException {
+    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) return (Set<Integer>)hashMap.get(ACTIVE_NAMESERVERS);
+    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
   }
 
-  /**
-   * @return the timeToLive
-   */
-  public synchronized int getTimeToLive() {
-    if (isLazyEval() && timeToLive == LAZYINT) {
-      timeToLive = recordMap.getNameRecordFieldAsInt(name, TIME_TO_LIVE);
-    }
-    return timeToLive;
+  public Set<Integer> getPrimaryNameservers() throws FieldNotFoundException {
+    if (hashMap.containsKey(PRIMARY_NAMESERVERS)) return (Set<Integer>)hashMap.get(PRIMARY_NAMESERVERS);
+    throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
   }
 
-  /**
-   * @return the oldActivePaxosID
-   */
-  public String getOldActivePaxosID() {
-    if (isLazyEval() && oldActivePaxosID == null) {
-      oldActivePaxosID = recordMap.getNameRecordField(name, OLD_ACTIVE_PAXOS_ID);
-    }
-    return oldActivePaxosID;
+  public  String getActivePaxosID() throws FieldNotFoundException {
+    if (hashMap.containsKey(ACTIVE_PAXOS_ID)) return (String)hashMap.get(ACTIVE_PAXOS_ID);
+    throw new FieldNotFoundException(ACTIVE_PAXOS_ID);
   }
 
-  /**
-   * @param oldActivePaxosID the oldActivePaxosID to set
-   */
-  public void setOldActivePaxosID(String oldActivePaxosID) {
-    this.oldActivePaxosID = oldActivePaxosID;
-    if (isLazyEval() && oldActivePaxosID != null) {
-      recordMap.updateNameRecordFieldAsString(name, OLD_ACTIVE_PAXOS_ID, oldActivePaxosID);
-    }
+  public String getOldActivePaxosID() throws FieldNotFoundException {
+    if (hashMap.containsKey(OLD_ACTIVE_PAXOS_ID)) return (String)hashMap.get(OLD_ACTIVE_PAXOS_ID);
+    throw new FieldNotFoundException(OLD_ACTIVE_PAXOS_ID);
   }
 
-  /**
-   * Returns a total count on the number of lookup at this nameserver.
-   */
-  public synchronized int getTotalLookupRequest() { //synchronized
-    if (isLazyEval() && totalLookupRequest == LAZYINT) {
-      totalLookupRequest = recordMap.getNameRecordFieldAsInt(name, TOTALLOOKUPREQUEST);
-    }
-    return totalLookupRequest;
+  public  int getTimeToLive() throws FieldNotFoundException {
+    if (hashMap.containsKey(TIME_TO_LIVE)) return (Integer)hashMap.get(TIME_TO_LIVE);
+    throw new FieldNotFoundException(TIME_TO_LIVE);
   }
 
-  /**
-   * @param totalLookupRequest the totalLookupRequest to set
-   */
-  public void setTotalLookupRequest(int totalLookupRequest) {
-    this.totalLookupRequest = totalLookupRequest;
-    if (isLazyEval() && totalLookupRequest != LAZYINT) {
-      recordMap.updateNameRecordFieldAsInteger(name, TOTALLOOKUPREQUEST, totalLookupRequest);
-    }
+  public ValuesMap getValuesMap() throws FieldNotFoundException {
+    if (hashMap.containsKey(VALUES_MAP)) return (ValuesMap)hashMap.get(VALUES_MAP);
+    throw new FieldNotFoundException(VALUES_MAP);
   }
 
-  /**
-   * Returns a total count on the number of updates at this nameserver.
-   */
-  public synchronized int getTotalUpdateRequest() {
-    if (isLazyEval() && totalUpdateRequest == LAZYINT) {
-      totalUpdateRequest = recordMap.getNameRecordFieldAsInt(name, TOTALUPDATEREQUEST);
-    }
-    return totalUpdateRequest;
+  public ValuesMap getOldValuesMap() throws FieldNotFoundException {
+    if (hashMap.containsKey(OLD_VALUES_MAP)) return (ValuesMap)hashMap.get(OLD_VALUES_MAP);
+    throw new FieldNotFoundException(OLD_VALUES_MAP);
   }
 
-  /**
-   * @param totalUpdateRequest the totalUpdateRequest to set
-   */
-  public void setTotalUpdateRequest(int totalUpdateRequest) {
-    this.totalUpdateRequest = totalUpdateRequest;
-    if (isLazyEval() && totalUpdateRequest != LAZYINT) {
-      recordMap.updateNameRecordFieldAsInteger(name, TOTALUPDATEREQUEST, totalUpdateRequest);
-    }
+  public int getTotalLookupRequest() throws FieldNotFoundException {
+    if (hashMap.containsKey(TOTAL_LOOKUP_REQUEST)) return (Integer)hashMap.get(TOTAL_LOOKUP_REQUEST);
+    throw new FieldNotFoundException(TOTAL_LOOKUP_REQUEST);
   }
 
-  /**
-   * @return the oldValuesMap
-   */
-  public ValuesMap getOldValuesMap() {
-    if (isLazyEval() && oldValuesMap == null) {
-      oldValuesMap = recordMap.getNameRecordFieldAsValuesMap(name, OLDVALUESMAP);
-    }
-    return oldValuesMap;
+  public int getTotalUpdateRequest() throws FieldNotFoundException {
+    if (hashMap.containsKey(TOTAL_UPDATE_REQUEST)) return (Integer)hashMap.get(TOTAL_UPDATE_REQUEST);
+    throw new FieldNotFoundException(TOTAL_UPDATE_REQUEST);
   }
+
+
+
+//  public List<String> getKey(String fieldName) throws FieldNotFoundException {
+//    return (List<String>) ((Map) hashMap.get(VALUES_MAP)).get(fieldName);
+//
+//  }
+
+
+  /********************************************
+   * READ methods
+   * ******************************************/
 
   /**
-   * @param oldValuesMap the oldValuesMap to set
-   */
-  public void setOldValuesMap(ValuesMap oldValuesMap) {
-    this.oldValuesMap = oldValuesMap;
-    if (isLazyEval() && oldValuesMap != null) {
-      try {
-        recordMap.updateNameRecordFieldAsString(name, OLDVALUESMAP, oldValuesMap.toJSONObject().toString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("ERROR: problem convert oldValuesMap to JSONObject: " + e);
-      }
-    }
-  }
-  
-  //
-  // Utilities that use the accessors
-  //
-
-  /**
-   * Returns a copy of the active name servers set.
-   */
-  public synchronized Set<Integer> copyActiveNameServers() { //synchronized
-    Set<Integer> set = new HashSet<Integer>();
-    for (int id : getActiveNameservers()) {
-      set.add(id);
-    }
-    return set;
-  }
-
-  /**
-   * Returns true if the name record contains an active name server with the given id. False otherwise.
+   * Checks whether the key exists in the values map for this name record.
    *
-   * @param id Active name server id
+   * Call this method after reading this key from the database. If the key is not found, then name record does not exist.
+   * @param key
+   * @return
+   * @throws FieldNotFoundException
    */
-  public synchronized boolean containsActiveNameServer(int id) {
-    if (getActiveNameservers() == null) {
-      return false;
+  public boolean containsKey(String key) throws FieldNotFoundException {
+    if (hashMap.containsKey(VALUES_MAP)) {
+      ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
+      return valuesMap.containsKey(key);
     }
-    return getActiveNameservers().contains(id);
+    throw new FieldNotFoundException(VALUES_MAP);
   }
 
   /**
+   * Returns the list of values for this key, if the key exists and the key is read from database already.
+   * Throws FieldNotFoundException if (1) key has not been read from database
+   * or (2) key does not exist for this name record.
    *
-   * Increments the number of lookups by 1.
+   * Call this method only if <code>containsKey</code> returns true, otherwise return false.
+   *
+   * @param key
+   * @return
+   * @throws FieldNotFoundException
    */
-  public synchronized void incrementLookupRequest() {
-    setTotalLookupRequest(getTotalLookupRequest() + 1);
+  public ArrayList<String> getKey(String key) throws FieldNotFoundException {
+    if (hashMap.containsKey(VALUES_MAP)) {
+      ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
+      if (valuesMap.containsKey(key)) {
+        return valuesMap.get(key);
+      }
+    }
+    throw new FieldNotFoundException(VALUES_MAP);
   }
 
-  /**
-   *
-   * Increments the number of updates by 1.
-   */
-  public synchronized void incrementUpdateRequest() {
-    setTotalUpdateRequest(getTotalUpdateRequest() + 1);
+  public boolean containsActiveNameServer(int id) throws FieldNotFoundException {
+    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
+      return ((Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS)).contains(id);
+    }
+    throw  new FieldNotFoundException(ACTIVE_NAMESERVERS);
   }
 
   /**
    * ACTIVE: checks whether paxosID is current active Paxos/oldactive paxos/neither. .
-   *
    * @param paxosID
    * @return
+   * @throws FieldNotFoundException
    */
-  public synchronized int getPaxosStatus(String paxosID) {
-    if (getActivePaxosID() != null && getActivePaxosID().equals(paxosID)) {
+  public int getPaxosStatus(String paxosID) throws FieldNotFoundException{
+    String activePaxosID = getActivePaxosID();
+    String oldActivePaxosID = getOldActivePaxosID();
+    if (activePaxosID != null && activePaxosID.equals(paxosID)) {
       return 1; // CONSIDER TURNING THESE INTS INTO ENUMERATED VALUES!
     }
-    if (getOldActivePaxosID() != null && getOldActivePaxosID().equals(paxosID)) {
+    if (oldActivePaxosID != null && oldActivePaxosID.equals(paxosID)) {
       return 2;
     }
     return 3;
+
   }
 
   /**
-   * ACTIVE: handles paxos instance corresponding to the current set of actives has stopped.
-   *
-   * @param paxosID ID of the active set stopped
-   */
-  public synchronized void handleCurrentActiveStop(String paxosID) {
-
-    if (getActivePaxosID().equals(paxosID)) {
-      // current set of actives has stopped.
-      // copy all fields to "oldActive" variables
-      // initialize "active" variables to null
-      setOldActivePaxosID(paxosID);
-      setActivePaxosID(null);
-      setActiveNameservers(null);
-      setOldValuesMap(valuesMap);
-      setValuesMap(new ValuesMap());
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" Updated variables after current active stopped. ");
-      }
-    } else {
-    }
-    // this stops the old active.
-    // backup current state.
-  }
-
-  /**
-   * ACTIVE: When new actives are started, initialize the necessary variables.
-   *
-   * @param actives current set of active name servers
-   * @param paxosID paxosID of the current name servers
-   * @param currentValue starting value of active name servers
-   */
-  public synchronized void handleNewActiveStart(Set<Integer> actives, String paxosID, ValuesMap currentValue) {
-    setActiveNameservers(actives);
-//        this.activeRunning = true;
-    setActivePaxosID(paxosID);
-    setValuesMap(currentValue);
-  }
-
-  /**
-   * Return
    *
    * @param oldPaxosID
    * @return
+   * @throws FieldNotFoundException
    */
-  public synchronized ValuesMap getOldValues(String oldPaxosID) {
+  public ValuesMap getOldValuesOnPaxosIDMatch(String oldPaxosID) throws FieldNotFoundException{
     if (oldPaxosID.equals(getOldActivePaxosID())) {
       //return oldValuesList;
       return getOldValuesMap();
@@ -602,58 +340,155 @@ public class NameRecord implements Comparable<NameRecord> {
     return null;
   }
 
-  /**
-   *
-   * Returns a String representation of this NameRecord.
-   */
-  @Override
-  public synchronized String toString() {
-    if (isLazyEval()) {
-      return "NameRecord{LAZY - " + "name=" + name + '}';
-    } else {
-      try {
-        return toJSONObject().toString();
-      } catch (JSONException e) {
-        return "Error printing NameRecord: " + e;
-      }
+  /********************************************
+   * WRITE methods, these methods change one or more fields in database.
+   * ******************************************/
+
+
+  public void incrementLookupRequest() throws FieldNotFoundException {
+    ArrayList<Field> incrementFields = new ArrayList<Field>();
+    incrementFields.add(TOTAL_LOOKUP_REQUEST);
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(1);
+
+    NameServer.recordMap.increment(getName(),incrementFields,values);
+    // TODO implement batching
+  }
+
+  public void incrementUpdateRequest() throws FieldNotFoundException {
+    ArrayList<Field> incrementFields = new ArrayList<Field>();
+    incrementFields.add(TOTAL_UPDATE_REQUEST);
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(1);
+
+    NameServer.recordMap.increment(getName(),incrementFields,values);
+  }
+
+
+  public boolean updateKey(String key, ArrayList<String> newValues, ArrayList<String> oldValues,
+                           UpdateOperation operation) throws FieldNotFoundException{
+
+    ValuesMap valuesMap = getValuesMap(); // this will throw an exception if field is not read.
+    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation); //this updates the values map as well
+    if (updated) {
+      // commit update to database
+      ArrayList<Field> updatedFields = new ArrayList<Field>();
+      updatedFields.add(new Field(key,FieldType.LIST_STRING));
+      ArrayList<Object> updatedValues = new ArrayList<Object>();
+      updatedValues.add(valuesMap.get(key));
+
+      NameServer.recordMap.update(getName(), NAME, null, null, VALUES_MAP, updatedFields, updatedValues);
+//      valuesMap.get();
     }
+    return updated;
   }
 
-  @Override
-  public int compareTo(NameRecord d) {
-    int result = (this.getName()).compareTo(d.getName());
-    return result;
+  public void handleCurrentActiveStop(String paxosID) throws FieldNotFoundException{
+    String currentPaxosID = getActivePaxosID();
+    ValuesMap valuesMap = getValuesMap();
+    if (currentPaxosID != null && currentPaxosID.equals(paxosID)) {
+      ArrayList<Field> updateFields = new ArrayList<Field>();
+      updateFields.add(OLD_ACTIVE_PAXOS_ID);
+      updateFields.add(ACTIVE_PAXOS_ID);
+      updateFields.add(ACTIVE_NAMESERVERS);
+      updateFields.add(OLD_VALUES_MAP);
+      updateFields.add(VALUES_MAP);
+
+      ArrayList<Object> updateValues = new ArrayList<Object>();
+      updateValues.add(paxosID);
+      updateValues.add("NULL");
+      updateValues.add(new HashSet<Integer>());
+      updateValues.add(valuesMap);
+      updateValues.add(new ValuesMap());
+
+      NameServer.recordMap.update(getName(),NAME,updateFields,updateValues);
+
+      hashMap.put(OLD_ACTIVE_PAXOS_ID,paxosID);
+      hashMap.put(ACTIVE_PAXOS_ID,"NULL");
+      hashMap.put(ACTIVE_NAMESERVERS,new HashSet<Integer>());
+      hashMap.put(OLD_VALUES_MAP, valuesMap);
+      hashMap.put(VALUES_MAP, new ValuesMap());
+    }
+
+//    if (getActivePaxosID().equals(paxosID)) {
+//      // current set of actives has stopped.
+//      // copy all fields to "oldActive" variables
+//      // initialize "active" variables to null
+//      setOldActivePaxosID(paxosID);
+//      setActivePaxosID(null);
+//      setActiveNameservers(null);
+//      setOldValuesMap(valuesMap);
+//      setValuesMap(new ValuesMap());
+//      if (StartNameServer.debugMode) {
+//        GNS.getLogger().fine(" Updated variables after current active stopped. ");
+//      }
+//    } else {
+//
+//    }
+
   }
 
-  // test code
-  public static void main(String[] args) throws Exception {
-    NameServer.nodeID = 2;
-    test();
-    //System.exit(0);
+  public void handleNewActiveStart(Set<Integer> actives, String paxosID, ValuesMap currentValue)
+          throws FieldNotFoundException{
+    ArrayList<Field> updateFields = new ArrayList<Field>();
+    updateFields.add(NameRecord.ACTIVE_NAMESERVERS);
+    updateFields.add(NameRecord.ACTIVE_PAXOS_ID);
+    updateFields.add(NameRecord.VALUES_MAP);
+
+    ArrayList<Object> updateValues = new ArrayList<Object>();
+    updateValues.add(actives);
+    updateValues.add(paxosID);
+    updateValues.add(currentValue);
+
+    NameServer.recordMap.update(getName(),NAME,updateFields,updateValues);
+
+    hashMap.put(ACTIVE_NAMESERVERS,actives);
+    hashMap.put(ACTIVE_PAXOS_ID, paxosID);
+    hashMap.put(VALUES_MAP, currentValue);
+
   }
 
-  // make this query:
-  // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
-  private static void test() throws Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
-    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
-    NameRecord record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", new NameRecordKey("FRED"), 
-            new ArrayList<String>(Arrays.asList("FRANK")));
-    recordMap.addNameRecord(record);
-    record = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", recordMap);
-    System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
-    record.updateField("COLOR", new ArrayList<String>(Arrays.asList("Red", "Green")), null, UpdateOperation.CREATE);
-    System.out.println("COLOR: " + record.get("COLOR"));
-    System.out.println("CONTAINS KEY: " + record.containsKey("COLOR"));
-    System.out.println("CONTAINS ACTIVE NS: " + record.containsActiveNameServer(14));
-    System.out.println("TOTAL LOOKUP: " + record.getTotalLookupRequest());
-    record.incrementLookupRequest();
-    System.out.println("TOTAL LOOKUP: " + record.getTotalLookupRequest());
-    record.setTotalLookupRequest(0);
-    System.out.println("CONTAINS KEY: " + record.getTotalLookupRequest());
-    System.out.println("OLD VALUES MAP: " + record.getOldValuesMap());
-    //record.setOldValuesMap(record.getValuesMap());
-    //System.out.println("OLD VALUES MAP: " + record.getOldValuesMap());
+  /********************************************
+   * SETTER methods, these methods write to database one field in the name record.
+   * ******************************************/
+
+
+  public void setValuesMap(ValuesMap valuesMap) {
+
+    throw new UnsupportedOperationException();
   }
+
+
+  public void setActiveNameServers(Set<Integer> activeNameServers1) {
+
+  }
+
+  public void setActiveNameservers(Set<Integer> activeNameservers) {
+
+  }
+
+  public void setActivePaxosID(String activePaxosID) {
+
+  }
+
+  public void setOldActivePaxosID(String oldActivePaxosID) {
+
+  }
+
+  public void setTotalLookupRequest(int totalLookupRequest) {
+
+  }
+
+  public void setTotalUpdateRequest(int totalUpdateRequest) {
+
+  }
+
+  public void setOldValuesMap(ValuesMap oldValuesMap) {
+
+  }
+
+
 }
+

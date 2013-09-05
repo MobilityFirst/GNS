@@ -5,18 +5,17 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.*;
 
 public class CassandraRecordMap extends BasicRecordMap {
 
@@ -113,7 +112,8 @@ public class CassandraRecordMap extends BasicRecordMap {
   public NameRecord getNameRecordLazy(String name) {
     if (CassandraRecords.getInstance().contains(collectionName, name)) {
       //GNS.getLogger().info("Creating lazy name record for " + name);
-      return new NameRecord(name, this);
+      return new NameRecord(name);
+//      return new NameRecord(name, this);
     } else {
       return null;
     }
@@ -121,10 +121,38 @@ public class CassandraRecordMap extends BasicRecordMap {
 
   @Override
   public NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
-    ArrayList<String> values = CassandraRecords.getInstance().lookup(collectionName,name,keys);
-    if (values == null) return null;
-    return new NameRecord(name, this, keys,values);
+    throw new UnsupportedOperationException("Not supported yet.");
+//    ArrayList<String> values = CassandraRecords.getInstance().lookup(collectionName,name,keys);
+//    if (values == null) return null;
+//    return new NameRecord(name, this, keys, values);
 
+  }
+
+  @Override
+  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1,
+                           Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1,
+                     Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1) {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
@@ -146,7 +174,13 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public void addNameRecord(NameRecord recordEntry) {
     if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
+      try {
+        GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
+      } catch (FieldNotFoundException e) {
+        GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        return;
+      }
     }
     try {
       addNameRecord(recordEntry.toJSONObject());
@@ -162,7 +196,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   public void addNameRecord(JSONObject json) {
     CassandraRecords records = CassandraRecords.getInstance();
     try {
-      String name = json.getString(NameRecord.NAME);
+      String name = json.getString(NameRecord.NAME.getFieldName());
       records.insert(collectionName, name, json);
       GNS.getLogger().finer(records.toString() + ":: Added " + name);
     } catch (JSONException e) {
@@ -176,6 +210,9 @@ public class CassandraRecordMap extends BasicRecordMap {
     try {
       CassandraRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field found found exception: " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
@@ -288,7 +325,7 @@ public class CassandraRecordMap extends BasicRecordMap {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     BasicRecordMap recordMap = new CassandraRecordMap(CassandraRecords.DBNAMERECORD);
-    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS));
+    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS.getFieldName()));
     recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
   }

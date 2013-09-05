@@ -5,16 +5,15 @@
 package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
-import edu.umass.cs.gns.packet.QueryResultValue;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.fields.Field;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.*;
+
+//import edu.umass.cs.gns.packet.QueryResultValue;
 
 /**
  *
@@ -126,13 +125,76 @@ public class JSONUtils {
     return set;
   }
 
-  public static Map<String, QueryResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
-    Map<String, QueryResultValue> result = new HashMap<String, QueryResultValue>();
+  public static Map<String, ArrayList<String>> JSONObjectToMap(JSONObject json) throws JSONException {
+    Map<String, ArrayList<String>> result = new HashMap<String, ArrayList<String>>();
     Iterator<String> keyIter = json.keys();
     while (keyIter.hasNext()) {
       String key = keyIter.next();
-      result.put(key, new QueryResultValue(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
+      result.put(key, new ArrayList<String>(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
     }
     return result;
+  }
+
+
+  public static Object getObject(Field field, JSONObject jsonObject) throws JSONException{
+    if (jsonObject.has(field.getFieldName())) {
+      switch (field.type()) {
+        case INTEGER:
+          return jsonObject.getInt(field.getFieldName());
+        case STRING:
+          return jsonObject.getString(field.getFieldName());
+        case SET_INTEGER:
+          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getFieldName()));
+        case LIST_STRING:
+          return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getFieldName()));
+        case MAP:
+          return new ValuesMap(jsonObject.getJSONObject(field.getFieldName()));
+      }
+    }
+    return null;
+  }
+
+
+//  public static String getString(Field field, JSONObject jsonObject) throws JSONException{
+//    if (jsonObject.has(field.getFieldName())) {
+//      switch (field.type()) {
+//        case INTEGER:
+//          return jsonObject.getInt(field.getFieldName());
+//        case STRING:
+//          return jsonObject.getString(field.getFieldName());
+//        case SET_INTEGER:
+//          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getFieldName()));
+//        case LIST_STRING:
+//          return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getFieldName()));
+//        case MAP:
+//          return new ValuesMap(jsonObject.getJSONObject(field.getFieldName()));
+//      }
+//    }
+//    return null;
+//  }
+
+
+  public static void putFieldInJsonObject(Field field, Object value, JSONObject jsonObject) throws JSONException {
+    if (value == null) return;
+    switch (field.type()) {
+
+      case INTEGER:
+        jsonObject.put(field.getFieldName(), (Integer)value);
+        break;
+      case STRING:
+        jsonObject.put(field.getFieldName(), (String)value);
+        break;
+      case SET_INTEGER:
+        jsonObject.put(field.getFieldName(), (Set<Integer>)value);
+        break;
+      case LIST_STRING:
+        jsonObject.put(field.getFieldName(), (ArrayList<String>)value);
+        break;
+      case MAP:
+        jsonObject.put(field.getFieldName(), ((ValuesMap)value).toJSONObject());
+        break;
+
+    }
+
   }
 }

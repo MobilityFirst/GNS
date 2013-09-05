@@ -1,18 +1,13 @@
 package edu.umass.cs.gns.mSocket;
 
+import org.apache.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.HashMap;
 import java.util.Timer;
-
-import org.apache.log4j.Logger;
 
 public class MServerSocketController extends MSocketController implements Runnable {
 	//private DatagramSocket ctrlSocket=null;
@@ -110,7 +105,7 @@ public class MServerSocketController extends MSocketController implements Runnab
 	
 	//FIXME: controller in server MSocket is of type MSocketCOntroller instead of MServer SocketController, so by default it calls method of MSocketController not MServerSocketController
 	private void suspendIO(long flowID) throws IOException {
-		//TODO: may be some better way§
+		//TODO: may be some better way
 		ConnectionInfo cinfo = cinfoMap.get(flowID);
 		cinfo.getMSocket().closeAll();
 	}

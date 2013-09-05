@@ -4,7 +4,7 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import org.json.JSONException;
@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -206,7 +207,7 @@ public class Lookup {
      *
      * @param query
      */
-    private static void sendReplyToUser(QueryInfo query, QueryResultValue value, int TTL) {
+    private static void sendReplyToUser(QueryInfo query, ArrayList<String> value, int TTL) {
 //		CacheEntry entry = LocalNameServer.getCacheEntry(query.qName, query.qRecordKey);
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("LNSListenerQuery: send response from cache: " + entry);
 //        DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(), entry, query.incomingPacket.getQrecordKey());

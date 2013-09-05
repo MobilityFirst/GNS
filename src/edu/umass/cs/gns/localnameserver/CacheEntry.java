@@ -6,14 +6,12 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
-import java.util.Arrays;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -64,7 +62,7 @@ public class CacheEntry {
     this.timeToLive = packet.getTTL() == -1 ? DEFAULTTTLINSECONDS : packet.getTTL();
 //    this.value = new ValuesMap(packet.getRecordValue());
     // adding the value of the field queried by DNSPacket into cache
-    this.value.put(packet.getQrecordKey().getName(), new QueryResultValue(packet.getFieldValue()));
+    this.value.put(packet.getQrecordKey().getName(), new ArrayList<String>(packet.getFieldValue()));
     // set the timestamp for that field
     this.timestampAddress.put(packet.getQrecordKey().getName(), System.currentTimeMillis());
     //this.ipAddressList = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>(packet.rdata.size(), 0.75f, 3));
@@ -87,7 +85,7 @@ public class CacheEntry {
     this.name = packet.getName();
     this.timeToLive = 0; // this will depend on TTL sent by NS.
     this.value = new ValuesMap();
-    this.value.put(NameRecordKey.EdgeRecord.getName(), new QueryResultValue(Arrays.asList(getRandomString())));
+    this.value.put(NameRecordKey.EdgeRecord.getName(), new ArrayList<String>(Arrays.asList(getRandomString())));
     //
     this.primaryNameServer = (HashSet<Integer>) packet.getPrimaries();
 
@@ -114,7 +112,7 @@ public class CacheEntry {
     return activeNameServer;
   }
 
-  public synchronized  QueryResultValue getValue(NameRecordKey key) {
+  public synchronized  ArrayList<String> getValue(NameRecordKey key) {
     if (isValidAddress(key.getName())) {
       return value.get(key.getName());
     }

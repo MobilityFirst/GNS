@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
@@ -91,8 +92,15 @@ public class NSPaxosInterface implements PaxosInterface {
     else {
       String name = ReplicaController.getNameFromActivePaxosID(paxosID);
       // read all fields of the record
-      NameRecord record = NameServer.getNameRecord(name);
-      return  (record == null) ? null: record.toString();
+      NameRecord record = null;
+      try {
+        record = NameServer.getNameRecord(name);
+      } catch (RecordNotFoundException e) {
+
+        return null;
+//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+      return  record.toString();
     }
   }
 

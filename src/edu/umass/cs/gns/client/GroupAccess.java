@@ -1,11 +1,10 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.httpserver.Protocol;
-import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.packet.UpdateOperation;
+
 import java.util.ArrayList;
-import java.util.Arrays;
+
+//import edu.umass.cs.gns.packet.QueryResultValue;
 
 /**
  * GroupAccess provides an interface to the group information in the GNSR.
@@ -42,7 +41,7 @@ public class GroupAccess {
 
     public ArrayList<String> lookup(String guid) {
         Intercessor client = Intercessor.getInstance();
-        QueryResultValue result = client.sendQuery(guid, GROUPV2);
+      ArrayList<String> result = client.sendQuery(guid, GROUPV2);
         if (result != null) {
             return new ArrayList<String>(result);
         } else {

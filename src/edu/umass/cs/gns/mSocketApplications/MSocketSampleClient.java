@@ -2,8 +2,10 @@ package edu.umass.cs.gns.mSocketApplications;
 
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.UpdateOperation;
+
+import java.util.ArrayList;
 
 public class MSocketSampleClient
 {
@@ -19,8 +21,8 @@ public class MSocketSampleClient
 		String address = "127.0.0.1";
 		
 		boolean result = myInter.sendAddRecordWithConfirmation(name, key, address);
-		
-		QueryResultValue queryResult = myInter.sendQuery(name, key);
+
+    ArrayList<String> queryResult = myInter.sendQuery(name, key);
 		
 		System.out.println("Query Result: " + queryResult.toString());
 		

@@ -4,31 +4,29 @@
  */
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
+
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
- * 
+ *
  * Keys are strings and values are always a list (see also QueryResultValue).
- * 
+ *
  * @author westy
  */
 public class ValuesMap {
 
-  private Map<String, QueryResultValue> content;
-  
+  private Map<String, ArrayList<String>> content;
+
   public ValuesMap() {
-    this.content = new HashMap<String, QueryResultValue>();
+    this.content = new HashMap<String, ArrayList<String>>();
   }
 
   public ValuesMap(JSONObject json) throws JSONException {
@@ -36,57 +34,60 @@ public class ValuesMap {
     Iterator<String> keyIter = json.keys();
     while (keyIter.hasNext()) {
       String key = keyIter.next();
-      this.content.put(key, new QueryResultValue(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
+      this.content.put(key, new ArrayList<String>(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
     }
   }
-  
+
   public ValuesMap(ValuesMap map) {
-    this.content = new HashMap<String, QueryResultValue>(map.content);
+    this.content = new HashMap<String, ArrayList<String>>(map.content);
   }
-  
+
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     addToJSONObject(json);
     return json;
   }
-  
+
   public void addToJSONObject(JSONObject json) throws JSONException {
-    for (Map.Entry<String, QueryResultValue> entry : content.entrySet()) {
+    for (Map.Entry<String, ArrayList<String>> entry : content.entrySet()) {
       json.put(entry.getKey(), new JSONArray(entry.getValue()));
     }
   }
- 
-  public QueryResultValue get(String key) {
+
+  public ArrayList<String> get(String key) {
     return content.get(key);
   }
-  
-  public void put(String key, QueryResultValue value) {
+
+  public void put(String key, ArrayList<String> value) {
     content.put(key, value);
   }
-    public void remove(String key) {
-        content.remove(key);
-    }
+  public void remove(String key) {
+    content.remove(key);
+  }
 
-    public boolean containsKey(String key) {
+  public boolean containsKey(String key) {
     return content.containsKey(key);
   }
-  
+
   public boolean isEmpty() {
     return content.isEmpty();
   }
-  
+
   public Set<String> keySet() {
     return content.keySet();
   }
-  
-  public Set<Entry<String, QueryResultValue>> entrySet() {
+
+  public Set<Entry<String, ArrayList<String>>> entrySet() {
     return content.entrySet();
   }
 
+  public Map getMap() {
+    return content;
+  }
   @Override
   public String toString() {
-    return content.toString();  
+    return content.toString();
   }
-  
-  
+
+
 }

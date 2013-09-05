@@ -1,13 +1,11 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.UpdateOperation;
-import edu.umass.cs.gns.util.JSONUtils;
+import org.json.JSONArray;
+
 import java.security.acl.AclEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 /**
  * A frontend to the the table which stores the fields and values. Provides conversion between the database to java
@@ -33,7 +31,7 @@ public class RecordAccess {
 
   public String lookup(String guid, String key) {
     Intercessor client = Intercessor.getInstance();
-    QueryResultValue result = client.sendQuery(guid, key);
+    ArrayList<String> result = client.sendQuery(guid, key);
     if (result != null) {
       return new JSONArray(new ArrayList<String>(result)).toString();
     } else {
@@ -43,7 +41,7 @@ public class RecordAccess {
   
   public String lookupOne(String guid, String key) {
     Intercessor client = Intercessor.getInstance();
-    QueryResultValue result = client.sendQuery(guid, key);
+    ArrayList<String> result = client.sendQuery(guid, key);
     if (result != null && !result.isEmpty()) {
       return result.get(0);
     } else {

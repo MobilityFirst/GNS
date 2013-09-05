@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.packet.NameRecordStatsPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
@@ -32,49 +33,54 @@ public class SendNameRecordStats extends TimerTask {
     for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
     //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
 
+        try {
 
-      if (nameRecord.getTotalLookupRequest() == 0 && nameRecord.getTotalUpdateRequest() == 0) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("Zero read write frequency. NO Frequency to report.");
-        }
-        continue;
-      }
 
-      NameRecordStatsPacket statsPacket = new NameRecordStatsPacket(
-              // nameRecord.getRecordKey(), 
-              nameRecord.getName(), nameRecord.getTotalLookupRequest(),
-              nameRecord.getTotalUpdateRequest(), NameServer.nodeID);
-
-      try {
-        JSONObject json = statsPacket.toJSONObject();
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("PUSH_STATS: Round " + count + " Name " + nameRecord.getName()
-                  + " To nodes: " + nameRecord.getPrimaryNameservers() + " --> " + json);
-        }
-        int selectedPrimaryNS = -1;
-        for (int x : nameRecord.getPrimaryNameservers()) {
-          if (PaxosManager.isNodeUp(x)) {
-            selectedPrimaryNS = x;
-            break;
+        if (nameRecord.getTotalLookupRequest() == 0 && nameRecord.getTotalUpdateRequest() == 0) {
+          if (StartNameServer.debugMode) {
+            GNS.getLogger().fine("Zero read write frequency. NO Frequency to report.");
           }
-        }
-        if (selectedPrimaryNS != -1 && selectedPrimaryNS != NameServer.nodeID) {
-//          NameServer.tcpTransport.sendToID(json, selectedPrimaryNS,GNS.PortType.PERSISTENT_TCP_PORT);
-          NameServer.tcpTransport.sendToID(selectedPrimaryNS, json);
-        } else if (selectedPrimaryNS == NameServer.nodeID) {
-          // if same node, then directly call the function
-          ListenerNameRecordStats.handleIncomingPacket(json);
+          continue;
         }
 
-//				NameServer.nio.sendToID(json, nameRecord.getMainPrimary(), GNRS.PortType.PERSISTENT_TCP_PORT);
-      } catch (JSONException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
+        NameRecordStatsPacket statsPacket = new NameRecordStatsPacket(
+                // nameRecord.getRecordKey(),
+                nameRecord.getName(), nameRecord.getTotalLookupRequest(),
+                nameRecord.getTotalUpdateRequest(), NameServer.nodeID);
+
+        try {
+          JSONObject json = statsPacket.toJSONObject();
+          if (StartNameServer.debugMode) {
+            GNS.getLogger().fine("PUSH_STATS: Round " + count + " Name " + nameRecord.getName()
+                    + " To nodes: " + nameRecord.getPrimaryNameservers() + " --> " + json);
+          }
+          int selectedPrimaryNS = -1;
+          for (int x : nameRecord.getPrimaryNameservers()) {
+            if (PaxosManager.isNodeUp(x)) {
+              selectedPrimaryNS = x;
+              break;
+            }
+          }
+          if (selectedPrimaryNS != -1 && selectedPrimaryNS != NameServer.nodeID) {
+  //          NameServer.tcpTransport.sendToID(json, selectedPrimaryNS,GNS.PortType.PERSISTENT_TCP_PORT);
+            NameServer.tcpTransport.sendToID(selectedPrimaryNS, json);
+          } else if (selectedPrimaryNS == NameServer.nodeID) {
+            // if same node, then directly call the function
+            ListenerNameRecordStats.handleIncomingPacket(json);
+          }
+
+  //				NameServer.nio.sendToID(json, nameRecord.getMainPrimary(), GNRS.PortType.PERSISTENT_TCP_PORT);
+        } catch (JSONException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+
+        StatusClient.sendTrafficStatus(NameServer.nodeID, nameRecord.getPrimaryNameservers(),
+                GNS.PortType.NS_TCP_PORT, statsPacket.getType(), nameRecord.getName());
+      } catch (FieldNotFoundException e) {
+          GNS.getLogger().severe(" Following field is not found. " + e.getMessage());
       }
-
-      StatusClient.sendTrafficStatus(NameServer.nodeID, nameRecord.getPrimaryNameservers(),
-              GNS.PortType.NS_TCP_PORT, statsPacket.getType(), nameRecord.getName());
 
     }
   }

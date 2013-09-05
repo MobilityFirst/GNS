@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.packet.AdminRequestPacket;
@@ -120,11 +121,16 @@ public class NSListenerAdmin extends Thread {
               for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                 //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
                 // a bit of a hack here
-                if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
-                  GuidInfo userInfo = new GuidInfo(nameRecord.get(AccountAccess.GUID_INFO));
-                  if (userInfo.containsTag(tag)) {
-                    jsonArray.put(nameRecord.getName());
+                try {
+                  if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
+                    GuidInfo userInfo = new GuidInfo(nameRecord.getKey(AccountAccess.GUID_INFO));
+                    if (userInfo.containsTag(tag)) {
+                      jsonArray.put(nameRecord.getName());
+                    }
                   }
+                } catch (FieldNotFoundException e) {
+                  GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
               }
               // OTHERWISE WE DO THE DUMPY THING AND RETURN THE RECORD
@@ -155,7 +161,12 @@ public class NSListenerAdmin extends Thread {
                 int cnt = 0;
                 for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                   //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
-                  NameServer.removeNameRecord(nameRecord.getName());
+                  try {
+                    NameServer.removeNameRecord(nameRecord.getName());
+                  } catch (FieldNotFoundException e) {
+                    GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  }
                   //DBNameRecord.removeNameRecord(nameRecord.getName());
                   cnt++;
                 }

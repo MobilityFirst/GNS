@@ -2,7 +2,10 @@ package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
@@ -18,7 +21,7 @@ import java.util.*;
  * @author westy
  */
 public class InCoreRecordMapJSON extends BasicRecordMap {
-  private static final String NAME = NameRecord.NAME;
+  private static final String NAME = NameRecord.NAME.getFieldName();
 
   private Map<String, JSONObject> recordMap;
 
@@ -158,6 +161,31 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  @Override
+  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
   //
   // THESE WILL BE DEPRECATED
   //
@@ -182,6 +210,9 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
       recordMap.put(recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().severe("Error getting json record: " + e);
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found Exception: " + e.getMessage());
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
 
@@ -231,23 +262,31 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   //
   // TEST CODE
   //
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception, FieldNotFoundException {
     test();
   }
 
-  private static void test() throws Exception {
+  private static NameRecord createNameRecord(String name, String key, String value) throws Exception {
+    ValuesMap valuesMap = new ValuesMap();
+    valuesMap.put(key,new ArrayList(Arrays.asList(value)));
+    HashSet<Integer> x = new HashSet<Integer>();
+    x.add(0);
+    x.add(1);
+    x.add(2);
+    return new NameRecord(name, x, name+"-2",valuesMap);
+  }
+
+  private static void test() throws Exception, FieldNotFoundException {
     ConfigFileInfo.readHostInfo("ns1", 4);
     HashFunction.initializeHashFunction();
     InCoreRecordMapJSON recordMap = new InCoreRecordMapJSON();
-    NameRecord nameRecord = new NameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24",
-            new NameRecordKey("FRANK"),
-            new ArrayList(Arrays.asList("XYZ")));
+    NameRecord nameRecord = createNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "XYZ");
     recordMap.addNameRecord(nameRecord);
     nameRecord = recordMap.getNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
     System.out.println(nameRecord);
     if (nameRecord != null) {
-      System.out.println(nameRecord.get("_GNS_account_info"));
-      System.out.println(nameRecord.get("_GNS_guid_info"));
+      System.out.println(nameRecord.getKey("_GNS_account_info"));
+      System.out.println(nameRecord.getKey("_GNS_guid_info"));
     }
     System.out.println(recordMap.getNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK"));
     recordMap.updateNameRecordSingleValue("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "SLACKER");
@@ -256,7 +295,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     nameRecord = recordMap.getNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
     System.out.println(nameRecord);
     if (nameRecord != null) {
-      System.out.println(nameRecord.get("FRANK"));
+      System.out.println(nameRecord.getKey("FRANK"));
     }
   }
 }

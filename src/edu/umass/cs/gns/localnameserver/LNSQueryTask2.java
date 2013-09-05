@@ -14,7 +14,7 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
@@ -22,6 +22,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
@@ -99,7 +100,7 @@ public class LNSQueryTask2 extends TimerTask {
     CacheEntry cacheEntry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
     if (cacheEntry != null) {
       if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
-      QueryResultValue value = cacheEntry.getValue(incomingPacket.getQrecordKey());
+      ArrayList<String> value = cacheEntry.getValue(incomingPacket.getQrecordKey());
       if (value != null) {
         loggingForAddressInCache();
         sendReplyToUser(value, cacheEntry.getTTL());
@@ -125,7 +126,7 @@ public class LNSQueryTask2 extends TimerTask {
       SendActivesRequestTask.requestActives(incomingPacket.getQname());
       throw new RuntimeException();
     }
-
+//    int ns = 0;
     int ns = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserversQueried);
     if (ns >= 0) {
       nameserversQueried.add(ns);
@@ -175,6 +176,7 @@ public class LNSQueryTask2 extends TimerTask {
         //			LNSListener.udpTransport.sendPacket(json, nameServerID, GNS.PortType.UPDATE_PORT);
         //			Packet.sendUDPPacket(nameServerID, LocalNameServer.socket, json, GNRS.PortType.DNS_PORT);
       }
+      throw new RuntimeException();
 //      long delay = System.currentTimeMillis() - start;
 //      if (delay > 10) {
 //        GNS.getLogger().severe("LNS-long-processing\t" + delay+"\t"+ System.currentTimeMillis());
@@ -258,7 +260,7 @@ public class LNSQueryTask2 extends TimerTask {
   /**
    * Send DNS Query reply to User
    */
-  private void sendReplyToUser(QueryResultValue value, int TTL) {
+  private void sendReplyToUser(ArrayList<String> value, int TTL) {
 //    CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + incomingPacket.getQname());
     DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getQname(),incomingPacket.getQrecordKey(),value,TTL);

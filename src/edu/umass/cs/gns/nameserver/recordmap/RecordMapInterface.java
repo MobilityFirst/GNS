@@ -5,6 +5,9 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import org.json.JSONObject;
 
@@ -19,7 +22,7 @@ import java.util.Set;
  */
 public interface RecordMapInterface {
 
-  public void addNameRecord(JSONObject json);
+  public void addNameRecord(JSONObject json) throws RecordExistsException;
 
   public void removeNameRecord(String name);
 
@@ -51,12 +54,25 @@ public interface RecordMapInterface {
 
   public NameRecord getNameRecordLazy(String name, ArrayList<String> keys);
 
+  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException;
+
+  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1,
+                           Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException;
+
+  public abstract void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1);
+
+
+  public abstract void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1,
+                              Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
+
+  public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1);
+
   //
   // OLD Style
   //
-  public void addNameRecord(NameRecord recordEntry);
+  public void addNameRecord(NameRecord recordEntry) throws RecordExistsException;
 
-  public NameRecord getNameRecord(String name);
+  public NameRecord getNameRecord(String name) throws RecordNotFoundException;
 
   public Set<NameRecord> getAllNameRecords();
 
@@ -73,5 +89,8 @@ public interface RecordMapInterface {
   public Set<ReplicaControllerRecord> getAllPrimaryNameRecords();
   
   public ReplicaControllerRecord getNameRecordPrimaryLazy(String name);
+
+
+
   
 }

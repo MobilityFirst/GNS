@@ -5,33 +5,25 @@
  */
 package edu.umass.cs.gns.database;
 
-import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.*;
 
 /**
  *
@@ -84,7 +76,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
   private static List<CassandraRecords.CollectionSpec> collectionSpecs =
           Arrays.asList(
-          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME),
+          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getFieldName()),
           new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME));
 
   public CassandraRecords() {
@@ -274,6 +266,31 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
+  public HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public void update(String collection, String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public void update(String collection, String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public void increment(String collection, String name, ArrayList<Field> fields1, ArrayList<Object> values1) {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public ArrayList<JSONObject> retrieveAllEntries(String tableName) {
     ArrayList<JSONObject> result = new ArrayList<JSONObject>();
     String query = "SELECT * FROM " + CSI(tableName) + ";";
@@ -408,7 +425,13 @@ public class CassandraRecords implements NoSQLRecords {
 
   //test code
   private static NameRecord createNameRecord(String name, String key, String value) throws Exception {
-    return new NameRecord(name, new NameRecordKey(key), new ArrayList(Arrays.asList(value)));
+    ValuesMap valuesMap = new ValuesMap();
+    valuesMap.put(key,new ArrayList(Arrays.asList(value)));
+    HashSet<Integer> x = new HashSet<Integer>();
+    x.add(0);
+    x.add(1);
+    x.add(2);
+    return new NameRecord(name, x, name+"-2",valuesMap);
   }
   //
   // UTILS
@@ -452,7 +475,7 @@ public class CassandraRecords implements NoSQLRecords {
       System.out.println("CONTAINS = (should be true) " + instance.contains(DBNAMERECORD, n.getName()));
       System.out.println("CONTAINS = (should be false) " + instance.contains(DBNAMERECORD, "BLAH BLAH"));
       NameRecord record = new NameRecord(json);
-      record.updateField("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
+      record.updateKey("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
       System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
       instance.update(DBNAMERECORD, record.getName(), record.toJSONObject());
       JSONObject json2 = instance.lookup(DBNAMERECORD, n.getName());
@@ -464,13 +487,16 @@ public class CassandraRecords implements NoSQLRecords {
 //    instance.printAllEntries();
 //    System.out.println(MongoRecordsV2.getInstance().db.getCollection(COLLECTIONNAME).getStats().toString());
       //
-      instance.updateField(DBNAMERECORD, n.getName(), NameRecord.ACTIVE_NAMESERVERS, Arrays.asList(97, 98, 99));
+      instance.updateField(DBNAMERECORD, n.getName(), NameRecord.ACTIVE_NAMESERVERS.getFieldName(), Arrays.asList(97, 98, 99));
       json2 = instance.lookup(DBNAMERECORD, n.getName());
       System.out.println("JSON AFTER FIELD UPDATE => " + json2);
       instance.remove(DBNAMERECORD, n.getName());
       json2 = instance.lookup(DBNAMERECORD, n.getName());
       System.out.println("SHOULD BE EMPTY => " + json2);
       System.exit(0);
+    } catch (FieldNotFoundException e) {
+      System.out.println(" FieldNotFoundException. Field = " + e.getMessage());
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     } catch (Exception e) {
       System.out.println("Error during main test execution: " + e);
       e.printStackTrace();

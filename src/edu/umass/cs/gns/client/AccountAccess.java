@@ -2,14 +2,15 @@ package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.packet.UpdateOperation;
+import org.json.JSONException;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+//import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.UpdateAddressPacket;
 
 /**
  * Document once it settles down a bit.
@@ -43,7 +44,7 @@ public class AccountAccess {
   // NAME: "_GNS_GUID" -> GUID
   public AccountInfo lookupAccountInfoFromGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
-    QueryResultValue accountResult = client.sendQuery(guid, ACCOUNT_INFO);
+    ArrayList<String> accountResult = client.sendQuery(guid, ACCOUNT_INFO);
     if (accountResult == null) {
       guid = lookupPrimaryGuid(guid);
     }
@@ -62,7 +63,7 @@ public class AccountAccess {
 
   public String lookupPrimaryGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
-    QueryResultValue guidResult = client.sendQuery(guid, PRIMARY_GUID);
+    ArrayList<String> guidResult = client.sendQuery(guid, PRIMARY_GUID);
     if (guidResult != null) {
       return guidResult.get(0);
     } else {
@@ -72,7 +73,7 @@ public class AccountAccess {
 
   public String lookupGuid(String name) {
     Intercessor client = Intercessor.getInstance();
-    QueryResultValue guidResult = client.sendQuery(name, GUID);
+    ArrayList<String> guidResult = client.sendQuery(name, GUID);
     if (guidResult != null) {
       return guidResult.get(0);
     } else {
@@ -82,7 +83,7 @@ public class AccountAccess {
 
   public GuidInfo lookupGuidInfo(String guid) {
     Intercessor client = Intercessor.getInstance();
-    QueryResultValue guidResult = client.sendQuery(guid, GUID_INFO);
+    ArrayList<String> guidResult = client.sendQuery(guid, GUID_INFO);
     if (guidResult != null) {
       try {
         return new GuidInfo(guidResult);

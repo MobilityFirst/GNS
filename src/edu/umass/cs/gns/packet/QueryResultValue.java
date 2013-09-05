@@ -4,9 +4,6 @@
  */
 package edu.umass.cs.gns.packet;
 
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 /**
  * Holds values for the GNS. This is the class that is used to store values in the
  * in-memory side of the key value store. Put another way, this is the VALUE part of the
@@ -20,13 +17,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * 
  * @author westy
  */
-public class QueryResultValue extends CopyOnWriteArrayList<String> {
-
-  public QueryResultValue(Collection<? extends String> c) {
-    super(c);
-  }
-
-  public QueryResultValue() {
-  }
-  
-}
+//public class QueryResultValue extends CopyOnWriteArrayList<String> {
+//
+//  public QueryResultValue(Collection<? extends String> c) {
+//    super(c);
+//  }
+//
+//  public QueryResultValue() {
+//  }
+//
+//}

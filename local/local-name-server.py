@@ -178,7 +178,8 @@ def usage():
 
 def get_event_rate(exp_time,trace_file):
     """Get average rate of events"""
-    
+    if exp_time <= 0:
+        return 1000
     event_rate_f = float(exp_time) * 1000 / num_events(trace_file)
     event_rate = int(event_rate_f)
     return event_rate

@@ -73,9 +73,9 @@ public enum UpdateOperation {
    */
   public static boolean updateValuesMap(ValuesMap valuesMap, String key, ArrayList<String> newValues, ArrayList<String> oldValues,
           UpdateOperation operation) {
-    QueryResultValue valuesList = valuesMap.get(key);
+    ArrayList<String> valuesList = valuesMap.get(key);
     if (valuesList == null) {
-      valuesList = new QueryResultValue();
+      valuesList = new ArrayList<String>();
     }
     if (updateValuesList(valuesList, key, newValues, oldValues, operation)) {
       valuesMap.put(key, valuesList);
@@ -85,7 +85,7 @@ public enum UpdateOperation {
     }
   }
 
-  private static boolean updateValuesList(QueryResultValue valuesList, String key, ArrayList<String> newValues, ArrayList<String> oldValues,
+  private static boolean updateValuesList(ArrayList<String> valuesList, String key, ArrayList<String> newValues, ArrayList<String> oldValues,
           UpdateOperation operation) {
     switch (operation) {
       case CLEAR:

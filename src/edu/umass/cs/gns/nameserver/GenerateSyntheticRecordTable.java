@@ -2,18 +2,21 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import edu.umass.cs.gns.util.Util;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -29,7 +32,53 @@ import java.util.Set;
 
 public class GenerateSyntheticRecordTable {
 
+
   public static long sleepBetweenNames = 25;
+
+
+  static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  static Random rnd = new Random(System.currentTimeMillis());
+
+  static String randomString(int len) {
+    StringBuilder sb = new StringBuilder(len);
+    for (int i = 0; i < len; i++) {
+      sb.append(CHARACTERS.charAt(rnd.nextInt(CHARACTERS.length())));
+    }
+    return sb.toString();
+  }
+
+  private static ValuesMap getValuesMapSynthetic(int numValues) {
+    ValuesMap valuesMap =new ValuesMap();
+    ArrayList<String> value = new ArrayList<String>();
+
+    for (int i = 0; i < numValues; i++)
+      value.add(randomString(10));
+    valuesMap.put(NameRecordKey.EdgeRecord.getName(), value);
+    return valuesMap;
+  }
+
+
+  public static void addNameRecordsToDB(int regularWorkloadSize, int mobileWorkloadSize) {
+    for (int name = 0; name < (regularWorkloadSize + mobileWorkloadSize); name++) {
+      String strName = Integer.toString(name);
+      int numValues = 1;
+      ValuesMap valuesMap = getValuesMapSynthetic(numValues);
+
+      NameRecord nameRecord = new NameRecord(strName,ConfigFileInfo.getAllNameServerIDs(),strName+"-2",valuesMap);
+//      nameRecord.handleNewActiveStart(ConfigFileInfo.getAllNameServerIDs(),
+//              strName +"-2", valuesMap);
+      // first add name record, then create paxos instance for it.
+      try {
+        NameServer.addNameRecord(nameRecord);
+      } catch (RecordExistsException e) {
+        GNS.getLogger().severe("Name record already exists. Name = " + strName);
+        e.printStackTrace();
+      }
+      if (name > 0 && name % ((regularWorkloadSize + mobileWorkloadSize)/10) == 0) {
+        System.out.println(" Name added = " + name);
+      }
+    }
+  }
 
   /**
    * This method generates a record table at the name server
@@ -45,7 +94,7 @@ public class GenerateSyntheticRecordTable {
    * @throws NoSuchAlgorithmException
    */
   public static void generateRecordTable(int regularWorkloadSize, int mobileWorkloadSize,
-      int defaultTTLRegularNames,int defaultTTLMobileNames) throws NoSuchAlgorithmException {
+      int defaultTTLRegularNames,int defaultTTLMobileNames){
 
 
 //		InCoreRecordMap recordMap = new InCoreRecordMap();
@@ -53,7 +102,12 @@ public class GenerateSyntheticRecordTable {
 //				( regularWorkloadSize + mobileWorkloadSize + 1), 0.75f, 8);
     // reset the database
     NameServer.resetDB();
-    MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+    MessageDigest sha1 = null;
+    try {
+      sha1 = MessageDigest.getInstance("SHA-1");
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
 
     for (int name = 0; name < (regularWorkloadSize + mobileWorkloadSize); name++) {
       try {
@@ -71,7 +125,7 @@ public class GenerateSyntheticRecordTable {
           ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
           NameServer.addNameRecordPrimary(nameRecordPrimary);
           ValuesMap valuesMap = new ValuesMap();
-          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new QueryResultValue(new ArrayList(Arrays.asList(Integer.toString(address)))));
+          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
           ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
 //					NameRecord recordEntry = new NameRecord( strName, NameRecordKey.EdgeRecord, new ArrayList(Arrays.asList(Integer.toString(address))));
           //Set a default ttl value for regular and mobile names
@@ -87,12 +141,17 @@ public class GenerateSyntheticRecordTable {
           //Generate an entry for the name and add its record to the name server record table
           ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
           NameServer.addNameRecordPrimary(nameRecordPrimary);
-          ReplicaControllerRecord nameRecordPrimary1 = NameServer.getNameRecordPrimary(strName);
+
+//          NameServer.addNameRecord();
+//          ReplicaControllerRecord nameRecordPrimary1 = NameServer.getNameRecordPrimary(strName);
 //          if (StartNameServer.debugMode) GNS.getLogger().fine("Record checked out: "  + nameRecordPrimary1);
 
           ValuesMap valuesMap = new ValuesMap();
-          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new QueryResultValue(new ArrayList(Arrays.asList(Integer.toString(address)))));
+          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
           ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
+          if (name%1000 == 0) {
+            GNS.getLogger().severe("Added record " + name);
+          }
 //					NameRecord recordEntry = new NameRecord(strName, NameRecordKey.EdgeRecord, new ArrayList(Arrays.asList(Integer.toString(address))));
 //
 //					//Set a default ttl value for regular and mobile names
@@ -127,16 +186,131 @@ public class GenerateSyntheticRecordTable {
 //		}
 //	}
 
+
+  public static void testMongoLookups(String[] args) {
+    int numberRequests = Integer.parseInt(args[1]);
+    int names = Integer.parseInt(args[2]);
+    //StartNameServer.mongoPort = 12345;
+
+    try {
+      HashFunction.initializeHashFunction();
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+
+    NameServer.nodeID = 0;
+    ConfigFileInfo.readHostInfo(args[0],0);
+    GNS.numPrimaryReplicas = GNS.DEFAULTNUMPRIMARYREPLICAS;
+
+//    ConfigFileInfo.setNumberOfNameServers(3);
+    try{
+      new NameServer(0);
+    }catch (IOException exception) {
+      System.out.println(" IO EXCEPTION _-- " + exception.getMessage());
+      exception.printStackTrace();
+    }
+
+    addNameRecordsToDB(names,0);
+    System.out.println("Name record add complete.");
+
+    Random r = new Random();
+    long t0 = System.currentTimeMillis();
+    for (int i = 0; i < numberRequests; i++) {
+      int name = r.nextInt(names);
+      try {
+        NameRecord record = NameServer.getNameRecord(Integer.toString(name));
+      } catch (RecordNotFoundException e) {
+        System.out.println("Name record not found. record = " + name);
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+      if (i > 0 && i % ((numberRequests)/10) == 0) {
+        System.out.println(" Request complete = " + i);
+        long t1 = System.currentTimeMillis();
+        double throughput = (i*1.0)/(t1 - t0)*1000;
+        System.out.println("Throughput = " + (int)throughput);
+      }
+    }
+    long t1 = System.currentTimeMillis();
+    double throughput = (numberRequests*1.0)/(t1 - t0)*1000;
+    System.out.println("\n\nThroughput = " + (int)throughput);
+
+    System.exit(0); // necessary to exit code.
+
+  }
+
+
+  public static void testMongoUpdates(String[] args) {
+    int numberRequests = Integer.parseInt(args[1]);
+//    int names = Integer.parseInt(args[2]);
+    int names = 1;
+    int numValues = 1;
+
+    try {
+      HashFunction.initializeHashFunction();
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+
+    //StartNameServer.mongoPort = 12345;
+    NameServer.nodeID = 0;
+    ConfigFileInfo.readHostInfo(args[0],0);
+    GNS.numPrimaryReplicas = GNS.DEFAULTNUMPRIMARYREPLICAS;
+
+//    ConfigFileInfo.setNumberOfNameServers(3);
+    try{
+      new NameServer(0);
+    }catch (IOException exception) {
+      System.out.println(" IO EXCEPTION _-- " + exception.getMessage());
+      exception.printStackTrace();
+    }
+
+    addNameRecordsToDB(names,0);
+    System.out.println("Name record add complete.");
+
+    NameRecord record = null;
+    try {
+      record = NameServer.getNameRecord(Integer.toString(0));
+    } catch (RecordNotFoundException e) {
+      System.out.println("Record does not exist");
+      System.exit(2);
+      e.printStackTrace();
+    }
+    Random r = new Random();
+    long t0 = System.currentTimeMillis();
+
+    for (int i = 0; i < numberRequests; i++) {
+//      int name = r.nextInt(names);
+      record.setValuesMap(getValuesMapSynthetic(numValues));
+      NameServer.updateNameRecord(record);
+
+      if (i > 0 && i % ((numberRequests)/10) == 0) {
+        System.out.println(" Request complete = " + i);
+        long t1 = System.currentTimeMillis();
+        double throughput = (i*1.0)/(t1 - t0)*1000;
+        System.out.println("Throughput = " + (int)throughput);
+      }
+    }
+
+    long t1 = System.currentTimeMillis();
+    double throughput = (numberRequests*1.0)/(t1 - t0)*1000;
+    System.out.println("\n\nThroughput = " + (int)throughput);
+
+    System.exit(0); // necessary to exit code.
+
+  }
+
+
   /**
    * Test
    *
    * @throws NoSuchAlgorithmException *
    */
   public static void main(String[] args) throws NoSuchAlgorithmException {
-    HashFunction.initializeHashFunction();
-    NameServer.nodeID = 119;
-    GNS.numPrimaryReplicas = GNS.DEFAULTNUMPRIMARYREPLICAS;
-    ConfigFileInfo.readHostInfo("/Users/hardeep/Desktop/Workspace/PlanetlabScripts/src/Ping/name_server_ssh_local", 119);
+
+//    testMongoLookups(args);
+    testMongoUpdates(args);
+
+//    ConfigFileInfo.readHostInfo("/Users/hardeep/Desktop/Workspace/PlanetlabScripts/src/Ping/name_server_ssh_local", 119);
 //		ConcurrentMap<String, NameRecord> table = generateRecordTable( 5000, 10000, 240, 10 );
 //		System.out.println( table.size() );
 //		System.out.println( table.get("1"));

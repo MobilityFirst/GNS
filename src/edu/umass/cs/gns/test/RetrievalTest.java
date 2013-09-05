@@ -10,17 +10,19 @@ import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
-//import edu.umass.cs.gnrs.nameserver.MongoRecordMap;
-//import edu.umass.cs.gnrs.nameserver.NameRecord;
-//import edu.umass.cs.gnrs.nameserver.RecordMapInterface;
-import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.ThreadUtils;
+
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import javax.swing.JOptionPane;
+
+//import edu.umass.cs.gnrs.nameserver.MongoRecordMap;
+//import edu.umass.cs.gnrs.nameserver.NameRecord;
+//import edu.umass.cs.gnrs.nameserver.RecordMapInterface;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 
 /**
  *
@@ -65,11 +67,11 @@ public class RetrievalTest {
 //      GNS.getLogger().info("" + nameRecord.get(AccountAccess.GUID_INFO));
 //    }
     GNS.getLogger().info("GSN LOOKUP:");
-    QueryResultValue result = client.sendQuery(name, AccountAccess.GUID);
+    ArrayList<String> result = client.sendQuery(name, AccountAccess.GUID);
     GNS.getLogger().info(name + ": " + AccountAccess.GUID + " -> " + result.get(0));
-    QueryResultValue accountResult = client.sendQuery(guid, AccountAccess.ACCOUNT_INFO);
+    ArrayList<String> accountResult = client.sendQuery(guid, AccountAccess.ACCOUNT_INFO);
     GNS.getLogger().info(guid + ": " + AccountAccess.ACCOUNT_INFO + " -> " + new AccountInfo(accountResult).toJSONObject().toString());
-    QueryResultValue guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
+    ArrayList<String> guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
     GNS.getLogger().info(guid + ": " + AccountAccess.GUID_INFO + " -> " + new GuidInfo(guidResult).toJSONObject().toString());
 
   }

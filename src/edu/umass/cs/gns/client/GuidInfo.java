@@ -1,17 +1,14 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.packet.QueryResultValue;
+//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Stores the username, GUID and public key for a user
@@ -61,7 +58,7 @@ public class GuidInfo {
     return new ArrayList<String>(Arrays.asList(toJSONObject().toString()));
   }
 
-  public GuidInfo(QueryResultValue queryResult) throws JSONException, ParseException {
+  public GuidInfo(ArrayList<String> queryResult) throws JSONException, ParseException {
     this(new JSONObject(queryResult.get(0)));
   }
   public static final String PUBLICKEY = "publickey";

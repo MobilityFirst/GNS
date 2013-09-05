@@ -67,7 +67,7 @@ public class DNSPacket extends BasicPacket {
   /**
    * The field value being returned *
    */
-  private QueryResultValue fieldValue;
+  private ArrayList<String> fieldValue;
 //  /**
 //   * A list of primary name servers from the name *
 //   */
@@ -130,14 +130,14 @@ public class DNSPacket extends BasicPacket {
 //      this.activeNameServers = toSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
 
       if (!containsAnyError()) {
-        this.fieldValue = new QueryResultValue(JSONUtils.JSONArrayToSetString(json.getJSONArray(FIELD_VALUE)));
+        this.fieldValue = new ArrayList<String>(JSONUtils.JSONArrayToSetString(json.getJSONArray(FIELD_VALUE)));
 //        this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
       }
     }
     this.lnsId = json.getInt(LNS_ID);
   }
 
-  public DNSPacket(int id, String name, NameRecordKey key, QueryResultValue fieldValue, int TTL) {
+  public DNSPacket(int id, String name, NameRecordKey key, ArrayList<String> fieldValue, int TTL) {
     this.header = new Header(id, DNSRecordType.RESPONSE, DNSRecordType.RCODE_NO_ERROR);
       this.qname = name;
     this.qrecordKey = key;
@@ -290,7 +290,7 @@ public class DNSPacket extends BasicPacket {
     primary.add(10);
     primary.add(11);
     primary.add(12);
-    QueryResultValue rdata = new QueryResultValue();
+    ArrayList<String> rdata = new ArrayList<String>();
     rdata.add("2545435345");
 
     long t6 = System.currentTimeMillis();
@@ -386,14 +386,14 @@ public class DNSPacket extends BasicPacket {
   /**
    * @return the rdata
    */
-  public QueryResultValue getFieldValue() {
+  public ArrayList<String> getFieldValue() {
     return fieldValue;
   }
 
   /**
    * @param rdata the rdata to set
    */
-  public void setFieldValue(QueryResultValue rdata) {
+  public void setFieldValue(ArrayList<String> rdata) {
     this.fieldValue = rdata;
   }
 
