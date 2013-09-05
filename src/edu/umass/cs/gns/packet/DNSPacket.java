@@ -178,7 +178,9 @@ public class DNSPacket extends BasicPacket {
 //    if (fieldValue != null) {
 //      json.put(FIELD_VALUE, new JSONArray(fieldValue));
 //    }
-    json.put(RECORD_VALUE, recordValue.toJSONObject());
+    if (recordValue != null)
+	json.put(RECORD_VALUE, recordValue.toJSONObject());
+    
 //    json.put(PRIMARY_NAME_SERVERS, new JSONArray(getPrimaryNameServers()));
 //    json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
     json.put(LNS_ID, lnsId);

@@ -72,10 +72,18 @@ def run_local_name_server(id, working_dir, config_file):
     os.system('cd ' + working_dir + '; rm -rf ' + work_dir + '; mkdir ' + work_dir)
     cmd = 'cd ' + work_dir + ';' + join(gnrs_dir, 'local/local-name-server.py') \
         + ' --id ' + id \
-        + ' --lookupTrace ' + join(gnrs_dir, 'local/lookupLocal/' + id) \
-        + ' --updateTrace ' + join(gnrs_dir, 'local/updateLocal/' + id)   \
         + ' --jar ' + join(gnrs_dir, 'build/jars/GNS.jar') \
-        + ' --nsFile ' + config_file  # + ' > foo.out 2> foo.err < /dev/null'
+        + ' --nsFile ' + config_file  # + ' > foo.out 2> foo.err < /dev/null
+    
+    lookup_trace = join(gnrs_dir, 'local/lookupLocal/' + id)
+    if os.path.exists(lookup_trace):
+        cmd += ' --lookupTrace ' + join(gnrs_dir, 'local/lookupLocal/' + id)
+
+    update_trace = join(gnrs_dir, 'local/updateLocal/' + id)
+    if os.path.exists(update_trace):
+        cmd += ' --updateTrace ' + join(gnrs_dir, 'local/updateLocal/' + id) 
+
+
     print (cmd)
     os.system(cmd)
 
