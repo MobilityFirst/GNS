@@ -36,7 +36,7 @@ load_balancing = False
 
 primary_name_server = 3
 
-replication_interval = 10000
+replication_interval = 1
 
 is_beehive_replication = False
 is_location_replication = False
@@ -50,9 +50,9 @@ lnslog = 'FINE'
 lnslogstat = 'FINE'
 
 
-gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS-new/'
+gnrs_dir = '/Users/abhigyan/Documents/workspace/GNS2/'
 
-paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS-new/local/paxoslog/'
+paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNS2/local/paxoslog/'
 delete_paxos_log = True
 
 if scheme not in schemes:

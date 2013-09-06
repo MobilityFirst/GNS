@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nameserver.replicacontroller;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.packet.KeepAlivePacket;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
@@ -53,6 +54,9 @@ public class SenderKeepAliveRC extends TimerTask{
         e.printStackTrace();
       } catch (IOException e) {
         e.printStackTrace();
+      } catch (FieldNotFoundException e) {
+        GNS.getLogger().fine("Field not found exception. " + e.getMessage());
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
     }
   }

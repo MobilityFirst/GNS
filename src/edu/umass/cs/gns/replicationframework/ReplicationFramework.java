@@ -1,10 +1,12 @@
 package edu.umass.cs.gns.replicationframework;
 
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import edu.umass.cs.gns.util.ConfigFileInfo;
+
 import java.util.Set;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 
 /*************************************************************
  * This is a replication framework interface. Classes that 
@@ -23,6 +25,6 @@ public interface ReplicationFramework {
 	 * @param numReplica Number of replicas
 	 * @return A Set containing active nameservers id.
 	 ************************************************************/
-	public Set<Integer> newActiveReplica( ReplicaControllerRecord record, int numReplica, int count );
+	public Set<Integer> newActiveReplica( ReplicaControllerRecord record, int numReplica, int count ) throws FieldNotFoundException;
 	
 }

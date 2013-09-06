@@ -2,6 +2,7 @@ package edu.umass.cs.gns.replicationframework;
 
 import edu.umass.cs.gns.main.StartNameServer;
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.io.BufferedReader;
@@ -21,8 +22,7 @@ public class KMediods  implements ReplicationFramework {
 	 */
 	@Override
 	public Set<Integer> newActiveReplica(ReplicaControllerRecord record, int numReplica,
-			int count)
-	{
+			int count) throws FieldNotFoundException{
         // TODO: implement record.getRequestCountsFromEachLocalNameServer for this scheme to work
 		int k = numReplica;
 		ArrayList<Integer> kmedoids = new ArrayList<Integer>();

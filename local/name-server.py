@@ -62,7 +62,8 @@ node_id = -1
 name_server_file = 'pl_config'
 primary_name_server = exp_config.primary_name_server
 aggregate_interval = exp_config.replication_interval      #In seconds
-replication_interval = exp_config.replication_interval    #In seconds
+replication_interval = exp_config.replication_interval      #In seconds
+#exp_config.replication_interval    #In seconds
 normalizing_constant = 0.1   #Used as the denominator for calculating number of replicas
                             #NumReplicas = lookupRate / (updateRate * normalizing_constant)
 moving_avg_window_size = 20 #Used for calculating inter-arrival update time and ttl value

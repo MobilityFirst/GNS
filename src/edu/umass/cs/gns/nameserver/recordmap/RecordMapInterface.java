@@ -11,10 +11,7 @@ import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -54,9 +51,9 @@ public interface RecordMapInterface {
 
   public NameRecord getNameRecordLazy(String name, ArrayList<String> keys);
 
-  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException;
+  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException;
 
-  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1,
+  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1,
                            Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException;
 
   public abstract void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1);

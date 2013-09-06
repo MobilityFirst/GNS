@@ -12,7 +12,7 @@ import java.net.InetAddress;
  * Time: 12:10 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NSNodeConfig implements NodeConfig {
+public class GNSNodeConfig implements NodeConfig {
 
   @Override
   public boolean containsNodeInfo(int ID) {

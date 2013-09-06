@@ -1,13 +1,12 @@
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.nameserver.replicacontroller.KeepAliveWorker;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
-import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 import org.json.JSONObject;
-import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,7 +70,8 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case KEEP_ALIVE_PRIMARY:
         case DELETE_PRIMARY:
 //      case KEEP_ALIVE_ACTIVE:
-          KeepAliveWorker.handleIncomingPacket(json);
+          // TODO uncomment this.
+//          KeepAliveWorker.handleIncomingPacket(json);
           break;
 
 

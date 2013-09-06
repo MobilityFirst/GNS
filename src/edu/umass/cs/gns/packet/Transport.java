@@ -260,7 +260,7 @@ public class Transport {
     try {
       return json.getString(T_ADDRESS);
     } catch (JSONException e) {
-      GNS.getLogger().fine("Error extracting return address from JSON encoded packet." + e);
+      GNS.getLogger().finer("Error extracting return address from JSON encoded packet." + e);
       return "127.0.0.1";
     }
   }
@@ -269,7 +269,7 @@ public class Transport {
     try {
       return json.getInt(T_PORT);
     } catch (JSONException e) {
-      GNS.getLogger().fine("Error extracting return port from JSON encoded packet." + e);
+      GNS.getLogger().finer("Error extracting return port from JSON encoded packet." + e);
       return -1;
     }
   }

@@ -1,11 +1,12 @@
 package edu.umass.cs.gns.util;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 
 /*************************************************************
@@ -48,7 +49,15 @@ public class MovingAverage {
       this.sum = this.sum + x;
     }
   }
-  
+  public MovingAverage(ArrayList<Integer> values, int windowSize) {
+    this.window = new LinkedList<Integer>(values);
+    this.WINDOW_SIZE = windowSize;
+    this.sum = 0;
+    for (Integer x : this.window) {
+      this.sum = this.sum + x;
+    }
+  }
+
   public JSONArray toJSONArray () {
     return new JSONArray(window);
   }

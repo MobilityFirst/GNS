@@ -3,22 +3,25 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.packet.AdminRequestPacket;
 import edu.umass.cs.gns.packet.DumpRequestPacket;
 import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -70,9 +73,22 @@ public class NSListenerAdmin extends Thread {
             GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
 
             //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(activeNSInfoPacket.getName());
-            ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(activeNSInfoPacket.getName());
-            if (nameRecordPrimary != null && nameRecordPrimary.isPrimaryReplica()) {
-              sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest, nameRecordPrimary.copyActiveNameServers());
+            ArrayList<Field> readFields = new ArrayList<Field>();
+            readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+
+            ReplicaControllerRecord nameRecordPrimary = null;
+            try {
+              nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeNSInfoPacket.getName(), readFields);
+            } catch (RecordNotFoundException e) {
+              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+              break;
+            }
+
+            try {
+              sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest, nameRecordPrimary.getActiveNameservers());
+            } catch (FieldNotFoundException e) {
+              GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
 //            if (!NameServer.containsName(activeNSInfoPacket.getName()//, activeNSInfoPacket.getRecordKey()
 //                    )) {

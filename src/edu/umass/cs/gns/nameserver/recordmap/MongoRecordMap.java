@@ -129,14 +129,14 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
-    return new NameRecord(MongoRecords.getInstance().lookup(collectionName,name,nameField, fields1));
+  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+    return MongoRecords.getInstance().lookup(collectionName,name,nameField, fields1);
 //    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
-    return new NameRecord(MongoRecords.getInstance().lookup(collectionName,name,nameField, fields1, valuesMapField, valuesMapKeys));
+  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+    return MongoRecords.getInstance().lookup(collectionName,name,nameField, fields1, valuesMapField, valuesMapKeys);
   }
 
   @Override
@@ -266,7 +266,7 @@ public class MongoRecordMap extends BasicRecordMap {
   public ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
     if (MongoRecords.getInstance().contains(collectionName, name)) {
       //GNS.getLogger().info("Creating lazy name record for " + name);
-      return new ReplicaControllerRecord(name, this);
+      return new ReplicaControllerRecord(name);
     } else {
       return null;
     }
@@ -274,15 +274,18 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
-    }
+//    if (StartNameServer.debugMode) {
+//      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
+//    }
 
     try {
       MongoRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       return;
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found: " + e.getMessage());
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
 
@@ -291,6 +294,9 @@ public class MongoRecordMap extends BasicRecordMap {
     try {
       MongoRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found: " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }

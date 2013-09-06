@@ -5,13 +5,15 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.StatsInfo;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.fields.FieldType;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.MovingAverage;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,159 +22,88 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * The ReplicaControllerRecord class.
+ * ReplicaControllerRecord class.
  *
  */
 public class ReplicaControllerRecord {
 
-  public final static String NAME = "rcr_name";
-  public final static String PRIMARY_NAMESERVERS = "rcr_primary";
-  public final static String ACTIVE_NAMESERVERS = "rcr_active";
-  public final static String OLD_ACTIVE_NAMESERVERS = "rcr_oldactive";
-  public final static String ACTIVE_NAMESERVERS_RUNNING = "rcr_activeRunning";
-  public final static String OLD_ACTIVE_NAMESERVERS_RUNNING = "rcr_oldActiveRunning";
-  public final static String ACTIVE_PAXOS_ID = "rcr_activePaxosID";
-  public final static String OLD_ACTIVE_PAXOS_ID = "rcr_oldActivePaxosID";
-  public final static String MARKED_FOR_REMOVAL = "rcr_markedForRemoval";
-  public final static String NAMESERVER_VOTES_MAP = "rcr_nameserverVotesMap";
-  public final static String NAMESERVER_STATS_MAP = "rcr_nameServerStatsMap";
-  public final static String TOTALAGGREGATEREADFREQUENCY = "rcr_totalAggregateReadFrequency";
-  public final static String TOTALAGGREGATEWRITEFREQUENCY = "rcr_totalAggregateWriteFrequency";
-  public final static String PREVIOUSAGGREAGATEREADFREQUENCY = "rcr_previousAggregateReadFrequency";
-  public final static String PREVIOUSAGGREAGATEWRITEFREQUENCY = "rcr_previousAggregateWriteFrequency";
-  public final static String MOVINGAGGREGATELOOKUPFREQUENCY = "rcr_movingAvgAggregateLookupFrequency";
-  public final static String MOVINGAGGREGATEUPDATEFREQUENCY = "rcr_movingAvgAggregateUpdateFrequency";
-  public final static String KEEP_ALIVE_TIME = "rcr_keepAlive";
-  //
-  private final static int LAZYINT = -9999;
-  /**
-   * Name (host/domain) *
-   */
-  private String name;
-  /**
-   * Set of primary nameservers *
-   */
-  private HashSet<Integer> primaryNameservers;
-  /**
-   * Set of active nameservers most recently computed.
-   */
-  private Set<Integer> activeNameservers;
-  /**
-   * Previous set of active nameservers
-   */
-  private Set<Integer> oldActiveNameservers;
-  /**
-   * Whether previous set of active name server is active
-   */
-  private boolean oldActiveRunning = false;
-  /**
-   * Whether current set of active name servers is stopped.
-   */
-  private boolean activeRunning = false;
-  /**
-   * Paxos instance ID of the old active name server set
-   */
-  private String oldActivePaxosID;
-  /**
-   * Paxos instance ID of the new active name server set.
-   */
-  private String activePaxosID;
-  /**
-   * At primary name servers, this field means that the name record is going to be removed once current set of active is deleted.
-   */
-  private int markedForRemoval = -1; // default is -1, not added.
-  /**
-   * Read write rates reported from name server.
-   */
-  private ConcurrentMap<Integer, StatsInfo> nameServerStatsMap;
-  private MovingAverage movingAvgAggregateLookupFrequency = null;
-  private MovingAverage movingAvgAggregateUpdateFrequency = null;
-  private int totalAggregateReadFrequency;
-  private int totalAggregateWriteFrequency;
-  private int previousAggregateReadFrequency;
-  private int previousAggregateWriteFrequency;
-  /**
-   * List of name server voted as a replica for this record. <Key = NameserverID, Value=#Votes}
-   */
-  private ConcurrentMap<Integer, Integer> nameServerVotesMap;
+  public final static Field NAME = new Field("rcr_name", FieldType.STRING);
 
-  private long keepAliveTime = 0;
-  /**
-   * Indicates if we're using new load-as-you-go-scheme
-   */
-  private boolean lazyEval = false;
-  /**
-   * When we're loading values on demand this is the recordMap we use.
-   */
-  private BasicRecordMap recordMap;
+  public final static Field PRIMARY_NAMESERVERS = new Field("rcr_primary", FieldType.SET_INTEGER);
+  public final static Field ACTIVE_NAMESERVERS = new Field("rcr_active", FieldType.SET_INTEGER);
+  public final static Field OLD_ACTIVE_NAMESERVERS = new Field("rcr_oldactive", FieldType.SET_INTEGER);
 
-  /**
-   * Creates an instance of a ReplicaControllerRecord where the fields are left empty and filled in on demand from the backing
-   * store.
-   *
+  public final static Field ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_activeRunning", FieldType.BOOLEAN);
+  public final static Field OLD_ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_oldActiveRunning", FieldType.BOOLEAN);
+
+  public final static Field ACTIVE_PAXOS_ID = new Field("rcr_activePaxosID", FieldType.STRING);
+  public final static Field OLD_ACTIVE_PAXOS_ID = new Field("rcr_oldActivePaxosID", FieldType.STRING);
+
+  public final static Field MARKED_FOR_REMOVAL = new Field("rcr_markedForRemoval", FieldType.INTEGER);
+
+  public final static Field VOTES_MAP = new Field("rcr_votesMap", FieldType.VOTES_MAP);
+  public final static Field STATS_MAP = new Field("rcr_statsMap", FieldType.STATS_MAP);
+
+  public final static Field PREV_TOTAL_READ = new Field("rcr_prevTotalRead", FieldType.INTEGER);
+  public final static Field PREV_TOTAL_WRITE = new Field("rcr_prevTotalWrite", FieldType.INTEGER);
+  public final static Field MOV_AVG_READ = new Field("rcr_movAvgRead", FieldType.LIST_INTEGER);
+  public final static Field MOV_AVG_WRITE = new Field("rcr_movAvgWrite", FieldType.LIST_INTEGER);
+
+  public final static Field KEEP_ALIVE_TIME = new Field("rcr_keepAlive", FieldType.INTEGER);
+
+  private HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
+
+
+
+  /********************************************
+   * CONSTRUCTORS
+   * ******************************************/
+
+   /**
+   * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
+   * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
+   */
+  public ReplicaControllerRecord(String name, boolean initialize) {
+
+    hashMap = new HashMap<Field, Object>();
+    hashMap.put(NAME,name);
+
+    if (initialize == false) return;
+    hashMap.put(PRIMARY_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
+    hashMap.put(ACTIVE_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
+    hashMap.put(OLD_ACTIVE_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
+
+    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
+    hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
+
+    hashMap.put(ACTIVE_PAXOS_ID, name + "-1");
+    hashMap.put(OLD_ACTIVE_PAXOS_ID, name + "-2");
+
+    hashMap.put(MARKED_FOR_REMOVAL, -1);
+
+    hashMap.put(VOTES_MAP, new ConcurrentHashMap<Integer,Integer>());
+    hashMap.put(STATS_MAP, new ConcurrentHashMap<Integer,StatsInfo>());
+
+    hashMap.put(PREV_TOTAL_READ, 0);
+    hashMap.put(PREV_TOTAL_WRITE, 0);
+    hashMap.put(MOV_AVG_READ, new ArrayList<Integer>());
+    hashMap.put(MOV_AVG_WRITE, new ArrayList<Integer>());
+
+    hashMap.put(KEEP_ALIVE_TIME, 0);
+
+  }
+   /**
+   * creates an empty ReplicaControllerRecord object
    * @param name
-   * @param recordMap
    */
-  public ReplicaControllerRecord(String name, BasicRecordMap recordMap) {
-    if (recordMap == null) {
-      throw new RuntimeException("Record map cannot be null!");
-    }
-    this.recordMap = recordMap;
-    this.lazyEval = true; // Important
-    this.name = name;
-    this.primaryNameservers = null;
-    this.activeNameservers = null;
-    this.oldActiveNameservers = null;
-    this.oldActiveRunning = false;
-    this.activeRunning = false;
-    this.oldActivePaxosID = null;
-    this.activePaxosID = null;
-    this.markedForRemoval = -1;
-    this.nameServerStatsMap = null;
-    this.movingAvgAggregateLookupFrequency = null;
-    this.movingAvgAggregateUpdateFrequency = null;
-    this.totalAggregateReadFrequency = LAZYINT;
-    this.totalAggregateWriteFrequency = LAZYINT;
-    this.previousAggregateReadFrequency = LAZYINT;
-    this.previousAggregateWriteFrequency = LAZYINT;
-    this.nameServerVotesMap = null;
-    this.keepAliveTime = LAZYINT;
+  public ReplicaControllerRecord(String name){
+    hashMap = new HashMap<Field, Object>();
+    hashMap.put(NAME,name);
+
   }
 
-  /**
-   * This method creates a new initialized ReplicaControllerRecord.
-   */
-  public ReplicaControllerRecord(String name) {
-    this.name = name;
-    //Initialize the entry in the map
-    primaryNameservers = (HashSet<Integer>) HashFunction.getPrimaryReplicas(name);
-//        if (primaryNameservers.contains(NameServer.nodeID) == false)
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().finer("Constructor Primaries: " + primaryNameservers);
-    }
 
-    this.nameServerStatsMap = new ConcurrentHashMap<Integer, StatsInfo>(10, 0.75f, 3);
 
-    this.oldActiveNameservers = new HashSet<Integer>(primaryNameservers);
-    //this.oldActiveNameservers = new HashSet<Integer>(getPrimaryNameservers());
-    this.activeNameservers = new HashSet<Integer>(primaryNameservers);
-    //this.activeNameservers = getInitialActives(primaryNameservers, StartNameServer.minReplica, name);
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().finer(" Name Record INITIAL ACTIVES ARE: " + activeNameservers);
-    }
-    this.oldActivePaxosID = name + "-1"; // initialized uniformly among primaries
-    this.activePaxosID = name + "-2";
-    this.activeRunning = true;
-
-    this.totalAggregateReadFrequency = 0;
-    this.totalAggregateWriteFrequency = 0;
-    this.previousAggregateReadFrequency = 0;
-    this.previousAggregateWriteFrequency = 0;
-    this.nameServerVotesMap = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
-    this.movingAvgAggregateLookupFrequency = new MovingAverage(StartNameServer.movingAverageWindowSize);
-    this.movingAvgAggregateUpdateFrequency = new MovingAverage(StartNameServer.movingAverageWindowSize);
-    this.keepAliveTime = 0;
-  }
 
   /**
    * Creates a new ReplicaControllerRecord from a JSONObject.
@@ -181,138 +112,124 @@ public class ReplicaControllerRecord {
    * @throws JSONException
    */
   public ReplicaControllerRecord(JSONObject json) throws JSONException {
+    hashMap = new HashMap<Field, Object>();
 
-    this.name = json.getString(NAME);
-    GNS.getLogger().finer(" JSON = " + json);
-    this.primaryNameservers = (HashSet<Integer>) JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARY_NAMESERVERS));
-      GNS.getLogger().finer(" THIS IS ACTIVE:  " + json.getJSONArray(ACTIVE_NAMESERVERS));
-    GNS.getLogger().finer(" TO SET INTEGER:  " + JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS)));
-    this.activeNameservers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
-
-    // New fields
-    this.oldActiveNameservers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(OLD_ACTIVE_NAMESERVERS));
-    this.oldActiveRunning = json.getBoolean(OLD_ACTIVE_NAMESERVERS_RUNNING);
-    this.activeRunning = json.getBoolean(ACTIVE_NAMESERVERS_RUNNING);
-    this.oldActivePaxosID = json.getString(OLD_ACTIVE_PAXOS_ID);
-    if (!json.has(ACTIVE_PAXOS_ID)) {
-      this.activePaxosID = null;
-    } else {
-      this.activePaxosID = json.getString(ACTIVE_PAXOS_ID);
+    if (json.has(NAME.getFieldName())) {
+      hashMap.put(NAME,json.getString(NAME.getFieldName()));
     }
-    this.markedForRemoval = json.getInt(MARKED_FOR_REMOVAL);
 
-    GNS.getLogger().finer("NAMESERVER_VOTES_MAP string:  " + json.get(NAMESERVER_VOTES_MAP));
-    this.nameServerVotesMap = toIntegerMap(json.getJSONObject(NAMESERVER_VOTES_MAP));
-    this.nameServerStatsMap = toStatsMap(json.getJSONObject(NAMESERVER_STATS_MAP));
-
-    this.totalAggregateReadFrequency = json.getInt(TOTALAGGREGATEREADFREQUENCY);
-    this.totalAggregateWriteFrequency = json.getInt(TOTALAGGREGATEWRITEFREQUENCY);
-    this.previousAggregateReadFrequency = json.getInt(PREVIOUSAGGREAGATEREADFREQUENCY);
-    this.previousAggregateWriteFrequency = json.getInt(PREVIOUSAGGREAGATEWRITEFREQUENCY);
-
-
-    if (json.has(MOVINGAGGREGATELOOKUPFREQUENCY)) {
-      GNS.getLogger().finer("MOVINGAGGREGATELOOKUPFREQUENCY string:  " + json.get(MOVINGAGGREGATELOOKUPFREQUENCY));
-      this.movingAvgAggregateLookupFrequency = new MovingAverage(json.getJSONArray(MOVINGAGGREGATELOOKUPFREQUENCY), StartNameServer.movingAverageWindowSize);
+    if (json.has(PRIMARY_NAMESERVERS.getFieldName())) {
+      hashMap.put(PRIMARY_NAMESERVERS,JSONUtils.getObject(NAME, json));
     }
-    if (json.has(MOVINGAGGREGATEUPDATEFREQUENCY)) {
-      GNS.getLogger().finer("MOVINGAGGREGATEUPDATEFREQUENCY string:  " + json.get(MOVINGAGGREGATEUPDATEFREQUENCY));
-      this.movingAvgAggregateUpdateFrequency = new MovingAverage(json.getJSONArray(MOVINGAGGREGATEUPDATEFREQUENCY), StartNameServer.movingAverageWindowSize);
+    if (json.has(ACTIVE_NAMESERVERS.getFieldName())) {
+      hashMap.put(ACTIVE_NAMESERVERS,JSONUtils.getObject(ACTIVE_NAMESERVERS, json));
     }
-    this.keepAliveTime = json.getLong(KEEP_ALIVE_TIME);
+    if (json.has(OLD_ACTIVE_NAMESERVERS.getFieldName())) {
+      hashMap.put(OLD_ACTIVE_NAMESERVERS,JSONUtils.getObject(OLD_ACTIVE_NAMESERVERS, json));
+    }
+
+    if (json.has(OLD_ACTIVE_NAMESERVERS_RUNNING.getFieldName())) {
+      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING,JSONUtils.getObject(OLD_ACTIVE_NAMESERVERS_RUNNING, json));
+    }
+    if (json.has(ACTIVE_NAMESERVERS_RUNNING.getFieldName())) {
+      hashMap.put(ACTIVE_NAMESERVERS_RUNNING,JSONUtils.getObject(ACTIVE_NAMESERVERS_RUNNING, json));
+    }
+
+    if (json.has(ACTIVE_PAXOS_ID.getFieldName())) {
+      hashMap.put(ACTIVE_PAXOS_ID,JSONUtils.getObject(ACTIVE_PAXOS_ID, json));
+    }
+    if (json.has(OLD_ACTIVE_PAXOS_ID.getFieldName())) {
+      hashMap.put(OLD_ACTIVE_PAXOS_ID,JSONUtils.getObject(OLD_ACTIVE_PAXOS_ID, json));
+    }
+
+    if (json.has(MARKED_FOR_REMOVAL.getFieldName())) {
+      hashMap.put(MARKED_FOR_REMOVAL,JSONUtils.getObject(MARKED_FOR_REMOVAL, json));
+    }
+
+    if (json.has(VOTES_MAP.getFieldName())) {
+      hashMap.put(VOTES_MAP,JSONUtils.getObject(VOTES_MAP, json));
+    }
+    if (json.has(STATS_MAP.getFieldName())) {
+      hashMap.put(STATS_MAP,JSONUtils.getObject(STATS_MAP, json));
+    }
+
+
+    if (json.has(PREV_TOTAL_READ.getFieldName())) {
+      hashMap.put(PREV_TOTAL_READ,JSONUtils.getObject(PREV_TOTAL_READ, json));
+    }
+    if (json.has(PREV_TOTAL_WRITE.getFieldName())) {
+      hashMap.put(PREV_TOTAL_WRITE,JSONUtils.getObject(PREV_TOTAL_WRITE, json));
+    }
+    if (json.has(MOV_AVG_READ.getFieldName())) {
+      hashMap.put(MOV_AVG_READ,JSONUtils.getObject(MOV_AVG_READ, json));
+    }
+    if (json.has(MOV_AVG_WRITE.getFieldName())) {
+      hashMap.put(MOV_AVG_WRITE,JSONUtils.getObject(MOV_AVG_WRITE, json));
+    }
+
+    if (json.has(KEEP_ALIVE_TIME.getFieldName())) {
+      hashMap.put(KEEP_ALIVE_TIME,JSONUtils.getObject(KEEP_ALIVE_TIME, json));
+    }
+  }
+
+
+  public JSONObject toJSONObject() throws JSONException{
+    JSONObject jsonObject = new JSONObject();
+    for (Field f: hashMap.keySet()) {
+      JSONUtils.putFieldInJsonObject(f, hashMap.get(f),jsonObject);
+    }
+    return jsonObject;
+  }
+
+
+  @Override
+  public String toString() {
+    try {
+      return toJSONObject().toString();
+    } catch (JSONException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+    return null;
   }
 
   /**
-   * Converts a ReplicaControllerRecord to a JSONObject.
-   *
-   * @return
-   * @throws JSONException
+   * Constructor used by the initialize values read from database
+   * @param allValues
    */
-  public synchronized JSONObject toJSONObject() throws JSONException {
-    JSONObject json = new JSONObject();
-    // the reason we're putting the "user level" keys "inline" with all the other keys is
-    // so that we can later access the metadata and the data using the same mechanism, namely a
-    // lookup of the fields in the database. Alternatively, we could have separate storage and lookup
-    // of data and metadata.
-
-    json.put(NAME, getName());
-
-    json.put(PRIMARY_NAMESERVERS, new JSONArray(getPrimaryNameservers()));
-    json.put(ACTIVE_NAMESERVERS, new JSONArray(getActiveNameservers()));
-
-    // new fields
-    json.put(OLD_ACTIVE_NAMESERVERS, new JSONArray(getOldActiveNameservers()));
-    json.put(OLD_ACTIVE_NAMESERVERS_RUNNING, isOldActiveRunning());
-    json.put(ACTIVE_NAMESERVERS_RUNNING, isActiveRunning());
-    json.put(ACTIVE_PAXOS_ID, getActivePaxosID());
-    json.put(OLD_ACTIVE_PAXOS_ID, getOldActivePaxosID());
-    json.put(MARKED_FOR_REMOVAL, getMarkedForRemoval());
-    //		json.put(key, value)
-    json.put(NAMESERVER_VOTES_MAP, getNameServerVotesMap());
-    json.put(NAMESERVER_STATS_MAP, getNameServerStatsMap());
-
-    json.put(TOTALAGGREGATEREADFREQUENCY, getTotalAggregateReadFrequency());
-    json.put(TOTALAGGREGATEWRITEFREQUENCY, getTotalAggregateWriteFrequency());
-    json.put(PREVIOUSAGGREAGATEREADFREQUENCY, getPreviousAggregateReadFrequency());
-    json.put(PREVIOUSAGGREAGATEWRITEFREQUENCY, getPreviousAggregateWriteFrequency());
-
-
-    if (getMovingAvgAggregateLookupFrequency() != null) {
-      json.put(MOVINGAGGREGATELOOKUPFREQUENCY, getMovingAvgAggregateLookupFrequency().toJSONArray());
-    }
-    if (getMovingAvgAggregateUpdateFrequency() != null) {
-      json.put(MOVINGAGGREGATEUPDATEFREQUENCY, getMovingAvgAggregateUpdateFrequency().toJSONArray());
-    }
-    json.put(KEEP_ALIVE_TIME, keepAliveTime);
-    return json;
+  public ReplicaControllerRecord(HashMap<Field,Object> allValues) {
+    this.hashMap = allValues;
   }
+
+
+
+
+  /********************************************
+   * GETTER methods for each field in replica controller record
+   * ******************************************/
 
   /**
    * @return the name
    */
-  public synchronized String getName() {
-    return name;
-  }
-
-  public boolean isLazyEval() {
-    return lazyEval;
-  }
-
-  //
-  // lazified accessors
-  // NOTE THAT ALL OF THESE (WITH EXCEPTIONS OF THE ONES THAT EXPLICITLY UPDATE AN OBJECT) READ THE VALUE FROM THE
-  // DATABASE ONCE! WHICH MEANS THEY ASSUME THERE ARE NO INTERLEAVED CALLS THAT UPDATE THE DATABASE
-  //
-  /**
-   * @return the activeNameservers
-   */
-  public Set<Integer> getActiveNameservers() {
-    if (isLazyEval() && activeNameservers == null) {
-      activeNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS);
-    }
-    return activeNameservers;
-  }
-
-  /**
-   * @param activeNameservers the activeNameservers to set
-   */
-  public void setActiveNameservers(Set<Integer> activeNameservers) {
-    this.activeNameservers = activeNameservers;
-    if (isLazyEval() && activeNameservers != null) {
-      recordMap.updateNameRecordFieldAsIntegerSet(name, ACTIVE_NAMESERVERS, activeNameservers);
-    }
+  public String getName() throws FieldNotFoundException{
+    if (hashMap.containsKey(NAME)) return (String) hashMap.get(NAME);
+    throw  new FieldNotFoundException(NAME);
   }
 
   /**
    * Returns the PrimaryNameservers.
-   *
    * @return primaryNameservers as a set of Integers
    */
-  public synchronized HashSet<Integer> getPrimaryNameservers() {
-    if (isLazyEval() && primaryNameservers == null) {
-      primaryNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, PRIMARY_NAMESERVERS);
-    }
-    return primaryNameservers;
+  public HashSet<Integer> getPrimaryNameservers() throws FieldNotFoundException{
+    if (hashMap.containsKey(PRIMARY_NAMESERVERS)) return (HashSet<Integer>) hashMap.get(PRIMARY_NAMESERVERS);
+    throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
+  }
+
+  /**
+   * @return the activeNameservers
+   */
+  public Set<Integer> getActiveNameservers() throws FieldNotFoundException{
+    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) return (Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS);
+    throw  new FieldNotFoundException(ACTIVE_NAMESERVERS);
   }
 
   /**
@@ -320,41 +237,9 @@ public class ReplicaControllerRecord {
    *
    * @return
    */
-  public synchronized Set<Integer> getOldActiveNameservers() {
-    if (isLazyEval() && oldActiveNameservers == null) {
-      oldActiveNameservers = (HashSet<Integer>) recordMap.getNameRecordFieldAsIntegerSet(name, OLD_ACTIVE_NAMESERVERS);
-    }
-    return oldActiveNameservers;
-  }
-
-  /**
-   * @param oldActiveNameservers the oldActiveNameservers to set
-   */
-  public void setOldActiveNameservers(Set<Integer> oldActiveNameservers) {
-    this.oldActiveNameservers = oldActiveNameservers;
-    if (isLazyEval() && oldActiveNameservers != null) {
-      recordMap.updateNameRecordFieldAsIntegerSet(name, OLD_ACTIVE_NAMESERVERS, oldActiveNameservers);
-    }
-  }
-
-  /**
-   * @return the oldActiveRunning
-   */
-  public boolean isOldActiveRunning() {
-    if (isLazyEval()) {
-      oldActiveRunning = recordMap.getNameRecordFieldAsBoolean(name, OLD_ACTIVE_NAMESERVERS_RUNNING);
-    }
-    return oldActiveRunning;
-  }
-
-  /**
-   * @param oldActiveRunning the oldActiveRunning to set
-   */
-  public void setOldActiveRunning(boolean oldActiveRunning) {
-    this.oldActiveRunning = oldActiveRunning;
-    if (isLazyEval()) {
-      recordMap.updateNameRecordFieldAsBoolean(name, OLD_ACTIVE_NAMESERVERS_RUNNING, oldActiveRunning);
-    }
+  public Set<Integer> getOldActiveNameservers() throws FieldNotFoundException{
+    if (hashMap.containsKey(OLD_ACTIVE_NAMESERVERS)) return (Set<Integer>) hashMap.get(OLD_ACTIVE_NAMESERVERS);
+    throw  new FieldNotFoundException(OLD_ACTIVE_NAMESERVERS);
   }
 
   /**
@@ -362,21 +247,26 @@ public class ReplicaControllerRecord {
    *
    * @return
    */
-  public synchronized boolean isActiveRunning() {
-    if (isLazyEval()) {
-      activeRunning = recordMap.getNameRecordFieldAsBoolean(name, ACTIVE_NAMESERVERS_RUNNING);
-    }
-    return activeRunning;
+  public boolean isActiveRunning() throws FieldNotFoundException{
+    if (hashMap.containsKey(ACTIVE_NAMESERVERS_RUNNING)) return (Boolean) hashMap.get(ACTIVE_NAMESERVERS_RUNNING);
+    throw  new FieldNotFoundException(ACTIVE_NAMESERVERS_RUNNING);
   }
 
   /**
-   * @param activeRunning the activeRunning to set
+   * @return the oldActiveRunning
    */
-  public void setActiveRunning(boolean activeRunning) {
-    this.activeRunning = activeRunning;
-    if (isLazyEval()) {
-      recordMap.updateNameRecordFieldAsBoolean(name, ACTIVE_NAMESERVERS_RUNNING, activeRunning);
-    }
+  public boolean isOldActiveRunning() throws FieldNotFoundException{
+    if (hashMap.containsKey(OLD_ACTIVE_NAMESERVERS_RUNNING)) return (Boolean) hashMap.get(OLD_ACTIVE_NAMESERVERS_RUNNING);
+    throw  new FieldNotFoundException(OLD_ACTIVE_NAMESERVERS_RUNNING);
+  }
+
+  /**
+   * return paxos ID for new activeNameServers
+   * @return
+   */
+  public String getActivePaxosID() throws FieldNotFoundException{
+    if (hashMap.containsKey(ACTIVE_PAXOS_ID)) return (String) hashMap.get(ACTIVE_PAXOS_ID);
+    throw  new FieldNotFoundException(ACTIVE_PAXOS_ID);
   }
 
   /**
@@ -384,418 +274,129 @@ public class ReplicaControllerRecord {
    *
    * @return
    */
-  public synchronized String getOldActivePaxosID() {
-    if (isLazyEval() && oldActivePaxosID == null) {
-      oldActivePaxosID = recordMap.getNameRecordField(name, OLD_ACTIVE_PAXOS_ID);
-    }
-    return oldActivePaxosID;
+  public String getOldActivePaxosID() throws FieldNotFoundException {
+    if (hashMap.containsKey(OLD_ACTIVE_PAXOS_ID)) return (String) hashMap.get(OLD_ACTIVE_PAXOS_ID);
+    throw new FieldNotFoundException(OLD_ACTIVE_PAXOS_ID);
   }
 
-  /**
-   * @param oldActivePaxosID the oldActivePaxosID to set
-   */
-  public void setOldActivePaxosID(String oldActivePaxosID) {
-    this.oldActivePaxosID = oldActivePaxosID;
-    if (isLazyEval() && oldActivePaxosID != null) {
-      recordMap.updateNameRecordFieldAsString(name, OLD_ACTIVE_PAXOS_ID, oldActivePaxosID);
-    }
-  }
-
-  /**
-   * return paxos ID for new activeNameServers
-   *
-   * @return
-   */
-  public synchronized String getActivePaxosID() {
-    if (isLazyEval() && activePaxosID == null) {
-      activePaxosID = recordMap.getNameRecordField(name, ACTIVE_PAXOS_ID);
-    }
-    return activePaxosID;
-  }
-
-  /**
-   * @param activePaxosID the activePaxosID to set
-   */
-  public void setActivePaxosID(String activePaxosID) {
-    this.activePaxosID = activePaxosID;
-    if (isLazyEval() && activePaxosID != null) {
-      recordMap.updateNameRecordFieldAsString(name, ACTIVE_PAXOS_ID, activePaxosID);
-    }
-  }
-
-
-  public synchronized boolean isAdded() {
-    if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
-    }
-    return markedForRemoval == 0;
-  }
-
-  public synchronized void setAdded() {
-    if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
-    }
-
-    if (markedForRemoval > 0) {
-      GNS.getLogger().severe(" Exception: Trying to add a deleted record " + getName());
-//      System.exit(2);
-    }
-
-    if (markedForRemoval == -1) {
-      this.markedForRemoval = 0;
-      if (isLazyEval()) {
-        recordMap.updateNameRecordFieldAsInteger(name, MARKED_FOR_REMOVAL, markedForRemoval);
-      }
-    }
-  }
-
-  /**
-   * whether the flag is set of not.
-   *
-   * @return
-   */
-  public synchronized boolean isMarkedForRemoval() {
-    if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
-    }
-    return markedForRemoval > 0;
-  }
-
-
-  public synchronized int getMarkedForRemoval() {
-    if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
-    }
-    return markedForRemoval;
-  }
-
-  /**
-   * whether the flag is set of not.
-   *
-   * @return
-   */
-  public synchronized boolean isRemoved() {
-    if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
-    }
-    return markedForRemoval == 2;
-  }
-
-  /**
-   * set marked for removal as
-   */
-  public void setMarkedForRemoval() {
-    if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
-    }
-    if (markedForRemoval == 0) {
-      this.markedForRemoval = 1;
-      if (isLazyEval()) {
-        recordMap.updateNameRecordFieldAsInteger(name, MARKED_FOR_REMOVAL, markedForRemoval);
-      }
-    }
-  }
-
-  public void setRemoved() {
-    if (isLazyEval()) {
-      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
-    }
-    if (markedForRemoval != 2) {
-      this.markedForRemoval = 2;
-      if (isLazyEval()) {
-        recordMap.updateNameRecordFieldAsInteger(name, MARKED_FOR_REMOVAL, markedForRemoval);
-      }
-    }
-  }
-
-
-  /**
-   * @return the nameServerStatsMap
-   */
-  public ConcurrentMap<Integer, StatsInfo> getNameServerStatsMap() {
-    if (isLazyEval() && nameServerStatsMap == null) {
-      nameServerStatsMap = recordMap.getNameRecordFieldAsStatsMap(name, NAMESERVER_STATS_MAP);
-    }
-    return nameServerStatsMap;
-  }
-
-  /**
-   *
-   * @param id
-   * @param readFrequency
-   * @param writeFrequency
-   */
-  public synchronized void addNameServerStats(int id, int readFrequency, int writeFrequency) {
-    if (isLazyEval()) {
-      nameServerStatsMap = getNameServerStatsMap();
-    }
-    if (nameServerStatsMap != null) {
-      nameServerStatsMap.put(id, new StatsInfo(readFrequency, writeFrequency));
-    }
-    if (isLazyEval() && nameServerStatsMap != null) {
-      recordMap.updateNameRecordFieldAsMap(name, NAMESERVER_STATS_MAP, nameServerStatsMap);
-    }
+  public int getMarkedForRemoval() throws FieldNotFoundException{
+    if (hashMap.containsKey(MARKED_FOR_REMOVAL)) return (Integer) hashMap.get(MARKED_FOR_REMOVAL);
+    throw new FieldNotFoundException(MARKED_FOR_REMOVAL);
   }
 
   /**
    * @return the nameServerVotesMap
    */
-  public ConcurrentMap<Integer, Integer> getNameServerVotesMap() {
-    if (isLazyEval() && nameServerVotesMap == null) {
-      nameServerVotesMap = recordMap.getNameRecordFieldAsVotesMap(name, NAMESERVER_VOTES_MAP);
-    }
-    return nameServerVotesMap;
+  public ConcurrentMap<Integer, Integer> getNameServerVotesMap() throws FieldNotFoundException {
+    if (hashMap.containsKey(VOTES_MAP)) return (ConcurrentMap<Integer, Integer>) hashMap.get(VOTES_MAP);
+    throw new FieldNotFoundException(VOTES_MAP);
   }
 
   /**
-   * Adds vote to the name server for replica selection.
-   *
-   * @param id Name server id receiving the vote
+   * @return the nameServerStatsMap
    */
-  public synchronized void addReplicaSelectionVote(int id, int vote) { //synchronized
-    if (isLazyEval()) {
-      nameServerVotesMap = getNameServerVotesMap();
-    }
-    if (nameServerVotesMap.containsKey(id)) {
-      int votes = nameServerVotesMap.get(id) + vote;
-      nameServerVotesMap.put(id, votes);
-    } else {
-      nameServerVotesMap.put(id, vote);
-    }
-    if (isLazyEval()) {
-      recordMap.updateNameRecordFieldAsMap(name, NAMESERVER_VOTES_MAP, nameServerVotesMap);
-    }
-  }
-
-  /**
-   * @return the movingAvgAggregateLookupFrequency
-   */
-  public MovingAverage getMovingAvgAggregateLookupFrequency() {
-    if (isLazyEval() && movingAvgAggregateLookupFrequency == null) {
-      String result = recordMap.getNameRecordField(name, MOVINGAGGREGATELOOKUPFREQUENCY);
-      try {
-        movingAvgAggregateLookupFrequency = new MovingAverage(new JSONArray(result), StartNameServer.movingAverageWindowSize);
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error parsing result movingAvgAggregateLookupFrequency for " + name + " :" + e);
-      }
-    }
-    return movingAvgAggregateLookupFrequency;
-  }
-
-  public void updateMovingAvgAggregateLookupFrequency(int value) {
-    if (isLazyEval()) {
-      movingAvgAggregateLookupFrequency = getMovingAvgAggregateLookupFrequency();
-    }
-    movingAvgAggregateLookupFrequency.add(value);
-    if (isLazyEval()) {
-      recordMap.updateNameRecordFieldAsCollection(name, MOVINGAGGREGATELOOKUPFREQUENCY,
-              movingAvgAggregateLookupFrequency.toArrayList());
-    }
-  }
-
-  /**
-   * @return the movingAvgAggregateUpdateFrequency
-   */
-  public MovingAverage getMovingAvgAggregateUpdateFrequency() {
-    if (isLazyEval() && movingAvgAggregateUpdateFrequency == null) {
-      String result = recordMap.getNameRecordField(name, MOVINGAGGREGATEUPDATEFREQUENCY);
-      try {
-        movingAvgAggregateUpdateFrequency = new MovingAverage(new JSONArray(result), StartNameServer.movingAverageWindowSize);
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error parsing result movingAvgAggregateLookupFrequency for " + name + " :" + e);
-      }
-    }
-    return movingAvgAggregateUpdateFrequency;
-  }
-
-  public void updateMovingAvgAggregateUpdateFrequency(int value) {
-    if (isLazyEval()) {
-      movingAvgAggregateUpdateFrequency = getMovingAvgAggregateUpdateFrequency();
-    }
-    movingAvgAggregateUpdateFrequency.add(value);
-    if (isLazyEval()) {
-      recordMap.updateNameRecordFieldAsCollection(name, MOVINGAGGREGATEUPDATEFREQUENCY,
-              movingAvgAggregateUpdateFrequency.toArrayList());
-    }
-  }
-
-  /**
-   * @return the totalAggregateReadFrequency
-   */
-  public int getTotalAggregateReadFrequency() {
-    if (isLazyEval() && totalAggregateReadFrequency == LAZYINT) {
-      totalAggregateReadFrequency = recordMap.getNameRecordFieldAsInt(name, TOTALAGGREGATEREADFREQUENCY);
-    }
-    return totalAggregateReadFrequency;
-  }
-
-  /**
-   * @param totalAggregateReadFrequency the totalAggregateReadFrequency to set
-   */
-  public void setTotalAggregateReadFrequency(int totalAggregateReadFrequency) {
-    this.totalAggregateReadFrequency = totalAggregateReadFrequency;
-    if (isLazyEval() && totalAggregateReadFrequency != LAZYINT) {
-      recordMap.updateNameRecordFieldAsInteger(name, TOTALAGGREGATEREADFREQUENCY, totalAggregateReadFrequency);
-    }
-  }
-
-  /**
-   * @return the totalAggregateWriteFrequency
-   */
-  public int getTotalAggregateWriteFrequency() {
-    if (isLazyEval() && totalAggregateWriteFrequency == LAZYINT) {
-      totalAggregateWriteFrequency = recordMap.getNameRecordFieldAsInt(name, TOTALAGGREGATEWRITEFREQUENCY);
-    }
-    return totalAggregateWriteFrequency;
-  }
-
-  /**
-   * @param totalAggregateWriteFrequency the totalAggregateWriteFrequency to set
-   */
-  public void setTotalAggregateWriteFrequency(int totalAggregateWriteFrequency) {
-    this.totalAggregateWriteFrequency = totalAggregateWriteFrequency;
-    if (isLazyEval() && totalAggregateWriteFrequency != LAZYINT) {
-      recordMap.updateNameRecordFieldAsInteger(name, TOTALAGGREGATEWRITEFREQUENCY, totalAggregateWriteFrequency);
-    }
+  public ConcurrentMap<Integer, StatsInfo> getNameServerStatsMap() throws FieldNotFoundException {
+    if (hashMap.containsKey(STATS_MAP)) return (ConcurrentMap<Integer, StatsInfo>) hashMap.get(STATS_MAP);
+    throw new FieldNotFoundException(STATS_MAP);
   }
 
   /**
    * @return the previousAggregateReadFrequency
    */
-  public int getPreviousAggregateReadFrequency() {
-    if (isLazyEval() && previousAggregateReadFrequency == LAZYINT) {
-      previousAggregateReadFrequency = recordMap.getNameRecordFieldAsInt(name, PREVIOUSAGGREAGATEREADFREQUENCY);
-    }
-    return previousAggregateReadFrequency;
-  }
-
-  /**
-   * @param previousAggregateReadFrequency the previousAggregateReadFrequency to set
-   */
-  public void setPreviousAggregateReadFrequency(int previousAggregateReadFrequency) {
-    this.previousAggregateReadFrequency = previousAggregateReadFrequency;
-    if (isLazyEval() && previousAggregateReadFrequency != LAZYINT) {
-      recordMap.updateNameRecordFieldAsInteger(name, PREVIOUSAGGREAGATEREADFREQUENCY, previousAggregateReadFrequency);
-    }
+  public int getPreviousAggregateReadFrequency() throws FieldNotFoundException {
+    if (hashMap.containsKey(PREV_TOTAL_READ)) return (Integer) hashMap.get(PREV_TOTAL_READ);
+    throw new FieldNotFoundException(PREV_TOTAL_READ);
   }
 
   /**
    * @return the previousAggregateWriteFrequency
    */
-  public int getPreviousAggregateWriteFrequency() {
-    if (isLazyEval() && previousAggregateWriteFrequency == LAZYINT) {
-      previousAggregateWriteFrequency = recordMap.getNameRecordFieldAsInt(name, PREVIOUSAGGREAGATEWRITEFREQUENCY);
-    }
-    return previousAggregateWriteFrequency;
+  public int getPreviousAggregateWriteFrequency() throws FieldNotFoundException{
+    if (hashMap.containsKey(PREV_TOTAL_WRITE)) return (Integer) hashMap.get(PREV_TOTAL_WRITE);
+    throw new FieldNotFoundException(PREV_TOTAL_WRITE);
   }
 
   /**
-   * @param previousAggregateWriteFrequency the previousAggregateWriteFrequency to set
+   * @return the movingAvgAggregateLookupFrequency
    */
-  public void setPreviousAggregateWriteFrequency(int previousAggregateWriteFrequency) {
-    this.previousAggregateWriteFrequency = previousAggregateWriteFrequency;
-    if (isLazyEval() && previousAggregateWriteFrequency != LAZYINT) {
-      recordMap.updateNameRecordFieldAsInteger(name, PREVIOUSAGGREAGATEWRITEFREQUENCY, previousAggregateWriteFrequency);
-    }
+  public ArrayList<Integer> getMovingAvgAggregateLookupFrequency() throws FieldNotFoundException {
+    if (hashMap.containsKey(MOV_AVG_READ)) return (ArrayList<Integer>) hashMap.get(MOV_AVG_READ);
+    throw new FieldNotFoundException(MOV_AVG_READ);
+  }
+
+  /**
+   * @return the movingAvgAggregateUpdateFrequency
+   */
+  public ArrayList<Integer> getMovingAvgAggregateUpdateFrequency() throws FieldNotFoundException {
+    if (hashMap.containsKey(MOV_AVG_WRITE)) return (ArrayList<Integer>) hashMap.get(MOV_AVG_WRITE);
+    throw new FieldNotFoundException(MOV_AVG_WRITE);
   }
 
   /**
    * return the keep alive time value stored in record
    * @return
    */
-  public synchronized long getKeepAliveTime() {
-    if (isLazyEval() && keepAliveTime == LAZYINT) {
-      keepAliveTime = recordMap.getNameRecordFieldAsLong(name, KEEP_ALIVE_TIME);
-    }
-    return keepAliveTime;
-  }
-
-  /**
-   * @param keepAliveTime set keep alive time
-   */
-  public void setKeepAliveTime(long keepAliveTime) {
-    this.keepAliveTime = keepAliveTime;
-    if (isLazyEval() && keepAliveTime != LAZYINT) {
-      recordMap.updateNameRecordFieldAsLong(name, KEEP_ALIVE_TIME, keepAliveTime);
-    }
+  public int getKeepAliveTime() throws FieldNotFoundException {
+    if (hashMap.containsKey(KEEP_ALIVE_TIME)) return (Integer) hashMap.get(KEEP_ALIVE_TIME);
+    throw new FieldNotFoundException(KEEP_ALIVE_TIME);
   }
 
 
-  //
-  // Utilities that use the accessors
-  //
-  public enum ACTIVE_STATE {
 
-    ACTIVE_RUNNING,
-    OLD_ACTIVE_RUNNING,
-    NO_ACTIVE_RUNNING,
-    BOTH_ACTIVE_RUNNING_ERROR
-  };
 
-  /**
-   * Returns a copy of the active name servers set.
-   *
-   * @return copy of ActiveNameServers
-   */
-  public synchronized Set<Integer> copyActiveNameServers() { //synchronized
-    Set<Integer> set = new HashSet<Integer>();
-    for (int id : getActiveNameservers()) {
-      set.add(id);
-    }
-    return set;
+
+
+
+
+  /********************************************
+   * READ methods: these methods only read one or more fields. they use the above GETTER methods to access the values of fields.
+   * ******************************************/
+
+
+  public boolean isAdded() throws FieldNotFoundException{
+    // TODO what semantics do you want? == 0 or >= 0
+    return getMarkedForRemoval() == 0;
   }
 
   /**
-   * Returns the number of ActiveNameServers.
+   * whether the flag is set of not.
    *
    * @return
    */
-  public synchronized int numActiveNameServers() { //synchronized
-    return getActiveNameservers().size();
+  public boolean isMarkedForRemoval() throws FieldNotFoundException{
+    return getMarkedForRemoval() > 0;
   }
 
-//  private static Set<Integer> getInitialActives(Set<Integer> primaryNameservers, int count, String name) {
-//    // choose three actives which are different from primaries
-//    Set<Integer> newActives = new HashSet<Integer>();
-//    Random r = new Random(name.hashCode());
-//
-//    for (int j = 0; j < count; j++) {
-//      while (true) {
-//        int id = r.nextInt(ConfigFileInfo.getNumberOfNameServers());
-//        //            int active = (j + id)% ConfigFileInfo.getNumberOfNameServers();
-//        if (!primaryNameservers.contains(id) && !newActives.contains(id)) {
-//          GNS.getLogger().finer("ID " + id);
-//          newActives.add(id);
-//          break;
-//        }
-//      }
-//    }
-//    if (newActives.size() < count) {
-//      if (StartNameServer.debugMode) {
-//        GNS.getLogger().warning(" ERROR: initial actives < " + count + " Initial Actives: " + newActives);
-//      }
-//    }
-//    return newActives;
-//  }
+
+
+  /**
+   * whether the flag is set of not.
+   *
+   * @return
+   */
+  public boolean isRemoved() throws FieldNotFoundException{
+    return getMarkedForRemoval() == 2;
+  }
+
+
   /**
    * Returns true if the name record contains a primary name server with the given id. False otherwise.
    *
    * @param id Primary name server id
    */
-  public synchronized boolean containsPrimaryNameserver(int id) {
-    if (getPrimaryNameservers() != null) {
-      return getPrimaryNameservers().contains(id);
-    } else {
-      return false;
-    }
+  public boolean containsPrimaryNameserver(int id) throws FieldNotFoundException{
+    Set<Integer> primaries = getPrimaryNameservers();
+    if (primaries != null) return primaries.contains(id);
+    return false;
   }
+
 
   /**
    * Returns a set of highest voted name servers ids.
    *
    * @param numReplica Number of name servers to be selected.
    */
-  public synchronized Set<Integer> getHighestVotedReplicaID(int numReplica) { //synchronized
+  public Set<Integer> getHighestVotedReplicaID(int numReplica) throws FieldNotFoundException { //
     Set<Integer> replicas = new HashSet<Integer>();
 
     for (int i = 1; i <= numReplica; i++) {
@@ -830,103 +431,95 @@ public class ReplicaControllerRecord {
     return replicas;
   }
 
+  public enum ACTIVE_STATE {
+    ACTIVE_RUNNING,
+    OLD_ACTIVE_RUNNING,
+    NO_ACTIVE_RUNNING,
+    BOTH_ACTIVE_RUNNING_ERROR
+  };
+
+
   /**
-   * Returns the total number of lookup request across all active name servers
+   * primary checks the current step of transition from old active name servers to new active name servers
    *
    * @return
    */
-  public synchronized double getReadStats_Paxos() {
-    setTotalAggregateReadFrequency(0);
-    for (StatsInfo info : getNameServerStatsMap().values()) {
-      setTotalAggregateReadFrequency(getTotalAggregateReadFrequency() + info.getRead());
+  public ACTIVE_STATE getNewActiveTransitionStage() throws FieldNotFoundException{
+    boolean active = isActiveRunning();
+    boolean oldActive = isOldActiveRunning();
+    if (!active && oldActive) {
+      return ACTIVE_STATE.OLD_ACTIVE_RUNNING; // new proposed but old not stop stopped
     }
-
+    if (!active && !oldActive) {
+      return ACTIVE_STATE.NO_ACTIVE_RUNNING; // both are stopped, start new active
+    }
+    if (active && !oldActive) {
+      return ACTIVE_STATE.ACTIVE_RUNNING; // normal operation
+    }
     if (StartNameServer.debugMode) {
-      GNS.getLogger().finer("TotalAggregateRead: " + getTotalAggregateReadFrequency()
-              + " Previous: " + getPreviousAggregateReadFrequency()
-              + " Current: " + (getTotalAggregateReadFrequency() - getPreviousAggregateReadFrequency()));
+      GNS.getLogger().severe("ERROR: Error  BOTH OLD & NEW ACTIVE RUNNING for NameRecord. An error condition.");
     }
-    updateMovingAvgAggregateLookupFrequency(getTotalAggregateReadFrequency() - getPreviousAggregateReadFrequency());
-    //getMovingAvgAggregateLookupFrequency().add(getTotalAggregateReadFrequency() - getPreviousAggregateReadFrequency());
-    setPreviousAggregateReadFrequency(getTotalAggregateReadFrequency());
-
-    return getMovingAvgAggregateLookupFrequency().getAverage();
+    return ACTIVE_STATE.BOTH_ACTIVE_RUNNING_ERROR; // both cannot be running.
   }
 
   /**
-   * Returns the total number of updates request across all active name servers
+   * Are oldActiveNameSevers stopped now?
    *
    * @return
    */
-  public synchronized double getWriteStats_Paxos() {
-    setTotalAggregateWriteFrequency(0);
-    for (StatsInfo info : getNameServerStatsMap().values()) {
-      setTotalAggregateWriteFrequency(getTotalAggregateWriteFrequency() + info.getWrite());
-    }
-
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().finer("TotalAggregateWrite: " + getTotalAggregateWriteFrequency()
-              + " Previous: " + getPreviousAggregateWriteFrequency()
-              + " Current: " + (getTotalAggregateWriteFrequency() - getPreviousAggregateWriteFrequency()));
-    }
-    updateMovingAvgAggregateUpdateFrequency(getTotalAggregateWriteFrequency() - getPreviousAggregateWriteFrequency());
-    //getMovingAvgAggregateUpdateFrequency().add(getTotalAggregateWriteFrequency() - getPreviousAggregateWriteFrequency());
-    setPreviousAggregateWriteFrequency(getTotalAggregateWriteFrequency());
-
-    return getMovingAvgAggregateUpdateFrequency().getAverage();
+  public boolean isOldActiveStopped(String oldPaxosID) throws FieldNotFoundException{
+    String paxosID = getOldActivePaxosID();
+    if (paxosID.equals(oldPaxosID))   return !isOldActiveRunning();
+    return true;
   }
 
-  public static ConcurrentHashMap<Integer, Integer> toIntegerMap(JSONObject json) {
-    HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
-    try {
-      Iterator<String> nameItr = json.keys();
-      while (nameItr.hasNext()) {
-        String name = nameItr.next();
-        map.put(Integer.valueOf(name), json.getInt(name));
-      }
-    } catch (JSONException e) {
-    }
-    return new ConcurrentHashMap<Integer, Integer>(map);
+
+
+
+
+
+
+
+
+
+
+  /********************************************
+   * WRITE methods: these methods write one or more fields. they may read values of some fields using the above GETTER methods.
+   * ******************************************/
+
+
+
+  public void setAdded() throws FieldNotFoundException{
+
+    ArrayList<Field> updateFields = new ArrayList<Field>();
+    updateFields.add(MARKED_FOR_REMOVAL);
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(0);
+
+    NameServer.replicaController.update(getName(), NAME, updateFields, values);
+
+    hashMap.put(MARKED_FOR_REMOVAL,0);
+
+    // TODO think if checking this is necessary
+//    if (isLazyEval()) {
+//      markedForRemoval = recordMap.getNameRecordFieldAsInt(name, MARKED_FOR_REMOVAL);
+//    }
+//
+//    if (markedForRemoval > 0) {
+//      GNS.getLogger().severe(" Exception: Trying to add a deleted record " + getName());
+////      System.exit(2);
+//    }
+//
+//    if (markedForRemoval == -1) {
+//      this.markedForRemoval = 0;
+//      if (isLazyEval()) {
+//        recordMap.updateNameRecordFieldAsInteger(name, MARKED_FOR_REMOVAL, markedForRemoval);
+//      }
+//    }
   }
 
-  public static ConcurrentHashMap<Integer, StatsInfo> toStatsMap(JSONObject json) { //synchronized
-    HashMap<Integer, StatsInfo> map = new HashMap<Integer, StatsInfo>();
-    try {
-      Iterator<String> nameItr = json.keys();
-      while (nameItr.hasNext()) {
-        String name = nameItr.next();
-        map.put(Integer.valueOf(name), new StatsInfo(json.getJSONObject(name)));
-      }
-    } catch (JSONException e) {
-    }
-    return new ConcurrentHashMap<Integer, StatsInfo>(map);
-  }
 
-  public synchronized JSONObject statsMapToJSONObject(ConcurrentMap<Integer, StatsInfo> map) {
-    JSONObject json = new JSONObject();
-    try {
-      if (map != null) {
-        for (Map.Entry<Integer, StatsInfo> e : map.entrySet()) {
-          StatsInfo value = e.getValue();
-          if (value != null) {
-            JSONObject jsonStats = new JSONObject();
-            jsonStats.put("read", value.getRead());
-            jsonStats.put("write", value.getWrite());
-            json.put(e.getKey().toString(), jsonStats);
-          }
-        }
-      }
-    } catch (JSONException e) {
-    }
-    return json;
-  }
-
-  /**
-   * @return the isPrimaryReplica
-   */
-  public synchronized boolean isPrimaryReplica() {
-    return getPrimaryNameservers().contains(NameServer.nodeID);
-  }
 
   /**
    * Makes current active name servers old active name servers, and sets the new active name servers to true.
@@ -934,33 +527,53 @@ public class ReplicaControllerRecord {
    * @param newActiveNameServers
    * @param newActivePaxosID
    */
-  public synchronized void updateActiveNameServers(Set<Integer> newActiveNameServers, String newActivePaxosID) {
-    this.setOldActiveRunning(this.isActiveRunning());
-    this.setOldActiveNameservers(this.getActiveNameservers());
-    this.setOldActivePaxosID(this.getActivePaxosID());
-    this.setActiveNameservers(newActiveNameServers);
-    this.setActiveRunning(false);
-    this.setActivePaxosID(newActivePaxosID);
+  public void updateActiveNameServers(Set<Integer> newActiveNameServers, String newActivePaxosID) throws FieldNotFoundException{
+
+    boolean activeRunning = isActiveRunning();
+    Set<Integer> actives = getActiveNameservers();
+    String activePaxosID = getActivePaxosID();
+
+    ArrayList<Field> updateFields = new ArrayList<Field>();
+    updateFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+    updateFields.add(ACTIVE_NAMESERVERS_RUNNING);
+    updateFields.add(OLD_ACTIVE_NAMESERVERS);
+    updateFields.add(ACTIVE_NAMESERVERS);
+    updateFields.add(OLD_ACTIVE_PAXOS_ID);
+    updateFields.add(ACTIVE_PAXOS_ID);
+
+    ArrayList<Object> updateValues = new ArrayList<Object>();
+
+    updateValues.add(activeRunning);
+    updateValues.add(false);
+    updateValues.add(actives);
+    updateValues.add(newActiveNameServers);
+    updateValues.add(activePaxosID);
+    updateValues.add(newActivePaxosID);
+
+    NameServer.replicaController.update(getName(),NAME,updateFields,updateValues);
+
+    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, activeRunning);
+    hashMap.put(ACTIVE_NAMESERVERS_RUNNING, false);
+    hashMap.put(OLD_ACTIVE_NAMESERVERS, actives);
+    hashMap.put(ACTIVE_NAMESERVERS, newActiveNameServers);
+    hashMap.put(OLD_ACTIVE_PAXOS_ID, activePaxosID);
+    hashMap.put(ACTIVE_PAXOS_ID, newActivePaxosID);
   }
 
-  /**
-   * are oldActiveNameSevers stopped now?
-   *
-   * @return
-   */
-  public synchronized boolean isOldActiveStopped(String oldPaxosID) {
-    // checks whether old paxos is still running
-    if (this.getOldActivePaxosID().equals(oldPaxosID)) {
-      // return database status
-      return !isOldActiveRunning();
-    }
-    // if oldActivePaxosID != oldPaxosID, it means this oldPaxosID had stopped.
-    return true;
-  }
 
-  public synchronized boolean setOldActiveStopped(String oldActiveID) {
+
+
+  public boolean setOldActiveStopped(String oldActiveID) throws FieldNotFoundException{
+
     if (oldActiveID.equals(this.getOldActivePaxosID())) {
-      this.setOldActiveRunning(false);
+      ArrayList<Field> updateFields = new ArrayList<Field>();
+      updateFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+
+      ArrayList<Object> values = new ArrayList<Object>();
+      values.add(false);
+
+      NameServer.replicaController.update(getName(),NAME,updateFields,values);
+      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING,false);
       return true;
     }
     return false;
@@ -972,9 +585,16 @@ public class ReplicaControllerRecord {
    * @param newActiveID
    * @return
    */
-  public synchronized boolean setNewActiveRunning(String newActiveID) {
+  public boolean setNewActiveRunning(String newActiveID) throws FieldNotFoundException{
     if (newActiveID.equals(this.getActivePaxosID())) {
-      this.setActiveRunning(true);
+      ArrayList<Field> updateFields = new ArrayList<Field>();
+      updateFields.add(ACTIVE_NAMESERVERS_RUNNING);
+
+      ArrayList<Object> values = new ArrayList<Object>();
+      values.add(true);
+
+      NameServer.replicaController.update(getName(),NAME,updateFields,values);
+      hashMap.put(ACTIVE_NAMESERVERS_RUNNING,false);
       return true;
     }
     return false;
@@ -982,46 +602,291 @@ public class ReplicaControllerRecord {
 
 
   /**
-   * primary checks the current step of transition from old active name servers to new active name servers
+   * set marked for removal as
+   */
+  public void setMarkedForRemoval() throws FieldNotFoundException{
+    int markedForRemoval = getMarkedForRemoval();
+    if (markedForRemoval == 0) {
+      ArrayList<Field> fields = new ArrayList<Field>();
+      fields.add(MARKED_FOR_REMOVAL);
+
+      ArrayList<Object> values = new ArrayList<Object>();
+      values.add(1);
+
+      NameServer.replicaController.update(getName(),NAME,fields,values);
+      hashMap.put(MARKED_FOR_REMOVAL,1);
+    }
+  }
+
+  public void setRemoved() throws FieldNotFoundException{
+    ArrayList<Field> fields = new ArrayList<Field>();
+    fields.add(MARKED_FOR_REMOVAL);
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(2);
+
+    NameServer.replicaController.update(getName(),NAME,fields,values);
+    hashMap.put(MARKED_FOR_REMOVAL, 2);
+
+  }
+
+  /**
+   * Returns the total number of lookup request across all active name servers
    *
    * @return
    */
-  public synchronized ACTIVE_STATE getNewActiveTransitionStage() {
-    if (!isActiveRunning() && isOldActiveRunning()) {
-      return ACTIVE_STATE.OLD_ACTIVE_RUNNING; // new proposed but old not stop stopped
+  public double[] recomputeAverageReadWriteRate() throws FieldNotFoundException{
+    ConcurrentMap<Integer,StatsInfo> statsMap = getNameServerStatsMap();
+    int previousTotalReads = getPreviousAggregateReadFrequency();
+    int previousTotalWrites = getPreviousAggregateWriteFrequency();
+    MovingAverage lookups = new MovingAverage(getMovingAvgAggregateLookupFrequency(),StartNameServer.movingAverageWindowSize);
+    MovingAverage updates = new MovingAverage(getMovingAvgAggregateUpdateFrequency(), StartNameServer.movingAverageWindowSize);
+    int totalReads = 0;
+    int totalWrites = 0;
+    for (StatsInfo info: statsMap.values()) {
+      totalReads += info.getRead();
+      totalWrites += info.getWrite();
     }
-    if (!isActiveRunning() && !isOldActiveRunning()) {
-      return ACTIVE_STATE.NO_ACTIVE_RUNNING; // both are stopped, start new active
+
+    lookups.add(totalReads - previousTotalReads);
+    updates.add(totalWrites - previousTotalWrites);
+
+    double[] readWriteRate = new double[2];
+    readWriteRate[0] = lookups.getAverage();
+    readWriteRate[1] = updates.getAverage();
+
+
+    ArrayList<Field> updateFields = new ArrayList<Field>();
+    updateFields.add(PREV_TOTAL_READ);
+    updateFields.add(PREV_TOTAL_WRITE);
+    updateFields.add(MOV_AVG_READ);
+    updateFields.add(MOV_AVG_WRITE);
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(previousTotalReads);
+    values.add(previousTotalWrites);
+    values.add(lookups.toArrayList());
+    values.add(updates.toArrayList());
+
+    NameServer.replicaController.update(getName(),NAME,updateFields,values);
+
+    hashMap.put(PREV_TOTAL_READ,totalReads);
+    hashMap.put(PREV_TOTAL_WRITE,totalWrites);
+    hashMap.put(MOV_AVG_READ, lookups.toArrayList());
+    hashMap.put(MOV_AVG_WRITE,updates.toArrayList());
+
+    return readWriteRate;
+
+  }
+
+  /**
+   * Adds vote to the name server for replica selection.
+   *
+   * @param id Name server id receiving the vote
+   */
+  public void addReplicaSelectionVote(int id, int vote) throws FieldNotFoundException{ //
+    ConcurrentMap<Integer, Integer> votesMap = getNameServerVotesMap();
+
+    if (votesMap.containsKey(id)) {
+      int votes = votesMap.get(id) + vote;
+      votesMap.put(id, votes);
+    } else {
+      votesMap.put(id, vote);
     }
-    if (isActiveRunning() && !isOldActiveRunning()) {
-      return ACTIVE_STATE.ACTIVE_RUNNING; // normal operation
-    }
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().severe("ERROR: BOTH OLD & NEW ACTIVE RUNNING for NameRecord. An error condition.");
-    }
-    return ACTIVE_STATE.BOTH_ACTIVE_RUNNING_ERROR; // both cannot be running.
+
+    ArrayList<Field> updateFields = new ArrayList<Field>();
+    updateFields.add(VOTES_MAP);
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(votesMap);
+
+    NameServer.replicaController.update(getName(), NAME, updateFields, values);
+
+    // VotesMap is already updated in hashMap
   }
 
 
   /**
    *
-   * Returns a String representation of this NameRecord.
+   * @param id
+   * @param readFrequency
+   * @param writeFrequency
    */
-  @Override
-  public synchronized String toString() {
-    if (isLazyEval()) {
-      return "ReplicaControllerRecord{LAZY - " + "name=" + name + '}';
-    } else {
-      try {
-        return toJSONObject().toString();
-      } catch (JSONException e) {
-        return "Error printing NameRecord: " + e;
-      }
+  public void addNameServerStats(int id, int readFrequency, int writeFrequency) throws FieldNotFoundException{
+    ConcurrentMap<Integer, StatsInfo> statsMap = getNameServerStatsMap();
+
+    if (statsMap != null) {
+      statsMap.put(id, new StatsInfo(readFrequency, writeFrequency));
+      ArrayList<Field> updateFields = new ArrayList<Field>();
+      updateFields.add(STATS_MAP);
+
+      ArrayList<Object> values = new ArrayList<Object>();
+      values.add(statsMap);
+
+      NameServer.replicaController.update(getName(),NAME,updateFields,values);
+
+      // StatsMap is already updated in hashMap.
+
     }
+
   }
 
+
+
+
+
+
+
+  /********************************************
+   * SETTER methods, these methods write to database one field in the name record.
+   * ******************************************/
+
+  /**
+   * @param activeNameservers the activeNameservers to set
+   */
+  public void setActiveNameservers(Set<Integer> activeNameservers) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+
+
+  /**
+   * @param oldActiveNameservers the oldActiveNameservers to set
+   */
+  public void setOldActiveNameservers(Set<Integer> oldActiveNameservers) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+
+  /**
+   * @param oldActiveRunning the oldActiveRunning to set
+   */
+  public void setOldActiveRunning(boolean oldActiveRunning) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+
+  /**
+   * @param activeRunning the activeRunning to set
+   */
+  public void setActiveRunning(boolean activeRunning) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+
+  /**
+   * @param oldActivePaxosID the oldActivePaxosID to set
+   */
+  public void setOldActivePaxosID(String oldActivePaxosID) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+  /**
+   * @param activePaxosID the activePaxosID to set
+   */
+  public void setActivePaxosID(String activePaxosID) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+
+
+
+
+//  public void updateMovingAvgAggregateLookupFrequency(int value) {
+//    if (isLazyEval()) {
+//      movingAvgAggregateLookupFrequency = getMovingAvgAggregateLookupFrequency();
+//    }
+//    movingAvgAggregateLookupFrequency.add(value);
+//    if (isLazyEval()) {
+//      recordMap.updateNameRecordFieldAsCollection(name, MOV_AVG_READ,
+//              movingAvgAggregateLookupFrequency.toArrayList());
+//    }
+//  }
+//
+//
+//  public void updateMovingAvgAggregateUpdateFrequency(int value) {
+//    if (isLazyEval()) {
+//      movingAvgAggregateUpdateFrequency = getMovingAvgAggregateUpdateFrequency();
+//    }
+//    movingAvgAggregateUpdateFrequency.add(value);
+//    if (isLazyEval()) {
+//      recordMap.updateNameRecordFieldAsCollection(name, MOV_AVG_WRITE,
+//              movingAvgAggregateUpdateFrequency.toArrayList());
+//    }
+//  }
+
+
+
+
+  /**
+   * @param previousAggregateReadFrequency the previousAggregateReadFrequency to set
+   */
+  public void setPreviousAggregateReadFrequency(int previousAggregateReadFrequency) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+  /**
+   * @param previousAggregateWriteFrequency the previousAggregateWriteFrequency to set
+   */
+  public void setPreviousAggregateWriteFrequency(int previousAggregateWriteFrequency) {
+    GNS.getLogger().severe("Not implemented yet because is is not used!");
+    throw  new UnsupportedOperationException();
+  }
+
+
+  /**
+   * @param keepAliveTime set keep alive time
+   */
+  public void setKeepAliveTime(long keepAliveTime) throws FieldNotFoundException{
+    ArrayList<Field> fields = new ArrayList<Field>();
+    fields.add(KEEP_ALIVE_TIME);
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(keepAliveTime);
+
+    NameServer.replicaController.update(getName(),NAME,fields,values);
+
+  }
+
+
+
+//  private static Set<Integer> getInitialActives(Set<Integer> primaryNameservers, int count, String name) {
+//    // choose three actives which are different from primaries
+//    Set<Integer> newActives = new HashSet<Integer>();
+//    Random r = new Random(name.hashCode());
+//
+//    for (int j = 0; j < count; j++) {
+//      while (true) {
+//        int id = r.nextInt(ConfigFileInfo.getNumberOfNameServers());
+//        //            int active = (j + id)% ConfigFileInfo.getNumberOfNameServers();
+//        if (!primaryNameservers.contains(id) && !newActives.contains(id)) {
+//          GNS.getLogger().finer("ID " + id);
+//          newActives.add(id);
+//          break;
+//        }
+//      }
+//    }
+//    if (newActives.size() < count) {
+//      if (StartNameServer.debugMode) {
+//        GNS.getLogger().warning(" ERROR: initial actives < " + count + " Initial Actives: " + newActives);
+//      }
+//    }
+//    return newActives;
+//  }
+
+
+
+
+
   // test code
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws FieldNotFoundException, Exception {
     NameServer.nodeID = 4;
     StartNameServer.movingAverageWindowSize = 10;
     test();
@@ -1030,7 +895,7 @@ public class ReplicaControllerRecord {
 
   // make this query:
   // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
-  private static void test() throws Exception {
+  private static void test() throws FieldNotFoundException, Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     BasicRecordMap replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
@@ -1046,11 +911,11 @@ public class ReplicaControllerRecord {
     System.out.println(record.toJSONObject().toString());
     replicaController.addNameRecordPrimary(record);
     // create the lazy record
-    record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", replicaController);
+    record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", true);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
     System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
     record.addNameServerStats(10, 50, 75);
-    System.out.println("READ STATS: " + record.getReadStats_Paxos());
+    System.out.println("READ STATS: " + record.recomputeAverageReadWriteRate());
    
     record.addReplicaSelectionVote(11, 5);
     record.addReplicaSelectionVote(11, 1);
@@ -1060,9 +925,9 @@ public class ReplicaControllerRecord {
     record.addNameServerStats(11, 50, 75);
     record.addNameServerStats(12, 50, 75);
     System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(3));
-    record.updateMovingAvgAggregateLookupFrequency(10);
-    record.updateMovingAvgAggregateLookupFrequency(30);
-    record.updateMovingAvgAggregateLookupFrequency(50);
+//    record.updateMovingAvgAggregateLookupFrequency(10);
+//    record.updateMovingAvgAggregateLookupFrequency(30);
+//    record.updateMovingAvgAggregateLookupFrequency(50);
     System.out.println("MOVING AG READ: " + record.getMovingAvgAggregateLookupFrequency());
 
     MongoRecords instance = MongoRecords.getInstance();

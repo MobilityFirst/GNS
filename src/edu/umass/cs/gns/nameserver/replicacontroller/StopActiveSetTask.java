@@ -3,12 +3,16 @@ package edu.umass.cs.gns.nameserver.replicacontroller;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
@@ -47,9 +51,14 @@ public class StopActiveSetTask extends TimerTask {
   public void run() {
 
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
-    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
 
-    if (nameRecordPrimary == null) {
+    ArrayList<Field> readFields = new ArrayList<Field>();
+    readFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS_RUNNING);
+    readFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
+    ReplicaControllerRecord nameRecordPrimary = null;
+    try {
+      nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, readFields);
+    } catch (RecordNotFoundException e) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name // + " Record Key = " + nameRecordKey
         );
@@ -58,20 +67,19 @@ public class StopActiveSetTask extends TimerTask {
       return;
     }
 
-//    if (oldActivesQueried.size() == 0) {
-//      if (StartNameServer.debugMode) {
-//        GNS.getLogger().fine(" This node isnt the smallest primary active. will not proceed further.");
-//      }
-//      this.cancel();
-//      return;
-//    }
-
     // is active with paxos ID have stopped return true
-    if (nameRecordPrimary.isOldActiveStopped(oldPaxosID)) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("Old active name servers stopped. Paxos ID: " + oldPaxosID
-                + " Old Actives : " + oldActiveNameServers);
+    try {
+      if (nameRecordPrimary.isOldActiveStopped(oldPaxosID)) {
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine("Old active name servers stopped. Paxos ID: " + oldPaxosID
+                  + " Old Actives : " + oldActiveNameServers);
+        }
+        this.cancel();
+        return;
       }
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       this.cancel();
       return;
     }

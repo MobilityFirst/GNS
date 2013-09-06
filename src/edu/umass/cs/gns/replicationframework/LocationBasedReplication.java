@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.replicationframework;
 
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 
@@ -30,7 +31,7 @@ public class LocationBasedReplication implements ReplicationFramework {
      * @param count
 	 ************************************************************/
 	@Override
-	public Set<Integer> newActiveReplica(ReplicaControllerRecord nameRecordPrimary, int numReplica, int count) {
+	public Set<Integer> newActiveReplica(ReplicaControllerRecord nameRecordPrimary, int numReplica, int count) throws FieldNotFoundException{
 		
 		Set<Integer> newActiveNameServerSet;
 		if (numReplica >= ConfigFileInfo.getNumberOfNameServers()) {

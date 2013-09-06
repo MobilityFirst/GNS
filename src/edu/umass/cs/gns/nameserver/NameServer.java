@@ -1,13 +1,12 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
+import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
@@ -37,7 +36,7 @@ public class NameServer {
    */
 //  public static DatagramSocket dnsSocket;
   public static BasicRecordMap recordMap;
-  private static BasicRecordMap replicaController;
+  public static BasicRecordMap replicaController;
   public static ReplicationFramework replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer2 tcpTransport;
@@ -90,16 +89,19 @@ public class NameServer {
     int maxThreads = 5;
     executorService = new ScheduledThreadPoolExecutor(maxThreads);
 
+
     // Non-blocking IO created
     nsDemultiplexer = new NSPacketDemultiplexer();
     ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
+
+
 //    new Thread(worker).start();
 //    tcpTransport = new NioServer(nodeID, ConfigFileInfo.getIPAddress(nodeID),
 //            ConfigFileInfo.getNSTcpPort(nodeID), worker);
-    tcpTransport = new NioServer2(nodeID, worker, new NSNodeConfig());
+    tcpTransport = new NioServer2(nodeID, worker, new GNSNodeConfig());
 
     new Thread(tcpTransport).start();
-
+    PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
     // Load monitoring calculation initalized.
     loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
 
@@ -110,7 +112,7 @@ public class NameServer {
 
       // start paxos manager first.
       // this will recover state from paxos logs, if it exists
-      PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
+
 
       // Name server starts listening on UDP Port for messages.
 //      new NSListenerUDP().start();
@@ -200,14 +202,7 @@ public class NameServer {
 //
 //  }
 
-  public static NameRecord getNameRecord(String name) throws RecordNotFoundException{
-    return recordMap.getNameRecord(name);
-  }
 
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, ArrayList<Field> userFields)
-          throws RecordNotFoundException{
-    return recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFields);
-  }
 
 //
 //
@@ -229,57 +224,138 @@ public class NameServer {
 //    return recordMap.getNameRecordLazy(name, keys);
 //  }
 //
+  /******************************
+   * Name Record methods
+   ******************************/
 
+  /**
+   * Read the complete name record
+   * @param name
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static NameRecord getNameRecord(String name) throws RecordNotFoundException{
+    return recordMap.getNameRecord(name);
+  }
+
+  /**
+   * Read name record with select fields
+   * @param name
+   * @param fields
+   * @param userFields
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, ArrayList<Field> userFields)
+          throws RecordNotFoundException{
+    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFields));
+  }
+
+  /**
+   * Add this name record to DB
+   * @param record
+   * @throws RecordExistsException
+   */
   public static void addNameRecord(NameRecord record) throws RecordExistsException{
     recordMap.addNameRecord(record);
   }
 
-
+  /**
+   * Replace the name record in DB with this copy of name record
+   * @param record
+   */
   public static void updateNameRecord(NameRecord record) {
     recordMap.updateNameRecord(record);
-//    if (!record.isLazyEval()) {
-//
-//    }
   }
 
+  /**
+   * Remove name record from DB
+   * @param name
+   */
   public static void removeNameRecord(String name) {
     recordMap.removeNameRecord(name);
   }
 
-  public static boolean containsName(String name) {
-    return recordMap.containsName(name);
-  }
-
+  /**
+   * Return all name records in DB (Expensive operation)
+   * @return
+   */
   public static Set<NameRecord> getAllNameRecords() {
     return recordMap.getAllNameRecords();
   }
 
-  public static ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
-    GNS.getLogger().info("Creating lazy primary name record for " + name);
-    return replicaController.getNameRecordPrimaryLazy(name);
-  }
 
+//  public static boolean containsName(String name) {
+//    return recordMap.containsName(name);
+//  }
+
+//  public static ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
+//    GNS.getLogger().info("Creating lazy primary name record for " + name);
+//    return replicaController.getNameRecordPrimaryLazy(name);
+//  }
+
+
+
+
+  /******************************
+   * Replica controller methods
+   ******************************/
+
+  /**
+   * Read the complete ReplicaControllerRecord from database
+   * @param name
+   * @return
+   */
   public static ReplicaControllerRecord getNameRecordPrimary(String name) {
     return replicaController.getNameRecordPrimary(name);
   }
 
+
+  /**
+   * Read name record with select fields
+   * @param name
+   * @param fields
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ArrayList<Field> fields)
+          throws RecordNotFoundException{
+    return new ReplicaControllerRecord(replicaController.lookup(name, ReplicaControllerRecord.NAME, fields));
+  }
+
+
+  /**
+   * Add this record to database
+   * @param record
+   */
   public static void addNameRecordPrimary(ReplicaControllerRecord record) {
     replicaController.addNameRecordPrimary(record);
   }
 
+  /**
+   * Remove a ReplicaControllerRecord with given name from database
+   * @param name
+   */
   public static void removeNameRecordPrimary(String name) {
     replicaController.removeNameRecord(name);
   }
 
+  /**
+   * Replace the ReplicaControllerRecord in DB with this copy of ReplicaControllerRecord
+   * @param record
+   */
   public static void updateNameRecordPrimary(ReplicaControllerRecord record) {
-    if (!record.isLazyEval()) {
-      replicaController.updateNameRecordPrimary(record);
-    }
+    replicaController.updateNameRecordPrimary(record);
   }
 
+  /**
+   * Return all name records in DB (Expensive operation)
+   * @return
+   */
   public static Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
     return replicaController.getAllPrimaryNameRecords();
   }
+
 
   //  the nuclear option
   public static void resetDB() {
@@ -288,12 +364,7 @@ public class NameServer {
     replicaController.reset();
   }
 
-  //  the nuclear option
-  public static void deleteAllDatabases() {
-    recordMap.reset();
-    // reset them both
-    replicaController.reset();
-  }
+
 
   //  public static boolean isActiveNameServer(String name) {
 //    //println("isActiveNameServer: recordKey = " + recordKey + " name = " + name, debugMode);
@@ -345,4 +416,6 @@ public class NameServer {
 //    public static Set<NameRecord> getAllActiveNameRecords() {
 //        return recordMap.getAllNameRecords();
 //    }
+
+
 }

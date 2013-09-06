@@ -4,12 +4,16 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
@@ -55,10 +59,15 @@ public class StartupActiveSetTask extends TimerTask {
   @Override
   public void run() {
 
+    ArrayList<Field> readFields = new ArrayList<Field>();
+    readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
+    readFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
 
-    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
-//    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimary(name);
-    if (nameRecordPrimary == null) {
+    ReplicaControllerRecord nameRecordPrimary;
+    try {
+      nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, readFields);
+    } catch (RecordNotFoundException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name //+ " Record Key = " + nameRecordKey
         );
@@ -67,27 +76,26 @@ public class StartupActiveSetTask extends TimerTask {
       return;
     }
 
-//    if (newActivesQueried.size() == 0) {
-//      if (StartNameServer.debugMode) {
-//        GNS.getLogger().fine(" Node = " + NameServer.nodeID + " isn't the smallest primary active. will not proceed further.");
-//      }
-//      this.cancel();
-//      return;
-//    }
-
-    if (!nameRecordPrimary.getActivePaxosID().equals(newActivePaxosID)) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" Actives got accepted and replaced by new actives. Quitting. ");
+    try {
+      if (!nameRecordPrimary.getActivePaxosID().equals(newActivePaxosID)) {
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine(" Actives got accepted and replaced by new actives. Quitting. ");
+        }
+        this.cancel();
+        return;
       }
-      this.cancel();
-      return;
-    }
 
-    if (nameRecordPrimary.isActiveRunning()) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("New active name servers running. Startup done. All Actives: "
-                + nameRecordPrimary.copyActiveNameServers() + " Actives Queried: " + newActivesQueried);
+      if (nameRecordPrimary.isActiveRunning()) {
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine("New active name servers running. Startup done. All Actives: "
+                  + nameRecordPrimary.getActiveNameservers() + " Actives Queried: " + newActivesQueried);
+        }
+        this.cancel();
+        return;
       }
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       this.cancel();
       return;
     }

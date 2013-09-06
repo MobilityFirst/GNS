@@ -129,12 +129,12 @@ public class CassandraRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public NameRecord lookup(String name, Field nameField, ArrayList<Field> fields1,
+  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1,
                            Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -268,7 +268,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   public ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
     if (CassandraRecords.getInstance().contains(collectionName, name)) {
       //GNS.getLogger().info("Creating lazy name record for " + name);
-      return new ReplicaControllerRecord(name, this);
+      return new ReplicaControllerRecord(name);
     } else {
       return null;
     }
@@ -276,15 +276,18 @@ public class CassandraRecordMap extends BasicRecordMap {
 
   @Override
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
-    }
+//    if (StartNameServer.debugMode) {
+//      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
+//    }
 
     try {
       CassandraRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       return;
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found " + e.getMessage());
+      e.printStackTrace();
     }
   }
 
@@ -293,6 +296,9 @@ public class CassandraRecordMap extends BasicRecordMap {
     try {
       CassandraRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }

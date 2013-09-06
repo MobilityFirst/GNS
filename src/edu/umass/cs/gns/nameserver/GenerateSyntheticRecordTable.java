@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
@@ -126,7 +127,12 @@ public class GenerateSyntheticRecordTable {
           NameServer.addNameRecordPrimary(nameRecordPrimary);
           ValuesMap valuesMap = new ValuesMap();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
-          ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
+          try {
+            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
+          } catch (FieldNotFoundException e) {
+            GNS.getLogger().fine("Field not found exception. " + e.getMessage());
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+          }
 //					NameRecord recordEntry = new NameRecord( strName, NameRecordKey.EdgeRecord, new ArrayList(Arrays.asList(Integer.toString(address))));
           //Set a default ttl value for regular and mobile names
 //					recordEntry.setTTL(( name <= regularWorkloadSize )? defaultTTLRegularNames : defaultTTLMobileNames);
@@ -148,7 +154,12 @@ public class GenerateSyntheticRecordTable {
 
           ValuesMap valuesMap = new ValuesMap();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
-          ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
+          try {
+            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
+          } catch (FieldNotFoundException e) {
+            GNS.getLogger().fine("Field not found exception. " + e.getMessage());
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+          }
           if (name%1000 == 0) {
             GNS.getLogger().severe("Added record " + name);
           }

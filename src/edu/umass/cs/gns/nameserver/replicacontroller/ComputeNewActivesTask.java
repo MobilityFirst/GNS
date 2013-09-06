@@ -3,16 +3,20 @@ package edu.umass.cs.gns.nameserver.replicacontroller;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
-import edu.umass.cs.gns.paxos.PaxosManager;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.TimerTask;
 
@@ -23,228 +27,238 @@ import java.util.TimerTask;
  */
 public class ComputeNewActivesTask extends TimerTask
 {
-	
-	static int replicationRound = 0;
-	
-	@Override
-	public void run()
-	{
-		replicationRound++;
 
-		if (StartNameServer.debugMode) GNS.getLogger().fine("ComputeNewActives: " + replicationRound);
-		
-		//Iterate through the NameRecord and check if any changes need to
-		//be made to the active name server set
-		Set<ReplicaControllerRecord> nameRecords = NameServer.getAllPrimaryNameRecords();
-		if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfNameRecords\t" + nameRecords.size());
+  static int replicationRound = 0;
 
-		int count = 0;
-		for (ReplicaControllerRecord nameRecord : nameRecords) {
-			if (nameRecord.isMarkedForRemoval()) {
-				continue;
-			}
-			count++;
-			if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + nameRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound);
-			
-			if (!nameRecord.getPrimaryNameservers().contains(NameServer.nodeID) || 
-					!ReplicaController.isSmallestPrimaryRunning(nameRecord.getPrimaryNameservers()))
-					continue;
-			
-			if (StartNameServer.debugMode) GNS.getLogger().fine("I am the smallest primary NS up, I will select new actives.");
-			
-			Set<Integer> oldActiveNameServers = nameRecord.copyActiveNameServers();
-			Set<Integer> newActiveNameServers = getNewActiveNameServers(nameRecord, 
-					nameRecord.copyActiveNameServers(), replicationRound);
+  @Override
+  public void run()
+  {
+    replicationRound++;
+
+    if (StartNameServer.debugMode) GNS.getLogger().fine("ComputeNewActives: " + replicationRound);
+
+    //Iterate through the rcRecord and check if any changes need to
+    //be made to the active name server set
+    Set<ReplicaControllerRecord> rcRecords = NameServer.getAllPrimaryNameRecords();
+    if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfrcRecords\t" + rcRecords.size());
+
+    int count = 0;
+    for (ReplicaControllerRecord rcRecord : rcRecords) {
+      try {
 
 
-			if (!isActiveSetUnchanged(oldActiveNameServers, newActiveNameServers)) {
-				if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + nameRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpadingOtherActives");
-				
-				String newActivePaxosID = ReplicaController.getActivePaxosID(nameRecord);
-				NewActiveProposalPacket activePropose = new NewActiveProposalPacket(nameRecord.getName(), 
-					//nameRecord.getRecordKey(), 
-                                        NameServer.nodeID, newActiveNameServers, newActivePaxosID);
-				String paxosID = ReplicaController.getPrimaryPaxosID(nameRecord);
-      boolean isStop = false;
-				RequestPacket requestPacket = new RequestPacket(PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(), 
-						PaxosPacketType.REQUEST, isStop);
-				PaxosManager.propose(paxosID, requestPacket);
-				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
-			}
-			else {
-				if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
-			}
-		}
-		
-	}
+        if (rcRecord.isMarkedForRemoval()) {
+          continue;
+        }
+        count++;
+        if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound);
 
-  private boolean isActiveSetUnchanged(Set<Integer> oldActives, Set<Integer> newActives) {
-    if (oldActives.size() != newActives.size()) return  false;
-    for (int x: oldActives ) {
-      if (newActives.contains(x) == false) return false;
+        if (!rcRecord.getPrimaryNameservers().contains(NameServer.nodeID) ||
+                !ReplicaController.isSmallestPrimaryRunning(rcRecord.getPrimaryNameservers())) {
+          rcRecord.recomputeAverageReadWriteRate(); // this will keep moving average calculation updated.
+          continue;
+        }
+
+        if (StartNameServer.debugMode) GNS.getLogger().fine("I am the smallest primary NS up, I will select new actives.");
+
+        Set<Integer> oldActiveNameServers = rcRecord.getActiveNameservers();
+        Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord,
+                rcRecord.getActiveNameservers(), replicationRound);
+
+
+        if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
+          if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpadingOtherActives");
+
+          String newActivePaxosID = ReplicaController.getActivePaxosID(rcRecord);
+          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(),
+                  //rcRecord.getRecordKey(),
+                  NameServer.nodeID, newActiveNameServers, newActivePaxosID);
+          String paxosID = ReplicaController.getPrimaryPaxosID(rcRecord);
+          boolean isStop = false;
+          RequestPacket requestPacket = new RequestPacket(PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(),
+                  PaxosPacketType.REQUEST, isStop);
+          PaxosManager.propose(paxosID, requestPacket);
+          if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
+        }
+        else {
+          if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
+        }
+      } catch (FieldNotFoundException e) {
+        GNS.getLogger().severe("Field Not Found Exception: " + e.getMessage());
+        e.printStackTrace();
+      }
     }
-    return true;
+
   }
 
-	
-	/**
-	 * Calculates new set of active name servers depending on replication framework. 
-	 * @param nameRecord
-	 */
-	private Set<Integer> getNewActiveNameServers(ReplicaControllerRecord nameRecord,
-			Set<Integer> oldActiveNameServers, int count) {
-		
-		Set<Integer> newActiveNameServers = null;
-		
-		int numReplica = numberOfReplica(nameRecord);
-		
-		// used for beehive. 
-		if (StartNameServer.beehiveReplication) {
-			numReplica = BeehiveReplication.numActiveNameServers(nameRecord.getName()) - 3;
-		}
-		
-		//Get a new set of active name servers for this record
-		newActiveNameServers = NameServer.replicationFramework.newActiveReplica(nameRecord, numReplica, count);
-		
-		if (StartNameServer.debugMode) GNS.getLogger().fine("ComputeNewActives: Round:" + count + " Name:" + nameRecord.getName()
-				+ " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
-				+ " NewReplica:" + newActiveNameServers.toString());
-		
-		GNS.getStatLogger().info("ComputeNewActives: Round:" + count + " Name:" + nameRecord.getName()
-				+ " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
-				+ " NewReplica:" + newActiveNameServers.toString());
-		//		}
-		return newActiveNameServers;
-	}
+  private boolean isActiveSetModified(Set<Integer> oldActives, Set<Integer> newActives) {
+    if (oldActives.size() != newActives.size()) return  true;
+    for (int x: oldActives ) {
+      if (newActives.contains(x) == false) return true;
+    }
+    return false;
+  }
+
+
+  /**
+   * Calculates new set of active name servers depending on replication framework.
+   * @param rcRecord
+   */
+  private Set<Integer> getNewActiveNameServers(ReplicaControllerRecord rcRecord,
+                                               Set<Integer> oldActiveNameServers, int count) throws FieldNotFoundException{
+
+    Set<Integer> newActiveNameServers = null;
+
+    int numReplica = numberOfReplica(rcRecord);
+
+    // used for beehive.
+    if (StartNameServer.beehiveReplication) {
+      numReplica = BeehiveReplication.numActiveNameServers(rcRecord.getName()) - 3;
+    }
+
+    //Get a new set of active name servers for this record
+    newActiveNameServers = NameServer.replicationFramework.newActiveReplica(rcRecord, numReplica, count);
+
+    if (StartNameServer.debugMode) GNS.getLogger().fine("ComputeNewActives: Round:" + count + " Name:" + rcRecord.getName()
+            + " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
+            + " NewReplica:" + newActiveNameServers.toString());
+
+    GNS.getStatLogger().info("ComputeNewActives: Round:" + count + " Name:" + rcRecord.getName()
+            + " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
+            + " NewReplica:" + newActiveNameServers.toString());
+    //		}
+    return newActiveNameServers;
+  }
+
+
+  /**
+   * ***********************************************************
+   * Returns the size of active replicas set that should exist for this name record.
+   * The size of the active replica set
+   * depends on the lookup and update rate of this name record.
+   *
+   * @param rcRecord Name record
+   ***********************************************************
+   */
+  private static int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException{
+    double[] readWrites = rcRecord.recomputeAverageReadWriteRate();
+    double update = readWrites[0];
+    double lookup = readWrites[1];
+
+
+//		update = rcRecord.getWriteStats_Paxos();
+//		lookup = rcRecord.getReadStats_Paxos();
+
+//    NameServer.updateNameRecordPrimary(rcRecord);
+
+    int replicaCount = 0;
+    if (update == 0 && lookup == 0) {
+      // no requests seen, replicate at minimum number of locations.
+      replicaCount = StartNameServer.minReplica;
+    }
+    else if (update == 0) {
+      // no updates, replicate everywhere.
+      replicaCount = ConfigFileInfo.getNumberOfNameServers();
+    }
+    else {
+      replicaCount = StrictMath.round(StrictMath.round(
+              (lookup / (update * StartNameServer.normalizingConstant) + StartNameServer.minReplica)));
+
+      if (replicaCount > ConfigFileInfo.getNumberOfNameServers()) {
+        replicaCount =  ConfigFileInfo.getNumberOfNameServers();
+      }
+    }
+
+    // put in here for DNS experiments.
+    if (replicaCount > StartNameServer.maxReplica) replicaCount = StartNameServer.maxReplica;
+
+    GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t"
+            + rcRecord.getName() +"\tLookup\t" + lookup + "\tUpdateTrace\t" + update +
+            "\tReplicaCount\t" + replicaCount);
+
+    return replicaCount;
+  }
+
+  /**
+   * Apply the decision from paxos. Packet = NewActiveProposalPacket.
+   * @param decision
+   */
+  public static void applyNewActivesProposed(String decision) {
+
+    try {
+      NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
+
+
+      ArrayList<Field> readFields = new ArrayList<Field>();
+      readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
+      readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
+      readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+      readFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
+
+      ReplicaControllerRecord rcRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeProposalPacket.getName(), readFields);
+
+      if (rcRecordPrimary == null) {
+        if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: PAXOS DECISION: " +
+                "BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
+        return;
+      }
+
+      if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name = " + activeProposalPacket.getName()
+              + " Actives: " + activeProposalPacket.getProposedActiveNameServers()
+              + " DECISION: "+ decision );
+      if (rcRecordPrimary.isMarkedForRemoval()) {
+        if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION NOT APPLIED: actives not changed because rcRecord is markedForRemoval ");
+        return;
+      }
+
+      if (rcRecordPrimary.isActiveRunning() == false) {
+        if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION NOT APPLIED. Because most recently " +
+                "proposed active name servers is not yet running: " + rcRecordPrimary.getActiveNameservers());
+        return;
+      }
+
+      // All primaries will apply this decision.
+      rcRecordPrimary.updateActiveNameServers(activeProposalPacket.getProposedActiveNameServers(),
+              activeProposalPacket.getPaxosID());
+
+      if (StartNameServer.debugMode) GNS.getLogger().fine("Name Record Now: = " + rcRecordPrimary.toString());
+
+      // Step 1 complete: New Actives are chosen.
+
+      // Step 2: stop old paxos and write to primaries.
+      if (activeProposalPacket.getProposingNode() == NameServer.nodeID) { // if I have proposed this change, I will inform actives of this change.
+        if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS : Stop oldActiveSet now: Name = "
+                + activeProposalPacket.getName() + " Decision = " + decision);
+        StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
+                rcRecordPrimary.getOldActiveNameservers(),rcRecordPrimary.getOldActivePaxosID());
+        NameServer.timer.schedule(stopTask, 0, ReplicaController.TIMEOUT_INTERVAL);
+      }
+
+
+    } catch (JSONException e) {
+      if (StartNameServer.debugMode) GNS.getLogger().severe("JSON Exception in " +e.getMessage()) ;
+    } catch (FieldNotFoundException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      GNS.getLogger().severe("Unexpected Error: New Actives Accepted But Record Not Exists. " + e.getMessage());
+      e.printStackTrace();
+    } catch (RecordNotFoundException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+  }
 
 
 
-
-
-
-	/**
-	 * ***********************************************************
-	 * Returns the size of active replicas set that should exist for this name record. 
-	 * The size of the active replica set
-	 * depends on the lookup and update rate of this name record.
-	 *
-	 * @param nameRecord Name record
-	 ***********************************************************
-	 */
-	private static int numberOfReplica(ReplicaControllerRecord nameRecord) {
-		double update = 0;
-		double lookup = 0;
-		
-		update = nameRecord.getWriteStats_Paxos();
-		lookup = nameRecord.getReadStats_Paxos();
-		
-		NameServer.updateNameRecordPrimary(nameRecord);
-		
-		int replicaCount = 0;
-		if (update == 0 && lookup == 0) {
-			// no requests seen, replicate at minimum number of locations.
-			replicaCount = StartNameServer.minReplica;
-		}
-		else if (update == 0) {
-			// no updates, replicate everywhere.
-			replicaCount = ConfigFileInfo.getNumberOfNameServers();
-		}
-		else {
-			replicaCount = StrictMath.round(StrictMath.round(
-					(lookup / (update * StartNameServer.normalizingConstant) + StartNameServer.minReplica)));
-			
-			if (replicaCount > ConfigFileInfo.getNumberOfNameServers()) {
-				replicaCount =  ConfigFileInfo.getNumberOfNameServers();
-			}
-		}
-			
-		// put in here for DNS experiments.
-		if (replicaCount > StartNameServer.maxReplica) replicaCount = StartNameServer.maxReplica;
-		
-		GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t"
-		+ nameRecord.getName() +"\tLookup\t" + lookup + "\tUpdateTrace\t" + update +
-		"\tReplicaCount\t" + replicaCount);
-		
-		return replicaCount;
-	}
-	
-	/**
-	 * Apply the decision from paxos. Packet = NewActiveProposalPacket.
-	 * @param decision
-	 */
-	public static void applyNewActivesProposed(String decision) {
-		
-		try {
-			NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
-			ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(activeProposalPacket.getName());
-            if (nameRecordPrimary == null) {
-                if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: PAXOS DECISION: " +
-                        "BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
-                return;
-            }
-			
-			if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name = " + activeProposalPacket.getName()
-					+ " Actives: " + activeProposalPacket.getProposedActiveNameServers() 
-					+ " DECISION: "+ decision );
-			if (nameRecordPrimary.isMarkedForRemoval()) {
-				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION NOT APPLIED: actives not changed because namerecord is markedForRemoval ");
-				return;
-			}
-			
-			if (nameRecordPrimary.isActiveRunning() == false) {
-				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION NOT APPLIED. Because most recently " +
-						"proposed active name servers is not yet running: " + nameRecordPrimary.copyActiveNameServers());
-				return;
-			}
-			
-			// All primaries will apply this decision.
-			
-			nameRecordPrimary.updateActiveNameServers(activeProposalPacket.getProposedActiveNameServers(), 
-					activeProposalPacket.getPaxosID());
-			
-			if (StartNameServer.debugMode) GNS.getLogger().fine("Name Record Now: = " + nameRecordPrimary.toString());
-//			nameRecord.replaceActiveNameServers(activeProposalPacket.getProposedActiveNameServers());
-			// UpdateTrace Database.
-            NameServer.updateNameRecordPrimary(nameRecordPrimary);
-//			NameServer.updateNameRecord(nameRecord);
-			// TODO: 2-3 update database operations, reduce them.
-			
-			// Step 1 is done. New Actives are chosen.
-			
-			// Step 2: stop old paxos and write to primaries.
-			// if I have proposed this change, I will inform actives of this change.
-			if (activeProposalPacket.getProposingNode() == NameServer.nodeID) {
-				if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS : Stop oldActiveSet now: Name = "
-						+ activeProposalPacket.getName() + " Decision = " + decision);
-				ReplicaController.stopOldActives(nameRecordPrimary);
-				
-				// we're using timer instead of executor service because we need repeat execution.
-			}
-			else {
-				// This keeps the name record at primary in sync.
-				numberOfReplica(nameRecordPrimary);
-			}
-			
-		} catch (JSONException e) {
-			if (StartNameServer.debugMode) GNS.getLogger().severe("JSON Exception in " +e.getMessage()) ;
-		} 
-//		catch (IOException e) {
-//			if (StartNameServer.debugMode) GNRS.getLogger().severe("IO exception " + e.getMessage());
-//			e.printStackTrace();
-//		}
-	}
-	
 //	/**
 //	 * Updates name record at old/new actives (excluding primaries).
 //	 * Primaries would be updated when Paxos completes.
-//	 * @param nameRecord
+//	 * @param rcRecord
 //	 * @param count
 //	 * @param oldActiveNameServers
 //	 * @param newActiveNameServers
 //	 * @throws JSONException
 //	 * @throws IOException
 //	 */
-//	private static void updateOtherNameServers2(NameRecord nameRecord, int count,
+//	private static void updateOtherNameServers2(rcRecord nameRecord, int count,
 //			Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers)
 //					throws JSONException, IOException{
 //
@@ -350,5 +364,5 @@ public class ComputeNewActivesTask extends TimerTask
 //				+ "\t" + nameRecord.getPrimaryNameservers().toString());
 //	}
 
-	
+
 }

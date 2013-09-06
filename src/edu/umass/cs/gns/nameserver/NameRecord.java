@@ -36,9 +36,9 @@ public class NameRecord implements Comparable<NameRecord> {
 
   public final static Field TIME_TO_LIVE = new Field("nr_ttl", FieldType.INTEGER);
 
-  public final static Field VALUES_MAP = new Field("nr_valuesMap", FieldType.MAP);
+  public final static Field VALUES_MAP = new Field("nr_valuesMap", FieldType.VALUES_MAP);
 
-  public final static Field OLD_VALUES_MAP = new Field("nr_oldValuesMap", FieldType.MAP);
+  public final static Field OLD_VALUES_MAP = new Field("nr_oldValuesMap", FieldType.VALUES_MAP);
 
   public final static Field TOTAL_UPDATE_REQUEST = new Field("nr_totalUpdateRequest", FieldType.INTEGER);
 
@@ -461,31 +461,31 @@ public class NameRecord implements Comparable<NameRecord> {
 
 
   public void setActiveNameServers(Set<Integer> activeNameServers1) {
-
+    throw new UnsupportedOperationException();
   }
 
   public void setActiveNameservers(Set<Integer> activeNameservers) {
-
+    throw new UnsupportedOperationException();
   }
 
   public void setActivePaxosID(String activePaxosID) {
-
+    throw new UnsupportedOperationException();
   }
 
   public void setOldActivePaxosID(String oldActivePaxosID) {
-
+    throw new UnsupportedOperationException();
   }
 
   public void setTotalLookupRequest(int totalLookupRequest) {
-
+    throw new UnsupportedOperationException();
   }
 
   public void setTotalUpdateRequest(int totalUpdateRequest) {
-
+    throw new UnsupportedOperationException();
   }
 
   public void setOldValuesMap(ValuesMap oldValuesMap) {
-
+    throw new UnsupportedOperationException();
   }
   
   /**

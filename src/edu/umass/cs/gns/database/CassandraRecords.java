@@ -77,7 +77,7 @@ public class CassandraRecords implements NoSQLRecords {
   private static List<CassandraRecords.CollectionSpec> collectionSpecs =
           Arrays.asList(
           new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getFieldName()),
-          new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME));
+          new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getFieldName()));
 
   public CassandraRecords() {
     dbName = DBROOTNAME + NameServer.nodeID;

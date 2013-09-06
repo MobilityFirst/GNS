@@ -5,12 +5,7 @@
 package edu.umass.cs.gns.database;
 
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.main.GNS;
@@ -29,20 +24,13 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.Util;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -97,7 +85,7 @@ public class MongoRecords implements NoSQLRecords {
   private static List<CollectionSpec> collectionSpecs =
           Arrays.asList(
           new CollectionSpec(DBNAMERECORD, NameRecord.NAME.getFieldName()),
-          new CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME));
+          new CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getFieldName()));
 
   public static MongoRecords getInstance() {
     return MongoRecordCollectionHolder.INSTANCE;
@@ -577,6 +565,9 @@ public class MongoRecords implements NoSQLRecords {
             else  {
               String value = fieldValue.toString();
               switch (f.type()) {
+                case BOOLEAN:
+                  hashMap.put(f, Boolean.parseBoolean(value));
+                  break;
                 case INTEGER:
                   hashMap.put(f, Integer.parseInt(value));
                   break;
@@ -590,6 +581,13 @@ public class MongoRecords implements NoSQLRecords {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                   }
                   break;
+                case LIST_INTEGER:
+                  try {
+                    hashMap.put(f,JSONUtils.JSONArrayToArrayListInteger(new JSONArray(value)));
+                  } catch (JSONException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  }
+                  break;
                 case LIST_STRING:
                   try {
                     hashMap.put(f,JSONUtils.JSONArrayToArrayList(new JSONArray(value)));
@@ -597,14 +595,29 @@ public class MongoRecords implements NoSQLRecords {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                   }
                   break;
-                case MAP:
+                case VALUES_MAP:
                   try {
                     hashMap.put(f, new ValuesMap(new JSONObject(value)));
                   } catch (JSONException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                   }
                   break;
+                case VOTES_MAP:
+                  try {
+                    hashMap.put(f, JSONUtils.toIntegerMap(new JSONObject(value)));
+                  } catch (JSONException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  }
+                  break;
+                case STATS_MAP:
+                  try {
+                    hashMap.put(f, JSONUtils.toStatsMap(new JSONObject(value)));
+                  } catch (JSONException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  }
+                  break;
                 default:
+                  GNS.getLogger().severe("Exception Error Unknown type " + f + "value = " + value);
                   break;
               }
             }
@@ -666,7 +679,7 @@ public class MongoRecords implements NoSQLRecords {
       if (fields1 != null){
         for (int i = 0; i < fields1.size(); i++) {
           Object newValue;
-          if (fields1.get(i).type() == FieldType.MAP) {
+          if (fields1.get(i).type() == FieldType.VALUES_MAP) {
             newValue = ((ValuesMap)values1.get(i)).getMap();
           }
           else {
@@ -707,7 +720,7 @@ public class MongoRecords implements NoSQLRecords {
       if (fields1 != null){
         for (int i = 0; i < fields1.size(); i++) {
           Object newValue;
-          if (fields1.get(i).type() == FieldType.MAP) {
+          if (fields1.get(i).type() == FieldType.VALUES_MAP) {
             newValue = ((ValuesMap)values1.get(i)).getMap();
           }
           else {

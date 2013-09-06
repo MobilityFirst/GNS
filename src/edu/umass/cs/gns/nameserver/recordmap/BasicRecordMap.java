@@ -7,7 +7,6 @@ package edu.umass.cs.gns.nameserver.recordmap;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -113,7 +112,7 @@ public abstract class BasicRecordMap implements RecordMapInterface {
     String result = getNameRecordField(name, key);
     if (result != null) {
       try {
-        return new ConcurrentHashMap<Integer, StatsInfo>(ReplicaControllerRecord.toStatsMap(new JSONObject(result)));
+        return new ConcurrentHashMap<Integer, StatsInfo>(JSONUtils.toStatsMap(new JSONObject(result)));
       } catch (JSONException e) {
         GNS.getLogger().finer("Error parsing result " + name + " with key " + key + " :" + e);
         return null;
@@ -127,7 +126,7 @@ public abstract class BasicRecordMap implements RecordMapInterface {
     String result = getNameRecordField(name, key);
     if (result != null) {
       try {
-        return new ConcurrentHashMap<Integer, Integer>(ReplicaControllerRecord.toIntegerMap(new JSONObject(result)));
+        return new ConcurrentHashMap<Integer, Integer>(JSONUtils.toIntegerMap(new JSONObject(result)));
       } catch (JSONException e) {
         GNS.getLogger().finer("Error parsing result " + name + " with key " + key + " :" + e);
         return null;

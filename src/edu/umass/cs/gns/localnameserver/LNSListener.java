@@ -2,7 +2,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nameserver.NSNodeConfig;
+import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
@@ -36,7 +36,7 @@ public class LNSListener extends Thread {
     udpTransport = new Transport(LocalNameServer.nodeID, ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
 //    tcpTransport = new NioServer2(LocalNameServer.nodeID,new ByteStreamToJSONObjects(this));
 
-    tcpTransport = new NioServer2(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new NSNodeConfig());
+    tcpTransport = new NioServer2(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
     new Thread(tcpTransport).start();
 
 

@@ -8,9 +8,13 @@ package edu.umass.cs.gns.nameserver.fields;
  * To change this template use File | Settings | File Templates.
  */
 public enum FieldType {
+  BOOLEAN,
   INTEGER,
   STRING,
   SET_INTEGER,
+  LIST_INTEGER,
   LIST_STRING,
-  MAP
+  VALUES_MAP,
+  VOTES_MAP,
+  STATS_MAP
 }

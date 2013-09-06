@@ -5,6 +5,8 @@
 package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import org.json.JSONArray;
@@ -12,6 +14,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
@@ -139,16 +143,28 @@ public class JSONUtils {
   public static Object getObject(Field field, JSONObject jsonObject) throws JSONException{
     if (jsonObject.has(field.getFieldName())) {
       switch (field.type()) {
+        case BOOLEAN:
+          return jsonObject.getBoolean(field.getFieldName());
         case INTEGER:
           return jsonObject.getInt(field.getFieldName());
         case STRING:
           return jsonObject.getString(field.getFieldName());
         case SET_INTEGER:
           return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getFieldName()));
+        case LIST_INTEGER:
+          return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getFieldName()));
         case LIST_STRING:
           return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getFieldName()));
-        case MAP:
+        case VALUES_MAP:
           return new ValuesMap(jsonObject.getJSONObject(field.getFieldName()));
+        case VOTES_MAP:
+          return toIntegerMap(jsonObject.getJSONObject(field.getFieldName()));
+        case STATS_MAP:
+          return toStatsMap(jsonObject.getJSONObject(field.getFieldName()));
+        default:
+          GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
+          break;
+
       }
     }
     return null;
@@ -177,24 +193,90 @@ public class JSONUtils {
   public static void putFieldInJsonObject(Field field, Object value, JSONObject jsonObject) throws JSONException {
     if (value == null) return;
     switch (field.type()) {
-
+      case BOOLEAN:
+        jsonObject.put(field.getFieldName(), value);
+        break;
       case INTEGER:
-        jsonObject.put(field.getFieldName(), (Integer)value);
+        jsonObject.put(field.getFieldName(), value);
         break;
       case STRING:
-        jsonObject.put(field.getFieldName(), (String)value);
+        jsonObject.put(field.getFieldName(), value);
         break;
       case SET_INTEGER:
         jsonObject.put(field.getFieldName(), (Set<Integer>)value);
         break;
+      case LIST_INTEGER:
+        jsonObject.put(field.getFieldName(), (ArrayList<Integer>)value);
+        break;
       case LIST_STRING:
         jsonObject.put(field.getFieldName(), (ArrayList<String>)value);
         break;
-      case MAP:
+      case VALUES_MAP:
         jsonObject.put(field.getFieldName(), ((ValuesMap)value).toJSONObject());
         break;
-
+      case VOTES_MAP:
+        jsonObject.put(field.getFieldName(), ((ConcurrentMap<Integer,Integer>)value));
+        break;
+      case STATS_MAP:
+        jsonObject.put(field.getFieldName(), ((ConcurrentMap<Integer,StatsInfo>)value));
+        break;
+      default:
+        GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
+        break;
     }
 
   }
+
+
+
+  /*******************************************
+   *  Utilities for converting maps to JSON objects
+   *******************************************/
+
+
+  public static ConcurrentHashMap<Integer, Integer> toIntegerMap(JSONObject json) {
+    HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+    try {
+      Iterator<String> nameItr = json.keys();
+      while (nameItr.hasNext()) {
+        String name = nameItr.next();
+        map.put(Integer.valueOf(name), json.getInt(name));
+      }
+    } catch (JSONException e) {
+    }
+    return new ConcurrentHashMap<Integer, Integer>(map);
+  }
+
+  public static ConcurrentHashMap<Integer, StatsInfo> toStatsMap(JSONObject json) { //
+    HashMap<Integer, StatsInfo> map = new HashMap<Integer, StatsInfo>();
+    try {
+      Iterator<String> nameItr = json.keys();
+      while (nameItr.hasNext()) {
+        String name = nameItr.next();
+        map.put(Integer.valueOf(name), new StatsInfo(json.getJSONObject(name)));
+      }
+    } catch (JSONException e) {
+    }
+    return new ConcurrentHashMap<Integer, StatsInfo>(map);
+  }
+
+  public JSONObject statsMapToJSONObject(ConcurrentMap<Integer, StatsInfo> map) {
+    JSONObject json = new JSONObject();
+    try {
+      if (map != null) {
+        for (Map.Entry<Integer, StatsInfo> e : map.entrySet()) {
+          StatsInfo value = e.getValue();
+          if (value != null) {
+            JSONObject jsonStats = new JSONObject();
+            jsonStats.put("read", value.getRead());
+            jsonStats.put("write", value.getWrite());
+            json.put(e.getKey().toString(), jsonStats);
+          }
+        }
+      }
+    } catch (JSONException e) {
+    }
+    return json;
+  }
+
 }

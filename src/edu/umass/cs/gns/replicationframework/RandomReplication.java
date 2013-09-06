@@ -1,14 +1,10 @@
 package edu.umass.cs.gns.replicationframework;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-
+import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+
+import java.util.*;
 
 /*************************************************************
  * This class implements the ReplicationFramework interface
@@ -19,7 +15,7 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 public class RandomReplication implements ReplicationFramework {
 
 	@Override
-	public Set<Integer> newActiveReplica(ReplicaControllerRecord nameRecordPrimary, int numReplica, int count ) {
+	public Set<Integer> newActiveReplica(ReplicaControllerRecord nameRecordPrimary, int numReplica, int count ) throws FieldNotFoundException{
 		// random replicas will be selected deterministically for each name.
 		
 		if( numReplica == ConfigFileInfo.getNumberOfNameServers() ) {
@@ -29,13 +25,15 @@ public class RandomReplication implements ReplicationFramework {
 			}
 			return activeNameServerSet;
 		}
-		
-		int numActiveNameServers = nameRecordPrimary.numActiveNameServers();
+
+    Set<Integer> activeNameServers = nameRecordPrimary.getActiveNameservers();
+
+		int numActiveNameServers = activeNameServers.size();
 		
 		if( numReplica > numActiveNameServers && count > 1 ) {
 			//Randomly add new active name server
 			int add = numReplica - numActiveNameServers;
-			Set<Integer> newActiveNameServerSet = new HashSet<Integer>( nameRecordPrimary.copyActiveNameServers() );
+			Set<Integer> newActiveNameServerSet = new HashSet<Integer>( activeNameServers );
 			//Randomly choose active name servers from a uniform distribution between
 			//0 and N where N is 'add'
 			for( int i = 1; i <= add; i++ ) {
@@ -56,7 +54,7 @@ public class RandomReplication implements ReplicationFramework {
 			//Randomly remove old active name server
 			
 			int sub = numActiveNameServers - numReplica;
-			List<Integer> oldActiveNameServerSet = new ArrayList<Integer>( nameRecordPrimary.copyActiveNameServers() );
+			List<Integer> oldActiveNameServerSet = new ArrayList<Integer>( activeNameServers);
 			
 			// remove elements from the end of list.
 			for( int i = 1; i <= sub; i++) {
@@ -84,7 +82,7 @@ public class RandomReplication implements ReplicationFramework {
 			}
 			else {
 				//Return the old set of active name servers
-				return nameRecordPrimary.copyActiveNameServers();
+				return activeNameServers;
 			}
 		}
 		
