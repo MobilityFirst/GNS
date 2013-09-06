@@ -65,45 +65,6 @@ public class NameServer {
     // Ditto for the replica controller records
     NameServer.replicaController = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
             MongoRecords.DBREPLICACONTROLLER);
-//
-//    // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
-//    NameServer.recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
-//    // Ditto for the replica controller records
-//    NameServer.replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
-
-    // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
-    //NameServer.recordMap = new CassandraRecordMap(CassandraRecords.DBNAMERECORD);
-    // Ditto for the replica controller records
-    //NameServer.replicaController = new CassandraRecordMap(CassandraRecords.DBREPLICACONTROLLER);
-
-
-    // will need to add back some form of the code to select the appropriate one
-    // probably make persistentDataStore a selector
-
-//    if (StartNameServer.persistentDataStore) {
-//      if (StartNameServer.debugMode) {
-//        GNS.getLogger().info("NS Node " + NameServer.nodeID + " using Mongo DB ");
-//      }
-//      //throw new UnsupportedOperationException("MongoRecordMap is not supported yet.");
-//      NameServer.recordMap = new MongoRecordMap();
-//      //NameServer.recordMap = new InCoreRecordMapJSON();
-//
-////      if (StartNameServer.debugMode) GNRS.getLogger().info("NS Node " + NameServer.nodeID + " using Cassandra DB ");
-////      NameServer.recordMap = new CassandraRecordMap();
-//    } else if (StartNameServer.simpleDiskStore) {
-//      throw new UnsupportedOperationException("InCoreWithDiskBackup is not supported yet.");
-////      if (StartNameServer.debugMode) {
-////        GNRS.getLogger().info("NS Node " + NameServer.nodeID + " using Simple Disk Store DB ");
-////      }
-////      NameServer.recordMap = new InCoreWithDiskBackupV1();
-//    } else {
-//      //throw new UnsupportedOperationException("InCoreRecordMap is not supported yet.");
-//      if (StartNameServer.debugMode) {
-//        GNS.getLogger().info("NS Node " + NameServer.nodeID + " using In Core DB ");
-//      }
-//      NameServer.recordMap = new InCoreRecordMapJSON();
-//    }
-
 
     // what type of replication?
     if (StartNameServer.locationBasedReplication) {
@@ -238,7 +199,6 @@ public class NameServer {
 ////    }
 //
 //  }
-  // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
 
   public static NameRecord getNameRecord(String name) throws RecordNotFoundException{
     return recordMap.getNameRecord(name);

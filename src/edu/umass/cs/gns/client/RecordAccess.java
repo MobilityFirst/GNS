@@ -1,15 +1,17 @@
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import org.json.JSONArray;
 
 import java.security.acl.AclEntry;
 import java.util.ArrayList;
+import org.json.JSONException;
 
 /**
- * A frontend to the the table which stores the fields and values. Provides conversion between the database to java
- * objects
+ * A frontend to the the table which stores the fields and values. Provides conversion between the database to java objects
  *
  * See {@link AclEntry)
  *
@@ -38,7 +40,20 @@ public class RecordAccess {
       return new String();
     }
   }
-  
+
+  public String lookupMultipleValues(String guid, String key) {
+    Intercessor client = Intercessor.getInstance();
+    ValuesMap result = client.sendMultipleReturnValueQuery(guid, key);
+    try {
+      if (result != null) {
+        return result.toJSONObject().toString();
+      }
+    } catch (JSONException e) {
+       GNS.getLogger().severe("Problem parsing multiple value return:" + e);
+    }
+    return new String();
+  }
+
   public String lookupOne(String guid, String key) {
     Intercessor client = Intercessor.getInstance();
     ArrayList<String> result = client.sendQuery(guid, key);
@@ -58,5 +73,4 @@ public class RecordAccess {
     Intercessor client = Intercessor.getInstance();
     return client.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
   }
- 
 }

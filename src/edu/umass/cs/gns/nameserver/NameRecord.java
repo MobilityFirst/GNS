@@ -13,18 +13,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
 /**
- * Created with IntelliJ IDEA.
- * User: abhigyan
- * Date: 9/2/13
- * Time: 1:17 AM
- * To change this template use File | Settings | File Templates.
+ * 
+ * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
  */
-public class NameRecord {
-
+public class NameRecord implements Comparable<NameRecord> {
+  
   public final static Field NAME = new Field("nr_name", FieldType.STRING);
 
   public final static Field ACTIVE_NAMESERVERS = new Field("nr_active", FieldType.SET_INTEGER);
@@ -487,6 +486,23 @@ public class NameRecord {
 
   public void setOldValuesMap(ValuesMap oldValuesMap) {
 
+  }
+  
+  /**
+   * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
+   * 
+   * @param d
+   * @return 
+   */
+   @Override
+  public int compareTo(NameRecord d) {
+    int result;
+    try {
+      result = (this.getName()).compareTo(d.getName());
+    } catch (FieldNotFoundException ex) {
+      result = 0;
+    }
+    return result;
   }
 
 

@@ -46,7 +46,7 @@ public class RemoveTest {
     GNS.getLogger().info("RECORD CREATION:");
     AccountAccess fred = new AccountAccess();
     fred.addAccount(name, guid, publicKey, guid);
-    client.sendUpdateRecordWithConfirmation(guid, GroupAccess.GROUPV2, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+    client.sendUpdateRecordWithConfirmation(guid, GroupAccess.GROUP, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
 
 //    GNS.getLogger().info("GSN LOOKUP:");
 //    QueryResultValue result = client.sendQuery(name, AccountAccess.GUID);
@@ -56,13 +56,13 @@ public class RemoveTest {
 //    QueryResultValue guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
 //    GNS.getLogger().info(guid + ": " + AccountAccess.GUID_INFO + " -> " + new GuidInfo(guidResult).toJSONObject().toString());
 
-    ArrayList<String> result = client.sendQuery(guid, GroupAccess.GROUPV2);
-    GNS.getLogger().info(guid + ": " + GroupAccess.GROUPV2 + " -> " + result);
+    ArrayList<String> result = client.sendQuery(guid, GroupAccess.GROUP);
+    GNS.getLogger().info(guid + ": " + GroupAccess.GROUP + " -> " + result);
 
-    client.sendUpdateRecordWithConfirmation(guid, GroupAccess.GROUPV2, memberGuid, null, UpdateOperation.REMOVE);
+    client.sendUpdateRecordWithConfirmation(guid, GroupAccess.GROUP, memberGuid, null, UpdateOperation.REMOVE);
     
-    result = client.sendQuery(guid, GroupAccess.GROUPV2);
-    GNS.getLogger().info(guid + ": " + GroupAccess.GROUPV2 + " -> " + result);
+    result = client.sendQuery(guid, GroupAccess.GROUP);
+    GNS.getLogger().info(guid + ": " + GroupAccess.GROUP + " -> " + result);
 
   }
 

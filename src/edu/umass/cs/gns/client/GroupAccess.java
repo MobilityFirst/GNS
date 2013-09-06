@@ -27,21 +27,21 @@ public class GroupAccess {
 
         private static final GroupAccess INSTANCE = new GroupAccess();
     }
-    public static final String GROUPV2 = Defs.INTERNAL_PREFIX + "groupv2";
+    public static final String GROUP = Defs.INTERNAL_PREFIX + "group";
 
     public boolean addToGroup(String guid, String memberGuid) {
         Intercessor client = Intercessor.getInstance();
-        return client.sendUpdateRecordWithConfirmation(guid, GROUPV2, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+        return client.sendUpdateRecordWithConfirmation(guid, GROUP, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
     }
 
     public boolean removeFromGroup(String guid, String memberGuid) {
         Intercessor client = Intercessor.getInstance();
-        return client.sendUpdateRecordWithConfirmation(guid, GROUPV2, memberGuid, null, UpdateOperation.REMOVE);
+        return client.sendUpdateRecordWithConfirmation(guid, GROUP, memberGuid, null, UpdateOperation.REMOVE);
     }
 
     public ArrayList<String> lookup(String guid) {
         Intercessor client = Intercessor.getInstance();
-      ArrayList<String> result = client.sendQuery(guid, GROUPV2);
+      ArrayList<String> result = client.sendQuery(guid, GROUP);
         if (result != null) {
             return new ArrayList<String>(result);
         } else {

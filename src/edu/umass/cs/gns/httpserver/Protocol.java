@@ -596,8 +596,7 @@ public class Protocol {
     } else if (!verifyAccess(AccessType.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
-      //return mainTable.lookup(userInfo.getGuid()).toString();
-      return BADRESPONSE + " " + OPERATIONNOTSUPPORTED;
+      return recordAccess.lookupMultipleValues(guid, ALLFIELDS);
     } else {
       return recordAccess.lookup(guidInfo.getGuid(), field);
     }

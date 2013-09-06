@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.httpserver.Protocol;
@@ -14,22 +10,38 @@ import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.packet.AddRecordPacket;
+import edu.umass.cs.gns.packet.AdminRequestPacket;
+import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.DNSRecordType;
+import edu.umass.cs.gns.packet.DumpRequestPacket;
+import edu.umass.cs.gns.packet.Header;
+import edu.umass.cs.gns.packet.Packet;
+import static edu.umass.cs.gns.packet.Packet.*;
+import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.packet.Transport;
+import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.JSONUtils;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.cli.Options;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import static edu.umass.cs.gns.packet.Packet.*;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
 /**
@@ -56,6 +68,10 @@ public class Intercessor {
    * Used by the wait/notify calls *
    */
   private final Object monitor = new Object();
+  /**
+   * We use a ValuesMap for return values even when returning a signal value. This lets us use the same structure for single and
+   * multiple value returns.
+   */
   private static ConcurrentMap<Integer, ValuesMap> queryResult;
   private static final ValuesMap ERRORQUERYRESULT = new ValuesMap();
   private static Random randomID;
@@ -181,8 +197,17 @@ public class Intercessor {
     }
   }
 
-  // QUERYING
   public ArrayList<String> sendQuery(String name, String key) {
+    ValuesMap result = sendMultipleReturnValueQuery(name, key);
+    if (result != null) {
+      return result.get(key);
+    } else {
+      return null;
+    }
+  }
+
+  // QUERYING
+  public ValuesMap sendMultipleReturnValueQuery(String name, String key) {
     int id = randomID.nextInt();
     GNS.getLogger().fine("sending query ... " + name + " " + key);
     //Generate unique id for the query
@@ -222,11 +247,11 @@ public class Intercessor {
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
     }
-    
+
     if (result == ERRORQUERYRESULT) {
       return null;
     } else {
-      return result.get(key);
+      return result;
     }
   }
 
