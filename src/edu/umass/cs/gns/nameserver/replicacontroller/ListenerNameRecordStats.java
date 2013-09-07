@@ -56,11 +56,11 @@ public class ListenerNameRecordStats extends Thread {
       try {
 //      rcRecord = NameServer.getNameRecordPrimaryMultiField(selectionPacket.getName(), readFields);
         rcRecord.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote(),selectionPacket.getUpdate());
-        try {
-          if (StartNameServer.debugMode) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION (after) " + NameServer.getNameRecordPrimary(selectionPacket.getName()));
-        } catch (RecordNotFoundException e) {
-          // no exception possible here
-        }
+//        try {
+//          if (StartNameServer.debugMode) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION (after) " + NameServer.getNameRecordPrimary(selectionPacket.getName()));
+//        } catch (RecordNotFoundException e) {
+//          // no exception possible here
+//        }
       } catch (FieldNotFoundException e) {
         GNS.getLogger().severe("Field not found exception. " + e.getMessage());
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
