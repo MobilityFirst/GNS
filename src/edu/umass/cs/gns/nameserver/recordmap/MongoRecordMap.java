@@ -161,6 +161,21 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public Object getIterator(Field nameField, ArrayList<Field> fields) {
+    return MongoRecords.getInstance().getIterator(collectionName,nameField, fields);
+  }
+
+  @Override
+  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
+    return MongoRecords.getInstance().next(iterator, nameField, fields);
+  }
+
+  @Override
+  public void returnIterator() {
+    MongoRecords.getInstance().returnIterator();
+  }
+
+  @Override
   public NameRecord getNameRecord(String name) throws RecordNotFoundException{
     try {
       JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);

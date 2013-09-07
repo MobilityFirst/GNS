@@ -101,6 +101,15 @@ public interface NoSQLRecords {
   public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1,
                         Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
 
+
+  public Object getIterator(String collection, Field nameField, ArrayList<Field> fields);
+
+  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields);
+
+  public void returnIterator();
+
+//  public DBIterator getIterator(String collection);
+
   @Override
   public String toString();
  

@@ -7,7 +7,7 @@ import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.NewActiveProposalPacket;
-import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.TimerTask;
 
@@ -34,60 +35,96 @@ public class ComputeNewActivesTask extends TimerTask
   public void run()
   {
     replicationRound++;
+    int count = 0;
 
     if (StartNameServer.debugMode) GNS.getLogger().fine("ComputeNewActives: " + replicationRound);
 
-    //Iterate through the rcRecord and check if any changes need to
-    //be made to the active name server set
-    Set<ReplicaControllerRecord> rcRecords = NameServer.getAllPrimaryNameRecords();
-    if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfrcRecords\t" + rcRecords.size());
+    ArrayList<Field> readFields = new ArrayList<Field>();
+    readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
+    readFields.add(ReplicaControllerRecord.PRIMARY_NAMESERVERS);
+    readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
 
-    int count = 0;
-    for (ReplicaControllerRecord rcRecord : rcRecords) {
-      try {
+    readFields.add(ReplicaControllerRecord.PREV_TOTAL_READ);
+    readFields.add(ReplicaControllerRecord.PREV_TOTAL_WRITE);
+    readFields.add(ReplicaControllerRecord.MOV_AVG_READ);
+    readFields.add(ReplicaControllerRecord.MOV_AVG_WRITE);
 
 
-        if (rcRecord.isMarkedForRemoval()) {
-          continue;
-        }
+
+    Object iterator = NameServer.replicaController.getIterator(ReplicaControllerRecord.NAME,readFields);
+//    if (StartNameServer.debugMode) GNS.getLogger().fine("Got iterator : " + replicationRound);
+    try {
+
+
+      while (true) {
         count++;
-        if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound);
-
-        if (!rcRecord.getPrimaryNameservers().contains(NameServer.nodeID) ||
-                !ReplicaController.isSmallestPrimaryRunning(rcRecord.getPrimaryNameservers())) {
-          rcRecord.recomputeAverageReadWriteRate(); // this will keep moving average calculation updated.
-          continue;
+        HashMap<Field,Object> hashMap = NameServer.replicaController.next(iterator, ReplicaControllerRecord.NAME, readFields);
+//        if (StartNameServer.debugMode) GNS.getLogger().finer("Got next: " + count);
+        if (hashMap == null) {
+//          if (StartNameServer.debugMode) GNS.getLogger().finer("BREAK!! ");
+          break;
         }
+        ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(hashMap);
 
-        if (StartNameServer.debugMode) GNS.getLogger().fine("I am the smallest primary NS up, I will select new actives.");
+        //Iterate through the rcRecord and check if any changes need to
+        //be made to the active name server set
+//    Set<ReplicaControllerRecord> rcRecords = NameServer.getAllPrimaryNameRecords();
+//    if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfrcRecords\t" + rcRecords.size());
+//
+//
+//    for (ReplicaControllerRecord rcRecord : rcRecords) {
+        try {
 
-        Set<Integer> oldActiveNameServers = rcRecord.getActiveNameservers();
-        Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord,
-                rcRecord.getActiveNameservers(), replicationRound);
 
+          if (rcRecord.isMarkedForRemoval()) {
+            continue;
+          }
 
-        if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
-          if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpadingOtherActives");
+//          count++;
+          if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound);
 
-          String newActivePaxosID = ReplicaController.getActivePaxosID(rcRecord);
-          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(),
-                  //rcRecord.getRecordKey(),
-                  NameServer.nodeID, newActiveNameServers, newActivePaxosID);
-          String paxosID = ReplicaController.getPrimaryPaxosID(rcRecord);
-          boolean isStop = false;
-          RequestPacket requestPacket = new RequestPacket(PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(),
-                  PaxosPacketType.REQUEST, isStop);
-          PaxosManager.propose(paxosID, requestPacket);
-          if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
+          if (!rcRecord.getPrimaryNameservers().contains(NameServer.nodeID) ||
+                  !ReplicaController.isSmallestPrimaryRunning(rcRecord.getPrimaryNameservers())) {
+            rcRecord.recomputeAverageReadWriteRate(); // this will keep moving average calculation updated.
+            continue;
+          }
+
+          if (StartNameServer.debugMode) GNS.getLogger().fine("I am the smallest primary NS up, I will select new actives.");
+
+          Set<Integer> oldActiveNameServers = rcRecord.getActiveNameservers();
+          Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord,
+                  rcRecord.getActiveNameservers(), replicationRound);
+
+          if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
+            if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() +
+                    "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpadingOtherActives");
+
+            String newActivePaxosID = ReplicaController.getActivePaxosID(rcRecord);
+            NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(), NameServer.nodeID,
+                    newActiveNameServers, newActivePaxosID);
+            String paxosID = ReplicaController.getPrimaryPaxosID(rcRecord);
+            boolean isStop = false;
+            RequestPacket requestPacket = new RequestPacket(Packet.PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(),
+                    PaxosPacketType.REQUEST, isStop);
+
+            PaxosManager.propose(paxosID, requestPacket);
+            if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
+          }
+          else {
+            if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
+          }
+        } catch (FieldNotFoundException e) {
+          GNS.getLogger().severe("Field Not Found Exception: " + e.getMessage());
+          e.printStackTrace();
         }
-        else {
-          if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
-        }
-      } catch (FieldNotFoundException e) {
-        GNS.getLogger().severe("Field Not Found Exception: " + e.getMessage());
-        e.printStackTrace();
       }
+
+    } finally {
+      NameServer.replicaController.returnIterator();
     }
+
+    GNS.getLogger().fine("Reached end of code ... " );
+
 
   }
 

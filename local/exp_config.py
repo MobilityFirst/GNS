@@ -36,7 +36,7 @@ load_balancing = False
 
 primary_name_server = 3
 
-replication_interval = 5
+replication_interval = 3
 
 is_beehive_replication = False
 is_location_replication = False

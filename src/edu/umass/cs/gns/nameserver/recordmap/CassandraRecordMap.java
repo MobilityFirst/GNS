@@ -161,6 +161,21 @@ public class CassandraRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public Object getIterator(Field nameField, ArrayList<Field> fields) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public void returnIterator() {
+    return;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public NameRecord getNameRecord(String name) {
     try {
       JSONObject json = CassandraRecords.getInstance().lookup(collectionName, name);

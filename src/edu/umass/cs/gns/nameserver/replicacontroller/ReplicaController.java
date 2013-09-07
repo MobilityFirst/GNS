@@ -460,7 +460,7 @@ public class ReplicaController {
     try {
 
       if (nameRecordPrimary.isMarkedForRemoval() == true) {
-        nameRecordPrimary.setOldActiveStopped(packet.getPaxosIDToBeStopped()); // why do we need this stmt?
+//        nameRecordPrimary.setOldActiveStopped(packet.getPaxosIDToBeStopped()); // why do we need this stmt?
         PaxosManager.propose(paxosID, new RequestPacket(PacketType.PRIMARY_PAXOS_STOP.getInt(),
                         packet.toString(), PaxosPacketType.REQUEST, true));
         if (StartNameServer.debugMode) {

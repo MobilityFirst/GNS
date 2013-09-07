@@ -296,6 +296,22 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
+  public Object getIterator(String collection, Field nameField, ArrayList<Field> fields) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+
+  @Override
+  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public void returnIterator() {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public ArrayList<JSONObject> retrieveAllEntries(String tableName) {
     ArrayList<JSONObject> result = new ArrayList<JSONObject>();
     String query = "SELECT * FROM " + CSI(tableName) + ";";

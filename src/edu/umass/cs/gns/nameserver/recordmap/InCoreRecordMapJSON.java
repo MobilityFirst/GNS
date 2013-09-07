@@ -191,6 +191,21 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  @Override
+  public Object getIterator(Field nameField, ArrayList<Field> fields) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public void returnIterator() {
+    return;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
   //
   // THESE WILL BE DEPRECATED
   //

@@ -364,7 +364,6 @@ public class ReplicaControllerRecord {
 
   /**
    * whether the flag is set of not.
-   *
    * @return
    */
   public boolean isMarkedForRemoval() throws FieldNotFoundException{

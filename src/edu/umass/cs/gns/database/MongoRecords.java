@@ -563,72 +563,7 @@ public class MongoRecords implements NoSQLRecords {
       if (cursor.hasNext()) {
         hashMap.put(nameField,guid);// put the name in the hashmap!! very important!!
         DBObject dbObject = cursor.next();
-//        System.out.println("Object read ---> " +dbObject);
-        if (fields1 != null) {
-          for (Field f: fields1) {
-            Object fieldValue = dbObject.get(f.getFieldName());
-            if (fieldValue == null) hashMap.put(f,null); //.add(null);
-            else  {
-              String value = fieldValue.toString();
-              switch (f.type()) {
-                case BOOLEAN:
-                  hashMap.put(f, Boolean.parseBoolean(value));
-                  break;
-                case INTEGER:
-                  hashMap.put(f, Integer.parseInt(value));
-                  break;
-                case STRING:
-                  hashMap.put(f, value);
-                  break;
-                case SET_INTEGER:
-                  try {
-                    hashMap.put(f, JSONUtils.JSONArrayToSetInteger(new JSONArray(value)));
-                  } catch (JSONException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }
-                  break;
-                case LIST_INTEGER:
-                  try {
-                    hashMap.put(f,JSONUtils.JSONArrayToArrayListInteger(new JSONArray(value)));
-                  } catch (JSONException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }
-                  break;
-                case LIST_STRING:
-                  try {
-                    hashMap.put(f,JSONUtils.JSONArrayToArrayList(new JSONArray(value)));
-                  } catch (JSONException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }
-                  break;
-                case VALUES_MAP:
-                  try {
-                    hashMap.put(f, new ValuesMap(new JSONObject(value)));
-                  } catch (JSONException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }
-                  break;
-                case VOTES_MAP:
-                  try {
-                    hashMap.put(f, JSONUtils.toIntegerMap(new JSONObject(value)));
-                  } catch (JSONException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }
-                  break;
-                case STATS_MAP:
-                  try {
-                    hashMap.put(f, JSONUtils.toStatsMap(new JSONObject(value)));
-                  } catch (JSONException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }
-                  break;
-                default:
-                  GNS.getLogger().severe("Exception Error Unknown type " + f + "value = " + value);
-                  break;
-              }
-            }
-          }
-        }
+        populateHashMap(hashMap,dbObject,fields1);
 
         if (valuesMapField != null && valuesMapKeys != null) {
           BSONObject bson = (BSONObject) dbObject.get(valuesMapField.getFieldName());
@@ -666,6 +601,82 @@ public class MongoRecords implements NoSQLRecords {
     } finally {
       db.requestDone();
     }
+  }
+
+  /**
+   *
+   * @param hashMap
+   * @param dbObject
+   * @param fields1
+   */
+  private void populateHashMap(HashMap<Field,Object> hashMap, DBObject dbObject, ArrayList<Field> fields1) {
+
+//        System.out.println("Object read ---> " +dbObject);
+      if (fields1 != null) {
+        for (Field f: fields1) {
+          Object fieldValue = dbObject.get(f.getFieldName());
+          if (fieldValue == null) hashMap.put(f,null); //.add(null);
+          else  {
+            String value = fieldValue.toString();
+            switch (f.type()) {
+              case BOOLEAN:
+                hashMap.put(f, Boolean.parseBoolean(value));
+                break;
+              case INTEGER:
+                hashMap.put(f, Integer.parseInt(value));
+                break;
+              case STRING:
+                hashMap.put(f, value);
+                break;
+              case SET_INTEGER:
+                try {
+                  hashMap.put(f, JSONUtils.JSONArrayToSetInteger(new JSONArray(value)));
+                } catch (JSONException e) {
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                break;
+              case LIST_INTEGER:
+                try {
+                  hashMap.put(f,JSONUtils.JSONArrayToArrayListInteger(new JSONArray(value)));
+                } catch (JSONException e) {
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                break;
+              case LIST_STRING:
+                try {
+                  hashMap.put(f,JSONUtils.JSONArrayToArrayList(new JSONArray(value)));
+                } catch (JSONException e) {
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                break;
+              case VALUES_MAP:
+                try {
+                  hashMap.put(f, new ValuesMap(new JSONObject(value)));
+                } catch (JSONException e) {
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                break;
+              case VOTES_MAP:
+                try {
+                  hashMap.put(f, JSONUtils.toIntegerMap(new JSONObject(value)));
+                } catch (JSONException e) {
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                break;
+              case STATS_MAP:
+                try {
+                  hashMap.put(f, JSONUtils.toStatsMap(new JSONObject(value)));
+                } catch (JSONException e) {
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                break;
+              default:
+                GNS.getLogger().severe("Exception Error Unknown type " + f + "value = " + value);
+                break;
+            }
+          }
+        }
+      }
   }
 
   @Override
@@ -794,6 +805,63 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
+  public Object getIterator(String collectionName, Field nameField, ArrayList<Field> fields) {
+    ArrayList<JSONObject> result = new ArrayList<JSONObject>();
+    db.requestStart();
+//    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      // get all documents that have a name field (all doesn't work because of extra stuff mongo adds to the database)
+      BasicDBObject query = new BasicDBObject(primaryKey, new BasicDBObject("$exists", true));
+      BasicDBObject projection = new BasicDBObject().append("_id", 0);
+      projection.append(nameField.getFieldName(), 1); // name field must be returned.
+      if (fields != null) { // add other fields requested
+        for (Field f: fields) {
+          projection.append(f.getFieldName(),1);
+        }
+      }
+
+    DBCursor cursor = collection.find(query,projection);
+      return cursor;
+//      while (cursor.hasNext()) {
+//        DBObject obj = cursor.next();
+//        result.add(new JSONObject(obj.toString()));
+//      }
+//      return result;
+//    } catch (JSONException e) {
+//      GNS.getLogger().warning("Unable to parse JSON: " + e);
+//      return null;
+//    } finally {
+//      db.requestDone();
+//      return null;
+//    }
+  }
+
+  @Override
+  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
+    DBCursor cursor = (DBCursor) iterator;
+    if (cursor != null && cursor.hasNext()) {
+      HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
+      DBObject dbObject = cursor.next();
+
+      hashMap.put(nameField, dbObject.get(nameField.getFieldName()).toString());// put the name in the hashmap!! very important!!
+
+      populateHashMap(hashMap,dbObject,fields); // populate other fields in hashmap
+
+      return hashMap;
+    }
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public void returnIterator() {
+//    DBCursor cursor = (DBCursor) iterator;
+    db.requestDone();
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public String toString() {
     return "DB " + dbName;
   }
@@ -916,6 +984,27 @@ public class MongoRecords implements NoSQLRecords {
       instance.insert(collectionSpecs.get(0).getName(), x.getName(), x.toJSONObject());
     }
 
+    ArrayList<Field> fields = new ArrayList<Field>();
+    fields.add(NameRecord.ACTIVE_NAMESERVERS);
+    Object iterator = instance.getIterator(collectionSpecs.get(0).getName(), NameRecord.NAME, fields);
+    if (iterator != null) {
+      int i = 0;
+      while (true) {
+        i++;
+        HashMap<Field,Object> hashMap = instance.next(iterator,NameRecord.NAME,fields);
+        if (hashMap == null) {
+          System.out.println(" Iterating .... complete. " + i);
+          break;
+        }
+
+        NameRecord nameRecord = new NameRecord(hashMap);
+        System.out.println("Got record " + i + " name = " + nameRecord.getName() + " Actives = " + nameRecord.getActiveNameServers());
+
+      }
+    }
+    instance.returnIterator();
+    System.exit(0);
+
 //    System.out.println("LOOKUP BY GUID =>" + instance.lookup(n.getName(), true));
 //    instance.update(n.getName(), "timeToLive", "777");
 //    System.out.println("LOOKUP AFTER 777 =>" + instance.lookup(n.getName(), true));
@@ -940,7 +1029,7 @@ public class MongoRecords implements NoSQLRecords {
     System.out.println("OLD READ MULTIPLE FIELDS. VALUES => "  + MongoRecords.getInstance().lookup(collectionSpecs.get(0).getName(),record.getName(),
             fieldStrings, false));
 
-    ArrayList<Field> fields = new ArrayList<Field>();
+    fields = new ArrayList<Field>();
     fields.add(NameRecord.ACTIVE_NAMESERVERS);
     fields.add(NameRecord.ACTIVE_PAXOS_ID);
     fields.add(NameRecord.TIME_TO_LIVE);
