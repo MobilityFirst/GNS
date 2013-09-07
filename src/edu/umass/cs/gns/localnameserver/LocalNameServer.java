@@ -671,16 +671,7 @@ public class LocalNameServer {
     cache.invalidate(new NameAndRecordKey(name, recordKey));
   }
 
-  public static void incrementLookupRequest(String name//, NameRecordKey recordKey
-          ) {
-//    NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
-//    if (nameRecordStatsMap.containsKey(nameAndType)) {
-//      nameRecordStatsMap.get(nameAndType).incrementLookupCount();
-//    } else {
-//      NameRecordStats nameRecordStats = new NameRecordStats();
-//      nameRecordStats.incrementLookupCount();
-//      nameRecordStatsMap.put(nameAndType, nameRecordStats);
-//    }
+  public static void incrementLookupRequest(String name) {
     
     if (nameRecordStatsMap.containsKey(name)) {
       nameRecordStatsMap.get(name).incrementLookupCount();
@@ -691,16 +682,7 @@ public class LocalNameServer {
     }
   }
 
-  public static void incrementUpdateRequest(String name//, NameRecordKey recordKey
-          ) {
-//    NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
-//    if (nameRecordStatsMap.containsKey(nameAndType)) {
-//      nameRecordStatsMap.get(nameAndType).incrementUpdateCount();
-//    } else {
-//      NameRecordStats nameRecordStats = new NameRecordStats();
-//      nameRecordStats.incrementUpdateCount();
-//      nameRecordStatsMap.put(nameAndType, nameRecordStats);
-//    }
+  public static void incrementUpdateRequest(String name) {
     if (nameRecordStatsMap.containsKey(name)) {
       nameRecordStatsMap.get(name).incrementUpdateCount();
     } else {
@@ -742,16 +724,19 @@ public class LocalNameServer {
    *
    * @param name Host/domain/device name ***********************************************************
    */
-  public static int getVotes(String name//, NameRecordKey recordKey
-          ) {
-//    NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
-//    NameRecordStats nameRecordStats = nameRecordStatsMap.get(nameAndType);
-//    int vote = (nameRecordStats != null) ? nameRecordStats.getVotes() : 0;
-//    return vote;
-   
+  public static int getVotes(String name) {
+
     NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
     int vote = (nameRecordStats != null) ? nameRecordStats.getVotes() : 0;
     return vote;
+  }
+
+  public static NameRecordStats getStats(String name) {
+
+    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
+    return nameRecordStats;
+//    int vote = (nameRecordStats != null) ? nameRecordStats.getVotes() : 0;
+//    return vote;
   }
 
   public static Set<String> getNameRecordStatsKeySet() {

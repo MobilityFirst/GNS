@@ -191,6 +191,7 @@ public class JSONUtils {
 
 
   public static void putFieldInJsonObject(Field field, Object value, JSONObject jsonObject) throws JSONException {
+    try{
     if (value == null) return;
     switch (field.type()) {
       case BOOLEAN:
@@ -224,7 +225,10 @@ public class JSONUtils {
         GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
         break;
     }
-
+    }catch (Exception e) {
+      GNS.getLogger().fine(" Value " + value + " Field = " + field);
+      e.printStackTrace();
+    }
   }
 
 

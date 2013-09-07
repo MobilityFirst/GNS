@@ -1,16 +1,14 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer2;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.paxospacket.StatePacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -741,10 +739,8 @@ public class PaxosManager extends Thread{
 
   }
 
-
-
   static void processMessage(Runnable runnable) {
-    executorService.submit(runnable);
+    if (executorService!= null) executorService.submit(runnable);
   }
 
   static void sendMessage(int destID, JSONObject json, String paxosID) {

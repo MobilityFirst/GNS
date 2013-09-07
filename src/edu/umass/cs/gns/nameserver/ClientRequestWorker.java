@@ -6,6 +6,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -214,7 +215,11 @@ public class ClientRequestWorker extends TimerTask {
       ValuesMap valuesMap = new ValuesMap();
       valuesMap.put(nameRecordKey.getName(), value);
       rcRecord = new ReplicaControllerRecord(name, true);
-      NameServer.addNameRecordPrimary(rcRecord);
+      try {
+        NameServer.addNameRecordPrimary(rcRecord);
+      } catch (RecordExistsException e1) {
+        GNS.getLogger().fine("Record already exists ... continue");
+      }
       GNS.getLogger().fine(" Replica controller record created for name: " + addRecordPacket.getName());
 
       try {
@@ -277,7 +282,12 @@ public class ClientRequestWorker extends TimerTask {
 
 
     ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(name, true);//NameServer.getNameRecord(name);
-    NameServer.addNameRecordPrimary(rcRecord);
+    try {
+      NameServer.addNameRecordPrimary(rcRecord);
+    } catch (RecordExistsException e) {
+      GNS.getLogger().fine("Record already exists ... continue " + e.getMessage());
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
 
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
@@ -421,6 +431,18 @@ public class ClientRequestWorker extends TimerTask {
     }
   }
 
+
+  private static ArrayList<Field> lnsUpdateFields = new ArrayList<Field>();
+
+  private static ArrayList<Field> getLNSUpdateFields() {
+    synchronized (lnsUpdateFields) {
+      if (lnsUpdateFields.size() == 0) {
+        lnsUpdateFields.add(NameRecord.ACTIVE_NAMESERVERS);
+        lnsUpdateFields.add(NameRecord.ACTIVE_PAXOS_ID);
+      }
+      return lnsUpdateFields;
+    }
+  }
   /**
    * Handles the update case of UpdateAddressPacket
    * @param updatePacket
@@ -431,20 +453,20 @@ public class ClientRequestWorker extends TimerTask {
     // HANDLE NON-UPSERT CASE
 
     //NameRecord nameRecord = NameServer.getNameRecord(updatePacket.getName());
-    ArrayList<Field> lnsUpdateFields = new ArrayList<Field>();
-    lnsUpdateFields.add(NameRecord.ACTIVE_NAMESERVERS);
-    lnsUpdateFields.add(NameRecord.ACTIVE_PAXOS_ID);
+//    ArrayList<Field> lnsUpdateFields = new ArrayList<Field>();
 
-    NameRecord nameRecord = null;
+
+    NameRecord nameRecord;
     try {
-      nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), lnsUpdateFields, null);
+      nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), getLNSUpdateFields(), null);
     } catch (RecordNotFoundException e) {
-      if (StartNameServer.debugMode) GNS.getLogger().fine("Record not found exception. Name =\t" +updatePacket.getName());
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      if (StartNameServer.debugMode) GNS.getLogger().fine("Record not found Exception. Returned error to client. Name =\t" +updatePacket.getName());
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      return;
     }
 
     try{
-//      NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
+      //NameRecord nameRecord = NameServer.getNameRecordLazy(updatePacket.getName());
       //NameRecord nameRecord = DBNameRecord.getNameRecord(updatePacket.getName());
 
       if (nameRecord == null || !nameRecord.containsActiveNameServer(NameServer.nodeID)) {
@@ -456,13 +478,10 @@ public class ClientRequestWorker extends TimerTask {
         //                updatePacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
         String msg = " UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
                 + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId() + "\t" + updatePacket.getSequenceNumber();
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine(msg);
-        }
+        if (StartNameServer.debugMode) GNS.getLogger().fine(msg);
       } else {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine(" PAXOS PROPOSAL: propose update request: " + updatePacket.toString());
-        }
+
+        if (StartNameServer.debugMode) GNS.getLogger().fine(" PAXOS PROPOSAL: propose update request: " + updatePacket.toString());
 
         // Save request info to send confirmation to LNS later.
         updatePacket.setNameServerId(NameServer.nodeID); // to check that I had proposed this message
@@ -483,9 +502,7 @@ public class ClientRequestWorker extends TimerTask {
         }
         PaxosManager.propose(activePaxosID, new RequestPacket(updatePacket.getType().getInt(),
                 updatePacket.toString(), PaxosPacketType.REQUEST, false));
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine(" Update Packet Type : " + updatePacket.getType().getInt());
-        }
+        if (StartNameServer.debugMode) GNS.getLogger().fine(" Update Packet Type : " + updatePacket.getType().getInt());
       }
 //        long t1 = System.currentTimeMillis();
 //        if (t1 - t0 > 50) {
@@ -507,25 +524,27 @@ public class ClientRequestWorker extends TimerTask {
    */
   private void handleUpdateAddressNS() throws JSONException, IOException {
 
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("PAXOS DECISION: Update Confirmed...   " + incomingJSON);
-    }
+    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Update Confirmed ...   " + incomingJSON);
     UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
-
-    ArrayList<Field> userKeys = new ArrayList<Field>();
-    userKeys.add(new Field(updatePacket.getRecordKey().getName(),FieldType.LIST_STRING));
     NameRecord nameRecord;
-    try {
-      nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(),null, userKeys);
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().fine(" Exception: name record not found. Name = " + updatePacket.getName());
-      e.printStackTrace();
-      proposedUpdates.remove(updatePacket.getNSRequestID());
-      return;
+    if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) {
+       nameRecord = new NameRecord(updatePacket.getName());
+    }  else {
+      ArrayList<Field> userKeys = new ArrayList<Field>();
+      userKeys.add(new Field(updatePacket.getRecordKey().getName(),FieldType.LIST_STRING));
+      try {
+        nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(),null, userKeys);
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().fine(" Exception: name record not found. Name = " + updatePacket.getName());
+        e.printStackTrace();
+        proposedUpdates.remove(updatePacket.getNSRequestID());
+        return;
+      }
     }
+
 
     // Apply update
-    GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
+    if (StartNameServer.debugMode) GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
     boolean result;
     try {
       result = nameRecord.updateKey(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(),
@@ -551,8 +570,9 @@ public class ClientRequestWorker extends TimerTask {
       if (StartNameServer.debugMode) GNS.getLogger().fine("Update applied" + incomingJSON);
 
       if (updatePacket.getNameServerId() == NameServer.nodeID) {
-        // commenting this for now.
-        nameRecord.incrementUpdateRequest();
+
+//        nameRecord.incrementUpdateRequest(); // Abhigyan: commented this because we are using lns votes for this calculation.
+
         ConfirmUpdateLNSPacket confirmPacket = proposedUpdates.remove(updatePacket.getNSRequestID());
 //        Long t_1 = proposedUpdatesTime.remove(updatePacket.getNSRequestID());
 //        if (t_1 != null && t0 - t_1 > 50) {
@@ -602,20 +622,25 @@ public class ClientRequestWorker extends TimerTask {
     }
   }
 
-  private void handleDNSPacket() throws IOException, JSONException {
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("NS recvd DNS lookup request: " + incomingJSON);
+  private static ArrayList<Field> dnsField = new ArrayList<Field>();
+  public static ArrayList<Field> getDNSPacketFields() {
+    synchronized (dnsField) {
+      if (dnsField.size() == 0) {
+        dnsField.add(NameRecord.ACTIVE_NAMESERVERS);
+        dnsField.add(NameRecord.TIME_TO_LIVE);
+      }
+      return dnsField;
     }
-//    long requestRecvdTime = System.currentTimeMillis();
+  }
+
+  private void handleDNSPacket() throws IOException, JSONException {
+    if (StartNameServer.debugMode) GNS.getLogger().fine("NS recvd DNS lookup request: " + incomingJSON);
 
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
 
     if (dnsPacket.isQuery()) {
       int lnsId = dnsPacket.getLnsId();
 
-      ArrayList<Field> dnsLookupField = new ArrayList<Field>();
-      dnsLookupField.add(NameRecord.ACTIVE_NAMESERVERS);
-      dnsLookupField.add(NameRecord.TIME_TO_LIVE);
 
       ArrayList<Field> userField = new ArrayList<Field>();
       userField.add(new Field(dnsPacket.getQrecordKey().getName(), FieldType.LIST_STRING));
@@ -626,11 +651,13 @@ public class ClientRequestWorker extends TimerTask {
           // need everything so just grab all the fields
           nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
         } else {
-          nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(), dnsLookupField, userField);
+          nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(), getDNSPacketFields(), userField);
         }
-        GNS.getLogger().fine("Name record read is " + nameRecord.toJSONObject());
+        if (StartNameServer.debugMode) GNS.getLogger().fine("Name record read is " + nameRecord.toJSONObject());
       } catch (RecordNotFoundException e) {
-        e.printStackTrace();
+        GNS.getLogger().severe("Record not found for name: " + dnsPacket.getQname() + " Key = " + dnsPacket.getQrecordKey());
+//        e.printStackTrace();
+        // name record will be null
       }
       dnsPacket = makeResponsePacket(dnsPacket, nameRecord);
       NameServer.tcpTransport.sendToID(lnsId, dnsPacket.toJSONObject());
@@ -654,27 +681,29 @@ public class ClientRequestWorker extends TimerTask {
           // assume no error... change it below if there is an error
           dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
           dnsPacket.setTTL(nameRecord.getTimeToLive());
-          nameRecord.incrementLookupRequest();
+
+//          nameRecord.incrementLookupRequest();// Abhigyan: commented this because we are using lns votes for this calculation.
+
           if (nameRecord.containsKey(qKey)) {
             dnsPacket.setSingleReturnValue(nameRecord.getKey(qKey));
-            GNS.getLogger().fine("NS sending DNS lookup response: Name = " + qName);
+            if (StartNameServer.debugMode) GNS.getLogger().fine("NS sending DNS lookup response: Name = " + qName);
           } else if (Protocol.ALLFIELDS.equals(qKey)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
-            GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + qName);
+            if (StartNameServer.debugMode) GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + qName);
           } else { // send error msg.
-            GNS.getLogger().fine("Record doesn't contain field: " + qKey);
+            if (StartNameServer.debugMode) GNS.getLogger().fine("Record doesn't contain field: " + qKey);
             dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
           }
         } else { // send error msg.
-          GNS.getLogger().fine("QNAME of query is NULL!");
+          if (StartNameServer.debugMode) GNS.getLogger().fine("QNAME of query is NULL!");
           dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
         }
       } else { // send invalid error msg.
         dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
-        GNS.getLogger().fine("Invalid actives. Name: " + qName);
+        if (StartNameServer.debugMode) GNS.getLogger().fine("Invalid actives. Name: " + qName);
       }
     } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+      if (StartNameServer.debugMode) GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
     }
     return dnsPacket;

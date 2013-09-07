@@ -55,7 +55,7 @@ public class StopActiveSetTask extends TimerTask {
     ArrayList<Field> readFields = new ArrayList<Field>();
     readFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS_RUNNING);
     readFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
-    ReplicaControllerRecord nameRecordPrimary = null;
+    ReplicaControllerRecord nameRecordPrimary;
     try {
       nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, readFields);
     } catch (RecordNotFoundException e) {

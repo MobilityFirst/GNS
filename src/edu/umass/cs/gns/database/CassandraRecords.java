@@ -291,6 +291,11 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
+  public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public ArrayList<JSONObject> retrieveAllEntries(String tableName) {
     ArrayList<JSONObject> result = new ArrayList<JSONObject>();
     String query = "SELECT * FROM " + CSI(tableName) + ";";

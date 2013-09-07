@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,9 +14,10 @@ public class NameServerSelectionPacket extends BasicPacket {
   //private final static String RECORDKEY = "recordkey";
   private final static String NAME = "name";
   private final static String VOTE = "vote";
+  private final static String UPDATE = "update";
   private final static String NAMESERVER_ID = "nsID";
   private final static String LOCAL_NAMESERVER_ID = "lnsID";
-  private final static String UNIQUE_ID = "uniqueID";
+//  private final static String UNIQUE_ID = "uniqueID";
   
   /** Local name server transmitting this packet **/
   private int localnameserverID;
@@ -29,8 +29,10 @@ public class NameServerSelectionPacket extends BasicPacket {
   private String name;
   /** Vote = # of lookup since the last vote **/
   private int vote;
+  /** Vote = # of lookup since the last vote **/
+  private int update;
   /** Unique ID for this vote message **/
-  private int uniqueID;
+//  private int uniqueID;
   /*************************************************************
    * Constructs a new NSLocationPacket with the given parameters
    * @param name Name (service/host/domain or device name)
@@ -39,15 +41,16 @@ public class NameServerSelectionPacket extends BasicPacket {
    *        transmitting local name server
    * @param localnameserverID
    ************************************************************/
-  public NameServerSelectionPacket(String name, //NameRecordKey recordKey, 
-		  int vote, int nameserverID, int localnameserverID, int uniqueID) {
+  public NameServerSelectionPacket(String name,
+		  int vote, int update, int nameserverID, int localnameserverID, int uniqueID) {
     this.type = Packet.PacketType.NAMESERVER_SELECTION;
     //this.recordKey = recordKey;
     this.name = name;
     this.vote = vote;
+    this.update = update;
     this.nameserverID = nameserverID;
     this.localnameserverID = localnameserverID;
-    this.uniqueID = uniqueID;
+//    this.uniqueID = uniqueID;
   }
 
   /*************************************************************
@@ -57,12 +60,12 @@ public class NameServerSelectionPacket extends BasicPacket {
    ************************************************************/
   public NameServerSelectionPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    //this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
     this.name = json.getString(NAME);
     this.vote = json.getInt(VOTE);
+    this.update = json.getInt(UPDATE);
     this.nameserverID = json.getInt(NAMESERVER_ID);
     this.localnameserverID = json.getInt(LOCAL_NAMESERVER_ID);
-    this.uniqueID = json.getInt(UNIQUE_ID);
+//    this.uniqueID = json.getInt(UNIQUE_ID);
   }
 
   /*************************************************************
@@ -78,9 +81,10 @@ public class NameServerSelectionPacket extends BasicPacket {
     //json.put(RECORDKEY, getRecordKey().getName());
     json.put(NAME, getName());
     json.put(VOTE, getVote());
+    json.put(UPDATE, getUpdate());
     json.put(NAMESERVER_ID, getNameserverID());
     json.put(LOCAL_NAMESERVER_ID, getLocalnameserverID());
-    json.put(UNIQUE_ID, uniqueID);
+//    json.put(UNIQUE_ID, uniqueID);
     return json;
   }
 
@@ -118,12 +122,20 @@ public class NameServerSelectionPacket extends BasicPacket {
   public int getVote() {
     return vote;
   }
+
+  /**
+   * @return the vote
+   */
+  public int getUpdate() {
+    return update;
+  }
   
 
   /**
    * @return UniqueID 
    */
   public int getUniqueID() {
-    return uniqueID;
+    throw new UnsupportedOperationException();
+//    return uniqueID;
   }
 }

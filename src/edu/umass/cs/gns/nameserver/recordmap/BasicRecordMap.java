@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nameserver.recordmap;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -163,12 +164,17 @@ public abstract class BasicRecordMap implements RecordMapInterface {
     for (String row : getAllRowKeys()) {
       table.append(row + ": ");
       String prefix = "";
-      for (String column : getAllColumnKeys(row)) {
-        table.append(prefix);
-        table.append(column);
-        table.append(" -> ");
-        table.append(getNameRecordFieldAsArrayList(row, column));
-        prefix = ", ";
+      try {
+        for (String column : getAllColumnKeys(row)) {
+          table.append(prefix);
+          table.append(column);
+          table.append(" -> ");
+          table.append(getNameRecordFieldAsArrayList(row, column));
+          prefix = ", ";
+        }
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().severe("Record not found exception .... row = " + row);
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
       table.append("\n");
     }

@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
@@ -368,8 +366,13 @@ public class NameRecord implements Comparable<NameRecord> {
 
   public boolean updateKey(String key, ArrayList<String> newValues, ArrayList<String> oldValues,
                            UpdateOperation operation) throws FieldNotFoundException{
-
-    ValuesMap valuesMap = getValuesMap(); // this will throw an exception if field is not read.
+    ValuesMap valuesMap;
+    if (operation.equals(UpdateOperation.REPLACE_ALL)) {
+      valuesMap = new ValuesMap();
+      hashMap.put(VALUES_MAP, valuesMap);
+    } else {
+      valuesMap = getValuesMap(); // this will throw an exception if field is not read.
+    }
     boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation); //this updates the values map as well
     if (updated) {
       // commit update to database

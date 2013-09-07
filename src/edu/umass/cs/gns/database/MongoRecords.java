@@ -16,6 +16,7 @@ import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -155,7 +156,7 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public JSONObject lookup(String collectionName, String guid) {
+  public JSONObject lookup(String collectionName, String guid) throws RecordNotFoundException{
     return lookup(collectionName, guid, false);
   }
 
@@ -272,13 +273,18 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void insert(String collectionName, String guid, JSONObject value) {
+  public void insert(String collectionName, String guid, JSONObject value) throws RecordExistsException {
     db.requestStart();
     try {
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       DBObject dbObject = (DBObject) JSON.parse(value.toString());
-      collection.insert(dbObject);
+      try {
+        collection.insert(dbObject);
+      } catch (Exception e) {
+        throw new RecordExistsException(collectionName, guid);
+//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
     } finally {
       db.requestDone();
     }
@@ -743,6 +749,50 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
+
+  @Override
+  public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1,
+                        Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+    db.requestStart();
+    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      BasicDBObject updates = new BasicDBObject();
+      if (fields1 != null){
+        for (int i = 0; i < fields1.size(); i++) {
+          Object newValue;
+          if (fields1.get(i).type() == FieldType.VALUES_MAP) {
+            newValue = ((ValuesMap)values1.get(i)).getMap();
+          }
+          else {
+            newValue = values1.get(i);
+//            System.out.println("NEW VALUE ---> " +newValue);
+          }
+          updates.append(fields1.get(i).getFieldName(),newValue);
+
+        }
+//        updateOperator = new BasicDBObject("$set", updates);
+      }
+
+      if (votesMapField != null && votesMapKeys != null) {
+        for (int i = 0; i < votesMapKeys.size(); i++) {
+          String fieldName = votesMapField.getFieldName() + "." + votesMapKeys.get(i).getFieldName();
+          updates.append(fieldName, votesMapValues.get(i));
+        }
+      }
+
+//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+      if (updates.keySet().size() > 0) {
+        collection.update(query, new BasicDBObject("$inc", updates));
+//        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
+      }
+    } finally {
+      db.requestDone();
+    }
+  }
+
   @Override
   public String toString() {
     return "DB " + dbName;
@@ -766,7 +816,7 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   // test code
-  public static void main(String[] args) throws Exception, RecordNotFoundException, FieldNotFoundException {
+  public static void main(String[] args) throws Exception, RecordNotFoundException, FieldNotFoundException, RecordExistsException {
     StartNameServer.mongoPort = 12345;
     NameServer.nodeID = 0;
 
@@ -806,7 +856,7 @@ public class MongoRecords implements NoSQLRecords {
     getInstance().init();
   }
 
-  private static void retrieveTest() throws Exception {
+  private static void retrieveTest() throws RecordNotFoundException, Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
@@ -835,7 +885,7 @@ public class MongoRecords implements NoSQLRecords {
     System.out.println(instance.lookup(collectionSpecs.get(0).getName(), "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "POSITION"));
   }
 
-  public static void runtest() throws FieldNotFoundException, Exception, RecordNotFoundException {
+  public static void runtest() throws FieldNotFoundException, Exception, RecordNotFoundException, RecordExistsException{
 
 //    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     ConfigFileInfo.readHostInfo("/Users/abhigyan/Documents/workspace/GNS2/local/local_config", NameServer.nodeID);

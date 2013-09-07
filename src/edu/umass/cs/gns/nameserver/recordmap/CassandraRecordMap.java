@@ -156,6 +156,11 @@ public class CassandraRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
   public NameRecord getNameRecord(String name) {
     try {
       JSONObject json = CassandraRecords.getInstance().lookup(collectionName, name);

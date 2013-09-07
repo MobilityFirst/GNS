@@ -7,6 +7,7 @@ import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -93,7 +94,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public Set<String> getAllColumnKeys(String name) {
+  public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException{
     if (!containsName(name)) {
       try {
         MongoRecords records = MongoRecords.getInstance();
@@ -155,7 +156,12 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public NameRecord getNameRecord(String name) {
+  public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+    MongoRecords.getInstance().increment(collectionName, name, fields1, values1, votesMapField,votesMapKeys,votesMapValues);
+  }
+
+  @Override
+  public NameRecord getNameRecord(String name) throws RecordNotFoundException{
     try {
       JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
       if (json == null) {
@@ -171,7 +177,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(NameRecord recordEntry) {
+  public void addNameRecord(NameRecord recordEntry) throws RecordExistsException{
     if (StartNameServer.debugMode) {
       try {
         GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
@@ -193,7 +199,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(JSONObject json) {
+  public void addNameRecord(JSONObject json) throws RecordExistsException{
     MongoRecords records = MongoRecords.getInstance();
     try {
       String name = json.getString(NameRecord.NAME.getFieldName());
@@ -248,9 +254,10 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public ReplicaControllerRecord getNameRecordPrimary(String name) {
+  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException{
     try {
       JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
+//      GNS.getLogger().severe("JSON primary is " + json);
       if (json == null) {
         return null;
       } else {
@@ -273,7 +280,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws RecordExistsException {
 //    if (StartNameServer.debugMode) {
 //      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
 //    }

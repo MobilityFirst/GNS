@@ -88,7 +88,7 @@ public class StartupActiveSetTask extends TimerTask {
       if (nameRecordPrimary.isActiveRunning()) {
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("New active name servers running. Startup done. All Actives: "
-                  + nameRecordPrimary.getActiveNameservers() + " Actives Queried: " + newActivesQueried);
+                  + newActiveNameServers + " Actives Queried: " + newActivesQueried);
         }
         this.cancel();
         return;

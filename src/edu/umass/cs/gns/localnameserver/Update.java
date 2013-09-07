@@ -28,7 +28,8 @@ public class Update {
 
       AddRemove.handleUpsert(updateAddressPacket, InetAddress.getByName(Transport.getReturnAddress(json)), Transport.getReturnPort(json));
     } else {
-      LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName());
+
+      LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
 
       InetAddress senderAddress = null;
       int senderPort = -1;

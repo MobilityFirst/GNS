@@ -8,6 +8,8 @@ import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -119,7 +121,7 @@ public class ReplicaControllerRecord {
     }
 
     if (json.has(PRIMARY_NAMESERVERS.getFieldName())) {
-      hashMap.put(PRIMARY_NAMESERVERS,JSONUtils.getObject(NAME, json));
+      hashMap.put(PRIMARY_NAMESERVERS,JSONUtils.getObject(PRIMARY_NAMESERVERS, json));
     }
     if (json.has(ACTIVE_NAMESERVERS.getFieldName())) {
       hashMap.put(ACTIVE_NAMESERVERS,JSONUtils.getObject(ACTIVE_NAMESERVERS, json));
@@ -175,7 +177,9 @@ public class ReplicaControllerRecord {
 
   public JSONObject toJSONObject() throws JSONException{
     JSONObject jsonObject = new JSONObject();
+    GNS.getLogger().fine("hash map --> " + hashMap);
     for (Field f: hashMap.keySet()) {
+
       JSONUtils.putFieldInJsonObject(f, hashMap.get(f),jsonObject);
     }
     return jsonObject;
@@ -636,20 +640,20 @@ public class ReplicaControllerRecord {
    * @return
    */
   public double[] recomputeAverageReadWriteRate() throws FieldNotFoundException{
-    ConcurrentMap<Integer,StatsInfo> statsMap = getNameServerStatsMap();
+//    ConcurrentMap<Integer,StatsInfo> statsMap = getNameServerStatsMap();
     int previousTotalReads = getPreviousAggregateReadFrequency();
     int previousTotalWrites = getPreviousAggregateWriteFrequency();
     MovingAverage lookups = new MovingAverage(getMovingAvgAggregateLookupFrequency(),StartNameServer.movingAverageWindowSize);
     MovingAverage updates = new MovingAverage(getMovingAvgAggregateUpdateFrequency(), StartNameServer.movingAverageWindowSize);
-    int totalReads = 0;
-    int totalWrites = 0;
-    for (StatsInfo info: statsMap.values()) {
-      totalReads += info.getRead();
-      totalWrites += info.getWrite();
-    }
+//    int totalReads = 0;
+//    int totalWrites = 0;
+//    for (StatsInfo info: statsMap.values()) {
+//      totalReads += info.getRead();
+//      totalWrites += info.getWrite();
+//    }
 
-    lookups.add(totalReads - previousTotalReads);
-    updates.add(totalWrites - previousTotalWrites);
+    lookups.add(previousTotalReads);
+    updates.add(previousTotalWrites);
 
     double[] readWriteRate = new double[2];
     readWriteRate[0] = lookups.getAverage();
@@ -663,47 +667,144 @@ public class ReplicaControllerRecord {
     updateFields.add(MOV_AVG_WRITE);
 
     ArrayList<Object> values = new ArrayList<Object>();
-    values.add(previousTotalReads);
-    values.add(previousTotalWrites);
+    values.add(0);
+    values.add(0);
     values.add(lookups.toArrayList());
     values.add(updates.toArrayList());
 
     NameServer.replicaController.update(getName(),NAME,updateFields,values);
 
-    hashMap.put(PREV_TOTAL_READ,totalReads);
-    hashMap.put(PREV_TOTAL_WRITE,totalWrites);
+    hashMap.put(PREV_TOTAL_READ,0);
+    hashMap.put(PREV_TOTAL_WRITE,0);
     hashMap.put(MOV_AVG_READ, lookups.toArrayList());
     hashMap.put(MOV_AVG_WRITE,updates.toArrayList());
+
+//    hashMap.put(STATS_MAP,new );
 
     return readWriteRate;
 
   }
 
+
+//  /**
+//   * Returns the total number of lookup request across all active name servers
+//   *
+//   * @return
+//   */
+//  public double[] recomputeAverageReadWriteRate() throws FieldNotFoundException{
+//    ConcurrentMap<Integer,StatsInfo> statsMap = getNameServerStatsMap();
+//    int previousTotalReads = getPreviousAggregateReadFrequency();
+//    int previousTotalWrites = getPreviousAggregateWriteFrequency();
+//    MovingAverage lookups = new MovingAverage(getMovingAvgAggregateLookupFrequency(),StartNameServer.movingAverageWindowSize);
+//    MovingAverage updates = new MovingAverage(getMovingAvgAggregateUpdateFrequency(), StartNameServer.movingAverageWindowSize);
+//    int totalReads = 0;
+//    int totalWrites = 0;
+//    for (StatsInfo info: statsMap.values()) {
+//      totalReads += info.getRead();
+//      totalWrites += info.getWrite();
+//    }
+//
+//    lookups.add(totalReads - previousTotalReads);
+//    updates.add(totalWrites - previousTotalWrites);
+//
+//    double[] readWriteRate = new double[2];
+//    readWriteRate[0] = lookups.getAverage();
+//    readWriteRate[1] = updates.getAverage();
+//
+//
+//    ArrayList<Field> updateFields = new ArrayList<Field>();
+//    updateFields.add(PREV_TOTAL_READ);
+//    updateFields.add(PREV_TOTAL_WRITE);
+//    updateFields.add(MOV_AVG_READ);
+//    updateFields.add(MOV_AVG_WRITE);
+//
+//    ArrayList<Object> values = new ArrayList<Object>();
+//    values.add(previousTotalReads);
+//    values.add(previousTotalWrites);
+//    values.add(lookups.toArrayList());
+//    values.add(updates.toArrayList());
+//
+//    NameServer.replicaController.update(getName(),NAME,updateFields,values);
+//
+//    hashMap.put(PREV_TOTAL_READ,totalReads);
+//    hashMap.put(PREV_TOTAL_WRITE,totalWrites);
+//    hashMap.put(MOV_AVG_READ, lookups.toArrayList());
+//    hashMap.put(MOV_AVG_WRITE,updates.toArrayList());
+//
+////    hashMap.put(STATS_MAP,new );
+//
+//    return readWriteRate;
+//
+//  }
+
   /**
    * Adds vote to the name server for replica selection.
+   * and increment lookup count and update count.
    *
    * @param id Name server id receiving the vote
    */
-  public void addReplicaSelectionVote(int id, int vote) throws FieldNotFoundException{ //
-    ConcurrentMap<Integer, Integer> votesMap = getNameServerVotesMap();
+  public void addReplicaSelectionVote(int id, int vote, int updateVote) throws FieldNotFoundException{ //
 
-    if (votesMap.containsKey(id)) {
-      int votes = votesMap.get(id) + vote;
-      votesMap.put(id, votes);
-    } else {
-      votesMap.put(id, vote);
-    }
+    ArrayList<Field> incrementFields = new ArrayList<Field>();
+    incrementFields.add(PREV_TOTAL_READ);
+    incrementFields.add(PREV_TOTAL_WRITE);
+//    incrementFields.add(PREV_TOTAL_WRITE);
+    ArrayList<Object> incrementValues = new ArrayList<Object>();
+    incrementValues.add(vote);
+    incrementValues.add(updateVote);
 
-    ArrayList<Field> updateFields = new ArrayList<Field>();
-    updateFields.add(VOTES_MAP);
+    ArrayList<Field> votesMapKeys = new ArrayList<Field>();
+    votesMapKeys.add(new Field(Integer.toString(id),FieldType.INTEGER));
 
-    ArrayList<Object> values = new ArrayList<Object>();
-    values.add(votesMap);
+    ArrayList<Object> votesMapValues = new ArrayList<Object>();
+    votesMapValues.add(vote);
 
-    NameServer.replicaController.update(getName(), NAME, updateFields, values);
+    NameServer.replicaController.increment(getName(), incrementFields, incrementValues, VOTES_MAP, votesMapKeys, votesMapValues);
 
+
+
+//    ConcurrentMap<Integer, Integer> votesMap = getNameServerVotesMap();
+//
+//    if (votesMap.containsKey(id)) {
+//      int votes = votesMap.get(id) + vote;
+//      votesMap.put(id, votes);
+//    } else {
+//      votesMap.put(id, vote);
+//    }
+//
+//    ArrayList<Field> updateFields = new ArrayList<Field>();
+//    updateFields.add(VOTES_MAP);
+//
+//    ArrayList<Object> values = new ArrayList<Object>();
+//    values.add(votesMap);
+//
+//    NameServer.replicaController.update(getName(), NAME, updateFields, values);
     // VotesMap is already updated in hashMap
+
   }
+
+//  public void addReplicaSelectionVote(int id, int vote, int updateVote) throws FieldNotFoundException{ //
+//    ConcurrentMap<Integer, Integer> votesMap = getNameServerVotesMap();
+//
+//    if (votesMap.containsKey(id)) {
+//      int votes = votesMap.get(id) + vote;
+//      votesMap.put(id, votes);
+//    } else {
+//      votesMap.put(id, vote);
+//    }
+//
+//    ArrayList<Field> updateFields = new ArrayList<Field>();
+//    updateFields.add(VOTES_MAP);
+//
+//    ArrayList<Object> values = new ArrayList<Object>();
+//    values.add(votesMap);
+//
+//    NameServer.replicaController.update(getName(), NAME, updateFields, values);
+//
+//
+//
+//    // VotesMap is already updated in hashMap
+//  }
 
 
   /**
@@ -901,15 +1002,19 @@ public class ReplicaControllerRecord {
     BasicRecordMap replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();
     ReplicaControllerRecord record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
-    record.addReplicaSelectionVote(1, 5);
-    record.addReplicaSelectionVote(1, 1);
-    record.addReplicaSelectionVote(2, 2);
-    record.addReplicaSelectionVote(3, 3);
-    record.addReplicaSelectionVote(4, 4);
+    record.addReplicaSelectionVote(1, 5, 4);
+    record.addReplicaSelectionVote(1, 1, 4);
+    record.addReplicaSelectionVote(2, 2, 4);
+    record.addReplicaSelectionVote(3, 3, 4);
+    record.addReplicaSelectionVote(4, 4, 4);
     record.addNameServerStats(1, 50, 75);
     record.addNameServerStats(2, 50, 75);
     System.out.println(record.toJSONObject().toString());
-    replicaController.addNameRecordPrimary(record);
+    try {
+      replicaController.addNameRecordPrimary(record);
+    } catch (RecordExistsException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
     // create the lazy record
     record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", true);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
@@ -917,11 +1022,11 @@ public class ReplicaControllerRecord {
     record.addNameServerStats(10, 50, 75);
     System.out.println("READ STATS: " + record.recomputeAverageReadWriteRate());
    
-    record.addReplicaSelectionVote(11, 5);
-    record.addReplicaSelectionVote(11, 1);
-    record.addReplicaSelectionVote(21, 2);
-    record.addReplicaSelectionVote(13, 3);
-    record.addReplicaSelectionVote(14, 4);
+    record.addReplicaSelectionVote(11, 5,0);
+    record.addReplicaSelectionVote(11, 1,0);
+    record.addReplicaSelectionVote(21, 2,0);
+    record.addReplicaSelectionVote(13, 3,0);
+    record.addReplicaSelectionVote(14, 4,0);
     record.addNameServerStats(11, 50, 75);
     record.addNameServerStats(12, 50, 75);
     System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(3));
@@ -932,8 +1037,13 @@ public class ReplicaControllerRecord {
 
     MongoRecords instance = MongoRecords.getInstance();
     instance.printAllEntries(MongoRecords.DBREPLICACONTROLLER);
-    
-    record = replicaController.getNameRecordPrimary("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
+
+    try {
+      record = replicaController.getNameRecordPrimary("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
+    } catch (RecordNotFoundException e) {
+
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
     System.out.println(record.toJSONObject().toString());
     
   }

@@ -86,6 +86,21 @@ public interface NoSQLRecords {
    */
   public abstract void increment(String collection, String name, ArrayList<Field> fields1, ArrayList<Object> values1);
 
+
+  /**
+   * For the record with given name, increment the values of given fields by given values.
+   * In the votes map field, increment values of given keys by given values.
+   * @param collectionName
+   * @param guid
+   * @param fields1
+   * @param values1
+   * @param votesMapField
+   * @param votesMapKeys
+   * @param votesMapValues
+   */
+  public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1,
+                        Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
+
   @Override
   public String toString();
  

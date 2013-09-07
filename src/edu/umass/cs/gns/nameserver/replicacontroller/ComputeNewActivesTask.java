@@ -126,7 +126,6 @@ public class ComputeNewActivesTask extends TimerTask
     GNS.getStatLogger().info("ComputeNewActives: Round:" + count + " Name:" + rcRecord.getName()
             + " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
             + " NewReplica:" + newActiveNameServers.toString());
-    //		}
     return newActiveNameServers;
   }
 

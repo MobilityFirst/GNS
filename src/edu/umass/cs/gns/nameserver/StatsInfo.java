@@ -4,26 +4,28 @@
  */
 package edu.umass.cs.gns.nameserver;
 
-import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
 
 /**
  *
  * @author westy
  */
-public class StatsInfo extends HashMap<String,Integer> 
+public class StatsInfo extends HashMap<String,Integer>
 // implements Serializable 
 {
-
+  public static final String READ = "r";
+  public static final String WRITE = "w";
   //private static final long serialVersionUID = 2326392043474125897L;
 
 //  public StatsInfo() {
 //  }
 // 
   public StatsInfo(int read, int write) {
-    put("read", read);
-    put("write", write);
+    put(READ, read);
+    put(WRITE, write);
   }
 
   public StatsInfo(JSONObject json) throws JSONException {
@@ -31,14 +33,14 @@ public class StatsInfo extends HashMap<String,Integer>
   }
 
   private void initFromJSONObject(JSONObject json) throws JSONException {
-    put("read", json.getInt("read"));
-    put("write", json.getInt("write"));
+    put(READ, json.getInt(READ));
+    put(WRITE, json.getInt(WRITE));
   }
 
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
-    json.put("read", get("read"));
-    json.put("write", get("write"));
+    json.put(READ, get(READ));
+    json.put(WRITE, get(WRITE));
     return json;
   }
 
@@ -59,11 +61,12 @@ public class StatsInfo extends HashMap<String,Integer>
 //  }
   
   public int getRead() {
-    return get("read");
+    return get(READ);
   }
   
    public int getWrite() {
-    return get("write");
+    return get(WRITE);
   }
-   
+
+
 }

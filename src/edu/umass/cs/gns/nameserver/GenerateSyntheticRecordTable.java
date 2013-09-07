@@ -124,7 +124,12 @@ public class GenerateSyntheticRecordTable {
 
           //Generate an entry for the name and add its record to the name server record table
           ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
-          NameServer.addNameRecordPrimary(nameRecordPrimary);
+          try {
+            NameServer.addNameRecordPrimary(nameRecordPrimary);
+          } catch (RecordExistsException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            continue;
+          }
           ValuesMap valuesMap = new ValuesMap();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
           try {
@@ -145,8 +150,13 @@ public class GenerateSyntheticRecordTable {
           int address = ByteUtils.ByteArrayToInt(hash);
           if (StartNameServer.debugMode) GNS.getLogger().fine("RecordAdded\tName:\t" + name);
           //Generate an entry for the name and add its record to the name server record table
-          ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
-          NameServer.addNameRecordPrimary(nameRecordPrimary);
+          ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName, true);
+          try {
+            NameServer.addNameRecordPrimary(nameRecordPrimary);
+          } catch (RecordExistsException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            continue;
+          }
 
 //          NameServer.addNameRecord();
 //          ReplicaControllerRecord nameRecordPrimary1 = NameServer.getNameRecordPrimary(strName);

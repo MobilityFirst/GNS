@@ -25,7 +25,7 @@ public interface RecordMapInterface {
 
   public boolean containsName(String name);
 
-  public Set<String> getAllColumnKeys(String key);
+  public Set<String> getAllColumnKeys(String key) throws RecordNotFoundException;
 
   public Set<String> getAllRowKeys();
 
@@ -64,6 +64,9 @@ public interface RecordMapInterface {
 
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1);
 
+  public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1,
+                                 Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
+
   //
   // OLD Style
   //
@@ -77,9 +80,9 @@ public interface RecordMapInterface {
 
   // Replica Controller
   
-  public ReplicaControllerRecord getNameRecordPrimary(String name);
+  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;
 
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry);
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws RecordExistsException;
 
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry);
   

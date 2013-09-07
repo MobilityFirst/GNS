@@ -14,7 +14,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**************************************************************
  * This class implements the thread that periodically multicast 
@@ -89,36 +88,40 @@ public class NameServerVoteThread extends Thread {
 			count++;
 			startInterval = System.currentTimeMillis();
 			int vote;
+      int update;
 			NameServerSelectionPacket nsSelectionPacket;
-			JSONObject json;
-            GNS.getLogger().fine(" NameRecordStats Key Set: " + LocalNameServer.getNameRecordStatsKeySet());
+//			JSONObject json;
+      int nsToVoteFor = selectNSToVoteFor("0"); // TODO is name server selection independent of name?
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" NameRecordStats Key Set: " + LocalNameServer.getNameRecordStatsKeySet());
 			for (String name : LocalNameServer.getNameRecordStatsKeySet()) {
                 GNS.getLogger().fine(" BEGIN VOTING: " + name);
 				//String name = nameAndType.getName();
 				//NameRecordKey recordKey = nameAndType.getRecordKey();
 				try {
-					vote = LocalNameServer.getVotes(name//, recordKey
-                                                );
-                    GNS.getLogger().fine(" VOTE COUNT: " + vote);
-					if (vote == 0) {
+          NameRecordStats stats = LocalNameServer.getStats(name);
+
+					vote = stats.getVotes();
+          update = stats.getUpdateVotes();
+          if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" VOTE COUNT: " + vote);
+					if (vote == 0 && update == 0) {
 						continue;
 					}
-					int nsToVoteFor = selectNSToVoteFor(name); 
+
+//					int uniqueVoteID = r.nextInt();
+					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.nodeID, 0);
+
+          // send to all primaries.
+          LNSListener.tcpTransport.sendToIDs(LocalNameServer.getPrimaryNameServers(name), nsSelectionPacket.toJSONObject());
+
+//					unackedVotes.put(uniqueVoteID, uniqueVoteID);
+
+
 					
-					int uniqueVoteID = r.nextInt();
-					nsSelectionPacket = new NameServerSelectionPacket(name, vote, 
-							nsToVoteFor, LocalNameServer.nodeID, uniqueVoteID);
-					
-					unackedVotes.put(uniqueVoteID, uniqueVoteID);
-					json = nsSelectionPacket.toJSONObject();
-					
-					
-					// if not voted for by everyone, 
-					Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name//, recordKey
-                                                );
-					
-					LocalNameServer.executorService.scheduleAtFixedRate(new CheckVoteStatus(json, uniqueVoteID, primaryNameServers), 0, TIMEOUT, TimeUnit.MILLISECONDS);
-					if (StartLocalNameServer.debugMode) GNS.getLogger().fine("VOTE THREAD: CheckVoteStatus Object created.  ID = " + uniqueVoteID);
+//					// if not voted for by everyone,
+//					Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);
+//
+//					LocalNameServer.executorService.scheduleAtFixedRate(new CheckVoteStatus(json, uniqueVoteID, primaryNameServers), 0, TIMEOUT, TimeUnit.MILLISECONDS);
+//					if (StartLocalNameServer.debugMode) GNS.getLogger().fine("VOTE THREAD: CheckVoteStatus Object created.  ID = " + uniqueVoteID);
 					
 					
 //					ArrayList<Integer> destIDs = new ArrayList<Integer>();
@@ -133,12 +136,12 @@ public class NameServerVoteThread extends Thread {
 //					StatusClient.sendTrafficStatus(LocalNameServer.nodeID, primaryNameServers, GNRS.PortType.UPDATE_PORT, nsSelectionPacket.getType(),
 //							name, recordKey);
 //					if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("nNameServerVoteThread: Vote send to :" + destIDs.toString() + "--> " + json.toString());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
 
 
-				//				LocalNameServer.printNameRecordStatsMap( debugMode );
+        //				LocalNameServer.printNameRecordStatsMap( debugMode );
 			}
 		}
 	}

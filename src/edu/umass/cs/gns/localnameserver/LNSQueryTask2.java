@@ -12,10 +12,8 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
-//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
@@ -29,6 +27,8 @@ import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
+//import edu.umass.cs.gns.packet.QueryResultValue;
 
 
 
@@ -93,10 +93,7 @@ public class LNSQueryTask2 extends TimerTask {
         throw new RuntimeException();
         //    	return;
       }
-//      return;
     }
-
-    if (transmissionCount == 1) newDNSRequestBookkeeping();
 
     CacheEntry cacheEntry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
     if (cacheEntry != null) {
@@ -229,13 +226,6 @@ public class LNSQueryTask2 extends TimerTask {
     return null;
 
 
-  }
-
-  /**
-   * Initial book keeping for a new DNS Request.
-   */
-  private void newDNSRequestBookkeeping() {
-    LocalNameServer.incrementLookupRequest(incomingPacket.getQname());
   }
 
   /**

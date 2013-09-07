@@ -132,9 +132,11 @@ public class NameServer {
       // schedule periodic computation of new active name servers.
       if (!(StartNameServer.staticReplication || StartNameServer.optimalReplication)) {
 
-        executorService.scheduleAtFixedRate(new SendNameRecordStats(),
-                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
-                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
+        // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
+        // longer term solution is to integrate geoIPlocation database at name servers.
+//        executorService.scheduleAtFixedRate(new SendNameRecordStats(),
+//                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
+//                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
         executorService.scheduleAtFixedRate(new ComputeNewActivesTask(),
                 (new Random()).nextInt((int) StartNameServer.analysisInterval),
@@ -306,7 +308,7 @@ public class NameServer {
    * @param name
    * @return
    */
-  public static ReplicaControllerRecord getNameRecordPrimary(String name) {
+  public static ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException{
     return replicaController.getNameRecordPrimary(name);
   }
 
@@ -328,7 +330,7 @@ public class NameServer {
    * Add this record to database
    * @param record
    */
-  public static void addNameRecordPrimary(ReplicaControllerRecord record) {
+  public static void addNameRecordPrimary(ReplicaControllerRecord record) throws RecordExistsException{
     replicaController.addNameRecordPrimary(record);
   }
 

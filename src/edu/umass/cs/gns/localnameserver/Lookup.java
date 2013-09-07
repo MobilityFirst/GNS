@@ -5,7 +5,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.DNSPacket;
-//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import org.json.JSONException;
@@ -13,10 +12,11 @@ import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
+//import edu.umass.cs.gns.packet.QueryResultValue;
 
 public class Lookup {
 
@@ -29,7 +29,7 @@ public class Lookup {
     if (port > 0 && Transport.getReturnAddress(json) != null) {
       address = InetAddress.getByName(Transport.getReturnAddress(json));
     }
-
+    LocalNameServer.incrementLookupRequest(dnsPacket.getQname()); // important: used to count votes for names.
 //        numQueries++;
     //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Query-" + numQueries + "\t" + System.currentTimeMillis() + "\t"
     //                + dnsPacket.getQname() + "\tRecvd-packet");

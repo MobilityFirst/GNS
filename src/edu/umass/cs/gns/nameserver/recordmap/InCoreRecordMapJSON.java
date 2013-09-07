@@ -186,6 +186,11 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  @Override
+  public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
   //
   // THESE WILL BE DEPRECATED
   //

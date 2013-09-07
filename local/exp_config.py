@@ -20,8 +20,8 @@ num_ns = 80
 num_lns = 80
 
 
-queryTimeout = 1000
-maxQueryWaitTime = 2100
+queryTimeout = 3000
+maxQueryWaitTime = 9100
 
 
 
@@ -36,7 +36,7 @@ load_balancing = False
 
 primary_name_server = 3
 
-replication_interval = 1
+replication_interval = 5
 
 is_beehive_replication = False
 is_location_replication = False

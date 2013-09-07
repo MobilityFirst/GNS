@@ -2,8 +2,6 @@ package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.util.JSONUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -107,7 +105,8 @@ public class DNSPacket extends BasicPacket {
 //      this.primaryNameServers = (HashSet<Integer>) toSetInteger(json.getJSONArray(PRIMARY_NAME_SERVERS));
 //      this.activeNameServers = toSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
       //this.fieldValue = new ArrayList<String>(JSONUtils.JSONArrayToSetString(json.getJSONArray(FIELD_VALUE)));
-      this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
+      if (json.has(RECORD_VALUE))
+        this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
 
 
     }
@@ -179,7 +178,7 @@ public class DNSPacket extends BasicPacket {
 //      json.put(FIELD_VALUE, new JSONArray(fieldValue));
 //    }
     if (recordValue != null)
-	json.put(RECORD_VALUE, recordValue.toJSONObject());
+	      json.put(RECORD_VALUE, recordValue.toJSONObject());
     
 //    json.put(PRIMARY_NAME_SERVERS, new JSONArray(getPrimaryNameServers()));
 //    json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));

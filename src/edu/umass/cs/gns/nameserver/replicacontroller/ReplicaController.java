@@ -397,6 +397,7 @@ public class ReplicaController {
     readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
     readFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
     readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+    readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
 
     try {
       ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), readFields);

@@ -103,12 +103,16 @@ public class NameRecordStats {
 	public synchronized int getVotes() {
 		int lookupVote = totalLookup - lookupVoteCount;
 		lookupVoteCount += lookupVote;
-		int updateVote = totalUpdate - updateVoteCount;
-		updateVoteCount += updateVote;
-		return lookupVote + updateVote;
+		return lookupVote;
 	}
-	
-	/*************************************************************
+
+  public synchronized int getUpdateVotes() {
+    int updateVote = totalUpdate - updateVoteCount;
+    updateVoteCount += updateVote;
+    return updateVote;
+  }
+
+  /*************************************************************
 	 * Returns a String representation of this object.
 	 ************************************************************/
 	public synchronized String toString() {
