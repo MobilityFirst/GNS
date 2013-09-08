@@ -76,7 +76,8 @@ public class PaxosLogger2 extends Thread{
   /**
    * {@code FileWriter} object currently used for logging
    */
-  static FileWriter fileWriter;
+//  static FileWriter fileWriter;
+  static String logFileName;
 
   /**
    * file number of log file currently used for logging
@@ -142,13 +143,13 @@ public class PaxosLogger2 extends Thread{
 
     replicas = recoverPaxosInstancesFromLogs();
 
-
-    if (StartNameServer.debugMode) GNS.getLogger().fine(" Logger Initialized.");
-    try {
-      fileWriter = new FileWriter(getNextFileName());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    logFileName = getNextFileName();
+//    if (StartNameServer.debugMode) GNS.getLogger().fine(" Logger Initialized.");
+//    try {
+//
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
 
     if (StartNameServer.debugMode) GNS.getLogger().fine(" File Writer created.");
     LoggingThread thread = new LoggingThread();
@@ -822,19 +823,18 @@ public class PaxosLogger2 extends Thread{
 //      char[] buf = new char[1000];
 //      int index = 0;
       try {
+        FileWriter fileWriter = new FileWriter(logFileName, true);
         for (LoggingCommand cmd : logCmdCopy) {
           // TODO How is BufferedWriter different from FileWriter? what should we use?
-
           String s = getLogString(cmd.getPaxosID(), cmd.getLogJson());
           if (StartNameServer.debugMode) GNS.getLogger().fine("Logging this now: " + s);
           fileWriter.write(s);
         }
-        fileWriter.flush();
+        fileWriter.close();
         msgCount += logCmdCopy.size();
         if (msgCount > MSG_MAX) {
           msgCount = 0;
-          fileWriter.close();
-          fileWriter = new FileWriter(getNextFileName());
+          logFileName = getNextFileName();
         }
       } catch (IOException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

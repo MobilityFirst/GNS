@@ -72,25 +72,32 @@ public class Update {
         } else if (StartLocalNameServer.runHttpServer) {
           Intercessor.getInstance().checkForResult(json);
         }
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("this is the key: " + confirmPkt.getRecordKey().toString());
-        LocalNameServer.updateCacheEntry(confirmPkt);
+//        updateInfo.getName();
+//          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("this is the key: " + confirmPkt.getRecordKey().toString());
+        LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
 
         // record some stats
 //        LocalNameServer.incrementUpdateResponse(confirmPkt.getName());
 
         if (LocalNameServer.r.nextDouble() < StartLocalNameServer.outputSampleRate) {
-          String msg = updateInfo.getUpdateStats(confirmPkt);
+          String msg = updateInfo.getUpdateStats(confirmPkt, updateInfo.getName());
           if (StartLocalNameServer.debugMode) {
             GNS.getLogger().info(msg);
           }
           GNS.getStatLogger().info(msg);
+//          if (updateInfo.getLatency() > 30) {
+//
+////            GNS.getStatLogger().info(msg);
+//          }
         }
       }
     } else {
       // if update failed, invalidate active name servers
       // SendUpdatesTask will create a task to get new actives
       // TODO: create SendActivesRequestTask here and delete update info.
-      LocalNameServer.invalidateActiveNameServer(confirmPkt.getName());
+      UpdateInfo updateInfo = LocalNameServer.getUpdateInfo(confirmPkt.getRequestID());
+      if (updateInfo == null) return;
+      LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
       GNS.getLogger().fine(" Update Request Sent To An Invalid Active Name Server. ERROR!! Actives Invalidated");
 
     }

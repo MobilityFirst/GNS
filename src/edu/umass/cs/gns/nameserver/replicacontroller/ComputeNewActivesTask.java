@@ -48,6 +48,7 @@ public class ComputeNewActivesTask extends TimerTask
     readFields.add(ReplicaControllerRecord.PREV_TOTAL_WRITE);
     readFields.add(ReplicaControllerRecord.MOV_AVG_READ);
     readFields.add(ReplicaControllerRecord.MOV_AVG_WRITE);
+    readFields.add(ReplicaControllerRecord.VOTES_MAP);
 
 
 
@@ -128,6 +129,12 @@ public class ComputeNewActivesTask extends TimerTask
 
   }
 
+  /**
+   * Returns true if the set of new actives is identical to the set of old actives. False otherwise.
+   * @param oldActives
+   * @param newActives
+   * @return
+   */
   private boolean isActiveSetModified(Set<Integer> oldActives, Set<Integer> newActives) {
     if (oldActives.size() != newActives.size()) return  true;
     for (int x: oldActives ) {
@@ -215,6 +222,19 @@ public class ComputeNewActivesTask extends TimerTask
     return replicaCount;
   }
 
+  private static ArrayList<Field> readFieldsApplyNewActivesProposed = new ArrayList<Field>();
+
+  private static ArrayList<Field> getReadFieldsApplyNewActivesProposed() {
+    synchronized (readFieldsApplyNewActivesProposed) {
+      if (readFieldsApplyNewActivesProposed.size() > 0) return readFieldsApplyNewActivesProposed;
+
+      readFieldsApplyNewActivesProposed.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
+      readFieldsApplyNewActivesProposed.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
+      readFieldsApplyNewActivesProposed.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+      readFieldsApplyNewActivesProposed.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
+      return readFieldsApplyNewActivesProposed;
+    }
+  }
   /**
    * Apply the decision from paxos. Packet = NewActiveProposalPacket.
    * @param decision
@@ -224,14 +244,7 @@ public class ComputeNewActivesTask extends TimerTask
     try {
       NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
 
-
-      ArrayList<Field> readFields = new ArrayList<Field>();
-      readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
-      readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
-      readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
-      readFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
-
-      ReplicaControllerRecord rcRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeProposalPacket.getName(), readFields);
+      ReplicaControllerRecord rcRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeProposalPacket.getName(), getReadFieldsApplyNewActivesProposed());
 
       if (rcRecordPrimary == null) {
         if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: PAXOS DECISION: " +

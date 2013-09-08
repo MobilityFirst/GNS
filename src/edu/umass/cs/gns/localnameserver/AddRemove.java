@@ -50,7 +50,7 @@ public class AddRemove {
    * @throws JSONException
    */
   static void handleUpsert(UpdateAddressPacket updateAddressPacket, InetAddress address, int port) throws JSONException {
-    updateAddressPacket.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(updateAddressPacket.getName()));
+//    updateAddressPacket.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(updateAddressPacket.getName()));
 
 //    updateAddressPacket.setLocalNameServerId(LocalNameServer.nodeID);
 
@@ -100,12 +100,14 @@ public class AddRemove {
   public static void handlePacketConfirmAddLNS(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdateLNSPacket confirmAddPacket = new ConfirmUpdateLNSPacket(json);
     UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
+
     if (addInfo == null) {
       GNS.getLogger().warning("Add confirmation return info not found.: lns request id = " + confirmAddPacket.getLNSRequestID());
     } else {
       // update our cache BEFORE we confirm
-      LocalNameServer.updateCacheEntry(confirmAddPacket);
+      LocalNameServer.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
       // send it back to the orginator of the request
+      addInfo.getID();
       JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
       GNS.getLogger().fine("LNSListenerUpdate CONFIRM ADD (lns " + LocalNameServer.nodeID + ") to "
               + addInfo.senderAddress + ":" + addInfo.senderPort + " : " + jsonConfirm.toString());
@@ -133,7 +135,7 @@ public class AddRemove {
       // send it back to the orginator of the request
       JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
       // update our cache BEFORE we confirm
-      LocalNameServer.updateCacheEntry(confirmRemovePacket);
+      LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       GNS.getLogger().fine("LNSListenerUpdate CONFIRM REMOVE (lns " + LocalNameServer.nodeID + ") to "
               + removeInfo.senderAddress + ":" + removeInfo.senderPort + " : " + jsonConfirm.toString());
       if (removeInfo.senderAddress != null && removeInfo.senderPort > 0) {

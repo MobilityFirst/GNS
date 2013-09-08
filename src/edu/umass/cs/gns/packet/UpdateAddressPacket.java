@@ -8,7 +8,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * ***********************************************************
@@ -19,7 +18,8 @@ import java.util.Set;
  */
 public class UpdateAddressPacket extends BasicPacket {
 
-  private final static String SEQUENCENUMBER = "sequencenumber";
+//  private final static String SEQUENCENUMBER = "sequencenumber";
+
   private final static String REQUESTID = "reqID";
   private final static String LocalNSREQUESTID = "LSNreqID";
   private final static String NameServerREQUESTID = "NSreqID";
@@ -29,14 +29,29 @@ public class UpdateAddressPacket extends BasicPacket {
   private final static String OLDVALUE = "oldvalue";
   private final static String NAMESERVER_ID = "nsID";
   private final static String LOCAL_NAMESERVER_ID = "lnsID";
-  private final static String TTL = "ttl";
+//  private final static String TTL = "ttl";
   private final static String OPERATION = "operation";
-  private final static String PRIMARYNAMESERVERS = "primaryNSs";
-  /**
-   * FROM WHAT I CAN TELL THIS IS ONLY USED TO INIT ConfirmUpdateLNSPacket which never uses it for anything. 
-   * REMOVE? - Westy
-   */
-  private int seqNumber;
+
+//  private final static String REQUESTID = "up1";
+//  private final static String LocalNSREQUESTID = "up2";
+//  private final static String NameServerREQUESTID = "up3";
+//  private final static String NAME = "up4";
+//  private final static String RECORDKEY = "up5";
+//  private final static String NEWVALUE = "up6";
+//  private final static String OLDVALUE = "up7";
+//  private final static String NAMESERVER_ID = "up8";
+//  private final static String LOCAL_NAMESERVER_ID = "up9";
+//  //  private final static String TTL = "ttl";
+//  private final static String OPERATION = "up10";
+
+//  private final static String PRIMARYNAMESERVERS = "primaryNSs";
+
+//  /**
+//   * FROM WHAT I CAN TELL THIS IS ONLY USED TO INIT ConfirmUpdateLNSPacket which never uses it for anything.
+//   * REMOVE? - Westy
+//   */
+//  private int seqNumber;
+
   //
   // NOTE: CHANGED THE IDS A BIT - Westy
   // We have three. First one is used by the entity making the initial request (often the intercessor).
@@ -52,7 +67,7 @@ public class UpdateAddressPacket extends BasicPacket {
    */
   private int LNSRequestID;
   /**
-   * The ID the LNS uses to for bookkeeping
+   * The ID the NS uses to for bookkeeping
    */
   private int NSRequestID;
   /**
@@ -84,13 +99,13 @@ public class UpdateAddressPacket extends BasicPacket {
    * Name server transmitting this packet *
    */
   private int nameServerId;
-  /**
-   * Time to live *
-   */
-  private int ttl;
+//  /**
+//   * Time to live *
+//   */
+//  private int ttl;
   
   /// this will be filled in by the local nameserver - used for upsert operations
-  private Set<Integer> primaryNameServers;
+//  private Set<Integer> primaryNameServers;
 
   /**
    * ***********************************************************
@@ -101,12 +116,12 @@ public class UpdateAddressPacket extends BasicPacket {
    * @param newValue Updated address
    * @param oldValue Old address to be replaced (if applicable, can be null)
    */
-  public UpdateAddressPacket(Packet.PacketType type, int sequenceNumber, int requestID, String name, NameRecordKey recordKey,
+  public UpdateAddressPacket(Packet.PacketType type, int requestID, String name, NameRecordKey recordKey,
           ArrayList<String> newValue, ArrayList<String> oldValue, UpdateOperation operation, int localNameServerId) {
-    this(type, sequenceNumber, requestID, -1, -1, name, recordKey, newValue, oldValue, operation,localNameServerId, -1);
+    this(type, requestID, -1, -1, name, recordKey, newValue, oldValue, operation,localNameServerId, -1);
   }
   
-  public UpdateAddressPacket(Packet.PacketType type, int sequenceNumber,
+  public UpdateAddressPacket(Packet.PacketType type,
           int requestID, int LNSRequestID, int NSRequestID,
           String name, NameRecordKey recordKey,
           ArrayList<String> newValue,
@@ -114,7 +129,7 @@ public class UpdateAddressPacket extends BasicPacket {
           UpdateOperation operation,
           int localNameServerId, int nameServerId) {
     this.type = type;
-    this.seqNumber = sequenceNumber;
+//    this.seqNumber = sequenceNumber;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
     this.NSRequestID = NSRequestID;
@@ -125,7 +140,7 @@ public class UpdateAddressPacket extends BasicPacket {
     this.oldValue = oldValue;
     this.localNameServerId = localNameServerId;
     this.nameServerId = nameServerId;
-    this.ttl = -1;
+//    this.ttl = -1;
   }
 
   /**
@@ -137,7 +152,7 @@ public class UpdateAddressPacket extends BasicPacket {
    */
   public UpdateAddressPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.seqNumber = json.getInt(SEQUENCENUMBER);
+//    this.seqNumber = json.getInt(SEQUENCENUMBER);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
     this.NSRequestID = json.getInt(NameServerREQUESTID);
@@ -148,8 +163,8 @@ public class UpdateAddressPacket extends BasicPacket {
     this.oldValue = json.has(OLDVALUE) ? JSONUtils.JSONArrayToArrayList(json.getJSONArray(OLDVALUE)) : null;
     this.localNameServerId = json.getInt(LOCAL_NAMESERVER_ID);
     this.nameServerId = json.getInt(NAMESERVER_ID);
-    this.ttl = json.getInt(TTL);
-    this.primaryNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARYNAMESERVERS));
+//    this.ttl = json.getInt(TTL);
+//    this.primaryNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARYNAMESERVERS));
   }
 
   /**
@@ -163,7 +178,7 @@ public class UpdateAddressPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(SEQUENCENUMBER, getSequenceNumber());
+//    json.put(SEQUENCENUMBER, getSequenceNumber());
     json.put(REQUESTID, getRequestID());
     json.put(LocalNSREQUESTID, getLNSRequestID());
     json.put(NameServerREQUESTID, getNSRequestID());
@@ -176,18 +191,18 @@ public class UpdateAddressPacket extends BasicPacket {
     }
     json.put(LOCAL_NAMESERVER_ID, getLocalNameServerId());
     json.put(NAMESERVER_ID, getNameServerId());
-    json.put(TTL, getTtl());
-    json.put(PRIMARYNAMESERVERS, new JSONArray(getPrimaryNameServers()));
+//    json.put(TTL, getTtl());
+//    json.put(PRIMARYNAMESERVERS, new JSONArray(getPrimaryNameServers()));
 
     return json;
   }
 
-  /**
-   * @return the id which is used by the request originator for bookkeeping
-   */
-  public int getSequenceNumber() {
-    return seqNumber;
-  }
+//  /**
+//   * @return the id which is used by the request originator for bookkeeping
+//   */
+//  public int getSequenceNumber() {
+//    return seqNumber;
+//  }
 
   public int getRequestID() {
     return requestID;
@@ -265,27 +280,27 @@ public class UpdateAddressPacket extends BasicPacket {
     this.nameServerId = nameServerId;
   }
 
-  /**
-   * @return the ttl
-   */
-  public int getTtl() {
-    return ttl;
-  }
+//  /**
+//   * @return the ttl
+//   */
+//  public int getTtl() {
+//    return ttl;
+//  }
+//
+//  /**
+//   * @param ttl the ttl to set
+//   */
+//  public void setTtl(int ttl) {
+//    this.ttl = ttl;
+//  }
 
-  /**
-   * @param ttl the ttl to set
-   */
-  public void setTtl(int ttl) {
-    this.ttl = ttl;
-  }
-
-  public Set<Integer> getPrimaryNameServers() {
-    return primaryNameServers;
-  }
-
-  public void setPrimaryNameServers(Set<Integer> primaryNameServers) {
-    this.primaryNameServers = primaryNameServers;
-  }
+//  public Set<Integer> getPrimaryNameServers() {
+//    return primaryNameServers;
+//  }
+//
+//  public void setPrimaryNameServers(Set<Integer> primaryNameServers) {
+//    this.primaryNameServers = primaryNameServers;
+//  }
 
   /**
    * @return the operation
@@ -304,7 +319,7 @@ public class UpdateAddressPacket extends BasicPacket {
   	ArrayList<String> x = new ArrayList<String>();
   	x.add("12345678");
 //  	
-  	UpdateAddressPacket up  = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 12, 32234234, 123, 2323, "12322323", NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123);
+  	UpdateAddressPacket up  = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, 2323, "12322323", NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123);
 
 		int size = 0;
 		try {

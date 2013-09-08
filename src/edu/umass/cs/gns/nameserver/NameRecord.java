@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
@@ -24,23 +25,23 @@ public class NameRecord implements Comparable<NameRecord> {
   
   public final static Field NAME = new Field("nr_name", FieldType.STRING);
 
-  public final static Field ACTIVE_NAMESERVERS = new Field("nr_active", FieldType.SET_INTEGER);
+  public final static Field ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("nr_active", FieldType.SET_INTEGER): new Field("nr2", FieldType.SET_INTEGER);
 
-  public final static Field PRIMARY_NAMESERVERS = new Field("nr_primary", FieldType.SET_INTEGER);
+  public final static Field PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("nr_primary", FieldType.SET_INTEGER) : new Field("nr3", FieldType.SET_INTEGER);
 
-  public final static Field ACTIVE_PAXOS_ID = new Field("nr_activePaxosID", FieldType.STRING);
+  public final static Field ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new Field("nr_activePaxosID", FieldType.STRING): new Field("nr4", FieldType.STRING);
 
-  public final static Field OLD_ACTIVE_PAXOS_ID = new Field("nr_oldActivePaxosID", FieldType.STRING);
+  public final static Field OLD_ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new Field("nr_oldActivePaxosID", FieldType.STRING) : new Field("nr5", FieldType.STRING);
 
-  public final static Field TIME_TO_LIVE = new Field("nr_ttl", FieldType.INTEGER);
+  public final static Field TIME_TO_LIVE = (StartNameServer.experimentMode == false) ? new Field("nr_ttl", FieldType.INTEGER) : new Field("nr6", FieldType.INTEGER);
 
-  public final static Field VALUES_MAP = new Field("nr_valuesMap", FieldType.VALUES_MAP);
+  public final static Field VALUES_MAP = (StartNameServer.experimentMode == false) ? new Field("nr_valuesMap", FieldType.VALUES_MAP) : new Field("nr7", FieldType.VALUES_MAP);
 
-  public final static Field OLD_VALUES_MAP = new Field("nr_oldValuesMap", FieldType.VALUES_MAP);
+  public final static Field OLD_VALUES_MAP = (StartNameServer.experimentMode == false) ? new Field("nr_oldValuesMap", FieldType.VALUES_MAP) : new Field("nr8", FieldType.VALUES_MAP);
 
-  public final static Field TOTAL_UPDATE_REQUEST = new Field("nr_totalUpdateRequest", FieldType.INTEGER);
+  public final static Field TOTAL_UPDATE_REQUEST = (StartNameServer.experimentMode == false) ? new Field("nr_totalUpdateRequest", FieldType.INTEGER) : new Field("nr9", FieldType.INTEGER);
 
-  public final static Field TOTAL_LOOKUP_REQUEST = new Field("nr_totalLookupRequest", FieldType.INTEGER);
+  public final static Field TOTAL_LOOKUP_REQUEST = (StartNameServer.experimentMode == false) ? new Field("nr_totalLookupRequest", FieldType.INTEGER) : new Field("nr10", FieldType.INTEGER);
 
   /**
    * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
@@ -337,6 +338,9 @@ public class NameRecord implements Comparable<NameRecord> {
     return null;
   }
 
+
+
+
   /********************************************
    * WRITE methods, these methods change one or more fields in database.
    * ******************************************/
@@ -387,16 +391,26 @@ public class NameRecord implements Comparable<NameRecord> {
     return updated;
   }
 
+  private static ArrayList<Field> currentActiveStopFields = new ArrayList<Field>();
+
+  private static ArrayList<Field> getCurrentActiveStopFields() {
+    synchronized (currentActiveStopFields) {
+      if (currentActiveStopFields.size() > 0) return currentActiveStopFields;
+      currentActiveStopFields.add(OLD_ACTIVE_PAXOS_ID);
+      currentActiveStopFields.add(ACTIVE_PAXOS_ID);
+      currentActiveStopFields.add(ACTIVE_NAMESERVERS);
+      currentActiveStopFields.add(OLD_VALUES_MAP);
+      currentActiveStopFields.add(VALUES_MAP);
+      return currentActiveStopFields;
+    }
+  }
+
   public void handleCurrentActiveStop(String paxosID) throws FieldNotFoundException{
     String currentPaxosID = getActivePaxosID();
     ValuesMap valuesMap = getValuesMap();
     if (currentPaxosID != null && currentPaxosID.equals(paxosID)) {
-      ArrayList<Field> updateFields = new ArrayList<Field>();
-      updateFields.add(OLD_ACTIVE_PAXOS_ID);
-      updateFields.add(ACTIVE_PAXOS_ID);
-      updateFields.add(ACTIVE_NAMESERVERS);
-      updateFields.add(OLD_VALUES_MAP);
-      updateFields.add(VALUES_MAP);
+      ArrayList<Field> updateFields = getCurrentActiveStopFields();
+
 
       ArrayList<Object> updateValues = new ArrayList<Object>();
       updateValues.add(paxosID);
@@ -432,12 +446,24 @@ public class NameRecord implements Comparable<NameRecord> {
 
   }
 
+
+  private static ArrayList<Field> newActiveStartFields = new ArrayList<Field>();
+
+  private static ArrayList<Field> getNewActiveStartFields() {
+    synchronized (newActiveStartFields) {
+      if (newActiveStartFields.size() > 0) return newActiveStartFields;
+      newActiveStartFields.add(ACTIVE_NAMESERVERS);
+      newActiveStartFields.add(ACTIVE_PAXOS_ID);
+      newActiveStartFields.add(VALUES_MAP);
+      return newActiveStartFields;
+    }
+  }
+
+
   public void handleNewActiveStart(Set<Integer> actives, String paxosID, ValuesMap currentValue)
           throws FieldNotFoundException{
-    ArrayList<Field> updateFields = new ArrayList<Field>();
-    updateFields.add(NameRecord.ACTIVE_NAMESERVERS);
-    updateFields.add(NameRecord.ACTIVE_PAXOS_ID);
-    updateFields.add(NameRecord.VALUES_MAP);
+
+    ArrayList<Field> updateFields = getNewActiveStartFields();
 
     ArrayList<Object> updateValues = new ArrayList<Object>();
     updateValues.add(actives);

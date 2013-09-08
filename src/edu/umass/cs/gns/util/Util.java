@@ -1,16 +1,12 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import java.io.IOException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.Random;
 
 /**
  * Various generic static utility methods.
@@ -63,5 +59,18 @@ public class Util {
       result.put(parser.getName(), parser.getValue());
     }
     return result;
+  }
+
+
+
+  static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  static Random rnd = new Random(System.currentTimeMillis());
+
+  public static String randomString(int len) {
+    StringBuilder sb = new StringBuilder(len);
+    for (int i = 0; i < len; i++) {
+      sb.append(CHARACTERS.charAt(rnd.nextInt(CHARACTERS.length())));
+    }
+    return sb.toString();
   }
 }

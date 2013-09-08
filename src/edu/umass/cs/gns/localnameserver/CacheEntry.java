@@ -1,20 +1,17 @@
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.httpserver.Protocol;
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
-//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
 
 import java.util.*;
 import java.util.Map.Entry;
-
 import java.util.concurrent.ConcurrentHashMap;
+
+//import edu.umass.cs.gns.packet.QueryResultValue;
 
 /**
  * Represents the cache entry used at the local name server to cache DNS records
@@ -218,14 +215,14 @@ public class CacheEntry {
 //        break;
 //    }
     // punt and make the value not valid
-    value.remove(packet.getRecordKey().getName());
-    //Update the timestamp of when data was last fetched and cached
-    timestampAddress.remove(packet.getRecordKey().getName());
+//    value.remove(packet.getRecordKey().getName());
+//    //Update the timestamp of when data was last fetched and cached
+//    timestampAddress.remove(packet.getRecordKey().getName());
 
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Cache CLEARED for " + packet.getName() + " For key = " + packet.getRecordKey().getName());
+//    if (StartLocalNameServer.debugMode) {
+//      GNS.getLogger().fine("Cache CLEARED for " + packet.getName() + " For key = " + packet.getRecordKey().getName());
       //GNRS.getLogger().fine("Cache update oldvalue = " + oldValueString + " new value = " + value);
-    }
+//    }
   }
 
 //  public  void updateActiveNameServerCacheEntry(

@@ -9,7 +9,7 @@ public class NameRecordKey {
  private String value; 
   
  // define some constants for GNRS use
- public static final NameRecordKey EdgeRecord = new NameRecordKey("edgeRecord");
+ public static final NameRecordKey EdgeRecord = new NameRecordKey("ki");
  public static final NameRecordKey CoreRecord = new NameRecordKey("coreRecord");
  public static final NameRecordKey GroupRecord = new NameRecordKey("groupRecord");
 

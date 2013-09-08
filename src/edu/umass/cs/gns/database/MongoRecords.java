@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -717,7 +718,13 @@ public class MongoRecords implements NoSQLRecords {
       }
 //      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
       if (updates.keySet().size() > 0) {
+        long t0 = System.currentTimeMillis();
         collection.update(query, new BasicDBObject("$set", updates));
+        long t1 = System.currentTimeMillis();
+        if (t1 - t0 > 10) {
+          System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t"+t0);
+          GNS.getLogger().severe(" Long latency mongoUpdate " + (t1 - t0));
+        }
 //        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
       }
     } finally {
@@ -885,14 +892,19 @@ public class MongoRecords implements NoSQLRecords {
 
   // test code
   public static void main(String[] args) throws Exception, RecordNotFoundException, FieldNotFoundException, RecordExistsException {
-    StartNameServer.mongoPort = 12345;
+//    StartNameServer.mongoPort = sy;
+
+//    String configFile = "/Users/abhigyan/Documents/workspace/GNS2/local/local_config";
+
+    String configFile = args[0];
+
     NameServer.nodeID = 0;
 
     listDatabases();
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
     }
-    runtest();
+    runtest(configFile);
 
     //printFieldsTest();
     //retrieveFieldTest();
@@ -953,10 +965,10 @@ public class MongoRecords implements NoSQLRecords {
     System.out.println(instance.lookup(collectionSpecs.get(0).getName(), "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "POSITION"));
   }
 
-  public static void runtest() throws FieldNotFoundException, Exception, RecordNotFoundException, RecordExistsException{
+  public static void runtest(String configFile) throws FieldNotFoundException, Exception, RecordNotFoundException, RecordExistsException{
 
 //    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    ConfigFileInfo.readHostInfo("/Users/abhigyan/Documents/workspace/GNS2/local/local_config", NameServer.nodeID);
+    ConfigFileInfo.readHostInfo(configFile, NameServer.nodeID);
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
     instance.reset(collectionSpecs.get(0).getName());
@@ -984,26 +996,32 @@ public class MongoRecords implements NoSQLRecords {
       instance.insert(collectionSpecs.get(0).getName(), x.getName(), x.toJSONObject());
     }
 
+
+    // test update latency
+
+
+
+    // test iterator
     ArrayList<Field> fields = new ArrayList<Field>();
-    fields.add(NameRecord.ACTIVE_NAMESERVERS);
-    Object iterator = instance.getIterator(collectionSpecs.get(0).getName(), NameRecord.NAME, fields);
-    if (iterator != null) {
-      int i = 0;
-      while (true) {
-        i++;
-        HashMap<Field,Object> hashMap = instance.next(iterator,NameRecord.NAME,fields);
-        if (hashMap == null) {
-          System.out.println(" Iterating .... complete. " + i);
-          break;
-        }
-
-        NameRecord nameRecord = new NameRecord(hashMap);
-        System.out.println("Got record " + i + " name = " + nameRecord.getName() + " Actives = " + nameRecord.getActiveNameServers());
-
-      }
-    }
-    instance.returnIterator();
-    System.exit(0);
+//    fields.add(NameRecord.ACTIVE_NAMESERVERS);
+//    Object iterator = instance.getIterator(collectionSpecs.get(0).getName(), NameRecord.NAME, fields);
+//    if (iterator != null) {
+//      int i = 0;
+//      while (true) {
+//        i++;
+//        HashMap<Field,Object> hashMap = instance.next(iterator,NameRecord.NAME,fields);
+//        if (hashMap == null) {
+//          System.out.println(" Iterating .... complete. " + i);
+//          break;
+//        }
+//
+//        NameRecord nameRecord = new NameRecord(hashMap);
+//        System.out.println("Got record " + i + " name = " + nameRecord.getName() + " Actives = " + nameRecord.getActiveNameServers());
+//
+//      }
+//    }
+//    instance.returnIterator();
+//    System.exit(0);
 
 //    System.out.println("LOOKUP BY GUID =>" + instance.lookup(n.getName(), true));
 //    instance.update(n.getName(), "timeToLive", "777");
@@ -1058,13 +1076,41 @@ public class MongoRecords implements NoSQLRecords {
     instance.update(collectionSpecs.get(0).getName(),n.getName(),NameRecord.NAME, fields,values);
     System.out.println("\nUpdate COMPLETE\n");
     // now update user keys values
-    ArrayList<Object> userKeysUpdates = new ArrayList<Object>();
-    ArrayList<String> userKeysValues1 = new ArrayList<String>();
-    userKeysValues1.add("MY");userKeysValues1.add("NAME");userKeysValues1.add("IS");userKeysValues1.add("RED");
-    ArrayList<String> userKeysValues2 = new ArrayList<String>();
-    userKeysValues2.add("MERA");userKeysValues2.add("NAAM");userKeysValues2.add("LAAL");userKeysValues2.add("HAI");
-    userKeysUpdates.add(userKeysValues1);userKeysUpdates.add(userKeysValues2);
-    instance.update(collectionSpecs.get(0).getName(),n.getName(),NameRecord.NAME, fields,values, NameRecord.VALUES_MAP, userKeys, userKeysUpdates);
+    int maxThreads = 5;
+    ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(maxThreads);
+
+    for (int i = 0; i < 100000; i++) {
+      executorService.submit(new SendUpdate(n.getName()));
+      Thread.sleep(1);
+//      if (i%10 == 0) Thread.sleep(10);
+//      if (i%1000 == 0) System.out.println("\t" + i);
+//      ArrayList<Object> userKeysUpdates = new ArrayList<Object>();
+//      ArrayList<String> userKeysValues1 = new ArrayList<String>();
+//      userKeysValues1.add(Util.randomString(100));
+////      userKeysValues1.add("MY");userKeysValues1.add("NAME");userKeysValues1.add("IS");userKeysValues1.add("RED");
+//      ArrayList<String> userKeysValues2 = new ArrayList<String>();
+//      userKeysValues2.add(Util.randomString(100));
+////      userKeysValues2.add("MERA");userKeysValues2.add("NAAM");userKeysValues2.add("LAAL");userKeysValues2.add("HAI");
+//      userKeysUpdates.add(userKeysValues1);userKeysUpdates.add(userKeysValues2);
+//      long t0 = System.currentTimeMillis();
+//      instance.update(collectionSpecs.get(0).getName(),n.getName(),NameRecord.NAME, fields,values, NameRecord.VALUES_MAP, userKeys, userKeysUpdates);
+//      long t1 = System.currentTimeMillis();
+//      if (t1 - t0 > 20) {
+//        System.out.println("Long latency Request\t" + i + "\ttime\t" + t0 + "\tlatency\t"  + (t1 - t0));
+//      }
+    }
+
+    System.exit(2);
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1268,4 +1314,32 @@ public class MongoRecords implements NoSQLRecords {
     System.out.println("SHOULD BE EMPTY => " + json2);
   }
 
+}
+
+
+class SendUpdate extends  TimerTask{
+  String name;
+  public SendUpdate(String name) {
+    this.name = name;
+  }
+
+  @Override
+  public void run() {
+
+    ArrayList<Field> userKeys = new ArrayList<Field>();
+
+    userKeys.add(new Field("ABCD", FieldType.LIST_STRING));
+    userKeys.add(new Field("PQRS", FieldType.LIST_STRING));
+
+    ArrayList<Object> userKeysUpdates = new ArrayList<Object>();
+    ArrayList<String> userKeysValues1 = new ArrayList<String>();
+    userKeysValues1.add(Util.randomString(100));
+//      userKeysValues1.add("MY");userKeysValues1.add("NAME");userKeysValues1.add("IS");userKeysValues1.add("RED");
+    ArrayList<String> userKeysValues2 = new ArrayList<String>();
+    userKeysValues2.add(Util.randomString(100));
+//      userKeysValues2.add("MERA");userKeysValues2.add("NAAM");userKeysValues2.add("LAAL");userKeysValues2.add("HAI");
+    userKeysUpdates.add(userKeysValues1);userKeysUpdates.add(userKeysValues2);
+
+    MongoRecords.getInstance().update("NameRecord", name, NameRecord.NAME, null, null, NameRecord.VALUES_MAP, userKeys, userKeysUpdates);
+  }
 }

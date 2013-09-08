@@ -10,38 +10,23 @@ import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.AdminRequestPacket;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.DumpRequestPacket;
-import edu.umass.cs.gns.packet.Header;
-import edu.umass.cs.gns.packet.Packet;
-import static edu.umass.cs.gns.packet.Packet.*;
-import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.packet.Transport;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
-import edu.umass.cs.gns.packet.UpdateOperation;
+import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.packet.Packet.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.cli.Options;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import static edu.umass.cs.gns.packet.Packet.*;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
 /**
@@ -153,7 +138,7 @@ public class Intercessor {
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           if (StartLocalNameServer.debugMode) {
-            GNS.getLogger().finer((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + "): " + packet.getName() + "/" + packet.getRecordKey().getName());
+            GNS.getLogger().finer((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");// + packet.getName() + "/" + packet.getRecordKey().getName());
           }
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.isSuccess());
@@ -367,7 +352,7 @@ public class Intercessor {
 
     GNS.getLogger().fine("sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
     UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
-            sequenceNumber, id,
+            id,
             name, new NameRecordKey(key),
             newValue,
             oldValue,

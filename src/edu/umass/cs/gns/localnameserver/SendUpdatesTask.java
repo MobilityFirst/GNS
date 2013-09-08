@@ -47,7 +47,14 @@ public class SendUpdatesTask extends TimerTask
   @Override
   public void run()
   {
+
+
     timeoutCount++;
+//    long t0 = System.currentTimeMillis();
+//    if (timeoutCount == 0 && t0 - requestRecvdTime > 10) {
+//      GNS.getLogger().severe(" Long delay in Startup " + (t0 - requestRecvdTime));
+//    }
+
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
 
     if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
@@ -63,7 +70,7 @@ public class SendUpdatesTask extends TimerTask
         throw  new RuntimeException();
       }
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
-      ConfirmUpdateLNSPacket confirmPkt = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, 0);
+      ConfirmUpdateLNSPacket confirmPkt = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket);
       try {
         if (updateInfo.senderAddress != null && updateInfo.senderAddress.length() > 0 && updateInfo.senderPort > 0) {
           LNSListener.udpTransport.sendPacket(confirmPkt.toJSONObject(),
@@ -103,15 +110,13 @@ public class SendUpdatesTask extends TimerTask
       }
       // create the packet that we'll send to the primary
       UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
-              updateAddressPacket.getSequenceNumber(),
               updateAddressPacket.getRequestID(), updateRequestID, -1,
               name, updateAddressPacket.getRecordKey(),
               updateAddressPacket.getUpdateValue(),
               updateAddressPacket.getOldValue(),
               updateAddressPacket.getOperation(),
               LocalNameServer.nodeID, nameServerID);
-      pkt.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(name//, nameRecordKey
-      ));
+//      pkt.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(name));
 
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
 
@@ -140,7 +145,7 @@ public class SendUpdatesTask extends TimerTask
         PendingTasks.addToPendingRequests(name, //nameRecordKey,
                 new SendUpdatesTask(updateAddressPacket, senderAddress, senderPort, requestRecvdTime,activesQueried),
                 StartLocalNameServer.queryTimeout, senderAddress, senderPort,
-                ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, 0).toJSONObject());
+                ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject());
 
       } catch (JSONException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -155,6 +160,11 @@ public class SendUpdatesTask extends TimerTask
 
 
     }
+
+//    long t1 = System.currentTimeMillis();
+//    if (t1 - t0 > 10) {
+//      GNS.getLogger().severe(" long delay in SendUpdatesTask " + (t1 - t0));
+//    }
 
 
   }

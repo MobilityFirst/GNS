@@ -38,13 +38,23 @@ public class StopActiveSetTask extends TimerTask {
    * @param name
    * @param oldActiveNameServers
    */
-  public StopActiveSetTask(String name, //NameRecordKey nameRecordKey, 
-                           Set<Integer> oldActiveNameServers, String oldPaxosID) {
+  public StopActiveSetTask(String name, Set<Integer> oldActiveNameServers, String oldPaxosID) {
     this.name = name;
-    //this.nameRecordKey = nameRecordKey;
     this.oldActiveNameServers = oldActiveNameServers;
     this.oldActivesQueried = new HashSet<Integer>();
     this.oldPaxosID = oldPaxosID;
+  }
+
+
+  private static ArrayList<Field> stopActivesFields = new ArrayList<Field>();
+
+  private static ArrayList<Field> getStopActivesFields() {
+    synchronized (stopActivesFields) {
+      if (stopActivesFields.size() > 0) return stopActivesFields;
+      stopActivesFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS_RUNNING);
+      stopActivesFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
+      return stopActivesFields;
+    }
   }
 
   @Override
@@ -52,12 +62,9 @@ public class StopActiveSetTask extends TimerTask {
 
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
 
-    ArrayList<Field> readFields = new ArrayList<Field>();
-    readFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS_RUNNING);
-    readFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
     ReplicaControllerRecord nameRecordPrimary;
     try {
-      nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, readFields);
+      nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, getStopActivesFields());
     } catch (RecordNotFoundException e) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name // + " Record Key = " + nameRecordKey
@@ -87,7 +94,7 @@ public class StopActiveSetTask extends TimerTask {
     if (oldActivesQueried.size() == MAX_ATTEMPTS) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe("ERROR: Old Actives failed to STOP after " + MAX_ATTEMPTS + ". "
-                + "Old active name servers queried: " + oldActivesQueried);
+                + "Old active name servers queried: " + oldActivesQueried + " Name = " + name);
       }
       this.cancel();
       return;

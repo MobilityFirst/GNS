@@ -75,12 +75,16 @@ public class UpdateInfo {
     return senderPort;
   }
 
-  public String getUpdateStats(ConfirmUpdateLNSPacket confirmPkt) {
+  public String getUpdateStats(ConfirmUpdateLNSPacket confirmPkt, String name) {
     long latency = System.currentTimeMillis() - sendTime;
-    String msg = "Success-UpdateRequest\t" + confirmPkt.getName() + "\t" + latency
-            + "\t" + confirmPkt.getNumNameServersUpdated() + "\t" + confirmPkt.getNameServerId()
-            + "\t" + confirmPkt.getLocalNameServerId() + "\t" + confirmPkt.getRequestID() + "\t" + System.currentTimeMillis() ;
+    String msg = "Success-UpdateRequest\t" + name + "\t" + latency
+            + "\t" + 3 + "\t" + 0
+            + "\t" + LocalNameServer.nodeID + "\t" + confirmPkt.getRequestID() + "\t" + System.currentTimeMillis() ;
     return msg;
+  }
+
+  public long getLatency() {
+    return System.currentTimeMillis() - sendTime;
   }
 
     public String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID) {

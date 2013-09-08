@@ -134,13 +134,13 @@ public class SendAddRemoveUpsertTask extends TimerTask{
     ConfirmUpdateLNSPacket confirm;
     switch (packet.getType()) {
       case ADD_RECORD_LNS:
-        confirm = new ConfirmUpdateLNSPacket(0, false, (AddRecordPacket) packet);
+        confirm = new ConfirmUpdateLNSPacket(false, (AddRecordPacket) packet);
         return  confirm;
       case REMOVE_RECORD_LNS:
-        confirm = new ConfirmUpdateLNSPacket(0, false, (RemoveRecordPacket)packet);
+        confirm = new ConfirmUpdateLNSPacket(false, (RemoveRecordPacket)packet);
         return  confirm;
       case UPDATE_ADDRESS_LNS:
-        confirm = ConfirmUpdateLNSPacket.createFailPacket((UpdateAddressPacket)packet, 0);
+        confirm = ConfirmUpdateLNSPacket.createFailPacket((UpdateAddressPacket)packet);
         return confirm;
     }
     return null;

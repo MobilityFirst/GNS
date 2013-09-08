@@ -29,29 +29,54 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ReplicaControllerRecord {
 
+//  public final static Field NAME = new Field("rcr_name", FieldType.STRING);
+//
+//  public final static Field PRIMARY_NAMESERVERS = new Field("rcr_primary", FieldType.SET_INTEGER);
+//  public final static Field ACTIVE_NAMESERVERS = new Field("rcr_active", FieldType.SET_INTEGER);
+//  public final static Field OLD_ACTIVE_NAMESERVERS = new Field("rcr_oldactive", FieldType.SET_INTEGER);
+//
+//  public final static Field ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_activeRunning", FieldType.BOOLEAN);
+//  public final static Field OLD_ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_oldActiveRunning", FieldType.BOOLEAN);
+//
+//  public final static Field ACTIVE_PAXOS_ID = new Field("rcr_activePaxosID", FieldType.STRING);
+//  public final static Field OLD_ACTIVE_PAXOS_ID = new Field("rcr_oldActivePaxosID", FieldType.STRING);
+//
+//  public final static Field MARKED_FOR_REMOVAL = new Field("rcr_markedForRemoval", FieldType.INTEGER);
+//
+//  public final static Field VOTES_MAP = new Field("rcr_votesMap", FieldType.VOTES_MAP);
+//  public final static Field STATS_MAP = new Field("rcr_statsMap", FieldType.STATS_MAP);
+//
+//  public final static Field PREV_TOTAL_READ = new Field("rcr_prevTotalRead", FieldType.INTEGER);
+//  public final static Field PREV_TOTAL_WRITE = new Field("rcr_prevTotalWrite", FieldType.INTEGER);
+//  public final static Field MOV_AVG_READ = new Field("rcr_movAvgRead", FieldType.LIST_INTEGER);
+//  public final static Field MOV_AVG_WRITE = new Field("rcr_movAvgWrite", FieldType.LIST_INTEGER);
+//
+//  public final static Field KEEP_ALIVE_TIME = new Field("rcr_keepAlive", FieldType.INTEGER);
+
+
   public final static Field NAME = new Field("rcr_name", FieldType.STRING);
 
-  public final static Field PRIMARY_NAMESERVERS = new Field("rcr_primary", FieldType.SET_INTEGER);
-  public final static Field ACTIVE_NAMESERVERS = new Field("rcr_active", FieldType.SET_INTEGER);
-  public final static Field OLD_ACTIVE_NAMESERVERS = new Field("rcr_oldactive", FieldType.SET_INTEGER);
+  public final static Field PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false)? new Field("rcr_primary", FieldType.SET_INTEGER): new Field("rc1", FieldType.SET_INTEGER);
+  public final static Field ACTIVE_NAMESERVERS =  (StartNameServer.experimentMode == false)? new Field("rcr_active", FieldType.SET_INTEGER) : new Field("rc2", FieldType.SET_INTEGER);
+  public final static Field OLD_ACTIVE_NAMESERVERS =  (StartNameServer.experimentMode == false)? new Field("rcr_oldactive", FieldType.SET_INTEGER) : new Field("rc3", FieldType.SET_INTEGER);
 
-  public final static Field ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_activeRunning", FieldType.BOOLEAN);
-  public final static Field OLD_ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_oldActiveRunning", FieldType.BOOLEAN);
+  public final static Field ACTIVE_NAMESERVERS_RUNNING =  (StartNameServer.experimentMode == false)? new Field("rcr_activeRunning", FieldType.BOOLEAN): new Field("rc4", FieldType.BOOLEAN);
+  public final static Field OLD_ACTIVE_NAMESERVERS_RUNNING =  (StartNameServer.experimentMode == false)? new Field("rcr_oldActiveRunning", FieldType.BOOLEAN) : new Field("rc5", FieldType.BOOLEAN);
 
-  public final static Field ACTIVE_PAXOS_ID = new Field("rcr_activePaxosID", FieldType.STRING);
-  public final static Field OLD_ACTIVE_PAXOS_ID = new Field("rcr_oldActivePaxosID", FieldType.STRING);
+  public final static Field ACTIVE_PAXOS_ID =  (StartNameServer.experimentMode == false)? new Field("rcr_activePaxosID", FieldType.STRING):  new Field("rc6", FieldType.STRING);
+  public final static Field OLD_ACTIVE_PAXOS_ID =  (StartNameServer.experimentMode == false)? new Field("rcr_oldActivePaxosID", FieldType.STRING): new Field("rc7", FieldType.STRING);
 
-  public final static Field MARKED_FOR_REMOVAL = new Field("rcr_markedForRemoval", FieldType.INTEGER);
+  public final static Field MARKED_FOR_REMOVAL =  (StartNameServer.experimentMode == false)? new Field("rcr_markedForRemoval", FieldType.INTEGER): new Field("rc8", FieldType.INTEGER);
 
-  public final static Field VOTES_MAP = new Field("rcr_votesMap", FieldType.VOTES_MAP);
-  public final static Field STATS_MAP = new Field("rcr_statsMap", FieldType.STATS_MAP);
+  public final static Field VOTES_MAP =  (StartNameServer.experimentMode == false)? new Field("rcr_votesMap", FieldType.VOTES_MAP): new Field("rc9", FieldType.VOTES_MAP);
+  public final static Field STATS_MAP =  (StartNameServer.experimentMode == false)? new Field("rcr_statsMap", FieldType.STATS_MAP) : new Field("rc10", FieldType.STATS_MAP);
 
-  public final static Field PREV_TOTAL_READ = new Field("rcr_prevTotalRead", FieldType.INTEGER);
-  public final static Field PREV_TOTAL_WRITE = new Field("rcr_prevTotalWrite", FieldType.INTEGER);
-  public final static Field MOV_AVG_READ = new Field("rcr_movAvgRead", FieldType.LIST_INTEGER);
-  public final static Field MOV_AVG_WRITE = new Field("rcr_movAvgWrite", FieldType.LIST_INTEGER);
+  public final static Field PREV_TOTAL_READ = (StartNameServer.experimentMode == false)? new Field("rcr_prevTotalRead", FieldType.INTEGER): new Field("rc11", FieldType.INTEGER);
+  public final static Field PREV_TOTAL_WRITE = (StartNameServer.experimentMode == false)? new Field("rcr_prevTotalWrite", FieldType.INTEGER): new Field("rc12", FieldType.INTEGER);
+  public final static Field MOV_AVG_READ = (StartNameServer.experimentMode == false)? new Field("rcr_movAvgRead", FieldType.LIST_INTEGER): new Field("rc13", FieldType.LIST_INTEGER);
+  public final static Field MOV_AVG_WRITE = (StartNameServer.experimentMode == false)? new Field("rcr_movAvgWrite", FieldType.LIST_INTEGER): new Field("rc14", FieldType.LIST_INTEGER);
 
-  public final static Field KEEP_ALIVE_TIME = new Field("rcr_keepAlive", FieldType.INTEGER);
+  public final static Field KEEP_ALIVE_TIME = (StartNameServer.experimentMode == false)? new Field("rcr_keepAlive", FieldType.INTEGER):  new Field("rc15", FieldType.INTEGER);
 
   private HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
 
@@ -491,11 +516,49 @@ public class ReplicaControllerRecord {
    * ******************************************/
 
 
+  private static ArrayList<Field> setMarkedForRemoval = new ArrayList<Field>();
+
+  private static ArrayList<Field> getSetMarkedForRemoval() {
+    synchronized (setMarkedForRemoval) {
+      if (setMarkedForRemoval.size() > 0) return setMarkedForRemoval;
+      setMarkedForRemoval.add(MARKED_FOR_REMOVAL);
+      return setMarkedForRemoval;
+    }
+  }
+
+
+  /**
+   * set marked for removal as
+   */
+  public void setMarkedForRemoval() throws FieldNotFoundException{
+    int markedForRemoval = getMarkedForRemoval();
+    if (markedForRemoval == 0) {
+      ArrayList<Field> fields = getSetMarkedForRemoval();
+
+      ArrayList<Object> values = new ArrayList<Object>();
+      values.add(1);
+
+      NameServer.replicaController.update(getName(),NAME,fields,values);
+      hashMap.put(MARKED_FOR_REMOVAL,1);
+    }
+  }
+
+  public void setRemoved() throws FieldNotFoundException{
+
+    ArrayList<Field> fields = getSetMarkedForRemoval();
+
+    ArrayList<Object> values = new ArrayList<Object>();
+    values.add(2);
+
+    NameServer.replicaController.update(getName(),NAME,fields,values);
+    hashMap.put(MARKED_FOR_REMOVAL, 2);
+
+  }
+
 
   public void setAdded() throws FieldNotFoundException{
 
-    ArrayList<Field> updateFields = new ArrayList<Field>();
-    updateFields.add(MARKED_FOR_REMOVAL);
+    ArrayList<Field> updateFields = getSetMarkedForRemoval();
 
     ArrayList<Object> values = new ArrayList<Object>();
     values.add(0);
@@ -524,6 +587,21 @@ public class ReplicaControllerRecord {
 
 
 
+  private static ArrayList<Field> updateActiveNameServerFields = new ArrayList<Field>();
+
+  private static ArrayList<Field> getUpdateActiveNameServerFields() {
+    synchronized (updateActiveNameServerFields) {
+      if (updateActiveNameServerFields.size() > 0) return  updateActiveNameServerFields;
+      updateActiveNameServerFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+      updateActiveNameServerFields.add(ACTIVE_NAMESERVERS_RUNNING);
+      updateActiveNameServerFields.add(OLD_ACTIVE_NAMESERVERS);
+      updateActiveNameServerFields.add(ACTIVE_NAMESERVERS);
+      updateActiveNameServerFields.add(OLD_ACTIVE_PAXOS_ID);
+      updateActiveNameServerFields.add(ACTIVE_PAXOS_ID);
+      return updateActiveNameServerFields;
+    }
+  }
+
   /**
    * Makes current active name servers old active name servers, and sets the new active name servers to true.
    *
@@ -536,13 +614,7 @@ public class ReplicaControllerRecord {
     Set<Integer> actives = getActiveNameservers();
     String activePaxosID = getActivePaxosID();
 
-    ArrayList<Field> updateFields = new ArrayList<Field>();
-    updateFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
-    updateFields.add(ACTIVE_NAMESERVERS_RUNNING);
-    updateFields.add(OLD_ACTIVE_NAMESERVERS);
-    updateFields.add(ACTIVE_NAMESERVERS);
-    updateFields.add(OLD_ACTIVE_PAXOS_ID);
-    updateFields.add(ACTIVE_PAXOS_ID);
+    ArrayList<Field> updateFields = getUpdateActiveNameServerFields();
 
     ArrayList<Object> updateValues = new ArrayList<Object>();
 
@@ -566,11 +638,22 @@ public class ReplicaControllerRecord {
 
 
 
+
+  private static ArrayList<Field> setOldActiveStoppedFields = new ArrayList<Field>();
+
+  private static ArrayList<Field> getSetOldActiveStoppedFields() {
+    synchronized (setOldActiveStoppedFields) {
+      if (setOldActiveStoppedFields.size() > 0) return  setOldActiveStoppedFields;
+      setOldActiveStoppedFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+      return setOldActiveStoppedFields;
+    }
+  }
+
   public boolean setOldActiveStopped(String oldActiveID) throws FieldNotFoundException{
 
     if (oldActiveID.equals(this.getOldActivePaxosID())) {
-      ArrayList<Field> updateFields = new ArrayList<Field>();
-      updateFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+
+      ArrayList<Field> updateFields = getSetOldActiveStoppedFields();
 
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(false);
@@ -582,6 +665,18 @@ public class ReplicaControllerRecord {
     return false;
   }
 
+
+  private static ArrayList<Field> setNewActiveRunningFields = new ArrayList<Field>();
+
+  private static ArrayList<Field> getSetNewActiveRunningFields() {
+    synchronized (setNewActiveRunningFields) {
+      if (setNewActiveRunningFields.size() > 0) return  setNewActiveRunningFields;
+      setNewActiveRunningFields.add(ACTIVE_NAMESERVERS_RUNNING);
+      return setNewActiveRunningFields;
+    }
+  }
+
+
   /**
    * Set new active running.
    *
@@ -590,48 +685,21 @@ public class ReplicaControllerRecord {
    */
   public boolean setNewActiveRunning(String newActiveID) throws FieldNotFoundException{
     if (newActiveID.equals(this.getActivePaxosID())) {
-      ArrayList<Field> updateFields = new ArrayList<Field>();
-      updateFields.add(ACTIVE_NAMESERVERS_RUNNING);
+
+      ArrayList<Field> updateFields = getSetNewActiveRunningFields();
 
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(true);
 
       NameServer.replicaController.update(getName(),NAME,updateFields,values);
-      hashMap.put(ACTIVE_NAMESERVERS_RUNNING,false);
+      hashMap.put(ACTIVE_NAMESERVERS_RUNNING,true);
       return true;
     }
     return false;
   }
 
 
-  /**
-   * set marked for removal as
-   */
-  public void setMarkedForRemoval() throws FieldNotFoundException{
-    int markedForRemoval = getMarkedForRemoval();
-    if (markedForRemoval == 0) {
-      ArrayList<Field> fields = new ArrayList<Field>();
-      fields.add(MARKED_FOR_REMOVAL);
 
-      ArrayList<Object> values = new ArrayList<Object>();
-      values.add(1);
-
-      NameServer.replicaController.update(getName(),NAME,fields,values);
-      hashMap.put(MARKED_FOR_REMOVAL,1);
-    }
-  }
-
-  public void setRemoved() throws FieldNotFoundException{
-    ArrayList<Field> fields = new ArrayList<Field>();
-    fields.add(MARKED_FOR_REMOVAL);
-
-    ArrayList<Object> values = new ArrayList<Object>();
-    values.add(2);
-
-    NameServer.replicaController.update(getName(),NAME,fields,values);
-    hashMap.put(MARKED_FOR_REMOVAL, 2);
-
-  }
 
   /**
    * Returns the total number of lookup request across all active name servers

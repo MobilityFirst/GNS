@@ -740,12 +740,17 @@ public class PaxosReplica {
 
   }
 
+  public String getPaxosID() {
+    return paxosID;
+  }
+
   /**
    * Received request from client, so propose it to the current coordinator.
+   *
    * @param json
    * @throws JSONException
    */
-  private  void handleRequest(JSONObject json) throws JSONException{
+  public void handleRequest(JSONObject json) throws JSONException{
 //        if (StartNameServer.debugMode) GNS.getLogger().fine(" Send request to coordinator .... ");
     // send proposal to coordinator.
 //        maxSlot = -1;

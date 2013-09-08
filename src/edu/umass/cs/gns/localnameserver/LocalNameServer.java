@@ -806,16 +806,16 @@ public class LocalNameServer {
   }
   
 
-  public static void updateCacheEntry(ConfirmUpdateLNSPacket packet) {
+  public static void updateCacheEntry(ConfirmUpdateLNSPacket packet, String name, NameRecordKey key) {
     switch (packet.getType()) {
       case CONFIRM_ADD_LNS:
         // screw it.. let the next query generate the cache
         break;
       case CONFIRM_REMOVE_LNS:
-        cache.invalidate(packet.getName());
+        cache.invalidate(name);
         break;
       case CONFIRM_UPDATE_LNS:
-        CacheEntry entry = cache.getIfPresent(packet.getName());
+        CacheEntry entry = cache.getIfPresent(name);
         if (entry != null) {
           entry.updateCacheEntry(packet);
         }
