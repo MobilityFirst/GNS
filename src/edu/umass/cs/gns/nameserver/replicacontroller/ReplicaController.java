@@ -160,18 +160,21 @@ public class ReplicaController {
    * @param valuesMap
    * @throws FieldNotFoundException
    */
-  public static void handleNameRecordAddAtPrimary(ReplicaControllerRecord recordEntry, ValuesMap valuesMap) throws FieldNotFoundException{
+  public static void handleNameRecordAddAtPrimary(ReplicaControllerRecord recordEntry, ValuesMap valuesMap, long initScoutDelay) throws FieldNotFoundException{
 //        if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName() +
 //                "\tBefore Paxos instance created for name: " + recordEntry.getName()
 //                        + " Primaries: " + primaries);
-
+//    long initScoutDelay = 0;
+//    if (StartNameServer.paxosStartMinDelaySec > 0 && StartNameServer.paxosStartMaxDelaySec > 0) {
+//      initScoutDelay = StartNameServer.paxosStartMaxDelaySec*1000 + new Random().nextInt(StartNameServer.paxosStartMaxDelaySec*1000 - StartNameServer.paxosStartMinDelaySec*1000);
+//    }
     PaxosManager.createPaxosInstance(getPrimaryPaxosID(recordEntry), recordEntry.getPrimaryNameservers(),
-            recordEntry.toString());
+            recordEntry.toString(), initScoutDelay);
     if (StartNameServer.debugMode) GNS.getLogger().fine(" Primary-paxos created: Name = " + recordEntry.getName());
 
 //		if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName()  +
     ListenerReplicationPaxos.addNameRecordLocal(recordEntry.getName(),recordEntry.getActiveNameservers(),
-            recordEntry.getActivePaxosID(),valuesMap);
+            recordEntry.getActivePaxosID(),valuesMap, initScoutDelay);
 
     if (StartNameServer.debugMode) GNS.getLogger().fine(" Active-paxos and name record created. Name = " + recordEntry.getName());
 //				"\tPaxos instance created for name: " + recordEntry.getName()

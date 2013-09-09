@@ -224,7 +224,7 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine(" Replica controller record created for name: " + addRecordPacket.getName());
 
       try {
-        ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap);
+        ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap,0);
       } catch (FieldNotFoundException e1) {
         GNS.getLogger().fine("Field not found exception. Should not happen because we initialized all fields in record. " + e1.getMessage());
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -293,7 +293,7 @@ public class ClientRequestWorker extends TimerTask {
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
     try {
-      ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap);
+      ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap,0);
     } catch (FieldNotFoundException e) {
       GNS.getLogger().fine("Field not found exception. Should not happen because we initialized all fields in record. " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

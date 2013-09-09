@@ -6,9 +6,9 @@ import edu.umass.cs.gns.packet.paxospacket.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -219,7 +219,7 @@ public class PaxosReplica {
 
   private int nodeIDcount = 0;
 
-  HashSet<Integer> selectNodes = new HashSet<Integer>();
+//  HashSet<Integer> selectNodes = new HashSet<Integer>();
 
   /**
    * Constructor.
@@ -234,7 +234,7 @@ public class PaxosReplica {
     this.nodeIDs = nodeIDs;
     this.nodeIDcount = nodeIDs.size();
 
-    updateSelectNodes();
+//    updateSelectNodes();
     acceptorBallot = new Ballot(0, getDefaultCoordinatorReplica());
 //        PaxosLogger.logCurrentBallot(paxosID, acceptorBallot);
   }
@@ -249,16 +249,15 @@ public class PaxosReplica {
     this.lastRequest = lastRequest;
   }
 
-  private void updateSelectNodes() {
-    Integer[] nodeIDArray = nodeIDs.toArray(new Integer[0]);
-    selectNodes = new HashSet<Integer>();
-    selectNodes.add(nodeID);
-    while(selectNodes.size() *2 <= nodeIDcount) {
-      int x  = r.nextInt(nodeIDcount);
-      if (FailureDetection.isNodeUp(nodeIDArray[x])) selectNodes.add(nodeIDArray[x]);
-    }
-
-  }
+//  private void updateSelectNodes() {
+//    Integer[] nodeIDArray = nodeIDs.toArray(new Integer[0]);
+//    selectNodes = new HashSet<Integer>();
+//    selectNodes.add(nodeID);
+//    while(selectNodes.size() *2 <= nodeIDcount) {
+//      int x  = r.nextInt(nodeIDcount);
+//      if (FailureDetection.isNodeUp(nodeIDArray[x])) selectNodes.add(nodeIDArray[x]);
+//    }
+//  }
   /**
    * Handle an incoming message as per message type.
    * @param json
@@ -368,6 +367,7 @@ public class PaxosReplica {
       if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\t" +"JSON Exception. " + e.getMessage());
     }
   }
+
 
   /********************* START: Methods for replica recovery from paxos logs ********************************/
 
@@ -495,18 +495,31 @@ public class PaxosReplica {
 
   /********************* END: Methods for replica recovery from paxos logs ********************************/
 
+
+
+
+
+
+
+
+
+
+
+
   boolean replicaStarted = false;
 
   private final ReentrantLock startLock = new ReentrantLock();
 
-  public  void startReplica( ) {
+  public  void startReplica(long initScoutDelay) {
     synchronized (startLock) {
       if (replicaStarted) return;
       replicaStarted = true;
     }
-    startCoordinator();
+    startCoordinator(initScoutDelay);
     // send state to all nodes.
-    sendCurrentStateToAllNodes();
+
+//    sendCurrentStateToAllNodes();
+
 //        writeCurrentState();
   }
 
@@ -994,9 +1007,19 @@ public class PaxosReplica {
   /**
    * Initialize the coordinator at this replica.
    */
-  private void startCoordinator() {
+  private void startCoordinator(long initScoutDelay) {
+
     coordinatorBallot = new Ballot(0, getDefaultCoordinatorReplica());
-    initScout();
+
+    if (getDefaultCoordinatorReplica() == nodeID) {
+      StartScoutTask task = new StartScoutTask(this);
+      // coordinator starts scout after some delay to ensure that GNS has notified all replicas.
+      if (initScoutDelay  > 0) {
+        PaxosManager.executorService.schedule(task, initScoutDelay, TimeUnit.MILLISECONDS);
+      } else {
+        initScout();
+      }
+    }
   }
 
   /**
@@ -1226,24 +1249,28 @@ public class PaxosReplica {
             PaxosPacketType.ACCEPT, minSlot);
 
     if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C" +
-            " Selected nodes: " + selectNodes);
+            " Selected nodes: " + nodeIDs);
 
-    try {
-      JSONObject jsonObject = accept.toJSONObject();
-      jsonObject.put(PaxosManager.PAXOS_ID, paxosID);
-      if (PaxosManager.debug) {
-        if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C" +
-                " Sent packet to acceptors: " + jsonObject);
-        PaxosManager.tcpTransport.sendToIDs(selectNodes,jsonObject);
-      }
-      else {
-        for (int x: selectNodes)
-          PaxosManager.sendMessage(x,jsonObject);
-      }
+//    try {
+    JSONObject jsonObject = accept.toJSONObject();
+    jsonObject.put(PaxosManager.PAXOS_ID, paxosID);
+    PaxosManager.sendMessage(nodeIDs,jsonObject,paxosID);
+//    handleIncomingMessage(jsonObject, PaxosPacketType.ACCEPT);
+//      PaxosManager.tcpTransport.sendToIDs(nodeIDs,jsonObject);
+//      sendMessage();
+//      if (PaxosManager.debug) {
+//        if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C" +
+//                " Sent packet to acceptors: " + jsonObject);
 //
-    } catch (IOException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
+//      }
+//      else {
+//        for (int x: nodeIDs)
+//          PaxosManager.sendMessage(x,jsonObject);
+//      }
+//
+//    } catch (IOException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
 
 //        for (Integer i: nodeIDs) {
 //            // create accept packet
@@ -1473,18 +1500,19 @@ public class PaxosReplica {
       stateAtCoordinator.pValuePacket.proposal.gcSlot = minSlot;
       JSONObject jsonObject = stateAtCoordinator.pValuePacket.proposal.toJSONObject();
       jsonObject.put(PaxosManager.PAXOS_ID, paxosID);
-      if (PaxosManager.debug) {
-        PaxosManager.tcpTransport.sendToIDs(nodeIDs,jsonObject);
-      }
-      else {
-        for (int x: nodeIDs)
-          PaxosManager.sendMessage(x,jsonObject);
-
-      }
-    } catch (IOException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      PaxosManager.sendMessage(nodeIDs,jsonObject,paxosID);
+//      handleIncomingMessage(jsonObject,);
+//      if (PaxosManager.debug) {
+//         PaxosManager.tcpTransport.sendToIDs(nodeIDs,jsonObject);
+//      }
+//      else {
+//        for (int x: nodeIDs)
+//          PaxosManager.sendMessage(x,jsonObject);
+//      }
+//    } catch (IOException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();
     }
 //        if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C " +
 //                "Sending decision for slot = " + slot);
@@ -1506,9 +1534,9 @@ public class PaxosReplica {
   }
 
   /**
-   * send prepare packet to get new ballot accepted.
+   * Send prepare packet to get new ballot accepted.
    */
-  private void initScout() {
+  public void initScout() {
 
     synchronized (proposalNumberLock) {
       if (stopCommandProposed) return;
@@ -1553,6 +1581,47 @@ public class PaxosReplica {
 //            if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C sending prepare msg to " +i );
       sendMessage(i, prepare);
     }
+
+    int numberRetry = (int) (FailureDetection.timeoutInterval / PaxosManager.RESEND_PENDING_MSG_INTERVAL_SEC);
+    CheckPrepareMessageTask task = new CheckPrepareMessageTask(this,prepare, ballotScout, numberRetry);
+
+    PaxosManager.executorService.scheduleAtFixedRate(task,PaxosManager.RESEND_PENDING_MSG_INTERVAL_SEC,PaxosManager.RESEND_PENDING_MSG_INTERVAL_SEC, TimeUnit.SECONDS);
+
+
+  }
+
+  /**
+   * Returns true if there is a need to resend the prepare message again, otherwise false.
+   * @param proposedBallot
+   * @param prepare
+   * @return
+   */
+  public boolean resendPrepare(Ballot proposedBallot, PreparePacket prepare) {
+    try {
+      scoutLock.lock();
+      if (proposedBallot.equals(ballotScout) && waitForScout != null) {
+        // what if majority have failed.
+        int nodesUp = 0;
+        for (int x: nodeIDs)
+          if (FailureDetection.isNodeUp(x)) nodesUp++;
+        if (nodesUp*2 < nodeIDs.size()) return false; // more than half node down, give up resending prepare
+        boolean resend = false;
+        for (int x: nodeIDs) {
+          if (waitForScout.contains(x) == false && FailureDetection.isNodeUp(x)) {
+            sendMessage(x, prepare); // send message to the node if it is up and has not responded.
+            resend = true;
+            GNS.getLogger().fine(paxosID + "\t" + nodeID + "C\t Ballot = " + proposedBallot + " resend to node " + x);
+          }
+        }
+        return resend;
+      } else {
+        GNS.getLogger().fine(paxosID + "\t" + nodeID + "C\t No need to resend PreparePacket. Ballot adopted = " + proposedBallot);
+        return false;
+      }
+    } finally {
+      scoutLock.unlock();
+    }
+
   }
 
   /**
@@ -1698,7 +1767,7 @@ public class PaxosReplica {
    * @param packet
    */
   private void handleNodeStatusUpdate(FailureDetectionPacket packet) {
-    updateSelectNodes();
+//    updateSelectNodes();
     if (packet.status == true) return; // node is up.
     if (packet.responderNodeID == nodeID) return;  // I have failed!! not possible.
 
@@ -2093,9 +2162,9 @@ public class PaxosReplica {
         sendMessage(x, synchronizePacket);
       }
     }
-
   }
 }
+
 
 
 class ProposalStateAtCoordinator {
@@ -2133,4 +2202,40 @@ class ProposalStateAtCoordinator {
   }
 
 
+}
+
+class CheckPrepareMessageTask extends TimerTask {
+
+  int numRetry;
+  int count = 0;
+  PaxosReplica replica;
+  PreparePacket preparePacket;
+  Ballot proposedBallot;
+  public CheckPrepareMessageTask(PaxosReplica replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
+    this.numRetry = numRetry;
+    this.replica = replica;
+    this.preparePacket = preparePacket;
+    this.proposedBallot = proposedBallot;
+
+  }
+
+  @Override
+  public void run() {
+    boolean sendAgain = replica.resendPrepare(proposedBallot,preparePacket);
+    if (sendAgain == false || count == numRetry) throw  new RuntimeException();
+  }
+}
+
+
+class StartScoutTask extends TimerTask {
+  PaxosReplica replica;
+  public StartScoutTask(PaxosReplica replica) {
+    this.replica = replica;
+
+  }
+
+  @Override
+  public void run() {
+    replica.initScout();
+  }
 }

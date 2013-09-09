@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class DNSPacket extends BasicPacket {
 
-  public final static String HEADER = "header";
+  public final static String HEADER = "header1";
 //  public final static String QTYPE = "qtype";
   public final static String QRECORDKEY = "qrecordkey";
   public final static String QNAME = "qname";

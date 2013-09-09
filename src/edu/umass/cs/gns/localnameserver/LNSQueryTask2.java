@@ -148,6 +148,7 @@ public class LNSQueryTask2 extends TimerTask {
 
       try {
         json = incomingPacket.toJSONObjectQuestion();
+        GNS.getLogger().fine(">>>>>>>>>>>>>JSON Query is " + json);
       } catch (JSONException e) {
         e.printStackTrace();
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Error Converting Query to JSON Object.");

@@ -81,7 +81,9 @@ public class PaxosManager extends Thread{
   /**
    * Paxos coordinator checks whether all replicas have received the latest messages decided.
    */
-  private static long RESEND_PENDING_MSG_INTERVAL_SEC = 1;
+  static long RESEND_PENDING_MSG_INTERVAL_SEC = 1;
+
+  static long INIT_SCOUT_DELAY_MILLIS = 1000;
 
   /**
    * Paxos logs are garbage collected at this interval
@@ -269,7 +271,10 @@ public class PaxosManager extends Thread{
   private static void startPaxosMaintenanceActions() {
     startPaxosLogDeletionTask();
     startPaxosStateLogging();
-    startResendPendingMessages();
+
+//    startResendPendingMessages(); // Commenting this because it iterates over all paxos instances every second
+    // TODO
+
   }
 
   /**
@@ -308,7 +313,7 @@ public class PaxosManager extends Thread{
     if (paxosInstances!=null) {
       for (String x: PaxosManager.paxosInstances.keySet()) {
         if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos Recovery: starting paxos replica .. " + x);
-        PaxosManager.paxosInstances.get(x).startReplica();
+        PaxosManager.paxosInstances.get(x).startReplica(0);
       }
     }
 
@@ -458,7 +463,7 @@ public class PaxosManager extends Thread{
     Set<Integer> x = new HashSet<Integer>();
     for (int i = 0;  i < N; i++)
       x.add(i);
-    createPaxosInstance(defaultPaxosID, x, clientRequestHandler.getState(defaultPaxosID));
+    createPaxosInstance(defaultPaxosID, x, clientRequestHandler.getState(defaultPaxosID),0);
 
 
   }
@@ -510,7 +515,7 @@ public class PaxosManager extends Thread{
   /**
    * Adds a new Paxos instance to the set of actives.
    */
-  public static boolean createPaxosInstance(String paxosID, Set<Integer> nodeIDs, String initialState) {
+  public static boolean createPaxosInstance(String paxosID, Set<Integer> nodeIDs, String initialState, long initScoutDelay) {
 
     if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tEnter createPaxos");
     if (nodeIDs.size() < 3) {
@@ -534,7 +539,7 @@ public class PaxosManager extends Thread{
         return false;
       }
 
-      if (initialState != null) {
+      if (initialState != null && StartNameServer.experimentMode == false) { // During experiments, we disable state logging. This helps us load records faster into database.
         PaxosLogger2.logPaxosStart(paxosID, nodeIDs, new StatePacket(new Ballot(0,0),0, initialState));
       }
       if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tBefore creating replica.");
@@ -549,7 +554,7 @@ public class PaxosManager extends Thread{
     }
 
     if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tStarting replica");
-    if (r!= null) r.startReplica();
+    if (r!= null) r.startReplica(initScoutDelay);
 
     if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tExit create Paxos");
     return true;
@@ -768,6 +773,16 @@ public class PaxosManager extends Thread{
     }
 
   }
+
+  static void sendMessage(Set<Integer> destIDs, JSONObject json, String paxosID) {
+    try {
+      json.put(PaxosManager.PAXOS_ID, paxosID);
+      sendMessage(destIDs, json);
+    } catch (JSONException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+
+  }
   /**
    * all paxos instances use this method to exchange messages
    * @param destID
@@ -787,6 +802,23 @@ public class PaxosManager extends Thread{
     } catch (JSONException e)
     {
       if (StartNameServer.debugMode) GNS.getLogger().severe("JSON Exception in sending to ID. " + destID);
+    }
+
+  }
+  static void sendMessage(Set<Integer> destIDs, JSONObject json) {
+    try
+    {
+      if (!debug) {
+        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
+
+      }
+      tcpTransport.sendToIDs(destIDs, json);
+    } catch (IOException e)
+    {
+      if (StartNameServer.debugMode) GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. " + destIDs);
+    } catch (JSONException e)
+    {
+      if (StartNameServer.debugMode) GNS.getLogger().severe("JSON Exception in sending to IDs. " + destIDs);
     }
 
   }
@@ -909,6 +941,7 @@ class LogPaxosStateTask extends TimerTask {
 
   @Override
   public void run() {
+    if (StartNameServer.experimentMode) {return;} // we do not log paxos state during experiments ..
     for (String x: PaxosManager.paxosInstances.keySet()) {
 //      if (PaxosLogger2.resetStateChanged(x)) { //
       PaxosReplica r = PaxosManager.paxosInstances.get(x);

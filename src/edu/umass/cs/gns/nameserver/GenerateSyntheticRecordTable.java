@@ -109,7 +109,7 @@ public class GenerateSyntheticRecordTable {
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-
+    long t0 = System.currentTimeMillis();
     for (int name = 0; name < (regularWorkloadSize + mobileWorkloadSize); name++) {
       try {
         String strName = Integer.toString(name);
@@ -130,10 +130,16 @@ public class GenerateSyntheticRecordTable {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             continue;
           }
+          long t1 = System.currentTimeMillis();
+          long timeSpent = t1 - t0;
+          long initScoutDelay = 0;
+          if (StartNameServer.paxosStartMinDelaySec > 0 && StartNameServer.paxosStartMaxDelaySec > 0) {
+            initScoutDelay = (StartNameServer.paxosStartMinDelaySec - timeSpent)*1000 + new Random().nextInt(StartNameServer.paxosStartMaxDelaySec*1000 - StartNameServer.paxosStartMinDelaySec*1000);
+          }
           ValuesMap valuesMap = new ValuesMap();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
           try {
-            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
+            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay);
           } catch (FieldNotFoundException e) {
             GNS.getLogger().fine("Field not found exception. " + e.getMessage());
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -164,14 +170,20 @@ public class GenerateSyntheticRecordTable {
 
           ValuesMap valuesMap = new ValuesMap();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
+          long t1 = System.currentTimeMillis();
+          long timeSpent = t1 - t0;
+          long initScoutDelay = 0;
+          if (StartNameServer.paxosStartMinDelaySec > 0 && StartNameServer.paxosStartMaxDelaySec > 0) {
+            initScoutDelay = (StartNameServer.paxosStartMinDelaySec*1000 - timeSpent) + new Random().nextInt(StartNameServer.paxosStartMaxDelaySec*1000 - StartNameServer.paxosStartMinDelaySec*1000);
+          }
           try {
-            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap);
+            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay);
           } catch (FieldNotFoundException e) {
             GNS.getLogger().fine("Field not found exception. " + e.getMessage());
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
           }
           if (name%1000 == 0) {
-            GNS.getLogger().severe("Added record " + name);
+            GNS.getLogger().severe("Added record " + name + "\tinit scout delay\t" + initScoutDelay);
           }
 //					NameRecord recordEntry = new NameRecord(strName, NameRecordKey.EdgeRecord, new ArrayList(Arrays.asList(Integer.toString(address))));
 //
@@ -180,13 +192,18 @@ public class GenerateSyntheticRecordTable {
 //					NameServer.addNameRecord(recordEntry);
 //          if (StartNameServer.debugMode) GNS.getLogger().fine("Name record added: " + nameRecordPrimary);
 //					recordTable.put( recordEntry.name, recordEntry );
-          Thread.sleep(sleepBetweenNames);
+
+//          Thread.sleep(sleepBetweenNames);
+
         }
 
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
+
+    long t1 = System.currentTimeMillis();
+    GNS.getLogger().severe(" Time to add all records " + (t1 - t0)/1000 + " sec");
 
 //		if( !debugMode )
 //			writeTable( recordTable );

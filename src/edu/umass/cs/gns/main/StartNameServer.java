@@ -64,6 +64,11 @@ public class StartNameServer {
   public static int loadMonitorWindow = 100;
   private static int quitAfterTime = -1; // only for testing: local name server will quit after this time
 
+  // in experiment mode, the default paxos coordinator will send prepare message at a random time between
+  // paxosStartMinDelaySec  and paxosStartMaxDelaySec
+  public static int paxosStartMinDelaySec = 0;
+  public static int paxosStartMaxDelaySec = 0;
+
   @SuppressWarnings("static-access")
   /**
    * ************************************************************
@@ -150,6 +155,10 @@ public class StartNameServer {
     Option failureDetectionTimeoutInterval = new Option("failureDetectionTimeoutInterval", true,
             "Interval (in sec) after which a node is declared as failed");
 
+    Option paxosStartMinDelaySec = new Option("paxosStartMinDelaySec",true,"paxos starts at least this many seconds after start of experiment");
+
+    Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec",true,"paxos starts at most this many seconds after start of experiment");
+
     Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Size of window to calculate the "
             + "moving average of update inter-arrival time")
@@ -230,6 +239,8 @@ public class StartNameServer {
     commandLineOptions.addOption(paxosLogFolder);
     commandLineOptions.addOption(failureDetectionMsgInterval);
     commandLineOptions.addOption(failureDetectionTimeoutInterval);
+    commandLineOptions.addOption(paxosStartMinDelaySec);
+    commandLineOptions.addOption(paxosStartMaxDelaySec);
 
     commandLineOptions.addOption(workerThreadCount);
     commandLineOptions.addOption(tinyUpdate);
@@ -367,6 +378,10 @@ public class StartNameServer {
         PaxosManager.setFailureDetectionTimeoutInterval(Integer.parseInt(parser.getOptionValue("failureDetectionTimeoutInterval")) * 1000);
       }
 
+      if (experimentMode) {
+        paxosStartMinDelaySec = Integer.parseInt(parser.getOptionValue("paxosStartMinDelaySec", "0"));
+        paxosStartMaxDelaySec = Integer.parseInt(parser.getOptionValue("paxosStartMaxDelaySec", "0"));
+      }
 
       if (parser.hasOption("workerThreadCount")) {
         workerThreadCount = Integer.parseInt(parser.getOptionValue("workerThreadCount"));
