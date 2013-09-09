@@ -340,7 +340,7 @@ def print_options():
 
 def main(argv):
     try:                                
-        opts, args = getopt.getopt(argv, 'ab:c:d:e:fg:h:i:jk:l:m:n:o:p:qr:tuv:w:x:y:z:s:', 
+        opts, args = getopt.getopt(argv, 'ab:c:d:e:fg:h:i:jk:l:m:n:o:p:qr:tuv:w:x:y:z:s:a:b:cde:f:', 
                                    ['local', 'id=', 'nsFile=', 'lnsFile=',
                                     'cacheSize=', 
                                     'location', 'voteInterval=', 'primary=', 
@@ -349,7 +349,8 @@ def main(argv):
                                     'numUpdate=', 'workloadFile=', 'debugMode',
                                     'jar=', 'help', 'planetlab', 'lookupRate=', 'updateRateMobile=', 
                                     'updateRateRegular=', 'lookupTrace=', 'updateTrace=',
-                                    'expRunTime=' , 'rInterval=', 'optimalTrace=', 'optimal', 'runHttpServer'])
+                                    'expRunTime=' , 'rInterval=', 'optimalTrace=', 'optimal', 'runHttpServer',
+                                    'fileLoggingLevel=', 'consoleOutputLevel='])
     except getopt.GetoptError:   
         print 'Incorrect option'      
         usage()                         
@@ -382,6 +383,8 @@ def main(argv):
     global is_optimal_replication
     global replication_interval
     global is_Run_Http_Server 
+    global file_logging_level
+    global console_output_level
     global is_debug_mode
     
     for opt, arg in opts:
@@ -441,6 +444,10 @@ def main(argv):
 	    optimal_trace_file = arg
         elif opt == '--runHttpServer':
             is_Run_Http_Server = True
+        elif opt == '--fileLoggingLevel':
+            file_logging_level = arg
+        elif opt == '--consoleOutputLevel':
+            console_output_level = arg
         elif opt == '--help':
             usage()
             sys.exit(1)

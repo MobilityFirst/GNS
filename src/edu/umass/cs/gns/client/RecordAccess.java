@@ -43,13 +43,13 @@ public class RecordAccess {
 
   public String lookupMultipleValues(String guid, String key) {
     Intercessor client = Intercessor.getInstance();
-    ValuesMap result = client.sendMultipleReturnValueQuery(guid, key);
+    ValuesMap result = client.sendMultipleReturnValueQuery(guid, key, true);
     try {
       if (result != null) {
         return result.toJSONObject().toString();
       }
     } catch (JSONException e) {
-       GNS.getLogger().severe("Problem parsing multiple value return:" + e);
+      GNS.getLogger().severe("Problem parsing multiple value return:" + e);
     }
     return new String();
   }

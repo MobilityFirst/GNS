@@ -182,6 +182,8 @@ public class Intercessor {
     }
   }
 
+  // QUERYING
+  
   public ArrayList<String> sendQuery(String name, String key) {
     ValuesMap result = sendMultipleReturnValueQuery(name, key);
     if (result != null) {
@@ -191,8 +193,11 @@ public class Intercessor {
     }
   }
 
-  // QUERYING
   public ValuesMap sendMultipleReturnValueQuery(String name, String key) {
+    return sendMultipleReturnValueQuery(name, key, false);
+  }
+
+  public ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalKeys) {
     int id = randomID.nextInt();
     GNS.getLogger().fine("sending query ... " + name + " " + key);
     //Generate unique id for the query
@@ -231,6 +236,12 @@ public class Intercessor {
     queryResult.remove(id);
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
+    }
+
+    // remove any keys used internally by the GNS
+    if (removeInternalKeys) {
+      result.remove(AccountAccess.GUID_INFO);
+      result.remove(AccountAccess.ACCOUNT_INFO);
     }
 
     if (result == ERRORQUERYRESULT) {

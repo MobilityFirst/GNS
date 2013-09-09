@@ -271,7 +271,7 @@ def print_options():
 def main(argv):
     
     try:                                
-        opts, args = getopt.getopt(argv, 'a:bc:d:e:f:g:h:i:j:k:l:m:n:o:pqrw:stuvx:y:z:', 
+        opts, args = getopt.getopt(argv, 'a:bc:d:e:f:g:h:i:j:k:l:m:n:o:pqrw:stuvx:y:z:ab:c:d', 
                                    ['jar=', 'local', 'id=', 'nsFile=',
                                     'primary=', 'aggregateInterval=',
                                     'replicationInterval=', 'nConstant=',
@@ -279,7 +279,8 @@ def main(argv):
                                     'mTTL=', 'nTTL=', 'rWorkload=', 
                                     'mWorkload=', 'static', 'random',
                                     'location', 'nsSelectionVoteSize=', 'debugMode', 'help', 'planetlab',
-                                    'beehive', 'hop=', 'base=', 'alpha=', 'optimal', "dataStore="])
+                                    'beehive', 'hop=', 'base=', 'alpha=', 'optimal', 'dataStore=',
+                                    'fileLoggingLevel=', 'consoleOutputLevel='])
     except getopt.GetoptError:    
         print 'Incorrect option'      
         usage()                         
@@ -315,6 +316,8 @@ def main(argv):
     global num_local_name_server 
     global lnsnsping_file
     global nsnsping_file 
+    global file_logging_level
+    global console_output_level 
     for opt, arg in opts:
         if opt == '--jar':
             name_server_jar = arg
@@ -404,6 +407,10 @@ def main(argv):
             lnsnsping_file = arg
         elif opt == '-nsnsping':
             nsnsping_file = arg
+        elif opt == '--fileLoggingLevel':
+            file_logging_level = arg
+        elif opt == '--consoleOutputLevel':
+            console_output_level = arg
         elif opt == '--dataStore':
             data_store = arg
         elif opt == '--help':

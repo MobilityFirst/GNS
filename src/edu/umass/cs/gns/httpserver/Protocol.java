@@ -272,9 +272,9 @@ public class Protocol {
             + NEWLINE + NEWLINE
             + "DATABASE READ OPERATIONS" + NEWLINE + NEWLINE
             + urlPrefix + READ + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. "
-            + "Values are always returned as a JSON list."
-            //+ "Specify " + ALLFIELDS + " as the <field> to return all fields. "
+            + "  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority."
+            + " Values are always returned as a JSON list."
+            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object."
             + " See below for more on signature. "
             //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
