@@ -63,6 +63,20 @@ public class RecordAccess {
       return new String();
     }
   }
+  
+  public String lookupOneMultipleValues(String guid, String key) {
+    Intercessor client = Intercessor.getInstance();
+    ValuesMap result = client.sendMultipleReturnValueQuery(guid, key, true);
+    try {
+      if (result != null) {
+        // Pull the first value out of each array
+        return result.toJSONObjectFirstOnes().toString();
+      }
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem parsing multiple value return:" + e);
+    }
+    return new String();
+  }
 
   public boolean update(String guid, String key, ArrayList<String> value, ArrayList<String> oldValue, UpdateOperation operation) {
     Intercessor client = Intercessor.getInstance();

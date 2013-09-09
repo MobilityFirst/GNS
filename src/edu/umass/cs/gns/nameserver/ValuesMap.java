@@ -5,7 +5,6 @@
 package edu.umass.cs.gns.nameserver;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-
 import edu.umass.cs.gns.util.JSONUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +56,21 @@ public class ValuesMap {
     }
   }
 
+  // For the READONE command we just pull out the first item in each value of the key / values[list]
+  public JSONObject toJSONObjectFirstOnes() throws JSONException {
+    JSONObject json = new JSONObject();
+    addFirstOneToJSONObject(json);
+    return json;
+  }
+
+  public void addFirstOneToJSONObject(JSONObject json) throws JSONException {
+    for (Map.Entry<String, ArrayList<String>> entry : content.entrySet()) {
+      if (!entry.getValue().isEmpty()) {
+        json.put(entry.getKey(), entry.getValue().get(0));
+      }
+    }
+  }
+
   public ArrayList<String> get(String key) {
     return content.get(key);
   }
@@ -64,6 +78,7 @@ public class ValuesMap {
   public void put(String key, ArrayList<String> value) {
     content.put(key, value);
   }
+
   public void remove(String key) {
     content.remove(key);
   }
@@ -87,10 +102,9 @@ public class ValuesMap {
   public Map getMap() {
     return content;
   }
+
   @Override
   public String toString() {
     return content.toString();
   }
-
-
 }
