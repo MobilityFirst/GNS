@@ -4,6 +4,7 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
@@ -231,7 +232,7 @@ public class NameServer {
    ******************************/
 
   /**
-   * Read the complete name record
+    * Load a name record from the backing database and retrieve all the fields.
    * @param name
    * @return
    * @throws RecordNotFoundException
@@ -241,16 +242,37 @@ public class NameServer {
   }
 
   /**
-   * Read name record with select fields
+    * Load a name record from the backing database and retrieve certain fields as well.
    * @param name
-   * @param fields
-   * @param userFields
+   * @param fields - a list of Field structures representing "system" fields to retrieve
+   * @param userFields - a list of Field structures representing user fields to retrieve
    * @return
    * @throws RecordNotFoundException
    */
   public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, ArrayList<Field> userFields)
           throws RecordNotFoundException{
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFields));
+  }
+  
+  /**
+   * Load a name record from the backing database and retrieve certain fields as well.
+   * @param name
+   * @param fields - a list of Field structures representing "system" fields to retrieve
+   * @param userFieldNames - a list of strings which are names of user fields to retrieve
+   * @return
+   * @throws RecordNotFoundException 
+   */
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, String ... userFieldNames)
+          throws RecordNotFoundException{
+    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
+  }
+  
+  private static ArrayList<Field> userFieldList(String... fieldNames) {
+    ArrayList<Field> result = new ArrayList<Field>();
+    for (String name : fieldNames) {
+      result.add(new Field(name, FieldType.LIST_STRING));
+    }
+    return result;
   }
 
   /**

@@ -130,8 +130,7 @@ public class NSListenerAdmin extends Thread {
 
             StatusClient.sendStatus(NameServer.nodeID, "Dumping records");
             JSONArray jsonArray = new JSONArray();
-            // SPECIAL CASE: if there is an argument it is a TAGNAME and we return the name of all the
-            // records that have that tag
+            // if there is an argument it is a TAGNAME we return all the records that have that tag
             if (dumpRequestPacket.getArgument() != null) {
               String tag = dumpRequestPacket.getArgument();
               for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
@@ -141,7 +140,7 @@ public class NSListenerAdmin extends Thread {
                   if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
                     GuidInfo userInfo = new GuidInfo(nameRecord.getKey(AccountAccess.GUID_INFO));
                     if (userInfo.containsTag(tag)) {
-                      jsonArray.put(nameRecord.getName());
+                      jsonArray.put(nameRecord.toJSONObject());
                     }
                   }
                 } catch (FieldNotFoundException e) {
@@ -149,7 +148,7 @@ public class NSListenerAdmin extends Thread {
                   e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
               }
-              // OTHERWISE WE DO THE DUMPY THING AND RETURN THE RECORD
+              // OTHERWISE WE RETURN ALL THE RECORD
             } else {
               for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                 //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
@@ -194,7 +193,7 @@ public class NSListenerAdmin extends Thread {
                 PaxosManager.resetAll();
                 NameServer.resetDB();
                 break;
-                
+
 //              case DELETEALLGUIDRECORDS:
 //                // delete all the records that have a name (GUID) given by the argument in the packet
 //                String name = adminRequestPacket.getArgument();

@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.RecordAccess;
@@ -96,6 +97,7 @@ public class GnsHttpServer {
     if (localNameServerID != -1) {
       // tell the Intercessor what local name server to contact to
       Intercessor.getInstance().setLocalServerID(localNameServerID);
+      Admintercessor.getInstance().setLocalServerID(localNameServerID);
     }
     runServer();
   }
@@ -103,6 +105,7 @@ public class GnsHttpServer {
   public static void runHttp(int localNameServerID) {
     GnsHttpServer.localNameServerID = localNameServerID;
     Intercessor.getInstance().setLocalServerID(localNameServerID);
+    Admintercessor.getInstance().setLocalServerID(localNameServerID);
     runServer();
   }
 
@@ -113,8 +116,10 @@ public class GnsHttpServer {
       try {
 
         if (localNameServerID == -1) {
+          int randomHostID = new ArrayList<Integer>(ConfigFileInfo.getAllHostIDs()).get(new Random().nextInt(ConfigFileInfo.getAllHostIDs().size()));
           // pick a random local name server - ASSUMES THERE IS AN LNS RUNNING AT EVERY HOST
-          Intercessor.getInstance().setLocalServerID(new ArrayList<Integer>(ConfigFileInfo.getAllHostIDs()).get(new Random().nextInt(ConfigFileInfo.getAllHostIDs().size())));
+          Intercessor.getInstance().setLocalServerID(randomHostID);
+          Admintercessor.getInstance().setLocalServerID(randomHostID);
         }
 
         String requestMethod = exchange.getRequestMethod();

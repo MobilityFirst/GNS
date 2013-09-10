@@ -10,12 +10,16 @@ import org.json.JSONObject;
  * @author Westy
  ************************************************************/
 public class SentinalPacket extends BasicPacket {
+  
+   public final static String ID = "id";
+   private int id;
 
   /*************************************************************
    * Constructs new SentinalPacket.
    ************************************************************/
-  public SentinalPacket() {
+  public SentinalPacket(int id) {
     this.type = Packet.PacketType.SENTINAL;
+    this.id = id;
   }
 
   /*************************************************************
@@ -29,7 +33,8 @@ public class SentinalPacket extends BasicPacket {
       e.printStackTrace();
       return;
     }
-
+    
+    this.id = json.getInt(ID);
     this.type = Packet.getPacketType(json);
   }
  
@@ -43,7 +48,12 @@ public class SentinalPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    json.put(ID, id);
     return json;
+  }
+
+  public int getId() {
+    return id;
   }
 
 }

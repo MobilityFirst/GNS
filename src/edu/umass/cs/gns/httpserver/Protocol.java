@@ -7,6 +7,7 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.RecordAccess;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
+import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.GuidInfo;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
@@ -751,38 +752,47 @@ public class Protocol {
 
   public String processDump() {
     if (demoMode) {
-      return Intercessor.getInstance().sendDump();
+      return Admintercessor.getInstance().sendDump();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP;
   }
 
   public String processDump(String tagName) {
     if (demoMode) {
-      return new JSONArray(Intercessor.getInstance().collectTaggedGuids(tagName)).toString();
+      return new JSONArray(Admintercessor.getInstance().collectTaggedGuids(tagName)).toString();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP + QUERYPREFIX + NAME + VALSEP + tagName;
   }
 
   public String processDeleteAllRecords(String inputLine) {
     if (demoMode) {
-      Intercessor.getInstance().sendDeleteAllRecords();
-      return OKRESPONSE;
+      if (Admintercessor.getInstance().sendDeleteAllRecords()) {
+        return OKRESPONSE;
+      } else {
+        return BADRESPONSE;
+      }
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DELETEALLRECORDS + QUERYPREFIX + inputLine;
   }
 
   public String processResetDatabase(String inputLine) {
     if (demoMode) {
-      Intercessor.getInstance().sendResetDB();
-      return OKRESPONSE;
+      if (Admintercessor.getInstance().sendResetDB()) {
+        return OKRESPONSE;
+      } else {
+        return BADRESPONSE;
+      }
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + RESETDATABASE + QUERYPREFIX + inputLine;
   }
 
   public String processClearCache(String inputLine) {
     if (demoMode) {
-      Intercessor.getInstance().sendClearCache();
-      return OKRESPONSE;
+      if (Admintercessor.getInstance().sendClearCache()) {
+        return OKRESPONSE;
+      } else {
+        return BADRESPONSE;
+      }
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + CLEARCACHE + QUERYPREFIX + inputLine;
   }
@@ -813,12 +823,12 @@ public class Protocol {
   }
 
   public String processGetTagged(String tagName) {
-    return new JSONArray(Intercessor.getInstance().collectTaggedGuids(tagName)).toString();
+    return new JSONArray(Admintercessor.getInstance().collectTaggedGuids(tagName)).toString();
   }
   // currently doesn't handle subGuids that are tagged
 
   public String processClearTagged(String tagName) {
-    for (String guid : Intercessor.getInstance().collectTaggedGuids(tagName)) {
+    for (String guid : Admintercessor.getInstance().collectTaggedGuids(tagName)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       if (accountInfo != null) {
         accountAccess.deleteAccount(accountInfo);

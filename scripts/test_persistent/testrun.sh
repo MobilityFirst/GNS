@@ -19,6 +19,23 @@ cd /Users/westy/Documents/Code/GNS/scripts/test_persistent
 ./name-server.py --id 14 --nsFile name-server-info --dataStore MONGO --location --consoleOutputLevel INFO --fileLoggingLevel FINE &
 ./name-server.py --id 15 --nsFile name-server-info --dataStore MONGO --location --consoleOutputLevel INFO --fileLoggingLevel FINE &
 
+#./local-name-server.py --id 16 --nsFile name-server-info &
+#./local-name-server.py --id 17 --nsFile name-server-info &
+#./local-name-server.py --id 18 --nsFile name-server-info &
+#./local-name-server.py --id 19 --nsFile name-server-info &
+#./local-name-server.py --id 20 --nsFile name-server-info &
+#./local-name-server.py --id 21 --nsFile name-server-info &
+#./local-name-server.py --id 22 --nsFile name-server-info &
+#./local-name-server.py --id 23 --nsFile name-server-info &
+#./local-name-server.py --id 24 --nsFile name-server-info &
+#./local-name-server.py --id 25 --nsFile name-server-info &
+#./local-name-server.py --id 36 --nsFile name-server-info &
+#./local-name-server.py --id 27 --nsFile name-server-info &
+#./local-name-server.py --id 28 --nsFile name-server-info &
+#./local-name-server.py --id 29 --nsFile name-server-info &
+#./local-name-server.py --id 30 --nsFile name-server-info &
+#./local-name-server.py --id 31 --nsFile name-server-info &
+
 ./local-name-server.py --id 16 --nsFile name-server-info --runHttpServer --consoleOutputLevel INFO --fileLoggingLevel FINE &
 ./local-name-server.py --id 17 --nsFile name-server-info --runHttpServer --consoleOutputLevel INFO --fileLoggingLevel FINE &
 ./local-name-server.py --id 18 --nsFile name-server-info --runHttpServer --consoleOutputLevel INFO --fileLoggingLevel FINE &
@@ -35,6 +52,7 @@ cd /Users/westy/Documents/Code/GNS/scripts/test_persistent
 ./local-name-server.py --id 29 --nsFile name-server-info --runHttpServer --consoleOutputLevel INFO --fileLoggingLevel FINE &
 ./local-name-server.py --id 30 --nsFile name-server-info --runHttpServer --consoleOutputLevel INFO --fileLoggingLevel FINE &
 ./local-name-server.py --id 31 --nsFile name-server-info --runHttpServer --consoleOutputLevel INFO --fileLoggingLevel FINE &
+
 
 # cd /Users/westy/Documents/Code/GNRS-westy
 

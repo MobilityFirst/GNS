@@ -2,7 +2,6 @@ package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -15,10 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * ***********************************************************
+ * **
  * This is a utility class that parses configuration files to gather information about each name server in the system
- *
- * @author Hardeep Uppal **********************************************************
+ * 
  */
 public class ConfigFileInfo {
 
@@ -70,13 +68,13 @@ public class ConfigFileInfo {
   }
 
   /**
-   * ***********************************************************
+   * **
    * Parse the host's information file to create a mapping of node information for name servers and local name severs
    *
    * @param nodeInfoFile Format: HostID IsNS? IPAddress StartingPort Ping-Latency Latitude Longitude
    * @throws UnknownHostException
    * @throws NumberFormatException
-   * @throws IOException **********************************************************
+   * @throws IOException *
    */
   public static void readHostInfo(String nodeInfoFile, int nameServerID) {
     // Reads in data from a text file containing information about each name server 
@@ -151,7 +149,7 @@ public class ConfigFileInfo {
             closestNameServer = id;
           }
         }
-        
+
         addHostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
       }
       br.close();
@@ -160,7 +158,7 @@ public class ConfigFileInfo {
     } catch (IOException e) {
       System.err.println("Problem reading host config for NS " + nameServerID + " :" + e);
     }
-    
+
     GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
     numberOfNameServers = nameServerCount;
   }
@@ -182,63 +180,28 @@ public class ConfigFileInfo {
   }
 
   public static boolean isNameServer(int id) {
-	  if (nameServerMapping.containsKey(id)) return true;
-	  return false;
+    if (nameServerMapping.containsKey(id)) {
+      return true;
+    }
+    return false;
   }
 
   /**
-   * ***********************************************************
-   * Returns information about a host
+   * **
+   * Returns the HostInfo structure for a host
    *
    * @param id
-   * @return NameServerInfo **********************************************************
+   * @return NameServerInfo *
    */
   public static HostInfo getHostInfo(int id) {
     return hostInfoMapping.get(id);
   }
 
-//  /**
-//   * ***********************************************************
-//   * Returns the DNS port of a nameserver
-//   *
-//   * @param id Nameserver id
-//   * @return the DNS port of a nameserver *********************************************************
-//   */
-//  public static int getDnsPort(int id) {
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.DNS_PORT.getOffset();
-//  }
-
   /**
-   * ***********************************************************
-   * Returns the replication port for a nameserver
+   * Returns the TCP port of a nameserver
    *
    * @param id Nameserver id
-   * @return the replication port for a nameserver *********************************************************
-   */
-//  public static int getReplicationPort(int id) {
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.REPLICATION_PORT.getOffset();
-//  }
-
-  /**
-   * ***********************************************************
-   * Returns the update port for a nameserver
-   *
-   * @param id Nameserver id
-   * @return the update port for a nameserver *********************************************************
-   */
-//  public static int getUpdatePort(int id) {
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.UPDATE_PORT.getOffset();
-//  }
-
-  /**
-   * ***********************************************************
-   * Returns the stats port for a nameserver
-   *
-   * @param id Nameserver id
-   * @return the stats port for a nameserver *********************************************************
+   * @return the stats port for a nameserver
    */
   public static int getNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -246,30 +209,32 @@ public class ConfigFileInfo {
   }
 
   /**
-   * ***********************************************************
-   * Returns the stats port for a nameserver
+   * Returns the TCP port of a Local Nameserver
    *
    * @param id Nameserver id
-   * @return the stats port for a nameserver *********************************************************
+   * @return the stats port for a nameserver
    */
   public static int getLNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_TCP_PORT.getOffset();
   }
 
+  /**
+   * Returns the UDP port of a Local Nameserver
+   *
+   * @param id
+   * @return
+   */
   public static int getLNSUdpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UDP_PORT.getOffset();
   }
 
-
   /**
-   * ***********************************************************
-   * Returns the active nameserver information port of a nameserver
+   * Returns the Admin port of a Nameserver
    *
    * @param id Nameserver id
-   * @return the active nameserver information port of a nameserver.
-   * **********************************************************
+   * @return the active nameserver information port of a nameserver. *
    */
   public static int getNSAdminRequestPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -277,29 +242,7 @@ public class ConfigFileInfo {
   }
 
   /**
-   * Returns the DNS port of a local nameserver
-   *
-   * @param id
-   * @return
-   */
-//  public static int getLNSDnsPort(int id) {
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_DNS_PORT.getOffset();
-//  }
-
-  /**
-   * Returns the Update port of a local nameserver
-   *
-   * @param id
-   * @return
-   */
-//  public static int getLNSUpdatePort(int id) {
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UDP_PORT.getOffset();
-//  }
-
-  /**
-   * Returns the Admin port of a local nameserver
+   * Returns the Admin port of a Local Nameserver
    *
    * @param id
    * @return
@@ -310,7 +253,7 @@ public class ConfigFileInfo {
   }
 
   /**
-   * Returns the dump response port of a local nameserver
+   * Returns the dump response port of a Local nameserver
    *
    * @param id
    * @return
@@ -321,11 +264,10 @@ public class ConfigFileInfo {
   }
 
   /**
-   * ***********************************************************
    * Returns the IP address of a name server.
    *
    * @param id Nameserver id
-   * @return IP address of a nameserver *********************************************************
+   * @return IP address of a nameserver
    */
   public static InetAddress getIPAddress(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -333,10 +275,9 @@ public class ConfigFileInfo {
   }
 
   /**
-   * ***********************************************************
    * Returns the ping latency between a local namserver and a nameserver.
    *
-   * @param id Nameserver id *********************************************************
+   * @param id Nameserver id
    */
   public static double getPingLatency(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);

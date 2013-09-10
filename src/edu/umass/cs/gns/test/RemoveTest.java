@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
@@ -33,11 +34,11 @@ public class RemoveTest {
     }
     ConfigFileInfo.readHostInfo("ns1", hostID);
     HashFunction.initializeHashFunction();
-    Intercessor client = Intercessor.getInstance();
+    Admintercessor admin = Admintercessor.getInstance();
     GNS.getLogger().info("USING HOST ID #" + hostID);
-    client.setLocalServerID(hostID);
+    admin.setLocalServerID(hostID);
     GNS.getLogger().info("RESETING THE DATABASE");
-    client.sendResetDB();
+    admin.sendResetDB();
     ThreadUtils.sleep(2000);
     String name = "Sally";
     String guid = "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24";
@@ -46,6 +47,7 @@ public class RemoveTest {
     GNS.getLogger().info("RECORD CREATION:");
     AccountAccess fred = new AccountAccess();
     fred.addAccount(name, guid, publicKey, guid);
+    Intercessor client = Intercessor.getInstance();
     client.sendUpdateRecordWithConfirmation(guid, GroupAccess.GROUP, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
 
 //    GNS.getLogger().info("GSN LOOKUP:");

@@ -65,8 +65,6 @@ public class EC2Installer {
   //private static final String PUBLICKEYFILEEXTENSION = ".pub";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
-  
-  
   private static final String DEFAULT_LOG_LEVEL = "INFO";
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   //private static AmazonEC2 ec2;
@@ -83,7 +81,6 @@ public class EC2Installer {
   private static final int STARTINGNODENUMBER = 0;
   private static ConcurrentHashMap<Integer, Integer> hostsThatDidNotStart = new ConcurrentHashMap<Integer, Integer>();
   private static DataStoreType dataStoreType = DEFAULT_DATA_STORE_TYPE;
-  
 
   /**
    * Information read from config file on what hosts we are trying to start.
@@ -379,6 +376,10 @@ public class EC2Installer {
   private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
   private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
 
+  private static int getLNSId(int id) {
+    return id + idTable.size();
+  }
+
   /**
    * Starts an LNS, NS and HTTP server on the host.
    *
@@ -392,7 +393,7 @@ public class EC2Installer {
             "#!/bin/bash\n"
             + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
             + "nohup java -cp " + GNSFile + " " + StartLNSClass + " "
-            + "-id " + id
+            + "-id " + getLNSId(id)
             // at some point a bunch of these should become defaults
             + " -cacheSize 10000 "
             + " -primary 3 -location -vInterval 1000"
@@ -401,8 +402,10 @@ public class EC2Installer {
             //+ " -adaptiveTimeout -delta 0.05 -mu 1.0 -phi 6.0 "
             + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
             + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO "
-            + " -debugMode "
-            + " -nsfile name-server-info  > LNSlogfile 2>&1 &");
+            //+ " -debugMode "
+            + " -nsfile name-server-info  "
+            + "  -runHttpServer "
+            + "> LNSlogfile 2>&1 &");
 
     StatusModel.getInstance().queueUpdate(id, "Starting name servers");
     AWSEC2.executeBashScript(hostname, keyFile, "runNS.sh",
@@ -417,16 +420,17 @@ public class EC2Installer {
             + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
             + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO"
             + " -dataStore " + dataStoreType.name()
-            + " -debugMode "
+            //+ " -debugMode "
             + " -nsfile name-server-info "
             + "> NSlogfile 2>&1 &");
-    StatusModel.getInstance().queueUpdate(id, "Starting HTTP servers");
-    AWSEC2.executeBashScript(hostname, keyFile, "runHTTP.sh",
-            "#!/bin/bash\n"
-            + "mv --backup=numbered HTTPlogfile HTTPlogfile.save\n"
-            + "nohup java -cp " + GNSFile + " " + StartHTTPServerClass + " "
-            + "-lnsid " + id + " -nsfile name-server-info  > HTTPlogfile 2>&1 &",
-            id);
+    // now run as part of LNS
+//    StatusModel.getInstance().queueUpdate(id, "Starting HTTP servers");
+//    AWSEC2.executeBashScript(hostname, keyFile, "runHTTP.sh",
+//            "#!/bin/bash\n"
+//            + "mv --backup=numbered HTTPlogfile HTTPlogfile.save\n"
+//            + "nohup java -cp " + GNSFile + " " + StartHTTPServerClass + " "
+//            + "-lnsid " + id + " -nsfile name-server-info  > HTTPlogfile 2>&1 &",
+//            id);
     StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING, "All servers started");
   }
 
@@ -445,6 +449,7 @@ public class EC2Installer {
   private static void writeNSFile(String hostname, File keyFile) {
     StringBuilder result = new StringBuilder();
     //HostID IsNS? IPAddress [StartingPort | - ] Ping-Latency Latitude Longitude
+    // WRITE OUT NSs
     for (InstanceInfo info : idTable.values()) {
       result.append(info.getId());
       result.append(" yes ");
@@ -456,6 +461,20 @@ public class EC2Installer {
       result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getX()) : 0.0);
       result.append(NEWLINE);
     }
+    int nsCount = idTable.values().size();
+    // WRITE OUT LNSs whose numbers are N above NSs where N is the number of NSs
+    for (InstanceInfo info : idTable.values()) {
+      result.append(getLNSId(info.getId()));
+      result.append(" no ");
+      result.append(info.getHostname());
+      result.append(" default ");
+      result.append(" 0 ");
+      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getY()) : 0.0);
+      result.append(" ");
+      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getX()) : 0.0);
+      result.append(NEWLINE);
+    }
+
     SSHClient.execWithSudoNoPass(EC2USERNAME, hostname, keyFile, "echo \"" + result.toString() + "\" > name-server-info");
   }
 
@@ -522,6 +541,47 @@ public class EC2Installer {
    */
   public static void updateRunSet(String name, UpdateAction action) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
+    populateIDTableForRunset(name);
+    for (InstanceInfo info : idTable.values()) {
+      threads.add(new UpdateThread(info.getId(), info.getHostname(), action));
+    } 
+//    AWSCredentials credentials = null;
+//    try {
+//      //
+//      credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
+//    } catch (IOException e) {
+//      System.out.println("Problem contacting EC2 instances: " + e);
+//    }
+//    //Create Amazon Client object
+//    AmazonEC2 ec2 = new AmazonEC2Client(credentials);
+//    for (RegionRecord region : RegionRecord.values()) {
+//      AWSEC2.setRegion(ec2, region);
+//      System.out.println("Retrieving instance information in " + region.name() + "...");
+//      for (Instance instance : AWSEC2.getInstances(ec2)) {
+//        if (!instance.getState().getName().equals(InstanceStateRecord.TERMINATED.getName())) {
+//          String idString = getTagValue(instance, "id");
+//          if (idString != null && name.equals(getTagValue(instance, "runset"))) {
+//            int id = Integer.parseInt(idString);
+//            String hostname = instance.getPublicDnsName();
+//            threads.add(new UpdateThread(id, hostname, action));
+//          }
+//        }
+//      }
+//    }
+    for (int i = 0; i < threads.size(); i++) {
+      threads.get(i).start();
+    }
+    // and wait for them to complete
+    try {
+      for (int i = 0; i < threads.size(); i++) {
+        threads.get(i).join();
+      }
+    } catch (Exception e) {
+      System.out.println("Problem joining threads: " + e);
+    }
+  }
+
+  private static void populateIDTableForRunset(String name) {
     AWSCredentials credentials = null;
     try {
       //
@@ -540,48 +600,53 @@ public class EC2Installer {
           if (idString != null && name.equals(getTagValue(instance, "runset"))) {
             int id = Integer.parseInt(idString);
             String hostname = instance.getPublicDnsName();
-            //String hostname = retrieveHostname(name, id);
-            threads.add(new UpdateThread(id, hostname, action));
+            String ip = getHostIPSafe(hostname);
+            // and take a guess at the location (lat, long) of this host
+            Point2D location = GEOLocator.lookupIPLocation(ip);
+            idTable.put(id, new InstanceInfo(id, hostname, ip, location));
           }
         }
       }
     }
-    for (int i = 0; i < threads.size(); i++) {
-      threads.get(i).start();
-    }
-    // and wait for them to complete
+  }
+
+  private static String getHostIPSafe(String hostname) {
+    InetAddress inetAddress;
     try {
-      for (int i = 0; i < threads.size(); i++) {
-        threads.get(i).join();
-      }
-    } catch (Exception e) {
-      System.out.println("Problem joining threads: " + e);
+      inetAddress = InetAddress.getByName(hostname);
+      return inetAddress.getHostAddress();
+    } catch (UnknownHostException e) {
+      return "Unknown";
     }
   }
 
   public static void describeRunSet(final String name) {
-    try {
-      AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
-      //Create Amazon Client object
-      AmazonEC2 ec2 = new AmazonEC2Client(credentials);
-      for (RegionRecord region : RegionRecord.values()) {
-        AWSEC2.setRegion(ec2, region);
-        for (Instance instance : AWSEC2.getInstances(ec2)) {
-          if (!instance.getState().getName().equals(InstanceStateRecord.TERMINATED.getName())) {
-            final String idString = getTagValue(instance, "id");
-            if (idString != null && name.equals(getTagValue(instance, "runset"))) {
-              int id = Integer.parseInt(idString);
-              String hostname = instance.getPublicDnsName();
-              //String hostname = retrieveHostname(name, id);
-              System.out.println("Node " + id + " running on " + hostname);
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      System.out.println("Problem contacting EC2 instances: " + e);
-      e.printStackTrace();
+    populateIDTableForRunset(name);
+    for (InstanceInfo info : idTable.values()) {
+      System.out.println(info);
     }
+//    try {
+//      AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
+//      //Create Amazon Client object
+//      AmazonEC2 ec2 = new AmazonEC2Client(credentials);
+//      for (RegionRecord region : RegionRecord.values()) {
+//        AWSEC2.setRegion(ec2, region);
+//        for (Instance instance : AWSEC2.getInstances(ec2)) {
+//          if (!instance.getState().getName().equals(InstanceStateRecord.TERMINATED.getName())) {
+//            final String idString = getTagValue(instance, "id");
+//            if (idString != null && name.equals(getTagValue(instance, "runset"))) {
+//              int id = Integer.parseInt(idString);
+//              String hostname = instance.getPublicDnsName();
+//              //String hostname = retrieveHostname(name, id);
+//              System.out.println("Node " + id + " running on " + hostname);
+//            }
+//          }
+//        }
+//      }
+//    } catch (Exception e) {
+//      System.out.println("Problem contacting EC2 instances: " + e);
+//      e.printStackTrace();
+//    }
   }
 
   private static String getTagValue(Instance instance, String key) {

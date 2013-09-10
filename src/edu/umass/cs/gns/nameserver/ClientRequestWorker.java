@@ -224,7 +224,7 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine(" Replica controller record created for name: " + addRecordPacket.getName());
 
       try {
-        ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap,0);
+        ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap, 0);
       } catch (FieldNotFoundException e1) {
         GNS.getLogger().fine("Field not found exception. Should not happen because we initialized all fields in record. " + e1.getMessage());
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -293,7 +293,7 @@ public class ClientRequestWorker extends TimerTask {
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
     try {
-      ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap,0);
+      ReplicaController.handleNameRecordAddAtPrimary(rcRecord, valuesMap, 0);
     } catch (FieldNotFoundException e) {
       GNS.getLogger().fine("Field not found exception. Should not happen because we initialized all fields in record. " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -660,14 +660,11 @@ public class ClientRequestWorker extends TimerTask {
     if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) {
       nameRecord = new NameRecord(updatePacket.getName());
     } else {
-      ArrayList<Field> userKeys = new ArrayList<Field>();
-      userKeys.add(new Field(updatePacket.getRecordKey().getName(), FieldType.LIST_STRING));
       try {
-        nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), null, userKeys);
+        nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
       } catch (RecordNotFoundException e) {
         GNS.getLogger().fine(" Exception: name record not found. Name = " + updatePacket.getName());
         e.printStackTrace();
-//        proposedUpdates.remove(updatePacket.getNSRequestID());
         return;
       }
     }
@@ -784,10 +781,7 @@ public class ClientRequestWorker extends TimerTask {
   }
 
   private void handleDNSPacket() throws IOException, JSONException {
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("NS recvd DNS lookup request: " + incomingJSON);
-    }
-
+    GNS.getLogger().finer("NS recvd DNS lookup request: " + incomingJSON);
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
 
     if (dnsPacket.isQuery()) {
@@ -802,12 +796,13 @@ public class ClientRequestWorker extends TimerTask {
           // need everything so just grab all the fields
           nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
         } else {
-          nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(), getDNSPacketFields(), 
-                  userFieldList(dnsPacket.getQrecordKey().getName()));
+          nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(), 
+                  getDNSPacketFields(),
+                  dnsPacket.getQrecordKey().getName());
         }
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("Name record read is " + nameRecord.toJSONObject());
-        }
+
+        GNS.getLogger().finer("Name record read is " + nameRecord.toJSONObject());
+
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe("Record not found for name: " + dnsPacket.getQname() + " Key = " + dnsPacket.getQrecordKey());
 //        e.printStackTrace();
@@ -820,14 +815,6 @@ public class ClientRequestWorker extends TimerTask {
     } else {
       GNS.getLogger().severe("DNS Packet isn't a query!");
     }
-  }
-
-  private ArrayList<Field> userFieldList(String... fieldNames) {
-    ArrayList<Field> result = new ArrayList<Field>();
-    for (String name : fieldNames) {
-      result.add(new Field(name, FieldType.LIST_STRING));
-    }
-    return result;
   }
 
   private DNSPacket makeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord) {
@@ -843,36 +830,24 @@ public class ClientRequestWorker extends TimerTask {
           // assume no error... change it below if there is an error
           dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
           dnsPacket.setTTL(nameRecord.getTimeToLive());
-
-//          nameRecord.incrementLookupRequest();// Abhigyan: commented this because we are using lns votes for this calculation.
-
           if (nameRecord.containsKey(qKey)) {
             dnsPacket.setSingleReturnValue(nameRecord.getKey(qKey));
-            if (StartNameServer.debugMode) {
-              GNS.getLogger().fine("NS sending DNS lookup response: Name = " + qName);
-            }
+            GNS.getLogger().finer("NS sending DNS lookup response: Name = " + qName);
+
           } else if (Protocol.ALLFIELDS.equals(qKey)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
-            if (StartNameServer.debugMode) {
-              GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + qName);
-            }
+            GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + qName);
           } else { // send error msg.
-            if (StartNameServer.debugMode) {
-              GNS.getLogger().fine("Record doesn't contain field: " + qKey);
-            }
+            GNS.getLogger().finer("Record doesn't contain field: " + qKey);
             dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
           }
         } else { // send error msg.
-          if (StartNameServer.debugMode) {
-            GNS.getLogger().fine("QNAME of query is NULL!");
-          }
+          GNS.getLogger().finer("QNAME of query is NULL!");
           dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
         }
       } else { // send invalid error msg.
         dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("Invalid actives. Name: " + qName);
-        }
+        GNS.getLogger().finer("Invalid actives. Name: " + qName);
       }
     } catch (FieldNotFoundException e) {
       if (StartNameServer.debugMode) {

@@ -7,13 +7,12 @@ import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
 import edu.umass.cs.gns.packet.UpdateOperation;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 

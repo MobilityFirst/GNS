@@ -41,9 +41,9 @@ public class DumpRequestPacket extends BasicPacket {
    * @param jsonArray
    * @param argument 
    */
-  public DumpRequestPacket(int localNameServer, int primaryNameServer, JSONArray jsonArray, String argument) {
+  public DumpRequestPacket(int id, int localNameServer, int primaryNameServer, JSONArray jsonArray, String argument) {
     this.type = Packet.PacketType.DUMP_REQUEST;
-    this.id = 0;
+    this.id = id;
     this.primaryNameServer = primaryNameServer;
     this.localNameServer = localNameServer;
     this.jsonArray = jsonArray;
@@ -54,8 +54,8 @@ public class DumpRequestPacket extends BasicPacket {
    * Constructs a new DumpRequestPacket packet
    * @param localNameServer 
    */
-  public DumpRequestPacket(int localNameServer) {
-    this(localNameServer, -1, new JSONArray(), null);
+  public DumpRequestPacket(int id, int localNameServer) {
+    this(id, localNameServer, -1, new JSONArray(), null);
   }
   
   /**
@@ -63,8 +63,8 @@ public class DumpRequestPacket extends BasicPacket {
    * @param localNameServer
    * @param tagName 
    */
-  public DumpRequestPacket(int localNameServer, String tagName) {
-    this(localNameServer, -1, new JSONArray(), tagName);
+  public DumpRequestPacket(int id, int localNameServer, String tagName) {
+    this(id, localNameServer, -1, new JSONArray(), tagName);
   }
 
   /**
