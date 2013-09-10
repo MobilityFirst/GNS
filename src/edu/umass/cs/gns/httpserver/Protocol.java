@@ -40,9 +40,10 @@ public class Protocol {
 
   public final static String REGISTERACCOUNT = "registerAccount";
   public final static String ADDALIAS = "addAlias";
+  public final static String REMOVEALIAS = "removeAlias";
   public final static String ADDGUID = "addGuid";
   public final static String SETPASSWORD = "setPassword";
-  public final static String DELETEACCOUNT = "deleteAccount";
+  public final static String REMOVEACCOUNT = "removeAccount";
   public final static String LOOKUPGUID = "lookupGuid";
   public final static String LOOKUPGUIDRECORD = "lookupGuidRecord";
   //
@@ -102,6 +103,7 @@ public class Protocol {
   public final static String BADREADERGUID = "+BADREADERGUID+";
   public final static String BADWRITERGUID = "+BADWRITERGUID+";
   public final static String BADGUID = "+BADGUID+";
+  public final static String BADALIAS = "+BADALIAS+";
   public final static String BADACCOUNT = "+BADACCOUNT+";
   public final static String BADGROUP = "+BADGROUP+";
   public final static String BADFIELD = "+BADFIELD+";
@@ -113,6 +115,7 @@ public class Protocol {
   public final static String JSONPARSEERROR = "+JSONPARSEERROR+";
   public final static String TOMANYALIASES = "+TOMANYALIASES+";
   public final static String TOMANYGUIDS = "+TOMANYGUIDS+";
+  public final static String UPDATEERROR = "+UPDATEERROR+";
   public final static String GENERICEERROR = "+GENERICEERROR+";
   public final static String ALLFIELDS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
@@ -162,33 +165,44 @@ public class Protocol {
             + urlPrefix + HELP + NEWLINE
             + "  Returns this help message." + NEWLINE + NEWLINE
             //
-            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
-            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Creates a GUID associated with the the human readable name and the supplied publickey. Returns a guid." + NEWLINE
-            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-            //
-            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
-            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Associates the GUID supplied with the human readable name and the publickey." + NEWLINE
-            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-            //
-            + urlPrefix + LOOKUPGUID + QUERYPREFIX + NAME + VALSEP + "<name>"
-            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns the guid registered for this human readable name. Returns " + BADACCOUNT + " if the GUID has not been registered." + NEWLINE
-            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-            //
-            + urlPrefix + LOOKUPGUIDRECORD + QUERYPREFIX + GUID + VALSEP + "<guid>"
-            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns human readable name and public key associated with the given GUID. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE
-            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-            //
-            + "Unsecure versions of above operations - "
-            + "soon will only work in DEMO mode" + NEWLINE + NEWLINE
+//            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
+//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+//            + "  Creates a GUID associated with the the human readable name and the supplied publickey. Returns a guid." + NEWLINE
+//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+//            //
+//            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
+//            + KEYSEP + APPGUID + VALSEP + "<app guid>" 
+//            + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+//            + "  Associates the GUID supplied with the human readable name and the publickey." + NEWLINE
+//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+//            //
+//            + urlPrefix + DELETEACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>"
+//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+//            + "  Associates the GUID supplied with the human readable name and the publickey." + NEWLINE
+//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+//            //
+//            + urlPrefix + LOOKUPGUID + QUERYPREFIX + NAME + VALSEP + "<name>"
+//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+//            + "  Returns the guid registered for this human readable name. Returns " + BADACCOUNT + " if the GUID has not been registered." + NEWLINE
+//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+//            //
+//            + urlPrefix + LOOKUPGUIDRECORD + QUERYPREFIX + GUID + VALSEP + "<guid>"
+//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+//            + "  Returns human readable name and public key associated with the given GUID. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE
+//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+//            //
+//            + "Unsecure versions of above operations - "
+//            + "soon will only work in DEMO mode" + NEWLINE + NEWLINE
             + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>" + NEWLINE
             + "  Creates a GUID associated with the the human readable name (a human readable name) and the supplied publickey. Returns a guid." + NEWLINE + NEWLINE
             //
             + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>" + NEWLINE
             + "  Associates the GUID supplied with the human readable name (a human readable name for the user) and the publickey." + NEWLINE + NEWLINE
+            //
+            + urlPrefix + REMOVEACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>"
+            + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Removes the GUID associated with the human readable name. Must be signed by the guid."
+            + NEWLINE + NEWLINE
             //
             + urlPrefix + LOOKUPGUID + QUERYPREFIX + NAME + VALSEP + "<name>" + NEWLINE
             + "  Returns the guid associated with for this human readable name. Returns " + BADACCOUNT + " if the GUID has not been registered." + NEWLINE + NEWLINE
@@ -201,6 +215,9 @@ public class Protocol {
             //
             + urlPrefix + ADDALIAS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + NAME + VALSEP + "<alias>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds a additional human readble name to the account associated with the GUID. Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE + NEWLINE
+            //
+            + urlPrefix + REMOVEALIAS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + NAME + VALSEP + "<alias>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Removes the alias from the account associated with the GUID. Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE + NEWLINE
             //
             + "DATABASE CREATE OPERATIONS" + NEWLINE + NEWLINE
             + urlPrefix + CREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
@@ -383,6 +400,7 @@ public class Protocol {
             + "      " + TOMANYGUIDS + " - there is a limit to the number of GUIDs that can be created" + NEWLINE
             + "      " + OPERATIONNOTSUPPORTED + " - the indicated operation does not exist" + NEWLINE
             + "      " + QUERYPROCESSINGERROR + " - a general error occurred during the processing of a query" + NEWLINE
+            + "      " + UPDATEERROR + " - a general error that occured while updating the ACCOUNT or GUID info" + NEWLINE
             + "      " + GENERICEERROR + " - covers those pesky cases where you just don't know" + NEWLINE
             + NEWLINE + "o) A JSON list with 3 values in it looks like this [value1, value2, value3]" + NEWLINE + NEWLINE;
     return main + (demoMode ? demo : "") + post;
@@ -425,6 +443,20 @@ public class Protocol {
     }
   }
 
+  public String processRemoveAccount(String name, String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo = accountAccess.lookupGuidInfo(guid);
+    if (verifySignature(guidInfo, signature, message)) {
+      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromName(name);
+      if (accountInfo != null) {
+        return accountAccess.removeAccount(accountInfo);
+      } else {
+        return BADRESPONSE + " " + BADACCOUNT;
+      }
+    } else {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    }
+  }
+
   public String processAddAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo = accountAccess.lookupGuidInfo(guid);
     if (verifySignature(guidInfo, signature, message)) {
@@ -434,6 +466,16 @@ public class Protocol {
       } else {
         return accountAccess.addAlias(accountInfo, alias);
       }
+    } else {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    }
+  }
+
+  public String processRemoveAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo = accountAccess.lookupGuidInfo(guid);
+    if (verifySignature(guidInfo, signature, message)) {
+      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      return accountAccess.removeAlias(accountInfo, alias);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -466,15 +508,6 @@ public class Protocol {
       return accountAccess.setPassword(accountInfo, password);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
-    }
-  }
-
-  public String processDeleteUser(String name) {
-    AccountInfo accountInfo = accountAccess.lookupAccountInfoFromName(name);
-    if (accountInfo != null) {
-      return accountAccess.deleteAccount(accountInfo);
-    } else {
-      return BADRESPONSE + " " + BADACCOUNT;
     }
   }
 
@@ -676,7 +709,7 @@ public class Protocol {
     }
   }
 
-  public String processAddToGroupV2(String guid, String member, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processAddToGroup(String guid, String member, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo userInfo, writerInfo;
     if ((userInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID;
@@ -697,7 +730,7 @@ public class Protocol {
     }
   }
 
-  public String processRemoveFromGroupV2(String guid, String member, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRemoveFromGroup(String guid, String member, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo userInfo, writerInfo;
     if ((userInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID;
@@ -718,7 +751,7 @@ public class Protocol {
     }
   }
 
-  public String processGetGroupMembersV2(String guid, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processGetGroupMembers(String guid, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo userInfo, readInfo;
     if ((userInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID;
@@ -831,9 +864,8 @@ public class Protocol {
     for (String guid : Admintercessor.getInstance().collectTaggedGuids(tagName)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       if (accountInfo != null) {
-        accountAccess.deleteAccount(accountInfo);
+        accountAccess.removeAccount(accountInfo);
       }
-      //GuidInfo userInfo = accountAccess.lookupGuidInfo(guid);
     }
     return OKRESPONSE;
   }
@@ -874,6 +906,12 @@ public class Protocol {
         String userName = queryMap.get(NAME);
         String publicKey = queryMap.get(PUBLICKEY);
         return processRegisterAccount(userName, publicKey, null);
+      } else if (REMOVEACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, SIGNATURE))) {
+        // syntax: register userName guid public_key
+        String userName = queryMap.get(NAME);
+        String guid = queryMap.get(GUID);
+        String signature = queryMap.get(SIGNATURE);
+        return processRemoveAccount(userName, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (ADDGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, PUBLICKEY, SIGNATURE))) {
         // syntax: register userName guid public_key
         String guid = queryMap.get(GUID);
@@ -884,19 +922,21 @@ public class Protocol {
       } else if (ADDALIAS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
         // syntax: register userName guid public_key
         String guid = queryMap.get(GUID);
-        String userName = queryMap.get(NAME);
+        String name = queryMap.get(NAME);
         String signature = queryMap.get(SIGNATURE);
-        return processAddAlias(guid, userName, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processAddAlias(guid, name, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REMOVEALIAS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
+        // syntax: register userName guid public_key
+        String guid = queryMap.get(GUID);
+        String name = queryMap.get(NAME);
+        String signature = queryMap.get(SIGNATURE);
+        return processRemoveAlias(guid, name, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (SETPASSWORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, PASSWORD, SIGNATURE))) {
         // syntax: register userName guid public_key
         String guid = queryMap.get(GUID);
         String password = queryMap.get(PASSWORD);
         String signature = queryMap.get(SIGNATURE);
         return processSetPassword(guid, password, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (DELETEACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
-        // syntax: register userName guid public_key
-        String userName = queryMap.get(NAME);
-        return processDeleteUser(userName);
         // LOOKUP
       } else if (LOOKUPGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
         // syntax: lookup userName
@@ -1092,33 +1132,33 @@ public class Protocol {
         String guid = queryMap.get(GUID);
         String member = queryMap.get(MEMBER);
         String signature = queryMap.get(SIGNATURE);
-        return processAddToGroupV2(guid, member, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processAddToGroup(guid, member, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, WRITER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String member = queryMap.get(MEMBER);
         String writer = queryMap.get(WRITER);
         String signature = queryMap.get(SIGNATURE);
-        return processAddToGroupV2(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processAddToGroup(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String member = queryMap.get(MEMBER);
         String signature = queryMap.get(SIGNATURE);
-        return processRemoveFromGroupV2(guid, member, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processRemoveFromGroup(guid, member, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, WRITER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String member = queryMap.get(MEMBER);
         String writer = queryMap.get(WRITER);
         String signature = queryMap.get(SIGNATURE);
-        return processRemoveFromGroupV2(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processRemoveFromGroup(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (GETGROUPMEMBERS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, READER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String reader = queryMap.get(READER);
         String signature = queryMap.get(SIGNATURE);
-        return processGetGroupMembersV2(guid, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processGetGroupMembers(guid, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (GETGROUPMEMBERS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String signature = queryMap.get(SIGNATURE);
-        return processGetGroupMembersV2(guid, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processGetGroupMembers(guid, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
         // DEMO
       } else if (DEMO.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
         // pass in the host to use as a passkey check

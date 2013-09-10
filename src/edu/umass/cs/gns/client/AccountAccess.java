@@ -11,7 +11,6 @@ import java.util.Arrays;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 //import edu.umass.cs.gns.packet.UpdateAddressPacket;
-
 /**
  * Document once it settles down a bit.
  *
@@ -142,7 +141,7 @@ public class AccountAccess {
     }
   }
 
-  public String deleteAccount(AccountInfo accountInfo) {
+  public String removeAccount(AccountInfo accountInfo) {
     Intercessor client = Intercessor.getInstance();
     // do this first add to make sure this account exists
     if (client.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryName())) {
@@ -204,83 +203,124 @@ public class AccountAccess {
   public String addAlias(AccountInfo accountInfo, String alias) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
-    ArrayList<String> newvalue;
-    try {
-      newvalue = accountInfo.toDBFormat();
-    } catch (JSONException e) {
-      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-    }
+//    ArrayList<String> newvalue;
+//    try {
+//      newvalue = accountInfo.toDBFormat();
+//    } catch (JSONException e) {
+//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
+//    }
     Intercessor client = Intercessor.getInstance();
     // insure that that name does not already exist
     if (client.sendAddRecordWithConfirmation(alias, GUID, new ArrayList<String>(Arrays.asList(accountInfo.getPrimaryGuid())))) {
-      if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-              newvalue, null, UpdateOperation.REPLACE_ALL)) {
+//      if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+//              newvalue, null, UpdateOperation.REPLACE_ALL)) {
+      if (updateAccountInfo(accountInfo)) {
         return Protocol.OKRESPONSE;
       } else {
         client.sendRemoveRecordWithConfirmation(alias);
         accountInfo.removeAlias(alias);
-        return Protocol.BADRESPONSE + " " + Protocol.BADGUID; // not really, but close enough
+        return Protocol.BADRESPONSE + " " + Protocol.BADALIAS;
       }
     }
     // roll this back
     accountInfo.removeAlias(alias);
     return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
   }
-  
-  public String removeAlias(String alias) {
-    return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
+
+  public String removeAlias(AccountInfo accountInfo, String alias) {
+    Intercessor client = Intercessor.getInstance();
+    if (accountInfo.containsAlias(alias)) {
+      // remove the NAME -> GUID record
+      client.sendRemoveRecordWithConfirmation(alias);
+      accountInfo.removeAlias(alias);
+      accountInfo.noteUpdate();
+      if (updateAccountInfo(accountInfo)) {
+        return Protocol.OKRESPONSE;
+      }
+    }
+    return Protocol.BADRESPONSE + " " + Protocol.BADALIAS;
   }
 
   public String setPassword(AccountInfo accountInfo, String password) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    ArrayList<String> newvalue;
-    try {
-      newvalue = accountInfo.toDBFormat();
-    } catch (JSONException e) {
-      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-    }
+//    ArrayList<String> newvalue;
+//    try {
+//      newvalue = accountInfo.toDBFormat();
+//    } catch (JSONException e) {
+//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
+//    }
     Intercessor client = Intercessor.getInstance();
-    if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+//    if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+//            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+    if (updateAccountInfo(accountInfo)) {
       return Protocol.OKRESPONSE;
     }
-    return Protocol.BADRESPONSE + " " + Protocol.GENERICEERROR;
+    return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
   }
 
   public String addTag(GuidInfo guidInfo, String tag) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    ArrayList<String> newvalue;
-    try {
-      newvalue = guidInfo.toDBFormat();
-    } catch (JSONException e) {
-      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-    }
+//    ArrayList<String> newvalue;
+//    try {
+//      newvalue = guidInfo.toDBFormat();
+//    } catch (JSONException e) {
+//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
+//    }
     Intercessor client = Intercessor.getInstance();
-    if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
-            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+//    if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
+//            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+    if (updateGuidInfo(guidInfo)) {
       return Protocol.OKRESPONSE;
     }
     guidInfo.removeTag(tag);
-    return Protocol.BADRESPONSE + " " + Protocol.GENERICEERROR;
+    return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
   }
 
   public String removeTag(GuidInfo guidInfo, String tag) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    ArrayList<String> newvalue;
-    try {
-      newvalue = guidInfo.toDBFormat();
-    } catch (JSONException e) {
-      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-    }
+//    ArrayList<String> newvalue;
+//    try {
+//      newvalue = guidInfo.toDBFormat();
+//    } catch (JSONException e) {
+//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
+//    }
     Intercessor client = Intercessor.getInstance();
-    if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
-            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+//    if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
+//            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+    if (updateGuidInfo(guidInfo)) {
       return Protocol.OKRESPONSE;
     }
-    guidInfo.removeTag(tag);
-    return Protocol.BADRESPONSE + " " + Protocol.GENERICEERROR;
+    return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
+  }
+  
+  private boolean updateAccountInfo(AccountInfo accountInfo) {
+    Intercessor client = Intercessor.getInstance();
+    try {
+      ArrayList<String> newvalue;
+      newvalue = accountInfo.toDBFormat();
+      if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+              newvalue, null, UpdateOperation.REPLACE_ALL)) {
+        return true;
+      }
+    } catch (JSONException e) {
+    }
+    return false;
+  }
+
+  private boolean updateGuidInfo(GuidInfo guidInfo) {
+    Intercessor client = Intercessor.getInstance();
+    try {
+      ArrayList<String> newvalue;
+      newvalue = guidInfo.toDBFormat();
+      if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
+            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+        return true;
+      }
+    } catch (JSONException e) {
+    }
+    return false;
   }
 }

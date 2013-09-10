@@ -1,9 +1,7 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +36,7 @@ public class RemoveRecordPacket extends BasicPacket {
 
   /**
    * ***********************************************************
-   * Constructs a new AddRecordPacket with the given name and value.
+   * Constructs a new RemoveRecordPacket with the given name and value.
    *
    * @param name Host/domain/device name
    * @param value

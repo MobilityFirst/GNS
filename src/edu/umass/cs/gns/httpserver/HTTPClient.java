@@ -284,7 +284,7 @@ public class HTTPClient {
   }
 
   /**
-   * Removes all the values from the field.
+   * Removes all the values from a field.
    *
    * @param guid
    * @param field

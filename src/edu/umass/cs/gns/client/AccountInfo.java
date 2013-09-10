@@ -29,9 +29,9 @@ public class AccountInfo {
    */
   private String password;
 
-  public AccountInfo(String userName, String guid, String password) {
+  public AccountInfo(String userName, String primaryGUID, String password) {
     this.primaryName = userName;
-    this.primaryGuid = guid;
+    this.primaryGuid = primaryGUID;
     this.type = "DEFAULT"; // huh? :-)
     this.aliases = new HashSet<String>();
     this.guids = new HashSet<String>();
@@ -63,13 +63,17 @@ public class AccountInfo {
   public ArrayList<String> getAliases() {
     return new ArrayList<String>(aliases);
   }
+  
+  public boolean containsAlias(String alias) {
+    return aliases.contains(alias);
+  }
 
   public void addAlias(String alias) {
     aliases.add(alias);
   }
 
-  public void removeAlias(String alias) {
-    aliases.remove(alias);
+  public boolean removeAlias(String alias) {
+    return aliases.remove(alias);
   }
 
   public ArrayList<String> getGuids() {
@@ -80,8 +84,8 @@ public class AccountInfo {
     guids.add(guid);
   }
 
-  public void removeGuid(String guid) {
-    guids.remove(guid);
+  public boolean removeGuid(String guid) {
+    return guids.remove(guid);
   }
 
   public Date getCreated() {
