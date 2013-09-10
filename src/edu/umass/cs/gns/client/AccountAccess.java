@@ -226,6 +226,10 @@ public class AccountAccess {
     accountInfo.removeAlias(alias);
     return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
   }
+  
+  public String removeAlias(String alias) {
+    return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
+  }
 
   public String setPassword(AccountInfo accountInfo, String password) {
     accountInfo.setPassword(password);

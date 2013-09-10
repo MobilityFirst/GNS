@@ -240,6 +240,18 @@ public class NameServer {
   public static NameRecord getNameRecord(String name) throws RecordNotFoundException{
     return recordMap.getNameRecord(name);
   }
+  
+  /**
+    * Load a name record from the backing database and retrieve certain fields as well.
+   * @param name
+   * @param fields - a list of Field structures representing "system" fields to retrieve
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields)
+          throws RecordNotFoundException{
+    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, null));
+  }
 
   /**
     * Load a name record from the backing database and retrieve certain fields as well.
@@ -262,7 +274,7 @@ public class NameServer {
    * @return
    * @throws RecordNotFoundException 
    */
-  public static NameRecord getNameRecordMultiField2(String name, ArrayList<Field> fields, String ... userFieldNames)
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, String ... userFieldNames)
           throws RecordNotFoundException{
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
   }

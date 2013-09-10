@@ -660,7 +660,7 @@ public class ClientRequestWorker extends TimerTask {
       nameRecord = new NameRecord(updatePacket.getName());
     } else {
       try {
-        nameRecord = NameServer.getNameRecordMultiField2(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
+        nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
       } catch (RecordNotFoundException e) {
         GNS.getLogger().fine(" Exception: name record not found. Name = " + updatePacket.getName());
         e.printStackTrace();
@@ -795,7 +795,7 @@ public class ClientRequestWorker extends TimerTask {
           // need everything so just grab all the fields
           nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
         } else {
-          nameRecord = NameServer.getNameRecordMultiField2(dnsPacket.getQname(),
+          nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(),
                   getDNSPacketFields(),
                   dnsPacket.getQrecordKey().getName());
         }

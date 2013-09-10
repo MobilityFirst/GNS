@@ -199,7 +199,7 @@ class ReplicationWorkerPaxos extends TimerTask {
 
 
           try {
-            NameRecord nameRecord = NameServer.getNameRecordMultiField(packet.getName(), getPrevValueRequestFields(), null);
+            NameRecord nameRecord = NameServer.getNameRecordMultiField(packet.getName(), getPrevValueRequestFields());
             ValuesMap value = null;
             try {
               value = nameRecord.getOldValuesOnPaxosIDMatch(packet.getOldActivePaxosID());
@@ -267,7 +267,7 @@ class ReplicationWorkerPaxos extends TimerTask {
 
           NameRecord nameRecord1 = null;
           try {
-            nameRecord1 = NameServer.getNameRecordMultiField(oldActiveStopPacket.getName(), getOldActiveStopFields(), null);
+            nameRecord1 = NameServer.getNameRecordMultiField(oldActiveStopPacket.getName(), getOldActiveStopFields());
           } catch (RecordNotFoundException e) {
             GNS.getLogger().severe("Record not found exception. Name = " + oldActiveStopPacket.getName());
             break;
@@ -307,7 +307,7 @@ class ReplicationWorkerPaxos extends TimerTask {
 
           NameRecord nameRecord;
           try {
-            nameRecord = NameServer.getNameRecordMultiField(oldActiveStopPacket.getName(),getActivePaxosStopFields(),null);
+            nameRecord = NameServer.getNameRecordMultiField(oldActiveStopPacket.getName(),getActivePaxosStopFields());
           } catch (RecordNotFoundException e) {
             GNS.getLogger().severe("Record not found exception. Message = " + e.getMessage());
             break;
