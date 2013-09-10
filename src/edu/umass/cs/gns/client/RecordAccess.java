@@ -4,22 +4,18 @@ package edu.umass.cs.gns.client;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.UpdateOperation;
-import org.json.JSONArray;
-
-import java.security.acl.AclEntry;
 import java.util.ArrayList;
+import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
- * A frontend to the the table which stores the fields and values. Provides conversion between the database to java objects
+ * A frontend to the the database which stores the fields and values.
+ * Provides conversion between the database to java objects
  *
- * See {@link AclEntry)
  *
  * @author westy
  */
 public class RecordAccess {
-
-  public static String Version = "$Revision: 645 $";
 
   // make it a singleton class
   public static RecordAccess getInstance() {
@@ -63,7 +59,7 @@ public class RecordAccess {
       return new String();
     }
   }
-  
+
   public String lookupOneMultipleValues(String guid, String key) {
     Intercessor client = Intercessor.getInstance();
     ValuesMap result = client.sendMultipleReturnValueQuery(guid, key, true);
@@ -87,4 +83,5 @@ public class RecordAccess {
     Intercessor client = Intercessor.getInstance();
     return client.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
   }
+  public static String Version = "$Revision$";
 }

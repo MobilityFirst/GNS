@@ -1301,5 +1301,5 @@ public class Protocol {
     GNS.getLogger().finer("result = " + result);
     return result;
   }
-  public static String Version = "$Revision: 650 $";
+  public static String Version = "$Revision$";
 }

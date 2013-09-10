@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.util.Format;
@@ -10,7 +15,12 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * Stores the username, GUID and public key for a user
+ * Stores the Human Readable Name (HRN), GUID and public key for an account plus
+ * other stuff we need to keep like a password, aliases and additional guids.
+ * 
+ * The account can have multiple aliases which are extra HRNs. The account can
+ * also have additional associated GUIDs. For certain things we also keep an encrypted
+ * password. The primary authentication mechanism is the public key.
  *
  * @author westy
  */

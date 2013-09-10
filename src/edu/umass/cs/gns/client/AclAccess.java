@@ -14,8 +14,6 @@ import java.util.Set;
  */
 public class AclAccess {
 
-  public static String Version = "$Revision: 645 $";
-
   public AclAccess() {
   }
 
@@ -79,4 +77,5 @@ public class AclAccess {
     String aclKey = makeACLKey(access, key);
     client.sendUpdateRecordWithConfirmation(userInfo.getGuid(), aclKey, value, null, UpdateOperation.REMOVE);
   }
+  public static String Version = "$Revision$";
 }

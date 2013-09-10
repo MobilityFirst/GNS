@@ -22,7 +22,6 @@ public class MYSQLRecordTable {
   public static final String GUID = "guid";
   public static final String JSON = "jsonobject";
   private static final String TableCreate = "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), " + GUID + " CHAR(40), " + JSON + " TEXT)";
-  public static String Version = "$Revision: 92 $";
   private String tableName;
 
   public MYSQLRecordTable() {
@@ -238,4 +237,5 @@ public class MYSQLRecordTable {
     MySQLUtils.dropTable(tableName);
     MySQLUtils.maybeCreateTable(tableName, TableCreate);
   }
+  public static String Version = "$Revision: 92 $";
 }

@@ -9,24 +9,29 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.AclAccess;
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.RecordAccess;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.apache.commons.cli.*;
-
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
-
-import static edu.umass.cs.gns.main.StartLocalNameServer.debugMode;
-import java.net.HttpURLConnection;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  *
@@ -36,7 +41,6 @@ import java.net.HttpURLConnection;
  */
 public class GnsHttpServer {
 
-  public static String Version = "$Revision: 629 $";
   private static Protocol protocol = new Protocol();
   protected static String GNSPATH = "GNS";
   public static int address = 80;
@@ -45,7 +49,6 @@ public class GnsHttpServer {
   private static int localNameServerID;
 
   public static void runServer() {
-    debugMode = true;
     if (!tryPort(address)) {
       tryPort(addressNoPriv);
     }
@@ -166,6 +169,7 @@ public class GnsHttpServer {
 
 // EXAMPLE THAT JUST RETURNS HEADERS SENT
   private static class EchoHandler implements HttpHandler {
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
       String requestMethod = exchange.getRequestMethod();
@@ -182,17 +186,23 @@ public class GnsHttpServer {
         String serverVersionInfo = "Server Version: " + Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String protocolVersionInfo = "Protocol Version: " + Protocol.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String recordVersionInfo = "Record Version: " + RecordAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String aclVersionInfo = "ACL Version: " + AccountAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String accountVersionInfo = "Accounts Version: " + AccountAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String aclVersionInfo = "ACL Version: " + AclAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String groupsVersionInfo = "Groups Version: " + GroupAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
-        
-        String serverLocalNameServerID = "Name Server ID: " + localNameServerID + "\n\n";
-        
+
+        String serverLocalNameServerID = "Local Name Server ID: " + localNameServerID +  "\n";
+        String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() +  "\n";
+        String backingStoreClass = "Backing Store Class: " + StartNameServer.dataStore.getClassName() + "\n\n";
+
         responseBody.write(serverVersionInfo.getBytes());
         responseBody.write(protocolVersionInfo.getBytes());
         responseBody.write(recordVersionInfo.getBytes());
+        responseBody.write(accountVersionInfo.getBytes());
         responseBody.write(aclVersionInfo.getBytes());
         responseBody.write(groupsVersionInfo.getBytes());
         responseBody.write(serverLocalNameServerID.getBytes());
+        responseBody.write(numberOfNameServers.getBytes());
+        responseBody.write(backingStoreClass.getBytes());
         while (iter.hasNext()) {
           String key = iter.next();
           List values = requestHeaders.get(key);
@@ -203,10 +213,10 @@ public class GnsHttpServer {
       }
     }
   }
-  
   private static String GNRS_IP = "23.21.120.250";
-  
+
   private static class IPHandler implements HttpHandler {
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
       String requestMethod = exchange.getRequestMethod();
@@ -222,4 +232,5 @@ public class GnsHttpServer {
       }
     }
   }
+  public static String Version = "$Revision$";
 }

@@ -48,5 +48,5 @@ public class GroupAccess {
             return new ArrayList<String>();
         }
     }
-    public static String Version = "$Revision: 645 $";
+    public static String Version = "$Revision$";
 }

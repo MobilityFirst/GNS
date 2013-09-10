@@ -35,7 +35,7 @@
         <jar destfile="${jarbuild}/GNS.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Built-By" value="${user.name}"/>
-                <attribute name="Main-Class" value="edu.umass.cs.gnrs.httpserver.GnrsHttpServer"/>
+                <attribute name="Main-Class" value="edu.umass.cs.gns.httpserver.GnsHttpServer"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="${build}" includes="**/*.class" excludes="**/*Test.class"/>
@@ -50,7 +50,7 @@
 
     <target name="doc" description="generate javadoc">
         <mkdir dir="${build}/doc"/>
-        <javadoc packagenames="edu.umass.cs.gnrs.*" sourcepath="${src}" destdir="${build}/doc">
+        <javadoc packagenames="edu.umass.cs.gns.*" sourcepath="${src}" destdir="${build}/doc">
             <classpath refid="classpath.base"/>
             <link href="http://java.sun.com/javase/6/docs/api/"/>
         </javadoc>

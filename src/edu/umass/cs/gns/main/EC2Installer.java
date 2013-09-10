@@ -545,29 +545,6 @@ public class EC2Installer {
     for (InstanceInfo info : idTable.values()) {
       threads.add(new UpdateThread(info.getId(), info.getHostname(), action));
     } 
-//    AWSCredentials credentials = null;
-//    try {
-//      //
-//      credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
-//    } catch (IOException e) {
-//      System.out.println("Problem contacting EC2 instances: " + e);
-//    }
-//    //Create Amazon Client object
-//    AmazonEC2 ec2 = new AmazonEC2Client(credentials);
-//    for (RegionRecord region : RegionRecord.values()) {
-//      AWSEC2.setRegion(ec2, region);
-//      System.out.println("Retrieving instance information in " + region.name() + "...");
-//      for (Instance instance : AWSEC2.getInstances(ec2)) {
-//        if (!instance.getState().getName().equals(InstanceStateRecord.TERMINATED.getName())) {
-//          String idString = getTagValue(instance, "id");
-//          if (idString != null && name.equals(getTagValue(instance, "runset"))) {
-//            int id = Integer.parseInt(idString);
-//            String hostname = instance.getPublicDnsName();
-//            threads.add(new UpdateThread(id, hostname, action));
-//          }
-//        }
-//      }
-//    }
     for (int i = 0; i < threads.size(); i++) {
       threads.get(i).start();
     }

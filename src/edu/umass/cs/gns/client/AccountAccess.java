@@ -1,24 +1,26 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.UpdateOperation;
-import org.json.JSONException;
-
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.json.JSONException;
 
-//import edu.umass.cs.gns.packet.QueryResultValue;
-//import edu.umass.cs.gns.packet.UpdateAddressPacket;
 /**
- * Document once it settles down a bit.
+ * Provides the basic interface to GNS accounts. 
+ * <p>
+ * See {@link AccountInfo} for more details about accounts.
  *
  * @author westy
  */
 public class AccountAccess {
-
-  public static String Version = "$Revision: 646 $";
 
   public AccountAccess() {
   }
@@ -37,10 +39,24 @@ public class AccountAccess {
   public static final String PRIMARY_GUID = Defs.INTERNAL_PREFIX + "primary_guid";
   public static final String GUID_INFO = Defs.INTERNAL_PREFIX + "guid_info";
 
-  // GUID: "_GNS_ACCOUNT_INFO" -> {account} for primary guid
-  // GUID: "_GNS_GUID" -> GUID (primary) for secondary guid
-  // GUID: "_GNS_GUID_INFO" -> {guid info} 
-  // NAME: "_GNS_GUID" -> GUID
+  /**
+   * Obtains the account info record for the given GUID if that GUID
+   * was used to create an account or is one of the GUIDs associated with
+   * account.
+   * <p>
+   * Some of the internal records used to maintain account information are as follows:
+   * <p>
+   * GUID: "_GNS_ACCOUNT_INFO" -> {account} for primary guid<br>
+   * GUID: "_GNS_GUID" -> GUID (primary) for secondary guid<br>
+   * GUID: "_GNS_GUID_INFO" -> {guid info}<br>
+   * HRN: "_GNS_GUID" -> GUID<br>
+   * <p>
+   * GUID = Globally Unique Identifier<br>
+   * HRN = Human Readable Name<br>
+   * 
+   * @param guid
+   * @return an {@link AccountInfo} instance
+   */
   public AccountInfo lookupAccountInfoFromGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
     ArrayList<String> accountResult = client.sendQuery(guid, ACCOUNT_INFO);
@@ -60,6 +76,15 @@ public class AccountAccess {
     return null;
   }
 
+  /**
+   * If GUID is associated with another account, returns the GUID of that account,
+   * otherwise returns null.
+   * <p>
+   * GUID = Globally Unique Identifier
+   * 
+   * @param guid
+   * @return a GUID
+   */
   public String lookupPrimaryGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
     ArrayList<String> guidResult = client.sendQuery(guid, PRIMARY_GUID);
@@ -70,6 +95,15 @@ public class AccountAccess {
     }
   }
 
+  /**
+   * Returns the GUID associated with name which is a HRN.
+   * <p>
+   * GUID = Globally Unique Identifier<br>
+   * HRN = Human Readable Name<br>
+   * 
+   * @param name
+   * @return a GUID
+   */
   public String lookupGuid(String name) {
     Intercessor client = Intercessor.getInstance();
     ArrayList<String> guidResult = client.sendQuery(name, GUID);
@@ -80,6 +114,14 @@ public class AccountAccess {
     }
   }
 
+  /**
+   * Obtains the guid info record from the database for GUID given.
+   * <p>
+   * GUID = Globally Unique Identifier<br>
+   * 
+   * @param guid
+   * @return an {@link GuidInfo} instance
+   */
   public GuidInfo lookupGuidInfo(String guid) {
     Intercessor client = Intercessor.getInstance();
     ArrayList<String> guidResult = client.sendQuery(guid, GUID_INFO);
@@ -95,6 +137,14 @@ public class AccountAccess {
     return null;
   }
 
+  /**
+   * Obtains the account info record from the database for the account whose HRN is name.
+   * <p>
+   * HRN = Human Readable Name<br>
+   * 
+   * @param name
+   * @return an {@link AccountInfo} instance
+   */
   public AccountInfo lookupAccountInfoFromName(String name) {
     String guid = lookupGuid(name);
     if (guid != null) {
@@ -105,15 +155,17 @@ public class AccountAccess {
 
   /**
    * Create a new GNS user account.
-   *
-   * This adds three records to the GNS for the account. NAME: "_GNS_GUID" -> guid GUID: "_GNS_ACCOUNT_INFO" -> {account record - an
-   * AccountInfo object stored as JSON} GUID: "_GNS_GUID_INFO" -> {guid record - a GuidInfo object stored as JSON}
+   * <p>
+   * This adds three records to the GNS for the account:<br>
+   * NAME: "_GNS_GUID" -> guid<br>
+   * GUID: "_GNS_ACCOUNT_INFO" -> {account record - an AccountInfo object stored as JSON}<br>
+   * GUID: "_GNS_GUID_INFO" -> {guid record - a GuidInfo object stored as JSON}<br>
    *
    * @param name
    * @param guid
    * @param publicKey
    * @param password
-   * @return
+   * @return status result
    */
   public String addAccount(String name, String guid, String publicKey, String password) {
     try {
@@ -141,6 +193,12 @@ public class AccountAccess {
     }
   }
 
+  /**
+   * Removes a GNS user account.
+   * 
+   * @param accountInfo
+   * @return status result 
+   */
   public String removeAccount(AccountInfo accountInfo) {
     Intercessor client = Intercessor.getInstance();
     // do this first add to make sure this account exists
@@ -159,9 +217,20 @@ public class AccountAccess {
     }
   }
 
-  // GUID: "_GNS_PRIMARY_GUID" -> GUID (primary) for secondary guid
-  // GUID: "_GNS_GUID_INFO" -> {guid info} 
-  // ALIAS: "_GNS_GUID" -> GUID
+  /**
+   * Adds a new GUID associated with and existing account.
+   * <p>
+   * These records will be created:<br>
+   * GUID: "_GNS_PRIMARY_GUID" -> GUID (primary) for secondary guid<br>
+   * GUID: "_GNS_GUID_INFO" -> {guid info}<br>
+   * HRN: "_GNS_GUID" -> GUID<br>
+   * 
+   * @param accountInfo - the accountInfo of the account to add the GUID to
+   * @param name = the human readable name to associate with the GUID
+   * @param guid - the new GUID
+   * @param publicKey - the public key to use with the new account
+   * @return status result 
+   */
   public String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
     try {
       // insure that the guis doesn't exist already
@@ -173,18 +242,11 @@ public class AccountAccess {
 
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
-      ArrayList<String> newAccountInfo;
-      try {
-        newAccountInfo = accountInfo.toDBFormat();
-      } catch (JSONException e) {
-        return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-      }
       Intercessor client = Intercessor.getInstance();
       // insure that that name does not already exist
       if (client.sendAddRecordWithConfirmation(name, GUID, new ArrayList<String>(Arrays.asList(guid)))) {
         // update the account info
-        if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-                newAccountInfo, null, UpdateOperation.REPLACE_ALL)) {
+        if (updateAccountInfo(accountInfo)) {
           // add the GUID_INFO link
           client.sendAddRecordWithConfirmation(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
@@ -200,20 +262,22 @@ public class AccountAccess {
     }
   }
 
+  /**
+   * Add a new human readable name (alias) to an account.
+   * <p>
+   * These records will be added:<br>
+   * HRN: "_GNS_GUID" -> GUID<br>
+   * 
+   * @param accountInfo
+   * @param alias
+   * @return status result 
+   */
   public String addAlias(AccountInfo accountInfo, String alias) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
-//    ArrayList<String> newvalue;
-//    try {
-//      newvalue = accountInfo.toDBFormat();
-//    } catch (JSONException e) {
-//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-//    }
     Intercessor client = Intercessor.getInstance();
     // insure that that name does not already exist
     if (client.sendAddRecordWithConfirmation(alias, GUID, new ArrayList<String>(Arrays.asList(accountInfo.getPrimaryGuid())))) {
-//      if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-//              newvalue, null, UpdateOperation.REPLACE_ALL)) {
       if (updateAccountInfo(accountInfo)) {
         return Protocol.OKRESPONSE;
       } else {
@@ -227,6 +291,13 @@ public class AccountAccess {
     return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
   }
 
+  /**
+   * Remove an alias from an account.
+   * 
+   * @param accountInfo
+   * @param alias
+   * @return status result 
+   */
   public String removeAlias(AccountInfo accountInfo, String alias) {
     Intercessor client = Intercessor.getInstance();
     if (accountInfo.containsAlias(alias)) {
@@ -241,36 +312,34 @@ public class AccountAccess {
     return Protocol.BADRESPONSE + " " + Protocol.BADALIAS;
   }
 
+  /**
+   * Set the password of an account.
+   * 
+   * @param accountInfo
+   * @param password
+   * @return status result 
+   */
   public String setPassword(AccountInfo accountInfo, String password) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-//    ArrayList<String> newvalue;
-//    try {
-//      newvalue = accountInfo.toDBFormat();
-//    } catch (JSONException e) {
-//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-//    }
     Intercessor client = Intercessor.getInstance();
-//    if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-//            newvalue, null, UpdateOperation.REPLACE_ALL)) {
     if (updateAccountInfo(accountInfo)) {
       return Protocol.OKRESPONSE;
     }
     return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
   }
 
+  /**
+   * Add a tag to a GUID.
+   * 
+   * @param guidInfo
+   * @param tag
+   * @return status result 
+   */
   public String addTag(GuidInfo guidInfo, String tag) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-//    ArrayList<String> newvalue;
-//    try {
-//      newvalue = guidInfo.toDBFormat();
-//    } catch (JSONException e) {
-//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-//    }
     Intercessor client = Intercessor.getInstance();
-//    if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
-//            newvalue, null, UpdateOperation.REPLACE_ALL)) {
     if (updateGuidInfo(guidInfo)) {
       return Protocol.OKRESPONSE;
     }
@@ -278,24 +347,23 @@ public class AccountAccess {
     return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
   }
 
+  /**
+   * Remove a tag from a GUID.
+   * 
+   * @param guidInfo
+   * @param tag
+   * @return status result 
+   */
   public String removeTag(GuidInfo guidInfo, String tag) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-//    ArrayList<String> newvalue;
-//    try {
-//      newvalue = guidInfo.toDBFormat();
-//    } catch (JSONException e) {
-//      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
-//    }
     Intercessor client = Intercessor.getInstance();
-//    if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
-//            newvalue, null, UpdateOperation.REPLACE_ALL)) {
     if (updateGuidInfo(guidInfo)) {
       return Protocol.OKRESPONSE;
     }
     return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
   }
-  
+
   private boolean updateAccountInfo(AccountInfo accountInfo) {
     Intercessor client = Intercessor.getInstance();
     try {
@@ -316,11 +384,12 @@ public class AccountAccess {
       ArrayList<String> newvalue;
       newvalue = guidInfo.toDBFormat();
       if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
-            newvalue, null, UpdateOperation.REPLACE_ALL)) {
+              newvalue, null, UpdateOperation.REPLACE_ALL)) {
         return true;
       }
     } catch (JSONException e) {
     }
     return false;
   }
+  public static String Version = "$Revision$";
 }
