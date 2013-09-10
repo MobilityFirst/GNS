@@ -262,7 +262,7 @@ public class NameServer {
    * @return
    * @throws RecordNotFoundException 
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, String ... userFieldNames)
+  public static NameRecord getNameRecordMultiField2(String name, ArrayList<Field> fields, String ... userFieldNames)
           throws RecordNotFoundException{
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
   }
