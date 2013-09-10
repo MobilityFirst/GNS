@@ -229,12 +229,7 @@ public class GenerateSyntheticRecordTable {
     int numberRequests = Integer.parseInt(args[1]);
     int names = Integer.parseInt(args[2]);
     //StartNameServer.mongoPort = 12345;
-
-    try {
-      HashFunction.initializeHashFunction();
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
+    HashFunction.initializeHashFunction();
 
     NameServer.nodeID = 0;
     ConfigFileInfo.readHostInfo(args[0],0);
@@ -282,12 +277,7 @@ public class GenerateSyntheticRecordTable {
 //    int names = Integer.parseInt(args[2]);
     int names = 1;
     int numValues = 1;
-
-    try {
-      HashFunction.initializeHashFunction();
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
+    HashFunction.initializeHashFunction();
 
     //StartNameServer.mongoPort = 12345;
     NameServer.nodeID = 0;

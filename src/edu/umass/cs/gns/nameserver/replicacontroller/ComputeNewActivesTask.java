@@ -71,11 +71,10 @@ public class ComputeNewActivesTask extends TimerTask
         //be made to the active name server set
 //    Set<ReplicaControllerRecord> rcRecords = NameServer.getAllPrimaryNameRecords();
 //    if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfrcRecords\t" + rcRecords.size());
-//
-//
-//    for (ReplicaControllerRecord rcRecord : rcRecords) {
-        try {
 
+//    for (ReplicaControllerRecord rcRecord : rcRecords) {
+
+        try {
 
           if (rcRecord.isMarkedForRemoval()) {
             continue;
@@ -85,7 +84,7 @@ public class ComputeNewActivesTask extends TimerTask
           if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound);
 
           if (!rcRecord.getPrimaryNameservers().contains(NameServer.nodeID) ||
-                  !ReplicaController.isSmallestPrimaryRunning(rcRecord.getPrimaryNameservers())) {
+                  !ReplicaController.isSmallestNodeRunning(rcRecord.getPrimaryNameservers())) {
             rcRecord.recomputeAverageReadWriteRate(); // this will keep moving average calculation updated.
             continue;
           }
@@ -96,7 +95,7 @@ public class ComputeNewActivesTask extends TimerTask
           Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord,
                   rcRecord.getActiveNameservers(), replicationRound);
 
-          if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
+//          if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
             if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() +
                     "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpadingOtherActives");
 
@@ -110,10 +109,15 @@ public class ComputeNewActivesTask extends TimerTask
 
             PaxosManager.propose(paxosID, requestPacket);
             if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
-          }
-          else {
-            if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
-          }
+            try {
+              Thread.sleep(1); // sleep between successive names so as to keep traffic smooth
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+//          }
+//          else {
+//            if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
+//          }
         } catch (FieldNotFoundException e) {
           GNS.getLogger().severe("Field Not Found Exception: " + e.getMessage());
           e.printStackTrace();

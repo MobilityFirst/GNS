@@ -32,6 +32,7 @@ public class ClientRequestWorker extends TimerTask {
   JSONObject incomingJSON;
   Packet.PacketType packetType;
   private static ConcurrentHashMap<Integer, UpdateStatus> addInProgress = new ConcurrentHashMap<Integer, UpdateStatus>();
+
 //  private static ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket> proposedUpdates = new ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket>();
   /**
    * ID assigned to updates received from LNS. The next update from a LNS will be assigned id = updateIDCount + 1;

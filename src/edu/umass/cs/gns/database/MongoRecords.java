@@ -45,6 +45,8 @@ public class MongoRecords implements NoSQLRecords {
   private static final String DBROOTNAME = "GNS";
   public static final String DBNAMERECORD = "NameRecord";
   public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
+  public static final String PAXOSLOG = "PaxosLog";
+
   //public static final String[] COLLECTIONS = {DBNAMERECORD, DBREPLICACONTROLLER};
   //public static final String PRIMARYKEY = NameRecord.NAME;
   private DB db;
@@ -55,6 +57,8 @@ public class MongoRecords implements NoSQLRecords {
   public CollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
   }
+
+
 
   /**
    * Stores the name, primary key, and index of each collection we maintain in the mongo db.
@@ -88,6 +92,7 @@ public class MongoRecords implements NoSQLRecords {
           Arrays.asList(
           new CollectionSpec(DBNAMERECORD, NameRecord.NAME.getFieldName()),
           new CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getFieldName()));
+//          new CollectionSpec(PAXOSLOG, PaxosManager.LOG_MSG));
 
   public static MongoRecords getInstance() {
     return MongoRecordCollectionHolder.INSTANCE;
@@ -813,7 +818,6 @@ public class MongoRecords implements NoSQLRecords {
 
   @Override
   public Object getIterator(String collectionName, Field nameField, ArrayList<Field> fields) {
-    ArrayList<JSONObject> result = new ArrayList<JSONObject>();
     db.requestStart();
 //    try {
       String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
@@ -857,6 +861,49 @@ public class MongoRecords implements NoSQLRecords {
       populateHashMap(hashMap,dbObject,fields); // populate other fields in hashmap
 
       return hashMap;
+    }
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public Object getIterator(String collectionName, Field nameField) {
+//    ArrayList<JSONObject> result = new ArrayList<JSONObject>();
+    db.requestStart();
+//    try {
+    String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+    db.requestEnsureConnection();
+    DBCollection collection = db.getCollection(collectionName);
+    // get all documents that have a name field (all doesn't work because of extra stuff mongo adds to the database)
+    BasicDBObject query = new BasicDBObject(primaryKey, new BasicDBObject("$exists", true));
+//    BasicDBObject projection = new BasicDBObject().append("_id", 0);
+//    projection.append(nameField.getFieldName(), 1); // name field must be returned.
+//    if (fields != null) { // add other fields requested
+//      for (Field f: fields) {
+//        projection.append(f.getFieldName(),1);
+//      }
+//    }
+
+    DBCursor cursor = collection.find(query);
+    return cursor;
+  }
+
+  @Override
+  public JSONObject next(Object iterator, Field nameField) {
+    DBCursor cursor = (DBCursor) iterator;
+    if (cursor != null && cursor.hasNext()) {
+//      HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
+      DBObject dbObject = cursor.next();
+      try {
+        return new JSONObject(dbObject.toString());
+      } catch (JSONException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+      return null;
+//      hashMap.put(nameField, dbObject.get(nameField.getFieldName()).toString());// put the name in the hashmap!! very important!!
+//
+//      populateHashMap(hashMap,dbObject,fields); // populate other fields in hashmap
+//
+//      return hashMap;
     }
     return null;  //To change body of implemented methods use File | Settings | File Templates.
   }

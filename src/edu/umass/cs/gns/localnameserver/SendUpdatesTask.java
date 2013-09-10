@@ -89,8 +89,11 @@ public class SendUpdatesTask extends TimerTask
       throw  new RuntimeException();
     }
 
-    int nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, activesQueried);
+
+
+
     if (LocalNameServer.isValidNameserverInCache(name)) {
+      int nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, activesQueried);
       if (nameServerID == -1) {
 
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + activesQueried);
@@ -160,6 +163,47 @@ public class SendUpdatesTask extends TimerTask
 
 
     }
+
+//    if (activesQueried.size() == 3) return;
+//
+//    int nameServerID = activesQueried.size();
+////    if (activesQueried.size() == 0) (nameServerID);
+//    activesQueried.add(nameServerID);
+//
+//    if (timeoutCount == 0) {
+//      String hostAddress = null;
+//      if (senderAddress != null) hostAddress = senderAddress.getHostAddress();
+//      updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
+//              requestRecvdTime, hostAddress, senderPort);
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
+//    }
+//    // create the packet that we'll send to the primary
+//    UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
+//            updateAddressPacket.getRequestID(), updateRequestID, -1,
+//            name, updateAddressPacket.getRecordKey(),
+//            updateAddressPacket.getUpdateValue(),
+//            updateAddressPacket.getOldValue(),
+//            updateAddressPacket.getOperation(),
+//            LocalNameServer.nodeID, nameServerID);
+////      pkt.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(name));
+//
+//    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
+//
+//    // and send it off
+//    try {
+//      JSONObject jsonToSend = pkt.toJSONObject();
+//      LNSListener.tcpTransport.sendToID(nameServerID, jsonToSend);
+//      // remote status
+////      StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, pkt.getType(),
+////              name,updateAddressPacket.getUpdateValue().toString());
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("LNSListenerUpdate: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID
+//              + " Time:" + System.currentTimeMillis()
+//              + " --> " + jsonToSend.toString());
+//    } catch (JSONException e) {
+//      e.printStackTrace();
+//    } catch (IOException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
 
 //    long t1 = System.currentTimeMillis();
 //    if (t1 - t0 > 10) {

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
+
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.ListenerReplicationPaxos;
@@ -14,6 +15,8 @@ import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.HashFunction;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -302,7 +305,7 @@ public class ReplicaController {
       ReplicaControllerRecord.ACTIVE_STATE stage = rcRecord.getNewActiveTransitionStage();
       if (StartNameServer.debugMode) GNS.getLogger().fine("ACTIVE Transition currently in stage = " + stage + " name " + rcRecord.getName());
 
-  //    if (isSmallestPrimaryRunning(nameRecord.getPrimaryNameservers()) == false) return;
+  //    if (isSmallestNodeRunning(nameRecord.getPrimaryNameservers()) == false) return;
 
       if (StartNameServer.debugMode) GNS.getLogger().fine("Remove record request has keys: " + removeRecordRequests.keySet());
       if (removeRecordRequests.containsKey(getPrimaryPaxosID(rcRecord.getName())) == false) {
@@ -582,7 +585,7 @@ public class ReplicaController {
       if (rcRecord.setOldActiveStopped(packet.getPaxosID())) {
         if (StartNameServer.debugMode) GNS.getLogger().fine("OLD Active paxos stopped. Name: "+ rcRecord.getName()
                 + " Old Paxos ID: "+ packet.getPaxosID());
-        if (isSmallestPrimaryRunning(rcRecord.getPrimaryNameservers())) {
+        if (isSmallestNodeRunning(rcRecord.getPrimaryNameservers())) {
           StartupActiveSetTask startupTask = new StartupActiveSetTask(
                   rcRecord.getName(),
                   rcRecord.getOldActiveNameservers(),
@@ -608,14 +611,30 @@ public class ReplicaController {
 
 
   public static void handleNodeFailure(FailureDetectionPacket fdPacket) {
-    if (fdPacket.status == true) return; // node came up, don't worry about that
+    if (fdPacket.status == true) return; // node was down and it came up, don't worry about that
 
     int failedNode = fdPacket.responderNodeID;
-    if (StartNameServer.debugMode) GNS.getLogger().fine(" Failed Node Detected: replication controller working. " + failedNode);
+    GNS.getLogger().severe(" Failed Node Detected: replication controller working. " + failedNode);
 
 //		if (node fails then what happens)
-    Set<ReplicaControllerRecord> nameRecords = NameServer.getAllPrimaryNameRecords();
-    for (ReplicaControllerRecord record : nameRecords) {
+    Object iterator = NameServer.replicaController.getIterator(ReplicaControllerRecord.NAME);
+//    if (StartNameServer.debugMode) GNS.getLogger().fine("Got iterator : " + replicationRound);
+
+    while (true) {
+      JSONObject jsonObject = NameServer.replicaController.next(iterator, ReplicaControllerRecord.NAME);
+//        if (StartNameServer.debugMode) GNS.getLogger().finer("Got next: " + count);
+      if (jsonObject == null) {
+//          if (StartNameServer.debugMode) GNS.getLogger().finer("BREAK!! ");
+        break;
+      }
+      ReplicaControllerRecord record;
+      try {
+        record = new ReplicaControllerRecord(jsonObject);
+      } catch (JSONException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        continue;
+      }
+
       // if both this node & failed node are primaries.
       try {
         if (record.containsPrimaryNameserver(NameServer.nodeID)
@@ -642,7 +661,8 @@ public class ReplicaController {
               + " Failed Node: " + failedNode + " STAGE = " + stage);
     }
     // worry only if I am smallest primary
-    if (isSmallestPrimaryRunning(nameRecord.getPrimaryNameservers()) == false) return;
+    if (isSmallestNodeRunning(nameRecord.getPrimaryNameservers()) == false) return;
+    GNS.getLogger().severe(" Smallest node for name = " + nameRecord.getName());
     switch (stage) {
       case ACTIVE_RUNNING:
         if (nameRecord.isMarkedForRemoval() && !nameRecord.isRemoved()) {
@@ -651,6 +671,9 @@ public class ReplicaController {
           StopActiveSetTask stopTask = new StopActiveSetTask(nameRecord.getName(),
                   nameRecord.getOldActiveNameservers(), nameRecord.getOldActivePaxosID());
           NameServer.timer.schedule(stopTask, 0, TIMEOUT_INTERVAL);
+        }
+        else {
+          GNS.getLogger().severe("Reached here ... done nothing.");
         }
         break;
       case OLD_ACTIVE_RUNNING:
@@ -689,15 +712,15 @@ public class ReplicaController {
     }
   }
 
-
-  public static boolean isSmallestPrimaryRunning(
-          Set<Integer> primaryNameServer) {
+  public static boolean isSmallestNodeRunning(Set<Integer> nameServers) {
     int smallestNSUp = -1;
-    for (Integer primaryNS : primaryNameServer) {
-      if (PaxosManager.isNodeUp(primaryNS)) {
-        if (smallestNSUp == -1 || primaryNS < smallestNSUp) {
-          smallestNSUp = primaryNS;
-        }
+    for (Integer ns : nameServers) {
+      if (PaxosManager.isNodeUp(ns)) {
+        smallestNSUp = ns;
+        break;
+//        if (smallestNSUp == -1 || primaryNS < smallestNSUp) {
+//          smallestNSUp = primaryNS;
+//        }
       }
     }
     if (smallestNSUp == NameServer.nodeID) {
@@ -705,5 +728,48 @@ public class ReplicaController {
     } else {
       return false;
     }
+  }
+
+
+
+
+  public static void main(String[] args) {
+
+    HashFunction.initializeHashFunction();
+    ConfigFileInfo.setNumberOfNameServers(100);
+    NameServer.nodeID = 0;
+    int numNames = 10000;
+    ConcurrentHashMap<Integer, Integer> smallestCounts = new ConcurrentHashMap<Integer, Integer>();
+    for (int i = 0; i < numNames; i++) {
+      Set<Integer> nodes = HashFunction.getPrimaryReplicas(Integer.toString(i));
+      int smallestPrimary = getSmallestPrimaryRunning(nodes);
+      if (smallestCounts.containsKey(smallestPrimary)) {
+        smallestCounts.put(smallestPrimary, smallestCounts.get(smallestPrimary) + 1);
+      }else {
+        smallestCounts.put(smallestPrimary, 1);
+      }
+    }
+
+    for (int x: smallestCounts.keySet()) {
+      System.out.println(x + "\t" + smallestCounts.get(x));
+    }
+  }
+  private static int getSmallestPrimaryRunning(Set<Integer> primaryNameServer) {
+    int smallestNSUp = -1;
+    for (Integer primaryNS : primaryNameServer) {
+      return primaryNS;
+//      if (PaxosManager.isNodeUp(primaryNS)) {
+//
+//      }
+//      if (smallestNSUp == -1 || primaryNS < smallestNSUp) {
+//        smallestNSUp = primaryNS;
+//      }
+    }
+    return  smallestNSUp;
+//    if (smallestNSUp == NameServer.nodeID) {
+//      return true;
+//    } else {
+//      return false;
+//    }
   }
 }

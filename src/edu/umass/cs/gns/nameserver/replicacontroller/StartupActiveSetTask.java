@@ -62,10 +62,7 @@ public class StartupActiveSetTask extends TimerTask {
   private static ArrayList<Field> getGetStartupActiveSetFields() {
     synchronized (getStartupActiveSetFields) {
       if (getStartupActiveSetFields.size() > 0) return getStartupActiveSetFields;
-
-      getStartupActiveSetFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
       getStartupActiveSetFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
-      getStartupActiveSetFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       getStartupActiveSetFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
       return getStartupActiveSetFields;
     }
@@ -75,8 +72,7 @@ public class StartupActiveSetTask extends TimerTask {
   public void run() {
 
 
-    getStartupActiveSetFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
-    getStartupActiveSetFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
+
 
     ReplicaControllerRecord nameRecordPrimary;
     try {

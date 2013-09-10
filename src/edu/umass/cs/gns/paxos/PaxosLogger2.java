@@ -20,13 +20,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * (2)a paxos instance is stopped. This is an infinite log.
  * On startup, this {@code paxosIDsFile} tells which paxos instances were active before the system stopped.
  *
- *
  * (2) Paxos state: These files are stored in folder {@code logFolder}/{@code stateFolderSubdir}. It contains periodic
  * snapshots of complete state of all active paxos instance. The name of each file is formatted as follows:
  * 'paxosID_ballot_slotNumber'. the ballot is formatted as 'ballotNumber:coordinatorID'. The content of each file is
  * as follows. The first line contains an integer represented in string format. The integer tells the
  * the length of the paxos state contained in the file. Lines after the first line contain the state of the paxos instance.
- *
  *
  * (3) Log message files: This files are stored '{@code logFolder}/{@code logFilePrefix}_X' where 'X' is a non-negative
  * integer. These files the paxos messages as as they are processed. Each file contains at most {@code MSG_MAX} messages.
@@ -37,7 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * logs messages, and then performs the action associated with every logging message.
  * Currently, we log three types of messages: PREPARE, ACCEPT, and DECISION.  For example, once the DECISION message
  * is logged, it is forwarded to the paxos instance for processing.
- *
  *
  * TODO describe format of logs
  *
@@ -92,7 +89,7 @@ public class PaxosLogger2 extends Thread{
   /**
    * after writing {@code MSG_MAX} messages to a file, a new log file is used
    */
-  private static  int MSG_MAX = 100000;
+  private static  int MSG_MAX = 10000;
 
   /**
    * name of file which stores
@@ -816,21 +813,29 @@ public class PaxosLogger2 extends Thread{
         }
         continue;
       }
+//      continue;
+
 
       //        if (StartNameServer.debugMode) GNS.getLogger().fine(" Logging messages: " + msgsLogged.size());
       // log the msgs
 //            StringBuilder sb = new StringBuilder();
 //      char[] buf = new char[1000];
 //      int index = 0;
+
       try {
+        long t0 = System.currentTimeMillis();
         FileWriter fileWriter = new FileWriter(logFileName, true);
         for (LoggingCommand cmd : logCmdCopy) {
           // TODO How is BufferedWriter different from FileWriter? what should we use?
           String s = getLogString(cmd.getPaxosID(), cmd.getLogJson());
-          if (StartNameServer.debugMode) GNS.getLogger().fine("Logging this now: " + s);
+//          if (StartNameServer.debugMode) GNS.getLogger().fine("Logging this now: " + s);
           fileWriter.write(s);
         }
         fileWriter.close();
+        long t1 = System.currentTimeMillis();
+        if (t1 - t0 > 20) {
+          GNS.getLogger().severe("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " Msgcount = " + logCmdCopy.size());
+        }
         msgCount += logCmdCopy.size();
         if (msgCount > MSG_MAX) {
           msgCount = 0;
@@ -1032,6 +1037,24 @@ public class PaxosLogger2 extends Thread{
 
   }
 
+
+  public static void main(String []args) throws IOException {
+
+    for (int i = 0; i < 100000; i++) {
+      long t0 = System.currentTimeMillis();
+      FileWriter fileWriter = new FileWriter("/state/partition1/myfilename", true);
+//      TODO How is BufferedWriter different from FileWriter? what should we use?
+      String s = "klllkjasdl;fjaoial;smaso;imwa;eoimaw;cmaiw;coiamw;lcj;lhvalijwoij;lcmasdfasdfcawe;ojakls;dcl;w";
+//      if (StartNameServer.debugMode) GNS.getLogger().fine("Logging this now: " + s);
+          fileWriter.write(s);
+      fileWriter.close();
+      long t1 = System.currentTimeMillis();
+      if (t1 - t0 > 20) {
+        System.out.println("Long latency logging = " + (t1 - t0) + " ms. Time = " + (t0) );
+      }
+    }
+
+  }
   /**
    * returns true if log file can be deleted
    *

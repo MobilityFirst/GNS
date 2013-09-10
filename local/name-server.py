@@ -102,8 +102,8 @@ nsnsping_file = ''
 #persistent_data_store = False
 mongo_port = 12345
 paxos_log_folder = exp_config.paxos_log_folder
-failure_detection_msg_interval = 1           # Interval (in sec) between two failure detection messages sent to a node                                                                         
-failure_detection_timeout_interval = 4       # Interval (in sec) after which a node is declared as failed if it does not responsd to failure messages
+failure_detection_msg_interval = 10           # Interval (in sec) between two failure detection messages sent to a node                                                                       
+failure_detection_timeout_interval = 31       # Interval (in sec) after which a node is declared as failed if it does not responsd to failure messages
 
 # logging related parameters:
 # values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.

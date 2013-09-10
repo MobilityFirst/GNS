@@ -171,6 +171,16 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public Object getIterator(Field nameField) {
+    return MongoRecords.getInstance().getIterator(collectionName,nameField);
+  }
+
+  @Override
+  public JSONObject next(Object iterator, Field nameField) {
+    return MongoRecords.getInstance().next(iterator,nameField);
+  }
+
+  @Override
   public void returnIterator() {
     MongoRecords.getInstance().returnIterator();
   }

@@ -10,6 +10,7 @@ package edu.umass.cs.gns.nio;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NioServer2 implements Runnable {
 
   // The host:port combination to listen on
-
+  static final int MAX_QUEUE_DISCONNECTED = 10000;
   private int ID;
   private InetAddress myAddress;
   private int myPort;
@@ -149,7 +150,11 @@ public class NioServer2 implements Runnable {
   public void sendToIDs(Set<Integer> destIDs, JSONObject json, int excludeID) throws IOException {
     if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
       ArrayList e = new ArrayList();
-      e.add(json);
+      try {
+        e.add(new JSONObject(json.toString()));
+      } catch (JSONException e1) {
+        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
       workerObject.getPacketDemux().handleJSONObjects(e);
     }
 //        System.out.println(" Here in sendtoIDs");
@@ -246,6 +251,9 @@ public class NioServer2 implements Runnable {
             queue = new ArrayList();
             this.pendingData.put(connectedIDs[destID], queue);
           }
+          else if (queue.size() > MAX_QUEUE_DISCONNECTED) {
+            queue.remove(0);
+          }
           queue.add(ByteBuffer.wrap(data));
         }
 
@@ -273,6 +281,9 @@ public class NioServer2 implements Runnable {
           List queue = null;
           if (this.pendingData.containsKey(socketChannel)) {
             queue = (List) this.pendingData.remove(socketChannel);
+            if (queue.size() > MAX_QUEUE_DISCONNECTED) {
+              queue.remove(0);
+            }
           }
           if (queue == null) {
             queue = new ArrayList();

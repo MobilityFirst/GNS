@@ -1,7 +1,9 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
@@ -21,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -81,7 +84,7 @@ public class PaxosManager extends Thread{
   /**
    * Paxos coordinator checks whether all replicas have received the latest messages decided.
    */
-  static long RESEND_PENDING_MSG_INTERVAL_SEC = 1;
+  static long RESEND_PENDING_MSG_INTERVAL_MILLIS = 1000;
 
   static long INIT_SCOUT_DELAY_MILLIS = 1000;
 
@@ -302,7 +305,7 @@ public class PaxosManager extends Thread{
   private static void startResendPendingMessages() {
     ResendPendingMessagesTask task = new ResendPendingMessagesTask();
     executorService.scheduleAtFixedRate(task, 0,
-            RESEND_PENDING_MSG_INTERVAL_SEC, TimeUnit.SECONDS);
+            RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -520,7 +523,7 @@ public class PaxosManager extends Thread{
     if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tEnter createPaxos");
     if (nodeIDs.size() < 3) {
       if (StartNameServer.debugMode) GNS.getLogger().severe(nodeID + " less than three replicas " +
-              "paxos instance cannot be created. SEVERE ERROR. EXCEPTION.");
+              "paxos instance cannot be created. SEVERE ERROR. EXCEPTION Exception.");
       return false;
     }
 
@@ -689,6 +692,7 @@ public class PaxosManager extends Thread{
    * Some of them may elect a new co-ordinator.
    */
   static void informNodeStatus(FailureDetectionPacket fdPacket) {
+    GNS.getLogger().severe("Handling node failure = " + fdPacket.responderNodeID);
     for (String x: paxosInstances.keySet()) {
       PaxosReplica r = paxosInstances.get(x);
 
@@ -726,15 +730,15 @@ public class PaxosManager extends Thread{
       return;
     }
     switch (incomingPacketType){
-      case PaxosPacketType.DECISION:
-//            case PaxosPacketType.ACCEPT:
-//            case PaxosPacketType.PREPARE:
-        try {
-          PaxosLogger2.logMessage(new LoggingCommand(json.getString(PAXOS_ID),json, LoggingCommand.LOG_AND_EXECUTE));
-        } catch (JSONException e) {
-          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        break;
+//      case PaxosPacketType.DECISION:
+////            case PaxosPacketType.ACCEPT:
+////            case PaxosPacketType.PREPARE:
+//        try {
+//          PaxosLogger2.logMessage(new LoggingCommand(json.getString(PAXOS_ID),json, LoggingCommand.LOG_AND_EXECUTE));
+//        } catch (JSONException e) {
+//          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        }
+//        break;
       case PaxosPacketType.FAILURE_DETECT:
       case PaxosPacketType.FAILURE_RESPONSE:
         processMessage(new HandleFailureDetectionPacketTask(json));
@@ -823,6 +827,37 @@ public class PaxosManager extends Thread{
 
   }
 
+  public static String LOG_MSG = "LOGMSG";
+  private static int logMsgID = 0;
+  private static Lock logMsgIDLock = new ReentrantLock();
+
+  /**
+   * this methods does paxos logging in mongo DB.
+   * We prefer to write directly to disk as it gives better performance.
+   * @param jsonObject
+   * @param paxosID
+   */
+  static void addToPaxosLog(JSONObject jsonObject, String paxosID) {
+    int msgID;
+    try {
+      logMsgIDLock.lock();
+      msgID = ++logMsgID;
+
+    } finally {
+      logMsgIDLock.unlock();
+    }
+    try {
+      jsonObject.put(PAXOS_ID,paxosID);
+      jsonObject.put(LOG_MSG,msgID);
+      MongoRecords.getInstance().insert(MongoRecords.PAXOSLOG, "PaxosLog", jsonObject);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (RecordExistsException e) {
+      // Should not happen because record has no unique key.
+      e.printStackTrace();
+    }
+
+  }
   /**
    * main funtion to test the paxos manager code.
    * @param args
@@ -840,8 +875,6 @@ public class PaxosManager extends Thread{
     PaxosManager.setPaxosLogFolder(paxosLogFolder + "/paxoslog_" + myID);
     initializePaxosManagerDebugMode(nodeConfigFile, testConfig, myID, new DefaultPaxosInterface());
   }
-
-
 }
 
 

@@ -69,7 +69,6 @@ public class NameServerVoteThread extends Thread {
 			Thread.sleep(x);
 			System.out.println("NameServerVoteThread: Sleeping for " + x + "ms");
 		} catch (InterruptedException e) {
-			
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Initial thread sleeping period.");
 		}
 		this.startInterval = System.currentTimeMillis();
@@ -115,7 +114,7 @@ public class NameServerVoteThread extends Thread {
 
 //					unackedVotes.put(uniqueVoteID, uniqueVoteID);
 
-
+          Thread.sleep(1);
 					
 //					// if not voted for by everyone,
 //					Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);

@@ -30,7 +30,7 @@ public class HashFunction {
    * Initialize hash funtions
    * @throws NoSuchAlgorithmException
    ************************************************************/
-  public static void initializeHashFunction() throws NoSuchAlgorithmException {
+  public static void initializeHashFunction(){
 //    hashFunctions = new ArrayList<MessageDigest>();
 //    hashFunctions.add(MessageDigest.getInstance("MD5"));
 //    hashFunctions.add(MessageDigest.getInstance("SHA-1"));

@@ -307,6 +307,16 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
+  public Object getIterator(String collection, Field nameField) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public JSONObject next(Object iterator, Field nameField) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public void returnIterator() {
     //To change body of implemented methods use File | Settings | File Templates.
   }

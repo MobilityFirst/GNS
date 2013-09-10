@@ -202,6 +202,16 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
+  public Object getIterator(Field nameField) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public JSONObject next(Object iterator, Field nameField) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public void returnIterator() {
     return;  //To change body of implemented methods use File | Settings | File Templates.
   }

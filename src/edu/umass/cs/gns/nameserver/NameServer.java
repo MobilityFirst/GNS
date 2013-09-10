@@ -20,7 +20,6 @@ import edu.umass.cs.gns.util.Util;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -139,8 +138,8 @@ public class NameServer {
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
-        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(),
-                (new Random()).nextInt((int) StartNameServer.analysisInterval),
+        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(),StartNameServer.analysisInterval,
+//                (new Random()).nextInt((int) StartNameServer.analysisInterval),
                 StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
 
         // commenting keep alive messages
