@@ -83,7 +83,7 @@ public class CacheEntry {
   }
 
   public synchronized ArrayList<String> getValue(NameRecordKey key) {
-    if (isValidAddress(key.getName())) {
+    if (isValidValue(key.getName())) {
       return valuesMap.get(key.getName());
     }
     return null;
@@ -108,7 +108,7 @@ public class CacheEntry {
    * @param key
    * @return true or false value regarding cache being valid
    */
-  private synchronized boolean isValidAddress(String key) {
+  private synchronized boolean isValidValue(String key) {
     // NULL MEANS THE VALUE IS INVALID
     if (valuesMap == null || valuesMap.containsKey(key) == false) {
       return false;

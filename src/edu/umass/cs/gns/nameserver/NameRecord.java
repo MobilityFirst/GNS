@@ -1,10 +1,10 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
-import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.util.ArrayList;

@@ -60,9 +60,11 @@ public class NameServer {
     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
+            // probably should use something more generic here
             MongoRecords.DBNAMERECORD);
     // Ditto for the replica controller records
     NameServer.replicaController = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
+            // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
 
     // what type of replication?
@@ -138,8 +140,8 @@ public class NameServer {
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
-        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(),StartNameServer.analysisInterval,
-//                (new Random()).nextInt((int) StartNameServer.analysisInterval),
+        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), StartNameServer.analysisInterval,
+                //                (new Random()).nextInt((int) StartNameServer.analysisInterval),
                 StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
 
         // commenting keep alive messages
@@ -203,9 +205,6 @@ public class NameServer {
 ////    }
 //
 //  }
-
-
-
 //
 //
 //
@@ -229,31 +228,30 @@ public class NameServer {
   /******************************
    * Name Record methods
    ******************************/
-
   /**
-    * Load a name record from the backing database and retrieve all the fields.
+   * Load a name record from the backing database and retrieve all the fields.
    * @param name
    * @return
    * @throws RecordNotFoundException
    */
-  public static NameRecord getNameRecord(String name) throws RecordNotFoundException{
+  public static NameRecord getNameRecord(String name) throws RecordNotFoundException {
     return recordMap.getNameRecord(name);
   }
-  
+
   /**
-    * Load a name record from the backing database and retrieve certain fields as well.
+   * Load a name record from the backing database and retrieve certain fields as well.
    * @param name
    * @param fields - a list of Field structures representing "system" fields to retrieve
    * @return
    * @throws RecordNotFoundException
    */
   public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields)
-          throws RecordNotFoundException{
+          throws RecordNotFoundException {
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, null));
   }
 
   /**
-    * Load a name record from the backing database and retrieve certain fields as well.
+   * Load a name record from the backing database and retrieve certain fields as well.
    * @param name
    * @param fields - a list of Field structures representing "system" fields to retrieve
    * @param userFields - a list of Field structures representing user fields to retrieve
@@ -261,10 +259,10 @@ public class NameServer {
    * @throws RecordNotFoundException
    */
   public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, ArrayList<Field> userFields)
-          throws RecordNotFoundException{
+          throws RecordNotFoundException {
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFields));
   }
-  
+
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
    * @param name
@@ -273,11 +271,11 @@ public class NameServer {
    * @return
    * @throws RecordNotFoundException 
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, String ... userFieldNames)
-          throws RecordNotFoundException{
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, String... userFieldNames)
+          throws RecordNotFoundException {
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
   }
-  
+
   private static ArrayList<Field> userFieldList(String... fieldNames) {
     ArrayList<Field> result = new ArrayList<Field>();
     for (String name : fieldNames) {
@@ -291,7 +289,7 @@ public class NameServer {
    * @param record
    * @throws RecordExistsException
    */
-  public static void addNameRecord(NameRecord record) throws RecordExistsException{
+  public static void addNameRecord(NameRecord record) throws RecordExistsException {
     recordMap.addNameRecord(record);
   }
 
@@ -319,32 +317,24 @@ public class NameServer {
     return recordMap.getAllNameRecords();
   }
 
-
 //  public static boolean containsName(String name) {
 //    return recordMap.containsName(name);
 //  }
-
 //  public static ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
 //    GNS.getLogger().info("Creating lazy primary name record for " + name);
 //    return replicaController.getNameRecordPrimaryLazy(name);
 //  }
-
-
-
-
   /******************************
    * Replica controller methods
    ******************************/
-
   /**
    * Read the complete ReplicaControllerRecord from database
    * @param name
    * @return
    */
-  public static ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException{
+  public static ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException {
     return replicaController.getNameRecordPrimary(name);
   }
-
 
   /**
    * Read name record with select fields
@@ -354,16 +344,15 @@ public class NameServer {
    * @throws RecordNotFoundException
    */
   public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ArrayList<Field> fields)
-          throws RecordNotFoundException{
+          throws RecordNotFoundException {
     return new ReplicaControllerRecord(replicaController.lookup(name, ReplicaControllerRecord.NAME, fields));
   }
-
 
   /**
    * Add this record to database
    * @param record
    */
-  public static void addNameRecordPrimary(ReplicaControllerRecord record) throws RecordExistsException{
+  public static void addNameRecordPrimary(ReplicaControllerRecord record) throws RecordExistsException {
     replicaController.addNameRecordPrimary(record);
   }
 
@@ -391,16 +380,12 @@ public class NameServer {
     return replicaController.getAllPrimaryNameRecords();
   }
 
-
   //  the nuclear option
   public static void resetDB() {
     recordMap.reset();
     // reset them both
     replicaController.reset();
   }
-
-
-
   //  public static boolean isActiveNameServer(String name) {
 //    //println("isActiveNameServer: recordKey = " + recordKey + " name = " + name, debugMode);
 //    //println("isActiveNameServer: " + NameServer.recordMap, debugMode);
@@ -451,6 +436,4 @@ public class NameServer {
 //    public static Set<NameRecord> getAllActiveNameRecords() {
 //        return recordMap.getAllNameRecords();
 //    }
-
-
 }

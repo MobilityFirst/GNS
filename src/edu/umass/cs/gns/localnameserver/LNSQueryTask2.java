@@ -97,6 +97,7 @@ public class LNSQueryTask2 extends TimerTask {
     if (cacheEntry != null) {
       if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
       ArrayList<String> value = cacheEntry.getValue(incomingPacket.getQrecordKey());
+      GNS.getLogger().finer("CACHE VALUE=" + value);
       if (value != null) {
         loggingForAddressInCache();
         sendCachedReplyToUser(value, cacheEntry.getTTL());
