@@ -118,7 +118,7 @@ public class SendUpdatesTask extends TimerTask
               updateAddressPacket.getUpdateValue(),
               updateAddressPacket.getOldValue(),
               updateAddressPacket.getOperation(),
-              LocalNameServer.nodeID, nameServerID);
+              LocalNameServer.nodeID, nameServerID, updateAddressPacket.getTTL());
 //      pkt.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(name));
 
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending Update to Node: " + nameServerID);

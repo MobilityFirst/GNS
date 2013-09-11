@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
@@ -27,10 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CacheEntry {
 
   /**
-   * LNS DEFAULT TTL VALUE 
-   */
-  private static final int DEFAULTTTLINSECONDS = 2;
-  /**
    * The GUID containing the key value pair.
    */
   private String name;
@@ -39,7 +36,7 @@ public class CacheEntry {
    * Notice that we have ONE TTL for the entire cache entry which means one TTL for the whole name records.
    * But we keep individual timestamps for each key / value mapping.
    */
-  private int timeToLive = DEFAULTTTLINSECONDS;
+  private int timeToLive = GNS.DEFAULTTTLINSECONDS;
   /**
    * Time stamp when the value for each field was inserted into record.
    */
@@ -66,7 +63,7 @@ public class CacheEntry {
     this.name = packet.getQname();
     // this will depend on TTL sent by NS. 
     // UPDATE: NEVER LET IT BE -1 which means infinite
-    this.timeToLive = packet.getTTL() == -1 ? DEFAULTTTLINSECONDS : packet.getTTL();
+    this.timeToLive = packet.getTTL() == -1 ? GNS.DEFAULTTTLINSECONDS : packet.getTTL();
     // pull all the keys and values out of the returned value and cache them
     for (Entry<String, ArrayList<String>> entry : packet.getRecordValue().entrySet()) {
       String fieldKey = entry.getKey();

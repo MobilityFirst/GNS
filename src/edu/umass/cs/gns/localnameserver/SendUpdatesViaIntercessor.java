@@ -93,7 +93,7 @@ class SendUpdateIntercessorTask extends TimerTask {
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
             updateCount, updateCount, -1,
             name, NameRecordKey.EdgeRecord, newValue, null,
-            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1);
+            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULTTTLINSECONDS);
     try {
       LNSListener.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
     } catch (JSONException e) {
@@ -119,7 +119,8 @@ class SendAddIntercessorTask extends TimerTask {
 
     ArrayList<String> newValue = new ArrayList<String>();
     newValue.add(SendUpdatesViaIntercessor.getRandomString());
-    AddRecordPacket packet = new AddRecordPacket(requestCount,name,NameRecordKey.EdgeRecord, newValue, LocalNameServer.nodeID);
+    AddRecordPacket packet = new AddRecordPacket(requestCount,name,NameRecordKey.EdgeRecord, newValue, 
+            LocalNameServer.nodeID, GNS.DEFAULTTTLINSECONDS);
 
     try {
       LNSListener.demultiplexLNSPackets(packet.toJSONObject());

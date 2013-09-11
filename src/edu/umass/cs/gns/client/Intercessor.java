@@ -255,7 +255,7 @@ public class Intercessor {
   public boolean sendAddRecordWithConfirmation(String name, String key, ArrayList<String> value) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending add: " + name + "->" + value);
-    AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID);
+    AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULTTTLINSECONDS);
     try {
       JSONObject json = pkt.toJSONObject();
       sendPacket(json);
@@ -327,7 +327,7 @@ public class Intercessor {
             name, new NameRecordKey(key),
             newValue,
             oldValue,
-            operation, localServerID);
+            operation, localServerID, GNS.DEFAULTTTLINSECONDS);
     try {
       JSONObject json = pkt.toJSONObject();
       sendPacket(json);

@@ -429,7 +429,8 @@ public class ClientRequestWorker extends TimerTask {
       // do an INSERT (AKA ADD) operation
 
       AddRecordPacket addRecordPacket = new AddRecordPacket(updatePacket.getRequestID(), updatePacket.getName(),
-              updatePacket.getRecordKey(), updatePacket.getUpdateValue(), updatePacket.getLocalNameServerId());
+              updatePacket.getRecordKey(), updatePacket.getUpdateValue(), updatePacket.getLocalNameServerId(),
+              updatePacket.getTTL());
       addRecordPacket.setLNSRequestID(updatePacket.getLNSRequestID());
       incomingJSON = addRecordPacket.toJSONObject();
       handleAddRecordLNSPacket();

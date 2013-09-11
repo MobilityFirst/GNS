@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.packet;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import org.json.JSONException;
@@ -44,7 +45,7 @@ public class DNSPacket extends BasicPacket {
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
    */
-  private int ttl;
+  private int ttl = GNS.DEFAULTTTLINSECONDS;
   /**
    * The field value being returned *
    */
@@ -105,10 +106,9 @@ public class DNSPacket extends BasicPacket {
 //      this.primaryNameServers = (HashSet<Integer>) toSetInteger(json.getJSONArray(PRIMARY_NAME_SERVERS));
 //      this.activeNameServers = toSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
       //this.fieldValue = new ArrayList<String>(JSONUtils.JSONArrayToSetString(json.getJSONArray(FIELD_VALUE)));
-      if (json.has(RECORD_VALUE))
+      if (json.has(RECORD_VALUE)) {
         this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
-
-
+      }
     }
     this.lnsId = json.getInt(LNS_ID);
   }
@@ -177,9 +177,10 @@ public class DNSPacket extends BasicPacket {
 //    if (fieldValue != null) {
 //      json.put(FIELD_VALUE, new JSONArray(fieldValue));
 //    }
-    if (recordValue != null)
-	      json.put(RECORD_VALUE, recordValue.toJSONObject());
-    
+    if (recordValue != null) {
+      json.put(RECORD_VALUE, recordValue.toJSONObject());
+    }
+
 //    json.put(PRIMARY_NAME_SERVERS, new JSONArray(getPrimaryNameServers()));
 //    json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
     json.put(LNS_ID, lnsId);

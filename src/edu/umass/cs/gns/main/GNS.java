@@ -5,6 +5,8 @@ import java.util.logging.Logger;
 
 public class GNS {
 
+  public static final int DEFAULTTTLINSECONDS = 2;
+  
   public static int startingPort = 24400;
   
   // This is designed so we can run LNS and NS on the same host if needed

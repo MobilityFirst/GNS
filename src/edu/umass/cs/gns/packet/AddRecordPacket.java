@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.packet;
 
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
@@ -19,12 +20,13 @@ public class AddRecordPacket extends BasicPacket {
   private final static String VALUE = "value";
   private final static String LOCALNAMESERVERID = "localID";
   private final static String PRIMARYNAMESERVERS = "primaryID";
+  private final static String TIME_TO_LIVE = "ttlAddress";
   /** 
    * Unique identifier used by the entity making the initial request to confirm
    */
   private int requestID;
   /**
-   * The ID the LNS uses to for bookeeping
+   * The ID the LNS uses to for bookkeeping
    */
   private int LNSRequestID;
   /**
@@ -48,6 +50,10 @@ public class AddRecordPacket extends BasicPacket {
    * this will be filled in by the local nameserver
    */
   private Set<Integer> primaryNameServers;
+  /**
+   * Time interval (in seconds) that the record may be cached before it should be discarded
+   */
+  private int ttl;
   
 
   /**
@@ -59,13 +65,14 @@ public class AddRecordPacket extends BasicPacket {
    * @param localNameServerID Id of local nameserver sending this request.
    * **********************************************************
    */
-  public AddRecordPacket(int requestID, String name, NameRecordKey recordKey, ArrayList<String> value, int localNameServerID) {
+  public AddRecordPacket(int requestID, String name, NameRecordKey recordKey, ArrayList<String> value, int localNameServerID, int ttl) {
     this.type = Packet.PacketType.ADD_RECORD_LNS;
     this.requestID = requestID;
     this.recordKey = recordKey;
     this.name = name;
     this.value = value;
     this.localNameServerID = localNameServerID;
+    this.ttl = ttl;
   }
 
   /**
@@ -91,6 +98,7 @@ public class AddRecordPacket extends BasicPacket {
     //this.value = json.getString(VALUE);
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.primaryNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARYNAMESERVERS));
+    this.ttl = json.getInt(TIME_TO_LIVE);
   }
 
   /**
@@ -111,6 +119,7 @@ public class AddRecordPacket extends BasicPacket {
     json.put(VALUE, new JSONArray(getValue()));
     json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(PRIMARYNAMESERVERS, new JSONArray(primaryNameServers));
+    json.put(TIME_TO_LIVE, getTTL());
     return json;
   }
 
@@ -154,24 +163,21 @@ public class AddRecordPacket extends BasicPacket {
     return localNameServerID;
   }
 
-  /**
-   * @return the primaryNameserverId
-   */
   public void setLocalNameServerID(int localNameServerID1) {
     localNameServerID = localNameServerID1;
   }
-
-//  /**
-//   * @return the primaryNameServers
-//   */
-//  public Set<Integer> getPrimaryNameServers() {
-//    return primaryNameServers;
-//  }
 
   /**
    * @param primaryNameServers the primaryNameServers to set
    */
   public void setPrimaryNameServers(Set<Integer> primaryNameServers) {
     this.primaryNameServers = primaryNameServers;
+  }
+  
+  /**
+   * @return the ttl
+   */
+  public int getTTL() {
+    return ttl;
   }
 }
