@@ -4,7 +4,7 @@ package edu.umass.cs.gns.statusdisplay;
 //Modified by Westy October 2012
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.TrafficStatusPacket;
+import edu.umass.cs.gns.packet.admin.TrafficStatusPacket;
 import edu.umass.cs.gns.statusdisplay.StatusModel.SendNotation;
 import edu.umass.cs.gns.util.Colors;
 import edu.umass.cs.gns.util.Format;
@@ -186,22 +186,18 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
     switch (portType) {
       case NS_TCP_PORT:
         return Color.RED;
-      case DUMP_RESPONSE_PORT:
-        return Colors.Magenta;
       case LNS_ADMIN_PORT:
         return Colors.Yellow;
+      case LNS_ADMIN_RESPONSE_PORT:
+        return Colors.Brown;
+      case LNS_ADMIN_DUMP_RESPONSE_PORT:
+        return Colors.Magenta;
       case LNS_TCP_PORT:
         return Colors.DeepPink;
       case LNS_UDP_PORT:
         return Colors.Cyan;
       case NS_ADMIN_PORT:
         return Colors.DarkGoldenrod;
-//      case REPLICATION_PORT:
-//        return Colors.Brown;
-//      case PERSISTENT_TCP_PORT:
-//        return Colors.Orange;
-//      case UPDATE_PORT:
-//        return Colors.Blue;
       default:
         return Color.BLACK;
     }

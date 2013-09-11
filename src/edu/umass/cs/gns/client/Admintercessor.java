@@ -11,16 +11,16 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
-import edu.umass.cs.gns.packet.AdminRequestPacket;
-import edu.umass.cs.gns.packet.DumpRequestPacket;
-import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
+import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
 import static edu.umass.cs.gns.packet.Packet.*;
-import edu.umass.cs.gns.packet.SentinalPacket;
+import edu.umass.cs.gns.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gns.packet.admin.SentinalPacket;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.JSONUtils;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
@@ -33,7 +33,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * IMplements some admin functions for accessing the GNS
+ * Implements some admin functions for accessing the GNS.
+ * 
  * @author westy
  */
 public class Admintercessor {
@@ -41,18 +42,28 @@ public class Admintercessor {
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   private static Random randomID;
   private int localServerID = 0;
+  
   /**
-   * Used for the wait / notify handling
+   * Used for the general admin wait / notify handling
    */
-  private final Object monitor = new Object();
+  private final Object adminResponseMonitor = new Object();
+  /**
+   * This is where the admin response results are put.
+   */
+  private static ConcurrentMap<Integer, JSONObject> adminResult;
+
+  /**
+   * Used for the dump wait / notify handling
+   */
+  private final Object dumpMonitor = new Object();
   /**
    * This is where dump response records are collected while we're waiting for all them to come in.
    */
-  private static ConcurrentMap<Integer, Map<Integer, TreeSet<NameRecord>>> dumpStorage = new ConcurrentHashMap<Integer, Map<Integer, TreeSet<NameRecord>>>(10, 0.75f, 3);
+  private static ConcurrentMap<Integer, Map<Integer, TreeSet<NameRecord>>> dumpStorage;
   /**
    * This is where the final dump response results are put once we see the sentinel packet.
    */
-  private static ConcurrentMap<Integer, Map<Integer, TreeSet<NameRecord>>> dumpResult = new ConcurrentHashMap<Integer, Map<Integer, TreeSet<NameRecord>>>(10, 0.75f, 3);
+  private static ConcurrentMap<Integer, Map<Integer, TreeSet<NameRecord>>> dumpResult;
 
   public static Admintercessor getInstance() {
     return AdmintercessorHolder.INSTANCE;
@@ -68,9 +79,11 @@ public class Admintercessor {
     randomID = new Random();
     dumpStorage = new ConcurrentHashMap<Integer, Map<Integer, TreeSet<NameRecord>>>(10, 0.75f, 3);
     dumpResult = new ConcurrentHashMap<Integer, Map<Integer, TreeSet<NameRecord>>>(10, 0.75f, 3);
+    adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
 
     if (StartLocalNameServer.runHttpServer == false) {
       startCheckForDumpThread();
+      startCheckForAdminResponseThread();
     }
   }
 
@@ -85,28 +98,7 @@ public class Admintercessor {
             + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
             + " Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
   }
-
-  public boolean sendDeleteAllRecords() {
-    try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject());
-      return true;
-    } catch (Exception e) {
-      GNS.getLogger().warning("Error while sending DELETEALLRECORDS request: " + e);
-    }
-    return false;
-  }
-
-  // Miscellaneous operations
-  public boolean sendClearCache() {
-    try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject());
-      return true;
-    } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring error while sending CLEARCACHE request: " + e);
-    }
-    return false;
-  }
-
+  
   // the nuclear option
   public boolean sendResetDB() {
     try {
@@ -118,12 +110,127 @@ public class Admintercessor {
     return false;
   }
 
+  public boolean sendDeleteAllRecords() {
+    try {
+      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject());
+      return true;
+    } catch (Exception e) {
+      GNS.getLogger().warning("Error while sending DELETEALLRECORDS request: " + e);
+    }
+    return false;
+  }
+
+  public boolean sendClearCache() {
+    try {
+      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject());
+      return true;
+    } catch (Exception e) {
+      GNS.getLogger().warning("Ignoring error while sending CLEARCACHE request: " + e);
+    }
+    return false;
+  }
+  
+  public String sendDumpCache() {
+    int id = nextAdminRequestID();
+    try {
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject());
+      waitForAdminResponse(id);
+      JSONObject json = adminResult.get(id);
+      if (json != null) {
+        return json.getString("CACHE");
+      } else {
+        return null;
+      }
+    } catch (Exception e) {
+      GNS.getLogger().warning("Ignoring error while sending DUMPCACHE request: " + e);
+      return null;
+    } 
+  }
+  
+  private void waitForAdminResponse(int id) {
+    try {
+      GNS.getLogger().finer("Waiting for admin response id: " + id);
+      synchronized (adminResponseMonitor) {
+        while (!adminResult.containsKey(id)) {
+          adminResponseMonitor.wait();
+        }
+      }
+      GNS.getLogger().finer("Admin response id received: " + id);
+    } catch (InterruptedException x) {
+      GNS.getLogger().severe("Wait for return packet was interrupted " + x);
+    }
+  }
+  
+  private void startCheckForAdminResponseThread() {
+    new Thread("Admintercessor-CheckForAdminResponse") {
+      @Override
+      public void run() {
+        GNS.getLogger().info("Admintercessor check admin response thread started.");
+        ServerSocket adminSocket;
+        if ((adminSocket = getAdminResponseSocket()) != null) {
+          while (true) {
+            try {
+              Socket asock = adminSocket.accept();
+              //Read the packet from the input stream
+              JSONObject json = getJSONObjectFrame(asock);
+              GNS.getLogger().finer("Read " + json.toString());
+              processAdminResponsePackets(json);
+            } catch (IOException e) {
+              GNS.getLogger().warning("Error while reading admin response: " + e);
+            } catch (JSONException e) {
+              GNS.getLogger().warning("JSON Error while reading admin response: " + e);
+            }
+          }
+        }
+      }
+    }.start();
+  }
+
+  public void processAdminResponsePackets(JSONObject json) {
+    try {
+      switch (getPacketType(json)) {
+        case ADMIN_RESPONSE:
+          // put the records in dumpResult and let the folks waiting know they are ready
+          try {
+            AdminResponsePacket response = new AdminResponsePacket(json);
+            int id = response.getId();
+            GNS.getLogger().finer("Processing admin response for " + id);
+            synchronized (adminResponseMonitor) {
+              adminResult.put(id, response.getJsonObject());
+              adminResponseMonitor.notifyAll();
+            }
+          } catch (JSONException e) {
+            GNS.getLogger().warning("JSON error during admin response processing: " + e);
+          } catch (ParseException e) {
+            GNS.getLogger().warning("Parse error during admin response processing: " + e);
+          }
+          break;
+      }
+    } catch (JSONException e) {
+      GNS.getLogger().warning("JSON error while getting packet type: " + e);
+    }
+  }
+  
+  private ServerSocket getAdminResponseSocket() {
+    GNS.getLogger().finer("Waiting for responses dump");
+    ServerSocket adminSocket;
+    try {
+      adminSocket = new ServerSocket(ConfigFileInfo.getLNSAdminResponsePort(localServerID));
+    } catch (Exception e) {
+      GNS.getLogger().severe("Error creating admin response socket on port " + ConfigFileInfo.getLNSAdminResponsePort(localServerID) + " : " + e);
+      return null;
+    }
+    return adminSocket;
+  }
+  
+  // DUMP
+
   public String sendDump() {
     int id;
     if ((id = sendDumpOutputHelper(null)) == -1) {
       return Protocol.BADRESPONSE + " " + Protocol.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS";
     }
-    waitForDumpResult(id);
+    waitForDumpResponse(id);
     Map<Integer, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
@@ -133,12 +240,12 @@ public class Admintercessor {
     }
   }
 
-  private void waitForDumpResult(int id) {
+  private void waitForDumpResponse(int id) {
     try {
       GNS.getLogger().finer("Waiting for dump response id: " + id);
-      synchronized (monitor) {
+      synchronized (dumpMonitor) {
         while (!dumpResult.containsKey(id)) {
-          monitor.wait();
+          dumpMonitor.wait();
         }
       }
       GNS.getLogger().finer("Dump response id received: " + id);
@@ -233,10 +340,10 @@ public class Admintercessor {
             SentinalPacket sentinal = new SentinalPacket(json);
             int id = sentinal.getId();
             GNS.getLogger().finer("Processing sentinel for " + id);
-            synchronized (monitor) {
+            synchronized (dumpMonitor) {
               dumpResult.put(id, dumpStorage.get(id));
               dumpStorage.remove(id);
-              monitor.notifyAll();
+              dumpMonitor.notifyAll();
             }
           } catch (JSONException e) {
             GNS.getLogger().warning("JSON error during dump sentinel processing: " + e);
@@ -253,7 +360,7 @@ public class Admintercessor {
     if ((id = sendDumpOutputHelper(tagName)) == -1) {
       return null;
     }
-    waitForDumpResult(id);
+    waitForDumpResponse(id);
     Map<Integer, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
 
@@ -273,47 +380,13 @@ public class Admintercessor {
     }
   }
 
-  // uses a variation of the dump protocol to get all the guids that contain a tag
-  public HashSet<String> collectTaggedGuidsOld(String tagName) {
-    HashSet<String> guids = new HashSet<String>();
-    if (sendDumpOutputHelper(tagName) == -1) {
-      return null;
-    }
-    ServerSocket adminSocket;
-    if ((adminSocket = sendDumpGetInputSocket()) == null) {
-      return null;
-    }
-    while (true) {
-      try {
-        Socket asock = adminSocket.accept();
-        //Read the packet from the input stream
-        JSONObject json = getJSONObjectFrame(asock);
-        GNS.getLogger().finer("Read " + json.toString());
-        // keep reading until we see a packet that isn't a dump request
-        if (getPacketType(json) == Packet.PacketType.DUMP_REQUEST) {
-          DumpRequestPacket returnedDumpRequestPacket = new DumpRequestPacket(json);
-          JSONArray jsonArray = returnedDumpRequestPacket.getJsonArray();
-          guids.addAll(JSONUtils.JSONArrayToArrayList(jsonArray));
-        } else { // we've read the sentinal packet
-          GNS.getLogger().finer("Read sentinal" + json.toString());
-          adminSocket.close();
-          break;
-        }
-      } catch (Exception e) {
-        GNS.getLogger().warning("Caught and ignoring error : " + e);
-
-      }
-    }
-    return guids;
-  }
-
   private ServerSocket sendDumpGetInputSocket() {
     GNS.getLogger().finer("Waiting for responses dump");
     ServerSocket adminSocket;
     try {
-      adminSocket = new ServerSocket(ConfigFileInfo.getDumpReponsePort(localServerID));
+      adminSocket = new ServerSocket(ConfigFileInfo.getLNSAdminDumpReponsePort(localServerID));
     } catch (Exception e) {
-      GNS.getLogger().severe("Error creating admin socket on port " + ConfigFileInfo.getDumpReponsePort(localServerID) + " : " + e);
+      GNS.getLogger().severe("Error creating admin socket on port " + ConfigFileInfo.getLNSAdminDumpReponsePort(localServerID) + " : " + e);
       return null;
     }
     return adminSocket;
@@ -347,6 +420,14 @@ public class Admintercessor {
     do {
       id = randomID.nextInt();
     } while (dumpResult.containsKey(id));
+    return id;
+  }
+  
+   private int nextAdminRequestID() {
+    int id;
+    do {
+      id = randomID.nextInt();
+    } while (adminResult.containsKey(id));
     return id;
   }
 }

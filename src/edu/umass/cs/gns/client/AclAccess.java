@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.packet.UpdateOperation;
 
 import java.util.ArrayList;
 import java.util.HashSet;

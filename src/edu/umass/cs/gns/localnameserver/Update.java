@@ -61,9 +61,11 @@ public class Update {
           GNS.getLogger().fine("Update confirm return info not found.");
         }
       } else {
+        // update the cache BEFORE we send back the confirmation
+        LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
         // send the confirmation back to the originator of the update
         if (StartLocalNameServer.debugMode) {
-          GNS.getLogger().severe("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
+          GNS.getLogger().info("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
                   + updateInfo.senderAddress + ":" + updateInfo.senderPort + " : " + json.toString());
         }
         if (updateInfo.senderAddress != null && updateInfo.senderAddress.length() > 0 && updateInfo.senderPort > 0) {
@@ -72,12 +74,6 @@ public class Update {
         } else if (StartLocalNameServer.runHttpServer) {
           Intercessor.getInstance().checkForResult(json);
         }
-//        updateInfo.getName();
-//          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("this is the key: " + confirmPkt.getRecordKey().toString());
-        LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
-
-        // record some stats
-//        LocalNameServer.incrementUpdateResponse(confirmPkt.getName());
 
         if (LocalNameServer.r.nextDouble() < StartLocalNameServer.outputSampleRate) {
           String msg = updateInfo.getUpdateStats(confirmPkt, updateInfo.getName());
@@ -96,7 +92,9 @@ public class Update {
       // SendUpdatesTask will create a task to get new actives
       // TODO: create SendActivesRequestTask here and delete update info.
       UpdateInfo updateInfo = LocalNameServer.getUpdateInfo(confirmPkt.getRequestID());
-      if (updateInfo == null) return;
+      if (updateInfo == null) {
+        return;
+      }
       LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
       GNS.getLogger().fine(" Update Request Sent To An Invalid Active Name Server. ERROR!! Actives Invalidated");
 

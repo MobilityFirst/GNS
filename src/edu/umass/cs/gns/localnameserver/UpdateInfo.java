@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-
 import java.util.Set;
 
 public class UpdateInfo {
@@ -22,18 +21,10 @@ public class UpdateInfo {
    * ID of the name server where update was sent *
    */
   private int nameserverID;
-  
   /* so we can send a response back */
   public String senderAddress;
   public int senderPort;
 
-//  public UpdateInfo(int id, String name, long sendTime, int nameserverId) {
-//    this.id = id;
-//    this.name = name;
-//    this.sendTime = sendTime;
-//    this.nameserverID = nameserverId;
-//  }
-  
   public UpdateInfo(int id, String name, long sendTime, int nameserverId, String senderAddress, int senderPort) {
     this.id = id;
     this.name = name;
@@ -41,13 +32,11 @@ public class UpdateInfo {
     this.nameserverID = nameserverId;
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
-    
+
   }
 
   /**
-   * ************************************************************
    * Returns a String representation of QueryInfo
-	 *************************************************************
    */
   @Override
   public String toString() {
@@ -79,7 +68,7 @@ public class UpdateInfo {
     long latency = System.currentTimeMillis() - sendTime;
     String msg = "Success-UpdateRequest\t" + name + "\t" + latency
             + "\t" + 3 + "\t" + 0
-            + "\t" + LocalNameServer.nodeID + "\t" + confirmPkt.getRequestID() + "\t" + System.currentTimeMillis() ;
+            + "\t" + LocalNameServer.nodeID + "\t" + confirmPkt.getRequestID() + "\t" + System.currentTimeMillis();
     return msg;
   }
 
@@ -87,11 +76,11 @@ public class UpdateInfo {
     return System.currentTimeMillis() - sendTime;
   }
 
-    public String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID) {
-        long latency = System.currentTimeMillis() - sendTime;
-        String msg = "Failed-UpdateRequest\t" + name + "\t" + latency
-                + "\t" + null + "\t" + activesQueried
-                + "\t" + lnsID + "\t" + requestID + "\t" + System.currentTimeMillis();
-        return msg;
-    }
+  public String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID) {
+    long latency = System.currentTimeMillis() - sendTime;
+    String msg = "Failed-UpdateRequest\t" + name + "\t" + latency
+            + "\t" + null + "\t" + activesQueried
+            + "\t" + lnsID + "\t" + requestID + "\t" + System.currentTimeMillis();
+    return msg;
+  }
 }

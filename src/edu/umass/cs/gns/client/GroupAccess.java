@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.packet.UpdateOperation;
 
 import java.util.ArrayList;
 

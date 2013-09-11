@@ -3,7 +3,6 @@ package edu.umass.cs.gns.client;
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.packet.UpdateOperation;
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -11,7 +11,7 @@ import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.GuidInfo;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.UpdateOperation;
+import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -85,6 +85,7 @@ public class Protocol {
   public final static String DELETEALLRECORDS = "deleteAllRecords";
   public final static String RESETDATABASE = "resetDatabase";
   public final static String CLEARCACHE = "clearCache";
+  public final static String DUMPCACHE = "dumpCache";
   //public final static String DELETEALLGUIDRECORDS = "deleteAllGuidRecords";
   public final static String DUMP = "dump";
   public final static String ADDTAG = "addTag";
@@ -368,8 +369,11 @@ public class Protocol {
             + "  [ONLY IN DEMO MODE] Rests the database to an initialized state. The nuclear option." + NEWLINE + NEWLINE
             + urlPrefix + CLEARCACHE + NEWLINE
             + "  [ONLY IN DEMO MODE] Clears the local name server cache." + NEWLINE + NEWLINE
+            + urlPrefix + DUMPCACHE + NEWLINE
+            + "  [ONLY IN DEMO MODE] Returns the contents of the local name server cache." + NEWLINE + NEWLINE
             + urlPrefix + DUMP + NEWLINE
-            + "  [ONLY IN DEMO MODE] Returns the contents of the database." + NEWLINE + NEWLINE //            + urlPrefix + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + "<guid>" + NEWLINE
+            + "  [ONLY IN DEMO MODE] Returns the contents of the database." + NEWLINE + NEWLINE 
+            //            + urlPrefix + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + "<guid>" + NEWLINE
             //            + "  [ONLY IN DEMO MODE] Removes all records for the given." + NEWLINE + NEWLINE
             ;
 
@@ -796,6 +800,13 @@ public class Protocol {
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP + QUERYPREFIX + NAME + VALSEP + tagName;
   }
+  
+  public String processDumpCache() {
+    if (demoMode) {
+      return Admintercessor.getInstance().sendDumpCache();
+    }
+    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMPCACHE;
+  }
 
   public String processDeleteAllRecords(String inputLine) {
     if (demoMode) {
@@ -1170,9 +1181,8 @@ public class Protocol {
         return processResetDatabase(queryString);
       } else if (CLEARCACHE.equals(action)) {
         return processClearCache(queryString);
-//      } else if (DELETEALLGUIDRECORDS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
-//        String name = queryMap.get(GUID);
-//        return processDeleteAllGuidRecords(name);
+      } else if (DUMPCACHE.equals(action)) {
+        return processDumpCache();
       } else if (ADDTAG.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String tagName = queryMap.get(NAME);

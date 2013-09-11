@@ -66,6 +66,7 @@ public class Packet {
     DUMP_REQUEST(40),
     SENTINAL(41),
     ADMIN_REQUEST(42),
+    ADMIN_RESPONSE(43),
     //
     STATUS(50),
     TRAFFIC_STATUS(51),
@@ -389,14 +390,6 @@ public class Packet {
    */
   public static int getPort(int nameServerId, GNS.PortType portType) {
     switch (portType) {
-//      case DNS_PORT:
-//        return ConfigFileInfo.getDnsPort(nameServerId);
-//      case LNS_DNS_PORT:
-//        return ConfigFileInfo.getLNSDnsPort(nameServerId);
-//      case REPLICATION_PORT:
-//        return ConfigFileInfo.getReplicationPort(nameServerId);
-//      case UPDATE_PORT:
-//        return ConfigFileInfo.getUpdatePort(nameServerId);
       case NS_TCP_PORT:
         return ConfigFileInfo.getNSTcpPort(nameServerId);
       case LNS_TCP_PORT:
@@ -407,8 +400,10 @@ public class Packet {
         return ConfigFileInfo.getNSAdminRequestPort(nameServerId);
       case LNS_ADMIN_PORT:
         return ConfigFileInfo.getLNSAdminRequestPort(nameServerId);
-      case DUMP_RESPONSE_PORT:
-        return ConfigFileInfo.getDumpReponsePort(nameServerId);
+      case LNS_ADMIN_RESPONSE_PORT:
+        return ConfigFileInfo.getLNSAdminResponsePort(nameServerId);
+      case LNS_ADMIN_DUMP_RESPONSE_PORT:
+        return ConfigFileInfo.getLNSAdminDumpReponsePort(nameServerId);
     }
     return -1;
   }

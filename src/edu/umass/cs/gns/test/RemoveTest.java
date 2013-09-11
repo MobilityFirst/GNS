@@ -11,7 +11,7 @@ import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.packet.UpdateOperation;
+import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.ThreadUtils;

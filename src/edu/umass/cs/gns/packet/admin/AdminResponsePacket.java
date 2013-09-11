@@ -1,6 +1,12 @@
-package edu.umass.cs.gns.packet;
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
+package edu.umass.cs.gns.packet.admin;
 
-
+import edu.umass.cs.gns.packet.BasicPacket;
+import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.util.Format;
 import java.text.ParseException;
 import java.util.Date;
@@ -8,11 +14,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /*************************************************************
- * This class implements a packet that contains status information
+ * This class implements a packet that contains general 
+ * response information for admin purposes.
  * 
  * @author Westy
  ************************************************************/
-public class StatusPacket extends BasicPacket {
+public class AdminResponsePacket extends BasicPacket {
 
   public final static String ID = "id";
   public final static String JSON = "json";
@@ -24,12 +31,12 @@ public class StatusPacket extends BasicPacket {
   private JSONObject jsonObject;
 
   /**
-   * Constructs a new status packet with the given JSONObject
+   * Constructs a new AdminResponsePacket with the given JSONObject
    * @param id
    * @param jsonObject 
    */
-  public StatusPacket(int id, JSONObject jsonObject) {
-    this.type = Packet.PacketType.STATUS;
+  public AdminResponsePacket(int id, JSONObject jsonObject) {
+    this.type = Packet.PacketType.ADMIN_RESPONSE;
     this.id = id;
     this.time = new Date();
     this.jsonObject = jsonObject;
@@ -40,7 +47,7 @@ public class StatusPacket extends BasicPacket {
    * 
    * @param id 
    */
-  public StatusPacket(int id) {
+  public AdminResponsePacket(int id) {
     this(id, new JSONObject());
   }
 
@@ -49,8 +56,8 @@ public class StatusPacket extends BasicPacket {
    * @param json JSONObject representing this packet
    * @throws JSONException
    ************************************************************/
-  public StatusPacket(JSONObject json) throws JSONException, ParseException {
-    if (Packet.getPacketType(json) != Packet.PacketType.STATUS) {
+  public AdminResponsePacket(JSONObject json) throws JSONException, ParseException {
+    if (Packet.getPacketType(json) != Packet.PacketType.ADMIN_RESPONSE) {
       Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
       return;

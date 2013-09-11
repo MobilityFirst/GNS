@@ -7,7 +7,6 @@ package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.UpdateOperation;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;

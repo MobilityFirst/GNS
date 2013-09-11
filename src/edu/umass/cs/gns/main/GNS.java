@@ -13,8 +13,9 @@ public class GNS {
     LNS_TCP_PORT(1), // TCP port at local name servers
     LNS_UDP_PORT(2), // UDP port at local name servers
     NS_ADMIN_PORT(3),
-    DUMP_RESPONSE_PORT(4),
-    LNS_ADMIN_PORT(5);
+    LNS_ADMIN_PORT(4),
+    LNS_ADMIN_RESPONSE_PORT(5),
+    LNS_ADMIN_DUMP_RESPONSE_PORT(6);
     
     int offset;
     

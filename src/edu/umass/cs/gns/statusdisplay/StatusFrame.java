@@ -6,7 +6,7 @@ package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.TrafficStatusPacket;
+import edu.umass.cs.gns.packet.admin.TrafficStatusPacket;
 import edu.umass.cs.gns.util.ThreadUtils;
 import javax.swing.JComponent;
 

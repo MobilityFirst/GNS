@@ -251,6 +251,17 @@ public class ConfigFileInfo {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_PORT.getOffset();
   }
+  
+  /**
+   * Returns the response port of a Local nameserver
+   * 
+   * @param id
+   * @return 
+   */
+  public static int getLNSAdminResponsePort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_RESPONSE_PORT.getOffset();
+  }
 
   /**
    * Returns the dump response port of a Local nameserver
@@ -258,9 +269,9 @@ public class ConfigFileInfo {
    * @param id
    * @return
    */
-  public static int getDumpReponsePort(int id) {
+  public static int getLNSAdminDumpReponsePort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.DUMP_RESPONSE_PORT.getOffset();
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_DUMP_RESPONSE_PORT.getOffset();
   }
 
   /**

@@ -6,12 +6,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * ***********************************************************
  * This class implements the packet that confirms update, add and remove transactions. The packet is transmitted from an
  * active name server to a local name server that had originally sent the address update. Also used sent back to the
  * original client ({@link Intercessor} is one example).
- *
- * @author Westy *******************************************************
  */
 public class ConfirmUpdateLNSPacket extends BasicPacket {
 

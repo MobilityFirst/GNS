@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.packet;
 
 
+import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;

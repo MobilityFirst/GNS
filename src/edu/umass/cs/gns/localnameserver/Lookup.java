@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-
 public class Lookup {
 
 //    static int numQueries = 0;
@@ -45,30 +44,22 @@ public class Lookup {
 //      LocalNameServer.executorService.schedule(queryTaskObject,0,TimeUnit.MILLISECONDS);
     LocalNameServer.executorService.scheduleAtFixedRate(queryTaskObject, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 //        LocalNameServer.timer.schedule(queryTaskObject, 0);
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Scheduled this object.");
-    }
+    GNS.getLogger().fine("Scheduled this object.");
+
   }
 
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket) throws JSONException {
 //      long t0 = System.currentTimeMillis();
 //      numQueryResponse++;
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().info("LNS-RecvdPkt\t");
-    }
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Query-" + dnsPacket.getQueryId() + "\t"
-              + System.currentTimeMillis() + "\t" + dnsPacket.getQname() + "\tListener-response-enter");
-    }
-
+    GNS.getLogger().info("LNS-RecvdPkt\t");
+    GNS.getLogger().fine("Query-" + dnsPacket.getQueryId() + "\t"
+            + System.currentTimeMillis() + "\t" + dnsPacket.getQname() + "\tListener-response-enter");
 //      long receivedTime = System.currentTimeMillis();
 //      long t1 = System.currentTimeMillis();
     if (dnsPacket.isResponse() && dnsPacket.containsAnyError() == false) {
       //Packet is a response and does not have a response error
-      if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("LNSListenerResponse: Received ResponseNum: "
                 + (0) + " --> " + dnsPacket.toJSONObject().toString());
-      }
 //        long t2 = System.currentTimeMillis();
       //Match response to the query sent
       QueryInfo query = LocalNameServer.removeQueryInfo(dnsPacket.getQueryId());
@@ -123,9 +114,7 @@ public class Lookup {
 //				if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("LNSListenerResponse: Updating cache QueryID:" + dnsPacket.getQueryId());
         if (cacheEntry == null) {
           cacheEntry = LocalNameServer.addCacheEntry(dnsPacket);
-          if (StartLocalNameServer.debugMode) {
-            GNS.getLogger().fine("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
-          }
+          GNS.getLogger().fine("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
         }
       }
       // Add to NameRecordStats.
@@ -153,16 +142,13 @@ public class Lookup {
 
     QueryInfo query = LocalNameServer.removeQueryInfo(dnsPacket.getQueryId());
     if (query == null) {
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
-      }
+      GNS.getLogger().fine("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
       return;
     }
     if (dnsPacket.containsInvalidActiveNSError()) { // if invalid active name server error, get correct active name servers
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("ListenerResponse: Received ResponseNum: 0"
-                + "	Invalid-active-name-server. " + dnsPacket.toJSONObject().toString());
-      }
+      GNS.getLogger().fine("ListenerResponse: Received ResponseNum: 0"
+              + "	Invalid-active-name-server. " + dnsPacket.toJSONObject().toString());
+
       LocalNameServer.invalidateActiveNameServer(dnsPacket.getQname());
       LNSQueryTask2 queryTaskObject = new LNSQueryTask2(
               query.incomingPacket,
@@ -176,9 +162,8 @@ public class Lookup {
               queryTaskObject, StartLocalNameServer.queryTimeout,
               query.senderAddress, query.senderPort, LNSQueryTask2.getErrorPacket(query.incomingPacket));
       SendActivesRequestTask.requestActives(query.qName);
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine(" Scheduled lookup task.");
-      }
+      GNS.getLogger().fine(" Scheduled lookup task.");
+
     } else {      // other types of errors, send error response to client
       try {
         if (query.senderAddress != null && query.senderPort > 0) {
@@ -186,9 +171,8 @@ public class Lookup {
         } else if (StartLocalNameServer.runHttpServer) {
           Intercessor.getInstance().checkForResult(LNSQueryTask2.getErrorPacket(query.incomingPacket));
         }
-        if (StartLocalNameServer.debugMode) {
-          GNS.getLogger().fine("other error sent to client --> " + jsonObject + " query ID = " + query.incomingPacket.getQueryId());
-        }
+        GNS.getLogger().fine("other error sent to client --> " + jsonObject + " query ID = " + query.incomingPacket.getQueryId());
+
       } catch (JSONException e) {
         e.printStackTrace();
       }
@@ -202,13 +186,13 @@ public class Lookup {
     }
 
   }
-  
-    /**
-     * Send reply to user after DNS record is received.
-     *
-     * @param query
-     */
- private static void sendReplyToUser(QueryInfo query, ValuesMap returnValue, int TTL) {
+
+  /**
+   * Send reply to user after DNS record is received.
+   *
+   * @param query
+   */
+  private static void sendReplyToUser(QueryInfo query, ValuesMap returnValue, int TTL) {
 //		CacheEntry entry = LocalNameServer.getCacheEntry(query.qName, query.qRecordKey);
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("LNSListenerQuery: send response from cache: " + entry);
 //        DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(), entry, query.incomingPacket.getQrecordKey());

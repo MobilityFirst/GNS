@@ -1,33 +1,31 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.localnameserver.LNSListener;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
-import edu.umass.cs.gns.packet.*;
-import edu.umass.cs.gns.packet.Packet.*;
+import edu.umass.cs.gns.packet.AddRecordPacket;
+import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.DNSRecordType;
+import edu.umass.cs.gns.packet.Header;
+import edu.umass.cs.gns.packet.Packet;
+import static edu.umass.cs.gns.packet.Packet.*;
+import edu.umass.cs.gns.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.packet.Transport;
+import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.JSONUtils;
-import org.apache.commons.cli.Options;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static edu.umass.cs.gns.packet.Packet.*;
-import java.io.IOException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
 /**
@@ -35,6 +33,11 @@ import java.io.IOException;
  * @author westy
  */
 public class Intercessor {
+
+  // These are all used internally be the GNS
+  public static final HashSet<String> internalFields 
+          = new HashSet<String>(Arrays.asList(AccountAccess.ACCOUNT_INFO,
+          AccountAccess.GUID, AccountAccess.GUID_INFO, AccountAccess.PRIMARY_GUID));
 
   public static final int PORT = 17768;
 
@@ -162,7 +165,7 @@ public class Intercessor {
     return sendMultipleReturnValueQuery(name, key, false);
   }
 
-  public ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalKeys) {
+  public ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalFields) {
     GNS.getLogger().finer("Sending query ... " + name + " " + key);
     int id = nextQueryRequestID();
     Header header = new Header(id, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
@@ -195,12 +198,9 @@ public class Intercessor {
     ValuesMap result = queryResult.get(id);
     queryResult.remove(id);
     GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
-
-    // remove any keys used internally by the GNS
-    if (removeInternalKeys) {
-      result.remove(AccountAccess.GUID_INFO);
-      result.remove(AccountAccess.ACCOUNT_INFO);
-      result.remove(AccountAccess.PRIMARY_GUID);
+    
+    if (removeInternalFields) {
+      result = removeInternalFields(result);
     }
 
     if (result == ERRORQUERYRESULT) {
@@ -208,6 +208,21 @@ public class Intercessor {
     } else {
       return result;
     }
+  }
+  
+  /**
+   * Remove any keys / value pairs used internally by the GNS.
+   * 
+   * @param valuesMap
+   * @return 
+   */
+  private ValuesMap removeInternalFields(ValuesMap valuesMap) {
+    for (String field : internalFields) {
+      if (valuesMap.containsKey(field)) {
+        valuesMap.remove(field);
+      }
+    }
+    return valuesMap;
   }
 
   /**

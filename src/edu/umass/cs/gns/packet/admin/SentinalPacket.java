@@ -1,6 +1,8 @@
-package edu.umass.cs.gns.packet;
+package edu.umass.cs.gns.packet.admin;
 
 
+import edu.umass.cs.gns.packet.BasicPacket;
+import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 

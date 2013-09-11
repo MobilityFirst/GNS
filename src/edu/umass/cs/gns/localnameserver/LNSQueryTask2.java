@@ -43,8 +43,6 @@ public class LNSQueryTask2 extends TimerTask {
   private int queryId = 0;
   private HashSet<Integer> nameserversQueried;
 
-  private static final boolean DISABLECACHE = false; // for testing - Westy
-
   public LNSQueryTask2(DNSPacket incomingPacket,
                InetAddress senderAddress, int senderPort, long receivedTime,
                int lookupNumber, int queryId,

@@ -1,6 +1,9 @@
-package edu.umass.cs.gns.packet;
+package edu.umass.cs.gns.packet.admin;
 
+import edu.umass.cs.gns.packet.BasicPacket;
+import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
+import java.util.Random;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,12 +15,12 @@ import org.json.JSONObject;
  ***********************************************************
  */
 public class AdminRequestPacket extends BasicPacket {
-
+  
     public enum AdminOperation {
 
         DELETEALLRECORDS, CLEARCACHE, 
         //DELETEALLGUIDRECORDS, 
-        RESETDB
+        RESETDB, DUMPCACHE
     };
     public final static String ID = "id";
     private final static String OPERATION = "operation";
@@ -38,14 +41,22 @@ public class AdminRequestPacket extends BasicPacket {
    ***********************************************************
      */
     public AdminRequestPacket(AdminOperation operation) {
-        this(operation, null);
+        this(0, operation, null);
+    }
+    
+    public AdminRequestPacket(int id, AdminOperation operation) {
+        this(id, operation, null);
     }
 
     public AdminRequestPacket(AdminOperation operation, String argument) {
+      this(0, operation, argument);   
+    }
+    
+    public AdminRequestPacket(int id, AdminOperation operation, String argument) {
         this.type = PacketType.ADMIN_REQUEST;
-        this.id = 0;
+        this.id = id;
         this.operation = operation;
-        this.argument = argument;
+        this.argument = argument;    
     }
 
     /**
@@ -104,6 +115,5 @@ public class AdminRequestPacket extends BasicPacket {
     public String getArgument() {
         return argument;
     }
-    
     
 }

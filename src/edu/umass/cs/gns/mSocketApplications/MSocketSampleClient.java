@@ -3,7 +3,7 @@ package edu.umass.cs.gns.mSocketApplications;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.packet.UpdateOperation;
+import edu.umass.cs.gns.client.UpdateOperation;
 
 import java.util.ArrayList;
 
