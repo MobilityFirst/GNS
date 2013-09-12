@@ -1,12 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
  */
 package edu.umass.cs.gns.database;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 import com.mongodb.util.JSON;
-import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -19,19 +25,26 @@ import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.Util;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -194,6 +207,38 @@ public class MongoRecords implements NoSQLRecords {
   public String lookup(String collectionName, String guid, String key) {
     return lookup(collectionName, guid, key, false);
   }
+  
+  private String lookup(String collectionName, String guid, String key, boolean explain) {
+    db.requestStart();
+    try {
+      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      BasicDBObject projection = new BasicDBObject(key, 1).append("_id", 0);
+      //System.out.println("Query: " + query.toString() + " Projection: " + projection);
+      DBCursor cursor = collection.find(query, projection);
+      if (explain) {
+        System.out.println(cursor.explain().toString());
+      }
+      if (cursor.hasNext()) {
+        DBObject obj = cursor.next();
+        JSONObject json = new JSONObject(obj.toString());
+        if (json.has(key)) {
+          return json.getString(key);
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    } catch (JSONException e) {
+      GNS.getLogger().warning("Unable to parse JSON: " + e);
+      return null;
+    } finally {
+      db.requestDone();
+    }
+  }
 
   @Override
   public ArrayList<String> lookup(String collectionName, String guid, ArrayList<String> keys) {
@@ -246,33 +291,45 @@ public class MongoRecords implements NoSQLRecords {
     } finally {
       db.requestDone();
     }
-
   }
-
-  private String lookup(String collectionName, String guid, String key, boolean explain) {
+  
+  /**
+   * Given a key and a value return all the records that have a key with that value.
+   * Note: The key should be declared as an index otherwise this baby will be slow.
+   * 
+   * @param collectionName
+   * @param key
+   * @param value
+   * @param explain
+   * @return 
+   */
+  private HashSet<JSONObject> query(String collectionName, String key, String value, boolean explain) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject projection = new BasicDBObject(key, 1).append("_id", 0);
-      //System.out.println("Query: " + query.toString() + " Projection: " + projection);
-      DBCursor cursor = collection.find(query, projection);
+      // note that if the value of the key in the database is a list (which it is) this
+      // query will find all records where the value (a list) *contains* an element whose value is the value
+      //
+      //FROM MONGO DOC: Match an Array Element
+      //Equality matches can specify a single element in the array to match. These specifications match 
+      //if the array contains at least one element with the specified value.
+      //In the following example, the query matches all documents where the value of the field tags is 
+      //an array that contains 'fruit' as one of its elements:
+      //db.inventory.find( { tags: 'fruit' } )
+      //
+      BasicDBObject query = new BasicDBObject(key, value);
+      DBCursor cursor = collection.find(query);
       if (explain) {
         System.out.println(cursor.explain().toString());
       }
-      if (cursor.hasNext()) {
+      HashSet<JSONObject> result = new HashSet<JSONObject>();
+      while (cursor.hasNext()) {
         DBObject obj = cursor.next();
-        JSONObject json = new JSONObject(obj.toString());
-        if (json.has(key)) {
-          return json.getString(key);
-        } else {
-          return null;
-        }
-      } else {
-        return null;
+        result.add(new JSONObject(obj.toString()));
       }
+      return result;
+        
     } catch (JSONException e) {
       GNS.getLogger().warning("Unable to parse JSON: " + e);
       return null;
@@ -318,6 +375,7 @@ public class MongoRecords implements NoSQLRecords {
     updateListValue(collectionName, name, key, new ArrayList(Arrays.asList(value)));
   }
 
+  @Override
   public void updateField(String collectionName, String guid, String key, Object object) {
     db.requestStart();
     try {
@@ -613,6 +671,7 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
+  // I THINK JSON ALREADY DOES ALL THIS PARSING FOR US. WHY DO WE NEED THIS? - Westy
   /**
    *
    * @param hashMap
@@ -951,11 +1010,19 @@ public class MongoRecords implements NoSQLRecords {
   public static void main(String[] args) throws Exception, RecordNotFoundException, FieldNotFoundException, RecordExistsException {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
-    } else {
-      String configFile = args[0];
-      NameServer.nodeID = 0;
+//    } else if (args.length > 0) {
+//      String configFile = args[0];
+//      NameServer.nodeID = 0;
+//      listDatabases();
+//      runtest(configFile);
+    } else if (args.length > 0) {
+      NameServer.nodeID = Integer.parseInt(args[0]);
       listDatabases();
-      runtest(configFile);
+      queryTest();
+    } else {
+      NameServer.nodeID = 4;
+      listDatabases();
+      queryTest();
     }
     //printFieldsTest();
     //retrieveFieldTest();
@@ -987,44 +1054,20 @@ public class MongoRecords implements NoSQLRecords {
     getInstance().init();
   }
 
-  private static void retrieveTest() throws RecordNotFoundException, Exception {
+  private static void queryTest() throws RecordNotFoundException, Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
-    System.out.println(instance.lookup(collectionSpecs.get(0).getName(), "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"));
-  }
-
-  private static void retrieveFieldTest() throws Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
-    MongoRecords instance = MongoRecords.getInstance();
-    System.out.println(instance.lookup(collectionSpecs.get(0).getName(), "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", AccountAccess.ACCOUNT_INFO));
-  }
-
-  private static void printFieldsTest() throws Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
-    MongoRecords instance = MongoRecords.getInstance();
-    instance.printAllEntries(collectionSpecs.get(0).getName());
-  }
-
-  private static void updateFieldTest() throws Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
-    MongoRecords instance = MongoRecords.getInstance();
-    instance.updateSingleValue(collectionSpecs.get(0).getName(), "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "POSITION", "HERE");
-    System.out.println(instance.lookup(collectionSpecs.get(0).getName(), "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "POSITION"));
+    instance.printAllEntries(DBNAMERECORD);
+    System.out.println(instance.query(DBNAMERECORD, "location", "home", true));
   }
 
   public static void runtest(String configFile) throws FieldNotFoundException, Exception, RecordNotFoundException, RecordExistsException {
-
-//    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     ConfigFileInfo.readHostInfo(configFile, NameServer.nodeID);
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
     instance.reset(collectionSpecs.get(0).getName());
     for (CollectionSpec spec : collectionSpecs) {
-      //for (String collectionName : COLLECTIONS) {
       String collectionName = spec.getName();
 
       List<DBObject> list = instance.db.getCollection(collectionName).getIndexInfo();

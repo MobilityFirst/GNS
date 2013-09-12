@@ -745,15 +745,6 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().severe("Long latency HandleUpdateAddressNS " + (t1 - t0) + " Breakdown: " + (tA - t0) + "\t" + (tB - tA) + "\t" + (tC - tB) + "\t" + (t1 - tC));
     }
 
-
-//    long t1 = System.currentTimeMillis();
-//    if (t1 - t0 > 50) {
-//      if (StartNameServer.debugMode) {
-//        GNS.getLogger().severe("UpdateLongDelay = " + (t1 - t0) + " in handleUpdateAddressLNS UpdatePacket = "
-//                + updatePacket + "NameRecord = " + nameRecord);
-//      }
-//    }
-
   }
   // code written to test local name server: return same response everytime
   private static DNSPacket response = null;
@@ -859,105 +850,8 @@ public class ClientRequestWorker extends TimerTask {
     }
     return dnsPacket;
 
-//    try {
-//      // check if this is current set of ACTIVES (not primary!).
-//      if (nameRecord != null && nameRecord.containsActiveNameServer(NameServer.nodeID)) {
-//        if (dnsPacket.getQname() != null && dnsPacket.isQuery()
-//                && nameRecord.containsKey(dnsPacket.getQrecordKey().getName())) {
-//          //Generate the respose packet
-//          dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
-//          dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
-//          dnsPacket.setTTL(nameRecord.getTimeToLive());
-//          dnsPacket.setSingleReturnValue(nameRecord.getKey(dnsPacket.getQrecordKey().getName()));
-//          //update lookup frequency
-//          nameRecord.incrementLookupRequest();
-//        } else {
-//          dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
-//          dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
-//        }
-//        JSONObject outgoingJSON = dnsPacket.toJSONObject();
-//        NameServer.tcpTransport.sendToID(lnsId, outgoingJSON);
-//        if (StartNameServer.debugMode) {
-//          GNS.getLogger().fine("NS sent DNS lookup response: Name = " + dnsPacket.getQname());
-//        }
-//      } else { // send error msg.
-//        if (StartNameServer.debugMode) {
-//          GNS.getLogger().fine("Invalid actives. Name: " + dnsPacket.getQname());
-//        }
-//        dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
-//        dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
-//        NameServer.tcpTransport.sendToID(lnsId, dnsPacket.toJSONObject());
-//      }
-//    } catch (FieldNotFoundException e) {
-//      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-//    }
   }
 
-//  /**
-//   * Handles a DNS lookup request from the client.
-//   * @throws IOException
-//   * @throws JSONException
-//   */
-//  private void handleDNSPacket() throws IOException, JSONException {
-//    if (StartNameServer.debugMode) {
-//      GNS.getLogger().fine("NS recvd DNS lookup request: " + incomingJSON);
-//    }
-//
-//    DNSPacket dnsPacket = new DNSPacket(incomingJSON);
-//
-//    int lnsId = dnsPacket.getLnsId();
-//
-//    ArrayList<Field> dnsLookupField = new ArrayList<Field>();
-//    dnsLookupField.add(NameRecord.ACTIVE_NAMESERVERS);
-//    dnsLookupField.add(NameRecord.TIME_TO_LIVE);
-//
-//
-//    ArrayList<Field> userField = new ArrayList<Field>();
-//    userField.add(new Field(dnsPacket.getQrecordKey().getName(), FieldType.LIST_STRING));
-//
-//    NameRecord nameRecord = null;
-//    try {
-//      nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(),dnsLookupField, userField);
-//      GNS.getLogger().fine("Name record read is " + nameRecord.toJSONObject());
-//    } catch (RecordNotFoundException e) {
-//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//    }
-//    try {
-//      // check if this is current set of ACTIVES (not primary!).
-//      if (nameRecord != null && nameRecord.containsActiveNameServer(NameServer.nodeID)) {
-//        if (dnsPacket.getQname() == null || !dnsPacket.isQuery()
-//                // shouldn't be called with a null namerecord, but just to be sure
-//                || !nameRecord.containsKey(dnsPacket.getQrecordKey().getName())) {
-//          dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
-//          dnsPacket.getHeader().setQr(1);
-//        }
-//        else {
-//          //Generate the respose packet
-//          dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
-//          dnsPacket.getHeader().setQr(1);
-//          dnsPacket.setTTL(nameRecord.getTimeToLive());
-//          dnsPacket.setSingleReturnValue(nameRecord.getKey(dnsPacket.getQrecordKey().getName()));
-//
-//          //update lookup frequency
-//          nameRecord.incrementLookupRequest();
-//        }
-//        JSONObject outgoingJSON = dnsPacket.toJSONObject();
-//        NameServer.tcpTransport.sendToID(lnsId,outgoingJSON);
-//        if (StartNameServer.debugMode) GNS.getLogger().fine("NS sent DNS lookup response: Name = " + dnsPacket.getQname());
-//      } else { // send error msg.
-//        if (StartNameServer.debugMode) {
-//          GNS.getLogger().fine("Invalid actives. Name: " + dnsPacket.getQname());
-//        }
-//        dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
-//        dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
-//        NameServer.tcpTransport.sendToID(lnsId,dnsPacket.toJSONObject());
-//      }
-//    } catch (FieldNotFoundException e) {
-//      GNS.getLogger().severe(" Field not found exception: " + e.getMessage());
-//    }
-////    long responseTime = System.currentTimeMillis() - requestRecvdTime;
-//    // TODO update average response time for load balancing
-//  }
   /**
    * Returns the set of active name servers for a name record to the local name server.
    *

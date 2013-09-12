@@ -149,6 +149,21 @@ http://127.0.0.1:8080/GNS/removeList?guid=9BD5A4ADA6F2C7D6C94585B7FC089B9440078E
 \
 NEWER\
 \
+QUERY TEST\
+\
+http://127.0.0.1:8080/GNS/registerAccount?name=sam&publickey=dummy2\
+\
+403C716EA737AFEB54F40549CDF5727F10BA6F18\
+\
+http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3\
+\
+1A434C0DAA0B17E48ABD4B59C632CF13501C7D24\
+\
+http://127.0.0.1:8080/GNS/create?guid=403C716EA737AFEB54F40549CDF5727F10BA6F18&field=location&value=home&signature=signature\
+\
+http://127.0.0.1:8080/GNS/create?guid=1A434C0DAA0B17E48ABD4B59C632CF13501C7D24&field=location&value=home&signature=signature\
+\
+\
 \
 \
 http://23.21.120.250:8080/GNS/lookupGuid?name=notification_demo7@cs.umass.edu\
