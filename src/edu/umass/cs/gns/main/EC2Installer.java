@@ -439,6 +439,12 @@ public class EC2Installer {
     StatusModel.getInstance().queueUpdate(id, "Killing servers");
     AWSEC2.executeBashScript(hostname, keyFile, "killAllServers.sh", "#!/bin/bash\nkillall java");
   }
+  
+  private static void removeLogFiles(int id, String hostname) {
+    File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
+    StatusModel.getInstance().queueUpdate(id, "Removing log files");
+    AWSEC2.executeBashScript(hostname, keyFile, "removelogs.sh", "#!/bin/bash\nrm NSlogfile*\nrm LNSlogfile*\nrm -rf log");
+  }
 
   /**
    * Write the name-server-info file on the remote host.
@@ -531,6 +537,7 @@ public class EC2Installer {
 
     UPDATE,
     RESTART,
+    REMOVE_LOGS_AND_RESTART,
     DELETE_DATABASE
   };
 
@@ -657,6 +664,7 @@ public class EC2Installer {
     Option restart = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("restart a runset")
             .create("restart");
+    Option removeLogs = new Option("removeLogs", "remove log files");
     Option deleteDatabase = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("delete the databases in a runset")
             .create("deleteDatabase");
@@ -677,6 +685,7 @@ public class EC2Installer {
     //commandLineOptions.addOption(createOne);
     commandLineOptions.addOption(update);
     commandLineOptions.addOption(restart);
+    commandLineOptions.addOption(removeLogs);
     commandLineOptions.addOption(deleteDatabase);
     //commandLineOptions.addOption(updateCurrent);
     commandLineOptions.addOption(describe);
@@ -735,6 +744,7 @@ public class EC2Installer {
       String runsetDescribe = parser.getOptionValue("describe");
       String configName = parser.getOptionValue("config");
       String dataStoreName = parser.getOptionValue("datastore");
+      boolean removeLogs = parser.hasOption("removeLogs");
 
       if (dataStoreName != null) {
         try {
@@ -764,7 +774,7 @@ public class EC2Installer {
       } else if (runsetUpdate != null) {
         updateRunSet(runsetUpdate, UpdateAction.UPDATE);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetRestart, UpdateAction.RESTART);
+        updateRunSet(runsetRestart, (removeLogs ? UpdateAction.REMOVE_LOGS_AND_RESTART : UpdateAction.RESTART));
       } else if (runsetDeleteDatabase != null) {
         updateRunSet(runsetDeleteDatabase, UpdateAction.DELETE_DATABASE);
       } else if (runsetDescribe != null) {
@@ -842,6 +852,9 @@ public class EC2Installer {
           copyJARFiles(id, hostname);
           break;
         case RESTART:
+          break;
+        case REMOVE_LOGS_AND_RESTART:
+          removeLogFiles(id, hostname);
           break;
         case DELETE_DATABASE:
           deleteDatabase(id, hostname);
