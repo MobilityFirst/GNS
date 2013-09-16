@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
@@ -94,7 +93,7 @@ public class CacheEntry {
    * @param key 
    */
   private int getKeyTTL(String key) {
-    if (Intercessor.internalFields.contains(key)) {
+    if (GNS.isInternalField(key)) {
       // Fields used by the GNS are cached forever (or at least until they get updated).
       return -1;
     } else {

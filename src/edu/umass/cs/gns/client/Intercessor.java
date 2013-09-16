@@ -33,12 +33,6 @@ import org.json.JSONObject;
  * @author westy
  */
 public class Intercessor {
-
-  // These are all used internally be the GNS
-  public static final HashSet<String> internalFields 
-          = new HashSet<String>(Arrays.asList(AccountAccess.ACCOUNT_INFO,
-          AccountAccess.GUID, AccountAccess.GUID_INFO, AccountAccess.PRIMARY_GUID));
-
   public static final int PORT = 17768;
 
   // make it a singleton
@@ -217,9 +211,9 @@ public class Intercessor {
    * @return 
    */
   private ValuesMap removeInternalFields(ValuesMap valuesMap) {
-    for (String field : internalFields) {
-      if (valuesMap.containsKey(field)) {
-        valuesMap.remove(field);
+    for (String key : valuesMap.keySet()) {
+      if (GNS.isInternalField(key)) {
+        valuesMap.remove(key);
       }
     }
     return valuesMap;

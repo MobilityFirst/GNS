@@ -33,10 +33,10 @@ public class AccountAccess {
 
     private static final AccountAccess INSTANCE = new AccountAccess();
   }
-  public static final String ACCOUNT_INFO = Defs.INTERNAL_PREFIX + "account_info";
-  public static final String GUID = Defs.INTERNAL_PREFIX + "guid";
-  public static final String PRIMARY_GUID = Defs.INTERNAL_PREFIX + "primary_guid";
-  public static final String GUID_INFO = Defs.INTERNAL_PREFIX + "guid_info";
+  public static final String ACCOUNT_INFO = GNS.INTERNAL_PREFIX + "account_info";
+  public static final String GUID = GNS.INTERNAL_PREFIX + "guid";
+  public static final String PRIMARY_GUID = GNS.INTERNAL_PREFIX + "primary_guid";
+  public static final String GUID_INFO = GNS.INTERNAL_PREFIX + "guid_info";
 
   /**
    * Obtains the account info record for the given GUID if that GUID

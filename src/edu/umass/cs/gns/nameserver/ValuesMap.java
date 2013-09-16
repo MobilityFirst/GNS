@@ -71,22 +71,48 @@ public class ValuesMap {
     }
   }
 
+  /**
+   * Returns the value to which the specified key is mapped, or null if this valuesmap contains no mapping for the key.
+   * 
+   * @param key
+   * @return 
+   */
   public ArrayList<String> get(String key) {
     return content.get(key);
   }
 
+  /**
+   * Associates the specified value with the specified key in this valuesmap.
+   * @param key
+   * @param value 
+   */
   public void put(String key, ArrayList<String> value) {
     content.put(key, value);
   }
 
+  /**
+   * Removes the mapping for a key from this valuesmap if it is present.
+   * 
+   * @param key 
+   */
   public void remove(String key) {
     content.remove(key);
   }
 
+  /**
+   * Returns true if this valuesmap contains a mapping for the specified key.
+   * 
+   * @param key
+   * @return 
+   */
   public boolean containsKey(String key) {
     return content.containsKey(key);
   }
 
+  /**
+   * Returns true if this valuesmap contains no key-value mappings.
+   * @return 
+   */
   public boolean isEmpty() {
     return content.isEmpty();
   }

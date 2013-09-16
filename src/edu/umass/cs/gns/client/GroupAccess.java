@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.client;
 
 
+import edu.umass.cs.gns.main.GNS;
 import java.util.ArrayList;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
@@ -26,7 +27,7 @@ public class GroupAccess {
 
         private static final GroupAccess INSTANCE = new GroupAccess();
     }
-    public static final String GROUP = Defs.INTERNAL_PREFIX + "group";
+    public static final String GROUP = GNS.INTERNAL_PREFIX + "group";
 
     public boolean addToGroup(String guid, String memberGuid) {
         Intercessor client = Intercessor.getInstance();

@@ -56,35 +56,35 @@ public class MongoRecordMap extends BasicRecordMap {
   public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().finer(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
-    records.updateListValue(collectionName, name, key, value);
+    records.updateField(collectionName, name, key, value);
   }
 
   @Override
   public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().finer(records.toString() + ":: Writing int list " + name + "/" + key + ": " + value.toString());
-    records.updateListValueInt(collectionName, name, key, value);
+    records.updateField(collectionName, name, key, value);
   }
 
   @Override
   public void updateNameRecordFieldAsString(String name, String key, String string) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().finer(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
-    records.updateFieldAsString(collectionName, name, key, string);
+    records.updateField(collectionName, name, key, string);
   }
   
   @Override
   public void updateNameRecordFieldAsMap(String name, String key, Map map) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().finer(records.toString() + ":: Writing map " + name + "/" + key + ": " + map);
-    records.updateFieldAsMap(collectionName, name, key, map);
+    records.updateField(collectionName, name, key, map);
   }
   
   @Override
   public void updateNameRecordFieldAsCollection(String name, String key, Collection collection) {
     MongoRecords records = MongoRecords.getInstance();
     GNS.getLogger().finer(records.toString() + ":: Writing collection " + name + "/" + key + ": " + collection);
-    records.updateFieldAsCollection(collectionName, name, key, collection);
+    records.updateField(collectionName, name, key, collection);
   }
 
   @Override

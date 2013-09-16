@@ -2,6 +2,7 @@ package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
+import edu.umass.cs.gns.main.GNS;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class AclAccess {
   }
 
   private static String makeACLKey(AccessType access, String key) {
-    return Defs.INTERNAL_PREFIX + access.name() + "_" + key;
+    return GNS.INTERNAL_PREFIX + access.name() + "_" + key;
   }
 
   private Set<String> lookupHelper(AccessType access, GuidInfo userInfo, String key) {

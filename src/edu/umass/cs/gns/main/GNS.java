@@ -9,6 +9,12 @@ public class GNS {
   
   public static int startingPort = 24400;
   
+  public static final String INTERNAL_PREFIX = "_GNS_";
+  
+  public static boolean isInternalField(String key) {
+    return key.startsWith(INTERNAL_PREFIX);
+  }
+  
   // This is designed so we can run LNS and NS on the same host if needed
   public enum PortType {
     NS_TCP_PORT(0), // TCP port at name servers
