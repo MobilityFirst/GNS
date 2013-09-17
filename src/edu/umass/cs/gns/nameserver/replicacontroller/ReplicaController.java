@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
 
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.ListenerReplicationPaxos;
@@ -614,24 +615,19 @@ public class ReplicaController {
     if (fdPacket.status == true) return; // node was down and it came up, don't worry about that
 
     int failedNode = fdPacket.responderNodeID;
-    GNS.getLogger().severe(" Failed Node Detected: replication controller working. " + failedNode);
+    GNS.getLogger().info(" Failed Node Detected: replication controller working. " + failedNode);
 
 //		if (node fails then what happens)
-    Object iterator = NameServer.replicaController.getIterator(ReplicaControllerRecord.NAME);
+    BasicRecordCursor iterator = NameServer.replicaController.getAllRowsIterator();
 //    if (StartNameServer.debugMode) GNS.getLogger().fine("Got iterator : " + replicationRound);
 
-    while (true) {
-      JSONObject jsonObject = NameServer.replicaController.next(iterator, ReplicaControllerRecord.NAME);
-//        if (StartNameServer.debugMode) GNS.getLogger().finer("Got next: " + count);
-      if (jsonObject == null) {
-//          if (StartNameServer.debugMode) GNS.getLogger().finer("BREAK!! ");
-        break;
-      }
+    while (iterator.hasNext()) {
       ReplicaControllerRecord record;
       try {
+        JSONObject jsonObject = iterator.next();
         record = new ReplicaControllerRecord(jsonObject);
-      } catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      } catch (Exception e) {
+        GNS.getLogger().severe("Problem creating ReplicaControllerRecord from JSON" + e);
         continue;
       }
 

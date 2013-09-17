@@ -4,6 +4,7 @@
  */
 package edu.umass.cs.gns.nameserver.recordmap;
 
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
@@ -71,11 +72,8 @@ public interface RecordMapInterface {
 
   public abstract HashMap<Field,Object> next(Object iterator, Field nameField, ArrayList<Field> fields);
 
-  public abstract Object getIterator(Field nameField);
+  public abstract BasicRecordCursor getAllRowsIterator();
 
-  public abstract JSONObject next(Object iterator, Field nameField);
-
-  public abstract void returnIterator();
   //
   // OLD Style
   //

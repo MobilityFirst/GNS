@@ -267,59 +267,59 @@ public class CassandraRecords implements NoSQLRecords {
 
   @Override
   public HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public void update(String collection, String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
-    //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public void update(String collection, String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
-    //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public void increment(String collection, String name, ArrayList<Field> fields1, ArrayList<Object> values1) {
-    //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
-    //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public Object getIterator(String collection, Field nameField, ArrayList<Field> fields) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
 
   @Override
   public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public Object getIterator(String collection, Field nameField) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  public BasicRecordCursor getAllRowsIterator(String collection) {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  @Override
-  public JSONObject next(Object iterator, Field nameField) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
-  }
+//  @Override
+//  public JSONObject next(Object iterator, Field nameField) {
+//    return null;  //To change body of implemented methods use File | Settings | File Templates.
+//  }
 
-  @Override
-  public void returnIterator() {
-    //To change body of implemented methods use File | Settings | File Templates.
-  }
+//  @Override
+//  public void returnIterator() {
+//    //To change body of implemented methods use File | Settings | File Templates.
+//  }
 
   @Override
   public ArrayList<JSONObject> retrieveAllEntries(String tableName) {
@@ -441,114 +441,114 @@ public class CassandraRecords implements NoSQLRecords {
     }
   }
 
-  //
-  // TEST CODE
-  // 
-  private void loadTestData(String tableName, String guid) {
-    CollectionSpec spec = getCollectionSpec(tableName);
-    if (spec != null) {
-      insertColumn(tableName, guid, "KEY_1", "VALUE_1");
-      insertColumn(tableName, guid, "KEY_2", "VALUE_2");
-    } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
-    }
-  }
-
-  //test code
-  private static NameRecord createNameRecord(String name, String key, String value) throws Exception {
-    ValuesMap valuesMap = new ValuesMap();
-    valuesMap.put(key,new ArrayList(Arrays.asList(value)));
-    HashSet<Integer> x = new HashSet<Integer>();
-    x.add(0);
-    x.add(1);
-    x.add(2);
-    return new NameRecord(name, x, name+"-2",valuesMap);
-  }
-  //
-  // UTILS
-  //
-  static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  static Random rnd = new Random(System.currentTimeMillis());
-
-  private static String randomString(int len) {
-    StringBuilder sb = new StringBuilder(len);
-    for (int i = 0; i < len; i++) {
-      sb.append(CHARACTERS.charAt(rnd.nextInt(CHARACTERS.length())));
-    }
-    return sb.toString();
-  }
-
-  public static void runTest() {
-    try {
-      ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-      HashFunction.initializeHashFunction();
-      CassandraRecords instance = CassandraRecords.getInstance();
-      //instance.reset(DBNAMERECORD);
-      Random random = new Random();
-      NameRecord n = null;
-      for (int i = 0; i < 100; i++) {
-        NameRecord x = createNameRecord("GUID_" + randomString(8), "KEY_" + randomString(8), "VALUE_" + randomString(3));
-        if (i == 50) {
-          n = x;
-        }
-        System.out.println(x.toString());
-        instance.insert(DBNAMERECORD, x.getName(), x.toJSONObject());
-      }
-
-//    System.out.println("LOOKUP BY GUID =>" + instance.lookup(n.getName(), true));
-//    instance.update(n.getName(), "timeToLive", "777");
-//    System.out.println("LOOKUP AFTER 777 =>" + instance.lookup(n.getName(), true));
-//    instance.update(n.getName(), "FRANK", "777");
-//    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookup(n.getName(), true));
-//    
-      JSONObject json = instance.lookup(DBNAMERECORD, n.getName());
-      System.out.println("LOOKUP BY GUID => " + json);
-      System.out.println("CONTAINS = (should be true) " + instance.contains(DBNAMERECORD, n.getName()));
-      System.out.println("CONTAINS = (should be false) " + instance.contains(DBNAMERECORD, "BLAH BLAH"));
-      NameRecord record = new NameRecord(json);
-      record.updateKey("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
-      System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
-      instance.update(DBNAMERECORD, record.getName(), record.toJSONObject());
-      JSONObject json2 = instance.lookup(DBNAMERECORD, n.getName());
-      System.out.println("2ND LOOKUP BY GUID => " + json2);
-      //
-      //System.out.println("LOOKUP BY KEY =>" + instance.lookup(n.getName(), n.getRecordKey().getName(), true));
-
-//    System.out.println("DUMP =v");
-//    instance.printAllEntries();
-//    System.out.println(MongoRecordsV2.getInstance().db.getCollection(COLLECTIONNAME).getStats().toString());
-      //
-      instance.updateField(DBNAMERECORD, n.getName(), NameRecord.ACTIVE_NAMESERVERS.getFieldName(), Arrays.asList(97, 98, 99));
-      json2 = instance.lookup(DBNAMERECORD, n.getName());
-      System.out.println("JSON AFTER FIELD UPDATE => " + json2);
-      instance.remove(DBNAMERECORD, n.getName());
-      json2 = instance.lookup(DBNAMERECORD, n.getName());
-      System.out.println("SHOULD BE EMPTY => " + json2);
-      System.exit(0);
-    } catch (FieldNotFoundException e) {
-      System.out.println(" FieldNotFoundException. Field = " + e.getMessage());
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    } catch (Exception e) {
-      System.out.println("Error during main test execution: " + e);
-      e.printStackTrace();
-    }
-  }
-
-  private static void runBasicTest() {
-    try {
-      CassandraRecords client = CassandraRecords.getInstance();
-      client.loadTestData(DBREPLICACONTROLLER, "GUID_XYZ");
-      System.out.println(client.retrieveJSONObject(DBREPLICACONTROLLER, "GUID_XYZ"));
-      //client.queryTestSchema(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
-      //client.close();
-      System.exit(0);
-    } catch (Exception e) {
-      System.out.println("Error during main test execution: " + e);
-      e.printStackTrace();
-    }
-  }
-
-  public static void main(String[] args) throws Exception {
-    runTest();
-  }
+//  //
+//  // TEST CODE
+//  // 
+//  private void loadTestData(String tableName, String guid) {
+//    CollectionSpec spec = getCollectionSpec(tableName);
+//    if (spec != null) {
+//      insertColumn(tableName, guid, "KEY_1", "VALUE_1");
+//      insertColumn(tableName, guid, "KEY_2", "VALUE_2");
+//    } else {
+//      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+//    }
+//  }
+//
+//  //test code
+//  private static NameRecord createNameRecord(String name, String key, String value) throws Exception {
+//    ValuesMap valuesMap = new ValuesMap();
+//    valuesMap.put(key,new ArrayList(Arrays.asList(value)));
+//    HashSet<Integer> x = new HashSet<Integer>();
+//    x.add(0);
+//    x.add(1);
+//    x.add(2);
+//    return new NameRecord(name, x, name+"-2",valuesMap);
+//  }
+//  //
+//  // UTILS
+//  //
+//  static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//  static Random rnd = new Random(System.currentTimeMillis());
+//
+//  private static String randomString(int len) {
+//    StringBuilder sb = new StringBuilder(len);
+//    for (int i = 0; i < len; i++) {
+//      sb.append(CHARACTERS.charAt(rnd.nextInt(CHARACTERS.length())));
+//    }
+//    return sb.toString();
+//  }
+//
+//  public static void runTest() {
+//    try {
+//      ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+//      HashFunction.initializeHashFunction();
+//      CassandraRecords instance = CassandraRecords.getInstance();
+//      //instance.reset(DBNAMERECORD);
+//      Random random = new Random();
+//      NameRecord n = null;
+//      for (int i = 0; i < 100; i++) {
+//        NameRecord x = createNameRecord("GUID_" + randomString(8), "KEY_" + randomString(8), "VALUE_" + randomString(3));
+//        if (i == 50) {
+//          n = x;
+//        }
+//        System.out.println(x.toString());
+//        instance.insert(DBNAMERECORD, x.getName(), x.toJSONObject());
+//      }
+//
+////    System.out.println("LOOKUP BY GUID =>" + instance.lookup(n.getName(), true));
+////    instance.update(n.getName(), "timeToLive", "777");
+////    System.out.println("LOOKUP AFTER 777 =>" + instance.lookup(n.getName(), true));
+////    instance.update(n.getName(), "FRANK", "777");
+////    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookup(n.getName(), true));
+////    
+//      JSONObject json = instance.lookup(DBNAMERECORD, n.getName());
+//      System.out.println("LOOKUP BY GUID => " + json);
+//      System.out.println("CONTAINS = (should be true) " + instance.contains(DBNAMERECORD, n.getName()));
+//      System.out.println("CONTAINS = (should be false) " + instance.contains(DBNAMERECORD, "BLAH BLAH"));
+//      NameRecord record = new NameRecord(json);
+//      record.updateKey("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
+//      System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
+//      instance.update(DBNAMERECORD, record.getName(), record.toJSONObject());
+//      JSONObject json2 = instance.lookup(DBNAMERECORD, n.getName());
+//      System.out.println("2ND LOOKUP BY GUID => " + json2);
+//      //
+//      //System.out.println("LOOKUP BY KEY =>" + instance.lookup(n.getName(), n.getRecordKey().getName(), true));
+//
+////    System.out.println("DUMP =v");
+////    instance.printAllEntries();
+////    System.out.println(MongoRecordsV2.getInstance().db.getCollection(COLLECTIONNAME).getStats().toString());
+//      //
+//      instance.updateField(DBNAMERECORD, n.getName(), NameRecord.ACTIVE_NAMESERVERS.getFieldName(), Arrays.asList(97, 98, 99));
+//      json2 = instance.lookup(DBNAMERECORD, n.getName());
+//      System.out.println("JSON AFTER FIELD UPDATE => " + json2);
+//      instance.remove(DBNAMERECORD, n.getName());
+//      json2 = instance.lookup(DBNAMERECORD, n.getName());
+//      System.out.println("SHOULD BE EMPTY => " + json2);
+//      System.exit(0);
+//    } catch (FieldNotFoundException e) {
+//      System.out.println(" FieldNotFoundException. Field = " + e.getMessage());
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    } catch (Exception e) {
+//      System.out.println("Error during main test execution: " + e);
+//      e.printStackTrace();
+//    }
+//  }
+//
+//  private static void runBasicTest() {
+//    try {
+//      CassandraRecords client = CassandraRecords.getInstance();
+//      client.loadTestData(DBREPLICACONTROLLER, "GUID_XYZ");
+//      System.out.println(client.retrieveJSONObject(DBREPLICACONTROLLER, "GUID_XYZ"));
+//      //client.queryTestSchema(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
+//      //client.close();
+//      System.exit(0);
+//    } catch (Exception e) {
+//      System.out.println("Error during main test execution: " + e);
+//      e.printStackTrace();
+//    }
+//  }
+//
+//  public static void main(String[] args) throws Exception {
+//    runTest();
+//  }
 }

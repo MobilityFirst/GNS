@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -171,20 +172,10 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public Object getIterator(Field nameField) {
-    return MongoRecords.getInstance().getIterator(collectionName,nameField);
+  public BasicRecordCursor getAllRowsIterator() {
+    return MongoRecords.getInstance().getAllRowsIterator(collectionName);
   }
-
-  @Override
-  public JSONObject next(Object iterator, Field nameField) {
-    return MongoRecords.getInstance().next(iterator,nameField);
-  }
-
-  @Override
-  public void returnIterator() {
-    MongoRecords.getInstance().returnIterator();
-  }
-
+ 
   @Override
   public NameRecord getNameRecord(String name) throws RecordNotFoundException{
     try {

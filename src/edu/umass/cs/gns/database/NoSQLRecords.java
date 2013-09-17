@@ -105,11 +105,11 @@ public interface NoSQLRecords {
 
   public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields);
 
-  public Object getIterator(String collection, Field nameField);
+  public BasicRecordCursor getAllRowsIterator(String collection);
 
-  public JSONObject next(Object iterator, Field nameField);
+  //public JSONObject next(Object iterator, Field nameField);
 
-  public void returnIterator();
+  //public void returnIterator();
 
 //  public DBIterator getIterator(String collection);
 

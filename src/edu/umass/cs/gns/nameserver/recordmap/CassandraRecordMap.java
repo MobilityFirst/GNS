@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.database.CassandraRecords;
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -171,18 +172,8 @@ public class CassandraRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public Object getIterator(Field nameField) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
-  }
-
-  @Override
-  public JSONObject next(Object iterator, Field nameField) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
-  }
-
-  @Override
-  public void returnIterator() {
-    return;  //To change body of implemented methods use File | Settings | File Templates.
+  public BasicRecordCursor getAllRowsIterator() {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
