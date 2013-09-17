@@ -162,13 +162,8 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public Object getIterator(Field nameField, ArrayList<Field> fields) {
-    return MongoRecords.getInstance().getIterator(collectionName,nameField, fields);
-  }
-
-  @Override
-  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
-    return MongoRecords.getInstance().next(iterator, nameField, fields);
+  public BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields) {
+    return MongoRecords.getInstance().getAllRowsIterator(collectionName,nameField, fields);
   }
 
   @Override
@@ -218,7 +213,7 @@ public class MongoRecordMap extends BasicRecordMap {
   public void addNameRecord(JSONObject json) throws RecordExistsException{
     MongoRecords records = MongoRecords.getInstance();
     try {
-      String name = json.getString(NameRecord.NAME.getFieldName());
+      String name = json.getString(NameRecord.NAME.getName());
       records.insert(collectionName, name, json);
       GNS.getLogger().finer(records.toString() + ":: Added " + name + " JSON: " + json);
     } catch (JSONException e) {
@@ -352,7 +347,7 @@ public class MongoRecordMap extends BasicRecordMap {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
     BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
-    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS.getFieldName()));
+    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS.getName()));
     recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
     System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
   }

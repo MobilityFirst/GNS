@@ -138,60 +138,60 @@ public class ReplicaControllerRecord {
   public ReplicaControllerRecord(JSONObject json) throws JSONException {
     hashMap = new HashMap<Field, Object>();
 
-    if (json.has(NAME.getFieldName())) {
-      hashMap.put(NAME,json.getString(NAME.getFieldName()));
+    if (json.has(NAME.getName())) {
+      hashMap.put(NAME,json.getString(NAME.getName()));
     }
 
-    if (json.has(PRIMARY_NAMESERVERS.getFieldName())) {
+    if (json.has(PRIMARY_NAMESERVERS.getName())) {
       hashMap.put(PRIMARY_NAMESERVERS,JSONUtils.getObject(PRIMARY_NAMESERVERS, json));
     }
-    if (json.has(ACTIVE_NAMESERVERS.getFieldName())) {
+    if (json.has(ACTIVE_NAMESERVERS.getName())) {
       hashMap.put(ACTIVE_NAMESERVERS,JSONUtils.getObject(ACTIVE_NAMESERVERS, json));
     }
-    if (json.has(OLD_ACTIVE_NAMESERVERS.getFieldName())) {
+    if (json.has(OLD_ACTIVE_NAMESERVERS.getName())) {
       hashMap.put(OLD_ACTIVE_NAMESERVERS,JSONUtils.getObject(OLD_ACTIVE_NAMESERVERS, json));
     }
 
-    if (json.has(OLD_ACTIVE_NAMESERVERS_RUNNING.getFieldName())) {
+    if (json.has(OLD_ACTIVE_NAMESERVERS_RUNNING.getName())) {
       hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING,JSONUtils.getObject(OLD_ACTIVE_NAMESERVERS_RUNNING, json));
     }
-    if (json.has(ACTIVE_NAMESERVERS_RUNNING.getFieldName())) {
+    if (json.has(ACTIVE_NAMESERVERS_RUNNING.getName())) {
       hashMap.put(ACTIVE_NAMESERVERS_RUNNING,JSONUtils.getObject(ACTIVE_NAMESERVERS_RUNNING, json));
     }
 
-    if (json.has(ACTIVE_PAXOS_ID.getFieldName())) {
+    if (json.has(ACTIVE_PAXOS_ID.getName())) {
       hashMap.put(ACTIVE_PAXOS_ID,JSONUtils.getObject(ACTIVE_PAXOS_ID, json));
     }
-    if (json.has(OLD_ACTIVE_PAXOS_ID.getFieldName())) {
+    if (json.has(OLD_ACTIVE_PAXOS_ID.getName())) {
       hashMap.put(OLD_ACTIVE_PAXOS_ID,JSONUtils.getObject(OLD_ACTIVE_PAXOS_ID, json));
     }
 
-    if (json.has(MARKED_FOR_REMOVAL.getFieldName())) {
+    if (json.has(MARKED_FOR_REMOVAL.getName())) {
       hashMap.put(MARKED_FOR_REMOVAL,JSONUtils.getObject(MARKED_FOR_REMOVAL, json));
     }
 
-    if (json.has(VOTES_MAP.getFieldName())) {
+    if (json.has(VOTES_MAP.getName())) {
       hashMap.put(VOTES_MAP,JSONUtils.getObject(VOTES_MAP, json));
     }
-    if (json.has(STATS_MAP.getFieldName())) {
+    if (json.has(STATS_MAP.getName())) {
       hashMap.put(STATS_MAP,JSONUtils.getObject(STATS_MAP, json));
     }
 
 
-    if (json.has(PREV_TOTAL_READ.getFieldName())) {
+    if (json.has(PREV_TOTAL_READ.getName())) {
       hashMap.put(PREV_TOTAL_READ,JSONUtils.getObject(PREV_TOTAL_READ, json));
     }
-    if (json.has(PREV_TOTAL_WRITE.getFieldName())) {
+    if (json.has(PREV_TOTAL_WRITE.getName())) {
       hashMap.put(PREV_TOTAL_WRITE,JSONUtils.getObject(PREV_TOTAL_WRITE, json));
     }
-    if (json.has(MOV_AVG_READ.getFieldName())) {
+    if (json.has(MOV_AVG_READ.getName())) {
       hashMap.put(MOV_AVG_READ,JSONUtils.getObject(MOV_AVG_READ, json));
     }
-    if (json.has(MOV_AVG_WRITE.getFieldName())) {
+    if (json.has(MOV_AVG_WRITE.getName())) {
       hashMap.put(MOV_AVG_WRITE,JSONUtils.getObject(MOV_AVG_WRITE, json));
     }
 
-    if (json.has(KEEP_ALIVE_TIME.getFieldName())) {
+    if (json.has(KEEP_ALIVE_TIME.getName())) {
       hashMap.put(KEEP_ALIVE_TIME,JSONUtils.getObject(KEEP_ALIVE_TIME, json));
     }
   }

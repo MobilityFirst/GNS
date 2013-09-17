@@ -101,9 +101,9 @@ public interface NoSQLRecords {
                         Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
 
 
-  public Object getIterator(String collection, Field nameField, ArrayList<Field> fields);
+  public Object getAllRowsIterator(String collection, Field nameField, ArrayList<Field> fields);
 
-  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields);
+  //public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields);
 
   public BasicRecordCursor getAllRowsIterator(String collection);
 

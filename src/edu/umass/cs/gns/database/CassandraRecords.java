@@ -76,8 +76,8 @@ public class CassandraRecords implements NoSQLRecords {
   }
   private static List<CassandraRecords.CollectionSpec> collectionSpecs =
           Arrays.asList(
-          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getFieldName()),
-          new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getFieldName()));
+          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName()),
+          new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName()));
 
   public CassandraRecords() {
     dbName = DBROOTNAME + NameServer.nodeID;
@@ -296,15 +296,14 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public Object getIterator(String collection, Field nameField, ArrayList<Field> fields) {
+  public BasicRecordCursor getAllRowsIterator(String collection, Field nameField, ArrayList<Field> fields) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-
-  @Override
-  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
+//  @Override
+//  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//  }
 
   @Override
   public BasicRecordCursor getAllRowsIterator(String collection) {

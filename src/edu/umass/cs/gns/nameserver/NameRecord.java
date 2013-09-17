@@ -102,43 +102,43 @@ public class NameRecord implements Comparable<NameRecord> {
   public NameRecord(JSONObject jsonObject) throws JSONException{
 
     hashMap = new HashMap<Field, Object>();
-    if (jsonObject.has(NAME.getFieldName())) {
+    if (jsonObject.has(NAME.getName())) {
       hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
     }
 
-    if (jsonObject.has(ACTIVE_NAMESERVERS.getFieldName())) {
+    if (jsonObject.has(ACTIVE_NAMESERVERS.getName())) {
       hashMap.put(ACTIVE_NAMESERVERS, JSONUtils.getObject(ACTIVE_NAMESERVERS, jsonObject));
     }
 
-    if (jsonObject.has(PRIMARY_NAMESERVERS.getFieldName())) {
+    if (jsonObject.has(PRIMARY_NAMESERVERS.getName())) {
       hashMap.put(PRIMARY_NAMESERVERS, JSONUtils.getObject(PRIMARY_NAMESERVERS, jsonObject));
     }
 
-    if (jsonObject.has(ACTIVE_PAXOS_ID.getFieldName())) {
+    if (jsonObject.has(ACTIVE_PAXOS_ID.getName())) {
       hashMap.put(ACTIVE_PAXOS_ID, JSONUtils.getObject(ACTIVE_PAXOS_ID, jsonObject));
     }
 
-    if (jsonObject.has(OLD_ACTIVE_PAXOS_ID.getFieldName())) {
+    if (jsonObject.has(OLD_ACTIVE_PAXOS_ID.getName())) {
       hashMap.put(OLD_ACTIVE_PAXOS_ID, JSONUtils.getObject(OLD_ACTIVE_PAXOS_ID, jsonObject));
     }
 
-    if (jsonObject.has(TIME_TO_LIVE.getFieldName())) {
+    if (jsonObject.has(TIME_TO_LIVE.getName())) {
       hashMap.put(TIME_TO_LIVE, JSONUtils.getObject(TIME_TO_LIVE, jsonObject));
     }
 
-    if (jsonObject.has(VALUES_MAP.getFieldName())) {
+    if (jsonObject.has(VALUES_MAP.getName())) {
       hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
     }
 
-    if (jsonObject.has(OLD_VALUES_MAP.getFieldName())) {
+    if (jsonObject.has(OLD_VALUES_MAP.getName())) {
       hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
     }
 
-    if (jsonObject.has(TOTAL_LOOKUP_REQUEST.getFieldName())) {
+    if (jsonObject.has(TOTAL_LOOKUP_REQUEST.getName())) {
       hashMap.put(TOTAL_LOOKUP_REQUEST, JSONUtils.getObject(TOTAL_LOOKUP_REQUEST, jsonObject));
     }
 
-    if (jsonObject.has(TOTAL_UPDATE_REQUEST.getFieldName())) {
+    if (jsonObject.has(TOTAL_UPDATE_REQUEST.getName())) {
       hashMap.put(TOTAL_UPDATE_REQUEST, JSONUtils.getObject(TOTAL_UPDATE_REQUEST, jsonObject));
     }
 

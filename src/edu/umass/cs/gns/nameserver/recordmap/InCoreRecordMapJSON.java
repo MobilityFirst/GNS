@@ -22,7 +22,7 @@ import java.util.*;
  * @author westy
  */
 public class InCoreRecordMapJSON extends BasicRecordMap {
-  private static final String NAME = NameRecord.NAME.getFieldName();
+  private static final String NAME = NameRecord.NAME.getName();
 
   private Map<String, JSONObject> recordMap;
 
@@ -193,13 +193,8 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public Object getIterator(Field nameField, ArrayList<Field> fields) {
+  public BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields) {
    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override

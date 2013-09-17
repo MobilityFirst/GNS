@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.database;
 
+import edu.umass.cs.gns.nameserver.fields.Field;
+import java.util.HashMap;
 import java.util.Iterator;
 import org.json.JSONObject;
 
@@ -15,4 +17,8 @@ import org.json.JSONObject;
  */
 public interface RecordCursorInterface extends Iterator<JSONObject> {
  
+  public JSONObject nextJSONObject();
+  
+  public HashMap<Field, Object> nextHashMap();
+  
 }

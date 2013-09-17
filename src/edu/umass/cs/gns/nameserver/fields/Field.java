@@ -1,24 +1,22 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nameserver.fields;
 
-/**
- * Created with IntelliJ IDEA.
- * User: abhigyan
- * Date: 9/2/13
- * Time: 1:15 AM
- * To change this template use File | Settings | File Templates.
- */
 public class Field {
 
-  final String fieldName;
+  final String name;
   final FieldType type;
 
-  public Field(String fieldName, FieldType type) {
-    this.fieldName = fieldName;
+  public Field(String name, FieldType type) {
+    this.name = name;
     this.type = type;
   }
 
-  public String getFieldName() {
-    return fieldName;
+  public String getName() {
+    return name;
   }
   public FieldType type() {
     return type;
@@ -26,6 +24,6 @@ public class Field {
 
   @Override
   public String toString() {
-    return fieldName + " " + type.toString();
+    return name + " " + type.toString();
   }
 }

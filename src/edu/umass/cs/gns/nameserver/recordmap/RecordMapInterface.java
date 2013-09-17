@@ -68,9 +68,7 @@ public interface RecordMapInterface {
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1,
                                  Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
 
-  public abstract Object getIterator(Field nameField, ArrayList<Field> fields);
-
-  public abstract HashMap<Field,Object> next(Object iterator, Field nameField, ArrayList<Field> fields);
+  public abstract BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields);
 
   public abstract BasicRecordCursor getAllRowsIterator();
 

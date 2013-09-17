@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
@@ -51,35 +52,17 @@ public class ComputeNewActivesTask extends TimerTask {
     readFields.add(ReplicaControllerRecord.VOTES_MAP);
 
 
-
-    Object iterator = NameServer.replicaController.getIterator(ReplicaControllerRecord.NAME, readFields);
-//    if (StartNameServer.debugMode) GNS.getLogger().fine("Got iterator : " + replicationRound);
-
-
-
-    while (true) {
+    BasicRecordCursor iterator = NameServer.replicaController.getIterator(ReplicaControllerRecord.NAME, readFields);
+    while (iterator.hasNext()) {
       count++;
-      HashMap<Field, Object> hashMap = NameServer.replicaController.next(iterator, ReplicaControllerRecord.NAME, readFields);
-//        if (StartNameServer.debugMode) GNS.getLogger().finer("Got next: " + count);
-      if (hashMap == null) {
-//          if (StartNameServer.debugMode) GNS.getLogger().finer("BREAK!! ");
-        break;
-      }
+      HashMap<Field, Object> hashMap = iterator.nextHashMap();
       ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(hashMap);
-
       //Iterate through the rcRecord and check if any changes need to
       //be made to the active name server set
-//    Set<ReplicaControllerRecord> rcRecords = NameServer.getAllPrimaryNameRecords();
-//    if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\tNumberOfrcRecords\t" + rcRecords.size());
-
-//    for (ReplicaControllerRecord rcRecord : rcRecords) {
-
       try {
-
         if (rcRecord.isMarkedForRemoval()) {
           continue;
         }
-
 //          count++;
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound);

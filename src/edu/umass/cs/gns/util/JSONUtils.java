@@ -141,26 +141,26 @@ public class JSONUtils {
 
 
   public static Object getObject(Field field, JSONObject jsonObject) throws JSONException{
-    if (jsonObject.has(field.getFieldName())) {
+    if (jsonObject.has(field.getName())) {
       switch (field.type()) {
         case BOOLEAN:
-          return jsonObject.getBoolean(field.getFieldName());
+          return jsonObject.getBoolean(field.getName());
         case INTEGER:
-          return jsonObject.getInt(field.getFieldName());
+          return jsonObject.getInt(field.getName());
         case STRING:
-          return jsonObject.getString(field.getFieldName());
+          return jsonObject.getString(field.getName());
         case SET_INTEGER:
-          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getFieldName()));
+          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_INTEGER:
-          return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getFieldName()));
+          return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_STRING:
-          return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getFieldName()));
+          return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getName()));
         case VALUES_MAP:
-          return new ValuesMap(jsonObject.getJSONObject(field.getFieldName()));
+          return new ValuesMap(jsonObject.getJSONObject(field.getName()));
         case VOTES_MAP:
-          return toIntegerMap(jsonObject.getJSONObject(field.getFieldName()));
+          return toIntegerMap(jsonObject.getJSONObject(field.getName()));
         case STATS_MAP:
-          return toStatsMap(jsonObject.getJSONObject(field.getFieldName()));
+          return toStatsMap(jsonObject.getJSONObject(field.getName()));
         default:
           GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
@@ -195,31 +195,31 @@ public class JSONUtils {
     if (value == null) return;
     switch (field.type()) {
       case BOOLEAN:
-        jsonObject.put(field.getFieldName(), value);
+        jsonObject.put(field.getName(), value);
         break;
       case INTEGER:
-        jsonObject.put(field.getFieldName(), value);
+        jsonObject.put(field.getName(), value);
         break;
       case STRING:
-        jsonObject.put(field.getFieldName(), value);
+        jsonObject.put(field.getName(), value);
         break;
       case SET_INTEGER:
-        jsonObject.put(field.getFieldName(), (Set<Integer>)value);
+        jsonObject.put(field.getName(), (Set<Integer>)value);
         break;
       case LIST_INTEGER:
-        jsonObject.put(field.getFieldName(), (ArrayList<Integer>)value);
+        jsonObject.put(field.getName(), (ArrayList<Integer>)value);
         break;
       case LIST_STRING:
-        jsonObject.put(field.getFieldName(), (ArrayList<String>)value);
+        jsonObject.put(field.getName(), (ArrayList<String>)value);
         break;
       case VALUES_MAP:
-        jsonObject.put(field.getFieldName(), ((ValuesMap)value).toJSONObject());
+        jsonObject.put(field.getName(), ((ValuesMap)value).toJSONObject());
         break;
       case VOTES_MAP:
-        jsonObject.put(field.getFieldName(), ((ConcurrentMap<Integer,Integer>)value));
+        jsonObject.put(field.getName(), ((ConcurrentMap<Integer,Integer>)value));
         break;
       case STATS_MAP:
-        jsonObject.put(field.getFieldName(), ((ConcurrentMap<Integer,StatsInfo>)value));
+        jsonObject.put(field.getName(), ((ConcurrentMap<Integer,StatsInfo>)value));
         break;
       default:
         GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
