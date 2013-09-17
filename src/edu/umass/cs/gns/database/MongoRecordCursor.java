@@ -7,6 +7,7 @@ package edu.umass.cs.gns.database;
 
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import java.util.NoSuchElementException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +16,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class MongoRecordCursor implements BasicRecordCursor {
+public class MongoRecordCursor extends BasicRecordCursor {
 
   public MongoRecordCursor(DBCursor cursor) {
     this.cursor = cursor;
@@ -35,7 +36,7 @@ public class MongoRecordCursor implements BasicRecordCursor {
         return new JSONObject(dbObject.toString());
       } catch (JSONException e) {
         // Since next can't throw anything which isn't a runtime exception.
-        throw new RuntimeException("Error parsing JSON object.");
+        throw new GnsRuntimeException("Error parsing JSON object.");
       }
     } else {
       throw new NoSuchElementException();

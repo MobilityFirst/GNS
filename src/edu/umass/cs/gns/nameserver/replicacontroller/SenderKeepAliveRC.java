@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nameserver.replicacontroller;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.recordExceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.packet.KeepAlivePacket;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;

@@ -7,7 +7,7 @@ package edu.umass.cs.gns.nameserver.recordmap;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;

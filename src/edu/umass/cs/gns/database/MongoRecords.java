@@ -19,8 +19,8 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.nameserver.fields.FieldType;
-import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
-import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
@@ -278,42 +278,28 @@ public class MongoRecords implements NoSQLRecords {
    * @param key
    * @param value
    * @param explain
-   * @return 
+   * @return a MongoRecordCursor
    */
-  private HashSet<JSONObject> query(String collectionName, Field valuesMapField, String key, String value, boolean explain) {
-    db.requestStart();
-    try {
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      // note that if the value of the key in the database is a list (which it is) this
-      // query will find all records where the value (a list) *contains* an element whose value is the value
-      //
-      //FROM MONGO DOC: Match an Array Element
-      //Equality matches can specify a single element in the array to match. These specifications match 
-      //if the array contains at least one element with the specified value.
-      //In the following example, the query matches all documents where the value of the field tags is 
-      //an array that contains 'fruit' as one of its elements:
-      //db.inventory.find( { tags: 'fruit' } )
+  public MongoRecordCursor query(String collectionName, Field valuesMapField, String key, String value, boolean explain) {
+    db.requestEnsureConnection();
+    DBCollection collection = db.getCollection(collectionName);
+    // note that if the value of the key in the database is a list (which it is) this
+    // query will find all records where the value (a list) *contains* an element whose value is the value
+    //
+    //FROM MONGO DOC: Match an Array Element
+    //Equality matches can specify a single element in the array to match. These specifications match 
+    //if the array contains at least one element with the specified value.
+    //In the following example, the query matches all documents where the value of the field tags is 
+    //an array that contains 'fruit' as one of its elements:
+    //db.inventory.find( { tags: 'fruit' } )
 
-      String fieldName = valuesMapField.getFieldName() + "." + key;
-      BasicDBObject query = new BasicDBObject(fieldName, value);
-      DBCursor cursor = collection.find(query);
-      if (explain) {
-        System.out.println(cursor.explain().toString());
-      }
-      HashSet<JSONObject> result = new HashSet<JSONObject>();
-      while (cursor.hasNext()) {
-        DBObject obj = cursor.next();
-        result.add(new JSONObject(obj.toString()));
-      }
-      return result;
-
-    } catch (JSONException e) {
-      GNS.getLogger().warning("Unable to parse JSON: " + e);
-      return null;
-    } finally {
-      db.requestDone();
+    String fieldName = valuesMapField.getFieldName() + "." + key;
+    BasicDBObject query = new BasicDBObject(fieldName, value);
+    DBCursor cursor = collection.find(query);
+    if (explain) {
+      System.out.println(cursor.explain().toString());
     }
+    return new MongoRecordCursor(cursor);
   }
 
   @Override
@@ -744,7 +730,7 @@ public class MongoRecords implements NoSQLRecords {
       db.requestDone();
     }
   }
-   
+
   @Override
   public Object getIterator(String collectionName, Field nameField, ArrayList<Field> fields) {
     String primaryKey = getCollectionSpec(collectionName).getPrimaryKey();
@@ -759,7 +745,6 @@ public class MongoRecords implements NoSQLRecords {
         projection.append(f.getFieldName(), 1);
       }
     }
-
     DBCursor cursor = collection.find(query, projection);
     return cursor;
   }
@@ -824,7 +809,7 @@ public class MongoRecords implements NoSQLRecords {
     getInstance().init();
   }
 
-  // ALL THE BELOW IS TEST CODE
+  // ALL THE CODE BELOW IS TEST CODE
 //  //test code
   private static void queryTest(int nodeID) throws RecordNotFoundException, Exception {
     NameServer.nodeID = nodeID;
@@ -832,11 +817,20 @@ public class MongoRecords implements NoSQLRecords {
     HashFunction.initializeHashFunction();
     MongoRecords instance = MongoRecords.getInstance();
     instance.printAllEntries(DBNAMERECORD);
-    System.out.println(instance.query(DBNAMERECORD, NameRecord.VALUES_MAP, "location", "home", true));
-    BasicRecordCursor cursor = instance.getAllRowsIterator(DBNAMERECORD);
+    MongoRecordCursor cursor = instance.query(DBNAMERECORD, NameRecord.VALUES_MAP, "location", "home", true);
+
+    while (cursor.hasNext()) {
+      try {
+        JSONObject json = cursor.next();
+        System.out.println(json.getString(NameRecord.NAME.getFieldName()) + " -> " + json.toString());
+      } catch (Exception e) {
+        System.out.println("Exception: " + e);
+      }
+    }
+    //cursor = instance.getAllRowsIterator(DBNAMERECORD);
 //    while (cursor.hasNext()) {
 //      System.out.println(cursor.next().toString());
-//    }  
+//    } 
   }
 //  private static NameRecord createNameRecord(String name, String key1, String key2, String value) throws Exception {
 //    ValuesMap valuesMap = new ValuesMap();

@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;

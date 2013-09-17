@@ -5,12 +5,14 @@
  */
 package edu.umass.cs.gns.database;
 
+import java.util.Iterator;
+import org.json.JSONObject;
+
 /**
  * A cursor that can be used to iterate through a collection of GNS served records as JSONObjects.
  * 
  * @author westy
  */
-public abstract class BasicRecordCursor implements RecordCursorInterface {
-  
-  
+public interface RecordCursorInterface extends Iterator<JSONObject> {
+ 
 }

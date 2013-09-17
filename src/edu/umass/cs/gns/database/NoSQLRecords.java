@@ -5,8 +5,8 @@
 package edu.umass.cs.gns.database;
 
 import edu.umass.cs.gns.nameserver.fields.Field;
-import edu.umass.cs.gns.nameserver.recordExceptions.RecordExistsException;
-import edu.umass.cs.gns.nameserver.recordExceptions.RecordNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
