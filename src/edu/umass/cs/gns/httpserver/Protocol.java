@@ -120,6 +120,7 @@ public class Protocol {
   public final static String GENERICEERROR = "+GENERICEERROR+";
   public final static String ALLFIELDS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
+  public final static String EMPTY = "+EMPTY+";
   //
   public static final String RASALGORITHM = "RSA";
   public static final String SIGNATUREALGORITHM = "SHA1withRSA";
@@ -166,34 +167,34 @@ public class Protocol {
             + urlPrefix + HELP + NEWLINE
             + "  Returns this help message." + NEWLINE + NEWLINE
             //
-//            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
-//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-//            + "  Creates a GUID associated with the the human readable name and the supplied publickey. Returns a guid." + NEWLINE
-//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-//            //
-//            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
-//            + KEYSEP + APPGUID + VALSEP + "<app guid>" 
-//            + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-//            + "  Associates the GUID supplied with the human readable name and the publickey." + NEWLINE
-//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-//            //
-//            + urlPrefix + DELETEACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>"
-//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-//            + "  Associates the GUID supplied with the human readable name and the publickey." + NEWLINE
-//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-//            //
-//            + urlPrefix + LOOKUPGUID + QUERYPREFIX + NAME + VALSEP + "<name>"
-//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-//            + "  Returns the guid registered for this human readable name. Returns " + BADACCOUNT + " if the GUID has not been registered." + NEWLINE
-//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-//            //
-//            + urlPrefix + LOOKUPGUIDRECORD + QUERYPREFIX + GUID + VALSEP + "<guid>"
-//            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-//            + "  Returns human readable name and public key associated with the given GUID. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE
-//            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
-//            //
-//            + "Unsecure versions of above operations - "
-//            + "soon will only work in DEMO mode" + NEWLINE + NEWLINE
+            //            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
+            //            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            //            + "  Creates a GUID associated with the the human readable name and the supplied publickey. Returns a guid." + NEWLINE
+            //            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+            //            //
+            //            + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>"
+            //            + KEYSEP + APPGUID + VALSEP + "<app guid>" 
+            //            + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            //            + "  Associates the GUID supplied with the human readable name and the publickey." + NEWLINE
+            //            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+            //            //
+            //            + urlPrefix + DELETEACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + GUID + VALSEP + "<guid>"
+            //            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            //            + "  Associates the GUID supplied with the human readable name and the publickey." + NEWLINE
+            //            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+            //            //
+            //            + urlPrefix + LOOKUPGUID + QUERYPREFIX + NAME + VALSEP + "<name>"
+            //            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            //            + "  Returns the guid registered for this human readable name. Returns " + BADACCOUNT + " if the GUID has not been registered." + NEWLINE
+            //            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+            //            //
+            //            + urlPrefix + LOOKUPGUIDRECORD + QUERYPREFIX + GUID + VALSEP + "<guid>"
+            //            + KEYSEP + APPGUID + VALSEP + "<app guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            //            + "  Returns human readable name and public key associated with the given GUID. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE
+            //            + "  Must be signed by the given application guid." + NEWLINE + NEWLINE
+            //            //
+            //            + "Unsecure versions of above operations - "
+            //            + "soon will only work in DEMO mode" + NEWLINE + NEWLINE
             + urlPrefix + REGISTERACCOUNT + QUERYPREFIX + NAME + VALSEP + "<name>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>" + NEWLINE
             + "  Creates a GUID associated with the the human readable name (a human readable name) and the supplied publickey. Returns a guid." + NEWLINE + NEWLINE
             //
@@ -228,6 +229,11 @@ public class Protocol {
             //
             + urlPrefix + CREATELIST + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<JSON List>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds a key value pair to the database for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
+            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
+            + NEWLINE + NEWLINE
+            //
+            + urlPrefix + CREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Adds a key value pair to the database for the given GUID. See below for more on the signature. "
             //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             // 
@@ -372,8 +378,7 @@ public class Protocol {
             + urlPrefix + DUMPCACHE + NEWLINE
             + "  [ONLY IN DEMO MODE] Returns the contents of the local name server cache." + NEWLINE + NEWLINE
             + urlPrefix + DUMP + NEWLINE
-            + "  [ONLY IN DEMO MODE] Returns the contents of the database." + NEWLINE + NEWLINE 
-            //            + urlPrefix + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + "<guid>" + NEWLINE
+            + "  [ONLY IN DEMO MODE] Returns the contents of the database." + NEWLINE + NEWLINE //            + urlPrefix + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + "<guid>" + NEWLINE
             //            + "  [ONLY IN DEMO MODE] Removes all records for the given." + NEWLINE + NEWLINE
             ;
 
@@ -544,7 +549,7 @@ public class Protocol {
       return BADRESPONSE + " " + BADGUID;
     }
     if (verifySignature(userInfo, signature, message)) {
-      if (recordAccess.create(userInfo.getGuid(), field, new ArrayList<String>(Arrays.asList(value)))) {
+      if (recordAccess.create(userInfo.getGuid(), field, (value == null ? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(value))))) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -800,7 +805,7 @@ public class Protocol {
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP + QUERYPREFIX + NAME + VALSEP + tagName;
   }
-  
+
   public String processDumpCache() {
     if (demoMode) {
       return Admintercessor.getInstance().sendDumpCache();
@@ -950,56 +955,47 @@ public class Protocol {
         return processSetPassword(guid, password, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
         // LOOKUP
       } else if (LOOKUPGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
-        // syntax: lookup userName
         String userName = queryMap.get(NAME);
         return processLookupGuid(userName);
       } else if (LOOKUPGUIDRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
-        // syntax: lookup guid
         String guid = queryMap.get(GUID);
         return processLookupGuidInfo(guid);
-        // READ
-        // READ LONG VERSION WITH READER
       } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
-        // Read one field
-        // syntax: guid field reader signature
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
         String reader = queryMap.get(READER);
         String signature = queryMap.get(SIGNATURE);
         return processRead(guid, field, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
-        // Read one field
-        // syntax: guid field reader signature
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
         String reader = guid;
         String signature = queryMap.get(SIGNATURE);
         return processRead(guid, field, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
-        // Read one field
-        // syntax: guid field reader signature
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
         String reader = queryMap.get(READER);
         String signature = queryMap.get(SIGNATURE);
         return processReadOne(guid, field, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
-        // Read one field
-        // syntax: guid field reader signature
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
         String reader = guid;
         String signature = queryMap.get(SIGNATURE);
         return processReadOne(guid, field, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        //
-        // NEW
-        //
+        // CREATE AN EMPTY FIELD
       } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
         String value = queryMap.get(VALUE);
         String signature = queryMap.get(SIGNATURE);
         return processCreate(guid, field, value, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String signature = queryMap.get(SIGNATURE);
+        return processCreate(guid, field, null, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);

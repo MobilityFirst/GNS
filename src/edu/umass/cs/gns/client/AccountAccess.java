@@ -61,8 +61,10 @@ public class AccountAccess {
     ArrayList<String> accountResult = client.sendQuery(guid, ACCOUNT_INFO);
     if (accountResult == null) {
       guid = lookupPrimaryGuid(guid);
+      if (guid != null) {
+        accountResult = client.sendQuery(guid, ACCOUNT_INFO);
+      }
     }
-    accountResult = client.sendQuery(guid, ACCOUNT_INFO);
     if (accountResult != null) {
       try {
         return new AccountInfo(accountResult);
