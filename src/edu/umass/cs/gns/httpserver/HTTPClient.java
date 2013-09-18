@@ -301,24 +301,6 @@ public class HTTPClient {
   }
 
   /**
-   * @deprecated @see #createField
-   * @see #appendValue
-   * @see #replaceValue
-   * @see #removeValue
-   *
-   * Writes a key / value pair to the GNRS server for the given guid. Signs the query using the private key of the user associated
-   * with the guid.
-   *
-   */
-  @Deprecated
-  public void writeField(String guid, String field, String value) throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
-    String command = createAndSignQuery(guid, Protocol.INSERT, Protocol.GUID, guid, Protocol.FIELD, field, Protocol.VALUE, value);
-    String response = sendGetCommand(command);
-
-    checkResponse(response, command);
-  }
-
-  /**
    * Shorthand for readField(guid, field, guid)
    *
    * @param guid

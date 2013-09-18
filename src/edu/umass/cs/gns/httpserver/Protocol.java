@@ -41,6 +41,7 @@ public class Protocol {
   public final static String REGISTERACCOUNT = "registerAccount";
   public final static String ADDALIAS = "addAlias";
   public final static String REMOVEALIAS = "removeAlias";
+  public final static String RETRIEVEALIASES = "retrieveAliases";
   public final static String ADDGUID = "addGuid";
   public final static String SETPASSWORD = "setPassword";
   public final static String REMOVEACCOUNT = "removeAccount";
@@ -67,11 +68,6 @@ public class Protocol {
   public final static String CLEAR = "clear";
   public final static String READ = "read";
   public final static String READONE = "readOne";
-  //
-  // old DEPRECATED
-  public final static String INSERT = "insert";
-  public final static String INSERTLIST = "insertList";
-  public final static String INSERTALL = "insertAll";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";
@@ -490,6 +486,17 @@ public class Protocol {
     }
   }
 
+  public String processRetrieveAliases(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo = accountAccess.lookupGuidInfo(guid);
+    if (verifySignature(guidInfo, signature, message)) {
+      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      ArrayList<String> aliases = accountInfo.getAliases();
+      return new JSONArray(aliases).toString();
+    } else {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    }
+  }
+
   public String processAddGuid(String guid, String name, String publicKey, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     String newGuid = createGuidFromPublicKey(publicKey);
     GuidInfo guidInfo = accountAccess.lookupGuidInfo(guid);
@@ -711,8 +718,7 @@ public class Protocol {
     }
     if (verifySignature(userInfo, signature, message)) {
       Set values = aclAccess.lookup(access, userInfo, field);
-      JSONArray list = new JSONArray(values);
-      return list.toString();
+      return new JSONArray(values).toString();
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -947,6 +953,10 @@ public class Protocol {
         String name = queryMap.get(NAME);
         String signature = queryMap.get(SIGNATURE);
         return processRemoveAlias(guid, name, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (RETRIEVEALIASES.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String signature = queryMap.get(SIGNATURE);
+        return processRetrieveAliases(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (SETPASSWORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, PASSWORD, SIGNATURE))) {
         // syntax: register userName guid public_key
         String guid = queryMap.get(GUID);
