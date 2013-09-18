@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.exceptions;
 
 import edu.umass.cs.gns.exceptions.GnsException;
-import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.database.Field;
 
 public class FieldNotFoundException extends GnsException{
   Field missingField;

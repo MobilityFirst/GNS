@@ -6,7 +6,7 @@ package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -19,6 +19,12 @@ import java.util.*;
  * @author westy
  */
 public interface RecordMapInterface {
+  
+  public void addNameRecord(NameRecord recordEntry) throws RecordExistsException;
+
+  public NameRecord getNameRecord(String name) throws RecordNotFoundException;
+
+  public void updateNameRecord(NameRecord recordEntry);
 
   public void addNameRecord(JSONObject json) throws RecordExistsException;
 
@@ -30,27 +36,7 @@ public interface RecordMapInterface {
 
   public Set<String> getAllRowKeys();
 
-  public void updateNameRecordListValue(String name, String key, ArrayList<String> value);
-
-  public void updateNameRecordListValueInt(String name, String key, Set<Integer> value);
-
-  public void updateNameRecordFieldAsString(String name, String key, String string);
-  
-  public void updateNameRecordFieldAsMap(String name, String key, Map map);
-  
-  public void updateNameRecordFieldAsCollection(String name, String key, Collection collection);
-
-  public String getNameRecordField(String name, String key);
-
-  public ArrayList<String> getNameRecordFields(String name, ArrayList<String> keys);
-
-  public String tableToString();
-
   public void reset();
-
-  public NameRecord getNameRecordLazy(String name);
-
-  public NameRecord getNameRecordLazy(String name, ArrayList<String> keys);
 
   public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException;
 
@@ -72,17 +58,6 @@ public interface RecordMapInterface {
 
   public abstract BasicRecordCursor getAllRowsIterator();
 
-  //
-  // OLD Style
-  //
-  public void addNameRecord(NameRecord recordEntry) throws RecordExistsException;
-
-  public NameRecord getNameRecord(String name) throws RecordNotFoundException;
-
-  public Set<NameRecord> getAllNameRecords();
-
-  public void updateNameRecord(NameRecord recordEntry);
-
   // Replica Controller
   
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;
@@ -90,12 +65,5 @@ public interface RecordMapInterface {
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws RecordExistsException;
 
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry);
-  
-  public Set<ReplicaControllerRecord> getAllPrimaryNameRecords();
-  
-  public ReplicaControllerRecord getNameRecordPrimaryLazy(String name);
-
-
-
   
 }

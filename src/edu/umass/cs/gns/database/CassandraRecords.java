@@ -13,7 +13,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.nameserver.fields.Field;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -259,9 +258,10 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void printAllEntries(String tableName) {
-    for (JSONObject entry : retrieveAllEntries(tableName)) {
-      System.out.println(entry.toString());
+  public void printAllEntries(String collectionName) {
+    BasicRecordCursor cursor = getAllRowsIterator(collectionName);
+    while (cursor.hasNext()) {
+      System.out.println(cursor.nextJSONObject());
     }
   }
 
@@ -300,37 +300,9 @@ public class CassandraRecords implements NoSQLRecords {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-//  @Override
-//  public HashMap<Field, Object> next(Object iterator, Field nameField, ArrayList<Field> fields) {
-//    throw new UnsupportedOperationException("Not supported yet.");
-//  }
-
   @Override
   public BasicRecordCursor getAllRowsIterator(String collection) {
     throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-//  @Override
-//  public JSONObject next(Object iterator, Field nameField) {
-//    return null;  //To change body of implemented methods use File | Settings | File Templates.
-//  }
-
-//  @Override
-//  public void returnIterator() {
-//    //To change body of implemented methods use File | Settings | File Templates.
-//  }
-
-  @Override
-  public ArrayList<JSONObject> retrieveAllEntries(String tableName) {
-    ArrayList<JSONObject> result = new ArrayList<JSONObject>();
-    String query = "SELECT * FROM " + CSI(tableName) + ";";
-    GNS.getLogger().finer("Executing query " + query);
-    ResultSet results = session.execute(query);
-    JSONObject json = new JSONObject();
-    for (Row row : results) {
-      result.add(retrieveJSONObjectFromRow(row));
-    }
-    return result;
   }
 
   @Override

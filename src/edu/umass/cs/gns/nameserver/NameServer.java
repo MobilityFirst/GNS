@@ -1,12 +1,13 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.FieldType;
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.fields.Field;
-import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -17,10 +18,8 @@ import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -156,75 +155,6 @@ public class NameServer {
     }
   }
 
-  //    private void restartAfterCrash() {
-//        Set<NameRecord> nameRecords = getAllNameRecords();
-//        // check if all name records have replicas created for them.
-//        for (NameRecord nameRecord: nameRecords) {
-//            if (nameRecord.isPrimaryReplica()) {
-//                String primaryPaxosID = ReplicaController.getPrimaryPaxosID(nameRecord);
-//                if (!PaxosManager.doesPaxosInstanceExist(primaryPaxosID)) {
-//
-//                }
-//            }
-//        }
-//    }
-//  public static ReplicaControllerRecord getPrimaryNameRecord(String name) {
-//    return (ReplicaControllerRecord) recordMap.getNameRecord(name);
-//  }
-//
-//  public static NameRecord getActiveNameRecord(String name) {
-//        return (NameRecord)recordMap.getNameRecord(name);
-//  }
-//    public static NameRecord getNameRecord(String name) {
-//        return recordMap.getNameRecord(name);
-//    }
-//  public static void addNameRecord(NameRecord recordEntry) {
-//    if (StartNameServer.debugMode) {
-//      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
-//    }
-//
-////    try {
-//      // first add to database
-//      recordMap.addNameRecord(recordEntry);
-//
-//      // then create paxos instance
-//      // if this node is a primary name server for this name, then create a paxos instance for this name
-//      // whose node IDs are the primary name servers
-//      HashSet<Integer> primaries = recordEntry.getPrimaryNameservers();
-//      if (StartNameServer.debugMode) {
-//        GNS.getLogger().fine("Start primary " + primaries);
-//      }
-//      if (primaries.contains(nodeID)) {
-//        if (StartNameServer.debugMode) {
-//          GNS.getLogger().fine("Starting replication controller primary" + primaries);
-//        }
-//        ReplicaController.handleNameRecordAddAtPrimary(recordEntry, primaries);
-//      }
-////    } catch (JSONException e) {
-////      GNS.getLogger().severe("Error getting json record: " + e);
-////    }
-//
-//  }
-//
-//
-//
-//
-//  /**
-//   * Creates a name record that loads reads and writes fields on demand.
-//   *
-//   * @param name
-//   * @return
-//   */
-//  public static NameRecord getNameRecordLazy(String name) {
-//    GNS.getLogger().info("Creating lazy name record for " + name);
-//    return recordMap.getNameRecordLazy(name);
-//  }
-//
-//  public static NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
-//    GNS.getLogger().info("Creating lazy name record for " + name);
-//    return recordMap.getNameRecordLazy(name, keys);
-//  }
-//
   /******************************
    * Name Record methods
    ******************************/
@@ -309,21 +239,10 @@ public class NameServer {
     recordMap.removeNameRecord(name);
   }
 
-  /**
-   * Return all name records in DB (Expensive operation)
-   * @return
-   */
-  public static Set<NameRecord> getAllNameRecords() {
-    return recordMap.getAllNameRecords();
+  public static BasicRecordCursor getAllRowsIterator() {
+    return recordMap.getAllRowsIterator();
   }
 
-//  public static boolean containsName(String name) {
-//    return recordMap.containsName(name);
-//  }
-//  public static ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
-//    GNS.getLogger().info("Creating lazy primary name record for " + name);
-//    return replicaController.getNameRecordPrimaryLazy(name);
-//  }
   /******************************
    * Replica controller methods
    ******************************/
@@ -372,12 +291,8 @@ public class NameServer {
     replicaController.updateNameRecordPrimary(record);
   }
 
-  /**
-   * Return all name records in DB (Expensive operation)
-   * @return
-   */
-  public static Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
-    return replicaController.getAllPrimaryNameRecords();
+  public static BasicRecordCursor getAllPrimaryRowsIterator() {
+    return replicaController.getAllRowsIterator();
   }
 
   //  the nuclear option
@@ -386,54 +301,4 @@ public class NameServer {
     // reset them both
     replicaController.reset();
   }
-  //  public static boolean isActiveNameServer(String name) {
-//    //println("isActiveNameServer: recordKey = " + recordKey + " name = " + name, debugMode);
-//    //println("isActiveNameServer: " + NameServer.recordMap, debugMode);
-//    NameRecord nameRecord = getNameRecord(name);
-//    //println("isActiveNameServer: " + nameRecord.toString(), debugMode);
-//    return (nameRecord != null) ? nameRecord.containsActiveNameServer(nodeID) : false;
-//    //recordMap.getNameRecordField(NameRecord.);
-//  }
-//  public static Set<Integer> getActiveNameServers(String name) {
-//    NameRecord nameRecord = getNameRecord(name);
-//    return (nameRecord == null) ? new HashSet<Integer>() : nameRecord.copyActiveNameServers();
-//  }
-//  public static Set<Integer> getAllNameServers(String name) {
-//    NameRecord nameRecord = getNameRecord(name);
-//    return (nameRecord == null) ? new HashSet<Integer>() : nameRecord.copyAllNameServers();
-//  }
-//  public static boolean isPrimaryNameServer(String name) {
-//    ReplicaControllerRecord nameRecord = getPrimaryNameRecord(name);
-//    //println("isPrimaryNameServer: " + nameRecord.toString(), debugMode);
-//    return (nameRecord != null) ? nameRecord.containsPrimaryNameserver(nodeID) : false;
-//  }
-//  public static Set<Integer> getPrimaryNameServers(String name) {
-//    NameRecord nameRecord = getNameRecord(name);
-//
-//    if (nameRecord != null) {
-//      return nameRecord.getPrimaryNameservers();
-//    } else {
-//      return getPrimaryReplicas(name);
-//    }
-//
-//  }
-//  public static int getWriteFrequency(String name) {
-//    NameRecord nameRecord = getNameRecord(name);
-//    return (nameRecord == null) ? 0 : nameRecord.getTotalWriteFrequency();
-//  }
-//
-//  public static int getReadFrequency(String name) {
-//    NameRecord nameRecord = getNameRecord(name);
-//    return (nameRecord == null) ? 0 : nameRecord.getTotalReadFrequency();
-//  }
-//  public static Set<NameRecord> getAllNameRecords() {
-//    return recordMap.getAllNameRecords();
-//  }
-//    // ** NEW **
-//    public static Set<NameRecord> getAllPrimaryNameRecords() {
-//        return recordMap.getAllNameRecords();
-//    }
-//    public static Set<NameRecord> getAllActiveNameRecords() {
-//        return recordMap.getAllNameRecords();
-//    }
 }

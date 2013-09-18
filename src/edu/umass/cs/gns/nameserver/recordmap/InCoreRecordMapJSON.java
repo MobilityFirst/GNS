@@ -4,7 +4,7 @@ import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -55,85 +55,6 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
-    if (containsName(name)) {
-      try {
-        recordMap.get(name).put(key, value);
-        //System.out.println("&&&&"+recordMap.get(name).toString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error updating json record: " + e);
-      }
-    }
-  }
-
-  @Override
-  public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
-    if (containsName(name)) {
-      try {
-        recordMap.get(name).put(key, value);
-        //System.out.println("&&&&"+recordMap.get(name).toString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error updating json record: " + e);
-      }
-    }
-  }
-
-  @Override
-  public void updateNameRecordFieldAsString(String name, String key, String string) {
-    if (containsName(name)) {
-      try {
-        recordMap.get(name).put(key, string);
-        //System.out.println("&&&&"+recordMap.get(name).toString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error updating json record: " + e);
-      }
-    }
-  }
-  
-  @Override
-  public void updateNameRecordFieldAsCollection(String name, String key, Collection list) {
-    if (containsName(name)) {
-      try {
-        recordMap.get(name).put(key, list);
-        //System.out.println("&&&&"+recordMap.get(name).toString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error updating json record: " + e);
-      }
-    }
-  }
-  
-  @Override
-  public void updateNameRecordFieldAsMap(String name, String key, Map map) {
-    if (containsName(name)) {
-      try {
-        recordMap.get(name).put(key, map);
-        //System.out.println("&&&&"+recordMap.get(name).toString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error updating json record: " + e);
-      }
-    }
-  }
-
-  @Override
-  public String getNameRecordField(String name, String key) {
-    if (containsName(name)) {
-      try {
-        return recordMap.get(name).getString(key);
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error updating json record: " + e);
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
-
-  @Override
-  public ArrayList<String> getNameRecordFields(String name, ArrayList<String> key) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
   public Set<String> getAllRowKeys() {
     return recordMap.keySet();
   }
@@ -151,17 +72,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
       return null;
     }
   }
-  
-  @Override
-  public NameRecord getNameRecordLazy(String name) {
-   throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
+ 
   @Override
   public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
@@ -232,18 +143,18 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     }
   }
 
-  @Override
-  public Set<NameRecord> getAllNameRecords() {
-    Set<NameRecord> result = new HashSet();
-    for (Map.Entry<String, JSONObject> entry : recordMap.entrySet()) {
-      try {
-        result.add(new NameRecord(entry.getValue()));
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Error getting json record: " + e);
-      }
-    }
-    return result;
-  }
+//  @Override
+//  public Set<NameRecord> getAllNameRecords() {
+//    Set<NameRecord> result = new HashSet();
+//    for (Map.Entry<String, JSONObject> entry : recordMap.entrySet()) {
+//      try {
+//        result.add(new NameRecord(entry.getValue()));
+//      } catch (JSONException e) {
+//        GNS.getLogger().severe("Error getting json record: " + e);
+//      }
+//    }
+//    return result;
+//  }
 
   @Override
   public void updateNameRecord(NameRecord recordEntry) {
@@ -256,11 +167,6 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
   
   @Override
-  public ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
-     throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -270,10 +176,10 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  @Override
-  public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
+//  @Override
+//  public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//  }
 
 //  //
 //  // TEST CODE

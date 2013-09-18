@@ -12,8 +12,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.fields.Field;
-import edu.umass.cs.gns.nameserver.fields.FieldType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;

@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.database;
 
-import edu.umass.cs.gns.nameserver.fields.Field;
 import java.util.HashMap;
 import java.util.Iterator;
 import org.json.JSONObject;

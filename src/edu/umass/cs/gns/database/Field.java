@@ -3,7 +3,10 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.nameserver.fields;
+package edu.umass.cs.gns.database;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Field {
 
@@ -25,5 +28,13 @@ public class Field {
   @Override
   public String toString() {
     return name + " " + type.toString();
+  }
+  
+  public static ArrayList<Field> keys(Field ... fields) {
+    return new ArrayList<Field>(Arrays.asList(fields));
+  }
+
+  public static ArrayList<Object> values(Object ... objects) {
+    return new ArrayList<Object>(Arrays.asList(objects));
   }
 }

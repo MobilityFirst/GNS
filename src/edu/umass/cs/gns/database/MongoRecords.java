@@ -17,8 +17,6 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.nameserver.fields.Field;
-import edu.umass.cs.gns.nameserver.fields.FieldType;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -391,22 +389,6 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
-  /**
-   * THIS SHOULD NEVER BE CALLED IN PRODUCTION CODE UNLESS IT IS A TEST FUNCTION.
-   *
-   * @param collectionName
-   * @return
-   */
-  @Override
-  public ArrayList<JSONObject> retrieveAllEntries(String collectionName) {
-    ArrayList<JSONObject> result = new ArrayList<JSONObject>();
-    MongoRecordCursor cursor = getAllRowsIterator(collectionName);
-    while (cursor.hasNext()) {
-      result.add(cursor.nextJSONObject());
-    }
-    return result;
-  }
-
   @Override
   public HashMap<Field, Object> lookup(String collectionName, String guid, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
     return lookup(collectionName, guid, nameField, fields1, null, null);
@@ -533,41 +515,12 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1) {
-    db.requestStart();
-    try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject updates = new BasicDBObject();
-      if (fields1 != null) {
-        for (int i = 0; i < fields1.size(); i++) {
-          Object newValue;
-          if (fields1.get(i).type() == FieldType.VALUES_MAP) {
-            newValue = ((ValuesMap) values1.get(i)).getMap();
-          } else {
-            newValue = values1.get(i);
-//            System.out.println("NEW VALUE ---> " +newValue);
-          }
-          updates.append(fields1.get(i).getName(), newValue);
-
-        }
-//        updateOperator = new BasicDBObject("$set", updates);
-      }
-
-//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-      if (updates.keySet().size() > 0) {
-        collection.update(query, new BasicDBObject("$inc", updates));
-//        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
-      }
-    } finally {
-      db.requestDone();
-    }
+  public void increment(String collectionName, String guid, ArrayList<Field> fields, ArrayList<Object> values) {
+    increment(collectionName, guid, fields, values, null, null, null);
   }
 
   @Override
-  public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1,
+  public void increment(String collectionName, String guid, ArrayList<Field> fields, ArrayList<Object> values,
           Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
     db.requestStart();
     try {
@@ -576,63 +529,41 @@ public class MongoRecords implements NoSQLRecords {
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject updates = new BasicDBObject();
-      if (fields1 != null) {
-        for (int i = 0; i < fields1.size(); i++) {
+      if (fields != null) {
+        for (int i = 0; i < fields.size(); i++) {
           Object newValue;
-          if (fields1.get(i).type() == FieldType.VALUES_MAP) {
-            newValue = ((ValuesMap) values1.get(i)).getMap();
+          if (fields.get(i).type() == FieldType.VALUES_MAP) {
+            newValue = ((ValuesMap) values.get(i)).getMap();
           } else {
-            newValue = values1.get(i);
-//            System.out.println("NEW VALUE ---> " +newValue);
+            newValue = values.get(i);
           }
-          updates.append(fields1.get(i).getName(), newValue);
-
+          updates.append(fields.get(i).getName(), newValue);
         }
-//        updateOperator = new BasicDBObject("$set", updates);
       }
-
       if (votesMapField != null && votesMapKeys != null) {
         for (int i = 0; i < votesMapKeys.size(); i++) {
           String fieldName = votesMapField.getName() + "." + votesMapKeys.get(i).getName();
           updates.append(fieldName, votesMapValues.get(i));
         }
       }
-
-//      BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
       if (updates.keySet().size() > 0) {
         collection.update(query, new BasicDBObject("$inc", updates));
-//        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
       }
     } finally {
       db.requestDone();
     }
   }
 
-  /**
-   * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
-   * the NAME (AKA the primary key) is always there.
-   * 
-   * @param collectionName
-   * @param nameField
-   * @param fields
-   * @return 
-   */
   @Override
   public MongoRecordCursor getAllRowsIterator(String collectionName, Field nameField, ArrayList<Field> fields) {
     return new MongoRecordCursor(db, collectionName, getCollectionSpec(collectionName).getPrimaryKey(), fields);
   }
 
-  /**
-   * Returns an iterator for all the rows in the collection.
-   * 
-   * @param collectionName
-   * @return 
-   */
   @Override
   public MongoRecordCursor getAllRowsIterator(String collectionName) {
     return new MongoRecordCursor(db, collectionName, getCollectionSpec(collectionName).getPrimaryKey());
   }
-  
+
   @Override
   public Set<String> keySet(String collectionName) {
     Set<String> result = new HashSet<String>();
@@ -652,6 +583,8 @@ public class MongoRecords implements NoSQLRecords {
       System.out.println(cursor.nextJSONObject());
     }
   }
+  
+
   @Override
   public String toString() {
     return "DB " + dbName;
@@ -711,10 +644,10 @@ public class MongoRecords implements NoSQLRecords {
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject().toString());
     }
-    
-   
-    
-    
+
+
+
+
   }
 //  private static NameRecord createNameRecord(String name, String key1, String key2, String value) throws Exception {
 //    ValuesMap valuesMap = new ValuesMap();

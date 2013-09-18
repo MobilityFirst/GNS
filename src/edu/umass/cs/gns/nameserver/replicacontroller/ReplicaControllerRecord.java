@@ -5,8 +5,8 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.StatsInfo;
-import edu.umass.cs.gns.nameserver.fields.Field;
-import edu.umass.cs.gns.nameserver.fields.FieldType;
+import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.FieldType;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -809,21 +809,31 @@ public class ReplicaControllerRecord {
    */
   public void addReplicaSelectionVote(int id, int vote, int updateVote) throws FieldNotFoundException{ //
 
-    ArrayList<Field> incrementFields = new ArrayList<Field>();
-    incrementFields.add(PREV_TOTAL_READ);
-    incrementFields.add(PREV_TOTAL_WRITE);
-//    incrementFields.add(PREV_TOTAL_WRITE);
-    ArrayList<Object> incrementValues = new ArrayList<Object>();
-    incrementValues.add(vote);
-    incrementValues.add(updateVote);
+//    ArrayList<Field> incrementFields = new ArrayList<Field>();
+//    incrementFields.add(PREV_TOTAL_READ);
+//    incrementFields.add(PREV_TOTAL_READ);
+////    incrementFields.add(PREV_TOTAL_WRITE);
+//    ArrayList<Object> incrementValues = new ArrayList<Object>();
+//    incrementValues.add(vote);
+//    incrementValues.add(updateVote);
+//
+//    ArrayList<Field> votesMapKeys = new ArrayList<Field>();
+//    votesMapKeys.add(new Field(Integer.toString(id),FieldType.INTEGER));
+//
+//    ArrayList<Object> votesMapValues = new ArrayList<Object>();
+//    votesMapValues.add(vote);
 
-    ArrayList<Field> votesMapKeys = new ArrayList<Field>();
-    votesMapKeys.add(new Field(Integer.toString(id),FieldType.INTEGER));
-
-    ArrayList<Object> votesMapValues = new ArrayList<Object>();
-    votesMapValues.add(vote);
-
-    NameServer.replicaController.increment(getName(), incrementFields, incrementValues, VOTES_MAP, votesMapKeys, votesMapValues);
+    NameServer.replicaController.increment(getName(), 
+            Field.keys(PREV_TOTAL_READ, PREV_TOTAL_READ),
+            //incrementFields, 
+            Field.values(vote, updateVote),
+            //incrementValues, 
+            VOTES_MAP,
+            Field.keys(new Field(Integer.toString(id),FieldType.INTEGER)),
+            //votesMapKeys,
+            Field.values(vote)
+            //votesMapValues
+            );
 
 
 

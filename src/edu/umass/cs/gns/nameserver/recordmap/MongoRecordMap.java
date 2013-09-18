@@ -1,23 +1,21 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
-import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.*;
 
 public class MongoRecordMap extends BasicRecordMap {
 
@@ -28,74 +26,13 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public String getNameRecordField(String name, String key) {
-    MongoRecords records = MongoRecords.getInstance();
-    String result = records.lookup(collectionName, name, key);
-    if (result != null) {
-      GNS.getLogger().finer(records.toString() + ":: Retrieved " + name + "/" + key + ": " + result);
-      return result;
-    } else {
-      GNS.getLogger().finer(records.toString() + ":: No record named " + name + " with key " + key);
-      return null;
-    }
-  }
-
-  @Override
-  public ArrayList<String> getNameRecordFields(String name, ArrayList<String> keys) {
-    MongoRecords records = MongoRecords.getInstance();
-    ArrayList<String> result = records.lookup(collectionName, name, keys);
-    if (result != null) {
-      GNS.getLogger().finer(records.toString() + ":: Retrieved " + name + "/" + keys + ": " + result);
-      return result;
-    } else {
-      GNS.getLogger().finer(records.toString() + ":: No record named " + name + " with key " + keys);
-      return null;
-    }
-  }
-
-  @Override
-  public void updateNameRecordListValue(String name, String key, ArrayList<String> value) {
-    MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().finer(records.toString() + ":: Writing list " + name + "/" + key + ": " + value.toString());
-    records.updateField(collectionName, name, key, value);
-  }
-
-  @Override
-  public void updateNameRecordListValueInt(String name, String key, Set<Integer> value) {
-    MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().finer(records.toString() + ":: Writing int list " + name + "/" + key + ": " + value.toString());
-    records.updateField(collectionName, name, key, value);
-  }
-
-  @Override
-  public void updateNameRecordFieldAsString(String name, String key, String string) {
-    MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().finer(records.toString() + ":: Writing string " + name + "/" + key + ": " + string);
-    records.updateField(collectionName, name, key, string);
-  }
-  
-  @Override
-  public void updateNameRecordFieldAsMap(String name, String key, Map map) {
-    MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().finer(records.toString() + ":: Writing map " + name + "/" + key + ": " + map);
-    records.updateField(collectionName, name, key, map);
-  }
-  
-  @Override
-  public void updateNameRecordFieldAsCollection(String name, String key, Collection collection) {
-    MongoRecords records = MongoRecords.getInstance();
-    GNS.getLogger().finer(records.toString() + ":: Writing collection " + name + "/" + key + ": " + collection);
-    records.updateField(collectionName, name, key, collection);
-  }
-
-  @Override
   public Set<String> getAllRowKeys() {
     MongoRecords records = MongoRecords.getInstance();
     return records.keySet(collectionName);
   }
 
   @Override
-  public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException{
+  public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException {
     if (!containsName(name)) {
       try {
         MongoRecords records = MongoRecords.getInstance();
@@ -111,44 +48,24 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public NameRecord getNameRecordLazy(String name) {
-    if (MongoRecords.getInstance().contains(collectionName, name)) {
-      //GNS.getLogger().info("Creating lazy name record for " + name);
-      return new NameRecord(name);
-    } else {
-      return null;
-    }
-  }
-
-  @Override
-  public NameRecord getNameRecordLazy(String name, ArrayList<String> keys) {
-    GNS.getLogger().severe("Not implemented yet.");
-    throw  new RuntimeException();
-//    ArrayList<String> values = MongoRecords.getInstance().lookup(collectionName,name,keys);
-//    if (values == null) return null;
-//    return new NameRecord(name, this, keys,values);
-
-  }
-
-  @Override
-  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
-    return MongoRecords.getInstance().lookup(collectionName,name,nameField, fields1);
+  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+    return MongoRecords.getInstance().lookup(collectionName, name, nameField, fields1);
 //    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
-    return MongoRecords.getInstance().lookup(collectionName,name,nameField, fields1, valuesMapField, valuesMapKeys);
+  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+    return MongoRecords.getInstance().lookup(collectionName, name, nameField, fields1, valuesMapField, valuesMapKeys);
   }
 
   @Override
   public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
-    MongoRecords.getInstance().update(collectionName,name,nameField,fields1,values1);
+    MongoRecords.getInstance().update(collectionName, name, nameField, fields1, values1);
   }
 
   @Override
   public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
-    MongoRecords.getInstance().update(collectionName,name,nameField,fields1,values1, valuesMapField, valuesMapKeys, valuesMapValues);
+    MongoRecords.getInstance().update(collectionName, name, nameField, fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
   @Override
@@ -158,21 +75,21 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
-    MongoRecords.getInstance().increment(collectionName, name, fields1, values1, votesMapField,votesMapKeys,votesMapValues);
+    MongoRecords.getInstance().increment(collectionName, name, fields1, values1, votesMapField, votesMapKeys, votesMapValues);
   }
 
   @Override
   public BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields) {
-    return MongoRecords.getInstance().getAllRowsIterator(collectionName,nameField, fields);
+    return MongoRecords.getInstance().getAllRowsIterator(collectionName, nameField, fields);
   }
 
   @Override
   public BasicRecordCursor getAllRowsIterator() {
     return MongoRecords.getInstance().getAllRowsIterator(collectionName);
   }
- 
+
   @Override
-  public NameRecord getNameRecord(String name) throws RecordNotFoundException{
+  public NameRecord getNameRecord(String name) throws RecordNotFoundException {
     try {
       JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
       if (json == null) {
@@ -188,7 +105,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(NameRecord recordEntry) throws RecordExistsException{
+  public void addNameRecord(NameRecord recordEntry) throws RecordExistsException {
     if (StartNameServer.debugMode) {
       try {
         GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
@@ -210,7 +127,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(JSONObject json) throws RecordExistsException{
+  public void addNameRecord(JSONObject json) throws RecordExistsException {
     MongoRecords records = MongoRecords.getInstance();
     try {
       String name = json.getString(NameRecord.NAME.getName());
@@ -244,28 +161,12 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public Set<NameRecord> getAllNameRecords() {
-    //MongoRecords.getInstance().keySet(collectionName);
-    MongoRecords records = MongoRecords.getInstance();
-    Set<NameRecord> result = new HashSet<NameRecord>();
-    for (JSONObject json : records.retrieveAllEntries(collectionName)) {
-      try {
-        result.add(new NameRecord(json));
-      } catch (JSONException e) {
-        GNS.getLogger().severe(records.toString() + ":: Error getting name record: " + e);
-        e.printStackTrace();
-      }
-    }
-    return result;
-  }
-
-  @Override
   public void reset() {
     MongoRecords.getInstance().reset(collectionName);
   }
 
   @Override
-  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException{
+  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException {
     try {
       JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
 //      GNS.getLogger().severe("JSON primary is " + json);
@@ -281,21 +182,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
   
   @Override
-  public ReplicaControllerRecord getNameRecordPrimaryLazy(String name) {
-    if (MongoRecords.getInstance().contains(collectionName, name)) {
-      //GNS.getLogger().info("Creating lazy name record for " + name);
-      return new ReplicaControllerRecord(name);
-    } else {
-      return null;
-    }
-  }
-
-  @Override
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws RecordExistsException {
-//    if (StartNameServer.debugMode) {
-//      GNS.getLogger().fine("Start addNameRecord " + recordEntry.getName());
-//    }
-
     try {
       MongoRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
@@ -318,37 +205,20 @@ public class MongoRecordMap extends BasicRecordMap {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
-
-  @Override
-  public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {
-    //MongoRecords.getInstance().keySet(collectionName);
-    MongoRecords records = MongoRecords.getInstance();
-    Set<ReplicaControllerRecord> result = new HashSet<ReplicaControllerRecord>();
-    for (JSONObject json : records.retrieveAllEntries(collectionName)) {
-      try {
-        result.add(new ReplicaControllerRecord(json));
-      } catch (JSONException e) {
-        GNS.getLogger().severe(records.toString() + ":: Error getting name record: " + e);
-        e.printStackTrace();
-      }
-    }
-    return result;
-//        return MongoRecordMap.g;
-  }
-
-  // test code
-  public static void main(String[] args) throws Exception {
-    NameServer.nodeID = 2;
-    retrieveFieldTest();
-    //System.exit(0);
-  }
-
-  private static void retrieveFieldTest() throws Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
-    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
-    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS.getName()));
-    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
-    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
-  }
+//
+//  // test code
+//  public static void main(String[] args) throws Exception {
+//    NameServer.nodeID = 2;
+//    retrieveFieldTest();
+//    //System.exit(0);
+//  }
+//
+//  private static void retrieveFieldTest() throws Exception {
+//    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+//    HashFunction.initializeHashFunction();
+//    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
+//    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS.getName()));
+//    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
+//    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
+//  }
 }

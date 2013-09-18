@@ -5,17 +5,16 @@
 package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
+import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.nameserver.fields.Field;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 

@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nameserver.fields;
+package edu.umass.cs.gns.database;
 
 import com.mongodb.DBObject;
 import edu.umass.cs.gns.main.GNS;

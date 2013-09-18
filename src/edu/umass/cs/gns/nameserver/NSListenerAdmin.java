@@ -2,8 +2,9 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.fields.Field;
+import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
@@ -133,8 +134,10 @@ public class NSListenerAdmin extends Thread {
             // if there is an argument it is a TAGNAME we return all the records that have that tag
             if (dumpRequestPacket.getArgument() != null) {
               String tag = dumpRequestPacket.getArgument();
-              for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-                //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
+              BasicRecordCursor cursor = NameServer.getAllRowsIterator();
+              while (cursor.hasNext()) {
+                NameRecord nameRecord = new NameRecord(cursor.next());
+                //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                 // a bit of a hack here
                 try {
                   if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
@@ -150,8 +153,10 @@ public class NSListenerAdmin extends Thread {
               }
               // OTHERWISE WE RETURN ALL THE RECORD
             } else {
-              for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-                //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
+              //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
+              BasicRecordCursor cursor = NameServer.getAllRowsIterator();
+              while (cursor.hasNext()) {
+                NameRecord nameRecord = new NameRecord(cursor.next());
                 jsonArray.put(nameRecord.toJSONObject());
               }
             }
@@ -174,8 +179,10 @@ public class NSListenerAdmin extends Thread {
                 GNS.getLogger().fine("NSListenerAdmin (" + NameServer.nodeID + ") : Handling DELETEALLRECORDS request");
                 long startTime = System.currentTimeMillis();
                 int cnt = 0;
-                for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-                  //for (NameRecord nameRecord : DBNameRecord.getAllNameRecords()) {
+                BasicRecordCursor cursor = NameServer.getAllRowsIterator();
+                while (cursor.hasNext()) {
+                  NameRecord nameRecord = new NameRecord(cursor.next());
+                  //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                   try {
                     NameServer.removeNameRecord(nameRecord.getName());
                   } catch (FieldNotFoundException e) {
