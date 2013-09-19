@@ -2,6 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -113,6 +114,9 @@ public class PaxosLogger2 extends Thread{
   private static final ReentrantLock loggingLock = new ReentrantLock();
 
 
+  private static String getLogFolderPath() {
+    return logFolder + "/" + "NODE" + NameServer.nodeID;
+  }
   // <state>
   // <last message>
   // <not logged>
@@ -132,7 +136,7 @@ public class PaxosLogger2 extends Thread{
     }
 
     // initialize folder
-    paxosStateFolder = logFolder + "/" + stateFolderSubdir;
+    paxosStateFolder = getLogFolderPath() + "/" + stateFolderSubdir;
 
     ConcurrentHashMap<String, PaxosReplica> replicas = null;
 
@@ -301,7 +305,7 @@ public class PaxosLogger2 extends Thread{
         GNS.getLogger().fine("Paxos Recovery: Now recovering log file: " + fileList[i]);
       }
       try {
-        BufferedReader br = new BufferedReader(new FileReader(new File(logFolder + "/" + fileList[i])));
+        BufferedReader br = new BufferedReader(new FileReader(new File(getLogFolderPath() + "/" + fileList[i])));
         while (true) {
           String line = br.readLine();
           if (line == null) {
@@ -395,9 +399,9 @@ public class PaxosLogger2 extends Thread{
   }
 
   private static void createLogDirs() {
-    File f = new File(logFolder);
+    File f = new File(getLogFolderPath());
     if (!f.exists()) { // paxos folder does not exist, then create dirs to store logs.
-      f.mkdirs(); // create logFolder
+      f.mkdirs(); // create getLogFolderPath()
     }
 
     f = new File(paxosStateFolder);
@@ -411,8 +415,8 @@ public class PaxosLogger2 extends Thread{
    */
   static void clearLogs() {
     if (logFolder != null) {
-      logFolder.length();
-      File f = new File(logFolder);
+      getLogFolderPath().length();
+      File f = new File(getLogFolderPath());
       deleteDir(f);
       createLogDirs();// recreate log dirs if they do not exist.
     }
@@ -611,7 +615,7 @@ public class PaxosLogger2 extends Thread{
    * @return
    */
   private static String getStateLogFileName(String paxosID, StatePacket packet) {
-    return logFolder + "/" + stateFolderSubdir  + "/" + paxosID + "_" + packet.b + "_" + packet.slotNumber;
+    return getLogFolderPath() + "/" + stateFolderSubdir  + "/" + paxosID + "_" + packet.b + "_" + packet.slotNumber;
   }
 
 
@@ -623,7 +627,7 @@ public class PaxosLogger2 extends Thread{
    */
   private static String getPaxosIDsFile() {
     if (paxosIDFileComplete == null)
-      paxosIDFileComplete = logFolder + "/" + paxosIDsFile;
+      paxosIDFileComplete = getLogFolderPath() + "/" + paxosIDsFile;
     return  paxosIDFileComplete;
   }
 
@@ -641,7 +645,7 @@ public class PaxosLogger2 extends Thread{
    */
   private static String[] getSortedLogFileList() {
 
-    String[] fileList = new File(logFolder).list(new FilenameFilter() {
+    String[] fileList = new File(getLogFolderPath()).list(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
         if (name.startsWith(logFilePrefix)) {
@@ -785,7 +789,7 @@ public class PaxosLogger2 extends Thread{
 
   private static String getNextFileName() {
     logFileNumber++;
-    return  logFolder + "/" + logFilePrefix  + logFileNumber;
+    return  getLogFolderPath() + "/" + logFilePrefix  + logFileNumber;
   }
 
   /**
@@ -1024,7 +1028,7 @@ public class PaxosLogger2 extends Thread{
     for (int i = 0; i < logFiles.length - 1; i++) {
       String x = logFiles[i];
       if (isLogFileDeletable(x)) {
-        File f = new File(logFolder + "/" + x);
+        File f = new File(getLogFolderPath() + "/" + x);
         boolean result = f.delete();
         if (StartNameServer.debugMode) GNS.getLogger().fine("Deletable : " + x);
 //          if (StartNameServer.debugMode) GNS.getLogger().fine("NOT Deletable : " + x);
@@ -1073,7 +1077,7 @@ public class PaxosLogger2 extends Thread{
     HashMap<String, PaxosStateFileName> paxosState = readPaxosState(paxosIDs);
 
     try{
-      BufferedReader br = new BufferedReader(new FileReader(new File(logFolder + "/" + logFileName)));
+      BufferedReader br = new BufferedReader(new FileReader(new File(getLogFolderPath() + "/" + logFileName)));
       int i = 0;
       while (true) {
         String line = br.readLine();
@@ -1110,7 +1114,7 @@ public class PaxosLogger2 extends Thread{
   private static HashSet<String> getPaxosInstanceSet(String logFileName) {
     HashSet<String> paxosIDs = new HashSet<String>();
     try {
-      BufferedReader br = new BufferedReader(new FileReader(new File(logFolder + "/" + logFileName)));
+      BufferedReader br = new BufferedReader(new FileReader(new File(getLogFolderPath() + "/" + logFileName)));
       while (true) {
         String line = br.readLine();
         if (line == null) {
