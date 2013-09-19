@@ -6,7 +6,7 @@ package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.database.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;

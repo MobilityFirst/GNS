@@ -12,7 +12,7 @@ import edu.umass.cs.gns.client.GuidInfo;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.database.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.JSONUtils;

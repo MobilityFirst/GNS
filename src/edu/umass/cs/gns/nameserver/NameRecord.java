@@ -4,7 +4,6 @@ import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.database.FieldType;
-import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;

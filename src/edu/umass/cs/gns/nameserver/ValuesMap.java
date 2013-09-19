@@ -1,13 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
  */
 package edu.umass.cs.gns.nameserver;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

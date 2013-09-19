@@ -17,6 +17,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import org.json.JSONException;
@@ -392,7 +393,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public ArrayList<String> lookup(String collection, String guid, ArrayList<String> key) {
+  public ResultValue lookup(String collection, String guid, ArrayList<String> key) {
     return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 

@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.database.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import java.text.ParseException;

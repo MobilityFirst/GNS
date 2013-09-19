@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.database.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;

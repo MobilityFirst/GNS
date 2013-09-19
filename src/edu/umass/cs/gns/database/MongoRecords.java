@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.database;
 
+import edu.umass.cs.gns.nameserver.ResultValue;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;

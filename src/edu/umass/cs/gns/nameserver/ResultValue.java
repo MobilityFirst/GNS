@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.database;
+package edu.umass.cs.gns.nameserver;
 
 import java.util.ArrayList;
 import java.util.Collection;

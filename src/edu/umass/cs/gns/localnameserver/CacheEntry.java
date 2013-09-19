@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.database.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;

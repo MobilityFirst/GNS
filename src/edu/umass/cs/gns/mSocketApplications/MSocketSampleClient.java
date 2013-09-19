@@ -4,7 +4,7 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.database.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValue;
 
 import java.util.ArrayList;
 

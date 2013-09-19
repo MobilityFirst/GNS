@@ -1,14 +1,18 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.httpserver.Protocol;
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.httpserver.Protocol;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.*;
@@ -16,13 +20,12 @@ import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.HashFunction;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Handle client requests - ADD/REMOVE/LOOKUP/UPDATE + REQUESTACTIVES
