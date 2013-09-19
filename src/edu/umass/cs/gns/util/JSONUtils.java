@@ -42,7 +42,8 @@ public class JSONUtils {
   public static ResultValue JSONArrayToResultValue(JSONArray jsonArray) throws JSONException {
     ResultValue list = new ResultValue();
     for (int i = 0; i < jsonArray.length(); i++) {
-      list.add(jsonArray.getString(i));
+      // NOTE THE USE OF GET INSTEAD OF GETSTRING!
+      list.add(jsonArray.get(i));
     }
     return list;
   }

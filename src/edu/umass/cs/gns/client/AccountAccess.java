@@ -8,8 +8,8 @@ package edu.umass.cs.gns.client;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.ResultValueString;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONException;
 
@@ -91,7 +91,7 @@ public class AccountAccess {
     Intercessor client = Intercessor.getInstance();
     ResultValue guidResult = client.sendQuery(guid, PRIMARY_GUID);
     if (guidResult != null) {
-      return guidResult.get(0);
+      return (String) guidResult.get(0);
     } else {
       return null;
     }
@@ -110,7 +110,7 @@ public class AccountAccess {
     Intercessor client = Intercessor.getInstance();
     ResultValue guidResult = client.sendQuery(name, GUID);
     if (guidResult != null) {
-      return guidResult.get(0);
+      return (String) guidResult.get(0);
     } else {
       return null;
     }
@@ -129,7 +129,7 @@ public class AccountAccess {
     ResultValue guidResult = client.sendQuery(guid, GUID_INFO);
     if (guidResult != null) {
       try {
-        return new GuidInfo(guidResult);
+        return new GuidInfo(guidResult.toResultValueString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing guidinfo:" + e);
       } catch (ParseException e) {

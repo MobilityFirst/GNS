@@ -2,6 +2,7 @@ package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValueString;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
@@ -59,7 +60,7 @@ public class GuidInfo {
     return new ResultValue(Arrays.asList(toJSONObject().toString()));
   }
 
-  public GuidInfo(ArrayList<String> queryResult) throws JSONException, ParseException {
+  public GuidInfo(ResultValueString queryResult) throws JSONException, ParseException {
     this(new JSONObject(queryResult.get(0)));
   }
   public static final String PUBLICKEY = "publickey";

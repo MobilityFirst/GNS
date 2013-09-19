@@ -141,7 +141,7 @@ public class NSListenerAdmin extends Thread {
                 // a bit of a hack here
                 try {
                   if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
-                    GuidInfo userInfo = new GuidInfo(nameRecord.getKey(AccountAccess.GUID_INFO));
+                    GuidInfo userInfo = new GuidInfo(nameRecord.getKey(AccountAccess.GUID_INFO).toResultValueString());
                     if (userInfo.containsTag(tag)) {
                       jsonArray.put(nameRecord.toJSONObject());
                     }

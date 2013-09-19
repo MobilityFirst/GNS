@@ -718,7 +718,7 @@ public class Protocol {
       return BADRESPONSE + " " + BADGUID;
     }
     if (verifySignature(userInfo, signature, message)) {
-      Set values = aclAccess.lookup(access, userInfo, field);
+      Set<String> values = aclAccess.lookup(access, userInfo, field);
       return new JSONArray(values).toString();
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;

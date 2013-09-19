@@ -48,20 +48,11 @@ public class AclAccess {
     return GNS.INTERNAL_PREFIX + access.name() + "_" + key;
   }
 
-  private Set<String> lookupHelper(AccessType access, GuidInfo userInfo, String key) {
+  public Set<String> lookup(AccessType access, GuidInfo userInfo, String key) {
     Intercessor client = Intercessor.getInstance();
     ResultValue result = client.sendQuery(userInfo.getGuid(), makeACLKey(access, key));
     if (result != null) {
-      return new HashSet<String>(result);
-    } else {
-      return null;
-    }
-  }
-
-  public Set<String> lookup(AccessType access, GuidInfo userInfo, String key) {
-    Set<String> result = lookupHelper(access, userInfo, key);
-    if (result != null) {
-      return result;
+      return new HashSet<String>(result.toStringSet());
     } else {
       return new HashSet<String>();
     }

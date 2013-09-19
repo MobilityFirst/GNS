@@ -76,7 +76,7 @@ public class RetrievalTest {
     ResultValue accountResult = client.sendQuery(guid, AccountAccess.ACCOUNT_INFO);
     GNS.getLogger().info(guid + ": " + AccountAccess.ACCOUNT_INFO + " -> " + new AccountInfo(accountResult).toJSONObject().toString());
     ResultValue guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
-    GNS.getLogger().info(guid + ": " + AccountAccess.GUID_INFO + " -> " + new GuidInfo(guidResult).toJSONObject().toString());
+    GNS.getLogger().info(guid + ": " + AccountAccess.GUID_INFO + " -> " + new GuidInfo(guidResult.toResultValueString()).toJSONObject().toString());
 
   }
 

@@ -130,10 +130,10 @@ public enum UpdateOperation {
       case SUBSTITUTE:
         boolean changed = false;
         if (oldValues != null) {
-          for (Iterator<String> oldIter = oldValues.iterator(), newIter = newValues.iterator();
+          for (Iterator<Object> oldIter = oldValues.iterator(), newIter = newValues.iterator();
                   oldIter.hasNext() && newIter.hasNext();) {
-            String oldValue = oldIter.next();
-            String newValue = newIter.next();
+            Object oldValue = oldIter.next();
+            Object newValue = newIter.next();
             if (Collections.replaceAll(valuesList, oldValue, newValue)) {
               changed = true;
             }

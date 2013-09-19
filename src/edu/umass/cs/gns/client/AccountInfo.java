@@ -120,7 +120,7 @@ public class AccountInfo {
     return new ResultValue(Arrays.asList(toJSONObject().toString()));
   }
 
-  public AccountInfo(ArrayList<String> queryResult) throws JSONException, ParseException {
+  public AccountInfo(ResultValue queryResult) throws JSONException, ParseException {
     this(new JSONObject(queryResult.get(0)));
   }
 

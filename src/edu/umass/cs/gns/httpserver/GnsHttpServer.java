@@ -50,7 +50,12 @@ public class GnsHttpServer {
 
   public static void runServer() {
     if (!tryPort(address)) {
-      tryPort(addressNoPriv);
+      int cnt = 0;
+      do {
+        if (tryPort(addressNoPriv + cnt)) {
+          break;
+        }
+      } while (cnt++ < 100);
     }
   }
 
@@ -190,8 +195,8 @@ public class GnsHttpServer {
         String aclVersionInfo = "ACL Version: " + AclAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String groupsVersionInfo = "Groups Version: " + GroupAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
 
-        String serverLocalNameServerID = "Local Name Server ID: " + localNameServerID +  "\n";
-        String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() +  "\n";
+        String serverLocalNameServerID = "Local Name Server ID: " + localNameServerID + "\n";
+        String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() + "\n";
         String backingStoreClass = "Backing Store Class: " + StartNameServer.dataStore.getClassName() + "\n\n";
 
         responseBody.write(serverVersionInfo.getBytes());

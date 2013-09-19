@@ -282,7 +282,7 @@ public class MongoRecords implements NoSQLRecords {
    * @param explain
    * @return a MongoRecordCursor
    */
-  public MongoRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, String value, boolean explain) {
+  public MongoRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
     // note that if the value of the key in the database is a list (which it is) this
@@ -297,6 +297,7 @@ public class MongoRecords implements NoSQLRecords {
 
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject query = new BasicDBObject(fieldName, value);
+    System.out.println("***QUERY***: " + query.toString());
     DBCursor cursor = collection.find(query);
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -506,7 +507,7 @@ public class MongoRecords implements NoSQLRecords {
         collection.update(query, new BasicDBObject("$set", updates));
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 10) {
-          System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t" + t0);
+          //System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t" + t0);
           GNS.getLogger().severe(" Long latency mongoUpdate " + (t1 - t0));
         }
 //        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
@@ -598,7 +599,7 @@ public class MongoRecords implements NoSQLRecords {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
     } else {
-      queryTest(Integer.parseInt(args[0]));
+      queryTest(Integer.parseInt(args[0]), args[1]);
     }
   }
 
@@ -621,7 +622,7 @@ public class MongoRecords implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
 //  //test code
-  private static void queryTest(int nodeID) throws RecordNotFoundException, Exception {
+  private static void queryTest(int nodeID, String searchArg) throws RecordNotFoundException, Exception {
     NameServer.nodeID = nodeID;
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
@@ -629,8 +630,16 @@ public class MongoRecords implements NoSQLRecords {
     System.out.println("***ALL RECORDS***");
     instance.printAllEntries(DBNAMERECORD);
     System.out.println("***ALL RECORD KEYS ->" + instance.keySet(DBNAMERECORD).toString());
+
+    Object search;
+    try {
+      search = Double.parseDouble(searchArg);
+    } catch (NumberFormatException e) {
+      search = searchArg;
+    }
+
     System.out.println("***LOCATION QUERY***");
-    MongoRecordCursor cursor = instance.queryUserField(DBNAMERECORD, NameRecord.VALUES_MAP, "location", "23.2", true);
+    MongoRecordCursor cursor = instance.queryUserField(DBNAMERECORD, NameRecord.VALUES_MAP, "location", search, true);
     while (cursor.hasNext()) {
       try {
         JSONObject json = cursor.next();

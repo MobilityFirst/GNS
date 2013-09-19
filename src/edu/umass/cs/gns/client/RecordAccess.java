@@ -31,7 +31,7 @@ public class RecordAccess {
     Intercessor client = Intercessor.getInstance();
     ResultValue result = client.sendQuery(guid, key);
     if (result != null) {
-      return new JSONArray(new ResultValue(result)).toString();
+      return new JSONArray(result).toString();
     } else {
       return new String();
     }
@@ -54,7 +54,7 @@ public class RecordAccess {
     Intercessor client = Intercessor.getInstance();
     ResultValue result = client.sendQuery(guid, key);
     if (result != null && !result.isEmpty()) {
-      return result.get(0);
+      return (String) result.get(0);
     } else {
       return new String();
     }
