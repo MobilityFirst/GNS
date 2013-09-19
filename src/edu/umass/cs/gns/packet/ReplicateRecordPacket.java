@@ -46,7 +46,6 @@ public class ReplicateRecordPacket extends BasicPacket {
    * Map of values for this name record *
    */
   private ValuesMap valuesMap;
-  //private ArrayList<String> valuesList;
   /**
    * List of primary nameservers for this name record *
    */
@@ -70,10 +69,9 @@ public class ReplicateRecordPacket extends BasicPacket {
    * @param activeNameServers List of active nameservers
    ***********************************************************
    */
-  private ReplicateRecordPacket(//NameRecordKey recordKey, 
+  private ReplicateRecordPacket(
           String name, int timeToLive,
           ValuesMap valuesMap,
-          //ArrayList<String> values,
           HashSet<Integer> primaryNameServers, Set<Integer> activeNameServers, int primaryNameserverId) {
     this.type = Packet.PacketType.REPLICATE_RECORD;
     //this.recordKey = recordKey;

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.packet;
 
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
@@ -46,10 +47,6 @@ public class DNSPacket extends BasicPacket {
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
    */
   private int ttl = GNS.DEFAULTTTLINSECONDS;
-  /**
-   * The field value being returned *
-   */
-//  private ArrayList<String> fieldValue;
   /**
    * The value that is getting sent back to the client. MOST OF THE TIME THIS WILL HAVE JUST A SINGLE KEY/VALUE, but sometimes we
    * return the entire record. When it's a single key/value the key will be the same as the qrecordKey.
@@ -113,7 +110,7 @@ public class DNSPacket extends BasicPacket {
     this.lnsId = json.getInt(LNS_ID);
   }
 
-  public DNSPacket(int id, String name, NameRecordKey key, ArrayList<String> fieldValue, int TTL) {
+  public DNSPacket(int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL) {
     this.header = new Header(id, DNSRecordType.RESPONSE, DNSRecordType.RCODE_NO_ERROR);
     this.qname = name;
     this.qrecordKey = key;
@@ -283,13 +280,6 @@ public class DNSPacket extends BasicPacket {
     this.ttl = ttlAddress;
   }
 
-//  /**
-//   * @return the rdata
-//   */
-//  public ArrayList<String> getFieldValue() {
-//    return fieldValue;
-//  }
-//
   /**
    *
    * @return
@@ -309,7 +299,7 @@ public class DNSPacket extends BasicPacket {
   /**
    * @param data the data to set
    */
-  public void setSingleReturnValue(ArrayList<String> data) {
+  public void setSingleReturnValue(ResultValue data) {
     if (this.recordValue == null) {
       this.recordValue = new ValuesMap();
     }
@@ -367,7 +357,7 @@ public class DNSPacket extends BasicPacket {
     primary.add(10);
     primary.add(11);
     primary.add(12);
-    ArrayList<String> rdata = new ArrayList<String>();
+    ResultValue rdata = new ResultValue();
     rdata.add("2545435345");
 
     long t6 = System.currentTimeMillis();

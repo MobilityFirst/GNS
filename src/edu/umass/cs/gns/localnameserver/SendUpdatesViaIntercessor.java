@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
@@ -87,7 +88,7 @@ class SendUpdateIntercessorTask extends TimerTask {
 
 
 
-    ArrayList<String> newValue = new ArrayList<String>();
+    ResultValue newValue = new ResultValue();
     newValue.add(SendUpdatesViaIntercessor.getRandomString());
 
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
@@ -117,7 +118,7 @@ class SendAddIntercessorTask extends TimerTask {
   public void run() {
 
 
-    ArrayList<String> newValue = new ArrayList<String>();
+    ResultValue newValue = new ResultValue();
     newValue.add(SendUpdatesViaIntercessor.getRandomString());
     AddRecordPacket packet = new AddRecordPacket(requestCount,name,NameRecordKey.EdgeRecord, newValue, 
             LocalNameServer.nodeID, GNS.DEFAULTTTLINSECONDS);

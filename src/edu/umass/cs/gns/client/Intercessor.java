@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.localnameserver.LNSListener;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
@@ -20,7 +21,6 @@ import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -146,7 +146,7 @@ public class Intercessor {
   }
 
   // QUERYING
-  public ArrayList<String> sendQuery(String name, String key) {
+  public ResultValue sendQuery(String name, String key) {
     ValuesMap result = sendMultipleReturnValueQuery(name, key);
     if (result != null) {
       return result.get(key);
@@ -243,10 +243,10 @@ public class Intercessor {
   }
 
   public boolean sendAddRecordWithConfirmation(String name, String key, String value) {
-    return sendAddRecordWithConfirmation(name, key, new ArrayList<String>(Arrays.asList(value)));
+    return sendAddRecordWithConfirmation(name, key, new ResultValue(Arrays.asList(value)));
   }
 
-  public boolean sendAddRecordWithConfirmation(String name, String key, ArrayList<String> value) {
+  public boolean sendAddRecordWithConfirmation(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending add: " + name + "->" + value);
     AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULTTTLINSECONDS);
@@ -283,12 +283,12 @@ public class Intercessor {
 
   public boolean sendUpdateRecordWithConfirmation(String name, String key, String newValue, String oldValue, UpdateOperation operation) {
     return sendUpdateRecordWithConfirmation(name, key,
-            new ArrayList<String>(Arrays.asList(newValue)),
-            oldValue != null ? new ArrayList<String>(Arrays.asList(oldValue)) : null,
+            new ResultValue(Arrays.asList(newValue)),
+            oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             operation);
   }
 
-  public boolean sendUpdateRecordWithConfirmation(String name, String key, ArrayList<String> newValue, ArrayList<String> oldValue, UpdateOperation operation) {
+  public boolean sendUpdateRecordWithConfirmation(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation) {
     int id = nextUpdateRequestID();
     sendUpdateWithSequenceNumber(name, key, newValue, oldValue, id, 0, operation);
     // now we wait until the correct packet comes back
@@ -312,8 +312,8 @@ public class Intercessor {
    * @param sequenceNumber
    * @param operation
    */
-  public void sendUpdateWithSequenceNumber(String name, String key, ArrayList<String> newValue,
-          ArrayList<String> oldValue, int id, int sequenceNumber, UpdateOperation operation) {
+  public void sendUpdateWithSequenceNumber(String name, String key, ResultValue newValue,
+          ResultValue oldValue, int id, int sequenceNumber, UpdateOperation operation) {
 
     GNS.getLogger().finer("sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
     UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,

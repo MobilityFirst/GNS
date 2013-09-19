@@ -12,6 +12,7 @@ import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.ThreadUtils;
@@ -53,7 +54,7 @@ public class RetrievalTest {
     String guid = "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24";
     String publicKey = "dummy3";
     GNS.getLogger().info("RECORD CREATION:");
-    client.sendAddRecordWithConfirmation(name, AccountAccess.GUID, new ArrayList<String>(Arrays.asList(guid)));
+    client.sendAddRecordWithConfirmation(name, AccountAccess.GUID, new ResultValue(Arrays.asList(guid)));
     AccountInfo accountInfo = new AccountInfo(name, guid, null);
     client.sendAddRecordWithConfirmation(guid, AccountAccess.ACCOUNT_INFO, accountInfo.toDBFormat());
     GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
@@ -70,11 +71,11 @@ public class RetrievalTest {
 //      GNS.getLogger().info("" + nameRecord.get(AccountAccess.GUID_INFO));
 //    }
     GNS.getLogger().info("GSN LOOKUP:");
-    ArrayList<String> result = client.sendQuery(name, AccountAccess.GUID);
+    ResultValue result = client.sendQuery(name, AccountAccess.GUID);
     GNS.getLogger().info(name + ": " + AccountAccess.GUID + " -> " + result.get(0));
-    ArrayList<String> accountResult = client.sendQuery(guid, AccountAccess.ACCOUNT_INFO);
+    ResultValue accountResult = client.sendQuery(guid, AccountAccess.ACCOUNT_INFO);
     GNS.getLogger().info(guid + ": " + AccountAccess.ACCOUNT_INFO + " -> " + new AccountInfo(accountResult).toJSONObject().toString());
-    ArrayList<String> guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
+    ResultValue guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
     GNS.getLogger().info(guid + ": " + AccountAccess.GUID_INFO + " -> " + new GuidInfo(guidResult).toJSONObject().toString());
 
   }

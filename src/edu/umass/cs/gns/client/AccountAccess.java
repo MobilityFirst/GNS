@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import java.text.ParseException;
@@ -58,7 +59,7 @@ public class AccountAccess {
    */
   public AccountInfo lookupAccountInfoFromGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
-    ArrayList<String> accountResult = client.sendQuery(guid, ACCOUNT_INFO);
+    ResultValue accountResult = client.sendQuery(guid, ACCOUNT_INFO);
     if (accountResult == null) {
       guid = lookupPrimaryGuid(guid);
       if (guid != null) {
@@ -88,7 +89,7 @@ public class AccountAccess {
    */
   public String lookupPrimaryGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
-    ArrayList<String> guidResult = client.sendQuery(guid, PRIMARY_GUID);
+    ResultValue guidResult = client.sendQuery(guid, PRIMARY_GUID);
     if (guidResult != null) {
       return guidResult.get(0);
     } else {
@@ -107,7 +108,7 @@ public class AccountAccess {
    */
   public String lookupGuid(String name) {
     Intercessor client = Intercessor.getInstance();
-    ArrayList<String> guidResult = client.sendQuery(name, GUID);
+    ResultValue guidResult = client.sendQuery(name, GUID);
     if (guidResult != null) {
       return guidResult.get(0);
     } else {
@@ -125,7 +126,7 @@ public class AccountAccess {
    */
   public GuidInfo lookupGuidInfo(String guid) {
     Intercessor client = Intercessor.getInstance();
-    ArrayList<String> guidResult = client.sendQuery(guid, GUID_INFO);
+    ResultValue guidResult = client.sendQuery(guid, GUID_INFO);
     if (guidResult != null) {
       try {
         return new GuidInfo(guidResult);
@@ -172,7 +173,7 @@ public class AccountAccess {
     try {
       Intercessor client = Intercessor.getInstance();
       // do this first add to make sure this name isn't already registered
-      if (client.sendAddRecordWithConfirmation(name, GUID, new ArrayList<String>(Arrays.asList(guid)))) {
+      if (client.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -239,19 +240,20 @@ public class AccountAccess {
         return Protocol.BADRESPONSE + " " + Protocol.DUPLICATEGUID;
       }
       // do this first so if there is an execption we don't have to back out of anything
-      ArrayList<String> guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
+      ResultValue guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
 
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
       Intercessor client = Intercessor.getInstance();
       // insure that that name does not already exist
-      if (client.sendAddRecordWithConfirmation(name, GUID, new ArrayList<String>(Arrays.asList(guid)))) {
+      if (client.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // update the account info
         if (updateAccountInfo(accountInfo)) {
           // add the GUID_INFO link
           client.sendAddRecordWithConfirmation(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
-          client.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ArrayList<String>(Arrays.asList(accountInfo.getPrimaryGuid())), null, UpdateOperation.CREATE);
+          client.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())), 
+                  null, UpdateOperation.CREATE);
           return Protocol.OKRESPONSE;
         }
       }
@@ -278,7 +280,7 @@ public class AccountAccess {
     accountInfo.noteUpdate();
     Intercessor client = Intercessor.getInstance();
     // insure that that name does not already exist
-    if (client.sendAddRecordWithConfirmation(alias, GUID, new ArrayList<String>(Arrays.asList(accountInfo.getPrimaryGuid())))) {
+    if (client.sendAddRecordWithConfirmation(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
       if (updateAccountInfo(accountInfo)) {
         return Protocol.OKRESPONSE;
       } else {
@@ -368,7 +370,7 @@ public class AccountAccess {
   private boolean updateAccountInfo(AccountInfo accountInfo) {
     Intercessor client = Intercessor.getInstance();
     try {
-      ArrayList<String> newvalue;
+      ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
       if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
               newvalue, null, UpdateOperation.REPLACE_ALL)) {
@@ -382,7 +384,7 @@ public class AccountAccess {
   private boolean updateGuidInfo(GuidInfo guidInfo) {
     Intercessor client = Intercessor.getInstance();
     try {
-      ArrayList<String> newvalue;
+      ResultValue newvalue;
       newvalue = guidInfo.toDBFormat();
       if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
               newvalue, null, UpdateOperation.REPLACE_ALL)) {

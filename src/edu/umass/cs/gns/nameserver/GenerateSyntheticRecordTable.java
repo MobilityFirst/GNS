@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -50,7 +51,7 @@ public class GenerateSyntheticRecordTable {
 
   private static ValuesMap getValuesMapSynthetic(int numValues) {
     ValuesMap valuesMap =new ValuesMap();
-    ArrayList<String> value = new ArrayList<String>();
+    ResultValue value = new ResultValue();
 
     for (int i = 0; i < numValues; i++)
       value.add(randomString(10));
@@ -137,7 +138,7 @@ public class GenerateSyntheticRecordTable {
             initScoutDelay = (StartNameServer.paxosStartMinDelaySec - timeSpent)*1000 + new Random().nextInt(StartNameServer.paxosStartMaxDelaySec*1000 - StartNameServer.paxosStartMinDelaySec*1000);
           }
           ValuesMap valuesMap = new ValuesMap();
-          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
+          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(Integer.toString(address))));
           try {
             ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay);
           } catch (FieldNotFoundException e) {
@@ -169,7 +170,7 @@ public class GenerateSyntheticRecordTable {
 //          if (StartNameServer.debugMode) GNS.getLogger().fine("Record checked out: "  + nameRecordPrimary1);
 
           ValuesMap valuesMap = new ValuesMap();
-          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList(Arrays.asList(Integer.toString(address))));
+          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(Integer.toString(address))));
           long t1 = System.currentTimeMillis();
           long timeSpent = t1 - t0;
           long initScoutDelay = 0;

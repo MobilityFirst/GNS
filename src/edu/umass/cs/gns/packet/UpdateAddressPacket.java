@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -61,11 +62,11 @@ public class UpdateAddressPacket extends BasicPacket {
   /**
    * Value for updating *
    */
-  private ArrayList<String> updateValue;
+  private ResultValue updateValue;
   /**
    * The old value to replace in a substitute operation *
    */
-  private ArrayList<String> oldValue;
+  private ResultValue oldValue;
   /**
    * The operation to perform *
    */
@@ -93,15 +94,15 @@ public class UpdateAddressPacket extends BasicPacket {
    * @param oldValue Old address to be replaced (if applicable, can be null)
    */
   public UpdateAddressPacket(Packet.PacketType type, int requestID, String name, NameRecordKey recordKey,
-          ArrayList<String> newValue, ArrayList<String> oldValue, UpdateOperation operation, int localNameServerId, int ttl) {
+          ResultValue newValue, ResultValue oldValue, UpdateOperation operation, int localNameServerId, int ttl) {
     this(type, requestID, -1, -1, name, recordKey, newValue, oldValue, operation, localNameServerId, -1, ttl);
   }
 
   public UpdateAddressPacket(Packet.PacketType type,
           int requestID, int LNSRequestID, int NSRequestID,
           String name, NameRecordKey recordKey,
-          ArrayList<String> newValue,
-          ArrayList<String> oldValue,
+          ResultValue newValue,
+          ResultValue oldValue,
           UpdateOperation operation,
           int localNameServerId, int nameServerId, int ttl) {
     this.type = type;
@@ -133,8 +134,8 @@ public class UpdateAddressPacket extends BasicPacket {
     this.name = json.getString(NAME);
     this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
     this.operation = UpdateOperation.valueOf(json.getString(OPERATION));
-    this.updateValue = JSONUtils.JSONArrayToArrayList(json.getJSONArray(NEWVALUE));
-    this.oldValue = json.has(OLDVALUE) ? JSONUtils.JSONArrayToArrayList(json.getJSONArray(OLDVALUE)) : null;
+    this.updateValue = JSONUtils.JSONArrayToResultValue(json.getJSONArray(NEWVALUE));
+    this.oldValue = json.has(OLDVALUE) ? JSONUtils.JSONArrayToResultValue(json.getJSONArray(OLDVALUE)) : null;
     this.localNameServerId = json.getInt(LOCAL_NAMESERVER_ID);
     this.nameServerId = json.getInt(NAMESERVER_ID);
     this.ttl = json.getInt(TTL);
@@ -210,11 +211,11 @@ public class UpdateAddressPacket extends BasicPacket {
   /**
    * @return the new value
    */
-  public ArrayList<String> getUpdateValue() {
+  public ResultValue getUpdateValue() {
     return updateValue;
   }
 
-  public ArrayList<String> getOldValue() {
+  public ResultValue getOldValue() {
     return oldValue;
   }
 
@@ -258,10 +259,11 @@ public class UpdateAddressPacket extends BasicPacket {
   }
 
   public static void main(String[] args) {
-    ArrayList<String> x = new ArrayList<String>();
+    ResultValue x = new ResultValue();
     x.add("12345678");
 //  	
-    UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, 2323, "12322323", NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
+    UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, 2323, "12322323",
+            NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
             GNS.DEFAULTTTLINSECONDS);
 
     int size = 0;

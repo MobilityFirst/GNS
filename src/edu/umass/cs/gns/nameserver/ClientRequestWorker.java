@@ -5,6 +5,7 @@ import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -150,7 +151,7 @@ public class ClientRequestWorker extends TimerTask {
     AddRecordPacket addRecordPacket;
     String name;
     NameRecordKey nameRecordKey;
-    ArrayList<String> value;
+    ResultValue value;
     addRecordPacket = new AddRecordPacket(incomingJSON);
     name = addRecordPacket.getName();
     nameRecordKey = addRecordPacket.getRecordKey();
@@ -272,7 +273,7 @@ public class ClientRequestWorker extends TimerTask {
     AddRecordPacket addRecordPacket;
     String name;
     NameRecordKey nameRecordKey;
-    ArrayList<String> value;
+    ResultValue value;
     addRecordPacket = new AddRecordPacket(incomingJSON);
     name = addRecordPacket.getName();
     nameRecordKey = addRecordPacket.getRecordKey();

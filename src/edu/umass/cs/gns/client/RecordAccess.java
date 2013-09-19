@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import java.util.ArrayList;
@@ -28,9 +29,9 @@ public class RecordAccess {
 
   public String lookup(String guid, String key) {
     Intercessor client = Intercessor.getInstance();
-    ArrayList<String> result = client.sendQuery(guid, key);
+    ResultValue result = client.sendQuery(guid, key);
     if (result != null) {
-      return new JSONArray(new ArrayList<String>(result)).toString();
+      return new JSONArray(new ResultValue(result)).toString();
     } else {
       return new String();
     }
@@ -51,7 +52,7 @@ public class RecordAccess {
 
   public String lookupOne(String guid, String key) {
     Intercessor client = Intercessor.getInstance();
-    ArrayList<String> result = client.sendQuery(guid, key);
+    ResultValue result = client.sendQuery(guid, key);
     if (result != null && !result.isEmpty()) {
       return result.get(0);
     } else {
@@ -73,12 +74,12 @@ public class RecordAccess {
     return new String();
   }
 
-  public boolean update(String guid, String key, ArrayList<String> value, ArrayList<String> oldValue, UpdateOperation operation) {
+  public boolean update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation) {
     Intercessor client = Intercessor.getInstance();
     return client.sendUpdateRecordWithConfirmation(guid, key, value, oldValue, operation);
   }
 
-  public boolean create(String guid, String key, ArrayList<String> value) {
+  public boolean create(String guid, String key, ResultValue value) {
     Intercessor client = Intercessor.getInstance();
     return client.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
   }

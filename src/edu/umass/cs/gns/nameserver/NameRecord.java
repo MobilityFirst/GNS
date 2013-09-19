@@ -4,6 +4,7 @@ import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.database.FieldType;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -254,7 +255,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return
    * @throws FieldNotFoundException
    */
-  public ArrayList<String> getKey(String key) throws FieldNotFoundException {
+  public ResultValue getKey(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
       ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
       if (valuesMap.containsKey(key)) {
@@ -328,7 +329,7 @@ public class NameRecord implements Comparable<NameRecord> {
     NameServer.recordMap.increment(getName(), incrementFields, values);
   }
 
-  public boolean updateKey(String key, ArrayList<String> newValues, ArrayList<String> oldValues,
+  public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues,
           UpdateOperation operation) throws FieldNotFoundException {
     ValuesMap valuesMap;
     if (operation.equals(UpdateOperation.REPLACE_ALL)) {

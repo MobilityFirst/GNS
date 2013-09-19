@@ -2,6 +2,7 @@ package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,7 +50,7 @@ public class AclAccess {
 
   private Set<String> lookupHelper(AccessType access, GuidInfo userInfo, String key) {
     Intercessor client = Intercessor.getInstance();
-    ArrayList<String> result = client.sendQuery(userInfo.getGuid(), makeACLKey(access, key));
+    ResultValue result = client.sendQuery(userInfo.getGuid(), makeACLKey(access, key));
     if (result != null) {
       return new HashSet<String>(result);
     } else {

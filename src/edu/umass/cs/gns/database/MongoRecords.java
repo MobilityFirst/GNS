@@ -228,11 +228,11 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public ArrayList<String> lookup(String collectionName, String guid, ArrayList<String> keys) {
+  public ResultValue lookup(String collectionName, String guid, ArrayList<String> keys) {
     return lookup(collectionName, guid, keys, false);
   }
 
-  private ArrayList<String> lookup(String collectionName, String guid, ArrayList<String> keys, boolean explain) {
+  private ResultValue lookup(String collectionName, String guid, ArrayList<String> keys, boolean explain) {
     db.requestStart();
     try {
       String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -250,7 +250,7 @@ public class MongoRecords implements NoSQLRecords {
       if (explain) {
         System.out.println(cursor.explain().toString());
       }
-      ArrayList<String> values = new ArrayList<String>();
+      ResultValue values = new ResultValue();
       if (cursor.hasNext()) {
         DBObject obj = cursor.next();
         for (String key : keys) {
@@ -446,7 +446,7 @@ public class MongoRecords implements NoSQLRecords {
             }
             if (valuesMapKeys.get(i).type() == FieldType.LIST_STRING) {
               try {
-                valuesMap.put(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToArrayList(fieldValue));
+                valuesMap.put(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(fieldValue));
               } catch (JSONException e) {
                 GNS.getLogger().fine("Error parsing json");
                 e.printStackTrace();
@@ -474,7 +474,8 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void update(String collectionName, String guid, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void update(String collectionName, String guid, Field nameField, ArrayList<Field> fields, ArrayList<Object> values,
+          Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     db.requestStart();
     try {
       String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -482,15 +483,15 @@ public class MongoRecords implements NoSQLRecords {
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject updates = new BasicDBObject();
-      if (fields1 != null) {
-        for (int i = 0; i < fields1.size(); i++) {
+      if (fields != null) {
+        for (int i = 0; i < fields.size(); i++) {
           Object newValue;
-          if (fields1.get(i).type() == FieldType.VALUES_MAP) {
-            newValue = ((ValuesMap) values1.get(i)).getMap();
+          if (fields.get(i).type() == FieldType.VALUES_MAP) {
+            newValue = ((ValuesMap) values.get(i)).getMap();
           } else {
-            newValue = values1.get(i);
+            newValue = values.get(i);
           }
-          updates.append(fields1.get(i).getName(), newValue);
+          updates.append(fields.get(i).getName(), newValue);
         }
       }
       if (valuesMapField != null && valuesMapKeys != null) {
@@ -583,7 +584,6 @@ public class MongoRecords implements NoSQLRecords {
       System.out.println(cursor.nextJSONObject());
     }
   }
-  
 
   @Override
   public String toString() {
@@ -629,7 +629,7 @@ public class MongoRecords implements NoSQLRecords {
     instance.printAllEntries(DBNAMERECORD);
     System.out.println("***ALL RECORD KEYS ->" + instance.keySet(DBNAMERECORD).toString());
     System.out.println("***LOCATION QUERY***");
-    MongoRecordCursor cursor = instance.queryUserField(DBNAMERECORD, NameRecord.VALUES_MAP, "location", "home", true);
+    MongoRecordCursor cursor = instance.queryUserField(DBNAMERECORD, NameRecord.VALUES_MAP, "location", "23.2", true);
     while (cursor.hasNext()) {
       try {
         JSONObject json = cursor.next();
@@ -644,10 +644,6 @@ public class MongoRecords implements NoSQLRecords {
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject().toString());
     }
-
-
-
-
   }
 //  private static NameRecord createNameRecord(String name, String key1, String key2, String value) throws Exception {
 //    ValuesMap valuesMap = new ValuesMap();

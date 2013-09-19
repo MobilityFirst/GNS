@@ -6,6 +6,7 @@ package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
@@ -25,7 +26,6 @@ import org.json.JSONObject;
 public class JSONUtils {
 
   /**
-   * org.JSON sucks!!!
    *
    * @param jsonArray
    * @return
@@ -33,7 +33,14 @@ public class JSONUtils {
    */
   public static ArrayList<String> JSONArrayToArrayList(JSONArray jsonArray) throws JSONException {
     ArrayList<String> list = new ArrayList();
-    //org.JSON sucks!!!
+    for (int i = 0; i < jsonArray.length(); i++) {
+      list.add(jsonArray.getString(i));
+    }
+    return list;
+  }
+  
+  public static ResultValue JSONArrayToResultValue(JSONArray jsonArray) throws JSONException {
+    ResultValue list = new ResultValue();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.getString(i));
     }
@@ -128,12 +135,12 @@ public class JSONUtils {
     return set;
   }
 
-  public static Map<String, ArrayList<String>> JSONObjectToMap(JSONObject json) throws JSONException {
-    Map<String, ArrayList<String>> result = new HashMap<String, ArrayList<String>>();
+  public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
+    Map<String, ResultValue> result = new HashMap<String, ResultValue>();
     Iterator<String> keyIter = json.keys();
     while (keyIter.hasNext()) {
       String key = keyIter.next();
-      result.put(key, new ArrayList<String>(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
+      result.put(key, new ResultValue(JSONUtils.JSONArrayToResultValue(json.getJSONArray(key))));
     }
     return result;
   }

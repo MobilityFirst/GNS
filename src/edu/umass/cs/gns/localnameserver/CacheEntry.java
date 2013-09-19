@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
@@ -64,9 +65,9 @@ public class CacheEntry {
     // UPDATE: NEVER LET IT BE -1 which means infinite
     this.timeToLive = packet.getTTL() == -1 ? GNS.DEFAULTTTLINSECONDS : packet.getTTL();
     // pull all the keys and values out of the returned value and cache them
-    for (Entry<String, ArrayList<String>> entry : packet.getRecordValue().entrySet()) {
+    for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
       String fieldKey = entry.getKey();
-      ArrayList<String> fieldValue = entry.getValue();
+      ResultValue fieldValue = entry.getValue();
       this.valuesMap.put(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
@@ -81,7 +82,7 @@ public class CacheEntry {
     this.activeNameServer = packet.getActiveNameServers();
   }
 
-  public synchronized ArrayList<String> getValue(NameRecordKey key) {
+  public synchronized ResultValue getValue(NameRecordKey key) {
     if (isValidValue(key.getName())) {
       return valuesMap.get(key.getName());
     }
@@ -131,9 +132,9 @@ public class CacheEntry {
   }
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
-    for (Entry<String, ArrayList<String>> entry : packet.getRecordValue().entrySet()) {
+    for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
       String fieldKey = entry.getKey();
-      ArrayList<String> fieldValue = entry.getValue();
+      ResultValue fieldValue = entry.getValue();
       this.valuesMap.put(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
@@ -245,7 +246,7 @@ public class CacheEntry {
     this.name = packet.getName();
     this.timeToLive = 0; // this will depend on TTL sent by NS.
     this.valuesMap = new ValuesMap();
-    this.valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ArrayList<String>(Arrays.asList(getRandomString())));
+    this.valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(getRandomString())));
     //
     this.primaryNameServer = (HashSet<Integer>) packet.getPrimaries();
 

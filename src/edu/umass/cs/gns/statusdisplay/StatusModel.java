@@ -33,7 +33,6 @@ public class StatusModel {
     return instance;
   }
   private Map<Integer, StatusEntry> entries = new ConcurrentHashMap<Integer, StatusEntry>();
-  //private CopyOnWriteArrayList<String> entryUpdates = new CopyOnWriteArrayList<String>();
   private Set<UpdateListener> listeners = new HashSet<UpdateListener>();
 
   public synchronized void addUpdateListener(UpdateListener listener) {

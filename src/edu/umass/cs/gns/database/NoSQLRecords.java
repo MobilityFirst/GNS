@@ -47,7 +47,7 @@ public interface NoSQLRecords {
    * @param key
    * @return 
    */
-  public ArrayList<String> lookup(String collection, String name, ArrayList<String> key);
+  public ResultValue lookup(String collection, String name, ArrayList<String> key);
 
   /**
    * Create a new record (row) with the given name using the JSONObject.

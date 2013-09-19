@@ -5,6 +5,7 @@
 package edu.umass.cs.gns.nameserver;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,10 +26,10 @@ import org.json.JSONObject;
  */
 public class ValuesMap {
 
-  private Map<String, ArrayList<String>> content;
+  private Map<String, ResultValue> content;
 
   public ValuesMap() {
-    this.content = new HashMap<String, ArrayList<String>>();
+    this.content = new HashMap<String, ResultValue>();
   }
 
   public ValuesMap(JSONObject json) throws JSONException {
@@ -36,12 +37,12 @@ public class ValuesMap {
     Iterator<String> keyIter = json.keys();
     while (keyIter.hasNext()) {
       String key = keyIter.next();
-      this.content.put(key, new ArrayList<String>(JSONUtils.JSONArrayToArrayList(json.getJSONArray(key))));
+      this.content.put(key, new ResultValue(JSONUtils.JSONArrayToResultValue(json.getJSONArray(key))));
     }
   }
 
   public ValuesMap(ValuesMap map) {
-    this.content = new HashMap<String, ArrayList<String>>(map.content);
+    this.content = new HashMap<String, ResultValue>(map.content);
   }
 
   public JSONObject toJSONObject() throws JSONException {
@@ -51,7 +52,7 @@ public class ValuesMap {
   }
 
   public void addToJSONObject(JSONObject json) throws JSONException {
-    for (Map.Entry<String, ArrayList<String>> entry : content.entrySet()) {
+    for (Map.Entry<String, ResultValue> entry : content.entrySet()) {
       json.put(entry.getKey(), new JSONArray(entry.getValue()));
     }
   }
@@ -64,7 +65,7 @@ public class ValuesMap {
   }
 
   public void addFirstOneToJSONObject(JSONObject json) throws JSONException {
-    for (Map.Entry<String, ArrayList<String>> entry : content.entrySet()) {
+    for (Map.Entry<String, ResultValue> entry : content.entrySet()) {
       if (!entry.getValue().isEmpty()) {
         json.put(entry.getKey(), entry.getValue().get(0));
       }
@@ -77,7 +78,7 @@ public class ValuesMap {
    * @param key
    * @return 
    */
-  public ArrayList<String> get(String key) {
+  public ResultValue get(String key) {
     return content.get(key);
   }
 
@@ -86,7 +87,7 @@ public class ValuesMap {
    * @param key
    * @param value 
    */
-  public void put(String key, ArrayList<String> value) {
+  public void put(String key, ResultValue value) {
     content.put(key, value);
   }
 
@@ -121,7 +122,7 @@ public class ValuesMap {
     return content.keySet();
   }
 
-  public Set<Entry<String, ArrayList<String>>> entrySet() {
+  public Set<Entry<String, ResultValue>> entrySet() {
     return content.entrySet();
   }
 

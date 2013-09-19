@@ -12,6 +12,7 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.ThreadUtils;
@@ -58,7 +59,7 @@ public class RemoveTest {
 //    QueryResultValue guidResult = client.sendQuery(guid, AccountAccess.GUID_INFO);
 //    GNS.getLogger().info(guid + ": " + AccountAccess.GUID_INFO + " -> " + new GuidInfo(guidResult).toJSONObject().toString());
 
-    ArrayList<String> result = client.sendQuery(guid, GroupAccess.GROUP);
+    ResultValue result = client.sendQuery(guid, GroupAccess.GROUP);
     GNS.getLogger().info(guid + ": " + GroupAccess.GROUP + " -> " + result);
 
     client.sendUpdateRecordWithConfirmation(guid, GroupAccess.GROUP, memberGuid, null, UpdateOperation.REMOVE);

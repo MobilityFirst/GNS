@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
@@ -54,8 +55,8 @@ public class GuidInfo {
    * Convert GuidInfo to and from the format which is used to store it in the DB. 
    * Use a JSON Object which is put as the first element of an ArrayList
    */
-  public ArrayList<String> toDBFormat() throws JSONException {
-    return new ArrayList<String>(Arrays.asList(toJSONObject().toString()));
+  public ResultValue toDBFormat() throws JSONException {
+    return new ResultValue(Arrays.asList(toJSONObject().toString()));
   }
 
   public GuidInfo(ArrayList<String> queryResult) throws JSONException, ParseException {

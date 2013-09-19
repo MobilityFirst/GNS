@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,11 +72,11 @@ public enum UpdateOperation {
    * @param operation
    * @return false if the value was not updated true otherwise
    */
-  public static boolean updateValuesMap(ValuesMap valuesMap, String key, ArrayList<String> newValues, ArrayList<String> oldValues,
+  public static boolean updateValuesMap(ValuesMap valuesMap, String key, ResultValue newValues, ResultValue oldValues,
           UpdateOperation operation) {
-    ArrayList<String> valuesList = valuesMap.get(key);
+    ResultValue valuesList = valuesMap.get(key);
     if (valuesList == null) {
-      valuesList = new ArrayList<String>();
+      valuesList = new ResultValue();
     }
     if (updateValuesList(valuesList, key, newValues, oldValues, operation)) {
       valuesMap.put(key, valuesList);
@@ -85,7 +86,7 @@ public enum UpdateOperation {
     }
   }
 
-  private static boolean updateValuesList(ArrayList<String> valuesList, String key, ArrayList<String> newValues, ArrayList<String> oldValues,
+  private static boolean updateValuesList(ResultValue valuesList, String key, ResultValue newValues, ResultValue oldValues,
           UpdateOperation operation) {
     switch (operation) {
       case CLEAR:

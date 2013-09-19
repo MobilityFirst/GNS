@@ -12,6 +12,7 @@ import edu.umass.cs.gns.client.GuidInfo;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -556,7 +557,7 @@ public class Protocol {
       return BADRESPONSE + " " + BADGUID;
     }
     if (verifySignature(userInfo, signature, message)) {
-      if (recordAccess.create(userInfo.getGuid(), field, (value == null ? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(value))))) {
+      if (recordAccess.create(userInfo.getGuid(), field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))))) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -574,7 +575,7 @@ public class Protocol {
     }
     try {
       if (verifySignature(userInfo, signature, message)) {
-        if (recordAccess.create(userInfo.getGuid(), field, JSONUtils.JSONArrayToArrayList(new JSONArray(value)))) {
+        if (recordAccess.create(userInfo.getGuid(), field, JSONUtils.JSONArrayToResultValue(new JSONArray(value)))) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -595,8 +596,8 @@ public class Protocol {
     }
     if (verifySignature(userInfo, signature, message)) {
       if (recordAccess.update(userInfo.getGuid(), field,
-              new ArrayList<String>(Arrays.asList(value)),
-              oldValue != null ? new ArrayList<String>(Arrays.asList(oldValue)) : null,
+              new ResultValue(Arrays.asList(value)),
+              oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
               operation)) {
         return OKRESPONSE;
       } else {
@@ -616,8 +617,8 @@ public class Protocol {
     if (verifySignature(userInfo, signature, message)) {
       try {
         if (recordAccess.update(userInfo.getGuid(), field,
-                JSONUtils.JSONArrayToArrayList(new JSONArray(value)),
-                oldValue != null ? JSONUtils.JSONArrayToArrayList(new JSONArray(oldValue)) : null,
+                JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
+                oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
                 operation)) {
           return OKRESPONSE;
         } else {
@@ -781,7 +782,7 @@ public class Protocol {
     } else if (!verifyAccess(AccessType.READ_WHITELIST, userInfo, GROUP_ACL, readInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
-      ArrayList<String> values = groupAccess.lookup(guid);
+      ResultValue values = groupAccess.lookup(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
     }

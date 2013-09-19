@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.packet;
 
 
-import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.database.ResultValue;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
@@ -40,7 +40,7 @@ public class AddRecordPacket extends BasicPacket {
   /**
    * the value *
    */
-  private ArrayList<String> value;
+  private ResultValue value;
   /**
    * Id of local nameserver handling this request *
    */
@@ -65,7 +65,7 @@ public class AddRecordPacket extends BasicPacket {
    * @param localNameServerID Id of local nameserver sending this request.
    * **********************************************************
    */
-  public AddRecordPacket(int requestID, String name, NameRecordKey recordKey, ArrayList<String> value, int localNameServerID, int ttl) {
+  public AddRecordPacket(int requestID, String name, NameRecordKey recordKey, ResultValue value, int localNameServerID, int ttl) {
     this.type = Packet.PacketType.ADD_RECORD_LNS;
     this.requestID = requestID;
     this.recordKey = recordKey;
@@ -94,7 +94,7 @@ public class AddRecordPacket extends BasicPacket {
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
     this.name = json.getString(NAME);
-    this.value = JSONUtils.JSONArrayToArrayList(json.getJSONArray(VALUE));
+    this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
     //this.value = json.getString(VALUE);
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.primaryNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARYNAMESERVERS));
@@ -152,7 +152,7 @@ public class AddRecordPacket extends BasicPacket {
   /**
    * @return the value
    */
-  public ArrayList<String> getValue() {
+  public ResultValue getValue() {
     return value;
   }
 
