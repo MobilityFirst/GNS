@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.database;
 
-import edu.umass.cs.gns.nameserver.ResultValue;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -13,13 +12,14 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.util.JSON;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.exceptions.RecordExistsException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.bson.BSONObject;
 import org.json.JSONArray;
@@ -51,51 +50,9 @@ public class MongoRecords implements NoSQLRecords {
   public static final String DBNAMERECORD = "NameRecord";
   public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
   public static final String PAXOSLOG = "PaxosLog";
-  //public static final String[] COLLECTIONS = {DBNAMERECORD, DBREPLICACONTROLLER};
-  //public static final String PRIMARYKEY = NameRecord.NAME;
   private DB db;
   private String dbName;
-  // maintains information about the collections we maintain in the mongo db
-  private static Map<String, CollectionSpec> collectionSpecMap = new HashMap<String, CollectionSpec>();
-
-  public CollectionSpec getCollectionSpec(String name) {
-    return collectionSpecMap.get(name);
-  }
-
-  /**
-   * Stores the name, primary key, and index of each collection we maintain in the mongo db.
-   */
-  static class CollectionSpec {
-
-    private String name;
-    private Field primaryKey;
-    private BasicDBObject index;
-
-    public CollectionSpec(String name, Field primaryKey) {
-      this.name = name;
-      this.primaryKey = primaryKey;
-      this.index = new BasicDBObject(primaryKey.getName(), 1);
-      collectionSpecMap.put(name, this);
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public Field getPrimaryKey() {
-      return primaryKey;
-    }
-
-    public BasicDBObject getIndex() {
-      return index;
-    }
-  }
-  private static List<CollectionSpec> collectionSpecs =
-          Arrays.asList(
-          new CollectionSpec(DBNAMERECORD, NameRecord.NAME),
-          new CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME));
-//          new CollectionSpec(PAXOSLOG, PaxosManager.LOG_MSG));
-
+  
   public static MongoRecords getInstance() {
     return MongoRecordCollectionHolder.INSTANCE;
   }
@@ -105,14 +62,15 @@ public class MongoRecords implements NoSQLRecords {
     private static final MongoRecords INSTANCE = new MongoRecords();
   }
 
-  //
-  //private static final BasicDBObject NAME_INDEX = new BasicDBObject(PRIMARYKEY, 1);
-  //private static final BasicDBObject RECORD_KEY_INDEX = new BasicDBObject(NameRecord.NAME, 1).append(NameRecord.KEY, -1);
   private MongoRecords() {
     init();
   }
-
+ 
   private void init() {
+    MongoCollectionSpec.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
+    MongoCollectionSpec.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
+    // add location as another index
+    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD).addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "location", 1));
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + NameServer.nodeID;
@@ -130,20 +88,22 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   private void initializeIndexes() {
-    for (CollectionSpec spec : collectionSpecs) {
-      initializeIndex(spec.name);
+    for (MongoCollectionSpec spec : MongoCollectionSpec.allCollectionSpecs()) {
+      initializeIndex(spec.getName());
     }
   }
 
   private void initializeIndex(String collectionName) {
-    CollectionSpec spec = getCollectionSpec(collectionName);
-    db.getCollection(spec.getName()).ensureIndex(spec.getIndex(), new BasicDBObject("unique", true));
-    //db.getCollection(COLLECTIONNAME).ensureIndex(RECORD_KEY_INDEX, new BasicDBObject("unique", true));
+    MongoCollectionSpec spec = MongoCollectionSpec.getCollectionSpec(collectionName);
+    db.getCollection(spec.getName()).ensureIndex(spec.getPrimaryIndex(), new BasicDBObject("unique", true));
+    for (BasicDBObject index : spec.getOtherIndexes()) {
+      db.getCollection(spec.getName()).ensureIndex(index);
+    } 
   }
 
   @Override
   public void reset(String collectionName) {
-    if (getCollectionSpec(collectionName) != null) {
+    if (MongoCollectionSpec.getCollectionSpec(collectionName) != null) {
       db.requestStart();
       try {
         db.requestEnsureConnection();
@@ -170,7 +130,7 @@ public class MongoRecords implements NoSQLRecords {
   private JSONObject lookup(String collectionName, String guid, boolean explain) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -200,7 +160,7 @@ public class MongoRecords implements NoSQLRecords {
   private String lookup(String collectionName, String guid, String key, boolean explain) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -236,7 +196,7 @@ public class MongoRecords implements NoSQLRecords {
   private ResultValue lookup(String collectionName, String guid, ArrayList<String> keys, boolean explain) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
 
       DBCollection collection = db.getCollection(collectionName);
@@ -302,7 +262,7 @@ public class MongoRecords implements NoSQLRecords {
     if (explain) {
       System.out.println(cursor.explain().toString());
     }
-    return new MongoRecordCursor(cursor, getCollectionSpec(collectionName).getPrimaryKey());
+    return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
   }
 
   @Override
@@ -327,7 +287,7 @@ public class MongoRecords implements NoSQLRecords {
   public void update(String collectionName, String guid, JSONObject value) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -346,7 +306,7 @@ public class MongoRecords implements NoSQLRecords {
   public void updateField(String collectionName, String guid, String key, Object object) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -362,7 +322,7 @@ public class MongoRecords implements NoSQLRecords {
   public boolean contains(String collectionName, String guid) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -381,7 +341,7 @@ public class MongoRecords implements NoSQLRecords {
   public void remove(String collectionName, String guid) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -404,7 +364,7 @@ public class MongoRecords implements NoSQLRecords {
     }
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
 
       DBCollection collection = db.getCollection(collectionName);
@@ -480,7 +440,7 @@ public class MongoRecords implements NoSQLRecords {
           Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -527,7 +487,7 @@ public class MongoRecords implements NoSQLRecords {
           Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
     db.requestStart();
     try {
-      String primaryKey = getCollectionSpec(collectionName).getPrimaryKey().getName();
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
@@ -559,20 +519,20 @@ public class MongoRecords implements NoSQLRecords {
 
   @Override
   public MongoRecordCursor getAllRowsIterator(String collectionName, Field nameField, ArrayList<Field> fields) {
-    return new MongoRecordCursor(db, collectionName, getCollectionSpec(collectionName).getPrimaryKey(), fields);
+    return new MongoRecordCursor(db, collectionName, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey(), fields);
   }
 
   @Override
   public MongoRecordCursor getAllRowsIterator(String collectionName) {
-    return new MongoRecordCursor(db, collectionName, getCollectionSpec(collectionName).getPrimaryKey());
+    return new MongoRecordCursor(db, collectionName, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
   }
 
   @Override
   public Set<String> keySet(String collectionName) {
     Set<String> result = new HashSet<String>();
     // Get a cursor for all the rows with just the name column filled in.
-    MongoRecordCursor cursor = getAllRowsIterator(collectionName, getCollectionSpec(collectionName).getPrimaryKey(), null);
-    String nameField = getCollectionSpec(collectionName).getPrimaryKey().getName();
+    MongoRecordCursor cursor = getAllRowsIterator(collectionName, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey(), null);
+    String nameField = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
     while (cursor.hasNext()) {
       result.add(cursor.nextRowField(nameField));
     }
@@ -598,8 +558,10 @@ public class MongoRecords implements NoSQLRecords {
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
+    } else if (args.length == 3) {
+      queryTest(Integer.parseInt(args[0]), args[1], args[2]);
     } else {
-      queryTest(Integer.parseInt(args[0]), args[1]);
+      
     }
   }
 
@@ -622,7 +584,7 @@ public class MongoRecords implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
 //  //test code
-  private static void queryTest(int nodeID, String searchArg) throws RecordNotFoundException, Exception {
+  private static void queryTest(int nodeID, String key, String searchArg) throws RecordNotFoundException, Exception {
     NameServer.nodeID = nodeID;
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
@@ -639,7 +601,7 @@ public class MongoRecords implements NoSQLRecords {
     }
 
     System.out.println("***LOCATION QUERY***");
-    MongoRecordCursor cursor = instance.queryUserField(DBNAMERECORD, NameRecord.VALUES_MAP, "location", search, true);
+    MongoRecordCursor cursor = instance.queryUserField(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
     while (cursor.hasNext()) {
       try {
         JSONObject json = cursor.next();
