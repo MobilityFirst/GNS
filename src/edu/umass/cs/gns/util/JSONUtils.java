@@ -6,8 +6,8 @@ package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.StatsInfo;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import java.util.*;
@@ -50,7 +50,6 @@ public class JSONUtils {
 
   public static HashSet<String> JSONArrayToHashSet(JSONArray jsonArray) throws JSONException {
     HashSet<String> set = new HashSet();
-    //org.JSON sucks!!!
     for (int i = 0; i < jsonArray.length(); i++) {
       set.add(jsonArray.getString(i));
     }
@@ -59,7 +58,6 @@ public class JSONUtils {
 
   public static ArrayList<Integer> JSONArrayToArrayListInteger(JSONArray jsonArray) throws JSONException {
     ArrayList<Integer> list = new ArrayList();
-    //org.JSON sucks!!!
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.getInt(i));
     }

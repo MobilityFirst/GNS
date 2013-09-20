@@ -68,7 +68,7 @@ public class AccountAccess {
     }
     if (accountResult != null) {
       try {
-        return new AccountInfo(accountResult);
+        return new AccountInfo(accountResult.toResultValueString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing accountinfo:" + e);
       } catch (ParseException e) {

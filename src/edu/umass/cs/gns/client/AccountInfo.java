@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.nameserver.ResultValueString;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
@@ -120,7 +121,7 @@ public class AccountInfo {
     return new ResultValue(Arrays.asList(toJSONObject().toString()));
   }
 
-  public AccountInfo(ResultValue queryResult) throws JSONException, ParseException {
+  public AccountInfo(ResultValueString queryResult) throws JSONException, ParseException {
     this(new JSONObject(queryResult.get(0)));
   }
 
