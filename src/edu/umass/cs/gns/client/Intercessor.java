@@ -139,6 +139,8 @@ public class Intercessor {
             }
           }
           break;
+        case QUERY_RESPONSE:
+          SelectQueryHandler.processQueryResponsePackets(json);
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON error: " + e);
@@ -359,7 +361,7 @@ public class Intercessor {
     }
   }
 
-  private void sendPacket(JSONObject jsonObject) {
+  public void sendPacket(JSONObject jsonObject) {
     if (StartLocalNameServer.runHttpServer) {
       LNSListener.demultiplexLNSPackets(jsonObject);
     } else {

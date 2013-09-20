@@ -12,7 +12,7 @@ import java.net.InetAddress;
  * 
  * @author Hardeep Uppal
  *************************************************************/
-public class QueryInfo {
+public class DNSQueryInfo {
 
 //  public final static String CACHE = "cache";
 //  public final static String SINGLE_TRANSMISSION = "single-transmission";
@@ -57,7 +57,7 @@ public class QueryInfo {
    * @param nameserverID Response name server ID
    * @param queryStatus Query Status
    **************************************************************/
-  public QueryInfo(int id, String name, NameRecordKey recordKey, long time, 
+  public DNSQueryInfo(int id, String name, NameRecordKey recordKey, long time, 
 		  int nameserverID, String queryStatus, int lookupNumber,
 		  DNSPacket incomingPacket, InetAddress senderAddress, int senderPort) {
     this.id = id;

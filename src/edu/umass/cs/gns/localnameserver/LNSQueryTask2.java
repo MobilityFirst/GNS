@@ -9,25 +9,23 @@ package edu.umass.cs.gns.localnameserver;
  */
 
 import edu.umass.cs.gns.client.Intercessor;
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
@@ -77,7 +75,7 @@ public class LNSQueryTask2 extends TimerTask {
 
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Transmissions exceeded. " + incomingPacket.getQrecordKey() + " " + incomingPacket.getQname());
         errorResponse(incomingPacket, DNSRecordType.RCODE_ERROR, senderAddress, senderPort);
-        QueryInfo query = LocalNameServer.removeQueryInfo(queryId);
+        DNSQueryInfo query = LocalNameServer.removeQueryInfo(queryId);
 
         logFailureMessage(query);
         if (query != null) {
@@ -238,7 +236,7 @@ public class LNSQueryTask2 extends TimerTask {
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Valid Address in cache... "
             + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
     LocalNameServer.incrementLookupResponse(name);
-    QueryInfo tempQueryInfo = new QueryInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
+    DNSQueryInfo tempQueryInfo = new DNSQueryInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
             incomingPacket, senderAddress, senderPort);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();
@@ -269,7 +267,7 @@ public class LNSQueryTask2 extends TimerTask {
     }
   }
 
-  private void logFailureMessage(QueryInfo query) {
+  private void logFailureMessage(DNSQueryInfo query) {
 
     String failureCode = "Failed-LookupNoResponseReceived";
     if (nameserversQueried.isEmpty()) {

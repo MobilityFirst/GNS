@@ -62,7 +62,7 @@ public class Lookup {
                 + (0) + " --> " + dnsPacket.toJSONObject().toString());
 //        long t2 = System.currentTimeMillis();
       //Match response to the query sent
-      QueryInfo query = LocalNameServer.removeQueryInfo(dnsPacket.getQueryId());
+      DNSQueryInfo query = LocalNameServer.removeQueryInfo(dnsPacket.getQueryId());
 //        long t3 = System.currentTimeMillis();
       if (query == null) {
         return;
@@ -140,7 +140,7 @@ public class Lookup {
 
   public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket dnsPacket) throws JSONException {
 
-    QueryInfo query = LocalNameServer.removeQueryInfo(dnsPacket.getQueryId());
+    DNSQueryInfo query = LocalNameServer.removeQueryInfo(dnsPacket.getQueryId());
     if (query == null) {
       GNS.getLogger().finer("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
       return;
@@ -192,7 +192,7 @@ public class Lookup {
    *
    * @param query
    */
-  private static void sendReplyToUser(QueryInfo query, ValuesMap returnValue, int TTL) {
+  private static void sendReplyToUser(DNSQueryInfo query, ValuesMap returnValue, int TTL) {
 //		CacheEntry entry = LocalNameServer.getCacheEntry(query.qName, query.qRecordKey);
 //		if (StartLocalNameServer.debugMode) GNRS.getLogger().finer("LNSListenerQuery: send response from cache: " + entry);
 //        DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(), entry, query.incomingPacket.getQrecordKey());

@@ -60,7 +60,7 @@ public class LocalNameServer {
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    *
    */
-  private static ConcurrentMap<Integer, QueryInfo> queryTransmittedMap;
+  private static ConcurrentMap<Integer, DNSQueryInfo> queryTransmittedMap;
   private static ConcurrentMap<Integer, UpdateInfo> updateTransmittedMap;
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS record)
@@ -99,7 +99,7 @@ public class LocalNameServer {
   public LocalNameServer(int nodeID) throws IOException {
     LocalNameServer.nodeID = nodeID;
 
-    queryTransmittedMap = new ConcurrentHashMap<Integer, QueryInfo>(10, 0.75f, 3);
+    queryTransmittedMap = new ConcurrentHashMap<Integer, DNSQueryInfo>(10, 0.75f, 3);
     updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
 
     randomID = new Random(System.currentTimeMillis());
@@ -430,7 +430,7 @@ public class LocalNameServer {
     }
 
     //Add query info
-    QueryInfo query = new QueryInfo(id, name, recordKey, time,
+    DNSQueryInfo query = new DNSQueryInfo(id, name, recordKey, time,
             nameserverID, queryStatus, lookupNumber,
             incomingPacket, senderAddress, senderPort);
     queryTransmittedMap.put(id, query);
@@ -458,7 +458,7 @@ public class LocalNameServer {
 
 
     //Add query info
-    QueryInfo query = new QueryInfo(queryID, name, recordKey, time,
+    DNSQueryInfo query = new DNSQueryInfo(queryID, name, recordKey, time,
             nameserverID, queryStatus, lookupNumber,
             incomingPacket, senderAddress, senderPort);
     queryTransmittedMap.put(queryID, query);
@@ -528,7 +528,7 @@ public class LocalNameServer {
    *
    * @param id Query Id
    */
-  public static QueryInfo removeQueryInfo(int id) {
+  public static DNSQueryInfo removeQueryInfo(int id) {
     return queryTransmittedMap.remove(id);
   }
 
@@ -550,7 +550,7 @@ public class LocalNameServer {
     return queryTransmittedMap.containsKey(id);
   }
 
-  public static QueryInfo getQueryInfo(int id) {
+  public static DNSQueryInfo getQueryInfo(int id) {
     return queryTransmittedMap.get(id);
   }
 
@@ -1160,7 +1160,7 @@ public class LocalNameServer {
    */
   public static String queryLogString(String preamble) {
     StringBuilder queryTable = new StringBuilder();
-    for (QueryInfo info : LocalNameServer.queryTransmittedMap.values()) {
+    for (DNSQueryInfo info : LocalNameServer.queryTransmittedMap.values()) {
       queryTable.append("\n");
       queryTable.append(info.toString());
     }

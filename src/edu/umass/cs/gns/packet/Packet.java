@@ -74,6 +74,9 @@ public class Packet {
     //
     NAME_SERVER_LOAD(60),
     //
+    QUERY_REQUEST(70),
+    QUERY_RESPONSE(71),
+    //
     PAXOS_PACKET(90),
     //
     NEW_ACTIVE_START(101),
