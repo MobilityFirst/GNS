@@ -74,8 +74,7 @@ class SendQueryIntercessorTask extends TimerTask {
   public SendQueryIntercessorTask() {
     count = -1;
 //        this.name = name1;
-    Header header = new Header(0, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
-    queryRecord = new DNSPacket(header, "x", NameRecordKey.EdgeRecord, LocalNameServer.nodeID);
+    queryRecord = new DNSPacket(0, "x", NameRecordKey.EdgeRecord, LocalNameServer.nodeID);
   }
 
   @Override

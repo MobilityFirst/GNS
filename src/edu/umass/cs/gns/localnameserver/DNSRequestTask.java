@@ -31,7 +31,8 @@ import org.json.JSONObject;
 
 
 
-public class LNSQueryTask2 extends TimerTask {
+
+public class DNSRequestTask extends TimerTask {
 
   DNSPacket incomingPacket;
   InetAddress senderAddress;
@@ -42,7 +43,7 @@ public class LNSQueryTask2 extends TimerTask {
   private int queryId = 0;
   private HashSet<Integer> nameserversQueried;
 
-  public LNSQueryTask2(DNSPacket incomingPacket,
+  public DNSRequestTask(DNSPacket incomingPacket,
                InetAddress senderAddress, int senderPort, long receivedTime,
                int lookupNumber, int queryId,
                HashSet<Integer> nameserversQueried) {
@@ -108,7 +109,7 @@ public class LNSQueryTask2 extends TimerTask {
 
     if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
       LocalNameServer.removeQueryInfo(queryId);
-      LNSQueryTask2 queryTaskObject = new LNSQueryTask2(
+      DNSRequestTask queryTaskObject = new DNSRequestTask(
               incomingPacket,
               senderAddress,
               senderPort,
@@ -162,7 +163,7 @@ public class LNSQueryTask2 extends TimerTask {
                 ( 1 + r.nextDouble() * StartLocalNameServer.variation);
         long timerDelay = (long) latency;
 
-        LocalNameServer.executorService.schedule(new SendQueryWithDelay2(json, ns), timerDelay, TimeUnit.MILLISECONDS);
+        LocalNameServer.executorService.schedule(new SendDNSRequestWithDelay2(json, ns), timerDelay, TimeUnit.MILLISECONDS);
       }
       else {
         try {
@@ -287,11 +288,10 @@ public class LNSQueryTask2 extends TimerTask {
             + nameserversQueried.toString());
   }
 }
-
-class SendQueryWithDelay2 extends TimerTask {
+class SendDNSRequestWithDelay2 extends TimerTask {
   JSONObject json;
   int nameserver;
-  public SendQueryWithDelay2(JSONObject json, int nameserver) {
+  public SendDNSRequestWithDelay2(JSONObject json, int nameserver) {
     this.json = json;
     this.nameserver = nameserver;
   }

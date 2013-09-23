@@ -33,7 +33,7 @@ public class Lookup {
     //		if (StartLocalNameServer.debugMode) GNRS.getLogger().finer("Query-" + numQueries + "\t" + System.currentTimeMillis() + "\t"
     //                + dnsPacket.getQname() + "\tRecvd-packet");
     // schedule this task immediately, send query out.
-    LNSQueryTask2 queryTaskObject = new LNSQueryTask2(
+    DNSRequestTask queryTaskObject = new DNSRequestTask(
             dnsPacket,
             address,
             port,
@@ -150,7 +150,7 @@ public class Lookup {
               + "	Invalid-active-name-server. " + dnsPacket.toJSONObject().toString());
 
       LocalNameServer.invalidateActiveNameServer(dnsPacket.getQname());
-      LNSQueryTask2 queryTaskObject = new LNSQueryTask2(
+      DNSRequestTask queryTaskObject = new DNSRequestTask(
               query.incomingPacket,
               query.senderAddress,
               query.senderPort,
@@ -160,16 +160,16 @@ public class Lookup {
               new HashSet<Integer>());
       PendingTasks.addToPendingRequests(query.qName, //query.qRecordKey,
               queryTaskObject, StartLocalNameServer.queryTimeout,
-              query.senderAddress, query.senderPort, LNSQueryTask2.getErrorPacket(query.incomingPacket));
+              query.senderAddress, query.senderPort, DNSRequestTask.getErrorPacket(query.incomingPacket));
       SendActivesRequestTask.requestActives(query.qName);
       GNS.getLogger().finer(" Scheduled lookup task.");
 
     } else {      // other types of errors, send error response to client
       try {
         if (query.senderAddress != null && query.senderPort > 0) {
-          LNSListener.udpTransport.sendPacket(LNSQueryTask2.getErrorPacket(query.incomingPacket), query.senderAddress, query.senderPort);
+          LNSListener.udpTransport.sendPacket(DNSRequestTask.getErrorPacket(query.incomingPacket), query.senderAddress, query.senderPort);
         } else if (StartLocalNameServer.runHttpServer) {
-          Intercessor.getInstance().checkForResult(LNSQueryTask2.getErrorPacket(query.incomingPacket));
+          Intercessor.getInstance().checkForResult(DNSRequestTask.getErrorPacket(query.incomingPacket));
         }
         GNS.getLogger().finer("other error sent to client --> " + jsonObject + " query ID = " + query.incomingPacket.getQueryId());
 

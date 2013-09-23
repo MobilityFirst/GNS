@@ -22,14 +22,11 @@ import java.util.Set;
 public class DNSPacket extends BasicPacket {
 
   public final static String HEADER = "header1";
-//  public final static String QTYPE = "qtype";
   public final static String QRECORDKEY = "qrecordkey";
   public final static String QNAME = "qname";
   public final static String TIME_TO_LIVE = "ttlAddress";
   public final static String FIELD_VALUE = "fieldValue";
   public final static String RECORD_VALUE = "recordValue";
-//  public final static String PRIMARY_NAME_SERVERS = "Primary";
-//  public final static String ACTIVE_NAME_SERVERS = "Active";
   public final static String LNS_ID = "lnsId";
   /**
    * Packet header *
@@ -52,37 +49,20 @@ public class DNSPacket extends BasicPacket {
    * return the entire record. When it's a single key/value the key will be the same as the qrecordKey.
    */
   private ValuesMap recordValue;
-//  /**
-//   * A list of primary name servers from the name *
-//   */
-//  private HashSet<Integer> primaryNameServers;
-//  /**
-//   * A list of active name servers for the name *
-//   */
-//  private Set<Integer> activeNameServers;
-  /**
-   * Used by traffic status *
-   */
   private int lnsId = -1;
 
-//  /**
-//   **
-//   * Constructs a packet for querying a name server for name information.
-//   *
-//   * @param header Packet header
-//   * @param qname Host name in the query
-//  
-//   */
-//  public DNSPacket(Header header, String qname, NameRecordKey recordKey) {
-//    this.header = header;
-//    this.qrecordKey = recordKey;
-//    this.qname = qname;
-//    this.lnsId = -1;
-//  }
-  public DNSPacket(Header header, String qname, NameRecordKey recordKey, int sender) {
-    this.header = header;
-    this.qrecordKey = recordKey;
+  /**
+   **
+   * Constructs a packet for querying a name server for name information.
+   *
+   * @param header Packet header
+   * @param qname Host name in the query
+  
+   */
+  public DNSPacket(int id, String qname, NameRecordKey key, int sender) {
+    this.header = new Header(id, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
     this.qname = qname;
+    this.qrecordKey = key;
     this.lnsId = sender;
   }
 
@@ -95,8 +75,8 @@ public class DNSPacket extends BasicPacket {
    */
   public DNSPacket(JSONObject json) throws JSONException {
     this.header = new Header(json.getJSONObject(HEADER));
-    this.qrecordKey = NameRecordKey.valueOf(json.getString(QRECORDKEY));
     this.qname = json.getString(QNAME);
+    this.qrecordKey = NameRecordKey.valueOf(json.getString(QRECORDKEY));
 
     if (header.getQr() == DNSRecordType.RESPONSE && header.getRcode() != DNSRecordType.RCODE_ERROR) {
       this.ttl = json.getInt(TIME_TO_LIVE);
@@ -110,19 +90,22 @@ public class DNSPacket extends BasicPacket {
     this.lnsId = json.getInt(LNS_ID);
   }
 
+  /**
+   * A shortcut for when you just have a single field you want to return. 
+   * 
+   * @param id
+   * @param name
+   * @param key
+   * @param fieldValue
+   * @param TTL 
+   */
   public DNSPacket(int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL) {
     this.header = new Header(id, DNSRecordType.RESPONSE, DNSRecordType.RCODE_NO_ERROR);
     this.qname = name;
     this.qrecordKey = key;
-    //this.fieldValue = fieldValue;
-    // recordValue is only used to return an +ALL+ field value
     this.recordValue = new ValuesMap();
     this.recordValue.put(key.getName(), fieldValue);
     this.ttl = TTL;
-
-//    this.primaryNameServers = entry.getPrimaryNameServer();
-//    this.activeNameServers = entry.getActiveNameServers();
-
     this.lnsId = -1;
   }
 
@@ -130,11 +113,8 @@ public class DNSPacket extends BasicPacket {
     this.header = new Header(id, DNSRecordType.RESPONSE, DNSRecordType.RCODE_NO_ERROR);
     this.qname = name;
     this.qrecordKey = key;
-    //this.fieldValue = fieldValue;
     this.recordValue = entireRecord;
     this.ttl = TTL;
-//    this.primaryNameServers = entry.getPrimaryNameServer();
-//    this.activeNameServers = entry.getActiveNameServers();
     this.lnsId = -1;
   }
 
@@ -166,22 +146,19 @@ public class DNSPacket extends BasicPacket {
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
+    addToJSONObject(json);
+    return json;
+  }
 
+  public void addToJSONObject(JSONObject json) throws JSONException {
     json.put(HEADER, getHeader().toJSONObject());
     json.put(QRECORDKEY, getQrecordKey().getName());
     json.put(QNAME, getQname());
     json.put(TIME_TO_LIVE, getTTL());
-//    if (fieldValue != null) {
-//      json.put(FIELD_VALUE, new JSONArray(fieldValue));
-//    }
     if (recordValue != null) {
       json.put(RECORD_VALUE, recordValue.toJSONObject());
     }
-
-//    json.put(PRIMARY_NAME_SERVERS, new JSONArray(getPrimaryNameServers()));
-//    json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
     json.put(LNS_ID, lnsId);
-    return json;
   }
 
   /**
@@ -313,94 +290,70 @@ public class DNSPacket extends BasicPacket {
   public void setLnsId(int lnsId) {
     this.lnsId = lnsId;
   }
-//  /**
-//   * @return the primaryNameServers
-//   */
-//  public HashSet<Integer> getPrimaryNameServers() {
-//    return primaryNameServers;
+
+//  public static void main(String[] args) throws JSONException {
+//    long t1 = System.currentTimeMillis();
+//    Header header = new Header(100000, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
+//    long t2 = System.currentTimeMillis();
+//    DNSPacket pkt = new DNSPacket(header, "name1", NameRecordKey.EdgeRecord, -1);
+//    long t3 = System.currentTimeMillis();
+//    JSONObject pktJson = pkt.toJSONObjectQuestion();
+//    long t4 = System.currentTimeMillis();
+//    pkt = new DNSPacket(pktJson);
+//    long t5 = System.currentTimeMillis();
+//
+//    Set<Integer> active = new HashSet<Integer>();
+//    active.add(1);
+//    active.add(2);
+//    active.add(3);
+//    List<Integer> primary = new ArrayList<Integer>();
+//    primary.add(10);
+//    primary.add(11);
+//    primary.add(12);
+//    ResultValue rdata = new ResultValue();
+//    rdata.add("2545435345");
+//
+//    long t6 = System.currentTimeMillis();
+////    pkt.setActiveNameServers(active);
+//
+////    pkt.setPrimaryNameServers(new HashSet<Integer>(primary));
+//
+//    ValuesMap record = new ValuesMap();
+//    record.put("FRED", rdata);
+//    pkt.setRecordValue(record);
+//
+//    pkt.setTTL(10);
+//    long t7 = System.currentTimeMillis();
+//    pktJson = pkt.toJSONObject();
+//    long t8 = System.currentTimeMillis();
+//    pkt = new DNSPacket(pktJson);
+//    long t9 = System.currentTimeMillis();
+//
+//    System.out.println("header:" + (t2 - t1) + "ms");
+//    System.out.println("pkt:" + (t3 - t2) + "ms");
+//    System.out.println("pktToJson:" + (t4 - t3) + "ms");
+//    System.out.println("pktFromJson:" + (t5 - t4) + "ms");
+//    System.out.println("Generate data:" + (t6 - t5) + "ms");
+//    System.out.println("updatePkt:" + (t7 - t6) + "ms");
+//    System.out.println("respomsePktToJson:" + (t8 - t7) + "ms");
+//    System.out.println("jsonToPkt:" + (t9 - t8) + "ms");
+//
+//
+//    Header h = new Header(100000, DNSRecordType.RESPONSE, DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
+//    DNSPacket p = new DNSPacket(h, "name1", NameRecordKey.EdgeRecord, -1);
+////    p.setRecordValue(record);
+//    JSONObject json = p.toJSONObject();
+//    System.out.println(json.toString());
+//    p = new DNSPacket(json);
+//    System.out.println(p.toJSONObjectQuestion().toString());
+//    System.out.println(p.toJSONObjectQuestion().toString());
+////    System.out.println(p.getActiveNameServers().toString());
+////    p.setActiveNameServers(new HashSet<Integer>());
+////    p.getActiveNameServers().add(1);
+//    json = p.toJSONObject();
+//    System.out.println(json.toString());
+//    p = new DNSPacket(json);
+//    System.out.println(p.toJSONObjectQuestion().toString());
+//    System.out.println(p.toJSONObjectQuestion().toString());
 //  }
-//  /**
-//   * @param primaryNameServers the primaryNameServers to set
-//   */
-//  public void setPrimaryNameServers(HashSet<Integer> primaryNameServers) {
-//    this.primaryNameServers = primaryNameServers;
-//  }
-//  /**
-//   * @return the activeNameServers
-//   */
-//  public Set<Integer> getActiveNameServers() {
-//    return activeNameServers;
-//  }
-//  /**
-//   * @param activeNameServers the activeNameServers to set
-//   */
-//  public void setActiveNameServers(Set<Integer> activeNameServers) {
-//    this.activeNameServers = activeNameServers;
-//  }
-
-  public static void main(String[] args) throws JSONException {
-    long t1 = System.currentTimeMillis();
-    Header header = new Header(100000, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
-    long t2 = System.currentTimeMillis();
-    DNSPacket pkt = new DNSPacket(header, "name1", NameRecordKey.EdgeRecord, -1);
-    long t3 = System.currentTimeMillis();
-    JSONObject pktJson = pkt.toJSONObjectQuestion();
-    long t4 = System.currentTimeMillis();
-    pkt = new DNSPacket(pktJson);
-    long t5 = System.currentTimeMillis();
-
-    Set<Integer> active = new HashSet<Integer>();
-    active.add(1);
-    active.add(2);
-    active.add(3);
-    List<Integer> primary = new ArrayList<Integer>();
-    primary.add(10);
-    primary.add(11);
-    primary.add(12);
-    ResultValue rdata = new ResultValue();
-    rdata.add("2545435345");
-
-    long t6 = System.currentTimeMillis();
-//    pkt.setActiveNameServers(active);
-
-//    pkt.setPrimaryNameServers(new HashSet<Integer>(primary));
-
-    ValuesMap record = new ValuesMap();
-    record.put("FRED", rdata);
-    pkt.setRecordValue(record);
-
-    pkt.setTTL(10);
-    long t7 = System.currentTimeMillis();
-    pktJson = pkt.toJSONObject();
-    long t8 = System.currentTimeMillis();
-    pkt = new DNSPacket(pktJson);
-    long t9 = System.currentTimeMillis();
-
-    System.out.println("header:" + (t2 - t1) + "ms");
-    System.out.println("pkt:" + (t3 - t2) + "ms");
-    System.out.println("pktToJson:" + (t4 - t3) + "ms");
-    System.out.println("pktFromJson:" + (t5 - t4) + "ms");
-    System.out.println("Generate data:" + (t6 - t5) + "ms");
-    System.out.println("updatePkt:" + (t7 - t6) + "ms");
-    System.out.println("respomsePktToJson:" + (t8 - t7) + "ms");
-    System.out.println("jsonToPkt:" + (t9 - t8) + "ms");
-
-
-    Header h = new Header(100000, DNSRecordType.RESPONSE, DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
-    DNSPacket p = new DNSPacket(h, "name1", NameRecordKey.EdgeRecord, -1);
-//    p.setRecordValue(record);
-    JSONObject json = p.toJSONObject();
-    System.out.println(json.toString());
-    p = new DNSPacket(json);
-    System.out.println(p.toJSONObjectQuestion().toString());
-    System.out.println(p.toJSONObjectQuestion().toString());
-//    System.out.println(p.getActiveNameServers().toString());
-//    p.setActiveNameServers(new HashSet<Integer>());
-//    p.getActiveNameServers().add(1);
-    json = p.toJSONObject();
-    System.out.println(json.toString());
-    p = new DNSPacket(json);
-    System.out.println(p.toJSONObjectQuestion().toString());
-    System.out.println(p.toJSONObjectQuestion().toString());
-  }
 }

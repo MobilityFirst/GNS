@@ -5,8 +5,9 @@
  */
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.NameRecordKey;
 import static edu.umass.cs.gns.packet.Packet.*;
 import edu.umass.cs.gns.packet.QueryRequestPacket;
 import edu.umass.cs.gns.packet.QueryResponsePacket;
@@ -28,10 +29,10 @@ public class SelectQueryHandler {
   private static ConcurrentMap<Integer, JSONArray> result = new ConcurrentHashMap<Integer, JSONArray>(10, 0.75f, 3);
   private static Random randomID = new Random();
   
-  public static String sendQueryRequest(String key, String value) {
+  public static String sendQueryRequest(NameRecordKey key, String value) {
     int id = nextRequestID();
     try {
-      Intercessor.getInstance().sendPacket(new QueryRequestPacket(id, key, value).toJSONObject());
+      Intercessor.getInstance().sendPacket(new QueryRequestPacket(id, key, value, LocalNameServer.nodeID).toJSONObject());
       waitForResponsePacket(id);
       JSONArray json = result.get(id);
       if (json != null) {
