@@ -15,16 +15,16 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class RecordAccess {
+public class FieldAccess {
 
   // make it a singleton class
-  public static RecordAccess getInstance() {
-    return RecordAccessHolder.INSTANCE;
+  public static FieldAccess getInstance() {
+    return FieldAccessHolder.INSTANCE;
   }
 
-  private static class RecordAccessHolder {
+  private static class FieldAccessHolder {
 
-    private static final RecordAccess INSTANCE = new RecordAccess();
+    private static final FieldAccess INSTANCE = new FieldAccess();
   }
 
   public String lookup(String guid, String key) {

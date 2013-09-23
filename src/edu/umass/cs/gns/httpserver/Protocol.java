@@ -7,7 +7,7 @@ import edu.umass.cs.gns.client.AclAccess.AccessType;
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
-import edu.umass.cs.gns.client.RecordAccess;
+import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.UpdateOperation;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
@@ -146,7 +146,7 @@ public class Protocol {
   //public final static String TABLE = "table";
   //
   private boolean demoMode = true;
-  private RecordAccess recordAccess = RecordAccess.getInstance();
+  private FieldAccess recordAccess = FieldAccess.getInstance();
   private AccountAccess accountAccess = AccountAccess.getInstance();
   private AclAccess aclAccess = AclAccess.getInstance();
   //private GroupAccessV1 groupAccessV1 = GroupAccessV1.getInstance();
