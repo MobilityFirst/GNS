@@ -46,7 +46,7 @@ public class KeepAlivePacket extends BasicPacket{
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
-    Packet.putPacketType(json,type);
+    Packet.putPacketType(json, type);
     json.put(NAME, name);
     json.put(SENDER, sender);
     if (paxosID != null) {

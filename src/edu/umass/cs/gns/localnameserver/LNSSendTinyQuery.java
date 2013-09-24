@@ -119,7 +119,7 @@ public class LNSSendTinyQuery {
 	
 	private static int addToQueryInfo(String name, int nameServerID, long recvdTime, int count) {
 		
- 		int queryId = LocalNameServer.addQueryInfo(name, NameRecordKey.EdgeRecord, 
+ 		int queryId = LocalNameServer.addDNSRequestInfo(name, NameRecordKey.EdgeRecord, 
 				nameServerID, recvdTime, "send-tiny-query", count, null, null, -1);
 		return queryId;
 

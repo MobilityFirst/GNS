@@ -14,7 +14,7 @@ public class LNSRecvTinyQuery {
 		int queryID = tinyQuery.getQueryID();
 		
 		if (StartLocalNameServer.debugMode) GNS.getLogger().fine("TINYQUERY LNSRECVD queryid " + tinyQuery.getQueryID());
-		DNSQueryInfo queryInfo = LocalNameServer.removeQueryInfo(queryID);
+		DNSRequestInfo queryInfo = LocalNameServer.removeDNSRequestInfo(queryID);
 		if (queryInfo != null) {
 			// Log response
 			queryInfo.setRecvTime(System.currentTimeMillis());

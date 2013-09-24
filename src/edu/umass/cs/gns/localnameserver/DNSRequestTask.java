@@ -76,7 +76,7 @@ public class DNSRequestTask extends TimerTask {
 
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Transmissions exceeded. " + incomingPacket.getQrecordKey() + " " + incomingPacket.getQname());
         errorResponse(incomingPacket, DNSRecordType.RCODE_ERROR, senderAddress, senderPort);
-        DNSQueryInfo query = LocalNameServer.removeQueryInfo(queryId);
+        DNSRequestInfo query = LocalNameServer.removeDNSRequestInfo(queryId);
 
         logFailureMessage(query);
         if (query != null) {
@@ -86,7 +86,7 @@ public class DNSRequestTask extends TimerTask {
         }
         throw new RuntimeException();
       }
-      if (LocalNameServer.containsQueryInfo(queryId) == false) {
+      if (LocalNameServer.containsDNSRequestInfo(queryId) == false) {
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query ID does not exist. Removed due to Invalid Active NS or response recvd Query ID = " + queryId + " \t " + transmissionCount + "\t" + nameserversQueried + "\t");
         throw new RuntimeException();
         //    	return;
@@ -95,7 +95,7 @@ public class DNSRequestTask extends TimerTask {
 
     CacheEntry cacheEntry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
     if (cacheEntry != null) {
-      if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
+      if (transmissionCount > 1) LocalNameServer.removeDNSRequestInfo(queryId);
       ResultValue value = cacheEntry.getValue(incomingPacket.getQrecordKey());
       GNS.getLogger().finer("CACHE VALUE=" + value);
       if (value != null) {
@@ -108,7 +108,7 @@ public class DNSRequestTask extends TimerTask {
     }
 
     if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
-      LocalNameServer.removeQueryInfo(queryId);
+      LocalNameServer.removeDNSRequestInfo(queryId);
       DNSRequestTask queryTaskObject = new DNSRequestTask(
               incomingPacket,
               senderAddress,
@@ -133,7 +133,7 @@ public class DNSRequestTask extends TimerTask {
 
 //        queryStatus = (queryStatus == null) ? QueryInfo.SINGLE_TRANSMISSION : queryStatus + "-" + QueryInfo.SINGLE_TRANSMISSION;
         //Get a unique id for this query
-        queryId = LocalNameServer.addQueryInfo(incomingPacket.getQname(), incomingPacket.getQrecordKey(), ns,
+        queryId = LocalNameServer.addDNSRequestInfo(incomingPacket.getQname(), incomingPacket.getQrecordKey(), ns,
                 receivedTime, "x", (int) lookupNumber,
                 incomingPacket, senderAddress, senderPort);
       }
@@ -237,7 +237,7 @@ public class DNSRequestTask extends TimerTask {
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Valid Address in cache... "
             + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
     LocalNameServer.incrementLookupResponse(name);
-    DNSQueryInfo tempQueryInfo = new DNSQueryInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
+    DNSRequestInfo tempQueryInfo = new DNSRequestInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
             incomingPacket, senderAddress, senderPort);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();
@@ -268,7 +268,7 @@ public class DNSRequestTask extends TimerTask {
     }
   }
 
-  private void logFailureMessage(DNSQueryInfo query) {
+  private void logFailureMessage(DNSRequestInfo query) {
 
     String failureCode = "Failed-LookupNoResponseReceived";
     if (nameserversQueried.isEmpty()) {

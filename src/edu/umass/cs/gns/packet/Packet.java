@@ -119,29 +119,6 @@ public class Packet {
     }
   }
 
-  public static PacketType getPacketTypeWithDNSPacket(JSONObject json) throws JSONException {
-
-    if (Packet.hasPacketTypeField(json)) {
-      return getPacketType(json);
-    }
-
-    // else it is a DNS packet
-    try {
-      DNSPacket dnsPacket = new DNSPacket(json);
-      if (dnsPacket.isQuery()) { // Query
-        return PacketType.DNS;
-      } else if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
-        return PacketType.DNS_RESPONSE;
-      } else if (dnsPacket.containsAnyError()) {
-        return PacketType.DNS_ERROR_RESPONSE;
-      }
-    } catch (JSONException e) {
-      GNS.getLogger().fine("JSON Exception: Probably not a DNS packet: "
-              + e.getMessage());
-    }
-    return null;
-  }
-
   public static PacketType getDNSPacketType(DNSPacket dnsPacket) throws JSONException {
 
     if (dnsPacket.isQuery()) { // Query
@@ -152,6 +129,10 @@ public class Packet {
       return PacketType.DNS_ERROR_RESPONSE;
     }
     return null;
+  }
+  
+  public static PacketType getDNSPacketType(QueryRequestPacket packet) throws JSONException {
+    return PacketType.QUERY_REQUEST;
   }
 
   // some shorthand helpers
@@ -164,6 +145,7 @@ public class Packet {
     if (Packet.hasPacketTypeField(json)) {
       return PacketType.getPacketType(json.getInt(TYPE));
     }
+    // why... why not just put the type in the packet like all the other ones do?
     return PacketType.DNS;
   }
 

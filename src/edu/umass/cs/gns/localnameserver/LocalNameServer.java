@@ -60,7 +60,7 @@ public class LocalNameServer {
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    *
    */
-  private static ConcurrentMap<Integer, DNSQueryInfo> queryTransmittedMap;
+  private static ConcurrentMap<Integer, DNSRequestInfo> requestTransmittedMap;
   private static ConcurrentMap<Integer, UpdateInfo> updateTransmittedMap;
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS record)
@@ -99,7 +99,7 @@ public class LocalNameServer {
   public LocalNameServer(int nodeID) throws IOException {
     LocalNameServer.nodeID = nodeID;
 
-    queryTransmittedMap = new ConcurrentHashMap<Integer, DNSQueryInfo>(10, 0.75f, 3);
+    requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
     updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
 
     randomID = new Random(System.currentTimeMillis());
@@ -272,144 +272,8 @@ public class LocalNameServer {
     if (StartLocalNameServer.runHttpServer) {
       GnsHttpServer.runHttp(LocalNameServer.nodeID);
     }
-
-    //Start sending lookups and updates
-
-    //		if (StartLocalNameServer.isSyntheticWorkload) {
-    //			if(StartLocalNameServer.optimalReplication)
-    //				//new SendOptimalTraceThread().start();
-    //				new SendOptimalTraceThread_Xiaozheng().start();
-    //			else
-    //				//new SendZipfQueryThread().start();
-    //				new SendZipfQueryThread_Xiaozheng().start();
-    //			//			new SendUpdatesThread().start();
-    //			//			new SendUpdateMobileName( StartLocalNameServer.mobileWorkloadSize, 
-    //			//					StartLocalNameServer.updateRateMobile, StartLocalNameServer.regularWorkloadSize ).start();
-    //			new SendUpdateRegularName(StartLocalNameServer.regularWorkloadSize,
-    //					StartLocalNameServer.alpha, StartLocalNameServer.updateRateRegular).start();
-    //		} else {
-    //			new SendQueryThread(NameRecordKey.EdgeRecord, StartLocalNameServer.name).start();
-    //		}
   }
-
-  // NEEDS TO BE UPDATED
-//    public static void runSimpleTest() {
-//        Intercessor myInter;
-//        myInter = Intercessor.getInstance();
-//        myInter.setLocalServerID(LocalNameServer.nodeID);
-//        String name = "Abhigyan";
-////        String name1 = "Khushboo";
-//        String key = "Sharma";
-//        String key1 = "FNU";
-//        String value = "12345";
-//        String value1 = "678910";
-//
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send ADD Message: " + name);
-//        boolean result = myInter.sendAddRecordWithConfirmation(name, key, value);
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" ADD Message Result: " + result);
-//
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send ADD Message: " + key1);
-//        result = myInter.sendAddRecordWithConfirmation(name, key1, value1);
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" ADD Message Result: " + result);
-//
-////        if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" Send LOOKUP Message");
-////        QueryResultValue lookupResult = myInter.sendQuery(name,key);
-////
-////        if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" LOOKUP Message Result: " + lookupResult);
-////        if (lookupResult.get(0).equals(value)) {
-////            if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" LOOKUP SUCCESS (correct value): " + lookupResult);
-////        }
-////        else {
-////            if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" LOOKUP FAILED (incorrect value): " + lookupResult);
-////        }
-//
-//        for (int i = 0 ; i < 2; i++) {
-//
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send LOOKUP Message");
-//            QueryResultValue lookupResult = myInter.sendQuery(name,key);
-//
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" LOOKUP Message Result: " + lookupResult);
-//            if (lookupResult!= null && lookupResult.size() > 0 && lookupResult.get(0).equals(value)) {
-//                if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" LOOKUP SUCCESS (correct value): " + lookupResult);
-//            }
-//            else {
-//                if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" LOOKUP FAILED (incorrect value): " + lookupResult);
-//            }
-//
-//            String newValue = SendUpdatesViaIntercessor.getRandomString();
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send UPDATE Message new value: " + newValue);
-//            boolean updateResult = myInter.sendUpdateRecordWithConfirmation(name, key, newValue, value,
-//                    UpdateOperation.REPLACE_ALL);
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" UPDATE Message Result: " + updateResult);
-//            value = newValue;
-//
-//        }
-//
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send REMOVE Message");
-//        boolean removeResult = myInter.sendRemoveRecordWithConfirmation(name);
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" REMOVE Message Result: " + removeResult);
-//
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: Send LOOKUP Message");
-//        QueryResultValue lookupResult = myInter.sendQuery(name,key);
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: LOOKUP Message Result: " + lookupResult);
-//        if (lookupResult!= null && lookupResult.size() > 0 && lookupResult.get(0).equals(value)) {
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: LOOKUP SUCCESS (correct value): " + lookupResult);
-//        }
-//        else {
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: LOOKUP FAILED (incorrect value): " + lookupResult);
-//        }
-//
-//        for (int i = 0 ; i < 2; i++) {
-//
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send LOOKUP Message for " + key1);
-//            lookupResult = myInter.sendQuery(name,key1);
-//
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" LOOKUP Message Result: " + lookupResult +  " for " + key1);
-//            if (lookupResult!= null && lookupResult.size() > 0 && lookupResult.get(0).equals(value1)) {
-//                if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" LOOKUP SUCCESS (correct value): " + lookupResult +  " for " + key1);
-//            }
-//            else {
-//                if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" LOOKUP FAILED (incorrect value): " + lookupResult +  " for " + key1);
-//            }
-//
-//            String newValue = SendUpdatesViaIntercessor.getRandomString();
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send UPDATE Message new value: " + newValue +
-//                    " for " + key1);
-//            boolean updateResult = myInter.sendUpdateRecordWithConfirmation(name, key1, newValue, value1,
-//                    UpdateOperation.REPLACE_ALL);
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" UPDATE Message Result: " + updateResult +
-//                   " for " + key1);
-//            value1 = newValue;
-//
-//        }
-//
-//
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send REMOVE Message"  +  " for " + key1);
-//        removeResult = myInter.sendRemoveRecordWithConfirmation(name);
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" REMOVE Message Result: " + removeResult +  " for " + key1);
-//
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: Send LOOKUP Message" +  " for " + key1);
-//        lookupResult = myInter.sendQuery(name,key1);
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: LOOKUP Message Result: " + lookupResult +  " for " + key1);
-//        if (lookupResult!= null && lookupResult.size() > 0 && lookupResult.get(0).equals(value)) {
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: LOOKUP SUCCESS (correct value): " + lookupResult +  " for " + key1);
-//        }
-//        else {
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" After REMOVE: LOOKUP FAILED (incorrect value): " + lookupResult  +  " for " + key1);
-//        }
-//
-////        String newValue = SendUpdatesViaIntercessor.getRandomString();
-////        if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" After REMOVE: Send UPDATE Message new value: " + newValue);
-////        boolean updateResult = myInter.sendUpdateWithConfirmation(name, key, newValue, value,
-////                UpdateAddressPacket.UpdateOperation.REPLACE_ALL);
-////        if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" After REMOVE: UPDATE Message Result: " + updateResult);
-////
-////        value = newValue;
-//
-//
-//
-//
-//    }
+  
   /**
    **
    * Adds information of a transmitted query to a query transmitted map.
@@ -419,72 +283,24 @@ public class LocalNameServer {
    * @param time System time during transmission
    * @return A unique id for the query
    */
-  public static int addQueryInfo(String name, NameRecordKey recordKey,
+  public static int addDNSRequestInfo(String name, NameRecordKey recordKey,
           int nameserverID, long time, String queryStatus, int lookupNumber,
           DNSPacket incomingPacket, InetAddress senderAddress, int senderPort) {
     int id = randomID.nextInt();
 
     //Generate unique id for the query
-    while (queryTransmittedMap.containsKey(id)) {
+    while (requestTransmittedMap.containsKey(id)) {
       id = randomID.nextInt();
     }
 
     //Add query info
-    DNSQueryInfo query = new DNSQueryInfo(id, name, recordKey, time,
+    DNSRequestInfo query = new DNSRequestInfo(id, name, recordKey, time,
             nameserverID, queryStatus, lookupNumber,
             incomingPacket, senderAddress, senderPort);
-    queryTransmittedMap.put(id, query);
+    requestTransmittedMap.put(id, query);
     return id;
   }
 
-  /**
-   * Same as the other addQueryInfo object. QueryID is already specified instead of being randomly chosen.
-   *
-   * @param name
-   * @param recordKey
-   * @param nameserverID
-   * @param time
-   * @param queryStatus
-   * @param lookupNumber
-   * @param incomingPacket
-   * @param senderAddress
-   * @param senderPort
-   * @param queryID
-   * @return
-   */
-  public static int addQueryInfo(String name, NameRecordKey recordKey,
-          int nameserverID, long time, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort, int queryID) {
-
-
-    //Add query info
-    DNSQueryInfo query = new DNSQueryInfo(queryID, name, recordKey, time,
-            nameserverID, queryStatus, lookupNumber,
-            incomingPacket, senderAddress, senderPort);
-    queryTransmittedMap.put(queryID, query);
-    return queryID;
-  }
-
-  public static int addQueryInfo(String name, NameRecordKey recordKey,
-          int nameserverID, long time, String queryStatus, int lookupNumber) {
-    // ABHIGYAN
-    return 0;
-
-    // DUMMY FUNCTION
-  }
-
-//  public static int addUpdateInfo(String name, int nameserverID, long time) {
-//    int id = randomID.nextInt();
-//    //Generate unique id for the query
-//    while (updateTransmittedMap.containsKey(id)) {
-//      id = randomID.nextInt();
-//    }
-//
-//    //Add update info
-//    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID);
-//    updateTransmittedMap.put(id, update);
-//    return id;
-//  }
   public static int addUpdateInfo(String name, int nameserverID, long time, String senderAddress, int senderPort) {
     int id = randomID.nextInt();
     //Generate unique id for the query
@@ -500,36 +316,12 @@ public class LocalNameServer {
 
   /**
    **
-   * Appends <i>status</i> to query info status.
-   *
-   * @param id Query Id
-   * @param status Query status
-   */
-//  public static void appendQueryInfoStatus(int id, String status) {
-//    QueryInfo info = queryTransmittedMap.get(id);
-//    if (info != null) {
-//      info.appendQueryStatus(status);
-//      //			info.queryStatus = (info.queryStatus == null
-//      //					|| (info.queryStatus.equals(QueryInfo.SINGLE_TRANSMISSION)
-//      //							&& status.equals(QueryInfo.MULTIPLE_TRANSMISSION)))
-//      //							? status : info.queryStatus + "-" + status;
-//    }
-//  }
-//  public static boolean addNameServerQueried(int queryID, int nameServerID, String queryStatus) {
-//    QueryInfo info = queryTransmittedMap.get(queryID);
-//    if (info == null) {
-//      return false;
-//    }
-//    return info.addNameServerQueried(nameServerID, queryStatus);
-//  }
-  /**
-   **
    * Removes and returns QueryInfo entry from the map for a query Id..
    *
    * @param id Query Id
    */
-  public static DNSQueryInfo removeQueryInfo(int id) {
-    return queryTransmittedMap.remove(id);
+  public static DNSRequestInfo removeDNSRequestInfo(int id) {
+    return requestTransmittedMap.remove(id);
   }
 
   public static UpdateInfo removeUpdateInfo(int id) {
@@ -546,12 +338,12 @@ public class LocalNameServer {
    *
    * @param id Query Id
    */
-  public static boolean containsQueryInfo(int id) {
-    return queryTransmittedMap.containsKey(id);
+  public static boolean containsDNSRequestInfo(int id) {
+    return requestTransmittedMap.containsKey(id);
   }
 
-  public static DNSQueryInfo getQueryInfo(int id) {
-    return queryTransmittedMap.get(id);
+  public static DNSRequestInfo getDNSRequestInfo(int id) {
+    return requestTransmittedMap.get(id);
   }
 
   public static void invalidateCache() {
@@ -1158,9 +950,9 @@ public class LocalNameServer {
    * Prints information about transmitted queries that have not received a response.
    *
    */
-  public static String queryLogString(String preamble) {
+  public static String dnsRequestInfoLogString(String preamble) {
     StringBuilder queryTable = new StringBuilder();
-    for (DNSQueryInfo info : LocalNameServer.queryTransmittedMap.values()) {
+    for (DNSRequestInfo info : LocalNameServer.requestTransmittedMap.values()) {
       queryTable.append("\n");
       queryTable.append(info.toString());
     }
