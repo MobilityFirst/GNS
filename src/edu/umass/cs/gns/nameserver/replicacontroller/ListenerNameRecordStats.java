@@ -139,11 +139,9 @@ public class ListenerNameRecordStats extends Thread {
     }
     if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: StatsPacket for name " + statsPacket.getName()
             + " Decision: " + decision);
-    ArrayList<Field> readFields = new ArrayList<Field>();
-    readFields.add(ReplicaControllerRecord.STATS_MAP);
     ReplicaControllerRecord rcRecord;
     try {
-      rcRecord = NameServer.getNameRecordPrimaryMultiField(statsPacket.getName(),readFields);
+      rcRecord = NameServer.getNameRecordPrimaryMultiField(statsPacket.getName(), ReplicaControllerRecord.STATS_MAP);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found exception. " + statsPacket.getName());
       e.printStackTrace();  
@@ -163,9 +161,7 @@ public class ListenerNameRecordStats extends Thread {
     NameServerSelectionPacket selectionPacket;
     try {
       selectionPacket = new NameServerSelectionPacket(new JSONObject(decision));
-      ArrayList<Field> readFields = new ArrayList<Field>();
-      readFields.add(ReplicaControllerRecord.VOTES_MAP);
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(selectionPacket.getName(),readFields);
+      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(selectionPacket.getName(), ReplicaControllerRecord.VOTES_MAP);
       GNS.getLogger().severe("Record read = " + rcRecord.toString());
       // TODO: convert read and write to directly write
       if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name Sever Vote: " + selectionPacket.toString());

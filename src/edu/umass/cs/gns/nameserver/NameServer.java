@@ -20,6 +20,7 @@ import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -53,9 +54,6 @@ public class NameServer {
    */
   public NameServer(int nodeID) throws IOException {
     NameServer.nodeID = nodeID;
-
-//    NameServer.dnsSocket = new DatagramSocket(ConfigFileInfo.getDnsPort(nodeID));
-//    NameServer.updateSocket = new DatagramSocket(ConfigFileInfo.getUpdatePort(nodeID));
     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
@@ -170,6 +168,7 @@ public class NameServer {
 
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
+   * 
    * @param name
    * @param fields - a list of Field structures representing "system" fields to retrieve
    * @return
@@ -182,6 +181,7 @@ public class NameServer {
 
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
+   * 
    * @param name
    * @param fields - a list of Field structures representing "system" fields to retrieve
    * @param userFields - a list of Field structures representing user fields to retrieve
@@ -195,9 +195,10 @@ public class NameServer {
 
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
+   * 
    * @param name
-   * @param fields - a list of Field structures representing "system" fields to retrieve
-   * @param userFieldNames - a list of strings which are names of user fields to retrieve
+   * @param fields
+   * @param userFieldNames - strings which name the user fields to return
    * @return
    * @throws RecordNotFoundException 
    */
@@ -270,6 +271,10 @@ public class NameServer {
     return replicaController.getNameRecordPrimary(name);
   }
 
+  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, Field ... fields)
+          throws RecordNotFoundException {
+    return getNameRecordPrimaryMultiField(name, new ArrayList<Field>(Arrays.asList(fields)));
+  }
   /**
    * Read name record with select fields
    * @param name

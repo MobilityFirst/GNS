@@ -239,40 +239,6 @@ public class ClientRequestWorker extends TimerTask {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
     }
-
-
-
-
-//      GNS.getLogger().fine(" Full record: "  + rcRecord);
-//    if (NameServer.getNameRecordPrimary(name) == null)
-//
-//    else
-//      NameServer.updateNameRecordPrimary(rcRecord);
-
-
-//      ReplicaControllerRecord temp = NameServer.getNameRecordPrimary(rcRecord.getName());
-//      GNS.getLogger().fine(" Full record 2: "  + temp);
-//
-//      temp = NameServer.getNameRecordPrimaryLazy(rcRecord.getName());
-//      GNS.getLogger().fine(" Full record 3: "  + temp);
-
-//      ReplicaControllerRecord rc1 = NameServer.getNameRecordPrimary(nameRecord.getName());
-//      GNS.getLogger().fine(" Name record read from DB: "  + rc1);
-
-//        NameRecord record = new NameRecord(name, nameRecordKey, value);
-//        // add the name record, which also creates a paxos instance for this name record
-//        NameServer.addNameRecord(record);
-//      if (nameRecord == null) {
-    // create and add the record
-
-//      } else {
-//        nameRecord.put(nameRecordKey.getName(), new QueryResultValue(value));
-//        NameServer.updateNameRecord(nameRecord);
-//      }
-    // send back a confirmation
-
-
-
   }
 
   private void handleAddRecordNS() throws JSONException, IOException {
@@ -372,13 +338,11 @@ public class ClientRequestWorker extends TimerTask {
    * @throws IOException
    */
   private void handleUpsert(UpdateAddressPacket updatePacket) throws JSONException, IOException {
-    ArrayList<Field> readFields = new ArrayList<Field>();
-    readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
-    readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
     // this must be primary
     ReplicaControllerRecord nameRecordPrimary = null;
     try {
-      nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(updatePacket.getName(), readFields);
+      nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(updatePacket.getName(),
+              ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       try {
         if (nameRecordPrimary.isMarkedForRemoval()) {
           ConfirmUpdateLNSPacket failConfirmPacket =
@@ -782,14 +746,17 @@ public class ClientRequestWorker extends TimerTask {
   }
 
   private void handleQueryRequest() throws IOException, JSONException {
-    GNS.getLogger().info("NS recvd QueryRequest: " + incomingJSON);
+    GNS.getLogger().info("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
     QueryRequestPacket request = new QueryRequestPacket(incomingJSON);
     JSONArray jsonRecords = new JSONArray();
     BasicRecordCursor cursor = NameServer.queryUserField(request.getKey().getName(), request.getValue());
+    int cnt = 0; // just for debugging message
     while (cursor.hasNext()) {
       jsonRecords.put(cursor.next());
+      cnt++;
     }
     QueryResponsePacket response = new QueryResponsePacket(request.getId(), request.getLnsQueryId(), NameServer.nodeID, jsonRecords);
+    GNS.getLogger().info("NS" + NameServer.nodeID + " sending back " + cnt + " records");
     NameServer.tcpTransport.sendToID(request.getLns(), response.toJSONObject());
   }
 
@@ -799,9 +766,6 @@ public class ClientRequestWorker extends TimerTask {
 
     if (dnsPacket.isQuery()) {
       int lnsId = dnsPacket.getLnsId();
-
-//      ArrayList<Field> userField = new ArrayList<Field>();
-//      userField.add(new Field(dnsPacket.getQrecordKey().getName(), FieldType.LIST_STRING));
 
       NameRecord nameRecord = null;
       try {
@@ -888,13 +852,10 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine("Name = " + packet.getName());
     }
 
-    ArrayList<Field> readFields = new ArrayList<Field>();
-    readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
-    readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
-
     boolean sendError = false;
     try {
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), readFields);
+      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), 
+              ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
 
       if (rcRecord.isMarkedForRemoval()) {
         sendError = true;

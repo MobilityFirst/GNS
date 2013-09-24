@@ -72,14 +72,10 @@ public class NSListenerAdmin extends Thread {
             ActiveNameServerInfoPacket activeNSInfoPacket = new ActiveNameServerInfoPacket(incomingJSON);
 
             GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
-
-            //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(activeNSInfoPacket.getName());
-            ArrayList<Field> readFields = new ArrayList<Field>();
-            readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
-
+           
             ReplicaControllerRecord nameRecordPrimary = null;
             try {
-              nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeNSInfoPacket.getName(), readFields);
+              nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeNSInfoPacket.getName(), ReplicaControllerRecord.ACTIVE_NAMESERVERS);
             } catch (RecordNotFoundException e) {
               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
               break;

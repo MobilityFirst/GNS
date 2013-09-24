@@ -207,13 +207,10 @@ public class ReplicaController {
     // 2. stop current primaries
     // 3. send confirmation to client.
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
-    //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(removeRecord.getName());
-
-    ArrayList<Field> readFields = new ArrayList<Field>();
-    readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
-
+   
     try {
-      ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(removeRecord.getName(), readFields);
+      ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(removeRecord.getName(), 
+              ReplicaControllerRecord.MARKED_FOR_REMOVAL);
       if (nameRecordPrimary.isRemoved()) { // if removed, send confirm to client
         ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(true, removeRecord);
         NameServer.tcpTransport.sendToID(removeRecord.getLocalNameServerID(),confirmPacket.toJSONObject());
