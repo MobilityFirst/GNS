@@ -87,6 +87,11 @@ public class CassandraRecordMap extends BasicRecordMap {
   public BasicRecordCursor getAllRowsIterator() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
+  
+  @Override
+  public BasicRecordCursor queryUserField(Field valuesMapField, String key, Object value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   @Override
   public NameRecord getNameRecord(String name) {
@@ -219,4 +224,5 @@ public class CassandraRecordMap extends BasicRecordMap {
 //    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
 //    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
 //  }
+
 }

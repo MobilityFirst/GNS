@@ -54,9 +54,32 @@ public interface RecordMapInterface {
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1,
                                  Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
 
+  /**
+   * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
+   * the NAME (AKA the primary key) is always there.
+   * 
+   * @param nameField - the field in the row that contains the name field
+   * @param fields
+   * @return 
+   */
   public abstract BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields);
 
+  /**
+   * Returns an iterator for all the rows in the collection with all fields filled in.
+   * 
+   * @return 
+   */
   public abstract BasicRecordCursor getAllRowsIterator();
+  
+  /**
+   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+   * 
+   * @param valuesMapField - the field in the row that contains the *user* fields
+   * @param key
+   * @param value
+   * @return 
+   */
+  public abstract BasicRecordCursor queryUserField(Field valuesMapField, String key, Object value);
 
   // Replica Controller
   

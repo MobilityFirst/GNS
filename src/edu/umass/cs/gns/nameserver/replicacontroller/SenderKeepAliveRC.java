@@ -55,8 +55,6 @@ public class SenderKeepAliveRC extends TimerTask {
         }
       } catch (JSONException e) {
         e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
       } catch (FieldNotFoundException e) {
         GNS.getLogger().fine("Field not found exception. " + e.getMessage());
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

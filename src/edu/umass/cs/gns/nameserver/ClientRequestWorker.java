@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +39,6 @@ public class ClientRequestWorker extends TimerTask {
   JSONObject incomingJSON;
   Packet.PacketType packetType;
   private static ConcurrentHashMap<Integer, UpdateStatus> addInProgress = new ConcurrentHashMap<Integer, UpdateStatus>();
-
 //  private static ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket> proposedUpdates = new ConcurrentHashMap<Integer, ConfirmUpdateLNSPacket>();
   /**
    * ID assigned to updates received from LNS. The next update from a LNS will be assigned id = updateIDCount + 1;
@@ -100,6 +101,9 @@ public class ClientRequestWorker extends TimerTask {
         // Request current actives
         case REQUEST_ACTIVES:
           handleRequestActivesPacket();
+          break;
+        case QUERY_REQUEST:
+          handleQueryRequest();
           break;
 
 
@@ -775,6 +779,18 @@ public class ClientRequestWorker extends TimerTask {
       }
       return dnsField;
     }
+  }
+
+  private void handleQueryRequest() throws IOException, JSONException {
+    GNS.getLogger().info("NS recvd QueryRequest: " + incomingJSON);
+    QueryRequestPacket request = new QueryRequestPacket(incomingJSON);
+    JSONArray jsonRecords = new JSONArray();
+    BasicRecordCursor cursor = NameServer.queryUserField(request.getKey().getName(), request.getValue());
+    while (cursor.hasNext()) {
+      jsonRecords.put(cursor.next());
+    }
+    QueryResponsePacket response = new QueryResponsePacket(request.getId(), request.getLnsQueryId(), NameServer.nodeID, jsonRecords);
+    NameServer.tcpTransport.sendToID(request.getLns(), response.toJSONObject());
   }
 
   private void handleDNSPacket() throws IOException, JSONException {

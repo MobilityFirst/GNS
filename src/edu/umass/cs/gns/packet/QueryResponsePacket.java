@@ -20,28 +20,24 @@ public class QueryResponsePacket extends BasicPacket {
 
   public final static String ID = "id";
   public final static String JSON = "json";
-
+  public final static String LNSQUERYID = "lnsQueryId";
+  public final static String NAMESERVER = "ns";
   private int id;
+  private int lnsQueryId;
+  private int nameServer;
   private JSONArray jsonArray;
 
   /**
-   * Constructs a new QueryResponsePacket with the given JSONArray
+   * Constructs a new QueryResponsePacket
    * @param id
    * @param jsonObject 
    */
-  public QueryResponsePacket(int id, JSONArray jsonArray) {
+  public QueryResponsePacket(int id, int lnsQueryId, int nameServer, JSONArray jsonArray) {
     this.type = Packet.PacketType.QUERY_RESPONSE;
     this.id = id;
+    this.lnsQueryId = lnsQueryId;
+    this.nameServer = nameServer;
     this.jsonArray = jsonArray;
-  }
-
-  /**
-   * Constructs a new empty QueryResponsePacket packet
-   * 
-   * @param id 
-   */
-  public QueryResponsePacket(int id) {
-    this(id, new JSONArray());
   }
 
   /*************************************************************
@@ -57,11 +53,13 @@ public class QueryResponsePacket extends BasicPacket {
     }
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
+    this.lnsQueryId = json.getInt(LNSQUERYID);
+    this.nameServer = json.getInt(NAMESERVER);
     this.jsonArray = json.getJSONArray(JSON);
   }
 
   /*************************************************************
-   * Converts a ActiveNSUpdatePacket to a JSONObject.
+   * Converts a QueryResponsePacket to a JSONObject.
    * @return JSONObject representing this packet.
    * @throws JSONException
    ************************************************************/
@@ -70,16 +68,26 @@ public class QueryResponsePacket extends BasicPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(ID, id);
+    json.put(LNSQUERYID, lnsQueryId);
+    json.put(NAMESERVER, nameServer);
     json.put(JSON, jsonArray);
 
     return json;
   }
-  
+
   public int getId() {
     return id;
   }
-  
-   public JSONArray getJsonArray() {
+
+  public JSONArray getJsonArray() {
     return jsonArray;
+  }
+
+  public int getLnsQueryId() {
+    return lnsQueryId;
+  }
+
+  public int getNameServer() {
+    return nameServer;
   }
 }

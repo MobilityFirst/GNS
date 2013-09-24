@@ -151,27 +151,23 @@ public class Lookup {
 
       LocalNameServer.invalidateActiveNameServer(dnsPacket.getQname());
       DNSRequestTask queryTaskObject = new DNSRequestTask(
-              query.incomingPacket,
-              query.senderAddress,
-              query.senderPort,
-              query.getLookupRecvdTime(),
-              query.id,
+              query.getIncomingPacket(), query.getSenderAddress(), query.getSenderPort(),
+              query.getLookupRecvdTime(), query.getId(),
               0,
               new HashSet<Integer>());
-      PendingTasks.addToPendingRequests(query.qName, //query.qRecordKey,
-              queryTaskObject, StartLocalNameServer.queryTimeout,
-              query.senderAddress, query.senderPort, DNSRequestTask.getErrorPacket(query.incomingPacket));
-      SendActivesRequestTask.requestActives(query.qName);
+      PendingTasks.addToPendingRequests(query.getqName(), //query.qRecordKey,
+              queryTaskObject, StartLocalNameServer.queryTimeout, query.getSenderAddress(), query.getSenderPort(), DNSRequestTask.getErrorPacket(query.getIncomingPacket()));
+      SendActivesRequestTask.requestActives(query.getqName());
       GNS.getLogger().finer(" Scheduled lookup task.");
 
     } else {      // other types of errors, send error response to client
       try {
-        if (query.senderAddress != null && query.senderPort > 0) {
-          LNSListener.udpTransport.sendPacket(DNSRequestTask.getErrorPacket(query.incomingPacket), query.senderAddress, query.senderPort);
+        if (query.getSenderAddress() != null && query.getSenderPort() > 0) {
+          LNSListener.udpTransport.sendPacket(DNSRequestTask.getErrorPacket(query.getIncomingPacket()), query.getSenderAddress(), query.getSenderPort());
         } else if (StartLocalNameServer.runHttpServer) {
-          Intercessor.getInstance().checkForResult(DNSRequestTask.getErrorPacket(query.incomingPacket));
+          Intercessor.getInstance().checkForResult(DNSRequestTask.getErrorPacket(query.getIncomingPacket()));
         }
-        GNS.getLogger().finer("other error sent to client --> " + jsonObject + " query ID = " + query.incomingPacket.getQueryId());
+        GNS.getLogger().finer("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());
 
       } catch (JSONException e) {
         e.printStackTrace();
@@ -198,10 +194,10 @@ public class Lookup {
 //        DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(), entry, query.incomingPacket.getQrecordKey());
 
     try {
-      DNSPacket outgoingPacket = new DNSPacket(query.incomingPacket.getHeader().getId(), query.incomingPacket.getQname(),
-              query.incomingPacket.getQrecordKey(), returnValue, TTL);
-      if (query.senderAddress != null && query.senderPort > 0) {
-        LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), query.senderAddress, query.senderPort);
+      DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getHeader().getId(), query.getIncomingPacket().getQname(),
+              query.getIncomingPacket().getQrecordKey(), returnValue, TTL);
+      if (query.getSenderAddress() != null && query.getSenderPort() > 0) {
+        LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), query.getSenderAddress(), query.getSenderPort());
       } else if (StartLocalNameServer.runHttpServer) {
         Intercessor.getInstance().checkForResult(outgoingPacket.toJSONObject());
       }

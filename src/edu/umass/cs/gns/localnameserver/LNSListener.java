@@ -112,8 +112,10 @@ public class LNSListener extends Thread {
           SendActivesRequestTask.handleActivesRequestReply(json);
           break;
         case QUERY_REQUEST:
+          Query.handlePacketQueryRequest(json);
           break;
         case QUERY_RESPONSE:
+          Query.handlePacketQueryResponse(json);
           break;  
         case TINY_QUERY:
           LNSRecvTinyQuery.logQueryResponse(json);

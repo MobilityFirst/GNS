@@ -242,7 +242,11 @@ public class MongoRecords implements NoSQLRecords {
    * @param explain
    * @return a MongoRecordCursor
    */
-  public MongoRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value, boolean explain) {
+  public MongoRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value) {
+    return queryUserField(collectionName, valuesMapField, key, value, false);
+  }
+  
+  private MongoRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
     // note that if the value of the key in the database is a list (which it is) this
@@ -257,7 +261,7 @@ public class MongoRecords implements NoSQLRecords {
 
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject query = new BasicDBObject(fieldName, value);
-    System.out.println("***QUERY***: " + query.toString());
+    //System.out.println("***QUERY***: " + query.toString());
     DBCursor cursor = collection.find(query);
     if (explain) {
       System.out.println(cursor.explain().toString());

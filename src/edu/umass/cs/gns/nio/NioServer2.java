@@ -7,7 +7,6 @@ package edu.umass.cs.gns.nio;
  * Time: 6:34 PM
  * To change this template use File | Settings | File Templates.
  */
-
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import org.json.JSONException;
@@ -29,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 //import edu.umass.cs.gnrs.main.GNS.PortType;
 //import edu.umass.cs.gnrs.packet.Packet;
 //import edu.umass.cs.gnrs.util.ConfigFileInfo;
-
 public class NioServer2 implements Runnable {
 
   // The host:port combination to listen on
@@ -63,15 +61,16 @@ public class NioServer2 implements Runnable {
   public NioServer2(int ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
     connectedIDs = new SocketChannel[nodeConfig.getNodeCount()];
     pendingChangeByNode = new boolean[nodeConfig.getNodeCount()];
-    for (int i = 0; i < pendingChangeByNode.length; i++)
+    for (int i = 0; i < pendingChangeByNode.length; i++) {
       pendingChangeByNode[i] = false;
+    }
     this.ID = ID;
     this.myAddress = nodeConfig.getNodeAddress(ID);
     this.myPort = nodeConfig.getNodePort(ID);
     this.selector = this.initSelector();
     this.workerObject = worker;
     this.nodeConfig = nodeConfig;
-    t.schedule(new WakeupSelectorTask(this),1,1);
+    t.schedule(new WakeupSelectorTask(this), 1, 1);
   }
 
   void wakeupSelector() {
@@ -82,7 +81,7 @@ public class NioServer2 implements Runnable {
           wakeup = newPendingData;
           newPendingData = false;
 
-          for (int i = 0; i < pendingChangeByNode.length ; i++) {
+          for (int i = 0; i < pendingChangeByNode.length; i++) {
             if (pendingChangeByNode[i]) {
               this.pendingChanges.add(new ChangeRequest(connectedIDs[i], ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
               pendingChangeByNode[i] = false;
@@ -91,63 +90,16 @@ public class NioServer2 implements Runnable {
         }
       }
     }
-    if (wakeup) selector.wakeup();
+    if (wakeup) {
+      selector.wakeup();
+    }
   }
 
-
-//    public void sendToAll(JSONObject json, Set<Integer> destIDs, Set<Integer> ports, Set<Integer> excludeNameServerIds) throws JSONException, IOException {
-//
-//        for (Integer id : destIDs) {
-//            if (excludeNameServerIds.contains(id)) {
-//                continue;
-//            }
-//            int destPort = Packet.getPort(id, portType);
-//            sendToID(id, destPort, json);
-//        }
-//    }
-//
-//    public void sendToAll(JSONObject json, Set<Integer> destIDs,
-//                          GNS.PortType portType, int excludeNameServerId) throws JSONException, IOException {
-//
-//        for (Integer id : destIDs) {
-//            if (id.intValue() == excludeNameServerId) {
-//                continue;
-//            }
-//            int destPort = Packet.getPort(id, portType);
-//            sendToID(id, destPort, json);
-//        }
-//    }
-//
-//    public void sendToAll(JSONObject json, Set<Integer> destIDs, PortType portType)
-//            throws IOException, JSONException {
-//        for (Integer destID : destIDs) {
-//            int destPort = Packet.getPort(destID, portType);
-//            sendToID(destID, destPort, json);
-//        }
-//    }
-
-  //    /**
-//     * Send to
-//     *
-//     * @param destID at port type
-//     * @param portType
-//     * @param destID
-//     * @param portType
-//     * @param json
-//     * @return
-//     * @throws IOException
-//     * @throws JSONException
-//     */
-//    public boolean sendToID(JSONObject json, int destID, PortType portType) throws IOException, JSONException {
-//        int destPort = Packet.getPort(destID, portType);
-//        return sendToID(destID, destPort, json);
-//    }
-
-  public void sendToIDs(Set<Integer> destIDs, JSONObject json) throws IOException {
+  public void sendToIDs(Set<Integer> destIDs, JSONObject json) {
     sendToIDs(destIDs, json, -1);
   }
 
-  public void sendToIDs(Set<Integer> destIDs, JSONObject json, int excludeID) throws IOException {
+  public void sendToIDs(Set<Integer> destIDs, JSONObject json, int excludeID) {
     if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
       ArrayList e = new ArrayList();
       try {
@@ -163,10 +115,16 @@ public class NioServer2 implements Runnable {
     boolean okay = true;
     synchronized (this.connectedIDs) {
 //            SocketChannel socketChannel = null;
-      for (int destID: destIDs) {
-        if (destID == excludeID) continue;
-        if (destID == ID) continue;
-        if (connectedIDs[destID] != null && connectedIDs[destID].isConnected()) continue;
+      for (int destID : destIDs) {
+        if (destID == excludeID) {
+          continue;
+        }
+        if (destID == ID) {
+          continue;
+        }
+        if (connectedIDs[destID] != null && connectedIDs[destID].isConnected()) {
+          continue;
+        }
         okay = false;
         break;
       }
@@ -174,10 +132,14 @@ public class NioServer2 implements Runnable {
       if (okay) {
 //                synchronized (this.pendingChanges) {
         synchronized (this.pendingData) {
-          for (int destID: destIDs) {
-            if (destID == excludeID) continue;
+          for (int destID : destIDs) {
+            if (destID == excludeID) {
+              continue;
+            }
 //                            System.out.println(" Sending to " + destID);
-            if (destID == ID) continue;
+            if (destID == ID) {
+              continue;
+            }
             // Indicate we want the interest ops set changed
 //                            if (pendingChangeByNode[destID] == false) {
 //                                this.pendingChanges.add(new ChangeRequest(connectedIDs[destID], ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
@@ -203,9 +165,15 @@ public class NioServer2 implements Runnable {
     }
 
     if (!okay) {
-      for (int destID:destIDs) {
-        if (destID == ID || destID == excludeID) continue;
-        sendToID(destID, json);
+      for (int destID : destIDs) {
+        if (destID == ID || destID == excludeID) {
+          continue;
+        }
+        try {
+          sendToID(destID, json);
+        } catch (IOException e) {
+          GNS.getLogger().severe("Issue while sending a packet to " + destID);
+        }
       }
     }
   }
@@ -219,18 +187,14 @@ public class NioServer2 implements Runnable {
       return true;
     }
 
-//        if (!nodeConfig.containsNodeInfo(destID)) {
-//            if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: Message Not Sent. Node Config does " +
-//                    "not contain info on nodeID = " + destID);
-//            return false;
-//        }
-
-    // append a packet length header to JSON object
+    // prepend a packet length header to JSON object
 
     String s = json.toString();
     byte[] data = ("&" + s.length() + "&" + s).getBytes();
 
-    if (!nodeConfig.containsNodeInfo(destID)) return false;
+    if (!nodeConfig.containsNodeInfo(destID)) {
+      return false;
+    }
 
 //        SocketChannel socketChannel = null;
     // synchronized for thread safety
@@ -250,8 +214,7 @@ public class NioServer2 implements Runnable {
           if (queue == null) {
             queue = new ArrayList();
             this.pendingData.put(connectedIDs[destID], queue);
-          }
-          else if (queue.size() > MAX_QUEUE_DISCONNECTED) {
+          } else if (queue.size() > MAX_QUEUE_DISCONNECTED) {
             queue.remove(0);
           }
           queue.add(ByteBuffer.wrap(data));
@@ -330,7 +293,6 @@ public class NioServer2 implements Runnable {
 //    }
 //    return socketChannel;
 //  }
-
   private void send(int x, SocketChannel socket, byte[] data) {
 
 //        synchronized (this.pendingChanges) {
@@ -371,7 +333,9 @@ public class NioServer2 implements Runnable {
                 if (key != null && key.isValid()) {
                   key.interestOps(change.ops);
                 } else {
-                  if (StartNameServer.debugMode) GNS.getLogger().severe("INVALID KEY: ");
+                  if (StartNameServer.debugMode) {
+                    GNS.getLogger().severe("INVALID KEY: ");
+                  }
                 }
                 break;
               case ChangeRequest.REGISTER:
@@ -424,7 +388,7 @@ public class NioServer2 implements Runnable {
     SocketChannel socketChannel = (SocketChannel) key.channel();
 
 
-    synchronized(this.connectedIDs) {
+    synchronized (this.connectedIDs) {
       // Finish the connection. If the connection operation failed
       // this will raise an IOException.
       try {
@@ -432,7 +396,9 @@ public class NioServer2 implements Runnable {
         socketChannel.socket().setKeepAlive(true);
       } catch (IOException e) {
         // Cancel the channel's registration with our selector
-        if (StartNameServer.debugMode) GNS.getLogger().severe(e.getMessage());
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().severe(e.getMessage());
+        }
         key.cancel();
         return;
       }
@@ -474,7 +440,9 @@ public class NioServer2 implements Runnable {
     } catch (IOException e) {
       // The remote forcibly closed the connection, cancel
       // the selection key and close the channel.
-      if (StartNameServer.debugMode) GNS.getLogger().severe("READ EXCEPTION, FORCED CLOSE CONNECTION.");
+      if (StartNameServer.debugMode) {
+        GNS.getLogger().severe("READ EXCEPTION, FORCED CLOSE CONNECTION.");
+      }
       key.cancel();
       socketChannel.close();
       return;
@@ -483,7 +451,9 @@ public class NioServer2 implements Runnable {
     if (numRead == -1) {
       // Remote entity shut the socket down cleanly. Do the
       // same from our end and cancel the channel.
-      if (StartNameServer.debugMode) GNS.getLogger().severe("REMOTE ENTITY SHUT DOWN SOCKET CLEANLY.");
+      if (StartNameServer.debugMode) {
+        GNS.getLogger().severe("REMOTE ENTITY SHUT DOWN SOCKET CLEANLY.");
+      }
       key.channel().close();
       key.cancel();
       //
@@ -577,10 +547,13 @@ public class NioServer2 implements Runnable {
 }
 
 class WakeupSelectorTask extends TimerTask {
+
   NioServer2 nioServer2;
+
   public WakeupSelectorTask(NioServer2 nioServer2) {
     this.nioServer2 = nioServer2;
   }
+
   @Override
   public void run() {
     nioServer2.wakeupSelector();

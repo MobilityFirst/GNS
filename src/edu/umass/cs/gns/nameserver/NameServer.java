@@ -239,8 +239,23 @@ public class NameServer {
     recordMap.removeNameRecord(name);
   }
 
+  /**
+   * Returns an iterator for all the rows in the collection with all fields filled in.
+   * 
+   * @return 
+   */
   public static BasicRecordCursor getAllRowsIterator() {
     return recordMap.getAllRowsIterator();
+  }
+  
+  /**
+   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+   * @param key
+   * @param value
+   * @return 
+   */
+  public static BasicRecordCursor queryUserField(String key, Object value) {
+      return recordMap.queryUserField(NameRecord.VALUES_MAP, key, value);
   }
 
   /******************************

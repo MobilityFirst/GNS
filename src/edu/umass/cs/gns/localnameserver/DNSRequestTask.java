@@ -80,7 +80,7 @@ public class DNSRequestTask extends TimerTask {
 
         logFailureMessage(query);
         if (query != null) {
-          if (StartLocalNameServer.debugMode) GNS.getLogger().finer("3.2.1 Query Info Removed." + query.id);
+          if (StartLocalNameServer.debugMode) GNS.getLogger().finer("3.2.1 Query Info Removed." + query.getId());
         } else {
           if (StartLocalNameServer.debugMode) GNS.getLogger().fine("3.2.2 Query Info Does not exist.");
         }

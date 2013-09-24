@@ -11,6 +11,7 @@ import edu.umass.cs.gns.nameserver.NameAndRecordKey;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.QueryRequestPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
@@ -62,6 +63,7 @@ public class LocalNameServer {
    */
   private static ConcurrentMap<Integer, DNSRequestInfo> requestTransmittedMap;
   private static ConcurrentMap<Integer, UpdateInfo> updateTransmittedMap;
+  private static ConcurrentMap<Integer, QueryInfo> queryTransmittedMap;
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS record)
    *
@@ -88,7 +90,7 @@ public class LocalNameServer {
   public static BeehiveDHTRouting beehiveDHTRouting;
   public static ConcurrentHashMap<Integer, Double> nameServerLoads;
   public static long startTime;
-  
+
   /**
    **
    * Constructs a local name server and assigns it a node id.
@@ -273,7 +275,7 @@ public class LocalNameServer {
       GnsHttpServer.runHttp(LocalNameServer.nodeID);
     }
   }
-  
+
   /**
    **
    * Adds information of a transmitted query to a query transmitted map.
@@ -286,12 +288,11 @@ public class LocalNameServer {
   public static int addDNSRequestInfo(String name, NameRecordKey recordKey,
           int nameserverID, long time, String queryStatus, int lookupNumber,
           DNSPacket incomingPacket, InetAddress senderAddress, int senderPort) {
-    int id = randomID.nextInt();
-
+    int id;
     //Generate unique id for the query
-    while (requestTransmittedMap.containsKey(id)) {
+    do {
       id = randomID.nextInt();
-    }
+    } while  (requestTransmittedMap.containsKey(id));
 
     //Add query info
     DNSRequestInfo query = new DNSRequestInfo(id, name, recordKey, time,
@@ -302,15 +303,29 @@ public class LocalNameServer {
   }
 
   public static int addUpdateInfo(String name, int nameserverID, long time, String senderAddress, int senderPort) {
-    int id = randomID.nextInt();
+    int id;
     //Generate unique id for the query
-    while (updateTransmittedMap.containsKey(id)) {
+    do {
       id = randomID.nextInt();
-    }
+    } while (updateTransmittedMap.containsKey(id));
 
     //Add update info
     UpdateInfo update = new UpdateInfo(id, name, time, nameserverID, senderAddress, senderPort);
     updateTransmittedMap.put(id, update);
+    return id;
+  }
+
+  public static int addQueryInfo(NameRecordKey recordKey, QueryRequestPacket incomingPacket,
+          InetAddress senderAddress, int senderPort,  Set<Integer> serverIds) {
+    int id;
+    do {
+      id = randomID.nextInt();
+    } while (requestTransmittedMap.containsKey(id));
+
+    //Add query info
+    QueryInfo query = new QueryInfo(id, recordKey,
+            incomingPacket, senderAddress, senderPort, serverIds);
+    queryTransmittedMap.put(id, query);
     return id;
   }
 

@@ -89,6 +89,11 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public BasicRecordCursor queryUserField(Field valuesMapField, String key, Object value) {
+    return MongoRecords.getInstance().queryUserField(collectionName, valuesMapField, key, value);
+  }
+  
+  @Override
   public NameRecord getNameRecord(String name) throws RecordNotFoundException {
     try {
       JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);

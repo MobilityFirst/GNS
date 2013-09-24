@@ -113,6 +113,10 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  @Override
+  public BasicRecordCursor queryUserField(Field valuesMapField, String key, Object value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
   //
   // THESE WILL BE DEPRECATED
   //
@@ -220,4 +224,5 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
 //      System.out.println(nameRecord.getKey("FRANK"));
 //    }
 //  }
+
 }

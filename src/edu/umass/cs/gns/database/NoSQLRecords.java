@@ -182,13 +182,23 @@ public interface NoSQLRecords {
   public BasicRecordCursor getAllRowsIterator(String collection, Field nameField, ArrayList<Field> fields);
 
   /**
-   * Returns an iterator for all the rows in the collection.
+   * Returns an iterator for all the rows in the collection with all fields filled in.
    * 
    * @param collectionName
-   * @return 
+   * @return BasicRecordCursor
    */
   public BasicRecordCursor getAllRowsIterator(String collection);
 
+  /**
+   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+   * 
+   * @param collectionName
+   * @param valuesMapField
+   * @param key
+   * @param value
+   * @return BasicRecordCursor
+   */
+  public BasicRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value);
   /**
    * Puts the database in a state where it has nothing in it.
    * 

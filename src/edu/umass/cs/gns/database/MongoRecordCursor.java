@@ -34,7 +34,8 @@ public class MongoRecordCursor extends BasicRecordCursor {
   private boolean allFields = false;
 
   /**
-   * Returns a cursor that iterates through all the rows in a collection.
+   * Returns a cursor that iterates through all the rows in a collection and includes all columns.
+   * 
    * @param db
    * @param collectionName
    * @param nameField 
@@ -51,6 +52,14 @@ public class MongoRecordCursor extends BasicRecordCursor {
     cursor = collection.find(query);
   }
 
+  /**
+   * Returns a cursor that iterates through all the rows in a collection and includes all columns in fields.
+   * 
+   * @param db
+   * @param collectionName
+   * @param nameField
+   * @param fields 
+   */
   public MongoRecordCursor(DB db, String collectionName, Field nameField, ArrayList<Field> fields) {
     this.nameField = nameField;
     this.fields = fields;
@@ -71,9 +80,9 @@ public class MongoRecordCursor extends BasicRecordCursor {
   }
   
   /**
-   * Returns a cursor that iterates through all the rows in a collection.
-   * @param db
-   * @param collectionName
+   * Wraps a cursor around the given DBCursor that iterates through all the rows indexed by the cursor.
+   * 
+   * @param cursor
    * @param nameField 
    */
   public MongoRecordCursor(DBCursor cursor, Field nameField) {
@@ -82,6 +91,11 @@ public class MongoRecordCursor extends BasicRecordCursor {
     this.allFields = true;
   }
 
+  /**
+   * Returns all the fields in the next row as a JSONObject.
+   * 
+   * @return JSONObject
+   */
   private JSONObject nextAllFieldsJSON() {
     if (cursor.hasNext()) {
       DBObject dbObject = cursor.next();
@@ -98,6 +112,11 @@ public class MongoRecordCursor extends BasicRecordCursor {
     }
   }
 
+  /**
+   * Returns all the fields in the next row as a HashMap.
+   * 
+   * @return HashMap
+   */
   private HashMap<Field, Object> nextSomeFieldsHashMap() {
     if (cursor.hasNext()) {
       HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
@@ -117,7 +136,7 @@ public class MongoRecordCursor extends BasicRecordCursor {
   /**
    * Returns the next row as a JSONObject.
    * 
-   * @return 
+   * @return JSONObject
    */
   @Override
   public JSONObject nextJSONObject() {
@@ -131,7 +150,7 @@ public class MongoRecordCursor extends BasicRecordCursor {
   /**
    * Returns the next row as a HashMap.
    * 
-   * @return 
+   * @return HashMap
    */
   @Override
   public HashMap<Field, Object> nextHashMap() {
@@ -142,6 +161,11 @@ public class MongoRecordCursor extends BasicRecordCursor {
     }
   }
   
+  /**
+   * Returns the value of the field named name in the next row.
+   * @param name
+   * @return String
+   */
   public String nextRowField(String name) {
     if (cursor.hasNext()) {
       DBObject dbObject = cursor.next();
@@ -157,16 +181,25 @@ public class MongoRecordCursor extends BasicRecordCursor {
     }
   }
 
+  /**
+   * Returns true if the iteration has more elements.
+   */
   @Override
   public boolean hasNext() {
     return cursor.hasNext();
   }
 
+  /**
+   * Returns the next row as a JSONObject.
+   */
   @Override
   public JSONObject next() {
     return nextJSONObject();
   }
 
+  /**
+   * Not supported!
+   */
   @Override
   public void remove() {
     throw new UnsupportedOperationException("Not supported.");

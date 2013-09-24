@@ -305,6 +305,12 @@ public class CassandraRecords implements NoSQLRecords {
   public BasicRecordCursor getAllRowsIterator(String collection) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
+  
+ 
+  @Override
+  public BasicRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   @Override
   public Set<String> keySet(String tableName) {

@@ -817,9 +817,6 @@ public class PaxosManager extends Thread{
 
       }
       tcpTransport.sendToIDs(destIDs, json);
-    } catch (IOException e)
-    {
-      if (StartNameServer.debugMode) GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. " + destIDs);
     } catch (JSONException e)
     {
       if (StartNameServer.debugMode) GNS.getLogger().severe("JSON Exception in sending to IDs. " + destIDs);
