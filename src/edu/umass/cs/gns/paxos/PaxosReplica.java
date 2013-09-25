@@ -896,7 +896,7 @@ public class PaxosReplica {
       // Add decision to slot. Union operation in Figure 1.
 //      PaxosManager.addToPaxosLog(json, paxosID);
       if (decisions.size() > 20 || pValuesAccepted.size() > 20) {
-        GNS.getLogger().severe(paxosID + "\t" +nodeID +
+        GNS.getLogger().info(paxosID + "\t" +nodeID +
                 " Decision size = " + decisions.size() + " Pvalue size = " + pValuesAccepted.size());
       }
       decisions.put(prop.slot, prop.req);
@@ -1112,7 +1112,7 @@ public class PaxosReplica {
    */
   private void handleAdoptedNew() throws JSONException {
 //    if (StartNameServer.debugMode)
-  GNS.getLogger().severe(paxosID + "C\t" +nodeID + "C Ballot adopted. Handling proposals. Paxos ID = " + paxosID + " Nodes = " + nodeIDs);
+  GNS.getLogger().info(paxosID + "C\t" +nodeID + "C Ballot adopted. Handling proposals. Paxos ID = " + paxosID + " Nodes = " + nodeIDs);
 
     // this is executed after locking "scoutLock"
 
@@ -1808,7 +1808,7 @@ public class PaxosReplica {
       acceptorLock.unlock();
     }
     if (packet.responderNodeID == coordinatorID && getDefaultCoordinatorReplica() == nodeID) { // current coordinator has failed.
-      GNS.getLogger().severe(paxosID + "C\t" +nodeID + " Node failed. :"  + packet.responderNodeID + " I will propose new ballot.");
+      GNS.getLogger().info(paxosID + "C\t" +nodeID + " Node failed. :"  + packet.responderNodeID + " I will propose new ballot.");
       if (StartNameServer.debugMode)
         GNS.getLogger().fine(paxosID + "C\t" +nodeID +"C co-ordinator has failed " + coordinatorID);
       if (StartNameServer.debugMode)

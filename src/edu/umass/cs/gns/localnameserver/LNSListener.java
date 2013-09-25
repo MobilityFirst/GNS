@@ -54,9 +54,7 @@ public class LNSListener extends Thread {
    */
   public static void demultiplexLNSPackets(JSONObject json) {
     try {
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().info("LOCAL NAME SERVER RECVD PACKET: " + json);
-      }
+      GNS.getLogger().finer("LOCAL NAME SERVER RECVD PACKET: " + json);
       switch (Packet.getPacketType(json)) {
         case DNS:
           DNSPacket dnsPacket = new DNSPacket(json);

@@ -183,7 +183,7 @@ public class GenerateSyntheticRecordTable {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
           }
           if (name%1000 == 0) {
-            GNS.getLogger().severe("Added record " + name + "\tinit scout delay\t" + initScoutDelay);
+            GNS.getLogger().info("Added record " + name + "\tinit scout delay\t" + initScoutDelay);
           }
 //					NameRecord recordEntry = new NameRecord(strName, NameRecordKey.EdgeRecord, new ArrayList(Arrays.asList(Integer.toString(address))));
 //
@@ -203,7 +203,7 @@ public class GenerateSyntheticRecordTable {
     }
 
     long t1 = System.currentTimeMillis();
-    GNS.getLogger().severe(" Time to add all records " + (t1 - t0)/1000 + " sec");
+    GNS.getLogger().info(" Time to add all records " + (t1 - t0)/1000 + " sec");
 
 //		if( !debugMode )
 //			writeTable( recordTable );
