@@ -16,7 +16,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
  ************************************************************/
-public class QueryResponsePacket extends BasicPacket {
+public class SelectResponsePacket extends BasicPacket {
 
   public final static String ID = "id";
   public final static String JSON = "json";
@@ -32,7 +32,7 @@ public class QueryResponsePacket extends BasicPacket {
    * @param id
    * @param jsonObject 
    */
-  public QueryResponsePacket(int id, int lnsQueryId, int nameServer, JSONArray jsonArray) {
+  public SelectResponsePacket(int id, int lnsQueryId, int nameServer, JSONArray jsonArray) {
     this.type = Packet.PacketType.QUERY_RESPONSE;
     this.id = id;
     this.lnsQueryId = lnsQueryId;
@@ -45,7 +45,7 @@ public class QueryResponsePacket extends BasicPacket {
    * @param json JSONObject representing this packet
    * @throws JSONException
    ************************************************************/
-  public QueryResponsePacket(JSONObject json) throws JSONException {
+  public SelectResponsePacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.QUERY_RESPONSE) {
       Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();

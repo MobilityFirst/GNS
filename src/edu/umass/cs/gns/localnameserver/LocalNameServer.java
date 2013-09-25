@@ -11,7 +11,7 @@ import edu.umass.cs.gns.nameserver.NameAndRecordKey;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.QueryRequestPacket;
+import edu.umass.cs.gns.packet.SelectRequestPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
@@ -63,7 +63,7 @@ public class LocalNameServer {
    */
   private static ConcurrentMap<Integer, DNSRequestInfo> requestTransmittedMap;
   private static ConcurrentMap<Integer, UpdateInfo> updateTransmittedMap;
-  private static ConcurrentMap<Integer, QueryInfo> queryTransmittedMap;
+  private static ConcurrentMap<Integer, SelectInfo> queryTransmittedMap;
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS record)
    *
@@ -103,7 +103,7 @@ public class LocalNameServer {
 
     requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
     updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
-    queryTransmittedMap = new ConcurrentHashMap<Integer, QueryInfo>(10, 0.75f, 3);
+    queryTransmittedMap = new ConcurrentHashMap<Integer, SelectInfo>(10, 0.75f, 3);
 
     randomID = new Random(System.currentTimeMillis());
 
@@ -316,7 +316,7 @@ public class LocalNameServer {
     return id;
   }
 
-  public static int addQueryInfo(NameRecordKey recordKey, QueryRequestPacket incomingPacket,
+  public static int addQueryInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket,
           InetAddress senderAddress, int senderPort,  Set<Integer> serverIds) {
     int id;
     do {
@@ -324,7 +324,7 @@ public class LocalNameServer {
     } while (requestTransmittedMap.containsKey(id));
 
     //Add query info
-    QueryInfo query = new QueryInfo(id, recordKey,
+    SelectInfo query = new SelectInfo(id, recordKey,
             incomingPacket, senderAddress, senderPort, serverIds);
     queryTransmittedMap.put(id, query);
     return id;
@@ -344,7 +344,7 @@ public class LocalNameServer {
     return updateTransmittedMap.remove(id);
   }
   
-  public static QueryInfo removeQueryInfo(int id) {
+  public static SelectInfo removeQueryInfo(int id) {
     return queryTransmittedMap.remove(id);
   }
 
@@ -352,7 +352,7 @@ public class LocalNameServer {
     return updateTransmittedMap.get(id);
   }
   
-  public static QueryInfo getQueryInfo(int id) {
+  public static SelectInfo getQueryInfo(int id) {
     return queryTransmittedMap.get(id);
   }
 

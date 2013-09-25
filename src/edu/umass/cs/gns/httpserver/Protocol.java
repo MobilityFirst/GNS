@@ -68,7 +68,7 @@ public class Protocol {
   public final static String CLEAR = "clear";
   public final static String READ = "read";
   public final static String READONE = "readOne";
-  public final static String QUERY = "query";
+  public final static String SELECT = "select";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";
@@ -316,7 +316,7 @@ public class Protocol {
             + " See below for more on signature. "
             + NEWLINE + NEWLINE
             //
-            + urlPrefix + QUERY + QUERYPREFIX + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + NEWLINE
+            + urlPrefix + SELECT + QUERYPREFIX + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + NEWLINE
             + "  Returns all records that have a field with the given value."
             + " Values are returned as a JSON array of JSON Objects."
             + NEWLINE + NEWLINE
@@ -649,8 +649,8 @@ public class Protocol {
     }
   }
 
-  public String processQuery(String field, Object value) {
-    return fieldAccess.query(field, value);
+  public String processSelect(String field, Object value) {
+    return fieldAccess.select(field, value);
   }
 
   public String processReadOne(String guid, String field, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
@@ -1119,10 +1119,10 @@ public class Protocol {
         String signature = queryMap.get(SIGNATURE);
         return processUpdateOperation(guid, field, "", null, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
                 UpdateOperation.CLEAR);
-      } else if (QUERY.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, VALUE))) {
+      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, VALUE))) {
         String field = queryMap.get(FIELD);
         Object value = queryMap.get(VALUE);
-        return processQuery(field, value);
+        return processSelect(field, value);
         // ACLADD
       } else if (ACLADD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
         // syntax: aclAdd hash field allowedreader signature

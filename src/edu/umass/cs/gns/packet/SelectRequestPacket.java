@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * The semantics is that we want to look up all 
  * @author westy
  */
-public class QueryRequestPacket extends BasicPacket {
+public class SelectRequestPacket extends BasicPacket {
 
   public final static String ID = "id";
   public final static String KEY = "key";
@@ -23,7 +23,7 @@ public class QueryRequestPacket extends BasicPacket {
   private int lnsID;
   private int lnsQueryId = -1;
 
-  public QueryRequestPacket(int id, NameRecordKey key, Object value, int lns) {
+  public SelectRequestPacket(int id, NameRecordKey key, Object value, int lns) {
     this.type = Packet.PacketType.QUERY_REQUEST;
     this.id = id;
     this.key = key;
@@ -31,7 +31,7 @@ public class QueryRequestPacket extends BasicPacket {
     this.lnsID = lns;
   }
  
-  public QueryRequestPacket(JSONObject json) throws JSONException {
+  public SelectRequestPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.QUERY_REQUEST) {
       Exception e = new Exception("QueryRequestPacket: wrong packet type " + Packet.getPacketType(json));
       return;

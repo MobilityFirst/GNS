@@ -131,7 +131,7 @@ public class Packet {
     return null;
   }
   
-  public static PacketType getDNSPacketType(QueryRequestPacket packet) throws JSONException {
+  public static PacketType getDNSPacketType(SelectRequestPacket packet) throws JSONException {
     return PacketType.QUERY_REQUEST;
   }
 

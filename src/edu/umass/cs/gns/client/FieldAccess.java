@@ -85,8 +85,8 @@ public class FieldAccess {
     return client.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
   }
 
-  public String query(String key, Object value) {
-    String result = SelectQueryHandler.sendQueryRequest(new NameRecordKey(key), value);
+  public String select(String key, Object value) {
+    String result = SelectHandler.sendSelectRequest(new NameRecordKey(key), value);
     if (result != null) {
       return result;
     } else {

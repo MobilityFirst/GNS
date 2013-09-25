@@ -9,8 +9,8 @@ import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import static edu.umass.cs.gns.packet.Packet.*;
-import edu.umass.cs.gns.packet.QueryRequestPacket;
-import edu.umass.cs.gns.packet.QueryResponsePacket;
+import edu.umass.cs.gns.packet.SelectRequestPacket;
+import edu.umass.cs.gns.packet.SelectResponsePacket;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -22,16 +22,16 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class SelectQueryHandler {
+public class SelectHandler {
 
   private static final Object monitor = new Object();
   private static ConcurrentMap<Integer, JSONArray> result = new ConcurrentHashMap<Integer, JSONArray>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
-  public static String sendQueryRequest(NameRecordKey key, Object value) {
+  public static String sendSelectRequest(NameRecordKey key, Object value) {
     int id = nextRequestID();
     try {
-      Intercessor.getInstance().sendPacket(new QueryRequestPacket(id, key, value, LocalNameServer.nodeID).toJSONObject());
+      Intercessor.getInstance().sendPacket(new SelectRequestPacket(id, key, value, LocalNameServer.nodeID).toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring JSON error while sending QUERY request: " + e);
       e.printStackTrace();
@@ -46,12 +46,12 @@ public class SelectQueryHandler {
     }
   }
 
-  public static void processQueryResponsePackets(JSONObject json) {
+  public static void processSelectResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case QUERY_RESPONSE:
           try {
-            QueryResponsePacket response = new QueryResponsePacket(json);
+            SelectResponsePacket response = new SelectResponsePacket(json);
             int id = response.getId();
             GNS.getLogger().info("Processing QueryResponse for " + id);
             synchronized (monitor) {

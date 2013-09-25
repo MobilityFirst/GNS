@@ -103,7 +103,7 @@ public class ClientRequestWorker extends TimerTask {
           handleRequestActivesPacket();
           break;
         case QUERY_REQUEST:
-          handleQueryRequest();
+          handleSelectRequest();
           break;
 
 
@@ -745,9 +745,9 @@ public class ClientRequestWorker extends TimerTask {
     }
   }
 
-  private void handleQueryRequest() throws IOException, JSONException {
+  private void handleSelectRequest() throws IOException, JSONException {
     GNS.getLogger().info("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
-    QueryRequestPacket request = new QueryRequestPacket(incomingJSON);
+    SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     JSONArray jsonRecords = new JSONArray();
     BasicRecordCursor cursor = NameServer.queryUserField(request.getKey().getName(), request.getValue());
     int cnt = 0; // just for debugging message
@@ -755,7 +755,7 @@ public class ClientRequestWorker extends TimerTask {
       jsonRecords.put(cursor.next());
       cnt++;
     }
-    QueryResponsePacket response = new QueryResponsePacket(request.getId(), request.getLnsQueryId(), NameServer.nodeID, jsonRecords);
+    SelectResponsePacket response = new SelectResponsePacket(request.getId(), request.getLnsQueryId(), NameServer.nodeID, jsonRecords);
     GNS.getLogger().info("NS" + NameServer.nodeID + " sending back " + cnt + " records");
     NameServer.tcpTransport.sendToID(request.getLnsID(), response.toJSONObject());
   }

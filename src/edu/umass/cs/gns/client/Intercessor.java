@@ -140,7 +140,7 @@ public class Intercessor {
           }
           break;
         case QUERY_RESPONSE:
-          SelectQueryHandler.processQueryResponsePackets(json);
+          SelectHandler.processSelectResponsePackets(json);
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON error: " + e);
