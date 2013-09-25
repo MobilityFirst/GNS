@@ -14,21 +14,21 @@ public class QueryRequestPacket extends BasicPacket {
   public final static String ID = "id";
   public final static String KEY = "key";
   public final static String VALUE = "value";
-  public final static String LNS = "lns";
+  public final static String LNSID = "lnsid";
   public final static String LNSQUERYID = "lnsQueryId";
   
   private int id;
   private NameRecordKey key;
-  private String value;
-  private int lns;
+  private Object value;
+  private int lnsID;
   private int lnsQueryId = -1;
 
-  public QueryRequestPacket(int id, NameRecordKey key, String value, int lns) {
+  public QueryRequestPacket(int id, NameRecordKey key, Object value, int lns) {
     this.type = Packet.PacketType.QUERY_REQUEST;
     this.id = id;
     this.key = key;
     this.value = value;
-    this.lns = lns;
+    this.lnsID = lns;
   }
  
   public QueryRequestPacket(JSONObject json) throws JSONException {
@@ -36,10 +36,11 @@ public class QueryRequestPacket extends BasicPacket {
       Exception e = new Exception("QueryRequestPacket: wrong packet type " + Packet.getPacketType(json));
       return;
     }
+    this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
     this.key = NameRecordKey.valueOf(json.getString(KEY));
     this.value = json.getString(VALUE);
-    this.lns = json.getInt(LNS);
+    this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
   }
  
@@ -51,10 +52,11 @@ public class QueryRequestPacket extends BasicPacket {
   }
 
   private void addToJSONObject(JSONObject json) throws JSONException {
+    Packet.putPacketType(json, getType());
     json.put(ID, id);
     json.put(KEY,   key.getName());
     json.put(VALUE, value);
-    json.put(LNS, lns);
+    json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
   }
 
@@ -70,12 +72,12 @@ public class QueryRequestPacket extends BasicPacket {
     return key;
   }
 
-  public String getValue() {
+  public Object getValue() {
     return value;
   }
 
-  public int getLns() {
-    return lns;
+  public int getLnsID() {
+    return lnsID;
   }
 
   public int getLnsQueryId() {

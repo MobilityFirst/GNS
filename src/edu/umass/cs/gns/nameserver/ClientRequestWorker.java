@@ -757,7 +757,7 @@ public class ClientRequestWorker extends TimerTask {
     }
     QueryResponsePacket response = new QueryResponsePacket(request.getId(), request.getLnsQueryId(), NameServer.nodeID, jsonRecords);
     GNS.getLogger().info("NS" + NameServer.nodeID + " sending back " + cnt + " records");
-    NameServer.tcpTransport.sendToID(request.getLns(), response.toJSONObject());
+    NameServer.tcpTransport.sendToID(request.getLnsID(), response.toJSONObject());
   }
 
   private void handleDNSPacket() throws IOException, JSONException {

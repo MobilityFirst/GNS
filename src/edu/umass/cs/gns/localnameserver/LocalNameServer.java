@@ -103,6 +103,7 @@ public class LocalNameServer {
 
     requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
     updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
+    queryTransmittedMap = new ConcurrentHashMap<Integer, QueryInfo>(10, 0.75f, 3);
 
     randomID = new Random(System.currentTimeMillis());
 
@@ -342,9 +343,17 @@ public class LocalNameServer {
   public static UpdateInfo removeUpdateInfo(int id) {
     return updateTransmittedMap.remove(id);
   }
+  
+  public static QueryInfo removeQueryInfo(int id) {
+    return queryTransmittedMap.remove(id);
+  }
 
   public static UpdateInfo getUpdateInfo(int id) {
     return updateTransmittedMap.get(id);
+  }
+  
+  public static QueryInfo getQueryInfo(int id) {
+    return queryTransmittedMap.get(id);
   }
 
   /**

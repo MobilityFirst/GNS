@@ -114,6 +114,7 @@ public class PaxosLogger2 extends Thread{
   private static final ReentrantLock loggingLock = new ReentrantLock();
 
 
+  // ADDED NODE + NameServer.nodeID so we can run multiple servers on a single machine
   private static String getLogFolderPath() {
     return logFolder + "/" + "NODE" + NameServer.nodeID;
   }
@@ -838,7 +839,7 @@ public class PaxosLogger2 extends Thread{
         fileWriter.close();
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 20) {
-          GNS.getLogger().severe("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " Msgcount = " + logCmdCopy.size());
+          GNS.getLogger().fine("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " Msgcount = " + logCmdCopy.size());
         }
         msgCount += logCmdCopy.size();
         if (msgCount > MSG_MAX) {

@@ -45,7 +45,7 @@ public class QueryResponsePacket extends BasicPacket {
    * @param json JSONObject representing this packet
    * @throws JSONException
    ************************************************************/
-  public QueryResponsePacket(JSONObject json) throws JSONException, ParseException {
+  public QueryResponsePacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.QUERY_RESPONSE) {
       Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();

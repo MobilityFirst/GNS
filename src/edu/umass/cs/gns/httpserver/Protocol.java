@@ -68,6 +68,7 @@ public class Protocol {
   public final static String CLEAR = "clear";
   public final static String READ = "read";
   public final static String READONE = "readOne";
+  public final static String QUERY = "query";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";
@@ -146,7 +147,7 @@ public class Protocol {
   //public final static String TABLE = "table";
   //
   private boolean demoMode = true;
-  private FieldAccess recordAccess = FieldAccess.getInstance();
+  private FieldAccess fieldAccess = FieldAccess.getInstance();
   private AccountAccess accountAccess = AccountAccess.getInstance();
   private AclAccess aclAccess = AclAccess.getInstance();
   //private GroupAccessV1 groupAccessV1 = GroupAccessV1.getInstance();
@@ -220,17 +221,14 @@ public class Protocol {
             + "DATABASE CREATE OPERATIONS" + NEWLINE + NEWLINE
             + urlPrefix + CREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds a key value pair to the database for the given GUID. See below for more on the signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             //
             + urlPrefix + CREATELIST + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<JSON List>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds a key value pair to the database for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             //
             + urlPrefix + CREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds a key value pair to the database for the given GUID. See below for more on the signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             // 
             + "DATABASE UPSERT OPERATIONS - "
@@ -284,12 +282,10 @@ public class Protocol {
             + "- remove all instances of value" + NEWLINE + NEWLINE
             + urlPrefix + REMOVE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Removes the value from the key value pair for the given GUID. See below for more on the signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             //
             + urlPrefix + REMOVELIST + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<JSON List>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Removes all the values from the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             + "DATABASE READ OPERATIONS" + NEWLINE + NEWLINE
             + urlPrefix + READ + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
@@ -297,31 +293,32 @@ public class Protocol {
             + " Values are always returned as a JSON list."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object."
             + " See below for more on signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             //
             + urlPrefix + READ + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + READER + VALSEP + "<readerguid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. "
             + "Values are always returned as a JSON list."
-            //+ "Specify " + ALLFIELDS + " as the <field> to return all fields. "
+            + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
             + " See below for more on signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             //
             + urlPrefix + READONE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. "
             + "Treats the value of key value pair as a singleton item and returns that item."
-            //+ "Specify " + ALLFIELDS + " as the <field> to return all fields. "
+            + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
             + " See below for more on signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
             + NEWLINE + NEWLINE
             //
             + urlPrefix + READONE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + READER + VALSEP + "<readerguid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. "
             + "Treats the value of key value pair as a singleton item and returns that item."
-            //+ "Specify " + ALLFIELDS + " as the <field> to return all fields. "
+            + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
             + " See below for more on signature. "
-            //+ "Returns " + BADRESPONSE + " " + BADGUID + " if the GUID has not been registered." 
+            + NEWLINE + NEWLINE
+            //
+            + urlPrefix + QUERY + QUERYPREFIX + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + NEWLINE
+            + "  Returns all records that have a field with the given value."
+            + " Values are returned as a JSON array of JSON Objects."
             + NEWLINE + NEWLINE
             + "DATABASE ACCESS CONTROL OPERATIONS "
             + "- regulate access to individual fields" + NEWLINE + NEWLINE
@@ -556,7 +553,7 @@ public class Protocol {
       return BADRESPONSE + " " + BADGUID;
     }
     if (verifySignature(userInfo, signature, message)) {
-      if (recordAccess.create(userInfo.getGuid(), field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))))) {
+      if (fieldAccess.create(userInfo.getGuid(), field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))))) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -574,7 +571,7 @@ public class Protocol {
     }
     try {
       if (verifySignature(userInfo, signature, message)) {
-        if (recordAccess.create(userInfo.getGuid(), field, JSONUtils.JSONArrayToResultValue(new JSONArray(value)))) {
+        if (fieldAccess.create(userInfo.getGuid(), field, JSONUtils.JSONArrayToResultValue(new JSONArray(value)))) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -594,7 +591,7 @@ public class Protocol {
       return BADRESPONSE + " " + BADGUID;
     }
     if (verifySignature(userInfo, signature, message)) {
-      if (recordAccess.update(userInfo.getGuid(), field,
+      if (fieldAccess.update(userInfo.getGuid(), field,
               new ResultValue(Arrays.asList(value)),
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
               operation)) {
@@ -615,7 +612,7 @@ public class Protocol {
     }
     if (verifySignature(userInfo, signature, message)) {
       try {
-        if (recordAccess.update(userInfo.getGuid(), field,
+        if (fieldAccess.update(userInfo.getGuid(), field,
                 JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
                 oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
                 operation)) {
@@ -646,10 +643,14 @@ public class Protocol {
     } else if (!verifyAccess(AccessType.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
-      return recordAccess.lookupMultipleValues(guid, ALLFIELDS);
+      return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
     } else {
-      return recordAccess.lookup(guidInfo.getGuid(), field);
+      return fieldAccess.lookup(guidInfo.getGuid(), field);
     }
+  }
+
+  public String processQuery(String field, Object value) {
+    return fieldAccess.query(field, value);
   }
 
   public String processReadOne(String guid, String field, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
@@ -667,9 +668,9 @@ public class Protocol {
     } else if (!verifyAccess(AccessType.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
-      return recordAccess.lookupOneMultipleValues(guid, ALLFIELDS);
+      return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
     } else {
-      return recordAccess.lookupOne(guidInfo.getGuid(), field);
+      return fieldAccess.lookupOne(guidInfo.getGuid(), field);
     }
   }
 
@@ -1118,6 +1119,10 @@ public class Protocol {
         String signature = queryMap.get(SIGNATURE);
         return processUpdateOperation(guid, field, "", null, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
                 UpdateOperation.CLEAR);
+      } else if (QUERY.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, VALUE))) {
+        String field = queryMap.get(FIELD);
+        Object value = queryMap.get(VALUE);
+        return processQuery(field, value);
         // ACLADD
       } else if (ACLADD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
         // syntax: aclAdd hash field allowedreader signature
@@ -1297,12 +1302,6 @@ public class Protocol {
     } else {
       // map over the allowedusers and see if any of them are groups that the user belongs to
       for (String potentialGroupGuid : allowedusers) {
-//        // old groups
-//        GroupEntry entry = groupAccessV1.lookupFromGuid(potentialGroupGuid);
-//        if (entry != null && entry.getMembers().contains(accesserGuid)) {
-//          return true;
-//        }
-        // new groups
         if (groupAccess.lookup(potentialGroupGuid).contains(accesserGuid)) {
           return true;
         }

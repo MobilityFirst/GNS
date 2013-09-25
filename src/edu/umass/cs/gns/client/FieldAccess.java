@@ -3,6 +3,7 @@ package edu.umass.cs.gns.client;
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import java.util.ArrayList;
 import org.json.JSONArray;
@@ -82,6 +83,15 @@ public class FieldAccess {
   public boolean create(String guid, String key, ResultValue value) {
     Intercessor client = Intercessor.getInstance();
     return client.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
+  }
+
+  public String query(String key, Object value) {
+    String result = SelectQueryHandler.sendQueryRequest(new NameRecordKey(key), value);
+    if (result != null) {
+      return result;
+    } else {
+      return new String();
+    }
   }
   public static String Version = "$Revision$";
 }

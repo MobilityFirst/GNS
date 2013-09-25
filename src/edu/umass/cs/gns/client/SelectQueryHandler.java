@@ -11,7 +11,6 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import static edu.umass.cs.gns.packet.Packet.*;
 import edu.umass.cs.gns.packet.QueryRequestPacket;
 import edu.umass.cs.gns.packet.QueryResponsePacket;
-import java.text.ParseException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -24,28 +23,29 @@ import org.json.JSONObject;
  * @author westy
  */
 public class SelectQueryHandler {
-  
+
   private static final Object monitor = new Object();
   private static ConcurrentMap<Integer, JSONArray> result = new ConcurrentHashMap<Integer, JSONArray>(10, 0.75f, 3);
   private static Random randomID = new Random();
-  
-  public static String sendQueryRequest(NameRecordKey key, String value) {
+
+  public static String sendQueryRequest(NameRecordKey key, Object value) {
     int id = nextRequestID();
     try {
       Intercessor.getInstance().sendPacket(new QueryRequestPacket(id, key, value, LocalNameServer.nodeID).toJSONObject());
-      waitForResponsePacket(id);
-      JSONArray json = result.get(id);
-      if (json != null) {
-        return json.toString();
-      } else {
-        return null;
-      }
-    } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring error while sending QUERY request: " + e);
+    } catch (JSONException e) {
+      GNS.getLogger().warning("Ignoring JSON error while sending QUERY request: " + e);
+      e.printStackTrace();
       return null;
-    } 
+    }
+    waitForResponsePacket(id);
+    JSONArray json = result.get(id);
+    if (json != null) {
+      return json.toString();
+    } else {
+      return null;
+    }
   }
-  
+
   public static void processQueryResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
@@ -53,15 +53,13 @@ public class SelectQueryHandler {
           try {
             QueryResponsePacket response = new QueryResponsePacket(json);
             int id = response.getId();
-            GNS.getLogger().finer("Processing QueryResponse for " + id);
+            GNS.getLogger().info("Processing QueryResponse for " + id);
             synchronized (monitor) {
               result.put(id, response.getJsonArray());
               monitor.notifyAll();
             }
           } catch (JSONException e) {
             GNS.getLogger().warning("JSON error during QueryResponse processing: " + e);
-          } catch (ParseException e) {
-            GNS.getLogger().warning("Parse error during QueryResponse processing: " + e);
           }
           break;
       }
@@ -69,6 +67,7 @@ public class SelectQueryHandler {
       GNS.getLogger().warning("JSON error while getting packet type: " + e);
     }
   }
+
   private static void waitForResponsePacket(int sequenceNumber) {
     try {
       synchronized (monitor) {
@@ -80,7 +79,7 @@ public class SelectQueryHandler {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);
     }
   }
-  
+
   private static int nextRequestID() {
     int id;
     do {

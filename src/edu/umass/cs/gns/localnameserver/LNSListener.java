@@ -10,15 +10,14 @@ import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.TimerTask;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Listens on a UDP port for requests from end-users, and responses from name servers.
@@ -38,19 +37,14 @@ public class LNSListener extends Thread {
 
     tcpTransport = new NioServer2(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
     new Thread(tcpTransport).start();
-
-
   }
 
   @Override
   public void run() {
-
     while (true) {
-
       JSONObject json = udpTransport.readPacket();
       demultiplexLNSPackets(json);
     }
-
   }
 
   /**
@@ -59,14 +53,10 @@ public class LNSListener extends Thread {
    * @param json
    */
   public static void demultiplexLNSPackets(JSONObject json) {
-
     try {
-
       if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().finer("LOCAL NAME SERVER RECVD PACKET: " + json);
+        GNS.getLogger().info("LOCAL NAME SERVER RECVD PACKET: " + json);
       }
-
-
       switch (Packet.getPacketType(json)) {
         case DNS:
           DNSPacket dnsPacket = new DNSPacket(json);
@@ -116,7 +106,7 @@ public class LNSListener extends Thread {
           break;
         case QUERY_RESPONSE:
           Query.handlePacketQueryResponse(json);
-          break;  
+          break;
         case TINY_QUERY:
           LNSRecvTinyQuery.logQueryResponse(json);
           // LNSRecvTinyQuery.recvdQueryResponse(new TinyQuery(json));

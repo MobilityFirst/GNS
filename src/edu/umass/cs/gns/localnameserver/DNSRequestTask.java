@@ -43,7 +43,7 @@ public class DNSRequestTask extends TimerTask {
   private int queryId = 0;
   private HashSet<Integer> nameserversQueried;
 
-  public DNSRequestTask(DNSPacket incomingPacket,
+    public DNSRequestTask(DNSPacket incomingPacket,
                InetAddress senderAddress, int senderPort, long receivedTime,
                int lookupNumber, int queryId,
                HashSet<Integer> nameserversQueried) {

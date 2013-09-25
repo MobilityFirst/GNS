@@ -1,37 +1,36 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import java.io.IOException;
+import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 /**
- * All packets recieved at name server (TCP/UDP) pass through this demultiplexer.
+ * All packets received at name server (TCP/UDP) pass through this demultiplexer.
  * This thread implements PacketDemultiplex interface for 
  * @author abhigyan
  *
  */
-public class NSPacketDemultiplexer extends PacketDemultiplexer{
+public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
   @Override
   public void handleJSONObjects(ArrayList jsonObjects) {
-    for (Object j: jsonObjects) {
+    for (Object j : jsonObjects) {
       handleJSONObject((JSONObject) j);
     }
 
   }
 
   public void handleJSONObject(JSONObject json) {
-
     try {
       Packet.PacketType type = Packet.getPacketType(json);
-      switch(type) {
+      switch (type) {
         // client requests: ADD/REMOVE/UPDATE/LOOKUP
 
         case ADD_RECORD_LNS:
@@ -41,6 +40,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case REMOVE_RECORD_LNS:
         case REQUEST_ACTIVES:
         case UPDATE_ADDRESS_LNS:
+        case QUERY_REQUEST:
         case DNS:
           ClientRequestWorker.handleIncomingPacket(json, type);
           break;
@@ -80,63 +80,15 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case PAXOS_PACKET:
           PaxosManager.handleIncomingPacket(json);
           break;
+        default:
+          GNS.getLogger().warning("No handler for packet type: " + type.toString());
       }
 
     } catch (JSONException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (IOException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();
     }
   }
-
-//	public void handleJSONObject(JSONObject json) {
-//		
-//		try {
-//			switch(Packet.getPacketType(json)) {
-//			case ADD_RECORD_LNS:
-//			case ADD_RECORD_NS:
-//			case UPDATE_ADDRESS_NS:
-//			case TINY_UPDATE:
-//			case CONFIRM_UPDATE_NS:
-//			case REMOVE_RECORD_LNS:
-//			case UPDATE_ADDRESS_LNS:
-//			
-//				// TODO: add packet types.
-//				NSListenerUpdate.handleIncomingPacket(json);
-//				break;
-//			case NAME_RECORD_STATS_RESPONSE:
-////				GNRS.getLogger().finer("NIO: Handed off packet to Listener name record stats");
-//				ListenerNameRecordStats.handleIncomingPacket(json);
-//				break;
-//			case ACTIVE_NAMESERVER_UPDATE:
-//			case REPLICATE_RECORD:
-//			case NAMESERVER_SELECTION:
-//			case REMOVE_REPLICATION_RECORD:
-//				ListenerReplication.handleIncomingMessage(json);
-//				break;
-//			case PAXOS_PACKET:
-//				PaxosManager.handleIncomingMessage(json);
-//				break;
-//			case NEW_ACTIVE_START:
-//			case NEW_ACTIVE_START_FORWARD:
-//			case NEW_ACTIVE_START_RESPONSE:
-//			case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
-//			case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-//			case OLD_ACTIVE_STOP:
-//				ListenerReplicationPaxos.handleIncomingMessage(json);
-//				break;
-//			case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
-//			case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
-//				ReplicaController.handleIncomingMessage(json);
-//				break;
-//			default:
-//				break;
-//			}
-//			
-//		} catch (JSONException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
 }
