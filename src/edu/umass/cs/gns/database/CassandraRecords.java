@@ -308,7 +308,7 @@ public class CassandraRecords implements NoSQLRecords {
   
  
   @Override
-  public BasicRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value) {
+  public BasicRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

@@ -102,7 +102,7 @@ public class ClientRequestWorker extends TimerTask {
         case REQUEST_ACTIVES:
           handleRequestActivesPacket();
           break;
-        case QUERY_REQUEST:
+        case SELECT_REQUEST:
           handleSelectRequest();
           break;
 
@@ -749,7 +749,8 @@ public class ClientRequestWorker extends TimerTask {
     GNS.getLogger().info("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     JSONArray jsonRecords = new JSONArray();
-    BasicRecordCursor cursor = NameServer.queryUserField(request.getKey().getName(), request.getValue());
+    // actually only need name and values map... fix this
+    BasicRecordCursor cursor = NameServer.selectRecords(request.getKey().getName(), request.getValue());
     int cnt = 0; // just for debugging message
     while (cursor.hasNext()) {
       jsonRecords.put(cursor.next());

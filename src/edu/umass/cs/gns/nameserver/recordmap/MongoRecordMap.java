@@ -89,8 +89,8 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public BasicRecordCursor queryUserField(Field valuesMapField, String key, Object value) {
-    return MongoRecords.getInstance().queryUserField(collectionName, valuesMapField, key, value);
+  public BasicRecordCursor selectRecords(Field valuesMapField, String key, Object value) {
+    return MongoRecords.getInstance().selectRecords(collectionName, valuesMapField, key, value);
   }
   
   @Override

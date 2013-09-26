@@ -255,8 +255,8 @@ public class NameServer {
    * @param value
    * @return 
    */
-  public static BasicRecordCursor queryUserField(String key, Object value) {
-      return recordMap.queryUserField(NameRecord.VALUES_MAP, key, value);
+  public static BasicRecordCursor selectRecords(String key, Object value) {
+      return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
   }
 
   /******************************

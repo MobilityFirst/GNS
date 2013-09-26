@@ -79,7 +79,7 @@ public interface RecordMapInterface {
    * @param value
    * @return 
    */
-  public abstract BasicRecordCursor queryUserField(Field valuesMapField, String key, Object value);
+  public abstract BasicRecordCursor selectRecords(Field valuesMapField, String key, Object value);
 
   // Replica Controller
   

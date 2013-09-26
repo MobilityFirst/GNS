@@ -19,6 +19,19 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * So we have these packets see and we convert them back and forth to and from JSON Objects.
+ * And send them over UDP and TCP connections. And we have an enum called PacketType that we
+ * use to keep track of the type of packet that it is.
+ * 
+ * And it appears that there are two separate but equal mechanisms to keep track of packet sizes
+ * during transmission (one in here and one elsewhere ...  multiple authors again).
+ * 
+ * This is our basic way of transmitting data.
+ * It's a bit of a hodgepodge at this point due to multiple authors, but it works.
+ * 
+ * @author westy
+ */
 public class Packet {
 
   /**
@@ -74,8 +87,8 @@ public class Packet {
     //
     NAME_SERVER_LOAD(60),
     //
-    QUERY_REQUEST(70),
-    QUERY_RESPONSE(71),
+    SELECT_REQUEST(70),
+    SELECT_RESPONSE(71),
     //
     PAXOS_PACKET(90),
     //
@@ -131,10 +144,6 @@ public class Packet {
     return null;
   }
   
-  public static PacketType getDNSPacketType(SelectRequestPacket packet) throws JSONException {
-    return PacketType.QUERY_REQUEST;
-  }
-
   // some shorthand helpers
   public static PacketType getPacketType(int number) {
     return PacketType.getPacketType(number);

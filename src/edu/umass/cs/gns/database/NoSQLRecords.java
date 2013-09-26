@@ -198,7 +198,7 @@ public interface NoSQLRecords {
    * @param value
    * @return BasicRecordCursor
    */
-  public BasicRecordCursor queryUserField(String collectionName, Field valuesMapField, String key, Object value);
+  public BasicRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value);
   /**
    * Puts the database in a state where it has nothing in it.
    * 

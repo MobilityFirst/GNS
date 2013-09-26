@@ -114,7 +114,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public BasicRecordCursor queryUserField(Field valuesMapField, String key, Object value) {
+  public BasicRecordCursor selectRecords(Field valuesMapField, String key, Object value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   //

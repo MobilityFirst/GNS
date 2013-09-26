@@ -139,7 +139,7 @@ public class Intercessor {
             }
           }
           break;
-        case QUERY_RESPONSE:
+        case SELECT_RESPONSE:
           SelectHandler.processSelectResponsePackets(json);
       }
     } catch (JSONException e) {

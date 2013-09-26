@@ -40,7 +40,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         case REMOVE_RECORD_LNS:
         case REQUEST_ACTIVES:
         case UPDATE_ADDRESS_LNS:
-        case QUERY_REQUEST:
+        case SELECT_REQUEST:
         case DNS:
           ClientRequestWorker.handleIncomingPacket(json, type);
           break;
@@ -82,6 +82,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           break;
         default:
           GNS.getLogger().warning("No handler for packet type: " + type.toString());
+          break;
       }
 
     } catch (JSONException e) {

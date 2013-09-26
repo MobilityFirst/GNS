@@ -5,8 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * A QueryRequestPacket is like a DNS packet without a GUID, but with a value. 
- * The semantics is that we want to look up all 
+ * A SelectRequestPacket is like a DNS packet without a GUID, but with a key and value. 
+ * The semantics is that we want to look up all the records that have a field named key with the given value.
  * @author westy
  */
 public class SelectRequestPacket extends BasicPacket {
@@ -16,23 +16,35 @@ public class SelectRequestPacket extends BasicPacket {
   public final static String VALUE = "value";
   public final static String LNSID = "lnsid";
   public final static String LNSQUERYID = "lnsQueryId";
-  
   private int id;
   private NameRecordKey key;
   private Object value;
   private int lnsID;
   private int lnsQueryId = -1;
 
+  /**
+   * Constructs a new QueryResponsePacket
+   * 
+   * @param id
+   * @param key
+   * @param value
+   * @param lns 
+   */
   public SelectRequestPacket(int id, NameRecordKey key, Object value, int lns) {
-    this.type = Packet.PacketType.QUERY_REQUEST;
+    this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
     this.value = value;
     this.lnsID = lns;
   }
- 
+
+  /**
+   * Constructs new SelectRequestPacket from a JSONObject
+   * @param json JSONObject representing this packet
+   * @throws JSONException
+   */
   public SelectRequestPacket(JSONObject json) throws JSONException {
-    if (Packet.getPacketType(json) != Packet.PacketType.QUERY_REQUEST) {
+    if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       Exception e = new Exception("QueryRequestPacket: wrong packet type " + Packet.getPacketType(json));
       return;
     }
@@ -43,7 +55,13 @@ public class SelectRequestPacket extends BasicPacket {
     this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
   }
- 
+
+  /**
+   * Converts a SelectRequestPacket to a JSONObject.
+   * 
+   * @return JSONObject
+   * @throws JSONException 
+   */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -54,7 +72,7 @@ public class SelectRequestPacket extends BasicPacket {
   private void addToJSONObject(JSONObject json) throws JSONException {
     Packet.putPacketType(json, getType());
     json.put(ID, id);
-    json.put(KEY,   key.getName());
+    json.put(KEY, key.getName());
     json.put(VALUE, value);
     json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
@@ -83,5 +101,4 @@ public class SelectRequestPacket extends BasicPacket {
   public int getLnsQueryId() {
     return lnsQueryId;
   }
-
 }

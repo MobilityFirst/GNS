@@ -99,10 +99,10 @@ public class LNSListener extends Thread {
         case REQUEST_ACTIVES:
           SendActivesRequestTask.handleActivesRequestReply(json);
           break;
-        case QUERY_REQUEST:
+        case SELECT_REQUEST:
           Select.handlePacketSelectRequest(json);
           break;
-        case QUERY_RESPONSE:
+        case SELECT_RESPONSE:
           Select.handlePacketSelectResponse(json);
           break;
         case TINY_QUERY:

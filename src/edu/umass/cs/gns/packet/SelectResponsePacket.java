@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 /*************************************************************
  * This class implements a packet that contains a response 
- * to a complex query statement.
+ * to a select statement.
  * 
  * @author Westy
  ************************************************************/
@@ -33,20 +33,20 @@ public class SelectResponsePacket extends BasicPacket {
    * @param jsonObject 
    */
   public SelectResponsePacket(int id, int lnsQueryId, int nameServer, JSONArray jsonArray) {
-    this.type = Packet.PacketType.QUERY_RESPONSE;
+    this.type = Packet.PacketType.SELECT_RESPONSE;
     this.id = id;
     this.lnsQueryId = lnsQueryId;
     this.nameServer = nameServer;
     this.jsonArray = jsonArray;
   }
 
-  /*************************************************************
-   * Constructs new QueryResponsePacket from a JSONObject
+  /**
+   * Constructs new SelectResponsePacket from a JSONObject
    * @param json JSONObject representing this packet
    * @throws JSONException
-   ************************************************************/
+   */
   public SelectResponsePacket(JSONObject json) throws JSONException {
-    if (Packet.getPacketType(json) != Packet.PacketType.QUERY_RESPONSE) {
+    if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {
       Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
       return;
@@ -58,11 +58,12 @@ public class SelectResponsePacket extends BasicPacket {
     this.jsonArray = json.getJSONArray(JSON);
   }
 
-  /*************************************************************
-   * Converts a QueryResponsePacket to a JSONObject.
+  /**
+   * Converts a SelectResponsePacket to a JSONObject.
+   * 
    * @return JSONObject representing this packet.
    * @throws JSONException
-   ************************************************************/
+   */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
