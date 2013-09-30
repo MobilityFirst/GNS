@@ -698,7 +698,7 @@ public class EC2Installer {
   }
 
   private static void printUsage() {
-    formatter.printHelp("Installer", commandLineOptions);
+    formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", commandLineOptions);
   }
 
   private static void printUsage(String header) {

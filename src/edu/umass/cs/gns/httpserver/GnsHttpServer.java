@@ -71,7 +71,7 @@ public class GnsHttpServer {
       GNS.getLogger().info("HTTP server is listening on port " + address);
       return true;
     } catch (IOException e) {
-      GNS.getLogger().info("HTTP server failed to start on port " + address + " due to " + e);
+      GNS.getLogger().fine("HTTP server failed to start on port " + address + " due to " + e);
       return false;
     }
   }
