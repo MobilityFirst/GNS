@@ -8,7 +8,7 @@ import java.util.ArrayList;
 /**
  * GroupAccess provides an interface to the group information in the GNSR.
  *
- * The members of a group are stored in a record whose key is the GROUPV2 string. 
+ * The members of a group are stored in a record whose key is the GROUP string. 
  *
  * @author westy
  */

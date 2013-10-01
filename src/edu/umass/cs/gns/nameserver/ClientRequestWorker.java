@@ -553,7 +553,7 @@ public class ClientRequestWorker extends TimerTask {
     long t1 = System.currentTimeMillis();
 
     if (t1 - t0 > 10) {
-      GNS.getLogger().severe("Long latency HandleUpdate " + (t1 - t0));
+      GNS.getLogger().warning("Long latency HandleUpdate " + (t1 - t0));
     }
 
 
@@ -714,7 +714,7 @@ public class ClientRequestWorker extends TimerTask {
     long t1 = System.currentTimeMillis();
 
     if (t1 - t0 > 10) {
-      GNS.getLogger().severe("Long latency HandleUpdateAddressNS " + (t1 - t0) + " Breakdown: " + (tA - t0) + "\t" + (tB - tA) + "\t" + (tC - tB) + "\t" + (t1 - tC));
+      GNS.getLogger().warning("Long latency HandleUpdateAddressNS " + (t1 - t0) + " Breakdown: " + (tA - t0) + "\t" + (tB - tA) + "\t" + (tC - tB) + "\t" + (t1 - tC));
     }
 
   }

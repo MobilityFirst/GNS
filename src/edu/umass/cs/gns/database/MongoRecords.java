@@ -473,7 +473,7 @@ public class MongoRecords implements NoSQLRecords {
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 10) {
           //System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t" + t0);
-          GNS.getLogger().severe(" Long latency mongoUpdate " + (t1 - t0));
+          GNS.getLogger().warning(" Long latency mongoUpdate " + (t1 - t0));
         }
 //        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
       }
