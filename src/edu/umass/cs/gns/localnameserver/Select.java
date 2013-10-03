@@ -36,7 +36,7 @@ public class Select {
     int queryId = LocalNameServer.addQueryInfo(packet.getKey(), packet, address, port, serverIds);
     packet.setLnsQueryId(queryId);
     JSONObject outgoingJSON = packet.toJSONObject();
-    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " transmitting QueryRequest " + outgoingJSON + " to " + serverIds);
+    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " transmitting QueryRequest " + outgoingJSON + " to " + serverIds);
     for (int nsid : serverIds) {
       try {
         if (!LNSListener.tcpTransport.sendToID(nsid, outgoingJSON)) {
@@ -49,29 +49,29 @@ public class Select {
   }
 
   public static void handlePacketSelectResponse(JSONObject json) throws JSONException {
-    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " recvd QueryResponse: " + json);
+    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " recvd QueryResponse: " + json);
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " recvd from NS" + packet.getNameServer());
+    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " recvd from NS" + packet.getNameServer());
     SelectInfo info = LocalNameServer.getQueryInfo(packet.getLnsQueryId());
-    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " located query info:" + info.serversYetToRespond());
+    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " located query info:" + info.serversYetToRespond());
     // upfdate our results list
     JSONArray jsonArray = packet.getJsonArray();
     int length = jsonArray.length();
-    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " processing " + length + " records");
+    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " processing " + length + " records");
     // org.json sucks... should have converted a long tine ago
     for (int i = 0; i < length; i++) {
       JSONObject record = jsonArray.getJSONObject(i);
       String name = record.getString(NameRecord.NAME.getName());
       if (info.addNewResponse(name, record)) {
-        GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " added record for " + name);
+        GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " added record for " + name);
       } else {
-        GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " DID NOT ADD record for " + name);
+        GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " DID NOT ADD record for " + name);
       }
     }
-    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " removing server " + packet.getNameServer());
+    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " removing server " + packet.getNameServer());
     // and remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServer());
-    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " servers yet to respond:" + info.serversYetToRespond());
+    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " servers yet to respond:" + info.serversYetToRespond());
     // if we're done send a response back to the client
     if (info.allServersResponded()) {
       SelectResponsePacket response = new SelectResponsePacket(packet.getId(), -1, -1, new JSONArray(info.getResponses()));

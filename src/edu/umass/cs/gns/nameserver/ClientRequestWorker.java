@@ -105,8 +105,6 @@ public class ClientRequestWorker extends TimerTask {
         case SELECT_REQUEST:
           handleSelectRequest();
           break;
-
-
       }
     } catch (JSONException e) {
       e.printStackTrace();
@@ -131,16 +129,8 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine("Field not found exception. " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-//    if (rcRecord!= null) {
-//
-//    }
-//    else {
-//      GNS.getLogger().severe(" Error: Exception: Name does not exist: " + packet.getName());
-//    }
-
-
-
   }
+  //
   private static ArrayList<Field> addRecordLNSFields = new ArrayList<Field>();
 
   private static ArrayList<Field> getAddRecordLNSFields() {
@@ -154,7 +144,7 @@ public class ClientRequestWorker extends TimerTask {
   }
 
   private void handleAddRecordLNSPacket() throws JSONException, IOException {
-    System.out.println(" Hello ..... starting method .... ");
+    //System.out.println(" Hello ..... starting method .... ");
     AddRecordPacket addRecordPacket;
     String name;
     NameRecordKey nameRecordKey;
@@ -163,10 +153,7 @@ public class ClientRequestWorker extends TimerTask {
     name = addRecordPacket.getName();
     nameRecordKey = addRecordPacket.getRecordKey();
     value = addRecordPacket.getValue();
-    GNS.getLogger().info(" ADD FROM LNS (ns " + NameServer.nodeID
-            + ") : " + name + "/" + nameRecordKey.toString() + ", "
-            + value);
-
+    GNS.getLogger().info(" ADD FROM LNS (ns " + NameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
 
     ReplicaControllerRecord rcRecord;
     try {
@@ -174,8 +161,6 @@ public class ClientRequestWorker extends TimerTask {
       try {
         if (rcRecord.isAdded() || rcRecord.isMarkedForRemoval()) {
           GNS.getLogger().info(" ADD (ns " + NameServer.nodeID + ") : Record already exists");
-
-
           ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(false, addRecordPacket);
           JSONObject jsonConfirm = confirmPacket.toJSONObject();
           NameServer.tcpTransport.sendToID(addRecordPacket.getLocalNameServerID(), jsonConfirm);
@@ -300,9 +285,8 @@ public class ClientRequestWorker extends TimerTask {
 
 
     JSONObject jsonConfirm = status.getConfirmUpdateLNSPacket().toJSONObject();
-    GNS.getLogger().info("Sending ADD REQUEST CONFIRM (ns " + NameServer.nodeID + ") : to "
-            + +status.getLocalNameServerID());
-    GNS.getLogger().info("Sending ADD REQUEST CONFIRM to LNS " + jsonConfirm);
+    GNS.getLogger().info("Sending ADD REQUEST CONFIRM (ns " + NameServer.nodeID + ") : to " + status.getLocalNameServerID());
+    GNS.getLogger().fine("Sending ADD REQUEST CONFIRM to LNS " + jsonConfirm);
     NameServer.tcpTransport.sendToID(status.getLocalNameServerID(), jsonConfirm);
 
     // confirm to every one that add is complete
@@ -746,7 +730,7 @@ public class ClientRequestWorker extends TimerTask {
   }
 
   private void handleSelectRequest() throws IOException, JSONException {
-    GNS.getLogger().info("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
+    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     JSONArray jsonRecords = new JSONArray();
     // actually only need name and values map... fix this
@@ -757,7 +741,7 @@ public class ClientRequestWorker extends TimerTask {
       cnt++;
     }
     SelectResponsePacket response = new SelectResponsePacket(request.getId(), request.getLnsQueryId(), NameServer.nodeID, jsonRecords);
-    GNS.getLogger().info("NS" + NameServer.nodeID + " sending back " + cnt + " records");
+    GNS.getLogger().fine("NS" + NameServer.nodeID + " sending back " + cnt + " records");
     NameServer.tcpTransport.sendToID(request.getLnsID(), response.toJSONObject());
   }
 
