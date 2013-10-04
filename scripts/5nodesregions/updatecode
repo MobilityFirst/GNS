@@ -1,5 +1,0 @@
-#
-
-cd /home/ec2-user/GNRS-westy
-svn update 
-ant
