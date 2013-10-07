@@ -1,9 +1,10 @@
-#!/usr/bin/python   
-                                                            
+#!/usr/bin/env python2.7
+                                             
 import getopt
 import os
 import sys
 import subprocess
+import socket
 
 #Constants: Do not edit
 LOCAL_EXP = '-local'
@@ -21,6 +22,7 @@ DEFAULT_TTL_MOBILE_NAME = '-mttl'
 REGULAR_WORLOAD = '-rworkload'
 MOBILE_WORLOAD = '-mworkload'
 STATIC_REPLICATION = '-static'
+OPTIMAL_REPLICATION = '-optimal'
 RANDOM_REPLICATION = '-random'
 LOCATION_REPLICATION = '-location'
 NAMESERVER_SELECTION_VOTE_SIZE = '-nsVoteSize'
@@ -29,36 +31,75 @@ C = '-C'
 ALPHA = '-alpha'
 BASE = '-base'
 DEBUG_MODE = '-debugMode'
-PERSISTENT_DATA_STORE = '-persistentDataStore'
+EXPERIMENT_MODE = '-experimentMode'
 HELP = '-help'
+TINY_UPDATE = '-tinyUpdate'
+
+KMEDOIDS_REPLICATION = '-kmedoids'
+NUM_LNS = '-numLNS' 
+LNSNSPING_FILE = '-lnsnsping'
+NSNSPING_FILE = '-nsnsping'
+
+FILE_LOGGING_LEVEL =  '-fileLoggingLevel'
+CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
+STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
+STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
+
+DATA_STORE = '-dataStore'
+
+#PRIMARY_PAXOS = '-primaryPaxos'
 
 #Parameters: Update as required
-name_server_jar = '../../build/jars/GNRS.jar'
-is_local = True                          #Run the name server instance on the local host.
+name_server_jar = '../../build/jars/GNS.jar'              #Local name server jar
+is_local = False                          #Run the name server instance on the local host.
 node_id = -1
 name_server_file = 'name-server-info'
 primary_name_server = 3
-aggregate_interval = 180      #In seconds
-replication_interval = 600   #In seconds
-normalizing_constant = 1   #Used as the denominator for calculating number of replicas
+aggregate_interval = 1000      #In seconds
+replication_interval = 1000    #In seconds
+normalizing_constant = 0.1   #Used as the denominator for calculating number of replicas
                             #NumReplicas = lookupRate / (updateRate * normalizing_constant)
 moving_avg_window_size = 20 #Used for calculating inter-arrival update time and ttl value
 
-ttl_constant = 0.0000001            #Multiplied by inter-arrival update time to calculate ttl value of a name
-default_ttl_regular_name = 0
-default_ttl_mobile_name = 0
+ttl_constant = 0.0            #Multiplied by inter-arrival update time to calculate ttl value of a name
+
+default_ttl_regular_name = 0   # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
+default_ttl_mobile_name = 0    # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
+
 regular_workload = 0
 mobile_workload = 0
-is_static_replication = False               #Radom3
-is_random_replication = True               #Uniform
-is_location_replication = False             
-name_server_selection_vote_size = 10        #top-k size
+
+is_optimal_replication = False              # Optimal
+
+is_static_replication = False
+
+is_random_replication = False               #Uniform
+
+is_location_replication = True              #Locality
+name_server_selection_vote_size = 5         #top-k size. this parameter is not used anymore.
+
 is_beehive_replication = False
-c_hop = 0.5
+c_hop = 0.3
 base = 16
 alpha = 0.91
 is_debug_mode = True
-is_persistent_data_store = True;
+is_experiment_mode = False                # Always set to True to run experiments
+
+tiny_update = False
+#primary_paxos = True
+is_kmedoids_replication = False
+num_local_name_server = 1
+lnsnsping_file = ''
+nsnsping_file = ''
+
+# logging related parameters:
+## values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
+file_logging_level = 'FINE'
+console_output_level = 'FINE'
+stat_file_logging_level = 'INFO'
+stat_console_output_level = 'INFO'
+
+data_store = 'MONGO'
 
 """ Prints usage message """
 def usage():
@@ -67,7 +108,7 @@ def usage():
     print '\nOptions:'
     print '--jar <*.jar>\t\tName server jar file including path'
     print '--local\t\t\tRun Name Server instance on localhost'
-#    print '--planetlab\t\t\tRun Name Server instance on PlanetLab node'
+    #print '--planetlab\t\t\tRun Name Server instance on PlanetLab node'
     print '--id <#>\t\tUnique name server id'
     print '--nsFile <file>\t\tName server file'
     print '\t\t\tFormat per line (local):' 
@@ -92,16 +133,21 @@ def usage():
     print '--location\t\tLocation Based selection of active name servers.' 
     print '--nsSelectionVoteSize <size> Size of name server select vote'
     print '--debugMode\t\tRun in debug mode. Generates log in file log_lns_id'
-    print '--persistentDataStore\t\tUse one'
+    print '--dataStore [MONGO|CASSANDRA]\t\t Which backing store to use.'
     print '--help\t\t\tPrints usage messages'
+    #Xiaozheng
+    print '--kmedoids\t\tKmedoids clustering for replication'
+    print '--numLNS\t\t\tnum of local name servers'
+    print '--lnsnsping\t\t\tping latency file for lns-ns'
+    print '--nsnsping\t\t\tping latency file for ns-ns'
     
 """ Executes an instance of Name Server with the give parameters """
 def run_name_server():
-    command = 'java -cp ' + name_server_jar + ' edu.umass.cs.gnrs.main.StartNameServer'
+    command = 'java -cp ' + name_server_jar + ' edu.umass.cs.gns.main.StartNameServer'
     if is_local:
         command += ' ' + LOCAL_EXP
-#    else:
-#        command += ' ' + PLANETLAB_EXP
+    #else:
+    #    command += ' ' + PLANETLAB_EXP
     command += ' ' + ID + ' ' + str(node_id)
     command += ' ' + NAMESERVER_FILE + ' ' + name_server_file
     command += ' ' + PRIMARY_NAMESERVERS + ' ' + str(primary_name_server)
@@ -126,23 +172,57 @@ def run_name_server():
         command += ' ' + C + ' ' + str(c_hop)
         command += ' ' + BASE + ' ' + str(base)
         command += ' ' + ALPHA + ' ' + str(alpha)
+    elif is_optimal_replication:
+        command += ' ' + OPTIMAL_REPLICATION
+    #Xiaozheng
+    elif is_kmedoids_replication:   
+    	command += ' ' + NUM_LNS + ' ' + str(num_local_name_server)
+    	command += ' ' + LNSNSPING_FILE + lnsnsping_file 
+    	command += ' ' + NSNSPING_FILE + nsnsping_file
     else:
         print 'Error: No replication model selected'
         sys.exit(2)
- 
-    if is_persistent_data_store:
-        command += ' ' + PERSISTENT_DATA_STORE
-     
+
+    command += ' ' + FILE_LOGGING_LEVEL + ' ' + file_logging_level
+    command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level
+    command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
+    command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
+
+    command += ' ' + DATA_STORE + ' ' + data_store
+
+    if tiny_update:
+        command += ' ' + TINY_UPDATE
+    #if primary_paxos:
+    #    command += ' ' + PRIMARY_PAXOS
+    if is_experiment_mode:
+        command += ' ' + EXPERIMENT_MODE
+        
     if is_debug_mode:
         command += ' ' + DEBUG_MODE
-
-    
-    print command
-    
+       # command += ' > log_ns_' + str(node_id)
+        print command
+    else:
+        command += ' > log_ns'
+    command += ' &'
     os.system(command)
+
+
+def get_node_id():
+    """Name server ID from pl_config file."""
+    host_name = socket.getfqdn()
+    host_name2 = socket.gethostname()
     
+    f = open(name_server_file)
+    for line in f:
+        tokens = line.split()
+        if (tokens[2] == host_name or tokens[2] == host_name2) and tokens[1] == 'yes':
+            return int(tokens[0])
+    print 'Host:' + host_name + ' Node Id: -1'
+    sys.exit(2)
+
 """ Look up name server id from file. """
-def get_name_server_id():      
+def get_name_server_id():
+    
     file = open(name_server_file, 'r')
     cmd = "uname -n"
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -156,6 +236,7 @@ def get_name_server_id():
     
     print 'Host:' + host_name + ' Node Id: -1'
     sys.exit(2)
+
 
 """ Prints options during debug mode """
 def print_options():
@@ -175,28 +256,31 @@ def print_options():
         print "Regular Workload: " + str(regular_workload)
         print "Mobile Workload: " + str(mobile_workload)
         print "Static Replication: " + str(is_static_replication)
+        print "Optimal Replication: " + str(is_optimal_replication)
         print "Random Replication: " + str(is_random_replication)
         print "Location Replication: " + str(is_location_replication)
         print "Name Server Selection Vote Size: " + str(name_server_selection_vote_size)
         print "Beehive Replication: " + str(is_beehive_replication)
+        print "Data Store: " + str(data_store)
         print "C: " + str(c_hop)
         print "Base: " + str(base)
         print "Alpha: " + str(alpha)
         print "Debug Mode: " + str(is_debug_mode)
-        print "Persistent Data Store: " + str(is_persistent_data_store) 
+        print "Experiment Mode: " + str(is_experiment_mode) 
 
 def main(argv):
+    
     try:                                
-        opts, args = getopt.getopt(argv, 'a:bc:d:e:f:g:h:i:j:k:l:m:n:o:pqrw:stuax:y:z:', 
+        opts, args = getopt.getopt(argv, 'a:bc:d:e:f:g:h:i:j:k:l:m:n:o:pqrw:stuvx:y:z:ab:c:d', 
                                    ['jar=', 'local', 'id=', 'nsFile=',
                                     'primary=', 'aggregateInterval=',
                                     'replicationInterval=', 'nConstant=',
                                     'mavgSize=', 'ttlConstant=', 'rTTL=',
                                     'mTTL=', 'nTTL=', 'rWorkload=', 
                                     'mWorkload=', 'static', 'random',
-                                    'location', 'nsSelectionVoteSize=', 
-                                    'debugMode', 'help', 'persistentDataStore', 'beehive', 
-                                    'hop=', 'base=', 'alpha='])
+                                    'location', 'nsSelectionVoteSize=', 'debugMode', 'help', 'planetlab',
+                                    'beehive', 'hop=', 'base=', 'alpha=', 'optimal', 'dataStore=',
+                                    'fileLoggingLevel=', 'consoleOutputLevel='])
     except getopt.GetoptError:    
         print 'Incorrect option'      
         usage()                         
@@ -217,21 +301,30 @@ def main(argv):
     global regular_workload 
     global mobile_workload 
     global is_static_replication 
+    global is_optimal_replication 
     global is_random_replication 
     global is_location_replication 
     global name_server_selection_vote_size
     global is_beehive_replication
+    global data_store
     global c_hop
     global base
     global alpha
     global is_debug_mode
-    global is_persistent_data_store
-   
+    #Xiaozheng
+    global is_kmedoids_replication
+    global num_local_name_server 
+    global lnsnsping_file
+    global nsnsping_file 
+    global file_logging_level
+    global console_output_level 
     for opt, arg in opts:
         if opt == '--jar':
             name_server_jar = arg
         elif opt == '--local':
             is_local = True
+        elif opt == '--planetlab':
+            is_local = False
         elif opt == '--id':
             node_id = int(arg)
         elif opt == '--nsFile':
@@ -258,24 +351,39 @@ def main(argv):
             mobile_workload = int(arg)
         elif opt == '--static':
             is_static_replication = True
+            is_optimal_replication = False
             is_random_replication = False
             is_location_replication = False
             is_beehive_replication = False
+            is_kmedoids_replication = False
+        elif opt == '--optimal':
+            is_static_replication = False
+            is_optimal_replication = True
+            is_random_replication = False
+            is_location_replication = False
+            is_beehive_replication = False
+            is_kmedoids_replication = False
         elif opt == '--location':
             is_location_replication = True
+            is_optimal_replication = False
             is_random_replication = False
             is_static_replication = False
             is_beehive_replication = False
+            is_kmedoids_replication = False
         elif opt == '--random':
             is_random_replication= True
+            is_optimal_replication = False
             is_location_replication = False
             is_static_replication = False
             is_beehive_replication = False
+            is_kmedoids_replication = False
         elif opt == '--beehive':
             is_beehive_replication = True
+            is_optimal_replication = False
             is_location_replication = False
             is_random_replication = False
             is_static_replication = False
+            is_kmedoids_replication = False
         elif opt == '--nsSelectionVoteSize':
             name_server_selection_vote_size = int(arg)
         elif opt == '--hop':
@@ -286,8 +394,25 @@ def main(argv):
             alpha = float(arg)
         elif opt == '--debugMode':
             is_debug_mode = True
-        elif opt == '--persistentDataStore':
-            is_persistent_data_store = True
+        #Xiaozheng
+        elif opt == '--kmedoids':
+            is_kmedoids_replication = True
+            is_static_replication = False
+            is_random_replication = False
+            is_location_replicaiotn = False
+            is_beehive_replication = False
+        elif opt == '--numLNS': 
+            num_local_name_server = int(arg)
+        elif opt == '-lnsnsping':
+            lnsnsping_file = arg
+        elif opt == '-nsnsping':
+            nsnsping_file = arg
+        elif opt == '--fileLoggingLevel':
+            file_logging_level = arg
+        elif opt == '--consoleOutputLevel':
+            console_output_level = arg
+        elif opt == '--dataStore':
+            data_store = arg
         elif opt == '--help':
             usage()
             sys.exit(1)
@@ -296,11 +421,24 @@ def main(argv):
             usage()                         
             sys.exit(2)
     
+    check_file(name_server_jar)
+    check_file(name_server_file)
+    
     if node_id is None or node_id == -1:
-        node_id = get_name_server_id();
+        node_id = get_node_id();
         
-    print_options()
+    #print_options()
     run_name_server()
 
+
+def check_file(filename):
+    if not os.path.exists(filename):
+        print '\n\tEXCEPTION\nEXCEPTION\nEXCEPTION\nEXCEPTION\n'
+        print '************************************************'
+        print 'File does not exist:', filename
+        print '************************************************'
+        print '\n\tEXCEPTION\nEXCEPTION\nEXCEPTION\nEXCEPTION\n'
+        sys.exit(1)
+                
 if __name__ == "__main__":
     main(sys.argv[1:])
