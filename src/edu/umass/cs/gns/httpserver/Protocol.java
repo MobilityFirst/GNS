@@ -47,6 +47,7 @@ public class Protocol {
   public final static String REMOVEACCOUNT = "removeAccount";
   public final static String LOOKUPGUID = "lookupGuid";
   public final static String LOOKUPGUIDRECORD = "lookupGuidRecord";
+  public final static String LOOKUPACCOUNTRECORD = "lookupAccountRecord";
   //
   // new
   public final static String CREATE = "create";
@@ -567,6 +568,22 @@ public class Protocol {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
   }
+  
+  public String processLookupAccountInfo(String guid) {
+    AccountInfo acccountInfo;
+    if ((acccountInfo = accountAccess.lookupAccountInfoFromGuid(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (acccountInfo != null) {
+      try {
+        return acccountInfo.toJSONObject().toString();
+      } catch (JSONException e) {
+        return BADRESPONSE + " " + JSONPARSEERROR;
+      }
+    } else {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+  }
 
   public String processCreate(String guid, String field, String value, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
@@ -998,6 +1015,9 @@ public class Protocol {
       } else if (LOOKUPGUIDRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
         String guid = queryMap.get(GUID);
         return processLookupGuidInfo(guid);
+      } else if (LOOKUPACCOUNTRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
+        String guid = queryMap.get(GUID);
+        return processLookupAccountInfo(guid);
       } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
