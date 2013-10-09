@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.database;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -274,11 +275,11 @@ public class MongoRecords implements NoSQLRecords {
     return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
   }
 
-  public MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, Object value) {
+  public MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value) {
     return selectRecordsWithin(collectionName, valuesMapField, key, value, false);
   }
 
-  private MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, Object value, boolean explain) {
+  private MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
 
@@ -288,10 +289,30 @@ public class MongoRecords implements NoSQLRecords {
 //                      } } } )
 
     // { "nr_valuesMap.location" : { "$geoWithin" : { "$box" : "[[69.0,39,0],[71.0,41,0]]"}}}
-
+    
+//    { <location field> : { $geoWithin : { $box :
+//                                       [ [ <bottom left coordinates> ] ,
+//                                         [ <upper right coordinates> ] ] } } }
+    //{ "nr_valuesMap.location" : { "$geoWithin" : { "$box" : [ [ 69.0 , 39.0] , [ 71.0 , 41.0]]}}}
+    
+    BasicDBList box1 = new BasicDBList();
+    BasicDBList box2 = new BasicDBList();
+    BasicDBList box = new BasicDBList();
+    try {
+      JSONArray json = new JSONArray(value);
+      box1.add(json.getJSONArray(0).getDouble(0));
+      box1.add(json.getJSONArray(0).getDouble(1));
+      box2.add(json.getJSONArray(1).getDouble(0));
+      box2.add(json.getJSONArray(1).getDouble(1));
+      box.add(box1);
+      box.add(box2);
+    } catch (JSONException e) {
+      GNS.getLogger().warning("Unable to index JSON: " + e);
+    }
+    System.out.println("***BOX: " + box);
     String fieldName = valuesMapField.getName() + "." + key;
-    BasicDBObject shapeClause = new BasicDBObject("$box", value);
-    BasicDBObject withinClause = new BasicDBObject("$geoWithin", shapeClause);
+    BasicDBObject shapeClause = new BasicDBObject("$box", box);
+    BasicDBObject withinClause = new BasicDBObject("$within", shapeClause);
     BasicDBObject query = new BasicDBObject(fieldName, withinClause);
     System.out.println("***QUERY***: " + query.toString());
     DBCursor cursor = collection.find(query);
@@ -655,15 +676,11 @@ public class MongoRecords implements NoSQLRecords {
     try {
       search = Double.parseDouble(searchArg);
     } catch (NumberFormatException e) {
-      try {
-        search = new JSONArray(searchArg);
-      } catch (JSONException f) {
-        search = searchArg;
-      }
+      search = searchArg;
     }
 
     System.out.println("***LOCATION QUERY***");
-    MongoRecordCursor cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
+    MongoRecordCursor cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, true);
     while (cursor.hasNext()) {
       try {
         JSONObject json = cursor.next();
