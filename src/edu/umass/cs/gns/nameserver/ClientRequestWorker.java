@@ -734,7 +734,29 @@ public class ClientRequestWorker extends TimerTask {
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     JSONArray jsonRecords = new JSONArray();
     // actually only need name and values map... fix this
-    BasicRecordCursor cursor = NameServer.selectRecords(request.getKey().getName(), request.getValue());
+    BasicRecordCursor cursor;
+    switch (request.getOperation()) {
+      case EQUALS:
+        cursor = NameServer.selectRecords(request.getKey().getName(), request.getValue());
+        break;
+      case NEAR:
+        if (request.getValue() instanceof String) {
+          cursor = NameServer.selectRecordsNear(request.getKey().getName(), (String) request.getValue(), request.getOtherValue());
+        } else {
+          return;
+        }
+        break;
+      case WITHIN:
+        if (request.getValue() instanceof String) {
+          cursor = NameServer.selectRecordsWithin(request.getKey().getName(), (String) request.getValue());
+        } else {
+          return;
+        }
+        break;
+      default:
+        return;
+    }
+
     int cnt = 0; // just for debugging message
     while (cursor.hasNext()) {
       jsonRecords.put(cursor.next());
@@ -839,7 +861,7 @@ public class ClientRequestWorker extends TimerTask {
 
     boolean sendError = false;
     try {
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), 
+      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(),
               ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
 
       if (rcRecord.isMarkedForRemoval()) {

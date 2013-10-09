@@ -5,21 +5,20 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import org.json.JSONObject;
-
 import java.util.*;
+import org.json.JSONObject;
 
 /**
  *
  * @author westy
  */
 public interface RecordMapInterface {
-  
+
   public void addNameRecord(NameRecord recordEntry) throws RecordExistsException;
 
   public NameRecord getNameRecord(String name) throws RecordNotFoundException;
@@ -38,21 +37,20 @@ public interface RecordMapInterface {
 
   public void reset();
 
-  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException;
+  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException;
 
-  public HashMap<Field,Object> lookup(String name, Field nameField, ArrayList<Field> fields1,
-                           Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException;
+  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1,
+          Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException;
 
   public abstract void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1);
 
-
   public abstract void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1,
-                              Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
+          Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
 
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1);
 
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1,
-                                 Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
+          Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
 
   /**
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
@@ -70,7 +68,7 @@ public interface RecordMapInterface {
    * @return 
    */
   public abstract BasicRecordCursor getAllRowsIterator();
-  
+
   /**
    * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
    * 
@@ -81,12 +79,32 @@ public interface RecordMapInterface {
    */
   public abstract BasicRecordCursor selectRecords(Field valuesMapField, String key, Object value);
 
+  /**
+   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
+   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+   * 
+   * @param valuesMapField - the field in the row that contains the *user* fields
+   * @param key
+   * @param value - a string that looks like this [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * @return 
+   */
+  public abstract BasicRecordCursor selectRecordsWithin(Field valuesMapField, String key, String value);
+
+  /**
+   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple: 
+   * [LONG, LAT]. maxDistance is in radians. The returned value is a BasicRecordCursor.
+   * @param valuesMapField - the field in the row that contains the *user* fields
+   * @param key
+   * @param value - a string that looks like this [LONG, LAT]
+   * @param maxDistance - the distance in radians
+   * @return 
+   */
+  public abstract BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Object maxDistance);
+
   // Replica Controller
-  
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;
 
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws RecordExistsException;
 
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry);
-  
 }

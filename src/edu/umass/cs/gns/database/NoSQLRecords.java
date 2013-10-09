@@ -199,6 +199,32 @@ public interface NoSQLRecords {
    * @return BasicRecordCursor
    */
   public BasicRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value);
+  
+  /**
+   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
+   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+   * 
+   * @param collectionName
+   * @param valuesMapField
+   * @param key
+   * @param value
+   * @return BasicRecordCursor
+   */
+  public BasicRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value);
+  
+  /**
+   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple: 
+   * [LONG, LAT]. maxDistance is in radians. The returned value is a BasicRecordCursor.
+   * 
+   * @param collectionName
+   * @param valuesMapField
+   * @param key
+   * @param value
+   * @param maxDistance
+   * @return 
+   */
+  public BasicRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance);
+  
   /**
    * Puts the database in a state where it has nothing in it.
    * 

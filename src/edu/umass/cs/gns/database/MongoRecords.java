@@ -288,33 +288,13 @@ public class MongoRecords implements NoSQLRecords {
 //                            { <shape operator> : <coordinates>
 //                      } } } )
 
-    // { "nr_valuesMap.location" : { "$geoWithin" : { "$box" : "[[69.0,39,0],[71.0,41,0]]"}}}
-    
-//    { <location field> : { $geoWithin : { $box :
-//                                       [ [ <bottom left coordinates> ] ,
-//                                         [ <upper right coordinates> ] ] } } }
-    //{ "nr_valuesMap.location" : { "$geoWithin" : { "$box" : [ [ 69.0 , 39.0] , [ 71.0 , 41.0]]}}}
-    
-    BasicDBList box1 = new BasicDBList();
-    BasicDBList box2 = new BasicDBList();
-    BasicDBList box = new BasicDBList();
-    try {
-      JSONArray json = new JSONArray(value);
-      box1.add(json.getJSONArray(0).getDouble(0));
-      box1.add(json.getJSONArray(0).getDouble(1));
-      box2.add(json.getJSONArray(1).getDouble(0));
-      box2.add(json.getJSONArray(1).getDouble(1));
-      box.add(box1);
-      box.add(box2);
-    } catch (JSONException e) {
-      GNS.getLogger().warning("Unable to index JSON: " + e);
-    }
-    System.out.println("***BOX: " + box);
+    BasicDBList box = parseJSONArrayLocationStringIntoDBList(value);
+    //System.out.println("***BOX: " + box);
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject shapeClause = new BasicDBObject("$box", box);
     BasicDBObject withinClause = new BasicDBObject("$within", shapeClause);
     BasicDBObject query = new BasicDBObject(fieldName, withinClause);
-    System.out.println("***QUERY***: " + query.toString());
+    //System.out.println("***QUERY***: " + query.toString());
     DBCursor cursor = collection.find(query);
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -322,11 +302,29 @@ public class MongoRecords implements NoSQLRecords {
     return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
   }
 
-  public MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, Object value, Object maxDistance) {
+  private BasicDBList parseJSONArrayLocationStringIntoDBList(String string) {
+    BasicDBList box1 = new BasicDBList();
+    BasicDBList box2 = new BasicDBList();
+    BasicDBList box = new BasicDBList();
+    try {
+      JSONArray json = new JSONArray(string);
+      box1.add(json.getJSONArray(0).getDouble(0));
+      box1.add(json.getJSONArray(0).getDouble(1));
+      box2.add(json.getJSONArray(1).getDouble(0));
+      box2.add(json.getJSONArray(1).getDouble(1));
+      box.add(box1);
+      box.add(box2);
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to parse JSON: " + e);
+    }
+    return box;
+  }
+
+  public MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance) {
     return selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance, false);
   }
 
-  private MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, Object value, Object maxDistance, boolean explain) {
+  private MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
 
@@ -334,10 +332,18 @@ public class MongoRecords implements NoSQLRecords {
 //                         { $near : [ <x> , <y> ] ,
 //                           $maxDistance: <distance>
 //                    } } )
-
+    BasicDBList tuple = new BasicDBList();
+    try {
+      JSONArray json = new JSONArray(value);
+      tuple.add(json.getDouble(0));
+      tuple.add(json.getDouble(1));
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to parse JSON: " + e);
+    }
     String fieldName = valuesMapField.getName() + "." + key;
-    BasicDBObject nearClause = new BasicDBObject("$near", value).append("$maxDistance", maxDistance);
+    BasicDBObject nearClause = new BasicDBObject("$near", tuple).append("$maxDistance", maxDistance);
     BasicDBObject query = new BasicDBObject(fieldName, nearClause);
+    //System.out.println("***QUERY***: " + query.toString());
     DBCursor cursor = collection.find(query);
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -639,7 +645,9 @@ public class MongoRecords implements NoSQLRecords {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
     } else if (args.length == 3) {
-      queryTest(Integer.parseInt(args[0]), args[1], args[2]);
+      queryTest(Integer.parseInt(args[0]), args[1], args[2], null);
+    } else if (args.length == 4) {
+      queryTest(Integer.parseInt(args[0]), args[1], args[2], args[3]);
     } else {
     }
   }
@@ -663,7 +671,7 @@ public class MongoRecords implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
 //  //test code
-  private static void queryTest(int nodeID, String key, String searchArg) throws RecordNotFoundException, Exception {
+  private static void queryTest(int nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     NameServer.nodeID = nodeID;
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
     HashFunction.initializeHashFunction();
@@ -679,8 +687,24 @@ public class MongoRecords implements NoSQLRecords {
       search = searchArg;
     }
 
+    Object other = null;
+    if (otherArg != null) {
+      try {
+        other = Double.parseDouble(otherArg);
+      } catch (NumberFormatException e) {
+        other = otherArg;
+      }
+    }
+
     System.out.println("***LOCATION QUERY***");
-    MongoRecordCursor cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, true);
+    MongoRecordCursor cursor;
+    if (search instanceof Double) {
+      cursor = instance.selectRecords(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
+    } else if (other != null) {
+      cursor = instance.selectRecordsNear(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, other, true);
+    } else {
+      cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, true);
+    }
     while (cursor.hasNext()) {
       try {
         JSONObject json = cursor.next();

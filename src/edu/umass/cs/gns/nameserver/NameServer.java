@@ -258,6 +258,31 @@ public class NameServer {
   public static BasicRecordCursor selectRecords(String key, Object value) {
       return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
   }
+  
+  /**
+   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
+   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+   * 
+   * @param key
+   * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * @return 
+   */
+  public static BasicRecordCursor selectRecordsWithin(String key, String value) {
+      return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
+  }
+  
+  /**
+   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple: 
+   * [LONG, LAT]. maxDistance is in radians. The returned value is a BasicRecordCursor.
+   * 
+   * @param key
+   * @param value - a string that looks like this: [LONG, LAT]
+   * @param maxDistance - the distance in radians
+   * @return 
+   */
+  public static BasicRecordCursor selectRecordsNear(String key, String value, Object maxDistance) {
+      return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
+  }
 
   /******************************
    * Replica controller methods

@@ -72,7 +72,7 @@ public class Protocol {
   public final static String SELECT = "select";
   public final static String WITHIN = "within";
   public final static String NEAR = "near";
-  public final static String MAXDISTANCE = "maxdistance";
+  public final static String MAXDISTANCE = "maxDistance";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";

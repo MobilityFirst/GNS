@@ -311,6 +311,16 @@ public class CassandraRecords implements NoSQLRecords {
   public BasicRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
+  
+  @Override
+  public BasicRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public BasicRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   @Override
   public Set<String> keySet(String tableName) {

@@ -94,6 +94,16 @@ public class MongoRecordMap extends BasicRecordMap {
   }
   
   @Override
+  public BasicRecordCursor selectRecordsWithin(Field valuesMapField, String key, String value) {
+     return MongoRecords.getInstance().selectRecordsWithin(collectionName, valuesMapField, key, value);
+  }
+
+  @Override
+  public BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Object maxDistance) {
+    return MongoRecords.getInstance().selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
+  }
+  
+  @Override
   public NameRecord getNameRecord(String name) throws RecordNotFoundException {
     try {
       JSONObject json = MongoRecords.getInstance().lookup(collectionName, name);
@@ -226,4 +236,6 @@ public class MongoRecordMap extends BasicRecordMap {
 //    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
 //    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
 //  }
+
+  
 }

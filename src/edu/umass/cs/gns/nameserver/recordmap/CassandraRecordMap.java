@@ -225,4 +225,14 @@ public class CassandraRecordMap extends BasicRecordMap {
 //    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
 //  }
 
+  @Override
+  public BasicRecordCursor selectRecordsWithin(Field valuesMapField, String key, String value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Object maxDistance) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
 }

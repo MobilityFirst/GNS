@@ -125,5 +125,9 @@ public class SelectRequestPacket extends BasicPacket {
   public SelectOperation getOperation() {
     return operation;
   }
+
+  public Object getOtherValue() {
+    return otherValue;
+  }
   
 }
