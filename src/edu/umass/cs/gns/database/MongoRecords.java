@@ -52,7 +52,7 @@ public class MongoRecords implements NoSQLRecords {
   public static final String PAXOSLOG = "PaxosLog";
   private DB db;
   private String dbName;
-  
+
   public static MongoRecords getInstance() {
     return MongoRecordCollectionHolder.INSTANCE;
   }
@@ -65,13 +65,16 @@ public class MongoRecords implements NoSQLRecords {
   private MongoRecords() {
     init();
   }
- 
+
   private void init() {
     MongoCollectionSpec.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     MongoCollectionSpec.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
     // add location as another index
-    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD).addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "location", 1));
-    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD).addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "ipAddress", 1));
+    //MongoCollectionSpec.getCollectionSpec(DBNAMERECORD).addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "location", 1));
+    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "location", "2d"));
+    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "ipAddress", 1));
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + NameServer.nodeID;
@@ -99,7 +102,7 @@ public class MongoRecords implements NoSQLRecords {
     db.getCollection(spec.getName()).ensureIndex(spec.getPrimaryIndex(), new BasicDBObject("unique", true));
     for (BasicDBObject index : spec.getOtherIndexes()) {
       db.getCollection(spec.getName()).ensureIndex(index);
-    } 
+    }
   }
 
   @Override
@@ -247,7 +250,7 @@ public class MongoRecords implements NoSQLRecords {
   public MongoRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value) {
     return selectRecords(collectionName, valuesMapField, key, value, false);
   }
-  
+
   private MongoRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
@@ -264,6 +267,56 @@ public class MongoRecords implements NoSQLRecords {
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject query = new BasicDBObject(fieldName, value);
     //System.out.println("***QUERY***: " + query.toString());
+    DBCursor cursor = collection.find(query);
+    if (explain) {
+      System.out.println(cursor.explain().toString());
+    }
+    return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
+  }
+
+  public MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, Object value) {
+    return selectRecordsWithin(collectionName, valuesMapField, key, value, false);
+  }
+
+  private MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, Object value, boolean explain) {
+    db.requestEnsureConnection();
+    DBCollection collection = db.getCollection(collectionName);
+
+//    db.<collection>.find( { <location field> :
+//                         { $geoWithin :
+//                            { <shape operator> : <coordinates>
+//                      } } } )
+
+    // { "nr_valuesMap.location" : { "$geoWithin" : { "$box" : "[[69.0,39,0],[71.0,41,0]]"}}}
+
+    String fieldName = valuesMapField.getName() + "." + key;
+    BasicDBObject shapeClause = new BasicDBObject("$box", value);
+    BasicDBObject withinClause = new BasicDBObject("$geoWithin", shapeClause);
+    BasicDBObject query = new BasicDBObject(fieldName, withinClause);
+    System.out.println("***QUERY***: " + query.toString());
+    DBCursor cursor = collection.find(query);
+    if (explain) {
+      System.out.println(cursor.explain().toString());
+    }
+    return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
+  }
+
+  public MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, Object value, Object maxDistance) {
+    return selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance, false);
+  }
+
+  private MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, Object value, Object maxDistance, boolean explain) {
+    db.requestEnsureConnection();
+    DBCollection collection = db.getCollection(collectionName);
+
+//   db.<collection>.find( { <location field> :
+//                         { $near : [ <x> , <y> ] ,
+//                           $maxDistance: <distance>
+//                    } } )
+
+    String fieldName = valuesMapField.getName() + "." + key;
+    BasicDBObject nearClause = new BasicDBObject("$near", value).append("$maxDistance", maxDistance);
+    BasicDBObject query = new BasicDBObject(fieldName, nearClause);
     DBCursor cursor = collection.find(query);
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -567,7 +620,6 @@ public class MongoRecords implements NoSQLRecords {
     } else if (args.length == 3) {
       queryTest(Integer.parseInt(args[0]), args[1], args[2]);
     } else {
-      
     }
   }
 
@@ -603,11 +655,15 @@ public class MongoRecords implements NoSQLRecords {
     try {
       search = Double.parseDouble(searchArg);
     } catch (NumberFormatException e) {
-      search = searchArg;
+      try {
+        search = new JSONArray(searchArg);
+      } catch (JSONException f) {
+        search = searchArg;
+      }
     }
 
     System.out.println("***LOCATION QUERY***");
-    MongoRecordCursor cursor = instance.selectRecords(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
+    MongoRecordCursor cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
     while (cursor.hasNext()) {
       try {
         JSONObject json = cursor.next();

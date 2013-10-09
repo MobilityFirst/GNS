@@ -30,10 +30,10 @@ public class SelectHandler {
   private static ConcurrentMap<Integer, JSONArray> resultsMap = new ConcurrentHashMap<Integer, JSONArray>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
-  public static String sendSelectRequest(NameRecordKey key, Object value) {
+  public static String sendSelectRequest(SelectRequestPacket.SelectOperation operation, NameRecordKey key, Object value, Object otherValue) {
     int id = nextRequestID();
     try {
-      Intercessor.getInstance().sendPacket(new SelectRequestPacket(id, key, value, LocalNameServer.nodeID).toJSONObject());
+      Intercessor.getInstance().sendPacket(new SelectRequestPacket(id, LocalNameServer.nodeID, operation, key, value, otherValue).toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring JSON error while sending Select request: " + e);
       e.printStackTrace();

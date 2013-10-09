@@ -11,16 +11,28 @@ import org.json.JSONObject;
  */
 public class SelectRequestPacket extends BasicPacket {
 
-  public final static String ID = "id";
-  public final static String KEY = "key";
-  public final static String VALUE = "value";
-  public final static String LNSID = "lnsid";
-  public final static String LNSQUERYID = "lnsQueryId";
+  public enum SelectOperation {
+
+    EQUALS,
+    NEAR,
+    WITHIN;
+  }
+  //
+  private final static String ID = "id";
+  private final static String KEY = "key";
+  private final static String VALUE = "value";
+  private final static String OTHERVALUE = "otherValue";
+  private final static String LNSID = "lnsid";
+  private final static String LNSQUERYID = "lnsQueryId";
+  private final static String OPERATION = "operation";
+  
   private int id;
   private NameRecordKey key;
   private Object value;
+  private Object otherValue;
   private int lnsID;
   private int lnsQueryId = -1;
+  private SelectOperation operation;
 
   /**
    * Constructs a new QueryResponsePacket
@@ -30,12 +42,14 @@ public class SelectRequestPacket extends BasicPacket {
    * @param value
    * @param lns 
    */
-  public SelectRequestPacket(int id, NameRecordKey key, Object value, int lns) {
+  public SelectRequestPacket(int id, int lns, SelectOperation operation, NameRecordKey key, Object value, Object otherValue) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
     this.value = value;
+    this.otherValue = otherValue;
     this.lnsID = lns;
+    this.operation = operation;
   }
 
   /**
@@ -52,8 +66,10 @@ public class SelectRequestPacket extends BasicPacket {
     this.id = json.getInt(ID);
     this.key = NameRecordKey.valueOf(json.getString(KEY));
     this.value = json.getString(VALUE);
+    this.otherValue = json.optString(OTHERVALUE, null);
     this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
+    this.operation = SelectOperation.valueOf(json.getString(OPERATION));
   }
 
   /**
@@ -74,8 +90,12 @@ public class SelectRequestPacket extends BasicPacket {
     json.put(ID, id);
     json.put(KEY, key.getName());
     json.put(VALUE, value);
+    if (otherValue != null) {
+      json.put(OTHERVALUE, otherValue);
+    }
     json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
+    json.put(OPERATION, operation.name());
   }
 
   public void setLnsQueryId(int lnsQueryId) {
@@ -101,4 +121,9 @@ public class SelectRequestPacket extends BasicPacket {
   public int getLnsQueryId() {
     return lnsQueryId;
   }
+
+  public SelectOperation getOperation() {
+    return operation;
+  }
+  
 }

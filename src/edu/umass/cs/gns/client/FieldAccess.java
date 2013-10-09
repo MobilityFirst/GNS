@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.packet.SelectRequestPacket;
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -86,7 +87,25 @@ public class FieldAccess {
   }
 
   public String select(String key, Object value) {
-    String result = SelectHandler.sendSelectRequest(new NameRecordKey(key), value);
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, new NameRecordKey(key), value, null);
+    if (result != null) {
+      return result;
+    } else {
+      return new String();
+    }
+  }
+  
+   public String selectWithin(String key, String value) {
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, new NameRecordKey(key), value, null);
+    if (result != null) {
+      return result;
+    } else {
+      return new String();
+    }
+  }
+   
+    public String selectNear(String key, String value, String maxDistance) {
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, new NameRecordKey(key), value, maxDistance);
     if (result != null) {
       return result;
     } else {

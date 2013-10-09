@@ -70,6 +70,9 @@ public class Protocol {
   public final static String READ = "read";
   public final static String READONE = "readOne";
   public final static String SELECT = "select";
+  public final static String WITHIN = "within";
+  public final static String NEAR = "near";
+  public final static String MAXDISTANCE = "maxdistance";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";
@@ -568,7 +571,7 @@ public class Protocol {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
   }
-  
+
   public String processLookupAccountInfo(String guid) {
     AccountInfo acccountInfo;
     if ((acccountInfo = accountAccess.lookupAccountInfoFromGuid(guid)) == null) {
@@ -689,6 +692,14 @@ public class Protocol {
 
   public String processSelect(String field, Object value) {
     return fieldAccess.select(field, value);
+  }
+
+  public String processSelectWithin(String field, String value) {
+    return fieldAccess.selectWithin(field, value);
+  }
+
+  public String processSelectNear(String field, String value, String maxDistance) {
+    return fieldAccess.selectNear(field, value, maxDistance);
   }
 
   public String processReadOne(String guid, String field, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
@@ -1170,6 +1181,15 @@ public class Protocol {
         String field = queryMap.get(FIELD);
         Object value = queryMap.get(VALUE);
         return processSelect(field, value);
+      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, NEAR, MAXDISTANCE))) {
+        String field = queryMap.get(FIELD);
+        String near = queryMap.get(NEAR);
+        String maxDistance = queryMap.get(MAXDISTANCE);
+        return processSelectNear(field, near, maxDistance);
+      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, WITHIN))) {
+        String field = queryMap.get(FIELD);
+        String within = queryMap.get(WITHIN);
+        return processSelectWithin(field, within);
         // ACLADD
       } else if (ACLADD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
         // syntax: aclAdd hash field allowedreader signature
