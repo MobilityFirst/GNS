@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.httpserver;
 
-import edu.umass.cs.gns.client.AclAccess.AccessType;
+import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.EC2Installer;
 import edu.umass.cs.gns.util.Base64;
@@ -33,6 +33,7 @@ import java.util.prefs.Preferences;
 import org.json.JSONArray;
 
 /**
+ * !!THIS IS NOT MAINTAINED. SEE THE GNSCLient project!!
  * A client for the GNRS HTTP server.
  *
  * A typical use case might look like this:<br>
@@ -392,11 +393,11 @@ public class HTTPClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    */
-  private void addToACL(AccessType accessType, String guid, String field, String reader) throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+  private void addToACL(MetaDataTypeName accessType, String guid, String field, String reader) throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     addToACL(accessType.name(), guid, field, reader);
   }
 
-  private void removeFromACL(AccessType accessType, String guid, String field, String reader) throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+  private void removeFromACL(MetaDataTypeName accessType, String guid, String field, String reader) throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     removeFromACL(accessType.name(), guid, field, reader);
   }
 
@@ -737,7 +738,6 @@ public class HTTPClient {
     //client.runDBTest();
     //client.runGroupTest();
     //client.setHost("23.21.120.250");
-    client.runBlockTest();
 
   }
 
@@ -796,7 +796,7 @@ public class HTTPClient {
       result = readField(westyGuid, "address", westyGuid);
       getLogger().info("Result of read of westy address by westy is: " + result);
 
-      addToACL(AccessType.READ_WHITELIST, westyGuid, "location", samGuid);
+      addToACL(MetaDataTypeName.READ_WHITELIST, westyGuid, "location", samGuid);
 
 
 
@@ -819,7 +819,7 @@ public class HTTPClient {
 
 
       // let anybody read barney's cell field
-      addToACL(AccessType.READ_WHITELIST, barneyGuid, "cell", Protocol.EVERYONE);
+      addToACL(MetaDataTypeName.READ_WHITELIST, barneyGuid, "cell", Protocol.EVERYONE);
 
 
       result = readField(barneyGuid, "cell", samGuid);
@@ -852,7 +852,7 @@ public class HTTPClient {
       getLogger().info("Result of registerNewUser for superuser is: " + superuserGuid);
 
       // let superuser read any of barney's fields
-      addToACL(AccessType.READ_WHITELIST, barneyGuid, Protocol.ALLFIELDS, superuserGuid);
+      addToACL(MetaDataTypeName.READ_WHITELIST, barneyGuid, Protocol.ALLFIELDS, superuserGuid);
 
 
       result = readField(barneyGuid, "cell", superuserGuid);
@@ -1076,7 +1076,7 @@ public class HTTPClient {
       createField(groupAccessUserGuid, "age", "43");
       createField(groupAccessUserGuid, "hometown", "whoville");
 
-      addToACL(AccessType.READ_WHITELIST, groupAccessUserGuid, "hometown", mygroupGuid);
+      addToACL(MetaDataTypeName.READ_WHITELIST, groupAccessUserGuid, "hometown", mygroupGuid);
 
       result = readField(groupAccessUserGuid, "age", westyGuid);
       if (!result.startsWith(Protocol.BADRESPONSE)) {
@@ -1159,91 +1159,7 @@ public class HTTPClient {
     }
   }
 
-  /*
-   * Server:
-       DesktopGnrsClient.getGnrs().createFieldUsingList(appGuid,
-SUBSCRIBERS,
-           new JSONArray());
-     DesktopGnrsClient.getGnrs().addToACL(
-         GnrsProtocol.AccessType.WRITE_WHITELIST, appGuid, SUBSCRIBERS,
-null);
-
-Client:
-             AndroidGnrsClient.getGnrs().appendValuesUsingList(notifGuid,
-                 SUBSCRIBERS, new JSONArray().put(myGuid.getGuid()),
-myGuid);
-
-Server:
-     JSONArray members = DesktopGnrsClient.gnrs.readFieldList(
-         appGuid.getGuid(), SUBSCRIBERS, appGuid);
-
-Does not see the client guid the first time it is called, then blocked.
-If you try to restart the server, it is blocked on createField.
-
-There are obviously some locking issues somewhere. As you told me
-everything was handled as a set, there might be a problem there or some
-updates are not committed in the database and holding locks. Anyway, it
-looks like simple producer/consumer deadlocks the GNRS.
-* 
-   */
-  private void runBlockTest() {
-    runBlockTest(true);
-  }
-
-  private void runBlockTest(boolean clearDatabase) {
-    if (clearDatabase) {
-      clearDatabase();
-    }
-
-    try {
-
-      String guid = lookupUserGuid("notification_demo7@cs.umass.edu");
-      if (isBadResponse(guid, Protocol.BADACCOUNT)) {
-        guid = registerNewUser("notification_demo7@cs.umass.edu");
-      }
-      
-      String clientGuid = lookupUserGuid("clientGuid");
-      if (isBadResponse(clientGuid, Protocol.BADACCOUNT)) {
-        clientGuid = registerNewUser("clientGuid");
-      }
-      
-      String client2Guid = lookupUserGuid("client2Guid");
-      if (isBadResponse(client2Guid, Protocol.BADACCOUNT)) {
-        client2Guid = registerNewUser("client2Guid");
-      }
-      
-      replaceOrCreateUsingList(guid, "subscribers", new ArrayList());
-      addToACL(AccessType.WRITE_WHITELIST, guid, "subscribers", Protocol.EVERYONE);
-      appendValueUsingList(guid, "subscribers", new ArrayList(Arrays.asList(clientGuid)));
-      String subscribers = readField(guid, "subscribers", guid);
-      getLogger().info("subscribers = " + subscribers);
-      
-      appendValueUsingList(guid, "subscribers", new ArrayList(Arrays.asList(client2Guid)));
-      subscribers = readField(guid, "subscribers", guid);
-      getLogger().info("subscribers = " + subscribers);
-      
-      appendValueUsingList(guid, "subscribers", new ArrayList(Arrays.asList(clientGuid)));
-      subscribers = readField(guid, "subscribers", guid);
-      getLogger().info("subscribers = " + subscribers);
-      
-
-    } catch (RuntimeException e) {
-      getLogger().severe(e.toString());
-      e.printStackTrace();
-    } catch (IOException e) {
-      getLogger().severe(e.toString());
-      e.printStackTrace();
-    } catch (NoSuchAlgorithmException e) {
-      getLogger().severe(e.toString());
-      e.printStackTrace();
-    } catch (InvalidKeyException e) {
-      getLogger().severe(e.toString());
-      e.printStackTrace();
-    } catch (SignatureException e) {
-      getLogger().severe(e.toString());
-      e.printStackTrace();
-    }
-  }
+ 
 
   private boolean isBadResponse(String response, String indicator) {
     if (response.startsWith(Protocol.BADRESPONSE)) {

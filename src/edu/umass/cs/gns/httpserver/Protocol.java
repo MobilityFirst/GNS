@@ -2,10 +2,10 @@ package edu.umass.cs.gns.httpserver;
 
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
-import edu.umass.cs.gns.client.AclAccess;
-import edu.umass.cs.gns.client.AclAccess.AccessType;
+import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.FieldAccess;
+import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.UpdateOperation;
@@ -154,7 +154,7 @@ public class Protocol {
   private boolean demoMode = true;
   private FieldAccess fieldAccess = FieldAccess.getInstance();
   private AccountAccess accountAccess = AccountAccess.getInstance();
-  private AclAccess aclAccess = AclAccess.getInstance();
+  private FieldMetaData fieldMetaData = FieldMetaData.getInstance();
   //private GroupAccessV1 groupAccessV1 = GroupAccessV1.getInstance();
   private GroupAccess groupAccess = GroupAccess.getInstance();
   //
@@ -383,7 +383,7 @@ public class Protocol {
     String post = "Notes: " + NEWLINE + NEWLINE
             + "o) The signature is a digest of the entire command signed by the private key associated with the GUID." + NEWLINE + NEWLINE
             + "o) Group read and write access is controlled using the special " + GROUP_ACL + " field." + NEWLINE + NEWLINE
-            + "o) ACL Type is one of " + AccessType.typesToString() + NEWLINE + NEWLINE
+            + "o) ACL Type is one of " + MetaDataTypeName.typesToString() + NEWLINE + NEWLINE
             + "o) Commands that don't return anything return the string " + OKRESPONSE + " if they are accepted." + NEWLINE + NEWLINE
             + "o) Commands that cannot be processed return the string that starts with the token " + BADRESPONSE + " " + NEWLINE
             + "followed by a token that indicates the problem, followed by an optional additional message." + NEWLINE
@@ -682,7 +682,7 @@ public class Protocol {
     }
     if (!verifySignature(readerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(AccessType.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
+    } else if (!verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
@@ -715,7 +715,7 @@ public class Protocol {
     }
     if (!verifySignature(readerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(AccessType.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
+    } else if (!verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
@@ -725,16 +725,16 @@ public class Protocol {
   }
 
   public String processAclAdd(String accessType, String guid, String field, String accesser, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    AccessType access;
-    if ((access = AccessType.valueOf(accessType)) == null) {
-      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + AccessType.values().toString();
+    MetaDataTypeName access;
+    if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
+      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (verifySignature(guidInfo, signature, message)) {
-      aclAccess.add(access, guidInfo, field, accesser);
+      fieldMetaData.add(access, guidInfo, field, accesser);
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -742,16 +742,16 @@ public class Protocol {
   }
 
   public String processAclRemove(String accessType, String guid, String field, String accesser, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    AccessType access;
-    if ((access = AccessType.valueOf(accessType)) == null) {
-      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + AccessType.values().toString();
+    MetaDataTypeName access;
+    if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
+      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (verifySignature(guidInfo, signature, message)) {
-      aclAccess.remove(access, guidInfo, field, accesser);
+      fieldMetaData.remove(access, guidInfo, field, accesser);
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -759,16 +759,16 @@ public class Protocol {
   }
 
   public String processRetrieveAcl(String accessType, String guid, String field, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    AccessType access;
-    if ((access = AccessType.valueOf(accessType)) == null) {
-      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + AccessType.values().toString();
+    MetaDataTypeName access;
+    if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
+      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (verifySignature(guidInfo, signature, message)) {
-      Set<String> values = aclAccess.lookup(access, guidInfo, field);
+      Set<String> values = fieldMetaData.lookup(access, guidInfo, field);
       return new JSONArray(values).toString();
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -787,7 +787,7 @@ public class Protocol {
     }
     if (!verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(AccessType.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (groupAccess.addToGroup(guid, member)) {
       return OKRESPONSE;
@@ -808,7 +808,7 @@ public class Protocol {
     }
     if (!verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(AccessType.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (groupAccess.removeFromGroup(guid, member)) {
       return OKRESPONSE;
@@ -829,7 +829,7 @@ public class Protocol {
     }
     if (!verifySignature(readInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(AccessType.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
+    } else if (!verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       ResultValue values = groupAccess.lookup(guid);
@@ -1326,7 +1326,7 @@ public class Protocol {
    * @param readerInfo
    * @return
    */
-  private boolean verifyAccess(AccessType access, GuidInfo contectInfo, GuidInfo readerInfo) {
+  private boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo) {
     return verifyAccess(access, contectInfo, ALLFIELDS, readerInfo);
   }
 
@@ -1340,19 +1340,19 @@ public class Protocol {
    * @param readerInfo
    * @return
    */
-  private boolean verifyAccess(AccessType access, GuidInfo userInfo, String field, GuidInfo readerInfo) {
+  private boolean verifyAccess(MetaDataTypeName access, GuidInfo userInfo, String field, GuidInfo readerInfo) {
     GNS.getLogger().finer("User: " + userInfo.getName() + " Reader: " + readerInfo.getName() + " Field: " + field);
     if (userInfo.getGuid().equals(readerInfo.getGuid())) {
       return true; // can always read your own stuff
     } else {
-      Set<String> allowedusers = aclAccess.lookup(access, userInfo, field);
+      Set<String> allowedusers = fieldMetaData.lookup(access, userInfo, field);
       GNS.getLogger().fine(userInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       if (checkAllowedUsers(readerInfo.getGuid(), allowedusers)) {
         GNS.getLogger().fine("User " + readerInfo.getName() + " allowed to access user " + userInfo.getName() + "'s " + field + " field");
         return true;
       }
       // otherwise find any users that can access all of the fields
-      allowedusers = aclAccess.lookup(access, userInfo, ALLFIELDS);
+      allowedusers = fieldMetaData.lookup(access, userInfo, ALLFIELDS);
       if (checkAllowedUsers(readerInfo.getGuid(), allowedusers)) {
         GNS.getLogger().fine("User " + readerInfo.getName() + " allowed to access all of user " + userInfo.getName() + "'s fields");
         return true;

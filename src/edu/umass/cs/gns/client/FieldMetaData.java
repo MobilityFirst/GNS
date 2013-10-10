@@ -43,8 +43,8 @@ public class FieldMetaData {
     private static final FieldMetaData INSTANCE = new FieldMetaData();
   }
 
-  private static String makeFieldMetaDataKey(MetaDataTypeName access, String key) {
-    return GNS.INTERNAL_PREFIX + access.name() + "_" + key;
+  private static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
+    return GNS.makeInternalField(metaDataType.name() + "_" + key);
   }
 
   public Set<String> lookup(MetaDataTypeName access, GuidInfo userInfo, String key) {

@@ -11,6 +11,22 @@ public class GNS {
   
   public static final String INTERNAL_PREFIX = "_GNS_";
   
+  /**
+   * Creates a GNS field that is hidden from the user.
+   * 
+   * @param string
+   * @return 
+   */
+  public static String makeInternalField(String string) {
+    return GNS.INTERNAL_PREFIX + string;
+  }
+  
+  /**
+   * Returns true if field is a GNS field that is hidden from the user.
+   * 
+   * @param key
+   * @return 
+   */
   public static boolean isInternalField(String key) {
     return key.startsWith(INTERNAL_PREFIX);
   }

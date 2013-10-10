@@ -9,11 +9,11 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.AclAccess;
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.FieldAccess;
+import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -192,7 +192,7 @@ public class GnsHttpServer {
         String protocolVersionInfo = "Protocol Version: " + Protocol.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String recordVersionInfo = "Record Version: " + FieldAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String accountVersionInfo = "Accounts Version: " + AccountAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String aclVersionInfo = "ACL Version: " + AclAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String fieldMetadataVersion = "Field Metadata Version: " + FieldMetaData.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String groupsVersionInfo = "Groups Version: " + GroupAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
 
         String serverLocalNameServerID = "Local Name Server ID: " + localNameServerID + "\n";
@@ -203,7 +203,7 @@ public class GnsHttpServer {
         responseBody.write(protocolVersionInfo.getBytes());
         responseBody.write(recordVersionInfo.getBytes());
         responseBody.write(accountVersionInfo.getBytes());
-        responseBody.write(aclVersionInfo.getBytes());
+        responseBody.write(fieldMetadataVersion.getBytes());
         responseBody.write(groupsVersionInfo.getBytes());
         responseBody.write(serverLocalNameServerID.getBytes());
         responseBody.write(numberOfNameServers.getBytes());

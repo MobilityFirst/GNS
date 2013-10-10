@@ -2,7 +2,7 @@ package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
-import java.util.ArrayList;
+import java.util.Set;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 /**
@@ -13,6 +13,15 @@ import java.util.ArrayList;
  * @author westy
  */
 public class GroupAccess {
+
+  /**
+   * HIdden field that stores group members
+   */
+  public static final String GROUP = GNS.makeInternalField("group");
+  /**
+   * Hidden field that stores group member requests
+   */
+  public static final String GROUPREQUESTS = GNS.makeInternalField("groupRequests");
 
   public GroupAccess() {
   }
@@ -26,7 +35,6 @@ public class GroupAccess {
 
     private static final GroupAccess INSTANCE = new GroupAccess();
   }
-  public static final String GROUP = GNS.INTERNAL_PREFIX + "group";
 
   public boolean addToGroup(String guid, String memberGuid) {
     Intercessor client = Intercessor.getInstance();
@@ -46,6 +54,33 @@ public class GroupAccess {
     } else {
       return new ResultValue();
     }
+  }
+
+  public boolean requestGroupAdmission(String guid, String memberGuid) {
+    Intercessor client = Intercessor.getInstance();
+    return client.sendUpdateRecordWithConfirmation(guid, GROUPREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+  }
+
+  public ResultValue retrieveGroupAdmissionRequests(String guid, String memberGuid) {
+    Intercessor client = Intercessor.getInstance();
+    ResultValue result = client.sendQuery(guid, GROUPREQUESTS);
+    if (result != null) {
+      return new ResultValue(result);
+    } else {
+      return new ResultValue();
+    }
+  }
+
+  public boolean aprooveGroupAdmission(String guid, Set<String> requests) {
+    Intercessor client = Intercessor.getInstance();
+    ResultValue fieldValue = new ResultValue(requests);
+
+    if (client.sendUpdateRecordWithConfirmation(guid, GROUP, fieldValue, null, UpdateOperation.APPEND_OR_CREATE)) {
+      if (client.sendUpdateRecordWithConfirmation(guid, GROUPREQUESTS, fieldValue, null, UpdateOperation.REMOVE)) {
+        return true;
+      }
+    }
+    return false;
   }
   public static String Version = "$Revision$";
 }
