@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -25,11 +26,11 @@ import org.json.JSONObject;
  * @author westy
  */
 public class SelectHandler {
-
+  
   private static final Object monitor = new Object();
-  private static ConcurrentMap<Integer, JSONArray> resultsMap = new ConcurrentHashMap<Integer, JSONArray>(10, 0.75f, 3);
+  private static ConcurrentMap<Integer, SelectResponsePacket> resultsMap = new ConcurrentHashMap<Integer, SelectResponsePacket>(10, 0.75f, 3);
   private static Random randomID = new Random();
-
+  
   public static String sendSelectRequest(SelectRequestPacket.SelectOperation operation, NameRecordKey key, Object value, Object otherValue) {
     int id = nextRequestID();
     try {
@@ -40,14 +41,19 @@ public class SelectHandler {
       return null;
     }
     waitForResponsePacket(id);
-    JSONArray json = resultsMap.get(id);
-    if (json != null) {
-      return buildResultString(json);
+    SelectResponsePacket packet = resultsMap.get(id);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
+      JSONArray json = packet.getJsonArray();
+      if (json != null) {
+        return buildResultString(json);
+      } else {
+        return null;
+      }
     } else {
-      return null;
+      return Protocol.BADRESPONSE + " " + Protocol.SELECTERROR + " " + packet.getErrorMessage();
     }
   }
-
+  
   private static String buildResultString(JSONArray json) {
     // extract the name and values from the returned records
     JSONArray result = new JSONArray();
@@ -63,7 +69,7 @@ public class SelectHandler {
     }
     return result.toString();
   }
-
+  
   private static JSONObject extractFieldsIntoJSONObject(JSONObject record, JSONObject JSONresult) {
     Iterator<String> iter = record.keys();
     while (iter.hasNext()) {
@@ -78,7 +84,7 @@ public class SelectHandler {
     }
     return JSONresult;
   }
-
+  
   public static void processSelectResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
@@ -88,7 +94,7 @@ public class SelectHandler {
             int id = response.getId();
             GNS.getLogger().info("Processing SelectResponse for " + id);
             synchronized (monitor) {
-              resultsMap.put(id, response.getJsonArray());
+              resultsMap.put(id, response);
               monitor.notifyAll();
             }
           } catch (JSONException e) {
@@ -100,7 +106,7 @@ public class SelectHandler {
       GNS.getLogger().warning("JSON error while getting packet type: " + e);
     }
   }
-
+  
   private static void waitForResponsePacket(int sequenceNumber) {
     try {
       synchronized (monitor) {
@@ -112,7 +118,7 @@ public class SelectHandler {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);
     }
   }
-
+  
   private static int nextRequestID() {
     int id;
     do {

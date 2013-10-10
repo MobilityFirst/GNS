@@ -275,6 +275,7 @@ public class MongoRecords implements NoSQLRecords {
     return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
   }
 
+  @Override
   public MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value) {
     return selectRecordsWithin(collectionName, valuesMapField, key, value, false);
   }
@@ -320,6 +321,7 @@ public class MongoRecords implements NoSQLRecords {
     return box;
   }
 
+  @Override
   public MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance) {
     return selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance, false);
   }

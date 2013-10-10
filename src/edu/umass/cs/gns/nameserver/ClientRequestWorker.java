@@ -729,42 +729,61 @@ public class ClientRequestWorker extends TimerTask {
     }
   }
 
-  private void handleSelectRequest() throws IOException, JSONException {
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
-    SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
-    JSONArray jsonRecords = new JSONArray();
-    // actually only need name and values map... fix this
-    BasicRecordCursor cursor;
-    switch (request.getOperation()) {
-      case EQUALS:
-        cursor = NameServer.selectRecords(request.getKey().getName(), request.getValue());
-        break;
-      case NEAR:
-        if (request.getValue() instanceof String) {
-          cursor = NameServer.selectRecordsNear(request.getKey().getName(), (String) request.getValue(), request.getOtherValue());
-        } else {
-          return;
-        }
-        break;
-      case WITHIN:
-        if (request.getValue() instanceof String) {
-          cursor = NameServer.selectRecordsWithin(request.getKey().getName(), (String) request.getValue());
-        } else {
-          return;
-        }
-        break;
-      default:
-        return;
-    }
+  private void handleSelectRequest() {
 
-    int cnt = 0; // just for debugging message
-    while (cursor.hasNext()) {
-      jsonRecords.put(cursor.next());
-      cnt++;
+    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
+    SelectRequestPacket request;
+    try {
+      request = new SelectRequestPacket(incomingJSON);
+    } catch (JSONException e) {
+      GNS.getLogger().severe("UNABLE TO PARSE SelectRequestPacket: " + incomingJSON + " error: " + e);
+      return;
     }
-    SelectResponsePacket response = new SelectResponsePacket(request.getId(), request.getLnsQueryId(), NameServer.nodeID, jsonRecords);
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " sending back " + cnt + " records");
-    NameServer.tcpTransport.sendToID(request.getLnsID(), response.toJSONObject());
+    try {
+      JSONArray jsonRecords = new JSONArray();
+      // actually only need name and values map... fix this
+      BasicRecordCursor cursor;
+      switch (request.getOperation()) {
+        case EQUALS:
+          cursor = NameServer.selectRecords(request.getKey().getName(), request.getValue());
+          break;
+        case NEAR:
+          if (request.getValue() instanceof String) {
+            cursor = NameServer.selectRecordsNear(request.getKey().getName(), (String) request.getValue(), request.getOtherValue());
+          } else {
+            return;
+          }
+          break;
+        case WITHIN:
+          if (request.getValue() instanceof String) {
+            cursor = NameServer.selectRecordsWithin(request.getKey().getName(), (String) request.getValue());
+          } else {
+            return;
+          }
+          break;
+        default:
+          return;
+      }
+
+      int cnt = 0; // just for debugging message
+      while (cursor.hasNext()) {
+        jsonRecords.put(cursor.next());
+        cnt++;
+      }
+      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacket(request.getId(), request.getLnsQueryId(),
+              NameServer.nodeID, jsonRecords);
+      GNS.getLogger().fine("NS" + NameServer.nodeID + " sending back " + cnt + " records");
+      NameServer.tcpTransport.sendToID(request.getLnsID(), response.toJSONObject());
+    } catch (Exception e) {
+      SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsQueryId(),
+              NameServer.nodeID, e.getMessage());
+      try {
+        NameServer.tcpTransport.sendToID(request.getLnsID(), failResponse.toJSONObject());
+      } catch (Exception f) {
+        GNS.getLogger().severe("UNABLE TO SEND Failure SelectResponsePacket: " + f);
+        return;
+      }
+    }
   }
 
   private void handleDNSPacket() throws IOException, JSONException {
