@@ -2,10 +2,10 @@ package edu.umass.cs.gns.httpserver;
 
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
-import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.FieldMetaData;
+import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.UpdateOperation;
@@ -80,9 +80,13 @@ public class Protocol {
   public final static String ADDTOGROUP = "addToGroup";
   public final static String REMOVEFROMGROUP = "removeFromGroup";
   public final static String GETGROUPMEMBERS = "getGroupMembers";
-  public final static String REQUESTGROUPADMISSION = "requestGroupAdmission";
-  public final static String RETRIEVEGROUPADMISSIONREQUESTS = "retrieveGroupAdmissionRequests";
-  public final static String APPROVEGROUPADMISSIONS = "approveGroupAdmissions";
+  //
+  public final static String REQUESTJOINGROUP = "requestJoinGroup";
+  public final static String RETRIEVEGROUPJOINREQUESTS = "retrieveGroupJoinRequests";
+  public final static String GRANTMEMBERSHIP = "grantMembership";
+  public final static String REQUESTLEAVEGROUP = "requestLeaveGroup";
+  public final static String RETRIEVEGROUPLEAVEREQUESTS = "retrieveGroupLeaveRequests";
+  public final static String REVOKEMEMBERSHIP = "revokeMembership";
   //
   public final static String HELP = "help";
   // demo commands (not accesible in "public" version")
@@ -354,14 +358,23 @@ public class Protocol {
             + urlPrefix + REMOVEFROMGROUP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + WRITER + VALSEP + "<writer guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Removes the member guid from the group specified by guid. Writer guid needs to have write access and sign the command." + NEWLINE + NEWLINE
             + urlPrefix + GETGROUPMEMBERS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + READER + VALSEP + "<reader guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
-            + urlPrefix + REQUESTGROUPADMISSION + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Request membership in the group specified by guid. Member guid needs to sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
-            + urlPrefix + RETRIEVEGROUPADMISSIONREQUESTS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns member requests formatted as a JSON Array. Guid needs to sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
-            + urlPrefix + APPROVEGROUPADMISSIONS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBERS + VALSEP + "<list of members>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Approves membership of members in the group. Members should be a list of guids formated as a JSON list. Guid needs to sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
-
+            + "  Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command." + NEWLINE + NEWLINE
+            + urlPrefix + REQUESTJOINGROUP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Request membership in the group specified by guid. Member guid needs to sign the command." + NEWLINE + NEWLINE
+            + urlPrefix + RETRIEVEGROUPJOINREQUESTS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Returns member join requests formatted as a JSON Array. Guid needs to sign the command." + NEWLINE + NEWLINE
+            + urlPrefix + GRANTMEMBERSHIP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Approves membership of member in the group. Guid needs to sign the command." + NEWLINE + NEWLINE
+            + urlPrefix + GRANTMEMBERSHIP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBERS + VALSEP + "<list of members>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Approves membership of members in the group. Members should be a list of guids formated as a JSON list. Guid needs to sign the command." + NEWLINE + NEWLINE
+             + urlPrefix + REQUESTLEAVEGROUP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Request revocation of membership in the group specified by guid. Member guid needs to sign the command." + NEWLINE + NEWLINE
+            + urlPrefix + RETRIEVEGROUPLEAVEREQUESTS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Returns member leave requests formatted as a JSON Array. Guid needs to sign the command." + NEWLINE + NEWLINE
+            + urlPrefix + REVOKEMEMBERSHIP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Revokes membership of member in the group. Guid needs to sign the command." + NEWLINE + NEWLINE
+            + urlPrefix + REVOKEMEMBERSHIP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBERS + VALSEP + "<list of members>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Approves revoking of membership of members in the group. Members should be a list of guids formated as a JSON list. Guid needs to sign the command." + NEWLINE + NEWLINE
             //
             + "GUID TAGGING "
             + NEWLINE + NEWLINE
@@ -853,7 +866,7 @@ public class Protocol {
     }
   }
 
-  public String processRequestGroupAdmission(String guid, String member, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRequestJoinGroup(String guid, String member, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, memberInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -866,7 +879,7 @@ public class Protocol {
     if (!verifySignature(memberInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else {
-      if (groupAccess.requestGroupAdmission(guid, member)) {
+      if (groupAccess.requestJoinGroup(guid, member)) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + GENERICEERROR;
@@ -874,7 +887,7 @@ public class Protocol {
     }
   }
 
-  public String processretrieveGroupAdmissionRequests(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRetrieveJoinGroupRequests(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -883,28 +896,104 @@ public class Protocol {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else {
-      ResultValue values = groupAccess.retrieveGroupAdmissionRequests(guid);
+      ResultValue values = groupAccess.retrieveGroupJoinRequests(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
     }
   }
 
-  public String processApproveGroupAdmissions(String guid, String members, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processGrantMembership(String guid, String member, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    return processGrantMemberships(guid, new ResultValue(new ArrayList(Arrays.asList(member))), signature, message);
+  }
+
+  public String processGrantMemberships(String guid, String members, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    try {
+      return processGrantMemberships(guid, new ResultValue(members), signature, message);
+    } catch (JSONException e) {
+      return BADRESPONSE + " " + JSONPARSEERROR;
+    }
+  }
+
+  public String processGrantMemberships(String guid, ResultValue members, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    try {
-      if (!verifySignature(guidInfo, signature, message)) {
-        return BADRESPONSE + " " + BADSIGNATURE;
-        // no need to verify ACL because only the GUID can access this
-      } else if (groupAccess.approveGroupAdmissions(guid, new ResultValue(members))) {
+    if (!verifySignature(guidInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+      // no need to verify ACL because only the GUID can access this
+    } else if (groupAccess.grantMembership(guid, members)) {
+      return OKRESPONSE;
+    } else {
+      return BADRESPONSE + " " + GENERICEERROR;
+    }
+  }
+
+  public String processRequestLeaveGroup(String guid, String member, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo, memberInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (member.equals(guid)) {
+      memberInfo = guidInfo;
+    } else if ((memberInfo = accountAccess.lookupGuidInfo(member)) == null) {
+      return BADRESPONSE + " " + BADREADERGUID + " " + member;
+    }
+    if (!verifySignature(memberInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    } else {
+      if (groupAccess.requestLeaveGroup(guid, member)) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + GENERICEERROR;
       }
+    }
+  }
+
+  public String processRetrieveLeaveGroupRequests(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (!verifySignature(guidInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+      // no need to verify ACL because only the GUID can access this
+    } else {
+      ResultValue values = groupAccess.retrieveGroupLeaveRequests(guid);
+      JSONArray list = new JSONArray(values);
+      return list.toString();
+    }
+  }
+
+  public String processRevokeMembership(String guid, String member, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    return processRevokeMemberships(guid, new ResultValue(new ArrayList(Arrays.asList(member))), signature, message);
+  }
+
+  public String processRevokeMemberships(String guid, String members, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    try {
+      return processRevokeMemberships(guid, new ResultValue(members), signature, message);
     } catch (JSONException e) {
       return BADRESPONSE + " " + JSONPARSEERROR;
+    }
+  }
+
+  public String processRevokeMemberships(String guid, ResultValue members, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (!verifySignature(guidInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+      // no need to verify ACL because only the GUID can access this
+    } else if (groupAccess.revokeMembership(guid, members)) {
+      return OKRESPONSE;
+    } else {
+      return BADRESPONSE + " " + GENERICEERROR;
     }
   }
 
@@ -1319,20 +1408,44 @@ public class Protocol {
         String guid = queryMap.get(GUID);
         String signature = queryMap.get(SIGNATURE);
         return processGetGroupMembers(guid, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REQUESTGROUPADMISSION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+      } else if (REQUESTJOINGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String member = queryMap.get(MEMBER);
         String signature = queryMap.get(SIGNATURE);
-        return processRequestGroupAdmission(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (RETRIEVEGROUPADMISSIONREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+        return processRequestJoinGroup(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (RETRIEVEGROUPJOINREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String signature = queryMap.get(SIGNATURE);
-        return processretrieveGroupAdmissionRequests(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (APPROVEGROUPADMISSIONS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+        return processRetrieveJoinGroupRequests(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (GRANTMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String members = queryMap.get(MEMBERS);
         String signature = queryMap.get(SIGNATURE);
-        return processApproveGroupAdmissions(guid, members, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        return processGrantMemberships(guid, members, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (GRANTMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String member = queryMap.get(MEMBER);
+        String signature = queryMap.get(SIGNATURE);
+        return processGrantMembership(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REQUESTLEAVEGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String member = queryMap.get(MEMBER);
+        String signature = queryMap.get(SIGNATURE);
+        return processRequestLeaveGroup(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (RETRIEVEGROUPLEAVEREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String signature = queryMap.get(SIGNATURE);
+        return processRetrieveLeaveGroupRequests(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REVOKEMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String members = queryMap.get(MEMBERS);
+        String signature = queryMap.get(SIGNATURE);
+        return processRevokeMemberships(guid, members, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REVOKEMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String member = queryMap.get(MEMBER);
+        String signature = queryMap.get(SIGNATURE);
+        return processRevokeMembership(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
         // DEMO
       } else if (DEMO.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
         // pass in the host to use as a passkey check

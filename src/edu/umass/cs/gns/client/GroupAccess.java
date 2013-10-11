@@ -14,13 +14,17 @@ import edu.umass.cs.gns.nameserver.ResultValue;
 public class GroupAccess {
 
   /**
-   * HIdden field that stores group members
+   * Hidden field that stores group members
    */
   public static final String GROUP = GNS.makeInternalField("group");
   /**
-   * Hidden field that stores group member requests
+   * Hidden field that stores group member join requests
    */
-  public static final String GROUPREQUESTS = GNS.makeInternalField("groupRequests");
+  public static final String JOINREQUESTS = GNS.makeInternalField("joinRequests");
+  /**
+   * Hidden field that stores group member quit requests
+   */
+  public static final String LEAVEREQUESTS = GNS.makeInternalField("leaveRequests");
 
   public GroupAccess() {
   }
@@ -55,14 +59,29 @@ public class GroupAccess {
     }
   }
 
-  public boolean requestGroupAdmission(String guid, String memberGuid) {
+  public boolean requestJoinGroup(String guid, String memberGuid) {
     Intercessor client = Intercessor.getInstance();
-    return client.sendUpdateRecordWithConfirmation(guid, GROUPREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+    return client.sendUpdateRecordWithConfirmation(guid, JOINREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+  }
+  
+  public boolean requestLeaveGroup(String guid, String memberGuid) {
+    Intercessor client = Intercessor.getInstance();
+    return client.sendUpdateRecordWithConfirmation(guid, LEAVEREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
-  public ResultValue retrieveGroupAdmissionRequests(String guid) {
+  public ResultValue retrieveGroupJoinRequests(String guid) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue result = client.sendQuery(guid, GROUPREQUESTS);
+    ResultValue result = client.sendQuery(guid, JOINREQUESTS);
+    if (result != null) {
+      return new ResultValue(result);
+    } else {
+      return new ResultValue();
+    }
+  }
+  
+  public ResultValue retrieveGroupLeaveRequests(String guid) {
+    Intercessor client = Intercessor.getInstance();
+    ResultValue result = client.sendQuery(guid, LEAVEREQUESTS);
     if (result != null) {
       return new ResultValue(result);
     } else {
@@ -70,11 +89,22 @@ public class GroupAccess {
     }
   }
 
-  public boolean approveGroupAdmissions(String guid, ResultValue requests) {
+  public boolean grantMembership(String guid, ResultValue requests) {
     Intercessor client = Intercessor.getInstance();
 
     if (client.sendUpdateRecordWithConfirmation(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE)) {
-      if (client.sendUpdateRecordWithConfirmation(guid, GROUPREQUESTS, requests, null, UpdateOperation.REMOVE)) {
+      if (client.sendUpdateRecordWithConfirmation(guid, JOINREQUESTS, requests, null, UpdateOperation.REMOVE)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  public boolean revokeMembership(String guid, ResultValue requests) {
+    Intercessor client = Intercessor.getInstance();
+
+    if (client.sendUpdateRecordWithConfirmation(guid, GROUP, requests, null, UpdateOperation.REMOVE)) {
+      if (client.sendUpdateRecordWithConfirmation(guid, LEAVEREQUESTS, requests, null, UpdateOperation.REMOVE)) {
         return true;
       }
     }
