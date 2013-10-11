@@ -80,6 +80,10 @@ public class Protocol {
   public final static String ADDTOGROUP = "addToGroup";
   public final static String REMOVEFROMGROUP = "removeFromGroup";
   public final static String GETGROUPMEMBERS = "getGroupMembers";
+  public final static String REQUESTGROUPADMISSION = "requestGroupAdmission";
+  public final static String RETRIEVEGROUPADMISSIONREQUESTS = "retrieveGroupAdmissionRequests";
+  public final static String APPROVEGROUPADMISSIONS = "approveGroupAdmissions";
+  //
   public final static String HELP = "help";
   // demo commands (not accesible in "public" version")
   public final static String DEMO = "demo";
@@ -138,6 +142,7 @@ public class Protocol {
   public final static String VALUE = "value";
   public final static String OLDVALUE = "oldvalue";
   public final static String MEMBER = "member";
+  public final static String MEMBERS = "members";
   // Fields for HTTP get queries
   public final static String ACLTYPE = "aclType";
   // Special fields for ACL 
@@ -350,6 +355,14 @@ public class Protocol {
             + "  Removes the member guid from the group specified by guid. Writer guid needs to have write access and sign the command." + NEWLINE + NEWLINE
             + urlPrefix + GETGROUPMEMBERS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + READER + VALSEP + "<reader guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
+            + urlPrefix + REQUESTGROUPADMISSION + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Request membership in the group specified by guid. Member guid needs to sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
+            + urlPrefix + RETRIEVEGROUPADMISSIONREQUESTS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Returns member requests formatted as a JSON Array. Guid needs to sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
+            + urlPrefix + APPROVEGROUPADMISSIONS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBERS + VALSEP + "<list of members>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Approves membership of members in the group. Members should be a list of guids formated as a JSON list. Guid needs to sign the command." + NEWLINE + NEWLINE //                + NEWLINE + "DEPRECATED GROUP OPERATIONS - regulate access to individual fields" + NEWLINE
+
+            //
             + "GUID TAGGING "
             + NEWLINE + NEWLINE
             + urlPrefix + ADDTAG + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + NAME + VALSEP + "<tagname>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
@@ -589,7 +602,8 @@ public class Protocol {
     }
   }
 
-  public String processCreate(String guid, String field, String value, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processCreate(String guid, String field, String value, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -606,14 +620,15 @@ public class Protocol {
     }
   }
 
-  public String processCreateList(String guid, String field, String value, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    GuidInfo userInfo;
-    if ((userInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+  public String processCreateList(String guid, String field, String value, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     try {
-      if (verifySignature(userInfo, signature, message)) {
-        if (fieldAccess.create(userInfo.getGuid(), field, JSONUtils.JSONArrayToResultValue(new JSONArray(value)))) {
+      if (verifySignature(guidInfo, signature, message)) {
+        if (fieldAccess.create(guidInfo.getGuid(), field, new ResultValue(value))) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -628,12 +643,12 @@ public class Protocol {
 
   public String processUpdateOperation(String guid, String field, String value, String oldValue, String signature, String message,
           UpdateOperation operation) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    GuidInfo userInfo;
-    if ((userInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(userInfo, signature, message)) {
-      if (fieldAccess.update(userInfo.getGuid(), field,
+    if (verifySignature(guidInfo, signature, message)) {
+      if (fieldAccess.update(guidInfo.getGuid(), field,
               new ResultValue(Arrays.asList(value)),
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
               operation)) {
@@ -648,13 +663,13 @@ public class Protocol {
 
   public String processUpdateListOperation(String guid, String field, String value, String oldValue, String signature, String message,
           UpdateOperation operation) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    GuidInfo userInfo;
-    if ((userInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(userInfo, signature, message)) {
+    if (verifySignature(guidInfo, signature, message)) {
       try {
-        if (fieldAccess.update(userInfo.getGuid(), field,
+        if (fieldAccess.update(guidInfo.getGuid(), field,
                 JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
                 oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
                 operation)) {
@@ -835,6 +850,61 @@ public class Protocol {
       ResultValue values = groupAccess.lookup(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
+    }
+  }
+
+  public String processRequestGroupAdmission(String guid, String member, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo, memberInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (member.equals(guid)) {
+      memberInfo = guidInfo;
+    } else if ((memberInfo = accountAccess.lookupGuidInfo(member)) == null) {
+      return BADRESPONSE + " " + BADREADERGUID + " " + member;
+    }
+    if (!verifySignature(memberInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    } else {
+      if (groupAccess.requestGroupAdmission(guid, member)) {
+        return OKRESPONSE;
+      } else {
+        return BADRESPONSE + " " + GENERICEERROR;
+      }
+    }
+  }
+
+  public String processretrieveGroupAdmissionRequests(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (!verifySignature(guidInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+      // no need to verify ACL because only the GUID can access this
+    } else {
+      ResultValue values = groupAccess.retrieveGroupAdmissionRequests(guid);
+      JSONArray list = new JSONArray(values);
+      return list.toString();
+    }
+  }
+
+  public String processApproveGroupAdmissions(String guid, String members, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    try {
+      if (!verifySignature(guidInfo, signature, message)) {
+        return BADRESPONSE + " " + BADSIGNATURE;
+        // no need to verify ACL because only the GUID can access this
+      } else if (groupAccess.approveGroupAdmissions(guid, new ResultValue(members))) {
+        return OKRESPONSE;
+      } else {
+        return BADRESPONSE + " " + GENERICEERROR;
+      }
+    } catch (JSONException e) {
+      return BADRESPONSE + " " + JSONPARSEERROR;
     }
   }
 
@@ -1249,6 +1319,20 @@ public class Protocol {
         String guid = queryMap.get(GUID);
         String signature = queryMap.get(SIGNATURE);
         return processGetGroupMembers(guid, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REQUESTGROUPADMISSION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String member = queryMap.get(MEMBER);
+        String signature = queryMap.get(SIGNATURE);
+        return processRequestGroupAdmission(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (RETRIEVEGROUPADMISSIONREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String signature = queryMap.get(SIGNATURE);
+        return processretrieveGroupAdmissionRequests(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (APPROVEGROUPADMISSIONS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String members = queryMap.get(MEMBERS);
+        String signature = queryMap.get(SIGNATURE);
+        return processApproveGroupAdmissions(guid, members, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
         // DEMO
       } else if (DEMO.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
         // pass in the host to use as a passkey check
@@ -1297,15 +1381,14 @@ public class Protocol {
     }
   }
 
-  private boolean verifySignature(GuidInfo userInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     if (demoMode) {
       return true;
     }
     byte[] messageDigest = SHA1HashFunction.getInstance().hash(message.getBytes());
 
 
-    byte[] encodedPublicKey = Base64.decode(userInfo.getPublicKey());
-    //byte[] encodedPublicKey = MoreUtils.hexStringToByteArray(userInfo.getPublicKey());
+    byte[] encodedPublicKey = Base64.decode(guidInfo.getPublicKey());
     KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
@@ -1314,12 +1397,12 @@ public class Protocol {
     sig.initVerify(publicKey);
     sig.update(messageDigest);
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    GNS.getLogger().fine("User " + userInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;
   }
 
   /**
-   * Checks to see if the reader given in readerInfo can access all of the fields of the user given by userInfo.
+   * Checks to see if the reader given in readerInfo can access all of the fields of the user given by guidInfo.
    *
    * @param access
    * @param contectInfo
@@ -1331,34 +1414,34 @@ public class Protocol {
   }
 
   /**
-   * Checks to see if the reader given in readerInfo can access the field of the user given by userInfo. Access type is some combo
+   * Checks to see if the reader given in readerInfo can access the field of the user given by guidInfo. Access type is some combo
    * of read, write, blacklist and whitelist. Note: Blacklists are currently not activated.
    *
    * @param access
-   * @param userInfo
+   * @param guidInfo
    * @param field
    * @param readerInfo
    * @return
    */
-  private boolean verifyAccess(MetaDataTypeName access, GuidInfo userInfo, String field, GuidInfo readerInfo) {
-    GNS.getLogger().finer("User: " + userInfo.getName() + " Reader: " + readerInfo.getName() + " Field: " + field);
-    if (userInfo.getGuid().equals(readerInfo.getGuid())) {
+  private boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo readerInfo) {
+    GNS.getLogger().finer("User: " + guidInfo.getName() + " Reader: " + readerInfo.getName() + " Field: " + field);
+    if (guidInfo.getGuid().equals(readerInfo.getGuid())) {
       return true; // can always read your own stuff
     } else {
-      Set<String> allowedusers = fieldMetaData.lookup(access, userInfo, field);
-      GNS.getLogger().fine(userInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+      Set<String> allowedusers = fieldMetaData.lookup(access, guidInfo, field);
+      GNS.getLogger().fine(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       if (checkAllowedUsers(readerInfo.getGuid(), allowedusers)) {
-        GNS.getLogger().fine("User " + readerInfo.getName() + " allowed to access user " + userInfo.getName() + "'s " + field + " field");
+        GNS.getLogger().fine("User " + readerInfo.getName() + " allowed to access user " + guidInfo.getName() + "'s " + field + " field");
         return true;
       }
       // otherwise find any users that can access all of the fields
-      allowedusers = fieldMetaData.lookup(access, userInfo, ALLFIELDS);
+      allowedusers = fieldMetaData.lookup(access, guidInfo, ALLFIELDS);
       if (checkAllowedUsers(readerInfo.getGuid(), allowedusers)) {
-        GNS.getLogger().fine("User " + readerInfo.getName() + " allowed to access all of user " + userInfo.getName() + "'s fields");
+        GNS.getLogger().fine("User " + readerInfo.getName() + " allowed to access all of user " + guidInfo.getName() + "'s fields");
         return true;
       }
     }
-    GNS.getLogger().fine("User " + readerInfo.getName() + " NOT allowed to access user " + userInfo.getName() + "'s " + field + " field");
+    GNS.getLogger().fine("User " + readerInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
     return false;
   }
 

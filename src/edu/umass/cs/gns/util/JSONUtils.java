@@ -31,7 +31,15 @@ public class JSONUtils {
    * @return
    * @throws JSONException
    */
-  public static ArrayList<String> JSONArrayToArrayList(JSONArray jsonArray) throws JSONException {
+  public static ArrayList<Object> JSONArrayToArrayList(JSONArray jsonArray) throws JSONException {
+    ArrayList<Object> list = new ArrayList();
+    for (int i = 0; i < jsonArray.length(); i++) {
+      list.add(jsonArray.get(i));
+    }
+    return list;
+  }
+  
+  public static ArrayList<String> JSONArrayToArrayListString(JSONArray jsonArray) throws JSONException {
     ArrayList<String> list = new ArrayList();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.getString(i));
@@ -159,7 +167,7 @@ public class JSONUtils {
         case LIST_INTEGER:
           return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_STRING:
-          return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getName()));
+          return JSONUtils.JSONArrayToArrayListString(jsonObject.getJSONArray(field.getName()));
         case VALUES_MAP:
           return new ValuesMap(jsonObject.getJSONObject(field.getName()));
         case VOTES_MAP:

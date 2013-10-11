@@ -70,7 +70,7 @@ public enum FieldType {
               break;
             case LIST_STRING:
               try {
-                hashMap.put(field, JSONUtils.JSONArrayToArrayList(new JSONArray(value)));
+                hashMap.put(field, JSONUtils.JSONArrayToArrayListString(new JSONArray(value)));
               } catch (JSONException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
               }

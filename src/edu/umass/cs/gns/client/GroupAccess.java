@@ -1,8 +1,7 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
-import java.util.Set;
+import edu.umass.cs.gns.nameserver.ResultValue;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 /**
@@ -61,7 +60,7 @@ public class GroupAccess {
     return client.sendUpdateRecordWithConfirmation(guid, GROUPREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
-  public ResultValue retrieveGroupAdmissionRequests(String guid, String memberGuid) {
+  public ResultValue retrieveGroupAdmissionRequests(String guid) {
     Intercessor client = Intercessor.getInstance();
     ResultValue result = client.sendQuery(guid, GROUPREQUESTS);
     if (result != null) {
@@ -71,12 +70,11 @@ public class GroupAccess {
     }
   }
 
-  public boolean aprooveGroupAdmission(String guid, Set<String> requests) {
+  public boolean approveGroupAdmissions(String guid, ResultValue requests) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue fieldValue = new ResultValue(requests);
 
-    if (client.sendUpdateRecordWithConfirmation(guid, GROUP, fieldValue, null, UpdateOperation.APPEND_OR_CREATE)) {
-      if (client.sendUpdateRecordWithConfirmation(guid, GROUPREQUESTS, fieldValue, null, UpdateOperation.REMOVE)) {
+    if (client.sendUpdateRecordWithConfirmation(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE)) {
+      if (client.sendUpdateRecordWithConfirmation(guid, GROUPREQUESTS, requests, null, UpdateOperation.REMOVE)) {
         return true;
       }
     }
