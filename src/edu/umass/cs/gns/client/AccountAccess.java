@@ -5,10 +5,9 @@
  */
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.ResultValueString;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import java.text.ParseException;
 import java.util.Arrays;
 import org.json.JSONException;
@@ -17,6 +16,16 @@ import org.json.JSONException;
  * Provides the basic interface to GNS accounts. 
  * <p>
  * See {@link AccountInfo} for more details about accounts.
+ * <p>
+ * Some of the internal records used to maintain account information are as follows:
+ * <p>
+ * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
+ * GUID: "GUID" -> GUID (primary) for secondary guid<br>
+ * GUID: "GUID_INFO" -> {guid info}<br>
+ * HRN:  "GUID" -> GUID<br>
+ * <p>
+ * GUID = Globally Unique Identifier<br>
+ * HRN = Human Readable Name<br>
  *
  * @author westy
  */
@@ -44,12 +53,10 @@ public class AccountAccess {
    * was used to create an account or is one of the GUIDs associated with
    * account.
    * <p>
-   * Some of the internal records used to maintain account information are as follows:
-   * <p>
-   * GUID: "_GNS_ACCOUNT_INFO" -> {account} for primary guid<br>
-   * GUID: "_GNS_GUID" -> GUID (primary) for secondary guid<br>
-   * GUID: "_GNS_GUID_INFO" -> {guid info}<br>
-   * HRN: "_GNS_GUID" -> GUID<br>
+   * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
+   * GUID: "GUID" -> GUID (primary) for secondary guid<br>
+   * GUID: "GUID_INFO" -> {guid info}<br>
+   * HRN:  "GUID" -> GUID<br>
    * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
@@ -252,7 +259,7 @@ public class AccountAccess {
           // add the GUID_INFO link
           client.sendAddRecordWithConfirmation(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
-          client.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())), 
+          client.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.CREATE);
           return Protocol.OKRESPONSE;
         }
@@ -325,7 +332,6 @@ public class AccountAccess {
   public String setPassword(AccountInfo accountInfo, String password) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    Intercessor client = Intercessor.getInstance();
     if (updateAccountInfo(accountInfo)) {
       return Protocol.OKRESPONSE;
     }
@@ -342,7 +348,6 @@ public class AccountAccess {
   public String addTag(GuidInfo guidInfo, String tag) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    Intercessor client = Intercessor.getInstance();
     if (updateGuidInfo(guidInfo)) {
       return Protocol.OKRESPONSE;
     }
@@ -360,7 +365,6 @@ public class AccountAccess {
   public String removeTag(GuidInfo guidInfo, String tag) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    Intercessor client = Intercessor.getInstance();
     if (updateGuidInfo(guidInfo)) {
       return Protocol.OKRESPONSE;
     }

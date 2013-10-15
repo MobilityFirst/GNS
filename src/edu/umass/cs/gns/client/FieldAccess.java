@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
@@ -94,8 +99,8 @@ public class FieldAccess {
       return new String();
     }
   }
-  
-   public String selectWithin(String key, String value) {
+
+  public String selectWithin(String key, String value) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, new NameRecordKey(key), value, null);
     if (result != null) {
       return result;
@@ -103,8 +108,8 @@ public class FieldAccess {
       return new String();
     }
   }
-   
-    public String selectNear(String key, String value, String maxDistance) {
+
+  public String selectNear(String key, String value, String maxDistance) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, new NameRecordKey(key), value, maxDistance);
     if (result != null) {
       return result;

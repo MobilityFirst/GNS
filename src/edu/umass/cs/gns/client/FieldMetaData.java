@@ -1,7 +1,11 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import java.util.HashSet;
@@ -47,9 +51,17 @@ public class FieldMetaData {
     return GNS.makeInternalField(metaDataType.name() + "_" + key);
   }
 
-  public Set<String> lookup(MetaDataTypeName access, GuidInfo userInfo, String key) {
+  /**
+   * Grabs the metadata indexed by type from the field from the guid.
+   * 
+   * @param type
+   * @param userInfo
+   * @param key
+   * @return 
+   */
+  public Set<String> lookup(MetaDataTypeName type, GuidInfo userInfo, String key) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue result = client.sendQuery(userInfo.getGuid(), makeFieldMetaDataKey(access, key));
+    ResultValue result = client.sendQuery(userInfo.getGuid(), makeFieldMetaDataKey(type, key));
     if (result != null) {
       return new HashSet<String>(result.toStringSet());
     } else {
@@ -57,16 +69,33 @@ public class FieldMetaData {
     }
   }
 
-  public void add(MetaDataTypeName access, GuidInfo userInfo, String key, String value) {
+  /**
+   * Adds a value to the metadata of the field in the guid.
+   * 
+   * @param type
+   * @param userInfo
+   * @param key
+   * @param value 
+   */
+  public void add(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     Intercessor client = Intercessor.getInstance();
-    String metaDataKey = makeFieldMetaDataKey(access, key);
+    String metaDataKey = makeFieldMetaDataKey(type, key);
     client.sendUpdateRecordWithConfirmation(userInfo.getGuid(), metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
-  public void remove(MetaDataTypeName access, GuidInfo userInfo, String key, String value) {
+  /**
+   * Removes a value from the metadata of the field in the guid.
+   * 
+   * @param type
+   * @param userInfo
+   * @param key
+   * @param value 
+   */
+  public void remove(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     Intercessor client = Intercessor.getInstance();
-    String metaDataKey = makeFieldMetaDataKey(access, key);
+    String metaDataKey = makeFieldMetaDataKey(type, key);
     client.sendUpdateRecordWithConfirmation(userInfo.getGuid(), metaDataKey, value, null, UpdateOperation.REMOVE);
   }
+  //
   public static String Version = "$Revision$";
 }
