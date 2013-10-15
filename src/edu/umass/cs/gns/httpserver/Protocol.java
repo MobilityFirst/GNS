@@ -160,7 +160,7 @@ public class Protocol {
   public final static String PASSKEY = "passkey";
   //public final static String TABLE = "table";
   //
-  private boolean demoMode = true;
+  private boolean demoMode = false;
   private FieldAccess fieldAccess = FieldAccess.getInstance();
   private AccountAccess accountAccess = AccountAccess.getInstance();
   private FieldMetaData fieldMetaData = FieldMetaData.getInstance();
