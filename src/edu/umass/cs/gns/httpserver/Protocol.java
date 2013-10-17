@@ -1500,8 +1500,10 @@ public class Protocol {
     }
     byte[] messageDigest = SHA1HashFunction.getInstance().hash(message.getBytes());
 
-
     byte[] encodedPublicKey = Base64.decode(guidInfo.getPublicKey());
+    if (encodedPublicKey == null) { // bogus signature
+      return false;
+    }
     KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
