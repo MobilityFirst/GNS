@@ -301,7 +301,7 @@ public class DNSRequestTask extends TimerTask {
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Valid Address in cache... "
             + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
     LocalNameServer.incrementLookupResponse(name);
-    QueryInfo tempQueryInfo = new QueryInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
+    DNSRequestInfo tempQueryInfo = new DNSRequestInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
             incomingPacket, senderAddress, senderPort, numRestarts);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();

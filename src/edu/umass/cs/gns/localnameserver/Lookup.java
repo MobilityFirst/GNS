@@ -207,7 +207,7 @@ public class Lookup {
           Intercessor.getInstance().checkForResult(DNSRequestTask.getErrorPacket(query.getIncomingPacket()));
         }
         GNS.getLogger().severe("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());
-        GNS.getStatLogger().fine(LNSQueryTask2.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),0,query.getLookupRecvdTime(),new HashSet<Integer>()));
+        GNS.getStatLogger().fine(DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),0,query.getLookupRecvdTime(),new HashSet<Integer>()));
 
       } catch (JSONException e) {
         e.printStackTrace();
