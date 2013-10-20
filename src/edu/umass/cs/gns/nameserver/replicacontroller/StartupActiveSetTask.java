@@ -10,6 +10,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.util.BestServerSelection;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class StartupActiveSetTask extends TimerTask {
   String newActivePaxosID;
   String oldActivePaxosID;
   ValuesMap initialValue;
-
+  int numAttempts = 0;
   /**
    * Constructor object
    *
@@ -70,7 +71,7 @@ public class StartupActiveSetTask extends TimerTask {
 
   @Override
   public void run() {
-
+    numAttempts ++;
 
 
 
@@ -97,10 +98,13 @@ public class StartupActiveSetTask extends TimerTask {
       }
 
       if (nameRecordPrimary.isActiveRunning()) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("New active name servers running. Startup done. All Actives: "
-                  + newActiveNameServers + " Actives Queried: " + newActivesQueried);
-        }
+        String msg = "New active name servers running. Startup done. Name = " + name + " All Actives: "
+                + newActiveNameServers + " Actives Queried: " + newActivesQueried;
+        if (StartNameServer.experimentMode) GNS.getLogger().severe(msg);
+        else  GNS.getLogger().info(msg);
+//        if (StartNameServer.debugMode) {
+//
+//        }
         this.cancel();
         return;
       }
@@ -111,7 +115,7 @@ public class StartupActiveSetTask extends TimerTask {
       return;
     }
 
-    if (newActivesQueried.size() == MAX_ATTEMPTS) {
+    if (numAttempts > MAX_ATTEMPTS) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe("ERROR: New Actives failed to start after " + MAX_ATTEMPTS + ". "
                 + "Active name servers queried: " + newActivesQueried);
@@ -120,7 +124,9 @@ public class StartupActiveSetTask extends TimerTask {
       return;
     }
 
-    int selectedActive = selectNextActiveToQuery();
+    int selectedActive = BestServerSelection.getSmallestLatencyNS(newActiveNameServers, newActivesQueried);
+
+    //selectNextActiveToQuery();
 
     if (selectedActive == -1) {
       if (StartNameServer.debugMode) {
@@ -129,6 +135,9 @@ public class StartupActiveSetTask extends TimerTask {
       }
       this.cancel();
       return;
+    }
+    else {
+      newActivesQueried.add(selectedActive);
     }
 
     if (StartNameServer.debugMode) {

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
@@ -12,21 +11,20 @@ import java.util.Set;
 public class RequestActivesPacket extends BasicPacket
 {
 
-
 	//public final static String RECORDKEY = "recordkey";
 	public final static String NAME = "name";
 	public static final String ACTIVES = "actives";
 	public final static String LNSID = "lnsid";
+//  public static final String ACTIVE_CHANGE_IN_PROGRESS = "activeChangeInProgress";
 	
 	String name;
 	//NameRecordKey recordKey;
 	Set<Integer> activeNameServers;
 	int lnsID;
+//  boolean activeChangeInProgress;
 	
-	public RequestActivesPacket(String name, //NameRecordKey recordKey,
-                int lnsID) {
+	public RequestActivesPacket(String name, int lnsID) {
 		this.name = name;
-		//this.recordKey = recordKey;
 		this.type = PacketType.REQUEST_ACTIVES;
 		this.lnsID = lnsID;
 	}
@@ -38,7 +36,9 @@ public class RequestActivesPacket extends BasicPacket
 		this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVES));
 		this.type = PacketType.REQUEST_ACTIVES;
 		this.lnsID = json.getInt(LNSID);
+//    this.activeChangeInProgress = json.getBoolean(ACTIVE_CHANGE_IN_PROGRESS);
 	}
+
 	
 	@Override
 	public JSONObject toJSONObject() throws JSONException
@@ -49,12 +49,14 @@ public class RequestActivesPacket extends BasicPacket
 		json.put(ACTIVES,new JSONArray(activeNameServers));
 		Packet.putPacketType(json, getType());
 		json.put(LNSID, lnsID);
+//    json.put(ACTIVE_CHANGE_IN_PROGRESS, activeChangeInProgress);
 		return json;
 	}
 
 	
 	public void setActiveNameServers(Set<Integer> activeNameServers) {
 		this.activeNameServers = activeNameServers;
+//    this.activeChangeInProgress = activeChangeInProgress;
 	}
 	
 

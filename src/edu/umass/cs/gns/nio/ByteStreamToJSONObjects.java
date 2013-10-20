@@ -15,167 +15,167 @@ import java.util.List;
 
 public class ByteStreamToJSONObjects implements Runnable {
 
-	HashMap socketData = new HashMap();
+  HashMap socketData = new HashMap();
 
-	private List queue = new LinkedList();
 
-	int recvdMessageCount = 0;
+  private List queue = new LinkedList();
+  int recvdMessageCount = 0;
 
-	PacketDemultiplexer packetDemux;
+  PacketDemultiplexer packetDemux;
 
-	public ByteStreamToJSONObjects(PacketDemultiplexer packetDemux) {
-		this.packetDemux = packetDemux;
-	}
+  public ByteStreamToJSONObjects(PacketDemultiplexer packetDemux) {
+    this.packetDemux = packetDemux;
+  }
 
-	public PacketDemultiplexer getPacketDemux() {
-		return packetDemux;
-	}
-	
-	public void processData2(NioServer server, SocketChannel socket, byte[] data, int count) {
+  public PacketDemultiplexer getPacketDemux() {
+    return packetDemux;
+  }
 
-		byte[] dataCopy = new byte[count];
-		System.arraycopy(data, 0, dataCopy, 0, count);
-		synchronized(queue) {
-			queue.add(new ServerDataEvent(server, socket, dataCopy));
-			queue.notify();
-		}
-	}
-    public void processData(SocketChannel socket, byte[] data, int count) {
-        String y = new String(data, 0, count);
-        if (!socketData.containsKey(socket)) {
-            socketData.put(socket, null);
-        }
+  public void processData2(NioServer server, SocketChannel socket, byte[] data, int count) {
 
-        String x = (String) socketData.get(socket);
-        if (x == null || x.length() == 0) {
-            x = y;
-        } else {
-            x = x + y;
-        }
-        ArrayList allJSONs = new ArrayList();
-        String remainingString = getJSONs(x, 0, allJSONs);
-        socketData.put(socket, remainingString);
+    byte[] dataCopy = new byte[count];
+    System.arraycopy(data, 0, dataCopy, 0, count);
+    synchronized(queue) {
+      queue.add(new ServerDataEvent(server, socket, dataCopy));
+      queue.notify();
+    }
+  }
+  public void processData(SocketChannel socket, byte[] data, int count) {
+    String y = new String(data, 0, count);
+    if (!socketData.containsKey(socket)) {
+      socketData.put(socket, null);
+    }
 
-        // call the packet demultiplexer object.
-        packetDemux.handleJSONObjects(allJSONs);
+    String x = (String) socketData.get(socket);
+    if (x == null || x.length() == 0) {
+      x = y;
+    } else {
+      x = x + y;
+    }
+    ArrayList allJSONs = new ArrayList();
+    String remainingString = getJSONs(x, 0, allJSONs);
+    socketData.put(socket, remainingString);
+
+    // call the packet demultiplexer object.
+    packetDemux.handleJSONObjects(allJSONs);
 
 //        recvdMessageCount++;
 //        if (StartNameServer.debugMode) GNS.getLogger().finer(y + " Received message count = "
 //                + recvdMessageCount);
 
+  }
+
+  public void run() {
+    ServerDataEvent dataEvent;
+
+    while(true) {
+      // Wait for data to become available
+      synchronized(queue) {
+        while(queue.isEmpty()) {
+          try {
+            queue.wait();
+          } catch (InterruptedException e) {
+          }
+        }
+        dataEvent = (ServerDataEvent) queue.remove(0);
+        if (!socketData.containsKey(dataEvent.socket)) {
+          socketData.put(dataEvent.socket, null);
+        }
+
+        String x = (String) socketData.get(dataEvent.socket);
+        if (x == null || x.length() == 0) {
+          x = new String(dataEvent.data);
+        } else {
+          x = x + new String(dataEvent.data);
+        }
+        ArrayList allJSONs = new ArrayList();
+        String remainingString = getJSONs(x, 0, allJSONs);
+        socketData.put(dataEvent.socket, remainingString);
+
+        // call the packet demultiplexer object.
+        packetDemux.handleJSONObjects(allJSONs);
+
+
+        recvdMessageCount++;
+        if (StartNameServer.debugMode) GNS.getLogger().finer(new String(dataEvent.data) + " Received message count = "
+                + recvdMessageCount);
+      }
+
+      // Return to sender
+      //			dataEvent.server.send(dataEvent.socket, dataEvent.data);
+    }
+  }
+
+  public static String getJSONs(String data, int startIndex, ArrayList allJSONs) {
+    if (startIndex < 0) {
+      if (StartNameServer.debugMode) GNS.getLogger().severe("Start Index cant be negative");
+      System.exit(2);
+    }
+    if (data == null || data.length() == 0) {
+      return data;
+    }
+    if (allJSONs == null) {
+      if (StartNameServer.debugMode) GNS.getLogger().severe("Can't return parsed json string. allJSONs ArrayList is null.");
+      System.exit(2);
     }
 
-	public void run() {
-		ServerDataEvent dataEvent;
+    // it will always start with '&'
+    int end = data.indexOf('&', startIndex + 1);
+    if (end == -1) {
+      // packet length header not yet received
+      if (startIndex > 0) {
+        return data.substring(startIndex);
+      }
+      return data;
+    }
+    // get the length of packet
+    int packetLength = Integer.parseInt(data.substring(startIndex + 1, end));
+    if (data.length() >= end + 1 + packetLength) {
+      try
+      {
+        JSONObject json;
+        json = new JSONObject(data.substring(end + 1, end + 1 + packetLength));
+        allJSONs.add(json);
+      } catch (JSONException e)
+      {
+        if (StartNameServer.debugMode) GNS.getLogger().fine("JSON Exception here. Move on.");
+        e.printStackTrace();
+      }
+      // recursive call
+      return getJSONs(data, end + 1 + packetLength, allJSONs);
+    }
+    if (startIndex > 0) {
+      return data.substring(startIndex);
+    }
+    return data;
+  }
 
-		while(true) {
-			// Wait for data to become available
-			synchronized(queue) {
-				while(queue.isEmpty()) {
-					try {
-						queue.wait();
-					} catch (InterruptedException e) {
-					}
-				}
-				dataEvent = (ServerDataEvent) queue.remove(0);
-				if (!socketData.containsKey(dataEvent.socket)) {
-					socketData.put(dataEvent.socket, null);
-				}
+  public static void main(String[] args) {
+    //
+    String filePath = "/Users/abhigyan/Documents/workspace/GNRS-westy/jsons.txt";
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(filePath));
+      int count = 0;
+      StringBuilder sb = new StringBuilder();
+      while(br.ready()) {
+        count++;
+        String jsonString = br.readLine();
+        sb.append("&" + jsonString.length() + "&" + jsonString);
+      }
+      br.close();
+      System.out.println(sb.toString());
+      ArrayList allJSONs = new ArrayList();
+      ByteStreamToJSONObjects.getJSONs(sb.toString(), 0, allJSONs);
+      for (Object j: allJSONs) {
+        System.out.println("OBJECT:" + (JSONObject) j);
+      }
+    } catch (NumberFormatException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 
-				String x = (String) socketData.get(dataEvent.socket);
-				if (x == null || x.length() == 0) {
-					x = new String(dataEvent.data);
-				} else {
-					x = x + new String(dataEvent.data); 
-				}
-				ArrayList allJSONs = new ArrayList();
-				String remainingString = getJSONs(x, 0, allJSONs);
-				socketData.put(dataEvent.socket, remainingString);
-
-				// call the packet demultiplexer object.
-				packetDemux.handleJSONObjects(allJSONs);
-
-
-				recvdMessageCount++;
-				if (StartNameServer.debugMode) GNS.getLogger().finer(new String(dataEvent.data) + " Received message count = "
-						+ recvdMessageCount);
-			}
-
-			// Return to sender
-			//			dataEvent.server.send(dataEvent.socket, dataEvent.data);
-		}
-	}
-
-	public static String getJSONs(String data, int startIndex, ArrayList allJSONs) {
-		if (startIndex < 0) {
-			if (StartNameServer.debugMode) GNS.getLogger().severe("Start Index cant be negative");
-			System.exit(2);
-		}
-		if (data == null || data.length() == 0) {
-			return data;
-		}
-		if (allJSONs == null) {
-			if (StartNameServer.debugMode) GNS.getLogger().severe("Can't return parsed json string. allJSONs ArrayList is null.");
-			System.exit(2);
-		}
-
-		// it will always start with '&' 
-		int end = data.indexOf('&', startIndex + 1);
-		if (end == -1) {
-			// packet length header not yet received
-			if (startIndex > 0) {
-				return data.substring(startIndex);
-			}
-			return data;
-		}
-		// get the length of packet
-		int packetLength = Integer.parseInt(data.substring(startIndex + 1, end));
-		if (data.length() >= end + 1 + packetLength) {
-			try
-			{
-				JSONObject json;
-				json = new JSONObject(data.substring(end + 1, end + 1 + packetLength));
-				allJSONs.add(json);
-			} catch (JSONException e)
-			{
-				if (StartNameServer.debugMode) GNS.getLogger().fine("JSON Exception here. Move on.");
-				e.printStackTrace();
-			}
-			// recursive call
-			return getJSONs(data, end + 1 + packetLength, allJSONs);
-		}
-		if (startIndex > 0) {
-			return data.substring(startIndex);
-		}
-		return data;
-	}
-
-	public static void main(String[] args) {
-		// 
-		String filePath = "/Users/abhigyan/Documents/workspace/GNRS-westy/jsons.txt";
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(filePath));
-			int count = 0;
-			StringBuilder sb = new StringBuilder();
-			while(br.ready()) {
-				count++;
-				String jsonString = br.readLine();
-				sb.append("&" + jsonString.length() + "&" + jsonString);
-			}
-			br.close();
-			System.out.println(sb.toString());
-			ArrayList allJSONs = new ArrayList();
-			ByteStreamToJSONObjects.getJSONs(sb.toString(), 0, allJSONs);
-			for (Object j: allJSONs) {
-				System.out.println("OBJECT:" + (JSONObject) j);
-			}
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
+  }
 }

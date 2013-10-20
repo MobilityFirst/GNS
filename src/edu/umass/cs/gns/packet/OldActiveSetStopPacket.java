@@ -1,10 +1,8 @@
 package edu.umass.cs.gns.packet;
 
+import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.Packet.PacketType;
 
 public class OldActiveSetStopPacket extends BasicPacket
 {
@@ -49,11 +47,8 @@ public class OldActiveSetStopPacket extends BasicPacket
 	 * 
 	 * @param name
 	 * @param primarySender
-	 * @param newActives
 	 */
-	public OldActiveSetStopPacket(String name, //NameRecordKey recordKey, 
-                int primarySender, 
-			int activeReceiver, String paxosIDToBeStopped, PacketType type1) {
+	public OldActiveSetStopPacket(String name, int primarySender, int activeReceiver, String paxosIDToBeStopped, PacketType type1) {
 		this.name = name;
 		//this.recordKey = recordKey;
 		this.type = type1;

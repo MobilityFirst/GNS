@@ -37,6 +37,7 @@ UPDATE_RATE_REGULAR = '-updateRateRegular'
 DEBUG_MODE = '-debugMode'
 EXPERIMENT_MODE = '-experimentMode'
 HELP = '-help'
+DELAY_SCHEDULING = '-delayScheduling'
 
 BEEHIVE_REPLICATION = '-beehive'
 BEEHIVEDHTBASE = '-beehiveBase'
@@ -73,19 +74,25 @@ is_local = False                                    #Flag for indicating the exe
 primary_name_server = exp_config.primary_name_server                             #Number of primary name servers
 cache_size = 10000                                    #Cache Size
 name = ''
+
+
+lookup_trace_file = ''           ## lookups trace
+update_trace_file = ''           ## updates trace
+
+# calculated automatically
+lookup_rate = 1000           #in ms                 #Inter-Arrival Time (in ms) between lookup queries, automatically determined by --expRunTime 
+update_rate_regular = 10000    #in ms               #Inter-Arrival Time (in ms) between update request for regular names
+update_rate_mobile = 0      #in ms (NOT USED)       #Inter-Arrival Time (in ms) between update request for mobile names   
+
+
+## NOT USED. was used for zipf workload
 is_zipf_workload = False                             #Use zipf distribution for generating lookup request
 workload_file = ''                         #List of names queried at this local name server
-lookup_trace_file = ''
-update_trace_file = ''
-
 regular_workload = 0                              #Size of regular workload, seems not used for local name server if update is not sent
 mobile_workload = 0                                 #Size of mobile workload
 alpha = 0.91                                        #Alpha for Zipf distribution
 num_lookups = 0                                     #Number of lookup queries generated at the local name server, not used when lookuptrace is used
 num_updates = 0                                     #Number of update queries generated at the local name server, not used when updatetrace is used
-lookup_rate = 1000           #in ms                 #Inter-Arrival Time (in ms) between lookup queries, automatically determined by --expRunTime 
-update_rate_mobile = 0      #in ms                  #Inter-Arrival Time (in ms) between update request for mobile names   
-update_rate_regular = 10000    #in ms               #Inter-Arrival Time (in ms) between update request for regular names
 
 
 # Location Replication / Random Replication
@@ -112,9 +119,10 @@ beehive_leaf_set = 4                                # Beehive Leaf set size
 regular_workload = 1                                # Size of regular workload, seems not used for local name server if update is not sent
 
 # Experiment duration
-is_experiment_mode = True                           # Always set to True to run experiments.
+is_experiment_mode = False                           # Always set to True to run experiments.
 is_debug_mode = True                                #Prints logs if True. Used for testing.
 experiment_run_time  = exp_config.experiment_run_time    # in seconds
+delay_scheduling = False # True
 
 # retransmission parameters
 numberOfTransmissions = 3                         # maximum number of times a query is transmitted
@@ -124,6 +132,7 @@ adaptiveTimeout = False
 delta = 0.05;                                   # Weight assigned to latest sample in calculating moving average.
 mu = 1.0;                                       # Co-efficient of estimated RTT in calculating timeout.
 phi = 6.0;                                      # Co-efficient of deviation in calculating timeout.
+
 
 run_http_server = True
 
@@ -262,7 +271,8 @@ def run_local_name_server():
         command += ' ' + DELTA + ' ' + str(delta)
         command += ' ' + MU + ' ' + str(mu)
         command += ' ' + PHI + ' ' + str(phi)
-    
+    if delay_scheduling:
+        command += ' ' + DELAY_SCHEDULING
 
     command += ' ' + FILE_LOGGING_LEVEL + ' ' + file_logging_level
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level

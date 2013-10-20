@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nio.NodeConfig;
 
 import java.io.BufferedReader;
@@ -45,7 +44,7 @@ public class PaxosNodeConfig implements NodeConfig {
                                 Integer.parseInt(tokens[2])));
             }
         } catch (FileNotFoundException e) {
-            if (StartNameServer.debugMode) GNS.getLogger().severe(" EXIT: Config file not found.");
+            GNS.getLogger().severe(" EXIT: Config file not found.");
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             System.exit(2);
         } catch (IOException e) {

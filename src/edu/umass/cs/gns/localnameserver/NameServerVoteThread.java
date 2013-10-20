@@ -59,13 +59,13 @@ public class NameServerVoteThread extends Thread {
 	 ************************************************************/
 	@Override
 	public void run() {
-		long interval = 0;
+		long interval;
 		int count = 0;
 
-        Random r = new Random();
+    Random r = new Random();
 		
 		try {
-			int x = r.nextInt((int)voteInterval);
+			int x = 50000 + r.nextInt((int)voteInterval);
 			Thread.sleep(x);
 			System.out.println("NameServerVoteThread: Sleeping for " + x + "ms");
 		} catch (InterruptedException e) {
@@ -110,7 +110,11 @@ public class NameServerVoteThread extends Thread {
 					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.nodeID, 0);
 
           // send to all primaries.
-          LNSListener.tcpTransport.sendToIDs(LocalNameServer.getPrimaryNameServers(name), nsSelectionPacket.toJSONObject());
+          Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);
+          for (int primary: primaryNameServers) {
+            LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);
+          }
+//          LNSListener.tcpTransport.sendToIDs(, nsSelectionPacket.toJSONObject());
 
 //					unackedVotes.put(uniqueVoteID, uniqueVoteID);
 

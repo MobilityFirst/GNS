@@ -1,22 +1,25 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.packet.AddRecordPacket;
+import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.UpdateTrace;
+import edu.umass.cs.gns.workloads.ExponentialDistribution;
 import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public class SendUpdatesViaIntercessor {
 
-//	private static ExponentialDistribution exponentialDistribution;
+	private static ExponentialDistribution exponentialDistribution;
 
   public static void schdeduleAllUpdates() {
     if (LocalNameServer.updateTrace == null) {
@@ -25,7 +28,7 @@ public class SendUpdatesViaIntercessor {
     }
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send update intercessor started. Number of queries. "
             + LocalNameServer.updateTrace.size());
-//		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.updateRateRegular);
+		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.updateRateRegular);
     double delay = 0;
 
     double expectedDurationSec = (LocalNameServer.updateTrace.size()
@@ -37,6 +40,7 @@ public class SendUpdatesViaIntercessor {
     GNS.getStatLogger().fine(msg);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
     int count = 0;
+//    delay +=
     for (UpdateTrace u : LocalNameServer.updateTrace) {
       count++;
       if (u.type == UpdateTrace.UPDATE) {
@@ -52,8 +56,8 @@ public class SendUpdatesViaIntercessor {
 
       }
 
-      delay += StartLocalNameServer.updateRateRegular;// exponentialDistribution.exponential();
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send update scheduled: count " + count + " delay = " + delay);
+      delay += exponentialDistribution.exponential();// StartLocalNameServer.updateRateRegular;
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send update scheduled: count " + count + " delay = " + delay);
     }
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
   }

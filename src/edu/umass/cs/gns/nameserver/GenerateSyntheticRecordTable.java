@@ -8,17 +8,17 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * **********************************************************
@@ -28,7 +28,7 @@ import java.util.Set;
  * and its popularity/rank.
  *
  * @author Hardeep Uppal
- *         **********************************************************
+ * **********************************************************
  */
 
 public class GenerateSyntheticRecordTable {
@@ -81,6 +81,122 @@ public class GenerateSyntheticRecordTable {
     }
   }
 
+
+  public static void generateRecordTableWithActives(int regularWorkloadSize, int mobileWorkloadSize,
+                                         int defaultTTLRegularNames,int defaultTTLMobileNames,
+                                         String activesFile){
+
+
+//		InCoreRecordMap recordMap = new InCoreRecordMap();
+//		ConcurrentMap<String, NameRecord> recordTable = new ConcurrentHashMap<String, NameRecord>(
+//				( regularWorkloadSize + mobileWorkloadSize + 1), 0.75f, 8);
+
+    HashMap<Integer, Set<Integer>> nameActives = null;
+    try {
+      nameActives = readActives(activesFile);
+    } catch (IOException e) {
+      GNS.getLogger().severe("Exception: error reading the set of actives from file. Quitting." + e.getMessage());
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      System.exit(2);
+    }
+    // reset the database
+    NameServer.resetDB();
+
+    int numActivesAdded = 0;
+    int numPrimariesAdded = 0;
+
+    long t0 = System.currentTimeMillis();
+    for (int name = 0; name < (regularWorkloadSize + mobileWorkloadSize); name++) {
+
+      if (nameActives.containsKey(name) == false) continue; // this name will not be queried anytime
+
+      // After how much delay will paxos start coordinator election ...
+      long t1 = System.currentTimeMillis();
+      long timeSpent = t1 - t0;
+      long initScoutDelay = 0;
+      if (StartNameServer.paxosStartMinDelaySec > 0 && StartNameServer.paxosStartMaxDelaySec > 0) {
+        if (timeSpent > StartNameServer.paxosStartMaxDelaySec*1000) {
+          initScoutDelay = 0;
+        } else {
+          initScoutDelay = (StartNameServer.paxosStartMinDelaySec*1000 - timeSpent)
+                  + new Random().nextInt(StartNameServer.paxosStartMaxDelaySec*1000 - StartNameServer.paxosStartMinDelaySec*1000);
+        }
+      }
+
+
+      try {
+        String strName = Integer.toString(name);
+        Set<Integer> primaryNameServer = HashFunction.getPrimaryReplicas(strName);
+
+        // Add record into the name server's record table if the name server
+        // is the primary replica if this name
+        if (primaryNameServer.contains(NameServer.nodeID)) {
+          numPrimariesAdded++;
+          //Use the SHA-1 hash of the name as its address
+
+          if (StartNameServer.debugMode) GNS.getLogger().fine("PrimaryRecordAdded\tName:\t" + name);
+          //Generate an entry for the name and add its record to the name server record table
+          ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName, nameActives.get(name), true);
+          try {
+            NameServer.addNameRecordPrimary(nameRecordPrimary);
+          } catch (RecordExistsException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            continue;
+          }
+
+          try {
+            PaxosManager.createPaxosInstance(ReplicaController.getPrimaryPaxosID(nameRecordPrimary), primaryNameServer,
+                    nameRecordPrimary.toString(), initScoutDelay);
+          } catch (FieldNotFoundException e) {
+            GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+            e.printStackTrace();
+          }
+        }
+
+        if (nameActives.get(name).contains(NameServer.nodeID)){
+          if (StartNameServer.debugMode) GNS.getLogger().fine("NameRecordAdded\tName:\t" + name);
+
+          numActivesAdded++;
+          ValuesMap valuesMap = new ValuesMap();
+          valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(randomString(10))));
+          ListenerReplicationPaxos.addNameRecordLocal(Integer.toString(name),nameActives.get(name),name + "-1",valuesMap,0);
+        }
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    long t1 = System.currentTimeMillis();
+    GNS.getLogger().severe(" Number of records added in primary DB: " + numPrimariesAdded + " In active DB: " + numActivesAdded);
+    GNS.getLogger().severe(" Time to add all records " + (t1 - t0)/1000 + " sec");
+
+
+  }
+
+  /**
+   * Read set of active name servers from file.
+   * @param activesFile
+   * @return
+   * @throws IOException
+   */
+  public static HashMap<Integer, Set<Integer>> readActives(String activesFile) throws IOException{
+    BufferedReader br = new BufferedReader(new FileReader(activesFile));
+    HashMap<Integer, Set<Integer>> nameActives = new HashMap<Integer, Set<Integer>>();
+    while (true) {
+      String line = br.readLine();
+      if (line == null) break;
+      String[] tokens = line.split("\\s+");
+      int name = Integer.parseInt(tokens[0]);
+      HashSet<Integer> actives = new HashSet<Integer>();
+      for (int i = 1; i < tokens.length; i++) {
+        actives.add(Integer.parseInt(tokens[i]));
+      }
+      nameActives.put(name,actives);
+    }
+    return nameActives;
+  }
+
   /**
    * This method generates a record table at the name server
    * from a synthetic workload. The workload is a list of
@@ -95,7 +211,8 @@ public class GenerateSyntheticRecordTable {
    * @throws NoSuchAlgorithmException
    */
   public static void generateRecordTable(int regularWorkloadSize, int mobileWorkloadSize,
-      int defaultTTLRegularNames,int defaultTTLMobileNames){
+                                         int defaultTTLRegularNames,int defaultTTLMobileNames){
+
 
 
 //		InCoreRecordMap recordMap = new InCoreRecordMap();
@@ -103,6 +220,7 @@ public class GenerateSyntheticRecordTable {
 //				( regularWorkloadSize + mobileWorkloadSize + 1), 0.75f, 8);
     // reset the database
     NameServer.resetDB();
+
     MessageDigest sha1 = null;
     try {
       sha1 = MessageDigest.getInstance("SHA-1");
@@ -174,7 +292,12 @@ public class GenerateSyntheticRecordTable {
           long timeSpent = t1 - t0;
           long initScoutDelay = 0;
           if (StartNameServer.paxosStartMinDelaySec > 0 && StartNameServer.paxosStartMaxDelaySec > 0) {
-            initScoutDelay = (StartNameServer.paxosStartMinDelaySec*1000 - timeSpent) + new Random().nextInt(StartNameServer.paxosStartMaxDelaySec*1000 - StartNameServer.paxosStartMinDelaySec*1000);
+            if (timeSpent > StartNameServer.paxosStartMaxDelaySec*1000) {
+              initScoutDelay = 0;
+            } else {
+              initScoutDelay = (StartNameServer.paxosStartMinDelaySec*1000 - timeSpent)
+                      + new Random().nextInt(StartNameServer.paxosStartMaxDelaySec*1000 - StartNameServer.paxosStartMinDelaySec*1000);
+            }
           }
           try {
             ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay);
@@ -194,8 +317,8 @@ public class GenerateSyntheticRecordTable {
 //					recordTable.put( recordEntry.name, recordEntry );
 
 //          Thread.sleep(sleepBetweenNames);
-
         }
+
 
       } catch (Exception e) {
         e.printStackTrace();

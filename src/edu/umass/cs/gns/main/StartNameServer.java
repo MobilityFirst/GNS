@@ -49,6 +49,10 @@ public class StartNameServer {
   // is in experiment mode: abhigyan.
   // use this flag to make changes to code which will only run during experiments.
   public static boolean experimentMode = false;
+
+  public static boolean delayScheduling = false;
+  public static double variation = 0.1;
+
   public static int workerThreadCount = 5; // number of worker threads
   public static boolean tinyUpdate = false; // 
   private static HelpFormatter formatter = new HelpFormatter();
@@ -60,8 +64,8 @@ public class StartNameServer {
   public static String nsnsPingFile;
   public static int minReplica = 3;
   public static int maxReplica = 100;
-  public static String specifiedActives = "specifiedActive.txt";
-  public static int loadMonitorWindow = 100;
+  public static String nameActives;
+  public static int loadMonitorWindow = 5000;
   private static int quitAfterTime = -1; // only for testing: local name server will quit after this time
 
   // in experiment mode, the default paxos coordinator will send prepare message at a random time between
@@ -159,6 +163,9 @@ public class StartNameServer {
 
     Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec",true,"paxos starts at most this many seconds after start of experiment");
 
+    Option delayScheduling = new Option("delayScheduling",  "add packet delay equal to ping delay between two servers (used for emulation).");
+    Option variation = new Option("variation", true,"variation");
+
     Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Size of window to calculate the "
             + "moving average of update inter-arrival time")
@@ -205,6 +212,9 @@ public class StartNameServer {
     Option quitAfterTime = new Option("quitAfterTime", true,
             "name server will quit after this time");
 
+    Option nameActives = new Option("nameActives", true,
+            "name server will quit after this time");
+
     commandLineOptions = new Options();
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
@@ -241,6 +251,8 @@ public class StartNameServer {
     commandLineOptions.addOption(failureDetectionTimeoutInterval);
     commandLineOptions.addOption(paxosStartMinDelaySec);
     commandLineOptions.addOption(paxosStartMaxDelaySec);
+    commandLineOptions.addOption(delayScheduling);
+    commandLineOptions.addOption(variation);
 
     commandLineOptions.addOption(workerThreadCount);
     commandLineOptions.addOption(tinyUpdate);
@@ -257,6 +269,7 @@ public class StartNameServer {
     commandLineOptions.addOption(statFileLoggingLevel);
     commandLineOptions.addOption(signatureCheck);
     commandLineOptions.addOption(quitAfterTime);
+    commandLineOptions.addOption(nameActives);
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
   }
@@ -358,18 +371,12 @@ public class StartNameServer {
         mongoPort = Integer.parseInt(parser.getOptionValue("mongoPort"));
       }
 
-//      primaryPaxos = parser.hasOption("primaryPaxos");
-//      PaxosManager.writeStateToDisk = parser.hasOption("paxosDiskBackup");
-//      String paxosLogFolder ;
-//      if (PaxosManager.writeStateToDisk && parser.hasOption("paxosLogFolder")) {
-//      }
       if (parser.hasOption("paxosLogFolder") == false) {
         PaxosManager.setPaxosLogFolder(DEFAULTPAXOSLOGPATHNAME);
 
       } else {
         PaxosManager.setPaxosLogFolder(parser.getOptionValue("paxosLogFolder"));
       }
-
 
       if (parser.hasOption("failureDetectionMsgInterval")) {
         PaxosManager.setFailureDetectionPingInterval(Integer.parseInt(parser.getOptionValue("failureDetectionMsgInterval")) * 1000);
@@ -381,6 +388,13 @@ public class StartNameServer {
       if (experimentMode) {
         paxosStartMinDelaySec = Integer.parseInt(parser.getOptionValue("paxosStartMinDelaySec", "0"));
         paxosStartMaxDelaySec = Integer.parseInt(parser.getOptionValue("paxosStartMaxDelaySec", "0"));
+      }
+
+
+      if (parser.hasOption("delayScheduling")) {
+        delayScheduling = parser.hasOption("delayScheduling");
+        if(delayScheduling && parser.hasOption("variation"))
+          variation = Double.parseDouble(parser.getOptionValue("variation"));
       }
 
       if (parser.hasOption("workerThreadCount")) {
@@ -408,27 +422,33 @@ public class StartNameServer {
       }
 
       // only for testing
-      if (parser.hasOption("quitAfterTime")) {
-        quitAfterTime = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
-        if (quitAfterTime >= 0) {
-          Thread t = new Thread() {
-            @Override
-            public void run() {
-              System.out.println("Sleeping for " + quitAfterTime + " sec before quitting ...");
-              try {
-                Thread.sleep(quitAfterTime * 1000);
-              } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-              }
-              System.out.println("SYSTEM EXIT.");
-              System.exit(2);
+      if (experimentMode) {
+        if (parser.hasOption("quitAfterTime")) {
+          quitAfterTime = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
+          if (quitAfterTime >= 0) {
+            Thread t = new Thread() {
+              @Override
+              public void run() {
+                System.out.println("Sleeping for " + quitAfterTime + " sec before quitting ...");
+                try {
+                  Thread.sleep(quitAfterTime * 1000);
+                } catch (InterruptedException e) {
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                System.out.println("SYSTEM EXIT.");
+                System.exit(2);
 
-            }
-          };
-          t.start();
+              }
+            };
+            t.start();
+          }
         }
       }
 
+        // only for testing
+      if (experimentMode) {
+        nameActives = parser.getOptionValue("nameActives","nameActives");
+      }
 
 //      NSListenerUpdate.doSignatureCheck = parser.hasOption("signatureCheck");
     } catch (Exception e1) {

@@ -31,10 +31,10 @@ public class Ballot implements Comparable<Ballot>{
 	}
 
     public int getBallotNumber() {
-        return ballotNumber;
+      return ballotNumber;
     }
     public int getCoordinatorID() {
-        return  coordinatorID;
+      return  coordinatorID;
     }
 
 	@Override

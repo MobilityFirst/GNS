@@ -176,7 +176,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           // start-up paxos instance at this node.
 
           CopyStateFromOldActiveTask copyTask = new CopyStateFromOldActiveTask(packet);
-          NameServer.timer.schedule(copyTask, 0, ReplicaController.TIMEOUT_INTERVAL);
+          NameServer.timer.schedule(copyTask, 0, ReplicaController.TIMEOUT_INTERVAL/4);
           break;
 
         case NEW_ACTIVE_START_FORWARD:
@@ -188,7 +188,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           }
           else {
             copyTask = new CopyStateFromOldActiveTask(packet);
-            NameServer.timer.schedule(copyTask, 0, ReplicaController.TIMEOUT_INTERVAL);
+            NameServer.timer.schedule(copyTask, 0, ReplicaController.TIMEOUT_INTERVAL/4);
           }
           break;
 
@@ -242,6 +242,7 @@ class ReplicationWorkerPaxos extends TimerTask {
             if (StartNameServer.debugMode) GNS.getLogger().fine(" Old Active did not return previous value.");
           }
           break;
+
         case NEW_ACTIVE_START_RESPONSE:
           packet = new NewActiveSetStartupPacket(json);
           NewActiveStartInfo info = ListenerReplicationPaxos.activeStartupInProgress.get(packet.getID());
@@ -250,7 +251,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           if (info != null) {
             info.receivedResponseFromActive(packet.getSendingActive());
             if (info.haveMajorityActivesResponded()) {
-              if (StartNameServer.debugMode) GNS.getLogger().fine("NEW_ACTIVE_START: received confirmation from majority. ");
+              if (StartNameServer.debugMode) GNS.getLogger().fine("NEW_ACTIVE_START: received confirmation from majority. name = " + packet.getName());
               info.packet.changePacketTypeToConfirmation();
 //              NameServer.tcpTransport.sendToID(info.packet.toJSONObject(),
 //                      info.packet.getSendingPrimary(), GNS.PortType.PERSISTENT_TCP_PORT);
@@ -273,7 +274,6 @@ class ReplicationWorkerPaxos extends TimerTask {
             break;
           }
           try {
-
             if (StartNameServer.debugMode) GNS.getLogger().fine("NAME RECORD NOW: " + nameRecord1);
             int paxosStatus = nameRecord1.getPaxosStatus(paxosID);
             if (StartNameServer.debugMode) GNS.getLogger().fine("PaxosIDtoBeStopped = " + paxosID + " PaxosStatus = " + paxosStatus);
@@ -286,11 +286,18 @@ class ReplicationWorkerPaxos extends TimerTask {
               // to this class.
               PaxosManager.propose(paxosID, new RequestPacket(PacketType.ACTIVE_PAXOS_STOP.getInt(),
                       oldActiveStopPacket.toString(), PaxosPacketType.REQUEST, true));
+              Long groupChangeStartTime = ReplicaController.groupChangeStartTimes.get(oldActiveStopPacket.getName());
+              if (groupChangeStartTime != null) {
+                long groupChangeDuration = System.currentTimeMillis()  - groupChangeStartTime;
+                if (StartNameServer.experimentMode)
+                  GNS.getLogger().severe("\tStopActiveFinallyProposed\t" + oldActiveStopPacket.getName() + "\t" + groupChangeDuration+ "\t");
+              }
               if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSE: STOP Current Active Set. Paxos ID = " + paxosID);
             } else if (paxosStatus == 2) { // this is the old paxos ID
               // send confirmation to primary that this paxos ID is stopped.
               sendOldActiveStopConfirmationToPrimary(oldActiveStopPacket);
             } else {
+              // if new active start packet comes before old active stop is committed, this situation might arise.
               if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS ID Neither current nor old. Ignore msg = " + paxosID);
             }
           } catch (FieldNotFoundException e) {
@@ -301,7 +308,9 @@ class ReplicationWorkerPaxos extends TimerTask {
         case ACTIVE_PAXOS_STOP:
           // STOP command is performed by paxos instance replica.
           oldActiveStopPacket = new OldActiveSetStopPacket(json);
-          if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Old Active Stopped: " + oldActiveStopPacket);
+
+          if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Old Active Stopped: Name = "
+                  + oldActiveStopPacket.getName() + "\t" + oldActiveStopPacket);
           paxosID = oldActiveStopPacket.getPaxosIDToBeStopped();
 
 
@@ -313,8 +322,11 @@ class ReplicationWorkerPaxos extends TimerTask {
             break;
           }
           try{
+
             nameRecord.handleCurrentActiveStop(paxosID);
+
             sendOldActiveStopConfirmationToPrimary(oldActiveStopPacket);
+
 
           } catch (FieldNotFoundException e) {
             GNS.getLogger().fine("FieldNotFoundException. " + e.getMessage());
@@ -378,6 +390,11 @@ class ReplicationWorkerPaxos extends TimerTask {
 
     // confirm to primary name server that this set of actives has stopped
     if (oldActiveStopPacket.getActiveReceiver() == NameServer.nodeID) {
+      Long groupChangeStartTime = ReplicaController.groupChangeStartTimes.get(oldActiveStopPacket.getName());
+      if (groupChangeStartTime != null) {
+        long groupChangeDuration = System.currentTimeMillis()  - groupChangeStartTime;
+        if (StartNameServer.experimentMode) GNS.getLogger().severe("\tStopActiveCompleted\t" + oldActiveStopPacket.getName() + "\t" + groupChangeDuration+ "\t");
+      }
       // the active node who received this node, sends confirmation to primary
       // confirm to primary
       oldActiveStopPacket.changePacketTypeToConfirm();
@@ -399,7 +416,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           throws  JSONException, IOException{
     try {
 
-
+      int path = 0;
       try {
         NameRecord nameRecord = new NameRecord(originalPacket.getName(), originalPacket.getNewActiveNameServers(),
                 originalPacket.getNewActivePaxosID(), previousValue);
@@ -414,8 +431,10 @@ class ReplicationWorkerPaxos extends TimerTask {
           if (StartNameServer.debugMode) GNS.getLogger().fine(" PAXOS INSTANCE NOT CREATED. "  + nameRecord.getName());
         }
       } catch (RecordExistsException e) {
-
+        path = 1;
         NameRecord nameRecord = null;
+
+//        if (previousValue.containsKey(NameRecordKey.EdgeRecord.getName()))
         try {
           nameRecord = NameServer.getNameRecord(originalPacket.getName());
           nameRecord.handleNewActiveStart(originalPacket.getNewActiveNameServers(),
@@ -430,13 +449,13 @@ class ReplicationWorkerPaxos extends TimerTask {
         } catch (FieldNotFoundException e1) {
           GNS.getLogger().severe("Field not found exception: " + e.getMessage());
           e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (RecordNotFoundException e1) {
+        }
+        catch (RecordNotFoundException e1) {
           GNS.getLogger().severe("Not possible because record just existed.");
           e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
-        if (StartNameServer.debugMode) GNS.getLogger().fine(" NAME RECORD UPDATED AT ACTIVE  NODE. "
-                + "name record = " + nameRecord);
+        if (StartNameServer.debugMode) GNS.getLogger().fine(" NAME RECORD UPDATED AT ACTIVE  NODE. Name record = " + nameRecord);
       } catch (FieldNotFoundException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
@@ -472,6 +491,27 @@ class ReplicationWorkerPaxos extends TimerTask {
       originalPacket.changePacketTypeToResponse();
       int sendingActive = originalPacket.getSendingActive();
       originalPacket.changeSendingActive(NameServer.nodeID);
+//      NameRecord nameRecord2 = NameServer.getNameRecord(originalPacket.getName());
+//      if (nameRecord2.containsActiveNameServer(NameServer.nodeID)) {
+//        GNS.getLogger().severe("NameRecord contains active name server " + nameRecord2.getName() + "\t"
+//                + NameServer.nodeID + "\tNameRecord = " + nameRecord2.toString()+ "\tPath = " + path + "\tPacket = " + originalPacket);
+//      }
+//      else {
+//        GNS.getLogger().severe("NameRecord does not contains active name server " + nameRecord2.getName() + "\t"
+//                + NameServer.nodeID + "\tNameRecord = " + nameRecord2.toString() + "\tPath = " + path + "\tPacket = " + originalPacket);
+//        System.exit(2);
+//      }
+//
+//      if (nameRecord2.containsKey(NameRecordKey.EdgeRecord.getName())) {
+//        GNS.getLogger().severe("NameRecord  contains key edge record " + nameRecord2.getName()
+//                + " Values Map = "  + nameRecord2.getValuesMap() + "\tNameRecord = " + nameRecord2.toString() + "\t Path = " + path  + " \tPrevious Value = " + previousValue);
+//      }
+//      else {
+//        GNS.getLogger().severe("NameRecord  does not contains key edge record " + nameRecord2.getName()
+//                + " Values Map = "  + nameRecord2.getValuesMap()
+//                + "\tNameRecord = " + nameRecord2.toString() + "\t Path = " + path  + " \tPrevious Value = " + previousValue);
+//        System.exit(2);
+//      }
       if (StartNameServer.debugMode) GNS.getLogger().fine("NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
 //      NameServer.tcpTransport.sendToID(originalPacket.toJSONObject(), sendingActive,
 //              GNS.PortType.PERSISTENT_TCP_PORT);
@@ -555,7 +595,7 @@ class NewActiveStartInfo {
   }
 
   public synchronized boolean haveMajorityActivesResponded() {
-    if (sent == false && packet.getNewActiveNameServers().size() < activesResponded.size() * 2) {
+    if (sent == false && packet.getNewActiveNameServers().size() == activesResponded.size()) {
       sent = true;
       return true;
     }

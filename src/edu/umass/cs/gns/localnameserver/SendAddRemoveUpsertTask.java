@@ -103,7 +103,7 @@ public class SendAddRemoveUpsertTask extends TimerTask{
       String hostAddress = null;
       if (senderAddress != null) hostAddress = senderAddress.getHostAddress();
       updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-              requestRecvdTime, hostAddress, senderPort);
+              requestRecvdTime, hostAddress, senderPort, 0,null);
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
       updatePacketWithRequestID(packet, updateRequestID);
     }

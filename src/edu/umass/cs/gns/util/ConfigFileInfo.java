@@ -161,6 +161,8 @@ public class ConfigFileInfo {
 
     GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
     numberOfNameServers = nameServerCount;
+    GNS.getLogger().fine("Closest name server is " + closestNameServer);
+//    System.exit(2);
   }
 
   public static void addHostInfo(int id, InetAddress ipAddress, int startingPort, double pingLatency, double latitude, double longitude) {
@@ -294,6 +296,15 @@ public class ConfigFileInfo {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getPingLatency();
   }
+
+  public static void updatePingLatency(int id, long responseTime) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    if (nodeInfo!=null) nodeInfo.updatePingLatency(responseTime);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getPingLatency();
+  }
+
+
+
 
   /**
    * Tests *

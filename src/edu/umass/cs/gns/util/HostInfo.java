@@ -69,8 +69,12 @@ public class HostInfo {
     return startingPortNumber;
   }
 
-  public double getPingLatency() {
+  public synchronized double getPingLatency() {
     return pingLatency;
+  }
+
+  public synchronized void updatePingLatency(long responseTime) {
+    pingLatency = pingLatency + 0.1*responseTime;
   }
 
   public double getLatitude() {

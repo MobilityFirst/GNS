@@ -109,6 +109,42 @@ public class ReplicaControllerRecord {
 
   }
 
+
+  /**
+   * ONLY FOR RUNNING EXPERIMENTS!!
+   * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
+   * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
+   */
+  public ReplicaControllerRecord(String name, Set<Integer> actives, boolean initialize) {
+
+    hashMap = new HashMap<Field, Object>();
+    hashMap.put(NAME,name);
+
+    if (initialize == false) return;
+    hashMap.put(PRIMARY_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
+    hashMap.put(ACTIVE_NAMESERVERS, actives);
+    hashMap.put(OLD_ACTIVE_NAMESERVERS, actives);
+
+    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
+    hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
+
+    hashMap.put(ACTIVE_PAXOS_ID, name + "-1");
+    hashMap.put(OLD_ACTIVE_PAXOS_ID, name + "-2");
+
+    hashMap.put(MARKED_FOR_REMOVAL, -1);
+
+    hashMap.put(VOTES_MAP, new ConcurrentHashMap<Integer,Integer>());
+    hashMap.put(STATS_MAP, new ConcurrentHashMap<Integer,StatsInfo>());
+
+    hashMap.put(PREV_TOTAL_READ, 0);
+    hashMap.put(PREV_TOTAL_WRITE, 0);
+    hashMap.put(MOV_AVG_READ, new ArrayList<Integer>());
+    hashMap.put(MOV_AVG_WRITE, new ArrayList<Integer>());
+
+    hashMap.put(KEEP_ALIVE_TIME, 0);
+
+  }
+
   /**
    * creates an empty ReplicaControllerRecord object
    * @param name
@@ -659,6 +695,7 @@ public class ReplicaControllerRecord {
         return setNewActiveRunningFields;
       }
       setNewActiveRunningFields.add(ACTIVE_NAMESERVERS_RUNNING);
+      setNewActiveRunningFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
       return setNewActiveRunningFields;
     }
   }
@@ -676,9 +713,12 @@ public class ReplicaControllerRecord {
 
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(true);
+      values.add(false);
 
-      NameServer.replicaController.update(getName(), NAME, updateFields, values);
+      NameServer.replicaController.update(getName(),NAME,updateFields,values);
       hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
+      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
+
       return true;
     }
     return false;

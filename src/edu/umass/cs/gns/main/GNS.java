@@ -71,11 +71,11 @@ public class GNS {
   /**
    * default query timeout in ms.
    */
-  public static int DEFAULT_QUERY_TIMEOUT = 500;
+  public static int DEFAULT_QUERY_TIMEOUT = 2000;
   /**
    * maximum query wait time in milliseconds
    */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 1000; // 100000 is too damn long... changed to 5 seconds - Westy
+  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 10000; // 100000 is too damn long... changed to 5 seconds - Westy
   /**
    * default number of transmissions
    */

@@ -47,6 +47,10 @@ public interface RecordMapInterface {
   public abstract void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1,
           Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
 
+  public abstract void updateConditional(String name, Field nameField, Field conditionField, Object conditionValue,
+                               ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField,
+                               ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
+
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1);
 
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1,

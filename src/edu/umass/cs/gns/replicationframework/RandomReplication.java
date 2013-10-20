@@ -18,7 +18,7 @@ public class RandomReplication implements ReplicationFramework {
 	public Set<Integer> newActiveReplica(ReplicaControllerRecord nameRecordPrimary, int numReplica, int count ) throws FieldNotFoundException{
 		// random replicas will be selected deterministically for each name.
 		
-		if( numReplica == ConfigFileInfo.getNumberOfNameServers() ) {
+		if(numReplica == ConfigFileInfo.getNumberOfNameServers()) {
 			Set<Integer> activeNameServerSet = new HashSet<Integer>();
 			for( int i = 0; i < ConfigFileInfo.getNumberOfNameServers(); i++ ) {
 				activeNameServerSet.add( i );

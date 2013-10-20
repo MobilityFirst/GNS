@@ -1,14 +1,15 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
+
 import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.ListenerReplicationPaxos;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
@@ -22,21 +23,26 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ReplicaController {
 
+  public static ConcurrentHashMap<String,Long> groupChangeStartTimes = new ConcurrentHashMap<String, Long>();
+
   /**
    * Timeout after which replica controller retries sending request to actives for (1) starting new actives
    * (2) stopping old actives.
    */
   public static int TIMEOUT_INTERVAL = 5000;
+
   /**
    * Set of RemoveRecordPacket that this node has currently received and is removing records for.
    */
   private static ConcurrentHashMap<String, RemoveRecordPacket> removeRecordRequests = new ConcurrentHashMap<String, RemoveRecordPacket>();
+
 
   /**
    * returns true if the given paxosID belongs to that between primary name servers for a name
@@ -49,10 +55,8 @@ public class ReplicaController {
       return false;
     }
 
-    if (paxosID.endsWith("-P")) {
-      return true;
-    }
-    return false;
+    if (paxosID.endsWith("-P")) return true;
+    return  false;
   }
 
   /**
@@ -60,7 +64,8 @@ public class ReplicaController {
    *
    * @param nameRecord
    */
-  public static String getPrimaryPaxosID(ReplicaControllerRecord nameRecord) throws FieldNotFoundException {
+  public static String getPrimaryPaxosID(ReplicaControllerRecord nameRecord) throws FieldNotFoundException
+  {
     return getPrimaryPaxosID(nameRecord.getName());
   }
 
@@ -70,7 +75,7 @@ public class ReplicaController {
    * @return
    */
   public static String getPrimaryPaxosID(String name) {
-    return name + "-P";
+    return  name + "-P";
   }
 
   /**
@@ -85,7 +90,7 @@ public class ReplicaController {
     }
     GNS.getLogger().severe("Error Exception: String is not a valid primaryPaxosID. String = " + primaryPaxosID);
 
-    return null;
+    return  null;
   }
 
   /**
@@ -93,12 +98,14 @@ public class ReplicaController {
    *
    * @param nameRecord
    */
-  public static String getActivePaxosID(ReplicaControllerRecord nameRecord) throws FieldNotFoundException {
+  public static String getActivePaxosID(ReplicaControllerRecord nameRecord) throws FieldNotFoundException
+  {
     Random r = new Random();
     return nameRecord.getName() + "-" + r.nextInt(100000000);
   }
 
-  public static String getActivePaxosID(String name) {
+  public static String getActivePaxosID(String name)
+  {
     Random r = new Random();
     return name + "-" + r.nextInt(100000000);
   }
@@ -114,21 +121,24 @@ public class ReplicaController {
       return tokens[0];
     }
     GNS.getLogger().severe("Error Exception: String is not a valid activePaxosID. String = " + activePaxosID);
-    return null;
+    return  null;
   }
+
+
+
+
+
 
   public static void handleIncomingPacket(JSONObject json) {
 
     try {
       switch (Packet.getPacketType(json)) {
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
-          NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(
-                  json);
+          NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(json);
           newActiveStartupReceivedConfirmationFromActive(packet);
           break;
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
-          OldActiveSetStopPacket oldPacket = new OldActiveSetStopPacket(
-                  json);
+          OldActiveSetStopPacket oldPacket = new OldActiveSetStopPacket(json);
           oldActivesStoppedReceivedConfirmationFromActive(oldPacket);
           break;
         default:
@@ -147,6 +157,7 @@ public class ReplicaController {
     }
   }
 
+
   /**
    * When name record is added this method (1) creates paxos instance between primaries
    * (2) NameRecord in DB (3) paxos instance between actives.
@@ -154,7 +165,8 @@ public class ReplicaController {
    * @param valuesMap
    * @throws FieldNotFoundException
    */
-  public static void handleNameRecordAddAtPrimary(ReplicaControllerRecord recordEntry, ValuesMap valuesMap, long initScoutDelay) throws FieldNotFoundException {
+  public static void handleNameRecordAddAtPrimary(ReplicaControllerRecord recordEntry, ValuesMap valuesMap,
+                                                  long initScoutDelay) throws FieldNotFoundException{
 //        if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName() +
 //                "\tBefore Paxos instance created for name: " + recordEntry.getName()
 //                        + " Primaries: " + primaries);
@@ -164,17 +176,14 @@ public class ReplicaController {
 //    }
     PaxosManager.createPaxosInstance(getPrimaryPaxosID(recordEntry), recordEntry.getPrimaryNameservers(),
             recordEntry.toString(), initScoutDelay);
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine(" Primary-paxos created: Name = " + recordEntry.getName());
-    }
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Primary-paxos created: Name = " + recordEntry.getName());
 
-//		if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName()  +
+    //		if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName()  +
+
     ListenerReplicationPaxos.addNameRecordLocal(recordEntry.getName(), recordEntry.getActiveNameservers(),
             recordEntry.getActivePaxosID(), valuesMap, initScoutDelay);
 
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine(" Active-paxos and name record created. Name = " + recordEntry.getName());
-    }
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Active-paxos and name record created. Name = " + recordEntry.getName());
 //				"\tPaxos instance created for name: " + recordEntry.getName()
 //						+ " Primaries: " + primaries);
 //    if (startActives) {
@@ -188,6 +197,7 @@ public class ReplicaController {
 //    }
   }
 
+
   /**
    * Handles a name record remove request from a client. if name exists, then we start deleting the name by
    * proposing to primaries that name record will be deleted.
@@ -200,13 +210,16 @@ public class ReplicaController {
     // 2. stop current primaries
     // 3. send confirmation to client.
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
+    //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(removeRecord.getName());
+
+    ArrayList<Field> readFields = new ArrayList<Field>();
+    readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
 
     try {
-      ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(removeRecord.getName(),
-              ReplicaControllerRecord.MARKED_FOR_REMOVAL);
+      ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(removeRecord.getName(), readFields);
       if (nameRecordPrimary.isRemoved()) { // if removed, send confirm to client
         ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(true, removeRecord);
-        NameServer.tcpTransport.sendToID(removeRecord.getLocalNameServerID(), confirmPacket.toJSONObject());
+        NameServer.tcpTransport.sendToID(removeRecord.getLocalNameServerID(),confirmPacket.toJSONObject());
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("Record already remove. Sent confirmation to client. Name = " + removeRecord.getName());
         }
@@ -231,7 +244,7 @@ public class ReplicaController {
     } catch (RecordNotFoundException e) {
       // return failure, because record was not even found in deleted state
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(false, removeRecord);
-      NameServer.tcpTransport.sendToID(removeRecord.getLocalNameServerID(), confirmPacket.toJSONObject());
+      NameServer.tcpTransport.sendToID(removeRecord.getLocalNameServerID(),confirmPacket.toJSONObject());
 
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
@@ -243,13 +256,13 @@ public class ReplicaController {
     }
 
   }
+
+
   private static ArrayList<Field> applyMarkedForRemovalFields = new ArrayList<Field>();
 
   private static ArrayList<Field> getApplyMarkedForRemovalFields() {
     synchronized (applyMarkedForRemovalFields) {
-      if (applyMarkedForRemovalFields.size() > 0) {
-        return applyMarkedForRemovalFields;
-      }
+      if (applyMarkedForRemovalFields.size() > 0) return applyMarkedForRemovalFields;
 
       applyMarkedForRemovalFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
       applyMarkedForRemovalFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS_RUNNING);
@@ -291,24 +304,16 @@ public class ReplicaController {
       rcRecord.setMarkedForRemoval(); // DB write
       // TODO: if update not applied do not proceed further
 
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("PAXOS DECISION applied. Name Record marked for removal " + rcRecord.getName());
-      }
+      if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION applied. Name Record marked for removal " + rcRecord.getName());
 
       ReplicaControllerRecord.ACTIVE_STATE stage = rcRecord.getNewActiveTransitionStage();
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("ACTIVE Transition currently in stage = " + stage + " name " + rcRecord.getName());
-      }
+      if (StartNameServer.debugMode) GNS.getLogger().fine("ACTIVE Transition currently in stage = " + stage + " name " + rcRecord.getName());
 
       //    if (isSmallestNodeRunning(nameRecord.getPrimaryNameservers()) == false) return;
 
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("Remove record request has keys: " + removeRecordRequests.keySet());
-      }
+      if (StartNameServer.debugMode) GNS.getLogger().fine("Remove record request has keys: " + removeRecordRequests.keySet());
       if (removeRecordRequests.containsKey(getPrimaryPaxosID(rcRecord.getName())) == false) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("SKIP: remove record request does not not contain " + rcRecord.getName());
-        }
+        if (StartNameServer.debugMode) GNS.getLogger().fine("SKIP: remove record request does not not contain " + rcRecord.getName());
         return;
       }
       switch (stage) {
@@ -332,12 +337,14 @@ public class ReplicaController {
 //		}
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field Not Found Exception. " + e.getMessage());
-      GNS.getLogger().severe(rcRecord.toString());
+
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 
     }
 
   }
+
+
 
 //  public static void startupNewActives(ReplicaControllerRecord nameRecord, ValuesMap initialValue) throws FieldNotFoundException{
 //    // this method will schedule a timer task to startup active replicas.
@@ -349,6 +356,7 @@ public class ReplicaController {
 //    // scheduled
 //    NameServer.timer.schedule(startupTask, 0, TIMEOUT_INTERVAL);
 //  }
+
 //  /**
 //   * Create a task to stop old actives from this name record.
 //   *
@@ -362,6 +370,8 @@ public class ReplicaController {
 //            nameRecord.getOldActivePaxosID());
 //    NameServer.timer.schedule(task, 0, TIMEOUT_INTERVAL);
 //  }
+
+
   /**
    * Primary has received message from an active that the paxos instance between new actives has started.
    * This method propose a request to ReplicaControllerRecord to update that new actives are running.
@@ -372,6 +382,11 @@ public class ReplicaController {
       GNS.getLogger().fine("NEW_ACTIVE_START: Received confirmation at primary. " + packet.getName());
     }
 
+    Long groupChangeStartTime = groupChangeStartTimes.remove(packet.getName());
+    if (groupChangeStartTime != null) {
+      long groupChangeDuration = System.currentTimeMillis()  - groupChangeStartTime;
+      if (StartNameServer.experimentMode) GNS.getLogger().severe("\tGroupChangeDuration\t" + packet.getName() + "\t" + groupChangeDuration+ "\t");
+    }
 //    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(packet.getName());
     String paxosID = getPrimaryPaxosID(packet.getName());
 
@@ -388,13 +403,13 @@ public class ReplicaController {
     }
 
   }
+
+
   private static ArrayList<Field> newActiveStartedFields = new ArrayList<Field>();
 
   private static ArrayList<Field> getNewActiveStartedFields() {
     synchronized (newActiveStartedFields) {
-      if (newActiveStartedFields.size() > 0) {
-        return newActiveStartedFields;
-      }
+      if (newActiveStartedFields.size() > 0) return newActiveStartedFields;
       newActiveStartedFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
       newActiveStartedFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
       newActiveStartedFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
@@ -409,26 +424,19 @@ public class ReplicaController {
    * @param decision
    * @throws JSONException
    */
-  public static void newActiveStartedWriteToNameRecord(String decision)
-          throws JSONException {
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("PAXOS DECISION: new active started. write to nameRecord: " + decision);
-    }
+  public static void newActiveStartedWriteToNameRecord(String decision) throws JSONException {
+    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: new active started. write to nameRecord: "+ decision);
 
-    ChangeActiveStatusPacket packet = new ChangeActiveStatusPacket(new JSONObject(decision));
+    ChangeActiveStatusPacket packet = new ChangeActiveStatusPacket( new JSONObject(decision));
 
     try {
       ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), getNewActiveStartedFields());
       if (rcRecord.setNewActiveRunning(packet.getPaxosID())) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("New Active paxos running for name : "
-                  + packet.getName() + " Paxos ID: " + packet.getPaxosID());
-        }
+        if (StartNameServer.debugMode)  GNS.getLogger().fine("New Active paxos running for name : "
+                + packet.getName() + " Paxos ID: " + packet.getPaxosID());
       } else {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("IGNORE MSG: NEW Active PAXOS ID NOT FOUND while setting "
-                  + "it to inactive. Already received msg before. Paxos ID = " + packet.getPaxosID());
-        }
+        if (StartNameServer.debugMode) GNS.getLogger().fine("IGNORE MSG: NEW Active PAXOS ID NOT FOUND while setting "
+                + "it to inactive. Already received msg before. Paxos ID = " + packet.getPaxosID());
       }
       if (rcRecord.isMarkedForRemoval() == true) {
 
@@ -446,19 +454,18 @@ public class ReplicaController {
     }
 
   }
+
   private static ArrayList<Field> oldActiveStopConfirmFields = new ArrayList<Field>();
 
   private static ArrayList<Field> getOldActiveStopConfirmFields() {
     synchronized (oldActiveStopConfirmFields) {
-      if (oldActiveStopConfirmFields.size() > 0) {
-        return oldActiveStopConfirmFields;
-      }
+      if (oldActiveStopConfirmFields.size() > 0) return oldActiveStopConfirmFields;
       oldActiveStopConfirmFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
       oldActiveStopConfirmFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
       return oldActiveStopConfirmFields;
     }
   }
-
+  static boolean expFlag = true;
   /**
    * Primary has received confirmation from an active that the old set of actives have stopped.
    * This method proposes a request to primary-paxos to write this to the database. Once the write is complete,
@@ -473,12 +480,16 @@ public class ReplicaController {
     //
     // schedule new active startup event: StartupReplicaSetTask
 
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("OLD ACTIVE STOP: Primary recvd confirmation. Name  = " + packet.getName());
-    }
+    if (StartNameServer.debugMode) GNS.getLogger().fine("OLD ACTIVE STOP: Primary recvd confirmation. Name  = "+ packet.getName());
+
+
 
     String paxosID = getPrimaryPaxosID(packet.getName());
-
+    Long groupChangeStartTime = groupChangeStartTimes.get(packet.getName());
+    if (groupChangeStartTime != null) {
+      long groupChangeDuration = System.currentTimeMillis()  - groupChangeStartTime;
+      if (StartNameServer.experimentMode) GNS.getLogger().severe("\tOldActiveStopDuration\t" + packet.getName() + "\t" + groupChangeDuration+ "\t");
+    }
 
 //    readFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS_RUNNING);
 
@@ -503,16 +514,53 @@ public class ReplicaController {
         return;
       }
 
-      ChangeActiveStatusPacket proposePacket = new ChangeActiveStatusPacket(packet.getPaxosIDToBeStopped(),
-              packet.getName(), PacketType.OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY);
+      // Write locally that name record is stopped and send message to start new actives ...
+      writeOldSActiveStoppedAndStartupNewActives(packet);
 
-      PaxosManager.propose(paxosID, new RequestPacket(PacketType.OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY.getInt(),
-              proposePacket.toString(), PaxosPacketType.REQUEST, false));
+//      ChangeActiveStatusPacket proposePacket = new ChangeActiveStatusPacket(packet.getPaxosIDToBeStopped(),
+//              packet.getName(), PacketType.OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY);
+//
+//      PaxosManager.propose(paxosID, new RequestPacket(PacketType.OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY.getInt(),
+//                      proposePacket.toString(), PaxosPacketType.REQUEST, false));
+//
+//      if (StartNameServer.debugMode) {
+//        GNS.getLogger().fine("PAXOS PROPOSAL: Old Active Stopped for  Name: " + packet.getName()
+//                + " Old Paxos ID = " + packet.getPaxosIDToBeStopped());
+//      }
+    }catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("PAXOS PROPOSAL: Old Active Stopped for  Name: " + packet.getName()
-                + " Old Paxos ID = " + packet.getPaxosIDToBeStopped());
+  public static void writeOldSActiveStoppedAndStartupNewActives(OldActiveSetStopPacket packet) {
+
+    ReplicaControllerRecord rcRecord;
+    try {
+      rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), getGetOldActiveStoppedFields());
+
+      if (StartNameServer.debugMode) GNS.getLogger().fine("Primary send: old active stopped. write to nameRecord: "+ packet.getName());
+
+      if (rcRecord.setOldActiveStopped(packet.getPaxosIDToBeStopped())) {
+        if (StartNameServer.debugMode) GNS.getLogger().fine("OLD Active paxos stopped. Name: "+ rcRecord.getName()
+                + " Old Paxos ID: "+ packet.getPaxosIDToBeStopped());
+        if (isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
+          StartupActiveSetTask startupTask = new StartupActiveSetTask(
+                  rcRecord.getName(),
+                  rcRecord.getOldActiveNameservers(),
+                  rcRecord.getActiveNameservers(),
+                  rcRecord.getActivePaxosID(), rcRecord.getOldActivePaxosID(), null);
+          // scheduled
+          NameServer.timer.schedule(startupTask, 0, TIMEOUT_INTERVAL);
+        }
+      } else {
+        if (StartNameServer.debugMode) GNS.getLogger().fine("INGORE MSG: OLD PAXOS ID NOT FOUND IN ReplicaControllerRecord" +
+                " while setting it to inactive: " + packet.getPaxosIDToBeStopped());
       }
+    } catch (RecordNotFoundException e) {
+      GNS.getLogger().severe("Name record not found. This case should not happen. " + e.getMessage());
+      e.printStackTrace();
+      return;
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. " + e.getMessage());
       e.printStackTrace();
@@ -521,59 +569,53 @@ public class ReplicaController {
   }
 
   /**
-   *
+   * Executes the result of paxos message proposed by <code>oldActivesStoppedReceivedConfirmationFromActive</code>.
+   * Apply the decision to stop paxos between primaries. This is done to delete name record from GNS.
    * @param value
    * @throws JSONException
    * @throws IOException
    */
   public static void applyStopPrimaryPaxos(String value) throws JSONException, IOException {
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("PAXOS DECISION stop primary paxos decision received.");
-    }
+    if (StartNameServer.debugMode)  GNS.getLogger().fine("PAXOS DECISION stop primary paxos decision received.");
     OldActiveSetStopPacket packet = new OldActiveSetStopPacket(new JSONObject(value));
     String paxosID = getPrimaryPaxosID(packet.getName()//, packet.getRecordKey()
-            );
+    );
 //		String name = packet.getName();
     RemoveRecordPacket removeRecordPacket = removeRecordRequests.remove(paxosID);
 
     ReplicaControllerRecord record = new ReplicaControllerRecord(packet.getName());
     try {
-      if (record != null) {
-        record.setRemoved();
-      }
+      if (record != null) record.setRemoved();
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("RECORD MARKED AS REMOVED IN REPLICA CONTROLLER DB");
-    }
+    if (StartNameServer.debugMode) GNS.getLogger().fine("RECORD MARKED AS REMOVED IN REPLICA CONTROLLER DB");
 
     if (removeRecordPacket != null) {
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(true, removeRecordPacket);
-      NameServer.tcpTransport.sendToID(removeRecordPacket.getLocalNameServerID(), confirmPacket.toJSONObject());
+      NameServer.tcpTransport.sendToID(removeRecordPacket.getLocalNameServerID(),confirmPacket.toJSONObject());
 //      NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
 //              confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("REMOVE RECORD SENT RESPONSE TO LNS");
-      }
+      if (StartNameServer.debugMode) GNS.getLogger().fine("REMOVE RECORD SENT RESPONSE TO LNS");
     }
   }
+
   private static ArrayList<Field> getOldActiveStoppedFields = new ArrayList<Field>();
 
   private static ArrayList<Field> getGetOldActiveStoppedFields() {
     synchronized (getOldActiveStoppedFields) {
-      if (getOldActiveStoppedFields.size() > 0) {
-        return getOldActiveStoppedFields;
-      }
+      if (getOldActiveStoppedFields.size() > 0) return getOldActiveStoppedFields;
       getOldActiveStoppedFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
       getOldActiveStoppedFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
       getOldActiveStoppedFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS);
+      getOldActiveStoppedFields.add(ReplicaControllerRecord.OLD_ACTIVE_NAMESERVERS_RUNNING);
       getOldActiveStoppedFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       getOldActiveStoppedFields.add(ReplicaControllerRecord.PRIMARY_NAMESERVERS);
       return getOldActiveStoppedFields;
     }
   }
+
 
   /**
    * Executes the result of paxos message proposed by <code>oldActivesStoppedReceivedConfirmationFromActive</code>.
@@ -591,16 +633,12 @@ public class ReplicaController {
     try {
       rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), getGetOldActiveStoppedFields());
 
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("PAXOS DECISION: old active stopped. write to nameRecord: " + decision);
-      }
+      if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: old active stopped. write to nameRecord: "+ packet.getName());
 
       if (rcRecord.setOldActiveStopped(packet.getPaxosID())) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("OLD Active paxos stopped. Name: " + rcRecord.getName()
-                  + " Old Paxos ID: " + packet.getPaxosID());
-        }
-        if (isSmallestNodeRunning(rcRecord.getPrimaryNameservers())) {
+        if (StartNameServer.debugMode) GNS.getLogger().fine("OLD Active paxos stopped. Name: "+ rcRecord.getName()
+                + " Old Paxos ID: "+ packet.getPaxosID());
+        if (isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
           StartupActiveSetTask startupTask = new StartupActiveSetTask(
                   rcRecord.getName(),
                   rcRecord.getOldActiveNameservers(),
@@ -610,10 +648,8 @@ public class ReplicaController {
           NameServer.timer.schedule(startupTask, 0, TIMEOUT_INTERVAL);
         }
       } else {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("INGORE MSG: OLD PAXOS ID NOT FOUND IN ReplicaControllerRecord"
-                  + " while setting it to inactive: " + packet.getPaxosID());
-        }
+        if (StartNameServer.debugMode) GNS.getLogger().fine("INGORE MSG: OLD PAXOS ID NOT FOUND IN ReplicaControllerRecord" +
+                " while setting it to inactive: " + packet.getPaxosID());
       }
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Name record not found. This case should not happen. " + e.getMessage());
@@ -665,8 +701,9 @@ public class ReplicaController {
     }
   }
 
+
   private static void handlePrimaryFailureForNameRecord(ReplicaControllerRecord nameRecord, int failedNode)
-          throws FieldNotFoundException {
+          throws FieldNotFoundException{
 
     ReplicaControllerRecord.ACTIVE_STATE stage = nameRecord.getNewActiveTransitionStage();
     if (StartNameServer.debugMode) {
@@ -674,9 +711,7 @@ public class ReplicaController {
               + " Failed Node: " + failedNode + " STAGE = " + stage);
     }
     // worry only if I am smallest primary
-    if (isSmallestNodeRunning(nameRecord.getPrimaryNameservers()) == false) {
-      return;
-    }
+    if (isSmallestNodeRunning(nameRecord.getName(), nameRecord.getPrimaryNameservers()) == false) return;
     GNS.getLogger().info(" Smallest node for name = " + nameRecord.getName());
     switch (stage) {
       case ACTIVE_RUNNING:
@@ -686,8 +721,9 @@ public class ReplicaController {
           StopActiveSetTask stopTask = new StopActiveSetTask(nameRecord.getName(),
                   nameRecord.getOldActiveNameservers(), nameRecord.getOldActivePaxosID());
           NameServer.timer.schedule(stopTask, 0, TIMEOUT_INTERVAL);
-        } else {
-          GNS.getLogger().severe("Reached here ... done nothing.");
+        }
+        else {
+          GNS.getLogger().info("No action for name: " + nameRecord.getName());
         }
         break;
       case OLD_ACTIVE_RUNNING:
@@ -710,9 +746,8 @@ public class ReplicaController {
         //			(2) next we will stop new active 
         //			(3) then remove name record
 
-        if (nameRecord.getActivePaxosID().endsWith("-2")) {
-          return; // TODO MAGIC NUMBER used here
-        }        // actives failed to start at the time request was added,
+        if (nameRecord.getActivePaxosID().endsWith("-2")) return; // TODO MAGIC NUMBER used here
+        // actives failed to start at the time request was added,
         // since I do not have the initial value for name record the client sent, I will not try to start the actives.
 
         StartupActiveSetTask startupTask = new StartupActiveSetTask(nameRecord.getName(),
@@ -727,23 +762,38 @@ public class ReplicaController {
     }
   }
 
-  public static boolean isSmallestNodeRunning(Set<Integer> nameServers) {
-    int smallestNSUp = -1;
-    for (Integer ns : nameServers) {
-      if (PaxosManager.isNodeUp(ns)) {
-        smallestNSUp = ns;
-        break;
-//        if (smallestNSUp == -1 || primaryNS < smallestNSUp) {
-//          smallestNSUp = primaryNS;
-//        }
+  public static boolean isSmallestNodeRunning(String name, Set<Integer> nameServers) {
+    Random r = new Random(name.hashCode());
+    ArrayList<Integer> x1  = new ArrayList<Integer>(nameServers);
+    Collections.sort(x1);
+    Collections.shuffle(x1, r);
+    for (int x: x1) {
+      if (PaxosManager.isNodeUp(x) ) {
+        return  x == NameServer.nodeID;
       }
     }
-    if (smallestNSUp == NameServer.nodeID) {
-      return true;
-    } else {
-      return false;
-    }
+    return false;
+
+//    Random r = new Random(name.hashCode());
+//    int smallestNSUp = -1;
+//    for (Integer ns : nameServers) {
+//      if (PaxosManager.isNodeUp(ns)) {
+//        smallestNSUp = ns;
+//        break;
+////        if (smallestNSUp == -1 || primaryNS < smallestNSUp) {
+////          smallestNSUp = primaryNS;
+////        }
+//      }
+//    }
+//    if (smallestNSUp == NameServer.nodeID) {
+//      return true;
+//    } else {
+//      return false;
+//    }
   }
+
+
+
 
   public static void main(String[] args) {
 
@@ -757,16 +807,15 @@ public class ReplicaController {
       int smallestPrimary = getSmallestPrimaryRunning(nodes);
       if (smallestCounts.containsKey(smallestPrimary)) {
         smallestCounts.put(smallestPrimary, smallestCounts.get(smallestPrimary) + 1);
-      } else {
+      }else {
         smallestCounts.put(smallestPrimary, 1);
       }
     }
 
-    for (int x : smallestCounts.keySet()) {
+    for (int x: smallestCounts.keySet()) {
       System.out.println(x + "\t" + smallestCounts.get(x));
     }
   }
-
   private static int getSmallestPrimaryRunning(Set<Integer> primaryNameServer) {
     int smallestNSUp = -1;
     for (Integer primaryNS : primaryNameServer) {
@@ -778,7 +827,7 @@ public class ReplicaController {
 //        smallestNSUp = primaryNS;
 //      }
     }
-    return smallestNSUp;
+    return  smallestNSUp;
 //    if (smallestNSUp == NameServer.nodeID) {
 //      return true;
 //    } else {

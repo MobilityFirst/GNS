@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
@@ -15,7 +16,7 @@ public class SendLoadMonitorPacketTask extends TimerTask
 	NameServerLoadPacket nsLoad;
 	public SendLoadMonitorPacketTask(int nsID) {
 		nameServerID = nsID;
-		nsLoad = new NameServerLoadPacket(nsID,0);
+		nsLoad = new NameServerLoadPacket(LocalNameServer.nodeID, nsID,0);
 	}
 	
 	@Override
@@ -33,7 +34,7 @@ public class SendLoadMonitorPacketTask extends TimerTask
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		GNS.getLogger().fine("NameServerLoadMonitor: LoadMonitorPacketSent. NameServer:" + nsLoad.getNsID() + 
+		if (StartLocalNameServer.debugMode)  GNS.getLogger().fine("LoadMonitorPacketSent. NameServer:" + nsLoad.getNsID() +
 				" Load:" + nsLoad.getLoadValue());
 	}
 

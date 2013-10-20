@@ -356,7 +356,7 @@ public class PaxosLogger2 extends Thread {
   }
 
   private static void updatePaxosInstances(ConcurrentHashMap<String, PaxosReplica> paxosInstances,
-          PaxosLogMessage logMessage) throws JSONException {
+                                           PaxosLogMessage logMessage) throws JSONException {
     if (paxosInstances == null || logMessage == null) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Ignored log msg:" + logMessage);
@@ -693,7 +693,7 @@ public class PaxosLogger2 extends Thread {
    * @param msg
    */
   public static void parsePaxosStart(ConcurrentHashMap<String, PaxosReplica> paxosInstances,
-          String paxosID, String msg) {
+                                     String paxosID, String msg) {
 
     if (paxosInstances.containsKey(paxosID)) {
       if (StartNameServer.debugMode) {
@@ -717,7 +717,7 @@ public class PaxosLogger2 extends Thread {
    * @param paxosID
    */
   private static void parsePaxosStop(ConcurrentHashMap<String, PaxosReplica> paxosInstances, String paxosID,
-          String msg) {
+                                     String msg) {
     PaxosReplica paxosReplica = paxosInstances.remove(paxosID);
 
     //TODO check this when implementing log synchronization
@@ -823,14 +823,15 @@ public class PaxosLogger2 extends Thread {
 
       }
 
-      if (logCmdCopy == null) {
-        if (SLEEP_INTERVAL_MS > 0) {
-          try {
-            Thread.sleep(SLEEP_INTERVAL_MS);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
+      if (SLEEP_INTERVAL_MS > 0) {
+        try {
+          Thread.sleep(SLEEP_INTERVAL_MS);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
         }
+      }
+
+      if (logCmdCopy == null) {
         continue;
       }
 //      continue;

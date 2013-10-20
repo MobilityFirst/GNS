@@ -3,15 +3,14 @@ package edu.umass.cs.gns.nameserver;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
+import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -22,7 +21,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -166,7 +164,6 @@ public class NSListenerAdmin extends Thread {
             if (GNS.getLogger().isLoggable(Level.FINER)) {
               GNS.getLogger().finer("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             }
-
             break;
           case ADMIN_REQUEST:
             AdminRequestPacket adminRequestPacket = new AdminRequestPacket(incomingJSON);

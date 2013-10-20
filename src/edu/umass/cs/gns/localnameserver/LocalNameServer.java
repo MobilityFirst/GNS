@@ -3,22 +3,20 @@ package edu.umass.cs.gns.localnameserver;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
-import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameAndRecordKey;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.SelectRequestPacket;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
-import edu.umass.cs.gns.packet.TinyQuery;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.UpdateTrace;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -28,7 +26,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -130,6 +127,12 @@ public class LocalNameServer {
     if (StartLocalNameServer.loadDependentRedirection) {
       initializeNameServerLoadMonitoring();
     }
+
+
+    // redirection according to beehive replication
+//    if (StartLocalNameServer.beehiveReplication) {
+//      beehiveDHTRouting = new BeehiveDHTRouting();
+//    }
 
   }
 
@@ -239,10 +242,12 @@ public class LocalNameServer {
       GNS.getLogger().fine("LNS listener started.");
     }
 
+
     new LNSListenerAdmin().start();
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("LNS listener admin started.");
     }
+
 
     //Periodically send nameserver votes for location based replication
     if (StartLocalNameServer.locationBasedReplication) {
@@ -253,6 +258,9 @@ public class LocalNameServer {
 //          }
 
     if (StartLocalNameServer.experimentMode) {
+
+      Thread.sleep(30000); // so that all local name servers can start at the same time.
+
 //        experimentSendRequestTimer = new Timer();
       //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Testing in experiment mode.");
 //    	if (StartLocalNameServer.tinyQuery == false) {
@@ -288,7 +296,7 @@ public class LocalNameServer {
    */
   public static int addDNSRequestInfo(String name, NameRecordKey recordKey,
           int nameserverID, long time, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort) {
+          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort, int numRestarts) {
     int id;
     //Generate unique id for the query
     do {
@@ -298,12 +306,63 @@ public class LocalNameServer {
     //Add query info
     DNSRequestInfo query = new DNSRequestInfo(id, name, recordKey, time,
             nameserverID, queryStatus, lookupNumber,
-            incomingPacket, senderAddress, senderPort);
+            incomingPacket, senderAddress, senderPort, numRestarts);
     requestTransmittedMap.put(id, query);
     return id;
   }
 
-  public static int addUpdateInfo(String name, int nameserverID, long time, String senderAddress, int senderPort) {
+
+//  /**
+//   * Same as the other addQueryInfo object. QueryID is already specified instead of being randomly chosen.
+//   *
+//   * @param name
+//   * @param recordKey
+//   * @param nameserverID
+//   * @param time
+//   * @param queryStatus
+//   * @param lookupNumber
+//   * @param incomingPacket
+//   * @param senderAddress
+//   * @param senderPort
+//   * @param queryID
+//   * @return
+//   */
+//  public static int addQueryInfo(String name, NameRecordKey recordKey,
+//          int nameserverID, long time, String queryStatus, int lookupNumber,
+//          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort, int queryID) {
+//
+//
+//    //Add query info
+//    QueryInfo query = new QueryInfo(queryID, name, recordKey, time,
+//            nameserverID, queryStatus, lookupNumber,
+//            incomingPacket, senderAddress, senderPort);
+//    queryTransmittedMap.put(queryID, query);
+//    return queryID;
+//  }
+
+  public static int addQueryInfo(String name, NameRecordKey recordKey,
+          int nameserverID, long time, String queryStatus, int lookupNumber) {
+    // ABHIGYAN
+    return 0;
+
+    // DUMMY FUNCTION
+  }
+
+//  public static int addUpdateInfo(String name, int nameserverID, long time) {
+//    int id = randomID.nextInt();
+//    //Generate unique id for the query
+//    while (updateTransmittedMap.containsKey(id)) {
+//      id = randomID.nextInt();
+//    }
+//
+//    //Add update info
+//    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID);
+//    updateTransmittedMap.put(id, update);
+//    return id;
+//  }
+
+  public static int addUpdateInfo(String name, int nameserverID, long time, String senderAddress, int senderPort,
+                                  int numRestarts, UpdateAddressPacket updateAddressPacket) {
     int id;
     //Generate unique id for the query
     do {
@@ -311,7 +370,7 @@ public class LocalNameServer {
     } while (updateTransmittedMap.containsKey(id));
 
     //Add update info
-    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID, senderAddress, senderPort);
+    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID, senderAddress, senderPort, updateAddressPacket, numRestarts);
     updateTransmittedMap.put(id, update);
     return id;
   }
@@ -380,8 +439,7 @@ public class LocalNameServer {
    *
    * @param name Host/Domain name
    */
-  public static boolean containsCacheEntry(String name //,NameRecordKey recordKey
-          ) {
+  public static boolean containsCacheEntry(String name) {
     //return cache.getIfPresent(new NameAndRecordKey(name, recordKey)) != null;
     return cache.getIfPresent(name) != null;
   }
@@ -576,8 +634,7 @@ public class LocalNameServer {
    *
    * @param name
    */
-  public static void invalidateActiveNameServer(String name//, NameRecordKey recordKey
-          ) {
+  public static void invalidateActiveNameServer(String name) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
     if (cacheEntry != null) {
       cacheEntry.invalidateActiveNameServer();
@@ -626,11 +683,6 @@ public class LocalNameServer {
       }
     }
 
-//    for (int x : cacheEntry.getPrimaryNameServer()) {
-//      if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-//        allServers.add(x);
-//      }
-//    }
 
     return BestServerSelection.simpleLatencyLoadHeuristic(allServers);
   }
@@ -710,7 +762,10 @@ public class LocalNameServer {
       }
       return -1;
     }
+    return getBeehiveNameServer(nameserverQueried, cacheEntry);
+  }
 
+  public static int getBeehiveNameServer(Set<Integer> nameserverQueried, CacheEntry cacheEntry) {
     ArrayList<Integer> allServers = new ArrayList<Integer>();
     if (cacheEntry.getActiveNameServers() != null) {
       for (int x : cacheEntry.getActiveNameServers()) {
@@ -720,11 +775,11 @@ public class LocalNameServer {
       }
     }
 
-    for (int x : cacheEntry.getPrimaryNameServer()) {
-      if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-        allServers.add(x);
-      }
-    }
+//    for (int x : cacheEntry.getPrimaryNameServer()) {
+//      if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
+//        allServers.add(x);
+//      }
+//    }
     if (allServers.size() == 0) {
       return -1;
     }
@@ -742,7 +797,6 @@ public class LocalNameServer {
     //				ConfigFileInfo.getClosestNameServer(), allServers);
     //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("BEEHIVE Chosen Name Server: " + x);
     //		return x;
-
   }
 
   /**
@@ -997,6 +1051,29 @@ public class LocalNameServer {
       str.append(" " + entry.getValue().toString());
     }
     return "***NameRecordStatsMap***" + str.toString();
+  }
+
+  public static void sendToNS(JSONObject json, int ns) {
+
+    if (StartLocalNameServer.delayScheduling) { // during testing, this option is used to simulate artificial latency between lns and ns
+      double latency = ConfigFileInfo.getPingLatency(ns) *
+              ( 1 + r.nextDouble() * StartLocalNameServer.variation);
+      long timerDelay = (long) latency;
+      LocalNameServer.executorService.schedule(new SendQueryWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
+    }
+    else if (json.toString().length() < 1000) {
+      try {
+        LNSListener.udpTransport.sendPacket(json, ns, GNS.PortType.LNS_UDP_PORT);
+      } catch (JSONException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    } else { // for large packets,  use TCP
+      try {
+        LNSListener.tcpTransport.sendToID(ns, json);
+      } catch (IOException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    }
   }
 
   /**

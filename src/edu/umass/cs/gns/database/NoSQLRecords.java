@@ -5,13 +5,14 @@
  */
 package edu.umass.cs.gns.database;
 
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.nameserver.ResultValue;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import org.json.JSONObject;
 
 /**
  * Provides an interface for insert, update, remove and lookup operations in a nosql database
@@ -148,6 +149,10 @@ public interface NoSQLRecords {
   public abstract void update(String collection, String name, Field nameField, ArrayList<Field> fields, ArrayList<Object> values,
           Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
 
+
+  public abstract void updateConditional(String collectionName, String guid, Field nameField,Field conditionField, Object conditionValue, ArrayList<Field> fields, ArrayList<Object> values,
+                                Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
+
   /**
    * For the record with given name, increment the values of given fields by given values. (Another form of update).
    * @param name
@@ -174,7 +179,7 @@ public interface NoSQLRecords {
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
    * the NAME (AKA the primary key) is always there.
    * 
-   * @param collectionName
+   * @param collection
    * @param nameField
    * @param fields
    * @return 
@@ -184,7 +189,7 @@ public interface NoSQLRecords {
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    * 
-   * @param collectionName
+   * @param collection
    * @return BasicRecordCursor
    */
   public BasicRecordCursor getAllRowsIterator(String collection);
@@ -199,7 +204,6 @@ public interface NoSQLRecords {
    * @return BasicRecordCursor
    */
   public BasicRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value);
-  
   /**
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
    * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.

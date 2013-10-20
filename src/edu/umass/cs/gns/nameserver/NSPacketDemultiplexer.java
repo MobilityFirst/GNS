@@ -31,17 +31,21 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
     try {
       Packet.PacketType type = Packet.getPacketType(json);
       switch (type) {
+        case PAXOS_PACKET:
+          PaxosManager.handleIncomingPacket(json);
+//          msg = 2;
+          break;
         // client requests: ADD/REMOVE/UPDATE/LOOKUP
-
+        case DNS:
+        case UPDATE_ADDRESS_LNS:
+        case NAME_SERVER_LOAD:
         case ADD_RECORD_LNS:
         case ADD_RECORD_NS:
         case CONFIRM_ADD_NS:
         case ADD_COMPLETE:
         case REMOVE_RECORD_LNS:
         case REQUEST_ACTIVES:
-        case UPDATE_ADDRESS_LNS:
         case SELECT_REQUEST:
-        case DNS:
           ClientRequestWorker.handleIncomingPacket(json, type);
           break;
 
@@ -70,21 +74,18 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         case KEEP_ALIVE_PRIMARY:
         case DELETE_PRIMARY:
 //      case KEEP_ALIVE_ACTIVE:
-          // TODO uncomment this.
 //          KeepAliveWorker.handleIncomingPacket(json);
           break;
-
-
-
         // Paxos: internal Paxos messages
-        case PAXOS_PACKET:
-          PaxosManager.handleIncomingPacket(json);
-          break;
+
         default:
           GNS.getLogger().warning("No handler for packet type: " + type.toString());
           break;
       }
-
+//      long t1 = System.currentTimeMillis();
+//      if (t1 - t0 > 10) {
+//        GNS.getLogger().severe("DEMUX LONG LATENCY\t" + (t1 - t0) + "\t" + msg );
+//      }
     } catch (JSONException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();

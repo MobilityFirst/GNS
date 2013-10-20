@@ -1,16 +1,20 @@
 package edu.umass.cs.gns.packet.paxospacket;
 
-import edu.umass.cs.gns.paxos.Ballot;
-import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gns.paxos.Ballot;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PreparePacket extends Packet {
 
   public int coordinatorID;
+
   public Ballot ballot;
+
   public int receiverID;
+
   public int slotNumber;
   public ConcurrentHashMap<Integer, PValuePacket> accepted;
 
@@ -23,25 +27,24 @@ public class PreparePacket extends Packet {
 
   }
 
-  public PreparePacket getPrepareReplyPacket(Ballot b,
-          ConcurrentHashMap<Integer, PValuePacket> accepted, int slotNumber) {
+  public PreparePacket getPrepareReplyPacket(Ballot b, int receiverID, ConcurrentHashMap<Integer, PValuePacket> accepted, int slotNumber) {
 
     if (b.equals(this.ballot)) {
-      PreparePacket prep = new PreparePacket(this.coordinatorID, this.receiverID,
+      PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,
               this.ballot, PaxosPacketType.PREPARE_REPLY);
       prep.accepted = accepted;
       prep.slotNumber = slotNumber;
       return prep;
     }
 
-    PreparePacket prep = new PreparePacket(this.coordinatorID, this.receiverID,
+    PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,
             b, PaxosPacketType.PREPARE_REPLY);
     prep.accepted = accepted;
     prep.slotNumber = slotNumber;
     return prep;
   }
 
-  public PreparePacket(JSONObject json) throws JSONException {
+  public PreparePacket(JSONObject json) throws JSONException{
     this.packetType = json.getInt(PaxosPacketType.ptype);
     this.coordinatorID = json.getInt("coordinatorID");
     this.receiverID = json.getInt("receiverID");
@@ -66,8 +69,10 @@ public class PreparePacket extends Packet {
     return accepted;
   }
 
+
   @Override
-  public JSONObject toJSONObject() throws JSONException {
+  public JSONObject toJSONObject() throws JSONException
+  {
     JSONObject json = new JSONObject();
     json.put(PaxosPacketType.ptype, this.packetType);
     json.put("coordinatorID", coordinatorID);
@@ -80,13 +85,14 @@ public class PreparePacket extends Packet {
     return json;
   }
 
-  private void addAcceptedToJSON(JSONObject json) throws JSONException {
-    if (accepted != null) {
-      JSONArray jsonArray = new JSONArray();
-      for (PValuePacket pValues : accepted.values()) {
+  private void addAcceptedToJSON(JSONObject json) throws JSONException{
+    if (accepted != null ) {
+      JSONArray jsonArray  = new JSONArray();
+      for (PValuePacket pValues: accepted.values()) {
         jsonArray.put(pValues.toJSONObject());
       }
       json.put("accepted", jsonArray);
     }
   }
+
 }

@@ -49,7 +49,7 @@ public class StartLocalNameServer {
   public static String optimalTrace = null;
   public static int replicationInterval = 0;
 
-  public static double outputSampleRate = 0.05;
+  public static double outputSampleRate = 1.0;
   /**
    * Variant of voting, in which votes are sent not for closest but for a random node among k-closest.
    * Name server chosen for a name is the (name modulo k)-th closest node.
@@ -63,7 +63,13 @@ public class StartLocalNameServer {
   /**
    * Whether beehive replication is used or not.
    */
-  public static boolean beehiveReplication = true;
+  public static boolean beehiveReplication = false;
+
+  /**
+   * Whether beehive replication is used or not.
+   */
+  public static boolean replicateAll = false;
+
   //Abhigyan: parameters related to retransmissions.
   // More parameters in util.AdaptiveRetransmission.java
   /**
@@ -78,6 +84,9 @@ public class StartLocalNameServer {
    * Fixed timeout after which a query retransmitted.
    */
   public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
+
+//  public static int MAX_RESTARTS = 3;
+
   /**
    * Whether use a fixed timeout or an adaptive timeout. By default, fixed timeout is used.
    */
@@ -100,7 +109,7 @@ public class StartLocalNameServer {
   
   public static boolean delayScheduling = false;
   
-  public static double variation = 0.1;
+  public static double variation = 0.1; // 10 % addition
 
   public static boolean runHttpServer = false;
   
@@ -146,8 +155,7 @@ public class StartLocalNameServer {
     Option statConsoleOutputLevel = new Option("statConsoleOutputLevel", true, "statConsoleOutputLevel");
 
     Option tinyQuery = new Option("tinyQuery", "tiny query mode");
-    Option delayScheduling = new Option("delayScheduling",  "add packet delay equal to ping delay " +
-    		"between two servers (used for emulation).");
+    Option delayScheduling = new Option("delayScheduling",  "add packet delay equal to ping delay between two servers (used for emulation).");
     Option variation = new Option("variation", true,"variation");
 
     Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
@@ -331,7 +339,7 @@ public class StartLocalNameServer {
 
       
       loadDependentRedirection = parser.hasOption("loadDependentRedirection");
-      nameServerLoadMonitorIntervalSeconds = (loadDependentRedirection) ? Integer.parseInt(parser.getOptionValue("nsLoadMonitorIntervalSeconds")) : 300;
+      nameServerLoadMonitorIntervalSeconds = (loadDependentRedirection) ? Integer.parseInt(parser.getOptionValue("nsLoadMonitorIntervalSeconds")) : 60;
 
       maxQueryWaitTime = (parser.hasOption("maxQueryWaitTime"))
               ? Integer.parseInt(parser.getOptionValue("maxQueryWaitTime")) : GNS.DEFAULT_MAX_QUERY_WAIT_TIME;

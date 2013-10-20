@@ -7,18 +7,21 @@ import org.json.JSONObject;
 public class NameServerLoadPacket extends BasicPacket {
 
   private int nsID;
+  private int lnsID;
   private double loadValue;
 
-  public NameServerLoadPacket(int nsID, double loadValue) {
+  public NameServerLoadPacket(int nsID, int lnsID, double loadValue) {
     this.type = PacketType.NAME_SERVER_LOAD;
     this.nsID = nsID;
     this.loadValue = loadValue;
+    this.lnsID = lnsID;
   }
 
   public NameServerLoadPacket(JSONObject json) throws JSONException {
     this.nsID = json.getInt("nsID");
-    this.loadValue = json.getDouble("loadValue");
+    this.loadValue = json.getDouble("lV");
     this.type = PacketType.NAME_SERVER_LOAD;
+    this.lnsID = json.getInt("lnsID");
   }
 
   @Override
@@ -26,7 +29,8 @@ public class NameServerLoadPacket extends BasicPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put("nsID", getNsID());
-    json.put("loadValue", getLoadValue());
+    json.put("lV", getLoadValue());
+    json.put("lnsID", lnsID);
     return json;
   }
 
@@ -37,6 +41,9 @@ public class NameServerLoadPacket extends BasicPacket {
     return nsID;
   }
 
+  public int getLnsID() {
+    return lnsID;
+  }
   /**
    * @return the loadValue
    */

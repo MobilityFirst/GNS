@@ -3,8 +3,10 @@ package edu.umass.cs.gns.replicationframework;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.Util;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 public class BeehiveReplication {
 	
@@ -76,31 +78,90 @@ public class BeehiveReplication {
 		return numActives;
 	}
 	
-	public static void main(String[] args) {
-		int nameServerCount = 10000;
-		int nameCount = 20000;
-		double hopCount = 1;
+	public static void main(String[] args) throws IOException {
+		int nameServerCount = 97;
+		int nameCount = 11000;
+		double hopCount = 0.54;
 		double zipfAlpha = 0.63;
-		
-		ConfigFileInfo.setNumberOfNameServers(nameServerCount);
-		generateReplicationLevel(hopCount, nameCount, zipfAlpha, 16);
-		//		System.out.println(replicationLevelMap.toString() );
-//        int totalReplicas =
-//		for(int i = 0; i <= nameCount; i++) {
-//			if (i%100 == 0)
-//			System.out.println(i + "\t" + numActiveNameServers(Integer.toString(i)));
-//		}
-		
-		for(double j = 0.5; j <= 10.0; j = j + 0.5) {
-			hopCount = j;
-			generateReplicationLevel(hopCount, nameCount, 0.91, 16);
-//					System.out.println(replicationLevelMap.toString() );
-			int sum = 0;
-			for(int i = 1; i <= nameCount; i++) {
-				sum += numActiveNameServers(Integer.toString(i));
-			}
-			System.out.println(j + "\t" + sum*1.0/nameCount);
-		}
+
+    ConfigFileInfo.setNumberOfNameServers(nameServerCount);
+
+    HashMap<Double,Integer> loadAuspiceReplicaCount = new HashMap<Double, Integer>();
+    loadAuspiceReplicaCount.put(1.0,213332);
+//    loadAuspiceReplicaCount.put(2.0,144858);
+//    loadAuspiceReplicaCount.put(3.0,121721);
+//    loadAuspiceReplicaCount.put(4.0,110110);
+//    loadAuspiceReplicaCount.put(5.0,102362);
+//    loadAuspiceReplicaCount.put(6.0, 99000);
+//    loadAuspiceReplicaCount.put(7.0, 99000);
+//    loadAuspiceReplicaCount.put(8.0, 99000);
+    for (Double load:loadAuspiceReplicaCount.keySet()) {
+
+      int auspiceTotalReplicas = loadAuspiceReplicaCount.get(load);
+  //		System.exit(2);
+      double selectedHopCount = 2.0;
+
+      int codonsTotalReplicas = 200000;
+      for(double j = 0.3; j <= 2.0; j = j + 0.02) {
+        hopCount = j;
+        generateReplicationLevel(hopCount, nameCount, 0.63, 16);
+  //					System.out.println(replicationLevelMap.toString() );
+        int sum = 0;
+        for(int i = 1; i <= nameCount; i++) {
+          sum += numActiveNameServers(Integer.toString(i));
+        }
+        System.out.println("sum = " + sum);
+        if (sum < auspiceTotalReplicas) {
+          break;
+        }
+        selectedHopCount = hopCount;
+        codonsTotalReplicas = sum;
+        System.out.println(j + "\t" + sum * 1.0);
+      }
+      System.out.println("Selected hop count\t" + selectedHopCount  + "\tCodons total replicas\t" + codonsTotalReplicas);
+
+      generateReplicationLevel(selectedHopCount, nameCount, zipfAlpha, 16);
+      //		System.out.println(replicationLevelMap.toString() );
+      int NUM_RETRY = nameServerCount;
+      FileWriter fw = new FileWriter(new File("nameActives-codons-load"  + load.intValue()));
+  //    System.out.println("ns count \t" + ConfigFileInfo.getNumberOfNameServers());
+
+      for(int i = 0; i <= nameCount; i++) {
+
+        int numReplica = numActiveNameServers(Integer.toString(i));
+
+        Set<Integer> newActiveNameServerSet = new HashSet<Integer>();
+
+        if(numReplica == ConfigFileInfo.getNumberOfNameServers()) {
+          for( int j = 0; j < ConfigFileInfo.getNumberOfNameServers(); j++ ) {
+            newActiveNameServerSet.add(j);
+          }
+        }
+        else {
+          for( int j = 1; j <= numReplica; j++ ) {
+            Random random = new Random(i);
+            boolean added;
+            int numTries = 0;
+            do {
+              numTries += 1;
+              int newActiveNameServerId = random.nextInt(ConfigFileInfo.getNumberOfNameServers());
+              added = newActiveNameServerSet.add(newActiveNameServerId);
+            } while(!added && numTries < NUM_RETRY);
+          }
+        }
+
+        fw.write(i + " ");
+        for (int ns: newActiveNameServerSet) {
+          fw.write(" " + ns);
+        }
+        fw.write("\n");
+  //      System.out.println(i + "\t" + numReplica + "\t" + newActiveNameServerSet.size());
+      }
+      fw.close();
+
+    }
+
+
 	}
 	
 }

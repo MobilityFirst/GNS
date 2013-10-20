@@ -9,6 +9,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.util.BestServerSelection;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class StopActiveSetTask extends TimerTask {
   Set<Integer> oldActiveNameServers;
   Set<Integer> oldActivesQueried;
   String oldPaxosID;
-
+  int numAttempts = 0;
   /**
    * Constructor object
    *
@@ -59,7 +60,7 @@ public class StopActiveSetTask extends TimerTask {
 
   @Override
   public void run() {
-
+    numAttempts ++;
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
 
     ReplicaControllerRecord nameRecordPrimary;
@@ -78,8 +79,7 @@ public class StopActiveSetTask extends TimerTask {
     try {
       if (nameRecordPrimary.isOldActiveStopped(oldPaxosID)) {
         if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("Old active name servers stopped. Paxos ID: " + oldPaxosID
-                  + " Old Actives : " + oldActiveNameServers);
+          GNS.getLogger().fine("Old active name servers stopped. Paxos ID: " + oldPaxosID + " Old Actives : " + oldActiveNameServers);
         }
         this.cancel();
         return;
@@ -91,32 +91,35 @@ public class StopActiveSetTask extends TimerTask {
       return;
     }
 
-    if (oldActivesQueried.size() == MAX_ATTEMPTS) {
-      if (StartNameServer.debugMode) {
+    if (numAttempts > MAX_ATTEMPTS) {
+//      if (StartNameServer.debugMode) {
         GNS.getLogger().severe("ERROR: Old Actives failed to STOP after " + MAX_ATTEMPTS + ". "
                 + "Old active name servers queried: " + oldActivesQueried + " Name = " + name);
-      }
+//      }
       this.cancel();
       return;
     }
 
-    int selectedOldActive = selectNextActiveToQuery();
+    int selectedOldActive = BestServerSelection.getSmallestLatencyNS(oldActiveNameServers, oldActivesQueried);
+            //selectNextActiveToQuery();
 
     if (selectedOldActive == -1) {
-      if (StartNameServer.debugMode) {
+//      if (StartNameServer.debugMode) {
         GNS.getLogger().severe("ERROR: No more old active left to query. "
                 + "Old Active name servers queried: " + oldActivesQueried + ". Old Actives not STOPped yet..");
-      }
+//      }
       this.cancel();
       return;
+    } else {
+      oldActivesQueried.add(selectedOldActive);
     }
+
 
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine(" Old Active Name Server Selected to Query: " + selectedOldActive);
     }
 
-    OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, //nameRecordKey, 
-            NameServer.nodeID, selectedOldActive, oldPaxosID, PacketType.OLD_ACTIVE_STOP);
+    OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, NameServer.nodeID, selectedOldActive, oldPaxosID, PacketType.OLD_ACTIVE_STOP);
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
     }
@@ -133,6 +136,11 @@ public class StopActiveSetTask extends TimerTask {
         GNS.getLogger().fine("JSON Exception in sending OldActiveSetSTOPPacket: " + e.getMessage());
       }
       e.printStackTrace();
+    }
+    Long groupChangeStartTime = ReplicaController.groupChangeStartTimes.get(packet.getName());
+    if (groupChangeStartTime != null) {
+      long groupChangeDuration = System.currentTimeMillis()  - groupChangeStartTime;
+      if (StartNameServer.experimentMode) GNS.getLogger().severe("\tOldActiveStopPropose\t" + packet.getName() + "\t" + groupChangeDuration+ "\t");
     }
 
     // if first time:  

@@ -126,7 +126,7 @@ public class HashFunction {
     try {
       HashFunction.initializeHashFunction();
 
-      ConfigFileInfo.setNumberOfNameServers(6);
+      ConfigFileInfo.setNumberOfNameServers(40);
       System.out.println(ByteUtils.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-1"))));
       String s = new String(SHA("www.google.com", MessageDigest.getInstance("SHA-1")));
       System.out.println(s);
@@ -146,9 +146,10 @@ public class HashFunction {
 
 //      ConfigFileInfo.readHostInfo("ns1", 1);
       GNS.numPrimaryReplicas = 3;//GNRS.DEFAULTNUMPRIMARYREPLICAS;
-      
-      Set<Integer> replicas = getPrimaryReplicas("0A7D28BDB37FFD25DBD9C956FAD675CA921B0F9C");
-      System.out.println("0A7D28BDB37FFD25DBD9C956FAD675CA921B0F9C: " + replicas.toString());
+
+     String name = "13";
+      Set<Integer> replicas = getPrimaryReplicas(name);
+      System.out.println(name + ": " + replicas.toString());
 
       replicas = getPrimaryReplicas("B04A8EBC86BC3BFDD1EF88377D55B8304088821C");
       System.out.println(replicas.toString());

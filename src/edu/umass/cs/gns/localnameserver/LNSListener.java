@@ -7,17 +7,21 @@ import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.TimerTask;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Listens on a UDP port for requests from end-users, and responses from name servers.
@@ -33,7 +37,14 @@ public class LNSListener extends Thread {
   public LNSListener() throws IOException {
     super("LNSListener");
     udpTransport = new Transport(LocalNameServer.nodeID, ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
+//    udpTransport.s
 //    tcpTransport = new NioServer2(LocalNameServer.nodeID,new ByteStreamToJSONObjects(this));
+
+
+//    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(new LNSPacketDemultiplexer());
+////    new Thread(worker).start();
+//    tcpTransport = new NioServer2(LocalNameServer.nodeID, worker, new GNSNodeConfig());
+//    new Thread(tcpTransport).start();
 
     tcpTransport = new NioServer2(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
     new Thread(tcpTransport).start();
@@ -43,6 +54,7 @@ public class LNSListener extends Thread {
   public void run() {
     while (true) {
       JSONObject json = udpTransport.readPacket();
+//      GNS.getLogger().fine("Recvd packet at LNS ..." );
       demultiplexLNSPackets(json);
     }
   }
@@ -72,7 +84,17 @@ public class LNSListener extends Thread {
               break;
           }
           break;
-        // Add/remove 
+        // Update
+        case UPDATE_ADDRESS_LNS:
+          Update.handlePacketUpdateAddressLNS(json);
+          break;
+        case CONFIRM_UPDATE_LNS:
+          Update.handlePacketConfirmUpdateLNS(json);
+          break;
+        case NAME_SERVER_LOAD:
+          handleNameServerLoadPacket(json);
+          break;
+        // Add/remove
         case ADD_RECORD_LNS:
           AddRemove.handlePacketAddRecordLNS(json);
           break;
@@ -84,13 +106,6 @@ public class LNSListener extends Thread {
           break;
         case CONFIRM_REMOVE_LNS:
           AddRemove.handlePacketConfirmRemoveLNS(json);
-          break;
-        // Update
-        case UPDATE_ADDRESS_LNS:
-          Update.handlePacketUpdateAddressLNS(json);
-          break;
-        case CONFIRM_UPDATE_LNS:
-          Update.handlePacketConfirmUpdateLNS(json);
           break;
         // Others
         case NAMESERVER_SELECTION:
@@ -125,6 +140,23 @@ public class LNSListener extends Thread {
       e.printStackTrace();
     }
   }
+
+  private static void handleNameServerLoadPacket(JSONObject json) throws JSONException {
+
+    NameServerLoadPacket nsLoad = new NameServerLoadPacket(json);
+    LocalNameServer.nameServerLoads.put(nsLoad.getNsID(), nsLoad.getLoadValue());
+
+
+  }
+
+  public static void sendPacketWithDelay(JSONObject json, int destID) {
+    Random r = new Random();
+    double latency = ConfigFileInfo.getPingLatency(destID) *
+            ( 1 + r.nextDouble() * StartLocalNameServer.variation);
+    long timerDelay = (long) latency;
+
+    LocalNameServer.executorService.schedule(new SendQueryWithDelayLNS(json, destID), timerDelay, TimeUnit.MILLISECONDS);
+  }
 }
 
 class LNSPacketDemultiplexer extends PacketDemultiplexer {
@@ -148,7 +180,12 @@ class MyTask extends TimerTask {
   @Override
   public void run() {
 //    long t0 = System.currentTimeMillis();
-    LNSListener.demultiplexLNSPackets(json);
+    try {
+      LNSListener.demultiplexLNSPackets(json);
+    } catch (Exception e) {
+        GNS.getLogger().severe("Exception Exception Exception ... " + e.getMessage());
+        e.printStackTrace();
+    }
 //    long t1 = System.currentTimeMillis();
 //    if (t1 - t0 > 10) {
 //      GNS.getLogger().severe("LNS-long-response\t" + (t1-t0)+"\t"+ System.currentTimeMillis());

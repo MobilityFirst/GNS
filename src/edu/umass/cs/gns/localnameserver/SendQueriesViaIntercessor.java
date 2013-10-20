@@ -6,8 +6,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.Header;
+import edu.umass.cs.gns.workloads.ExponentialDistribution;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 public class SendQueriesViaIntercessor // extends Thread
 {
-//	private static ExponentialDistribution exponentialDistribution;
+	private static ExponentialDistribution exponentialDistribution;
 //	public SendQueriesViaIntercessor()
 //	{
 ////		super("SendQueriesViaIntercessor");
@@ -35,7 +34,7 @@ public class SendQueriesViaIntercessor // extends Thread
     }
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send query intercessor started. Number of queries. "
             + LocalNameServer.lookupTrace.size());
-//		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.lookupRate );
+		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.lookupRate );
 //    double delay = LocalNameServer.lookupTrace.size();
 
     long expectedDurationSec = (long) ((LocalNameServer.lookupTrace.size() *
@@ -45,20 +44,37 @@ public class SendQueriesViaIntercessor // extends Thread
 
     GNS.getStatLogger().fine(msg);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
-    long delay = (long) (StartLocalNameServer.lookupRate * 1000);
-    LocalNameServer.executorService.scheduleAtFixedRate(new SendQueryIntercessorTask(), 0, (long) delay, TimeUnit.MICROSECONDS);
+//    long delay = (long) (StartLocalNameServer.lookupRate * 1000);
+//    LocalNameServer.executorService.scheduleAtFixedRate(new SendQueryIntercessorTask(), 0, (long) delay, TimeUnit.MICROSECONDS);
 //    int num = 1;
 //    if (StartLocalNameServer.lookupRate <1) {
 //      num = (int) (1.0/StartLocalNameServer.lookupRate);
 //    }
 
-
-//		for( String name : LocalNameServer.lookupTrace) {
-//			count++;
-//			LocalNameServer.executorService.schedule(new SendQueryIntercessorTask(count, name), (long) delay, TimeUnit.MILLISECONDS);
-//			delay += StartLocalNameServer.lookupRate;//exponentialDistribution.exponential();
+    // cache all name records
+//    try {
+//    HashSet<String> names = new HashSet<String>();
+//    for( String name : LocalNameServer.lookupTrace) {
+//      names.add(name);
+//    }
+//    for (String name: names) {
+//      PendingTasks.addToPendingRequests(name);
+//      Thread.sleep(1);
+//    }
+//
+//
+//      Thread.sleep(60000);
+//    } catch (InterruptedException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
+    long delay = 0;
+    int count = 0;
+		for( String name : LocalNameServer.lookupTrace) {
+			count++;
+			LocalNameServer.executorService.schedule(new SendQueryIntercessorTask(name,count), (long) delay, TimeUnit.MILLISECONDS);
+			delay += exponentialDistribution.exponential(); //StartLocalNameServer.lookupRate;
 //			if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send query scheduled: count " + count + " delay = " + delay);
-//		}
+		}
 
 //    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay/1000 + " Expected-duration " + expectedDurationSec);
   }
@@ -66,12 +82,51 @@ public class SendQueriesViaIntercessor // extends Thread
 }
 
 
-
 class SendQueryIntercessorTask extends TimerTask {
+
+  int lookupCount;
+  String name;
+
+  public SendQueryIntercessorTask(String name, int lookupCount) {
+
+    this.lookupCount = lookupCount;
+    this.name = name;
+  }
+
+  @Override
+  public void run() {
+
+    DNSPacket queryRecord = new DNSPacket(lookupCount, name, NameRecordKey.EdgeRecord, LocalNameServer.nodeID);
+    queryRecord.getHeader().setId(lookupCount);
+
+    JSONObject json;
+    try {
+      json = queryRecord.toJSONObjectQuestion();
+      LNSListener.demultiplexLNSPackets(json);
+    } catch (JSONException e) {
+      e.printStackTrace();
+
+    }
+//    ArrayList<String> newValue = new ArrayList<String>();
+//    newValue.add(SendUpdatesViaIntercessor.getRandomString());
+//
+//    UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
+//            updateCount, updateCount, -1,
+//            name, NameRecordKey.EdgeRecord, newValue, null,
+//            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1);
+//    try {
+//      LNSListener.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
+//    } catch (JSONException e) {
+//      e.printStackTrace();
+//    }
+  }
+}
+
+class SendQueryIntercessorTaskUniformTraffic extends TimerTask {
   int count;
   //    String name;
   DNSPacket queryRecord;
-  public SendQueryIntercessorTask() {
+  public SendQueryIntercessorTaskUniformTraffic() {
     count = -1;
 //        this.name = name1;
     queryRecord = new DNSPacket(0, "x", NameRecordKey.EdgeRecord, LocalNameServer.nodeID);
@@ -86,7 +141,6 @@ class SendQueryIntercessorTask extends TimerTask {
     if (StartLocalNameServer.tinyQuery)
       LNSSendTinyQuery.sendQuery(name, count);
     else {
-
 
       queryRecord.getHeader().setId(count);
       queryRecord.setQname(name);

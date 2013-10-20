@@ -25,17 +25,13 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -244,7 +240,7 @@ public class MongoRecords implements NoSQLRecords {
    * @param collectionName
    * @param key
    * @param value
-   * @param explain
+//   * @param explain
    * @return a MongoRecordCursor
    */
   @Override
@@ -446,16 +442,27 @@ public class MongoRecords implements NoSQLRecords {
 
   @Override
   public HashMap<Field, Object> lookup(String collectionName, String guid, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+    long t0 = System.currentTimeMillis();
+    long tA = 0;
+    long tB = 0;
+    long tC = 0;
+    long tD = 0;
+    long tE = 0;
+    long tF = 0;
+    long tG = 0;
     if (guid == null) {
       GNS.getLogger().fine("GUID is null: " + guid);
       throw new RecordNotFoundException(guid);
     }
     db.requestStart();
+    tA = System.currentTimeMillis();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
 
+
       DBCollection collection = db.getCollection(collectionName);
+      tB = System.currentTimeMillis();
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject projection = new BasicDBObject().append("_id", 0);
       if (fields1 != null) {
@@ -470,14 +477,24 @@ public class MongoRecords implements NoSQLRecords {
           projection.append(fieldName, 1);
         }
       }
+      tC = System.currentTimeMillis();
 
-      DBCursor cursor = collection.find(query, projection);
+      DBObject dbObject = collection.findOne(query, projection);
+      if (dbObject == null) throw  new RecordNotFoundException(guid);
+
+//      DBCursor cursor = collection.find(query, projection);
+      tD = System.currentTimeMillis();
+//      if (t1 - t0 > 20) {
+//        GNS.getLogger().severe("\t" + (t1 - t0) + "\t" + t0);
+//      }
       HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
-      if (cursor.hasNext()) {
+//      if (cursor.hasNext()) {
         hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
-        DBObject dbObject = cursor.next();
+//        t0 = System.currentTimeMillis();
+//        DBObject dbObject = cursor.next();
+        tE = System.currentTimeMillis();
         FieldType.populateHashMap(hashMap, dbObject, fields1);
-
+        tF = System.currentTimeMillis();
         if (valuesMapField != null && valuesMapKeys != null) {
           BSONObject bson = (BSONObject) dbObject.get(valuesMapField.getName());
 
@@ -494,7 +511,7 @@ public class MongoRecords implements NoSQLRecords {
               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
               continue;
             }
-            if (valuesMapKeys.get(i).type() == FieldType.LIST_STRING) {
+            if (valuesMapKeys.get(i).type().equals(FieldType.LIST_STRING)) {
               try {
                 valuesMap.put(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(fieldValue));
               } catch (JSONException e) {
@@ -508,11 +525,12 @@ public class MongoRecords implements NoSQLRecords {
           }
           hashMap.put(valuesMapField, valuesMap);
         }
-
+        tG = System.currentTimeMillis();
+        long t1 = System.currentTimeMillis();
+        if (t1 - t0 > 20) {
+          GNS.getLogger().severe(" MongoLookup longlatency " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)) ;
+        }
         return hashMap;
-      } else {
-        throw new RecordNotFoundException(guid);
-      }
     } finally {
       db.requestDone();
     }
@@ -536,7 +554,7 @@ public class MongoRecords implements NoSQLRecords {
       if (fields != null) {
         for (int i = 0; i < fields.size(); i++) {
           Object newValue;
-          if (fields.get(i).type() == FieldType.VALUES_MAP) {
+          if (fields.get(i).type().equals(FieldType.VALUES_MAP)) {
             newValue = ((ValuesMap) values.get(i)).getMap();
           } else {
             newValue = values.get(i);
@@ -557,6 +575,52 @@ public class MongoRecords implements NoSQLRecords {
         if (t1 - t0 > 10) {
           //System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t" + t0);
           GNS.getLogger().warning(" Long latency mongoUpdate " + (t1 - t0));
+
+        }
+//        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
+      }
+    } finally {
+      db.requestDone();
+    }
+  }
+
+  @Override
+  public void updateConditional(String collectionName, String guid, Field nameField, Field conditionField, Object conditionValue, ArrayList<Field> fields, ArrayList<Object> values,
+                     Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+    db.requestStart();
+    try {
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      query.append(conditionField.getName(), conditionValue);
+
+      BasicDBObject updates = new BasicDBObject();
+      if (fields != null) {
+        for (int i = 0; i < fields.size(); i++) {
+          Object newValue;
+          if (fields.get(i).type().equals(FieldType.VALUES_MAP)) {
+            newValue = ((ValuesMap) values.get(i)).getMap();
+          } else {
+            newValue = values.get(i);
+          }
+          updates.append(fields.get(i).getName(), newValue);
+        }
+      }
+      if (valuesMapField != null && valuesMapKeys != null) {
+        for (int i = 0; i < valuesMapKeys.size(); i++) {
+          String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
+          updates.append(fieldName, valuesMapValues.get(i));
+        }
+      }
+      if (updates.keySet().size() > 0) {
+        long t0 = System.currentTimeMillis();
+        collection.update(query, new BasicDBObject("$set", updates));
+        long t1 = System.currentTimeMillis();
+        if (t1 - t0 > 10) {
+          //System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t" + t0);
+          GNS.getLogger().warning(" Long latency mongoUpdate " + (t1 - t0));
+
         }
 //        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );
       }
@@ -583,7 +647,7 @@ public class MongoRecords implements NoSQLRecords {
       if (fields != null) {
         for (int i = 0; i < fields.size(); i++) {
           Object newValue;
-          if (fields.get(i).type() == FieldType.VALUES_MAP) {
+          if (fields.get(i).type().equals(FieldType.VALUES_MAP)) {
             newValue = ((ValuesMap) values.get(i)).getMap();
           } else {
             newValue = values.get(i);

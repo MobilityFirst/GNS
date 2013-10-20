@@ -5,15 +5,15 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.TinyQuery;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -53,6 +53,7 @@ public class CacheEntry {
    * A list of Active Nameservers for the name.
    */
   private Set<Integer> activeNameServer;
+
 
   /**
    * Constructs a cache entry using data from a DNS packet
@@ -132,6 +133,8 @@ public class CacheEntry {
   }
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
+
+    activeNameServer = new HashSet<Integer>(packet.getActiveNameServers());
     for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
       String fieldKey = entry.getKey();
       ResultValue fieldValue = entry.getValue();

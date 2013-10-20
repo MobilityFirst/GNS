@@ -1,11 +1,10 @@
 package edu.umass.cs.gns.util;
 
+import edu.umass.cs.gns.main.GNS;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
-
-import edu.umass.cs.gns.main.GNS;
 
 public class AdaptiveRetransmission {
 
@@ -50,7 +49,7 @@ public class AdaptiveRetransmission {
    */
 	public static synchronized long getTimeoutInterval(int latestNameServerQueried) {
 		long timeout = (long) (mu * estimatedRTT + phi * deviation);
-		//if (timeout > 200) timeout = 200;
+		if (timeout < 10) timeout = 10;
 		return timeout;
 	}
 

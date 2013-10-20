@@ -377,7 +377,11 @@ public class NioServer implements Runnable {
 	    }
     }
     // Hand the data off to our worker thread
-    this.workerObject.processData(socketChannel, this.readBuffer.array(), numRead);
+    GNS.getLogger().severe("Uncommen this line berfore using this class");
+    //    this.workerObject.processData(socketChannel, this.readBuffer.array(), numRead);
+    System.exit(2);
+    // TODO IMPORTANT
+
   }
 
   private void write(SelectionKey key) throws IOException {

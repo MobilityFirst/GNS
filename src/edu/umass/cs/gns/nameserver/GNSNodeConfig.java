@@ -26,6 +26,7 @@ public class GNSNodeConfig implements NodeConfig {
 
   @Override
   public InetAddress getNodeAddress(int ID) {
+    int x = 1111111000;
     return ConfigFileInfo.getIPAddress(ID);
   }
 

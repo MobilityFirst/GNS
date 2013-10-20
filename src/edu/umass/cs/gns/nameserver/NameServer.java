@@ -18,9 +18,13 @@ import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +58,10 @@ public class NameServer {
    */
   public NameServer(int nodeID) throws IOException {
     NameServer.nodeID = nodeID;
+
     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
+
+
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
             // probably should use something more generic here
@@ -85,47 +92,67 @@ public class NameServer {
 
 
     // Executor service created.
-    int maxThreads = 5;
-    executorService = new ScheduledThreadPoolExecutor(maxThreads);
+
+    executorService = new ScheduledThreadPoolExecutor(StartNameServer.workerThreadCount);
 
 
     // Non-blocking IO created
     nsDemultiplexer = new NSPacketDemultiplexer();
-    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
+
+
 
 
 //    new Thread(worker).start();
 //    tcpTransport = new NioServer(nodeID, ConfigFileInfo.getIPAddress(nodeID),
 //            ConfigFileInfo.getNSTcpPort(nodeID), worker);
-    tcpTransport = new NioServer2(nodeID, worker, new GNSNodeConfig());
 
+    new NSListenerUDP().start();
+
+    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
+    tcpTransport = new NioServer2(nodeID, worker, new GNSNodeConfig());
     new Thread(tcpTransport).start();
-    PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
+
+    if (StartNameServer.experimentMode) {
+      try {
+        Thread.sleep(30000); // wait so that other name servers can bind to respective TCP ports.
+      } catch (InterruptedException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    }
+
+
     // Load monitoring calculation initalized.
     loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
 
   }
 
   public void run() {
-    try {
+//    try {
 
       // start paxos manager first.
       // this will recover state from paxos logs, if it exists
 
 
       // Name server starts listening on UDP Port for messages.
-//      new NSListenerUDP().start();
+
 
       // admin thread started
-      new NSListenerAdmin().start(); // westy
 
+//      new NSListenerAdmin().start(); // westy
+    PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
 
       if (StartNameServer.experimentMode) {
         // Name Records added for experiments
 //        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,StartNameServer.mobileWorkloadSize);
-        GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
-                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
-                StartNameServer.defaultTTLMobileName);
+//        if (StartNameServer.staticReplication) {
+          GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
+                  StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
+                  StartNameServer.defaultTTLMobileName);
+//        }  else {
+//          GenerateSyntheticRecordTable.generateRecordTableWithActives(StartNameServer.regularWorkloadSize,
+//                  StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
+//                  StartNameServer.defaultTTLMobileName, StartNameServer.nameActives);
+//        }
       }
 
       // schedule periodic computation of new active name servers.
@@ -137,20 +164,23 @@ public class NameServer {
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
-        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), StartNameServer.analysisInterval,
-                //                (new Random()).nextInt((int) StartNameServer.analysisInterval),
+
+
+        int initialDelayMillis = 30000 + (new Random()).nextInt((int) StartNameServer.analysisInterval);
+
+        GNS.getLogger().fine("ComputeNewActives Initial delay " + initialDelayMillis);
+        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,
                 StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
 
         // commenting keep alive messages
 //        executorService.scheduleAtFixedRate(new SenderKeepAliveRC(),
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC + (new Random()).nextInt(SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC),
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC, TimeUnit.SECONDS);
-
-
       }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
   }
 
   /******************************
@@ -345,5 +375,24 @@ public class NameServer {
     recordMap.reset();
     // reset them both
     replicaController.reset();
+  }
+
+
+  public static void sendToLNS(JSONObject json, int lns) {
+
+
+    if (json.toString().length() < 1000) {
+      try {
+        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.LNS_UDP_PORT);
+      } catch (JSONException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    } else { // for large packets,  use TCP
+      try {
+        NameServer.tcpTransport.sendToID(lns, json);
+      } catch (IOException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    }
   }
 }

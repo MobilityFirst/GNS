@@ -51,6 +51,7 @@ STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 MONGO_PORT = '-mongoPort'
 PAXOS_LOG_FOLDER = '-paxosLogFolder'
 QUIT_AFTER_TIME = '-quitAfterTime'
+NAME_ACTIVES = '-nameActives'
 FAILURE_DETECTION_MSG_INTERVAL = '-failureDetectionMsgInterval'
 FAILURE_DETECTION_TIMEOUT_INTERVAL = '-failureDetectionTimeoutInterval'
 
@@ -102,8 +103,8 @@ nsnsping_file = ''
 #persistent_data_store = False
 mongo_port = 12345
 paxos_log_folder = exp_config.paxos_log_folder
-failure_detection_msg_interval = 10           # Interval (in sec) between two failure detection messages sent to a node                                                                       
-failure_detection_timeout_interval = 31       # Interval (in sec) after which a node is declared as failed if it does not responsd to failure messages
+failure_detection_msg_interval = 10000           # Interval (in sec) between two failure detection messages sent to a node                                                                       
+failure_detection_timeout_interval = 31000       # Interval (in sec) after which a node is declared as failed if it does not responsd to failure messages
 
 # logging related parameters:
 # values: ALL, OFF, INFO, FINE, FINER, FINEST,.. see java documentation.
@@ -115,6 +116,7 @@ stat_console_output_level = exp_config.nslogstat
 quit_after_time = -1 # if value >= 0, name server will quit after that time
 quit_node_id = 0     # which node will quit
 
+name_actives = exp_config.name_actives
 
 """ Prints usage message """
 def usage():
@@ -205,8 +207,11 @@ def run_name_server():
     
     command += ' ' + PAXOS_LOG_FOLDER + ' ' + paxos_log_folder + '/log_'  + str(node_id)
     command += ' ' + FAILURE_DETECTION_MSG_INTERVAL + ' ' + str(failure_detection_msg_interval)
-    command += ' ' + FAILURE_DETECTION_TIMEOUT_INTERVAL + ' ' + str(failure_detection_timeout_interval)    
+    command += ' ' + FAILURE_DETECTION_TIMEOUT_INTERVAL + ' ' + str(failure_detection_timeout_interval)
     
+    if not name_actives ==  '':
+        command += ' ' + NAME_ACTIVES + ' ' + name_actives
+        
     #if persistent_data_store:
     #    command += ' ' + PERSISTENT_DATA_STORE
     if mongo_port > 0:

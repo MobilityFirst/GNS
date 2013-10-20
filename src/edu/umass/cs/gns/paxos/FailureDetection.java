@@ -18,9 +18,12 @@ public class FailureDetection extends Thread{
 	/**
 	 * Frequency of pinging a node.
 	 */
-	static int pingInterval = 10000;
+	static int pingIntervalMillis = 10000;
 
-	static int timeoutInterval = 31000;
+  /**
+   * Interval after which a node is declared as failed is no response is received
+   */
+	static int timeoutIntervalMillis = 31000;
 
 	/**
 	 * number of nodes.
@@ -100,12 +103,12 @@ public class FailureDetection extends Thread{
 		try
 		{
             FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject());
-			PaxosManager.executorService.scheduleAtFixedRate(failureDetectionTask, r.nextInt(pingInterval),
-                    pingInterval, TimeUnit.MILLISECONDS);
+			PaxosManager.executorService.scheduleAtFixedRate(failureDetectionTask, r.nextInt(pingIntervalMillis),
+              pingIntervalMillis, TimeUnit.MILLISECONDS);
 		} catch (JSONException e)
 		{
 
-			if (StartNameServer.debugMode) GNS.getLogger().severe(" JSON EXCEPTION HERE !! " + e.getMessage());
+			GNS.getLogger().severe(" JSON EXCEPTION HERE !! " + e.getMessage());
 			e.printStackTrace();
 		}
 		if (StartNameServer.debugMode) GNS.getLogger().fine(nodeID + " started monitoring node " + monitoredNodeID);
@@ -190,7 +193,8 @@ public class FailureDetection extends Thread{
 	 * @return true if node = nodeID is up, false otherwise.
 	 */
 	static boolean isNodeUp(int nodeID) {
-		return nodeStatus.get(nodeID);
+    return true;
+//		return nodeStatus.get(nodeID);
 	}
 	
 	
@@ -269,16 +273,15 @@ public class FailureDetection extends Thread{
 				long delay = System.currentTimeMillis() - val;
 //				if (StartNameServer.debugMode) GNRS.getLogger().finer(nodeID + " status " + status + " delay " + delay);
 				
-				if (delay < pingInterval && status == false) {
+				if (delay < timeoutIntervalMillis && status == false) {
 					// case 1: node is up
 					nodeStatus.put(monitoredNode, true);
 					fdPacket = new FailureDetectionPacket(nodeID, monitoredNode, 
 									true, PaxosPacketType.NODE_STATUS);
 				}
-				else if (delay > timeoutInterval && status == true) {
+				else if (delay > timeoutIntervalMillis && status == true) {
 					// case 2: node is down
-					if (StartNameServer.debugMode) GNS.getLogger().severe(nodeID +
-                            "FD Node failed " + monitoredNode + "delay = " + delay);
+					GNS.getLogger().severe(nodeID + "FD Node failed " + monitoredNode + "delay = " + delay);
 					nodeStatus.put(monitoredNode, false);
 					fdPacket = new FailureDetectionPacket(nodeID, monitoredNode, 
 							false, PaxosPacketType.NODE_STATUS);
@@ -358,7 +361,7 @@ class FailureDetectionTask extends TimerTask{
 			PaxosManager.sendMessage(destNodeID, json);
 		}
 		else {
-			if (StartNameServer.debugMode) GNS.getLogger().severe("Failure Detection: Canceling Timer Task. " + this.destNodeID);
+			GNS.getLogger().severe("Failure Detection: Canceling Timer Task. " + this.destNodeID);
 			cancel();
 			return;
 		}
@@ -381,10 +384,8 @@ class HandleFailureDetectionPacketTask extends TimerTask{
         try {
             fdPacket = new FailureDetectionPacket(json);
         } catch (JSONException e) {
-            if (StartNameServer.debugMode) GNS.getLogger().severe("JSON Exception " + e.getMessage());
-
+            GNS.getLogger().severe("JSON Exception " + e.getMessage());
         }
-
     }
 
     @Override
@@ -402,7 +403,7 @@ class HandleFailureDetectionPacketTask extends TimerTask{
                 PaxosManager.sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject());
             } catch (JSONException e)
             {
-                if (StartNameServer.debugMode) GNS.getLogger().severe("JSON Exception " + e.getMessage());
+                GNS.getLogger().severe("JSON Exception " + e.getMessage());
             }
         }
         else if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_RESPONSE) {

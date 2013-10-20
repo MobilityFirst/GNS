@@ -26,6 +26,9 @@ public class DNSRequestInfo {
   private DNSPacket incomingPacket;
   private InetAddress senderAddress;
   private int senderPort;
+  public int numRestarts;
+
+  private int nameserverID;
 
   /**************************************************************
    * Constructs a QueryInfo object with the following parameters
@@ -37,7 +40,7 @@ public class DNSRequestInfo {
    **************************************************************/
   public DNSRequestInfo(int id, String name, NameRecordKey recordKey, long time,
           int nameserverID, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort) {
+          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort, int numRestarts) {
     this.id = id;
     this.qName = name;
     this.lookupRecvdTime = time;
@@ -45,6 +48,14 @@ public class DNSRequestInfo {
     this.incomingPacket = incomingPacket;
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
+    this.numRestarts = numRestarts;
+    this.nameserverID = nameserverID;
+  }
+
+
+  public synchronized void setNameserverID(int nameserverID1) {
+    nameserverID = nameserverID1;
+
   }
 
   /**

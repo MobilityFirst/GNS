@@ -1,11 +1,10 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
+import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.NameRecordStatsPacket;
 import edu.umass.cs.gns.packet.NameServerSelectionPacket;
 import edu.umass.cs.gns.packet.Packet;
@@ -17,7 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class ListenerNameRecordStats extends Thread {
 
@@ -162,7 +160,7 @@ public class ListenerNameRecordStats extends Thread {
     try {
       selectionPacket = new NameServerSelectionPacket(new JSONObject(decision));
       ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(selectionPacket.getName(), ReplicaControllerRecord.VOTES_MAP);
-      GNS.getLogger().severe("Record read = " + rcRecord.toString());
+      GNS.getLogger().fine("Record read = " + rcRecord.toString());
       // TODO: convert read and write to directly write
       if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name Sever Vote: " + selectionPacket.toString());
       rcRecord.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote(), selectionPacket.getUpdate());

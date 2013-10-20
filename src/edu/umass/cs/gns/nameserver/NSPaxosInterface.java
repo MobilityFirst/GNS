@@ -70,6 +70,9 @@ public class NSPaxosInterface implements PaxosInterface {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (IOException e) {
           e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (Exception e) {
+          GNS.getLogger().severe(" Exception Exception Exception ... " + e.getMessage());
+          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
     }

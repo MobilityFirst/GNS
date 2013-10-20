@@ -10,11 +10,12 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class CassandraRecordMap extends BasicRecordMap {
 
@@ -65,6 +66,11 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1,
           Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void updateConditional(String name, Field nameField, Field conditionField, Object conditionValue, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

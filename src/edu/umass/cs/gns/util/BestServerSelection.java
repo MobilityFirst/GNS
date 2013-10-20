@@ -1,9 +1,9 @@
 package edu.umass.cs.gns.util;
 
-import java.util.Set;
-
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+
+import java.util.Set;
 
 public class BestServerSelection
 {
@@ -23,8 +23,7 @@ public class BestServerSelection
 		  double selectServerLatency = Double.MAX_VALUE;
 		  for (int x: serverIDs) {
 			  if (ConfigFileInfo.getPingLatency(x) > 0) {
-				  double totallatency = LocalNameServer.nameServerLoads.get(x) + 
-						  ConfigFileInfo.getPingLatency(x);
+				  double totallatency = 5 * LocalNameServer.nameServerLoads.get(x) + ConfigFileInfo.getPingLatency(x);
 				  if (totallatency < selectServerLatency) {
 					  selectServer = x;
 					  selectServerLatency = totallatency;
@@ -117,21 +116,23 @@ public class BestServerSelection
    * Returns a name server id with the smallest network latency among the set of name servers. If the name server set is empty or
    * all the name servers have already been queried then -1 is returned. Returns -1 of the name servers Set is null
    *
-   * @param nameservers A set of name servers
+   * @param nameServers A set of name servers
    * @param nameserverQueried A set of name servers already queried
    * @return Name server id with the smallest latency or -1.****
    */
-  public static int getSmallestLatencyNS(Set<Integer> nameservers, Set<Integer> nameserverQueried) {
-    if (nameservers == null) {
+  public static int getSmallestLatencyNS(Set<Integer> nameServers, Set<Integer> nameserverQueried) {
+    if (nameServers == null) {
       return -1;
     }
-    if (nameservers.contains(ConfigFileInfo.getClosestNameServer()) && nameserverQueried != null && !nameserverQueried.contains(ConfigFileInfo.getClosestNameServer()) && ConfigFileInfo.getPingLatency(ConfigFileInfo.getClosestNameServer()) >= 0) {
+    if (nameServers.contains(ConfigFileInfo.getClosestNameServer()) &&
+            nameserverQueried != null && !nameserverQueried.contains(ConfigFileInfo.getClosestNameServer()) &&
+            ConfigFileInfo.getPingLatency(ConfigFileInfo.getClosestNameServer()) >= 0) {
       return ConfigFileInfo.getClosestNameServer();
     }
     double lowestLatency = Double.MAX_VALUE;
     int nameServerID = -1;
     double pingLatency;
-    for (Integer nsID : nameservers) {
+    for (Integer nsID : nameServers) {
       if (nameserverQueried != null && nameserverQueried.contains(nsID)) {
         continue;
       }

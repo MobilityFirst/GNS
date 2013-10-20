@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.io.IOException;
@@ -324,7 +325,7 @@ public class Packet {
       return;
     }
 
-    GNS.getLogger().finer("sendUDPPacket:: to: " + id + " (" + address.getHostName() + ":" + port + ")" + " json: " + json.toString());
+    if (StartLocalNameServer.debugMode) GNS.getLogger().finer("sendUDPPacket:: to: " + id + " (" + address.getHostName() + ":" + port + ")" + " json: " + json.toString());
 
     sendUDPPacket(socket, json, address, port);
 
