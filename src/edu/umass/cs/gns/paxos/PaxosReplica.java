@@ -1587,14 +1587,14 @@ public class PaxosReplica {
 
   private  void  sendDecisionForSlot(int slot, ProposalStateAtCoordinator stateAtCoordinator) {
     // check if majority reached
-    if (stateAtCoordinator.isFullResponse()) {
-      Object o = pValuesCommander.remove(slot);
-
-      if (o != null && StartNameServer.experimentMode) {
-        GNS.getLogger().severe("\t" + paxosID + "\t" + slot + "\t" + stateAtCoordinator.pValuePacket.proposal.req.isStopRequest() + "\tFullResponse");
-      }
-      return;
-    }
+//    if (stateAtCoordinator.isFullResponse()) {
+//      Object o = pValuesCommander.remove(slot);
+//
+//      if (o != null && StartNameServer.experimentMode) {
+//        GNS.getLogger().severe("\t" + paxosID + "\t" + slot + "\t" + stateAtCoordinator.pValuePacket.proposal.req.isStopRequest() + "\tFullResponse");
+//      }
+//      return;
+//    }
 
     if (stateAtCoordinator.isMajorityReached() == false) {
       return;
@@ -1602,7 +1602,7 @@ public class PaxosReplica {
 
 
     // remove object from pValuesCommander
-    stateAtCoordinator = pValuesCommander.get(slot);
+    stateAtCoordinator = pValuesCommander.remove(slot);
     // if object deleted return
     if (stateAtCoordinator == null) return;
     PaxosManager.removeFromActiveProposals(stateAtCoordinator);
