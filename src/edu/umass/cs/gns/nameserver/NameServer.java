@@ -49,12 +49,11 @@ public class NameServer {
   public static ScheduledThreadPoolExecutor executorService;
 
   /**
-   * ***********************************************************
    * Constructs a name server which uses a synthetic workload of integers as names in its record table. The size of the workload is
    * used to generate records and the integer value represents the name and its popularity.
    *
    * @param nodeID Name server id
-   * @throws IOException **********************************************************
+   * @throws IOException
    */
   public NameServer(int nodeID) throws IOException {
     NameServer.nodeID = nodeID;
@@ -127,60 +126,54 @@ public class NameServer {
   }
 
   public void run() {
-//    try {
-
-      // start paxos manager first.
-      // this will recover state from paxos logs, if it exists
+    // start paxos manager first.
+    // this will recover state from paxos logs, if it exists
 
 
-      // Name server starts listening on UDP Port for messages.
+    // Name server starts listening on UDP Port for messages.
 
 
-      // admin thread started
+    // START ADMIN THREAD - DO NOT REMOVE THIS
+    new NSListenerAdmin().start(); // westy
 
-//      new NSListenerAdmin().start(); // westy
     PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
 
-      if (StartNameServer.experimentMode) {
-        // Name Records added for experiments
+    if (StartNameServer.experimentMode) {
+      // Name Records added for experiments
 //        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,StartNameServer.mobileWorkloadSize);
 //        if (StartNameServer.staticReplication) {
-          GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
-                  StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
-                  StartNameServer.defaultTTLMobileName);
+      GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
+              StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
+              StartNameServer.defaultTTLMobileName);
 //        }  else {
 //          GenerateSyntheticRecordTable.generateRecordTableWithActives(StartNameServer.regularWorkloadSize,
 //                  StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
 //                  StartNameServer.defaultTTLMobileName, StartNameServer.nameActives);
 //        }
-      }
+    }
 
-      // schedule periodic computation of new active name servers.
-      if (!(StartNameServer.staticReplication || StartNameServer.optimalReplication)) {
+    // schedule periodic computation of new active name servers.
+    if (!(StartNameServer.staticReplication || StartNameServer.optimalReplication)) {
 
-        // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
-        // longer term solution is to integrate geoIPlocation database at name servers.
+      // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
+      // longer term solution is to integrate geoIPlocation database at name servers.
 //        executorService.scheduleAtFixedRate(new SendNameRecordStats(),
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
 
 
-        int initialDelayMillis = 30000 + (new Random()).nextInt((int) StartNameServer.analysisInterval);
+      int initialDelayMillis = 30000 + (new Random()).nextInt((int) StartNameServer.analysisInterval);
 
-        GNS.getLogger().fine("ComputeNewActives Initial delay " + initialDelayMillis);
-        executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,
-                StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
+      GNS.getLogger().fine("ComputeNewActives Initial delay " + initialDelayMillis);
+      executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,
+              StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
 
-        // commenting keep alive messages
+      // commenting keep alive messages
 //        executorService.scheduleAtFixedRate(new SenderKeepAliveRC(),
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC + (new Random()).nextInt(SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC),
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC, TimeUnit.SECONDS);
-      }
-
-//    } catch (IOException e) {
-//      e.printStackTrace();
-//    }
+    }
   }
 
   /******************************
@@ -278,7 +271,7 @@ public class NameServer {
   public static BasicRecordCursor getAllRowsIterator() {
     return recordMap.getAllRowsIterator();
   }
-  
+
   /**
    * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
    * @param key
@@ -286,9 +279,9 @@ public class NameServer {
    * @return 
    */
   public static BasicRecordCursor selectRecords(String key, Object value) {
-      return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
+    return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
   }
-  
+
   /**
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
    * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
@@ -298,9 +291,9 @@ public class NameServer {
    * @return 
    */
   public static BasicRecordCursor selectRecordsWithin(String key, String value) {
-      return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
+    return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
   }
-  
+
   /**
    * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple: 
    * [LONG, LAT]. maxDistance is in radians. The returned value is a BasicRecordCursor.
@@ -311,7 +304,7 @@ public class NameServer {
    * @return 
    */
   public static BasicRecordCursor selectRecordsNear(String key, String value, Object maxDistance) {
-      return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
+    return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
   }
 
   /******************************
@@ -326,10 +319,11 @@ public class NameServer {
     return replicaController.getNameRecordPrimary(name);
   }
 
-  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, Field ... fields)
+  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, Field... fields)
           throws RecordNotFoundException {
     return getNameRecordPrimaryMultiField(name, new ArrayList<Field>(Arrays.asList(fields)));
   }
+
   /**
    * Read name record with select fields
    * @param name
@@ -376,7 +370,6 @@ public class NameServer {
     // reset them both
     replicaController.reset();
   }
-
 
   public static void sendToLNS(JSONObject json, int lns) {
 

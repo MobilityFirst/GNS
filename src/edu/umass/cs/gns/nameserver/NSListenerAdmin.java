@@ -44,9 +44,13 @@ public class NSListenerAdmin extends Thread {
    *
    * @throws IOException ************************************************************
    */
-  public NSListenerAdmin() throws IOException {
+  public NSListenerAdmin() {
     super("NSListenerAdmin");
-    this.serverSocket = new ServerSocket(ConfigFileInfo.getNSAdminRequestPort(NameServer.nodeID));
+    try {
+      this.serverSocket = new ServerSocket(ConfigFileInfo.getNSAdminRequestPort(NameServer.nodeID));
+    } catch (IOException e) {
+      GNS.getLogger().severe("Unable to create NSListenerAdmin server: " + e);
+    }
   }
 
   /**
@@ -70,7 +74,7 @@ public class NSListenerAdmin extends Thread {
             ActiveNameServerInfoPacket activeNSInfoPacket = new ActiveNameServerInfoPacket(incomingJSON);
 
             GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
-           
+
             ReplicaControllerRecord nameRecordPrimary = null;
             try {
               nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeNSInfoPacket.getName(), ReplicaControllerRecord.ACTIVE_NAMESERVERS);
