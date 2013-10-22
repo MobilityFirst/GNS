@@ -43,6 +43,7 @@ public class Protocol {
   public final static String REMOVEALIAS = "removeAlias";
   public final static String RETRIEVEALIASES = "retrieveAliases";
   public final static String ADDGUID = "addGuid";
+  public final static String REMOVEGUID = "removeGuid";
   public final static String SETPASSWORD = "setPassword";
   public final static String REMOVEACCOUNT = "removeAccount";
   public final static String LOOKUPGUID = "lookupGuid";
@@ -138,6 +139,7 @@ public class Protocol {
   // Fields for HTTP get queries
   public final static String NAME = "name";
   public final static String GUID = "guid";
+  public final static String GUID2 = "guid2";
   public final static String READER = "reader";
   public final static String WRITER = "writer";
   public final static String APPGUID = "appGuid";
@@ -225,6 +227,9 @@ public class Protocol {
             //
             + urlPrefix + ADDGUID + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + NAME + VALSEP + "<name>" + KEYSEP + PUBLICKEY + VALSEP + "<publickey>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds a GUID to the account associated with the GUID. Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE + NEWLINE
+            //
+            + urlPrefix + REMOVEGUID + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + GUID2 + VALSEP + "<guidtoremove>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Removes the second GUID from the account associated with the first GUID. Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE + NEWLINE
             //
             + urlPrefix + ADDALIAS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + NAME + VALSEP + "<alias>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds a additional human readble name to the account associated with the GUID. Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE + NEWLINE
@@ -367,7 +372,7 @@ public class Protocol {
             + "  Approves membership of member in the group. Guid needs to sign the command." + NEWLINE + NEWLINE
             + urlPrefix + GRANTMEMBERSHIP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBERS + VALSEP + "<list of members>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Approves membership of members in the group. Members should be a list of guids formated as a JSON list. Guid needs to sign the command." + NEWLINE + NEWLINE
-             + urlPrefix + REQUESTLEAVEGROUP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + urlPrefix + REQUESTLEAVEGROUP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Request revocation of membership in the group specified by guid. Member guid needs to sign the command." + NEWLINE + NEWLINE
             + urlPrefix + RETRIEVEGROUPLEAVEREQUESTS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Returns member leave requests formatted as a JSON Array. Guid needs to sign the command." + NEWLINE + NEWLINE
@@ -555,6 +560,22 @@ public class Protocol {
           return result;
         }
       }
+    } else {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    }
+  }
+
+  public String processRemoveGuid(String guid, String guid2, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo,guid2Info;
+    if ((guid2Info = accountAccess.lookupGuidInfo(guid2)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid2;
+    }
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (verifySignature(guidInfo, signature, message)) {
+      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      return accountAccess.removeGuid(accountInfo, guid2Info);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -1157,6 +1178,12 @@ public class Protocol {
         String publicKey = queryMap.get(PUBLICKEY);
         String signature = queryMap.get(SIGNATURE);
         return processAddGuid(guid, userName, publicKey, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REMOVEGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, GUID2, SIGNATURE))) {
+        // syntax: register userName guid public_key
+        String guid = queryMap.get(GUID);
+        String guid2 = queryMap.get(GUID2);
+        String signature = queryMap.get(SIGNATURE);
+        return processRemoveGuid(guid, guid2, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (ADDALIAS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
         // syntax: register userName guid public_key
         String guid = queryMap.get(GUID);

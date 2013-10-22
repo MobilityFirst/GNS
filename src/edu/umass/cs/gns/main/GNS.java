@@ -18,7 +18,7 @@ public class GNS {
    * @return 
    */
   public static String makeInternalField(String string) {
-    return GNS.INTERNAL_PREFIX + string;
+    return INTERNAL_PREFIX + string;
   }
   
   /**

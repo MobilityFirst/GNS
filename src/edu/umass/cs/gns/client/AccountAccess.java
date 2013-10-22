@@ -227,7 +227,7 @@ public class AccountAccess {
   }
 
   /**
-   * Adds a new GUID associated with and existing account.
+   * Adds a new GUID associated with an existing account.
    * <p>
    * These records will be created:<br>
    * GUID: "_GNS_PRIMARY_GUID" -> GUID (primary) for secondary guid<br>
@@ -270,6 +270,30 @@ public class AccountAccess {
     } catch (JSONException e) {
       return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
     }
+  }
+  
+  /**
+   * Remove a GUID associated with an account.
+   * 
+   * @param accountInfo
+   * @param guid
+   * @return status result
+   */
+  public String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
+    Intercessor client = Intercessor.getInstance();
+     if (client.sendRemoveRecordWithConfirmation(guid.getGuid())) {
+       // remove reverse record
+       client.sendRemoveRecordWithConfirmation(guid.getName());
+       accountInfo.removeGuid(guid.getGuid());
+       accountInfo.noteUpdate();
+       if (updateAccountInfo(accountInfo)) {
+         return Protocol.OKRESPONSE;
+       } else {
+         return Protocol.BADRESPONSE + Protocol.UPDATEERROR;
+       }
+     } else {
+       return Protocol.BADRESPONSE + " " + Protocol.BADGUID;
+     }
   }
 
   /**
