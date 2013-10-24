@@ -31,7 +31,7 @@ public class ByteStreamToJSONObjects implements Runnable {
     return packetDemux;
   }
 
-  public void processData2(NioServer server, SocketChannel socket, byte[] data, int count) {
+  public void processData2(NioServer2 server, SocketChannel socket, byte[] data, int count) {
 
     byte[] dataCopy = new byte[count];
     System.arraycopy(data, 0, dataCopy, 0, count);

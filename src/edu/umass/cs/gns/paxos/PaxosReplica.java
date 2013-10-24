@@ -1357,8 +1357,9 @@ public class PaxosReplica {
 //    if (StartNameServer.debugMode) GNS.getLogger().fine("This is json = " + jsonObject.toString());
 //    jsonObject.put(PaxosManager.PAXOS_ID, paxosID);
     PaxosManager.sendMessage(nodeIDs,jsonObject,paxosID);
-    if (StartNameServer.experimentMode)
-      GNS.getLogger().severe("\t" + paxosID + "\t" + pValue.proposal.slot + "\t" + pValue.proposal.req.isStopRequest() + "\tRequestProposed" );
+//    if (StartNameServer.experimentMode)
+//      GNS.getLogger().severe("\t" + paxosID + "\t" + pValue.proposal.slot + "\t" + pValue.proposal.req.isStopRequest() + "\tRequestProposed" );
+
 //    handleIncomingMessage(jsonObject, PaxosPacketType.ACCEPT);
 //      PaxosManager.tcpTransport.sendToIDs(nodeIDs,jsonObject);
 //      sendMessage();
@@ -1579,8 +1580,8 @@ public class PaxosReplica {
       pValuesCommander = new ConcurrentHashMap<Integer, ProposalStateAtCoordinator>();
       for (Object o: c.keySet()) {
         ProposalStateAtCoordinator v = (ProposalStateAtCoordinator) c.get(o);
-        if (StartNameServer.experimentMode)
-        GNS.getLogger().severe("\t" + paxosID + "\t" + v.pValuePacket.proposal.slot + "\t" + v.pValuePacket.proposal.req.isStopRequest()+  "\tFullResponseAfterStop");
+//        if (StartNameServer.experimentMode)
+//        GNS.getLogger().severe("\t" + paxosID + "\t" + v.pValuePacket.proposal.slot + "\t" + v.pValuePacket.proposal.req.isStopRequest()+  "\tFullResponseAfterStop");
       }
     }
   }

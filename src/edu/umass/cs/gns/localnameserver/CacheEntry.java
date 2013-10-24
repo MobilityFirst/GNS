@@ -134,11 +134,12 @@ public class CacheEntry {
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
 
-    activeNameServer = new HashSet<Integer>(packet.getActiveNameServers());
+    activeNameServer = packet.getActiveNameServers();
+    if (valuesMap == null) valuesMap = new ValuesMap();
     for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
       String fieldKey = entry.getKey();
       ResultValue fieldValue = entry.getValue();
-      this.valuesMap.put(fieldKey, fieldValue);
+      valuesMap.put(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }

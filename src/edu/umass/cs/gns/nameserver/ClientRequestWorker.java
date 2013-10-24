@@ -20,6 +20,7 @@ import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.HashFunction;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,9 +74,9 @@ public class ClientRequestWorker extends TimerTask {
         case UPDATE_ADDRESS_LNS:
           handleUpdateAddressLNS();
           break;
-        case UPDATE_ADDRESS_NS:
-          handleUpdateAddressNS();
-          break;
+//        case UPDATE_ADDRESS_NS:
+//          handleUpdateAddressNS();
+//          break;
 
         // Request current actives
         case REQUEST_ACTIVES:
@@ -367,10 +368,9 @@ public class ClientRequestWorker extends TimerTask {
         return;
       }
       if (activeNS != null) {
-        for (int x : activeNS) {
-          activeID = x;
-        }
+        activeID = BestServerSelection.getSmallestLatencyNS(activeNS,null);
       }
+
       if (activeID != -1) {
         // forward update to active NS
         // updated to use a less kludgey operation - Westy
@@ -618,7 +618,7 @@ public class ClientRequestWorker extends TimerTask {
    * @throws JSONException
    * @throws IOException
    */
-  private void handleUpdateAddressNS() throws JSONException, IOException {
+  public static void handleUpdateAddressNS(JSONObject incomingJSON) throws JSONException, IOException {
 
 //    long t0 = System.currentTimeMillis();
     if (StartNameServer.debugMode) {
@@ -646,6 +646,18 @@ public class ClientRequestWorker extends TimerTask {
     try {
       result = nameRecord.updateKey(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(),
               updatePacket.getOldValue(), updatePacket.getOperation());
+      if (StartNameServer.debugMode)
+        GNS.getLogger().fine("Update operation result = " + result +  "\t" + updatePacket.getUpdateValue());
+      try {
+        NameRecord nameRecord2 = NameServer.getNameRecordMultiField(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
+        if (StartNameServer.debugMode) {
+          GNS.getLogger().fine("NAME RECORD after Update is: " + nameRecord.toString());
+        }
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().fine(" Exception: name record not found. Name = " + updatePacket.getName());
+        e.printStackTrace();
+        return;
+      }
 //      tB = System.currentTimeMillis();
       if (!result) { // update failed
         if (StartNameServer.debugMode) {

@@ -60,11 +60,11 @@ public class NSPaxosInterface implements PaxosInterface {
             // messages decided in to paxos between actives
             else if (req.clientID == Packet.PacketType.ACTIVE_PAXOS_STOP.getInt()) {
                 // current paxos instance stopped
-                ListenerReplicationPaxos.handleIncomingPacket(new JSONObject(req.value));
+                ListenerReplicationPaxos.handleActivePaxosStop(new JSONObject(req.value));
             }
             else if (req.clientID == Packet.PacketType.UPDATE_ADDRESS_NS.getInt()) {
                 // address update is applied
-                ClientRequestWorker.handleIncomingPacket(new JSONObject(req.value), Packet.PacketType.UPDATE_ADDRESS_NS);
+                ClientRequestWorker.handleUpdateAddressNS(new JSONObject(req.value));
             }
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

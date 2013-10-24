@@ -193,8 +193,8 @@ public class FailureDetection extends Thread{
 	 * @return true if node = nodeID is up, false otherwise.
 	 */
 	static boolean isNodeUp(int nodeID) {
-    return true;
-//		return nodeStatus.get(nodeID);
+//    return true;
+		return nodeStatus.get(nodeID);
 	}
 	
 	

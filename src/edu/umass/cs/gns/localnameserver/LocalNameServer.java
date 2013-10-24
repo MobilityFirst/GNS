@@ -250,9 +250,7 @@ public class LocalNameServer {
 
 
     //Periodically send nameserver votes for location based replication
-    if (StartLocalNameServer.locationBasedReplication) {
-      new NameServerVoteThread(StartLocalNameServer.voteInterval).start();
-    }
+
 //          if (StartLocalNameServer.experimentMode) {
 //            runSimpleTest();
 //          }
@@ -278,6 +276,10 @@ public class LocalNameServer {
         GNS.getLogger().fine("Scheduling all updates via intercessor.");
       }
       SendUpdatesViaIntercessor.schdeduleAllUpdates();
+    }
+
+    if (StartLocalNameServer.locationBasedReplication) {
+      new NameServerVoteThread(StartLocalNameServer.voteInterval).start();
     }
 
     if (StartLocalNameServer.runHttpServer) {

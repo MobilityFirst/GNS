@@ -93,8 +93,8 @@ public class StopActiveSetTask extends TimerTask {
 
     if (numAttempts > MAX_ATTEMPTS) {
 //      if (StartNameServer.debugMode) {
-        GNS.getLogger().severe("ERROR: Old Actives failed to STOP after " + MAX_ATTEMPTS + ". "
-                + "Old active name servers queried: " + oldActivesQueried + " Name = " + name);
+        GNS.getLogger().severe("ERROR: Old Actives failed to STOP after " + MAX_ATTEMPTS + " attempts   Name = " + name
+                + "Old active name servers queried: " + oldActivesQueried + " All Old Actives " + oldActivesQueried);
 //      }
       this.cancel();
       return;

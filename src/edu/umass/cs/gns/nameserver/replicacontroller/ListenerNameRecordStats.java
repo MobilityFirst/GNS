@@ -43,6 +43,8 @@ public class ListenerNameRecordStats extends Thread {
    */
   public static void handleNameServerSelectionPacket(JSONObject incomingJSON) throws JSONException, IOException {
 
+//    GNS.getLogger().severe("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
+
     if (StartNameServer.debugMode) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
     NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(incomingJSON);
 //    ArrayList<Field> readFields = new ArrayList<Field>();

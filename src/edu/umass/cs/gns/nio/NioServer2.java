@@ -397,7 +397,7 @@ public class NioServer2 implements Runnable {
                 if (key != null && key.isValid()) {
                   key.interestOps(change.ops);
                 } else {
-                  if (StartNameServer.debugMode) GNS.getLogger().severe("INVALID KEY: ");
+                  GNS.getLogger().severe("INVALID KEY: ");
                 }
                 break;
               case ChangeRequest.REGISTER:
@@ -449,7 +449,6 @@ public class NioServer2 implements Runnable {
   private void finishConnection(SelectionKey key) throws IOException {
     SocketChannel socketChannel = (SocketChannel) key.channel();
 
-
     synchronized(this.connectedIDs) {
       // Finish the connection. If the connection operation failed
       // this will raise an IOException.
@@ -458,7 +457,7 @@ public class NioServer2 implements Runnable {
         socketChannel.socket().setKeepAlive(true);
       } catch (IOException e) {
         // Cancel the channel's registration with our selector
-        if (StartNameServer.debugMode) GNS.getLogger().severe(e.getMessage());
+        GNS.getLogger().severe(e.getMessage());
         key.cancel();
         return;
       }
@@ -500,7 +499,7 @@ public class NioServer2 implements Runnable {
     } catch (IOException e) {
       // The remote forcibly closed the connection, cancel
       // the selection key and close the channel.
-      if (StartNameServer.debugMode) GNS.getLogger().severe("READ EXCEPTION, FORCED CLOSE CONNECTION.");
+      GNS.getLogger().severe("READ EXCEPTION, FORCED CLOSE CONNECTION.");
       key.cancel();
       socketChannel.close();
       return;
@@ -509,7 +508,7 @@ public class NioServer2 implements Runnable {
     if (numRead == -1) {
       // Remote entity shut the socket down cleanly. Do the
       // same from our end and cancel the channel.
-      if (StartNameServer.debugMode) GNS.getLogger().severe("REMOTE ENTITY SHUT DOWN SOCKET CLEANLY.");
+      if (StartNameServer.debugMode) GNS.getLogger().warning("REMOTE ENTITY SHUT DOWN SOCKET CLEANLY.");
       key.channel().close();
       key.cancel();
       //
@@ -529,7 +528,17 @@ public class NioServer2 implements Runnable {
       // Write until there's not more data ...
       while (!queue.isEmpty()) {
         ByteBuffer buf = (ByteBuffer) queue.get(0);
-        socketChannel.write(buf);
+        try {
+          socketChannel.write(buf);
+        } catch (IOException e) {
+          // The remote forcibly closed the connection, cancel
+          // the selection key and close the channel.
+          GNS.getLogger().severe("WRITE EXCEPTION, FORCED CLOSE CONNECTION.");
+          key.cancel();
+          socketChannel.close();
+          return;
+        }
+
         if (buf.remaining() > 0) {
           // ... or the socket's buffer fills up
           break;
@@ -580,7 +589,7 @@ public class NioServer2 implements Runnable {
     try {
       ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(null);
       new Thread(worker).start();
-      NioServer server = new NioServer(ID, null, port, worker);
+      NioServer2 server = new NioServer2(ID,  worker, null);
       new Thread(server).start();
       try {
         Thread.sleep(10000);

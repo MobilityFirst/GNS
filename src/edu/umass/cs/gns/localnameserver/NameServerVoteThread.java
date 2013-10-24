@@ -65,7 +65,7 @@ public class NameServerVoteThread extends Thread {
     Random r = new Random();
 		
 		try {
-			int x = 50000 + r.nextInt((int)voteInterval);
+			long x = voteInterval/2 + r.nextInt((int)voteInterval/2);
 			Thread.sleep(x);
 			System.out.println("NameServerVoteThread: Sleeping for " + x + "ms");
 		} catch (InterruptedException e) {
@@ -75,7 +75,7 @@ public class NameServerVoteThread extends Thread {
 		while (true) {
 			// sleep between loops
 			interval = System.currentTimeMillis() - startInterval;
-			if (interval < voteInterval && count > 0) {
+			if (count >=1 && interval < voteInterval) {
 				try {
 					long x = voteInterval - interval;
 					Thread.sleep(x);
@@ -105,7 +105,7 @@ public class NameServerVoteThread extends Thread {
 					if (vote == 0 && update == 0) {
 						continue;
 					}
-
+          GNS.getLogger().severe("\tVoteSent\t" + name +"\t" + vote +"\t" + update+"\t");
 //					int uniqueVoteID = r.nextInt();
 					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.nodeID, 0);
 

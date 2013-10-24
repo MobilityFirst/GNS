@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 public class GNS {
 
-  public static final int DEFAULTTTLINSECONDS = 2;
+  public static final int DEFAULTTTLINSECONDS = 0;
   
   public static int startingPort = 24400;
   

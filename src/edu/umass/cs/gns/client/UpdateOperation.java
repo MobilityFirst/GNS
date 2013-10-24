@@ -5,9 +5,10 @@
  */
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -116,6 +117,7 @@ public enum UpdateOperation {
         valuesList.addAll(singles);
         return true;
       case REMOVE:
+        GNS.getLogger().fine("Remove " + newValues  + "\tValues list = " + valuesList);
         if (valuesList.removeAll(newValues)) {
           return true;
         } else {

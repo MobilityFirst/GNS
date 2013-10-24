@@ -120,18 +120,18 @@ public class Lookup {
         }
       }
 //        long t2 = System.currentTimeMillis();
-      if (dnsPacket.getTTL() != 0) {// no need to update cache if TTL = 0.
-        CacheEntry cacheEntry = LocalNameServer.updateCacheEntry(dnsPacket);
+      // Abhigyan: need to update cache even for TTL == 0, because active name servers are updated.
+      CacheEntry cacheEntry = LocalNameServer.updateCacheEntry(dnsPacket);
 
-        //Cache response at the local name server, and update the set of active name servers.
+      //Cache response at the local name server, and update the set of active name servers.
 //			if ( ==)) {
 //				;
 //				if (StartLocalNameServer.debugMode) GNRS.getLogger().finer("LNSListenerResponse: Updating cache QueryID:" + dnsPacket.getQueryId());
-        if (cacheEntry == null) {
-          cacheEntry = LocalNameServer.addCacheEntry(dnsPacket);
-          GNS.getLogger().finer("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
-        }
+      if (cacheEntry == null) {
+        cacheEntry = LocalNameServer.addCacheEntry(dnsPacket);
+        GNS.getLogger().finer("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
       }
+
       // Add to NameRecordStats.
 //        LocalNameServer.incrementLookupResponse(dnsPacket.getQname());
 //        long t6 = System.currentTimeMillis();

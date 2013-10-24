@@ -163,7 +163,7 @@ public class NameServer {
 
 
 
-      int initialDelayMillis = 30000 + (new Random()).nextInt((int) StartNameServer.analysisInterval);
+      long initialDelayMillis = 30000 + StartNameServer.analysisInterval + (new Random()).nextInt((int) StartNameServer.analysisInterval);
 
       GNS.getLogger().fine("ComputeNewActives Initial delay " + initialDelayMillis);
       executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,

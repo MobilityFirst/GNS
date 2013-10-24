@@ -116,35 +116,36 @@ public class ComputeNewActivesTask extends TimerTask
 
         Set<Integer> oldActiveNameServers = rcRecord.getActiveNameservers();
         Set<Integer> newActiveNameServers;
-        if (StartNameServer.experimentMode) {
-          newActiveNameServers = getNewActiveNameServers_test(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
-        }
-        else {
-          newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
-        }
-          if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
-        if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() +
-                "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpadingOtherActives");
+//        if (StartNameServer.experimentMode) {
+//          newActiveNameServers = getNewActiveNameServers_test(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
+//        }
+//        else {
+//
+//        }
+        newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
+//        if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
+          if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() +
+                  "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpdatingOtherActives");
 
-        String newActivePaxosID = ReplicaController.getActivePaxosID(rcRecord);
-        NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(), NameServer.nodeID,
-                newActiveNameServers, newActivePaxosID);
-        String paxosID = ReplicaController.getPrimaryPaxosID(rcRecord);
-        boolean isStop = false;
-        RequestPacket requestPacket = new RequestPacket(Packet.PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(),
-                PaxosPacketType.REQUEST, isStop);
+          String newActivePaxosID = ReplicaController.getActivePaxosID(rcRecord);
+          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(), NameServer.nodeID,
+                  newActiveNameServers, newActivePaxosID);
+          String paxosID = ReplicaController.getPrimaryPaxosID(rcRecord);
+          boolean isStop = false;
+          RequestPacket requestPacket = new RequestPacket(Packet.PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(),
+                  PaxosPacketType.REQUEST, isStop);
 
-        PaxosManager.propose(paxosID, requestPacket);
-        if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
-          try {
-            Thread.sleep(50); // sleep between successive names so as to keep traffic smooth
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-          }
-          else {
-            if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
-          }
+          PaxosManager.propose(paxosID, requestPacket);
+          if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
+            try {
+              Thread.sleep(100); // sleep between successive names so as to keep traffic smooth
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+//        }
+//        else {
+//          if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
+//        }
       }
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field Not Found Exception: " + e.getMessage());
@@ -197,8 +198,8 @@ public class ComputeNewActivesTask extends TimerTask
    * Calculates new set of active name servers depending on replication framework.
    * @param rcRecord
    */
-  private Set<Integer> getNewActiveNameServers(ReplicaControllerRecord rcRecord,
-                                               Set<Integer> oldActiveNameServers, int count) throws FieldNotFoundException{
+  private Set<Integer> getNewActiveNameServers(ReplicaControllerRecord rcRecord, Set<Integer> oldActiveNameServers,
+                                               int count) throws FieldNotFoundException{
 
     Set<Integer> newActiveNameServers;
 
@@ -234,9 +235,8 @@ public class ComputeNewActivesTask extends TimerTask
    */
   private static int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException{
     double[] readWrites = rcRecord.recomputeAverageReadWriteRate();
-    double update = readWrites[0];
-    double lookup = readWrites[1];
-
+    double lookup = readWrites[0];
+    double update = readWrites[1];
 
 //		update = rcRecord.getWriteStats_Paxos();
 //		lookup = rcRecord.getReadStats_Paxos();
@@ -264,8 +264,8 @@ public class ComputeNewActivesTask extends TimerTask
     // put in here for DNS experiments.
     if (replicaCount > StartNameServer.maxReplica) replicaCount = StartNameServer.maxReplica;
 
-    GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t"
-            + rcRecord.getName() +"\tLookup\t" + lookup + "\tUpdateTrace\t" + update +
+    GNS.getStatLogger().severe("\tComputeNewActives-ReplicaCount\tName\t"
+            + rcRecord.getName() +"\tLookup\t" + lookup + "\tUpdate\t" + update +
             "\tReplicaCount\t" + replicaCount);
 
     return replicaCount;

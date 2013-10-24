@@ -771,11 +771,11 @@ public class ReplicaControllerRecord {
    *
    * @param id Name server id receiving the vote
    */
-  public void addReplicaSelectionVote(int id, int vote, int updateVote) throws FieldNotFoundException { //
+  public void addReplicaSelectionVote(int id, int vote, int update) throws FieldNotFoundException { //
     NameServer.replicaController.increment(getName(),
-            Field.keys(PREV_TOTAL_READ, PREV_TOTAL_READ),
+            Field.keys(PREV_TOTAL_READ, PREV_TOTAL_WRITE),
             //incrementFields, 
-            Field.values(vote, updateVote),
+            Field.values(vote, update),
             //incrementValues, 
             VOTES_MAP,
             Field.keys(new Field(Integer.toString(id), FieldType.INTEGER)),
