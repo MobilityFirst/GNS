@@ -173,7 +173,7 @@ public class ClientRequestWorker extends TimerTask {
       rcRecord = NameServer.getNameRecordPrimaryMultiField(name, getAddRecordLNSFields());
       try {
         if (rcRecord.isAdded() || rcRecord.isMarkedForRemoval()) {
-          GNS.getLogger().info(" ADD (ns " + NameServer.nodeID + ") : Record already exists");
+          GNS.getLogger().fine(" ADD (ns " + NameServer.nodeID + ") : Record already exists");
           ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(false, addRecordPacket);
           JSONObject jsonConfirm = confirmPacket.toJSONObject();
           NameServer.tcpTransport.sendToID(addRecordPacket.getLocalNameServerID(), jsonConfirm);
@@ -215,7 +215,7 @@ public class ClientRequestWorker extends TimerTask {
 //            PortType.PERSISTENT_TCP_PORT, NameServer.nodeID);
       NameServer.tcpTransport.sendToIDs(primaryNameServers, addRecordPacket.toJSONObject(), NameServer.nodeID);
 
-      GNS.getLogger().info("ADD REQUEST FROM LNS (ns " + NameServer.nodeID + ") : "
+      GNS.getLogger().fine("ADD REQUEST FROM LNS (ns " + NameServer.nodeID + ") : "
               + name + "/" + nameRecordKey.toString() + ", "
               + value + " - SENDING TO OTHER PRIMARIES: " + primaryNameServers.toString());
 
@@ -279,7 +279,6 @@ public class ClientRequestWorker extends TimerTask {
   }
 
   private void handleConfirmAddNS() throws JSONException, IOException {
-//    GNS.getLogger().info("here asdf");
     ConfirmAddNSPacket packet = new ConfirmAddNSPacket(incomingJSON);
     UpdateStatus status = addInProgress.get(packet.getPacketID());
     if (status == null) {
@@ -298,15 +297,16 @@ public class ClientRequestWorker extends TimerTask {
 
 
     JSONObject jsonConfirm = status.getConfirmUpdateLNSPacket().toJSONObject();
-    GNS.getLogger().info("Sending ADD REQUEST CONFIRM (ns " + NameServer.nodeID + ") : to " + status.getLocalNameServerID());
+    GNS.getLogger().fine("Sending ADD REQUEST CONFIRM (ns " + NameServer.nodeID + ") : to " + status.getLocalNameServerID());
     GNS.getLogger().fine("Sending ADD REQUEST CONFIRM to LNS " + jsonConfirm);
     NameServer.tcpTransport.sendToID(status.getLocalNameServerID(), jsonConfirm);
 
     // confirm to every one that add is complete
     AddCompletePacket pkt2 = new AddCompletePacket(status.getName());
 //    NameServer.tcpTransport.sendToAll(pkt2.toJSONObject(),status.getAllNameServers(),PortType.PERSISTENT_TCP_PORT);
+    GNS.getLogger().fine("Sending AddCompletePacket to all NS");
     NameServer.tcpTransport.sendToIDs(status.getAllNameServers(), pkt2.toJSONObject());
-    GNS.getLogger().info("Sending AddCompletePacket to all NS" + jsonConfirm);
+   
 
   }
 

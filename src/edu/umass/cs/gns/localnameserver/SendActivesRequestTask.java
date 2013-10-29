@@ -37,10 +37,10 @@ public class SendActivesRequestTask extends TimerTask
       // max number of attempts have been made,
       if (count > GNS.numPrimaryReplicas) {
         try {
-          GNS.getLogger().severe("No actives received for name: " + name + " sending error.");
+          GNS.getLogger().info("No actives received for name: " + name + " sending error.");
           PendingTasks.sendErrorMsgForName(name);
         } catch (JSONException e) {
-          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+          e.printStackTrace();
         }
         throw  new MyException();
       }
@@ -57,7 +57,7 @@ public class SendActivesRequestTask extends TimerTask
       if (e.getClass().equals(MyException.class)) {
         throw new RuntimeException();
       }
-      GNS.getLogger().severe("Exception Exception Exception ... ");
+      GNS.getLogger().severe("Unexpected exception in main active request loop: " + e);
       e.printStackTrace();
     }
   }
@@ -114,7 +114,7 @@ public class SendActivesRequestTask extends TimerTask
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Recvd request actives packet: " + requestActivesPacket + " name\t" + requestActivesPacket.getName());
     if (requestActivesPacket.getActiveNameServers() == null ||
             requestActivesPacket.getActiveNameServers().size() == 0) {
-      GNS.getLogger().severe("Null set of actives received for name " + requestActivesPacket.getName()  + " sending error");
+      GNS.getLogger().info("Null set of actives received for name " + requestActivesPacket.getName()  + " sending error");
       PendingTasks.sendErrorMsgForName(requestActivesPacket.getName());
       return;
     }
