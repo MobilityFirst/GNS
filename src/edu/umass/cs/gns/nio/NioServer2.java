@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class NioServer2 implements Runnable {
 
+  public static String Version = "$Revision$";
+  
   // The host:port combination to listen on
 
   private int ID;
@@ -719,6 +721,4 @@ class SendQueryWithDelay2 extends TimerTask {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
-
-
 }

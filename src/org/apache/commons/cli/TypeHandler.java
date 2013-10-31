@@ -30,7 +30,7 @@ import java.util.Date;
   * of conversion functionalities to ConvertUtils component in Commons
   * already. BeanUtils I think.
   *
-  * @version $Revision: 741425 $, $Date: 2009-02-05 22:10:54 -0800 (Thu, 05 Feb 2009) $
+  * @version $Revision$, $Date: 2009-02-05 22:10:54 -0800 (Thu, 05 Feb 2009) $
   */
 public class TypeHandler
 {

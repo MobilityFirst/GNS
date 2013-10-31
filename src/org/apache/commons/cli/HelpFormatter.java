@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Slawek Zachcial
  * @author John Keyes (john at integralsource.com)
- * @version $Revision: 751120 $, $Date: 2009-03-06 14:45:57 -0800 (Fri, 06 Mar 2009) $
+ * @version $Revision$, $Date: 2009-03-06 14:45:57 -0800 (Fri, 06 Mar 2009) $
  */
 public class HelpFormatter
 {

@@ -44,6 +44,8 @@ import org.json.JSONObject;
  */
 public class PaxosReplica {
 
+  public static String Version = "$Revision$";
+  
   /**
    * Special no-op command.
    */
@@ -2465,4 +2467,5 @@ class StartScoutTask extends TimerTask {
   public void run() {
     replica.initScout();
   }
+  
 }

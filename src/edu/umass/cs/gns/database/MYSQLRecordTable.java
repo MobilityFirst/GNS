@@ -237,5 +237,5 @@ public class MYSQLRecordTable {
     MySQLUtils.dropTable(tableName);
     MySQLUtils.maybeCreateTable(tableName, TableCreate);
   }
-  public static String Version = "$Revision: 92 $";
+  public static String Version = "$Revision$";
 }

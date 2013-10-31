@@ -38,7 +38,7 @@ import java.util.Properties;
  * @author bob mcwhirter (bob @ werken.com)
  * @author <a href="mailto:jstrachan@apache.org">James Strachan</a>
  * @author John Keyes (john at integralsource.com)
- * @version $Revision: 735247 $, $Date: 2009-01-17 00:23:35 -0800 (Sat, 17 Jan 2009) $
+ * @version $Revision$, $Date: 2009-01-17 00:23:35 -0800 (Sat, 17 Jan 2009) $
  */
 public class CommandLine implements Serializable
 {

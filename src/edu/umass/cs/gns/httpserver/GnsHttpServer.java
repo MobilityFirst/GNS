@@ -14,8 +14,12 @@ import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.FieldMetaData;
+import edu.umass.cs.gns.client.SelectHandler;
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.paxos.PaxosReplica;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -188,12 +192,36 @@ public class GnsHttpServer {
         Set<String> keySet = requestHeaders.keySet();
         Iterator<String> iter = keySet.iterator();
 
-        String serverVersionInfo = "Server Version: " + Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String protocolVersionInfo = "Protocol Version: " + Protocol.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String recordVersionInfo = "Record Version: " + FieldAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String accountVersionInfo = "Accounts Version: " + AccountAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String fieldMetadataVersion = "Field Metadata Version: " + FieldMetaData.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String groupsVersionInfo = "Groups Version: " + GroupAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
+        String serverVersionInfo =    
+                "Server Version: " 
+                + Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String protocolVersionInfo =  
+                "Protocol Version: " 
+                + Protocol.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String recordVersionInfo =    
+                "Field Access Version: " + 
+                FieldAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String accountVersionInfo =   
+                "Account Access Version: " +
+                AccountAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String fieldMetadataVersionInfo = 
+                "Field Metadata Version: " + 
+                FieldMetaData.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String groupsVersionInfo =       
+                "Groups Version: " + 
+                GroupAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
+        String selectVersionInfo = 
+                "Select Version: " + 
+                SelectHandler.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String mongoRecordsVersionInfo = 
+                "Mongo Records Version: " + 
+                MongoRecords.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
+        String paxosVersionInfo = 
+                "Paxos Replica Version: " + 
+                PaxosReplica.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+        String nioVersionInfo = 
+                "NIO Version: " + 
+                NioServer2.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
 
         String serverLocalNameServerID = "Local Name Server ID: " + localNameServerID + "\n";
         String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() + "\n";
@@ -203,8 +231,12 @@ public class GnsHttpServer {
         responseBody.write(protocolVersionInfo.getBytes());
         responseBody.write(recordVersionInfo.getBytes());
         responseBody.write(accountVersionInfo.getBytes());
-        responseBody.write(fieldMetadataVersion.getBytes());
+        responseBody.write(fieldMetadataVersionInfo.getBytes());
         responseBody.write(groupsVersionInfo.getBytes());
+        responseBody.write(selectVersionInfo.getBytes());
+        responseBody.write(mongoRecordsVersionInfo.getBytes());
+        responseBody.write(nioVersionInfo.getBytes());
+        responseBody.write(paxosVersionInfo.getBytes());
         responseBody.write(serverLocalNameServerID.getBytes());
         responseBody.write(numberOfNameServers.getBytes());
         responseBody.write(backingStoreClass.getBytes());

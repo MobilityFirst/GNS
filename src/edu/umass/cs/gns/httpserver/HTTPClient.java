@@ -1194,5 +1194,5 @@ public class HTTPClient {
       return "BadResponseException{" + "problemIndicator=" + problemIndicator + ", additionalInfo=" + additionalInfo + ", command=" + command + '}';
     }
   }
-  public static String Version = "$Revision: 96 $";
+  public static String Version = "$Revision$";
 }

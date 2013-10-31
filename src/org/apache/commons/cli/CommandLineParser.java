@@ -23,7 +23,7 @@ package org.apache.commons.cli;
  * and return a {@link CommandLine}.
  *
  * @author John Keyes (john at integralsource.com)
- * @version $Revision: 680644 $, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
+ * @version $Revision$, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
  */
 public interface CommandLineParser
 {

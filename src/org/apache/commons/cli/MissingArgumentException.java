@@ -22,7 +22,7 @@ package org.apache.commons.cli;
  * is not provided with an argument.
  *
  * @author John Keyes (john at integralsource.com)
- * @version $Revision: 680644 $, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
+ * @version $Revision$, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
  */
 public class MissingArgumentException extends ParseException
 {

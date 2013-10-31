@@ -1235,4 +1235,6 @@ public class MongoRecords implements NoSQLRecords {
 //
 //    MongoRecords.getInstance().update("NameRecord", name, NameRecord.NAME, null, null, NameRecord.VALUES_MAP, userKeys, userKeysUpdates);
 //  }
+  
+  public static String Version = "$Revision$";
 }

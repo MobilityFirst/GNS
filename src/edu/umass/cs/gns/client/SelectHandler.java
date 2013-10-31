@@ -126,4 +126,6 @@ public class SelectHandler {
     } while (resultsMap.containsKey(id));
     return id;
   }
+  
+  public static String Version = "$Revision$";
 }

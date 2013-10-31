@@ -27,7 +27,7 @@ import java.util.List;
  * {@link Parser#flatten(Options,String[],boolean) flatten} method.
  *
  * @author John Keyes (john at integralsource.com)
- * @version $Revision: 695760 $, $Date: 2008-09-16 01:05:03 -0700 (Tue, 16 Sep 2008) $
+ * @version $Revision$, $Date: 2008-09-16 01:05:03 -0700 (Tue, 16 Sep 2008) $
  */
 public class PosixParser extends Parser
 {

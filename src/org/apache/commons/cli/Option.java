@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author bob mcwhirter (bob @ werken.com)
  * @author <a href="mailto:jstrachan@apache.org">James Strachan</a>
- * @version $Revision: 680644 $, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
+ * @version $Revision$, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
  */
 public class Option implements Cloneable, Serializable
 {

@@ -25,7 +25,7 @@ package org.apache.commons.cli;
  * http://c2.com/cgi-bin/wiki?BuilderPattern</a>.</p>
  *
  * @author John Keyes (john at integralsource.com)
- * @version $Revision: 754830 $, $Date: 2009-03-16 00:26:44 -0700 (Mon, 16 Mar 2009) $
+ * @version $Revision$, $Date: 2009-03-16 00:26:44 -0700 (Mon, 16 Mar 2009) $
  * @since 1.0
  */
 public final class OptionBuilder

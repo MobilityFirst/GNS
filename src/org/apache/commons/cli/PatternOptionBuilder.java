@@ -50,7 +50,7 @@ import java.util.Date;
  * to be pluggable.
  * </p>
  *
- * @version $Revision: 734339 $, $Date: 2009-01-13 21:56:47 -0800 (Tue, 13 Jan 2009) $
+ * @version $Revision$, $Date: 2009-01-13 21:56:47 -0800 (Tue, 13 Jan 2009) $
  */
 public class PatternOptionBuilder
 {
