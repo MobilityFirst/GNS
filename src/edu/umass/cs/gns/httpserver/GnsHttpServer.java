@@ -209,21 +209,21 @@ public class GnsHttpServer {
                 FieldMetaData.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String groupsVersionInfo =       
                 "Groups Version: " + 
-                GroupAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
+                GroupAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String selectVersionInfo = 
                 "Select Version: " + 
                 SelectHandler.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String mongoRecordsVersionInfo = 
                 "Mongo Records Version: " + 
-                MongoRecords.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
+                MongoRecords.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String paxosVersionInfo = 
                 "Paxos Replica Version: " + 
                 PaxosReplica.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String nioVersionInfo = 
                 "NIO Version: " + 
-                NioServer2.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n\n";
+                NioServer2.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
-        String serverLocalNameServerID = "Local Name Server ID: " + localNameServerID + "\n";
+        String serverLocalNameServerID = "\nLocal Name Server ID: " + localNameServerID + "\n";
         String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() + "\n";
         String backingStoreClass = "Backing Store Class: " + StartNameServer.dataStore.getClassName() + "\n\n";
 

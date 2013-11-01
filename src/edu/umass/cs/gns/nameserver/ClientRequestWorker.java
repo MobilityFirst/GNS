@@ -782,7 +782,8 @@ public class ClientRequestWorker extends TimerTask {
           break;
         case NEAR:
           if (request.getValue() instanceof String) {
-            cursor = NameServer.selectRecordsNear(request.getKey().getName(), (String) request.getValue(), request.getOtherValue());
+            cursor = NameServer.selectRecordsNear(request.getKey().getName(), (String) request.getValue(), 
+                    Double.parseDouble((String)request.getOtherValue()));
           } else {
             return;
           }
