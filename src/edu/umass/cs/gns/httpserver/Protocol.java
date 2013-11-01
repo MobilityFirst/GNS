@@ -566,7 +566,7 @@ public class Protocol {
   }
 
   public String processRemoveGuid(String guid, String guid2, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    GuidInfo guidInfo,guid2Info;
+    GuidInfo guidInfo, guid2Info;
     if ((guid2Info = accountAccess.lookupGuidInfo(guid2)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid2;
     }
@@ -845,6 +845,33 @@ public class Protocol {
     }
   }
 
+  public String processAddMembersToGroup(String guid, String members, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo, writerInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (writer.equals(guid)) {
+      writerInfo = guidInfo;
+    } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+      return BADRESPONSE + BADWRITERGUID + " " + writer;
+    }
+    if (!verifySignature(writerInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+      return BADRESPONSE + " " + ACCESSDENIED;
+    } else {
+      try {
+        if (groupAccess.addToGroup(guid, new ResultValue(members))) {
+          return OKRESPONSE;
+        } else {
+          return BADRESPONSE + " " + GENERICEERROR;
+        }
+      } catch (JSONException e) {
+        return BADRESPONSE + " " + JSONPARSEERROR;
+      }
+    }
+  }
+
   public String processRemoveFromGroup(String guid, String member, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -863,6 +890,33 @@ public class Protocol {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;
+    }
+  }
+
+  public String processRemoveMembersFromGroup(String guid, String members, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo, writerInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (writer.equals(guid)) {
+      writerInfo = guidInfo;
+    } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
+    }
+    if (!verifySignature(writerInfo, signature, message)) {
+      return BADRESPONSE + " " + BADSIGNATURE;
+    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+      return BADRESPONSE + " " + ACCESSDENIED;
+    } else {
+      try {
+        if (groupAccess.removeFromGroup(guid, new ResultValue(members))) {
+          return OKRESPONSE;
+        } else {
+          return BADRESPONSE + " " + GENERICEERROR;
+        }
+      } catch (JSONException e) {
+        return BADRESPONSE + " " + JSONPARSEERROR;
+      }
     }
   }
 
@@ -1415,6 +1469,17 @@ public class Protocol {
         String writer = queryMap.get(WRITER);
         String signature = queryMap.get(SIGNATURE);
         return processAddToGroup(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String members = queryMap.get(MEMBERS);
+        String signature = queryMap.get(SIGNATURE);
+        return processAddMembersToGroup(guid, members, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, WRITER, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String members = queryMap.get(MEMBERS);
+        String writer = queryMap.get(WRITER);
+        String signature = queryMap.get(SIGNATURE);
+        return processAddMembersToGroup(guid, members, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String member = queryMap.get(MEMBER);
@@ -1426,6 +1491,17 @@ public class Protocol {
         String writer = queryMap.get(WRITER);
         String signature = queryMap.get(SIGNATURE);
         return processRemoveFromGroup(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String members = queryMap.get(MEMBERS);
+        String signature = queryMap.get(SIGNATURE);
+        return processRemoveMembersFromGroup(guid, members, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, WRITER, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String members = queryMap.get(MEMBERS);
+        String writer = queryMap.get(WRITER);
+        String signature = queryMap.get(SIGNATURE);
+        return processRemoveMembersFromGroup(guid, members, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
       } else if (GETGROUPMEMBERS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, READER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String reader = queryMap.get(READER);

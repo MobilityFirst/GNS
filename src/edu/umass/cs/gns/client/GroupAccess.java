@@ -43,10 +43,20 @@ public class GroupAccess {
     Intercessor client = Intercessor.getInstance();
     return client.sendUpdateRecordWithConfirmation(guid, GROUP, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
+  
+  public boolean addToGroup(String guid, ResultValue members) {
+    Intercessor client = Intercessor.getInstance();
+    return client.sendUpdateRecordWithConfirmation(guid, GROUP, members, null, UpdateOperation.APPEND_OR_CREATE);
+  }
 
   public boolean removeFromGroup(String guid, String memberGuid) {
     Intercessor client = Intercessor.getInstance();
     return client.sendUpdateRecordWithConfirmation(guid, GROUP, memberGuid, null, UpdateOperation.REMOVE);
+  }
+  
+  public boolean removeFromGroup(String guid, ResultValue members) {
+    Intercessor client = Intercessor.getInstance();
+    return client.sendUpdateRecordWithConfirmation(guid, GROUP, members, null, UpdateOperation.REMOVE);
   }
 
   public ResultValue lookup(String guid) {
