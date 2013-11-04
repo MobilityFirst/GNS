@@ -9,12 +9,15 @@ import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ResultValueString;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.JSONUtils;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.text.ParseException;
-import java.util.*;
 
 /**
  * Stores the Human Readable Name (HRN), GUID and public key for an account plus
@@ -170,7 +173,7 @@ public class AccountInfo {
     this.created = Format.parseDateUTC(json.getString(CREATED));
     this.updated = Format.parseDateUTC(json.getString(UPDATED));
     this.password = json.optString(PASSWORD, null);
-    this.verified = Boolean.parseBoolean(json.optString(VERIFIED, null));
+    this.verified = json.getBoolean(VERIFIED);
     this.verificationCode = json.optString(CODE, null);
   }
 

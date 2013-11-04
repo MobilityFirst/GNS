@@ -484,7 +484,9 @@ public class Protocol {
     }
     if (verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
-      if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
+      if (!accountInfo.isVerified()) {
+        return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
+      } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
         return BADRESPONSE + " " + TOMANYALIASES;
       } else {
         return accountAccess.addAlias(accountInfo, alias);
@@ -529,7 +531,9 @@ public class Protocol {
     }
     if (verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
-      if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
+      if (!accountInfo.isVerified()) {
+        return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
+      } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
         return BADRESPONSE + " " + TOMANYGUIDS;
       } else {
         String result = accountAccess.addGuid(accountInfo, name, newGuid, publicKey);

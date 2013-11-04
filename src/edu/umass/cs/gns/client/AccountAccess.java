@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
@@ -222,7 +221,7 @@ public class AccountAccess {
             accountInfo.setVerified(true);
             accountInfo.noteUpdate();
             if (updateAccountInfo(accountInfo)) {
-              return Protocol.OKRESPONSE;
+              return Protocol.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
             } else {
               return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to update account info";
             }
