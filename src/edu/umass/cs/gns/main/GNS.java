@@ -11,6 +11,8 @@ public class GNS {
   
   public static final String INTERNAL_PREFIX = "_GNS_";
   
+  public static final String GNS_URL_PATH = "GNS";
+  
   /**
    * Creates a GNS field that is hidden from the user.
    * 

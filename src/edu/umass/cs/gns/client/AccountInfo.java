@@ -40,6 +40,14 @@ public class AccountInfo {
    * An encrypted password
    */
   private String password;
+  /**
+   * Indicates if the account has been verified.
+   */
+  private boolean verified;
+  /**
+   * Used during the verification process.
+   */
+  private String verificationCode;
 
   public AccountInfo(String userName, String primaryGUID, String password) {
     this.primaryName = userName;
@@ -50,6 +58,8 @@ public class AccountInfo {
     this.created = new Date();
     this.updated = new Date();
     this.password = password;
+    this.verified = false;
+    this.verificationCode = null;
   }
 
   public String getPrimaryName() {
@@ -75,7 +85,7 @@ public class AccountInfo {
   public ArrayList<String> getAliases() {
     return new ArrayList<String>(aliases);
   }
-  
+
   public boolean containsAlias(String alias) {
     return aliases.contains(alias);
   }
@@ -112,6 +122,22 @@ public class AccountInfo {
     this.updated = new Date();
   }
 
+  public void setVerified(boolean verified) {
+    this.verified = verified;
+  }
+
+  public boolean isVerified() {
+    return verified;
+  }
+
+  public void setVerificationCode(String verificationCode) {
+    this.verificationCode = verificationCode;
+  }
+
+  public String getVerificationCode() {
+    return verificationCode;
+  }
+
   /**
    * Convert UserInfo to and from the format which is used to store it in the DB. 
    * Use a JSON Object which is put as the first
@@ -124,7 +150,6 @@ public class AccountInfo {
   public AccountInfo(ResultValueString queryResult) throws JSONException, ParseException {
     this(new JSONObject(queryResult.get(0)));
   }
-
   public static final String USERNAME = "username";
   public static final String GUID = "guid";
   public static final String TYPE = "type";
@@ -133,6 +158,8 @@ public class AccountInfo {
   public static final String CREATED = "created";
   public static final String UPDATED = "updated";
   public static final String PASSWORD = "password";
+  public static final String VERIFIED = "verified";
+  public static final String CODE = "code";
 
   public AccountInfo(JSONObject json) throws JSONException, ParseException {
     this.primaryName = json.getString(USERNAME);
@@ -143,6 +170,8 @@ public class AccountInfo {
     this.created = Format.parseDateUTC(json.getString(CREATED));
     this.updated = Format.parseDateUTC(json.getString(UPDATED));
     this.password = json.optString(PASSWORD, null);
+    this.verified = Boolean.parseBoolean(json.optString(VERIFIED, null));
+    this.verificationCode = json.optString(CODE, null);
   }
 
   public JSONObject toJSONObject() throws JSONException {
@@ -157,12 +186,19 @@ public class AccountInfo {
     if (password != null) {
       json.put(PASSWORD, password);
     }
+    json.put(VERIFIED, verified);
+    if (verificationCode != null) {
+      json.put(CODE, verificationCode);
+    }
     return json;
   }
 
   @Override
   public String toString() {
-    return "AccountInfo{" + "userName=" + primaryName + ", guid=" + primaryGuid + ", type=" + type + ", aliases=" + aliases + ", guids=" + guids + ", created=" + created + ", updated=" + updated + ", password=" + password + '}';
+    try {
+      return toJSONObject().toString();
+    } catch (JSONException e) {
+      return "AccountInfo{" + primaryGuid + "}";
+    }
   }
-
 }

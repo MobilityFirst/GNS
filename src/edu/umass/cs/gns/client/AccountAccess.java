@@ -5,9 +5,12 @@
  */
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.util.Email;
+import edu.umass.cs.gns.util.Util;
 import java.text.ParseException;
 import java.util.Arrays;
 import org.json.JSONException;
@@ -161,6 +164,81 @@ public class AccountAccess {
     }
     return null;
   }
+  private static final String VERIFY_COMMAND = "account_verify";
+  private static final String EMAIL_BODY = "This is an automated message informing you that an account has been created for %s on the GNS server.\n"
+          + "To verify this account you can enter this query into a browser:\n\n"
+          
+          + "http://%s/" + GNS.GNS_URL_PATH + "/verifyAccount?guid=%s&code=%s\n\n"
+          
+          + "or enter this command into the GNS CLI that you used to create the account:\n\n"
+          
+          + VERIFY_COMMAND + " %s %s\n\n"
+         
+          + "If you did not create this account please ignore this message.";
+  private static final String SUCCESS_NOTICE = "A confirmation email has been sent to %s. "
+          + "Please follow the instructions in that email to verify your account.\n";
+  private static final String PROBLEM_NOTICE = "There is some system problem in sending your confirmation email to %s. "
+          + "Your account has been created. Please email us at %s and we will attempt to fix the problem.\n";
+  //
+  private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server.\n"
+          + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
+
+  public String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
+    String response;
+    if ((response = addAccount(name, guid, publicKey, password)).equals(Protocol.OKRESPONSE)) {
+      String verifyCode = Util.randomString(6);
+      AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
+      accountInfo.setVerificationCode(verifyCode);
+      accountInfo.noteUpdate();
+      if (updateAccountInfo(accountInfo)) {
+        boolean emailOK = Email.emailSSL("GNS Account Verification", name,
+                String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
+        boolean adminEmailOK = Email.emailSSL("GNS Account Notification",
+                Email.ACCOUNT_CONTACT_EMAIL,
+                String.format(ADMIN_NOTICE, name, guid));
+        if (emailOK) {
+          return Protocol.OKRESPONSE;
+        } else {
+          // if we can't send the confirmation back out of the account creation
+          removeAccount(accountInfo);
+          return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to send email";
+        }
+      } else {
+        // if we do this we're probably housed anyway, but just in case try to remove the account
+        removeAccount(accountInfo);
+        return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to update account info";
+      }
+    }
+    return response;
+  }
+
+  public String verifyAccount(String guid, String code) {
+    AccountInfo accountInfo;
+    if ((accountInfo = lookupAccountInfoFromGuid(guid)) != null) {
+      if (!accountInfo.isVerified()) {
+        if (accountInfo.getVerificationCode() != null && code != null) {
+          if (accountInfo.getVerificationCode().equals(code)) {
+            accountInfo.setVerificationCode(null);
+            accountInfo.setVerified(true);
+            accountInfo.noteUpdate();
+            if (updateAccountInfo(accountInfo)) {
+              return Protocol.OKRESPONSE;
+            } else {
+              return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to update account info";
+            }
+          } else {
+            return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Code not correct";
+          }
+        } else {
+          return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Bad verification code";
+        }
+      }  else {
+        return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Account already verified";
+      }
+    } else {
+      return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to read account info";
+    }
+  }
 
   /**
    * Create a new GNS user account.
@@ -176,7 +254,7 @@ public class AccountAccess {
    * @param password
    * @return status result
    */
-  public String addAccount(String name, String guid, String publicKey, String password) {
+  private String addAccount(String name, String guid, String publicKey, String password) {
     try {
       Intercessor client = Intercessor.getInstance();
       // do this first add to make sure this name isn't already registered
@@ -271,7 +349,7 @@ public class AccountAccess {
       return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
     }
   }
-  
+
   /**
    * Remove a GUID associated with an account.
    * 
@@ -281,19 +359,19 @@ public class AccountAccess {
    */
   public String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
     Intercessor client = Intercessor.getInstance();
-     if (client.sendRemoveRecordWithConfirmation(guid.getGuid())) {
-       // remove reverse record
-       client.sendRemoveRecordWithConfirmation(guid.getName());
-       accountInfo.removeGuid(guid.getGuid());
-       accountInfo.noteUpdate();
-       if (updateAccountInfo(accountInfo)) {
-         return Protocol.OKRESPONSE;
-       } else {
-         return Protocol.BADRESPONSE + Protocol.UPDATEERROR;
-       }
-     } else {
-       return Protocol.BADRESPONSE + " " + Protocol.BADGUID;
-     }
+    if (client.sendRemoveRecordWithConfirmation(guid.getGuid())) {
+      // remove reverse record
+      client.sendRemoveRecordWithConfirmation(guid.getName());
+      accountInfo.removeGuid(guid.getGuid());
+      accountInfo.noteUpdate();
+      if (updateAccountInfo(accountInfo)) {
+        return Protocol.OKRESPONSE;
+      } else {
+        return Protocol.BADRESPONSE + Protocol.UPDATEERROR;
+      }
+    } else {
+      return Protocol.BADRESPONSE + " " + Protocol.BADGUID;
+    }
   }
 
   /**

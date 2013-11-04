@@ -46,7 +46,7 @@ import org.apache.commons.cli.ParseException;
 public class GnsHttpServer {
 
   private static Protocol protocol = new Protocol();
-  protected static String GNSPATH = "GNS";
+  protected static String GNSPATH = GNS.GNS_URL_PATH;
   public static int address = 80;
   public static int addressNoPriv = 8080;
   public static String hostName = "127.0.0.1";
