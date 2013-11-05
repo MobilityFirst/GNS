@@ -629,7 +629,7 @@ public class Protocol {
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(guidInfo, signature, message)) {
+    if (!verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
@@ -654,7 +654,7 @@ public class Protocol {
       return BADRESPONSE + BADWRITERGUID + " " + writer;
     }
     try {
-      if (!verifySignature(guidInfo, signature, message)) {
+      if (!verifySignature(writerGuidInfo, signature, message)) {
         return BADRESPONSE + " " + BADSIGNATURE;
       } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
         return BADRESPONSE + " " + ACCESSDENIED;
@@ -681,7 +681,7 @@ public class Protocol {
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(guidInfo, signature, message)) {
+    if (!verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
@@ -708,7 +708,7 @@ public class Protocol {
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(guidInfo, signature, message)) {
+    if (!verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
