@@ -124,7 +124,7 @@ public class ComputeNewActivesTask extends TimerTask
 //
 //        }
         newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
-//        if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
+        if (isActiveSetModified(oldActiveNameServers, newActiveNameServers)) {
           if (StartNameServer.debugMode) GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() +
                   "\tCount\t" + count + "\tRound\t" + replicationRound + "\tUpdatingOtherActives");
 
@@ -143,10 +143,10 @@ public class ComputeNewActivesTask extends TimerTask
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
-//        }
-//        else {
-//          if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
-//        }
+        }
+        else {
+          if (StartNameServer.debugMode) GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
+        }
       }
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field Not Found Exception: " + e.getMessage());

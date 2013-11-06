@@ -85,7 +85,7 @@ public class LocalNameServer {
   public static ConcurrentHashMap<Integer, Double> nameServerLoads;
   public static long startTime;
 
-  public static int intitalExpDelay = 1000;
+  public static int initialExpDelayMillis = 1000;
   /**
    **
    * Constructs a local name server and assigns it a node id.
@@ -256,7 +256,7 @@ public class LocalNameServer {
 
     if (StartLocalNameServer.experimentMode) {
 
-      Thread.sleep(intitalExpDelay); // so that all local name servers can start at the same time.
+      Thread.sleep(initialExpDelayMillis); // so that all local name servers can start at the same time.
 
 //        experimentSendRequestTimer = new Timer();
       //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Testing in experiment mode.");
@@ -1054,6 +1054,11 @@ public class LocalNameServer {
     return "***NameRecordStatsMap***" + str.toString();
   }
 
+  /**
+   * Send packet to NS after all packet
+   * @param json
+   * @param ns
+   */
   public static void sendToNS(JSONObject json, int ns) {
 
     if (StartLocalNameServer.delayScheduling) { // during testing, this option is used to simulate artificial latency between lns and ns

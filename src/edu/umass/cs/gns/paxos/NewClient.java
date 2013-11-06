@@ -2,17 +2,16 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.NodeConfig;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Random;
@@ -33,7 +32,7 @@ public class NewClient  extends PacketDemultiplexer{
   /**
    * Non-blocking tcp connection object
    */
-  NioServer2 nioServer2;
+  NioServer nioServer;
 
   /**
    * Timer object to send requests at given rate
@@ -130,13 +129,13 @@ public class NewClient  extends PacketDemultiplexer{
       NodeConfig nodeConfig = new PaxosNodeConfig(nodeConfigFile);
       InetAddress add = nodeConfig.getNodeAddress(ID);
       System.out.println(" Address  is " + add);
-      nioServer2 = new NioServer2(ID, new ByteStreamToJSONObjects(this), nodeConfig);
+      nioServer = new NioServer(ID, new ByteStreamToJSONObjects(this), nodeConfig);
     } catch (IOException e) {
       GNS.getLogger().severe(" Could not initialize TCP socket at client");
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       return;
     }
-    new Thread(nioServer2).start();
+    new Thread(nioServer).start();
   }
 
   /**
@@ -155,7 +154,7 @@ public class NewClient  extends PacketDemultiplexer{
       int replica = defaultReplica;
       boolean x = false;
       if (i == numberRequests/NewClient.groupsize) x = true;
-      SendRequestTask task = new SendRequestTask(i, ID, defaultPaxosID, replica, nioServer2, x);
+      SendRequestTask task = new SendRequestTask(i, ID, defaultPaxosID, replica, nioServer, x);
       t.schedule(task, (long)delay, TimeUnit.MILLISECONDS);
       delay += interRequestIntervalMilliseconds;
 //            if (delay > 10000) {
@@ -327,17 +326,17 @@ class SendRequestTask extends TimerTask {
 
   int replica;
 
-  NioServer2 nioServer2;
+  NioServer nioServer;
 
   boolean stop;
 
   public SendRequestTask(int requestID, int ID, String defaultPaxosID,
-                         int defaultReplica, NioServer2 nioServer2, boolean stop) {
+                         int defaultReplica, NioServer nioServer, boolean stop) {
     this.requestID = requestID;
     this.ID = ID;
     this.defaultPaxosID = defaultPaxosID;
     this.replica = defaultReplica;
-    this.nioServer2 = nioServer2;
+    this.nioServer = nioServer;
     this.stop = stop;
   }
 
@@ -356,7 +355,7 @@ class SendRequestTask extends TimerTask {
 //              System.out.println(" request = " + requestPacket);
         JSONObject json = requestPacket.toJSONObject();
         json.put(PaxosManager.PAXOS_ID, defaultPaxosID); // send request to paxos instance with ID = 0.
-        nioServer2.sendToID(replica, json);
+        nioServer.sendToID(replica, json);
         LatencyCalculator.addRequestSendTime();
 //                System.out.println(" XXXXXXXXXSent " + requestPacket + " to " + replica);
       } catch (IOException e) {

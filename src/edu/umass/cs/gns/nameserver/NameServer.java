@@ -14,7 +14,7 @@ import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -45,12 +45,12 @@ public class NameServer {
   public static BasicRecordMap replicaController;
   public static ReplicationFrameworkInterface replicationFramework;
   public static MovingAverage loadMonitor;
-  public static NioServer2 tcpTransport;
+  public static NioServer tcpTransport;
   public static Timer timer = new Timer();
   public static NSPacketDemultiplexer nsDemultiplexer;
   public static ScheduledThreadPoolExecutor executorService;
 
-  public static int initialExpDelay = 1000;
+  public static int initialExpDelayMillis = 1000;
 
   /**
    * Constructs a name server which uses a synthetic workload of integers as names in its record table. The size of the workload is
@@ -85,7 +85,7 @@ public class NameServer {
     new NSListenerUDP().start();
 
     ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
-    tcpTransport = new NioServer2(nodeID, worker, new GNSNodeConfig());
+    tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
     new Thread(tcpTransport).start();
 
     // START ADMIN THREAD - DO NOT REMOVE THIS
@@ -93,7 +93,7 @@ public class NameServer {
 
     if (StartNameServer.experimentMode) {
       try {
-        Thread.sleep(initialExpDelay); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
+        Thread.sleep(initialExpDelayMillis); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
       } catch (InterruptedException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
@@ -136,7 +136,7 @@ public class NameServer {
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
 
-      long initialDelayMillis = initialExpDelay + StartNameServer.analysisInterval + (new Random()).nextInt((int) StartNameServer.analysisInterval);
+      long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval + (new Random()).nextInt((int) StartNameServer.analysisInterval);
 
       GNS.getLogger().fine("ComputeNewActives Initial delay " + initialDelayMillis);
       executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,

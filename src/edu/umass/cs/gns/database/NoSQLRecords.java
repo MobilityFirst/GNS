@@ -176,6 +176,16 @@ public interface NoSQLRecords {
           Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
 
   /**
+   * For record with name, removes (unset) keys in list <code>mapKeys</code> from the map <code>mapField</code>.
+   *
+   * @param collectionName
+   * @param name
+   * @param mapField
+   * @param mapKeys
+   */
+  public void removeMapKeys(String collectionName, String name, Field mapField, ArrayList<Field> mapKeys);
+
+  /**
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
    * the NAME (AKA the primary key) is always there.
    * 

@@ -108,7 +108,7 @@ import java.util.concurrent.locks.ReentrantLock;
       FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject());
       long initialDelay = r.nextInt(pingIntervalMillis);
       if (StartNameServer.experimentMode) {
-        initialDelay += NameServer.initialExpDelay*3; // wait for all name servers to start up.
+        initialDelay += NameServer.initialExpDelayMillis *3; // wait for all name servers to start up.
       }
 			PaxosManager.executorService.scheduleAtFixedRate(failureDetectionTask, r.nextInt(pingIntervalMillis),
               pingIntervalMillis, TimeUnit.MILLISECONDS);

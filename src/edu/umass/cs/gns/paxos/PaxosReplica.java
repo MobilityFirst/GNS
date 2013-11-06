@@ -1038,7 +1038,7 @@ public class PaxosReplica {
         isStopped = true;
       }
       GNS.getLogger().fine(" Logging paxos stop " + req);
-      PaxosLogger2.logPaxosStop(paxosID);
+      PaxosLogger.logPaxosStop(paxosID);
     }
 
 
@@ -1471,8 +1471,8 @@ public class PaxosReplica {
     int senderNode = accept.nodeID;
 //        int deletelsot = accept.commitSlot;
 //        updateNodeAndSlotNumbers(senderNode, deletelsot);
-    GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C Accept-Reply\tsender\t" + accept.nodeID
-                + " slot\t" + slot );//+  "  accept = " + accept.toJSONObject().toString());
+    GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C Accept-Reply\tsender\t" + accept.nodeID
+            + " slot\t" + slot);//+  "  accept = " + accept.toJSONObject().toString());
     ProposalStateAtCoordinator stateAtCoordinator = pValuesCommander.get(slot);
 
     if (stateAtCoordinator == null) {
@@ -1954,7 +1954,7 @@ public class PaxosReplica {
     if (packet.responderNodeID == coordinatorID // current coordinator has failed.
             && getDefaultCoordinatorReplica() == nodeID) { // I am next coordinator
 
-      GNS.getLogger().warning(paxosID + "C\t" +nodeID + " Coordinator failed\t"  + packet.responderNodeID + " Propose new ballot.");
+      GNS.getLogger().warning(paxosID + "C\t" + nodeID + " Coordinator failed\t" + packet.responderNodeID + " Propose new ballot.");
 
       if (StartNameServer.debugMode)
         GNS.getLogger().fine(paxosID + "C\t" +nodeID +"C coordinator has failed " + coordinatorID);
@@ -2009,7 +2009,7 @@ public class PaxosReplica {
 //      PaxosManager.addToPaxosLog(incomingJson,paxosID);
 //      sendMessage(packet.coordinatorID,p);
 
-      PaxosLogger2.logMessage(new LoggingCommand(paxosID, incomingJson,LoggingCommand.LOG_AND_SEND_MSG,packet.coordinatorID, p.toJSONObject()));
+      PaxosLogger.logMessage(new LoggingCommand(paxosID, incomingJson, LoggingCommand.LOG_AND_SEND_MSG, packet.coordinatorID, p.toJSONObject()));
 
 //            b1 = new Ballot(acceptorBallot.getBallotNumber(), acceptorBallot.getCoordinatorID());
 //        }
@@ -2075,7 +2075,7 @@ public class PaxosReplica {
 //        PaxosManager.addToPaxosLog(incomingJson,paxosID);
 //        sendMessage(accept.nodeID, acceptReply);
 
-        PaxosLogger2.logMessage(new LoggingCommand(paxosID, incomingJson,LoggingCommand.LOG_AND_SEND_MSG,accept.nodeID, acceptReply.toJSONObject()));
+        PaxosLogger.logMessage(new LoggingCommand(paxosID, incomingJson, LoggingCommand.LOG_AND_SEND_MSG, accept.nodeID, acceptReply.toJSONObject()));
 
 //                if (acceptorBallot == null || accept.pValue.ballot.compareTo(acceptorBallot) >= 0) {
 //                    if (accept.pValue.ballot.compareTo(acceptorBallot) > 0) {

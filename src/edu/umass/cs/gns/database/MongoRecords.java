@@ -670,6 +670,31 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
+  public void removeMapKeys(String collectionName, String name, Field mapField, ArrayList<Field> mapKeys) {
+    db.requestStart();
+    try {
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, name);
+
+      BasicDBObject updates = new BasicDBObject();
+
+      if (mapField != null && mapKeys != null) {
+        for (int i = 0; i < mapKeys.size(); i++) {
+          String fieldName = mapField.getName() + "." + mapKeys.get(i).getName();
+          updates.append(fieldName, 1);
+        }
+      }
+      if (updates.keySet().size() > 0) {
+        collection.update(query, new BasicDBObject("$unset", updates));
+      }
+    } finally {
+      db.requestDone();
+    }
+  }
+
+  @Override
   public MongoRecordCursor getAllRowsIterator(String collectionName, Field nameField, ArrayList<Field> fields) {
     return new MongoRecordCursor(db, collectionName, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey(), fields);
   }

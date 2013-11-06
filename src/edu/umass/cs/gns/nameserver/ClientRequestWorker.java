@@ -65,6 +65,7 @@ public class ClientRequestWorker extends TimerTask {
 
   @Override
   public void run() {
+    //
     try {
       switch (packetType) {
         case DNS:
@@ -74,6 +75,7 @@ public class ClientRequestWorker extends TimerTask {
         case UPDATE_ADDRESS_LNS:
           handleUpdateAddressLNS();
           break;
+        // we are not handling UPDATE_ADDRESS_NS msg type through switch-case because this case handleUpdateAddressNS
 //        case UPDATE_ADDRESS_NS:
 //          handleUpdateAddressNS();
 //          break;
@@ -646,12 +648,13 @@ public class ClientRequestWorker extends TimerTask {
     try {
       result = nameRecord.updateKey(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(),
               updatePacket.getOldValue(), updatePacket.getOperation());
+
       if (StartNameServer.debugMode)
         GNS.getLogger().fine("Update operation result = " + result +  "\t" + updatePacket.getUpdateValue());
       try {
         NameRecord nameRecord2 = NameServer.getNameRecordMultiField(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
         if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("NAME RECORD after Update is: " + nameRecord.toString());
+          GNS.getLogger().fine("NAME RECORD after Update is: " + nameRecord2.toString());
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().fine(" Exception: name record not found. Name = " + updatePacket.getName());

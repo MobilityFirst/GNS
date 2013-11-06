@@ -342,6 +342,16 @@ public class NameRecord implements Comparable<NameRecord> {
 
   public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues,
           UpdateOperation operation) throws FieldNotFoundException {
+
+    if (operation.equals(UpdateOperation.REMOVE_FIELD)) { // remove the field with name = key from values map.
+
+      ArrayList<Field> keys = new ArrayList<Field>();
+      keys.add(new Field(key,FieldType.LIST_STRING));
+      NameServer.recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
+      return true;
+
+    }
+
     ValuesMap valuesMap;
     if (operation.equals(UpdateOperation.REPLACE_ALL)) {
       valuesMap = new ValuesMap();

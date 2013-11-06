@@ -18,7 +18,7 @@ import edu.umass.cs.gns.client.SelectHandler;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosReplica;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.io.IOException;
@@ -221,7 +221,7 @@ public class GnsHttpServer {
                 PaxosReplica.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String nioVersionInfo = 
                 "NIO Version: " + 
-                NioServer2.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
+                NioServer.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
         String serverLocalNameServerID = "\nLocal Name Server ID: " + localNameServerID + "\n";
         String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() + "\n";

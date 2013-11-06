@@ -48,7 +48,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Date: 7/24/13
  * Time: 8:16 AM
  */
-public class PaxosLogger2 extends Thread {
+public class PaxosLogger extends Thread {
 
   /**
    * lock object controlling access to {@code logCommands}
@@ -1290,7 +1290,7 @@ class LoggingThread extends Thread {
   public void run() {
     try {
 
-      PaxosLogger2.doLogging();
+      PaxosLogger.doLogging();
     } catch (Exception e) {
       System.out.println(e.getMessage());
       e.printStackTrace();
@@ -1305,8 +1305,8 @@ class LogDeletionTask extends TimerTask {
 
   @Override
   public void run() {
-    PaxosLogger2.deleteRedundantStateLogs();
-    PaxosLogger2.deleteLogMessageFiles();
+    PaxosLogger.deleteRedundantStateLogs();
+    PaxosLogger.deleteLogMessageFiles();
   }
 }
 

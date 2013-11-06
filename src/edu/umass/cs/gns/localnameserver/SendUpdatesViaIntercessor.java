@@ -98,7 +98,7 @@ class SendUpdateIntercessorTask extends TimerTask {
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
             updateCount, updateCount, -1,
             name, NameRecordKey.EdgeRecord, newValue, null,
-            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS);
+            UpdateOperation.REMOVE_FIELD, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS);
     try {
       LNSListener.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
     } catch (JSONException e) {

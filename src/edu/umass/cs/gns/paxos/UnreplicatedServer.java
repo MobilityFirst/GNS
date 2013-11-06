@@ -3,7 +3,7 @@ package edu.umass.cs.gns.paxos;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import org.json.JSONObject;
 
@@ -28,7 +28,7 @@ public class UnreplicatedServer {
   /**
    * When paxos is run independently {@code tcpTransport} is used to send messages between paxos replicas and client.
    */
-  public static NioServer2 tcpTransport;
+  public static NioServer tcpTransport;
 
   public static void initializeUnreplicatedServer(int nodeID1, String nodeConfigFile, String serverLogFileName1) {
     nodeID = nodeID1;
@@ -65,7 +65,7 @@ public class UnreplicatedServer {
 
     // start TCP transport thread
     try {
-      tcpTransport = new NioServer2(nodeID, worker, new PaxosNodeConfig(nodeConfigFile));
+      tcpTransport = new NioServer(nodeID, worker, new PaxosNodeConfig(nodeConfigFile));
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine(" TRANSPORT OBJECT CREATED ... ");
       }

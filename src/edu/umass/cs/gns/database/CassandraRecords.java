@@ -297,6 +297,11 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
+  public void removeMapKeys(String collectionName, String name, Field mapField, ArrayList<Field> mapKeys) {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public BasicRecordCursor getAllRowsIterator(String collection, Field nameField, ArrayList<Field> fields) {
     throw new UnsupportedOperationException("Not supported yet.");
   }

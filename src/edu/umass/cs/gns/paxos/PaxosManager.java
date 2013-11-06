@@ -5,7 +5,7 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
@@ -53,7 +53,7 @@ public class PaxosManager extends Thread{
   /**
    * When paxos is run independently {@code tcpTransport} is used to send messages between paxos replicas and client.
    */
-  static NioServer2 tcpTransport;
+  static NioServer tcpTransport;
 
   /**
    * a hash table of where K = paxos ID, V = Paxos replica
@@ -129,7 +129,7 @@ public class PaxosManager extends Thread{
     }
   }
 
-  public static void initializePaxosManager(int numberOfNodes, int nodeID, NioServer2 tcpTransport, PaxosInterface outputHandler, ScheduledThreadPoolExecutor executorService) {
+  public static void initializePaxosManager(int numberOfNodes, int nodeID, NioServer tcpTransport, PaxosInterface outputHandler, ScheduledThreadPoolExecutor executorService) {
 
     PaxosManager.N = numberOfNodes;
     PaxosManager.nodeID = nodeID;
@@ -144,7 +144,7 @@ public class PaxosManager extends Thread{
     // recover previous state if exists using logger
 //        ConcurrentHashMap<String, PaxosReplica> paxosInstances = PaxosLogger.initializePaxosLogger();
     // step 1: do local log recovery
-    paxosInstances = PaxosLogger2.initLogger();
+    paxosInstances = PaxosLogger.initLogger();
     if (paxosInstances == null) paxosInstances = new ConcurrentHashMap<String, PaxosReplica>();
 //    paxosInstances = new ConcurrentHashMap<PaxosName, PaxosReplica>();
 //    if (recoveredPaxosInstances != null) {
@@ -188,7 +188,7 @@ public class PaxosManager extends Thread{
 //
 //
 ////        ConcurrentHashMap<String, PaxosReplica> paxosInstances = PaxosLogger.initializePaxosLogger();
-////        PaxosLogger2.initLogger();
+////        PaxosLogger.initLogger();
 //
 //    // initialize executor service
 //
@@ -231,7 +231,7 @@ public class PaxosManager extends Thread{
    * @param paxosLogFolder
    */
   public static void setPaxosLogFolder(String paxosLogFolder) {
-    PaxosLogger2.logFolder = paxosLogFolder;
+    PaxosLogger.logFolder = paxosLogFolder;
   }
 
 
@@ -389,7 +389,7 @@ public class PaxosManager extends Thread{
 //          paxosInstances.put(paxosID,paxosReplica);
 //          // TODO get initial paxos state
 //          String initialPaxosState = "";
-//          PaxosLogger2.logPaxosStart(paxosID, paxosInstancesAdded.get(nodeID), null);
+//          PaxosLogger.logPaxosStart(paxosID, paxosInstancesAdded.get(nodeID), null);
 //          if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tStarting replica");
 //          paxosReplica.startReplica();
 //        }
@@ -411,8 +411,8 @@ public class PaxosManager extends Thread{
 //          continue;
 //        PaxosReplica paxosReplica = new PaxosReplica(paxosID,nodeID,paxosInstancesStopped.get(paxosID),true, paxosInstaceStopRequests.get(paxosID));
 //        paxosInstances.put(paxosID, paxosReplica);
-//        PaxosLogger2.logPaxosStop(paxosID);
-////        PaxosLogger2.logPaxosStop(paxosID, paxosInstaceStopRequests.get(paxosID));
+//        PaxosLogger.logPaxosStop(paxosID);
+////        PaxosLogger.logPaxosStop(paxosID, paxosInstaceStopRequests.get(paxosID));
 //        clientRequestHandler.handlePaxosDecision(paxosID, paxosInstaceStopRequests.get(paxosID));
 //      }
 //    }
@@ -481,7 +481,7 @@ public class PaxosManager extends Thread{
    * initialize transport object during Paxos debugging/testing
    * @param configFile config file containing list of node ID, IP, port
    */
-  private static NioServer2 initTransport(String configFile) {
+  private static NioServer initTransport(String configFile) {
 
     // create the worker object
     PaxosPacketDemultiplexer paxosDemux = new PaxosPacketDemultiplexer();
@@ -491,10 +491,10 @@ public class PaxosManager extends Thread{
 //        new Thread(worker).start();
 
     // start TCP transport thread
-    NioServer2 tcpTransportLocal = null;
+    NioServer tcpTransportLocal = null;
     try {
       GNS.getLogger().fine(" Node ID is " + nodeID);
-      tcpTransportLocal = new NioServer2(nodeID, worker, new PaxosNodeConfig(configFile));
+      tcpTransportLocal = new NioServer(nodeID, worker, new PaxosNodeConfig(configFile));
       if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID);
       new Thread(tcpTransportLocal).start();
     } catch (IOException e) {
@@ -508,7 +508,7 @@ public class PaxosManager extends Thread{
     // delete paxos instances
     paxosInstances.clear();
     // clear paxos logs
-    PaxosLogger2.clearLogs();
+    PaxosLogger.clearLogs();
     // run java gc
 
   }
@@ -550,11 +550,11 @@ public class PaxosManager extends Thread{
       else {
         if (r1 != null && r1.getPaxosID().equals(paxosID) == false) {
           GNS.getLogger().severe("OldPaxos replica replaced .. so log a stop message .. " + r1.getPaxosID() + " new replica " + paxosID);
-          PaxosLogger2.logPaxosStop(r1.getPaxosID());    // multiple stop msgs can get logged because other replica might stop in meanwhile.
+          PaxosLogger.logPaxosStop(r1.getPaxosID());    // multiple stop msgs can get logged because other replica might stop in meanwhile.
         }
 
         if (initialState != null && StartNameServer.experimentMode == false) { // During experiments, we disable state logging. This helps us load records faster into database.
-          PaxosLogger2.logPaxosStart(paxosID, nodeIDs, new StatePacket(new Ballot(0,0),0, initialState));
+          PaxosLogger.logPaxosStart(paxosID, nodeIDs, new StatePacket(new Ballot(0, 0), 0, initialState));
         }
         if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tBefore creating replica.");
 
@@ -580,7 +580,7 @@ public class PaxosManager extends Thread{
     throw  new UnsupportedOperationException();
 //    PaxosReplica replica = paxosInstances.remove(paxosID);
 //    if (replica != null)
-//      PaxosLogger2.logPaxosStop(paxosID);
+//      PaxosLogger.logPaxosStop(paxosID);
   }
 
 //	/**
@@ -768,7 +768,7 @@ public class PaxosManager extends Thread{
 //            case PaxosPacketType.PREPARE:
 //        tC = System.currentTimeMillis();
         try {
-          PaxosLogger2.logMessage(new LoggingCommand(json.getString(PAXOS_ID),json, LoggingCommand.LOG_AND_EXECUTE));
+          PaxosLogger.logMessage(new LoggingCommand(json.getString(PAXOS_ID), json, LoggingCommand.LOG_AND_EXECUTE));
         } catch (JSONException e) {
           e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -1073,11 +1073,11 @@ class LogPaxosStateTask extends TimerTask {
 
     if (StartNameServer.experimentMode) {return;} // we do not log paxos state during experiments ..
     for (String x: PaxosManager.paxosInstances.keySet()) {
-//      if (PaxosLogger2.resetStateChanged(x)) { //
+//      if (PaxosLogger.resetStateChanged(x)) { //
       PaxosReplica r = PaxosManager.paxosInstances.get(x);
       if (x != null) {
         StatePacket packet = r.getState();
-        PaxosLogger2.logPaxosState(r.getPaxosID(),packet);
+        PaxosLogger.logPaxosState(r.getPaxosID(), packet);
       }
 //      }
     }

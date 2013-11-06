@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 //import edu.umass.cs.gnrs.packet.Packet;
 //import edu.umass.cs.gnrs.util.ConfigFileInfo;
 
-public class NioServer2 implements Runnable {
+public class NioServer implements Runnable {
 
   public static String Version = "$Revision$";
   
@@ -62,7 +62,7 @@ public class NioServer2 implements Runnable {
   //    private HashMap<Integer, InetAddress> IDToIPMappings;
   private NodeConfig nodeConfig;
 
-  public NioServer2(int ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
+  public NioServer(int ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
     connectedIDs = new SocketChannel[nodeConfig.getNodeCount()];
     pendingChangeByNode = new boolean[nodeConfig.getNodeCount()];
     for (int i = 0; i < pendingChangeByNode.length; i++)
@@ -591,7 +591,7 @@ public class NioServer2 implements Runnable {
     try {
       ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(null);
       new Thread(worker).start();
-      NioServer2 server = new NioServer2(ID,  worker, null);
+      NioServer server = new NioServer(ID,  worker, null);
       new Thread(server).start();
       try {
         Thread.sleep(10000);
@@ -623,13 +623,13 @@ public class NioServer2 implements Runnable {
 }
 
 class WakeupSelectorTask extends TimerTask {
-  NioServer2 nioServer2;
-  public WakeupSelectorTask(NioServer2 nioServer2) {
-    this.nioServer2 = nioServer2;
+  NioServer nioServer;
+  public WakeupSelectorTask(NioServer nioServer) {
+    this.nioServer = nioServer;
   }
   @Override
   public void run() {
-    nioServer2.wakeupSelector();
+    nioServer.wakeupSelector();
   }
 }
 //private Map connectionStatus = new ConcurrentHashMap(); // 0 = not connected, 1 = connection initiated, 2 = connected.
@@ -705,18 +705,18 @@ class SendQueryWithDelay2 extends TimerTask {
 
   JSONObject json;
   int destID;
-  NioServer2 nioServer2;
+  NioServer nioServer;
 
-  public SendQueryWithDelay2(NioServer2 nioServer2, int destID, JSONObject json) {
+  public SendQueryWithDelay2(NioServer nioServer, int destID, JSONObject json) {
     this.json = json;
     this.destID = destID;
-    this.nioServer2 = nioServer2;
+    this.nioServer = nioServer;
   }
 
   @Override
   public void run() {
     try {
-      nioServer2.sendToIDActual(destID, json);
+      nioServer.sendToIDActual(destID, json);
     } catch (IOException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }

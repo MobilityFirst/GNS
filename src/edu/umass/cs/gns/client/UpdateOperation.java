@@ -28,6 +28,7 @@ import java.util.Set;
 public enum UpdateOperation {
 
   CREATE(false),
+  REMOVE_FIELD(false),
   CLEAR(false),
   REPLACE_ALL(false),
   REMOVE(false),

@@ -109,6 +109,11 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
+  public void removeMapKeys(String name, Field mapField, ArrayList<Field> mapKeys) {
+    //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
   public BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields) {
    throw new UnsupportedOperationException("Not supported yet.");
   }

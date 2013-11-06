@@ -4,7 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer2;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.NameServerLoadPacket;
@@ -32,21 +32,21 @@ import java.util.concurrent.TimeUnit;
 public class LNSListener extends Thread {
 
   public static Transport udpTransport;
-  public static NioServer2 tcpTransport;
+  public static NioServer tcpTransport;
 
   public LNSListener() throws IOException {
     super("LNSListener");
     udpTransport = new Transport(LocalNameServer.nodeID, ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
 //    udpTransport.s
-//    tcpTransport = new NioServer2(LocalNameServer.nodeID,new ByteStreamToJSONObjects(this));
+//    tcpTransport = new NioServer(LocalNameServer.nodeID,new ByteStreamToJSONObjects(this));
 
 
 //    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(new LNSPacketDemultiplexer());
 ////    new Thread(worker).start();
-//    tcpTransport = new NioServer2(LocalNameServer.nodeID, worker, new GNSNodeConfig());
+//    tcpTransport = new NioServer(LocalNameServer.nodeID, worker, new GNSNodeConfig());
 //    new Thread(tcpTransport).start();
 
-    tcpTransport = new NioServer2(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
     new Thread(tcpTransport).start();
   }
 

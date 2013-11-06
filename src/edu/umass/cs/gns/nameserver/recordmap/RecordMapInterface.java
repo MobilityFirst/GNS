@@ -10,8 +10,11 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import java.util.*;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  *
@@ -56,6 +59,7 @@ public interface RecordMapInterface {
   public abstract void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1,
           Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
 
+  public abstract void removeMapKeys(String name, Field mapField, ArrayList<Field> mapKeys);
   /**
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
    * the NAME (AKA the primary key) is always there.

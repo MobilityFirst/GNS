@@ -88,6 +88,11 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public void removeMapKeys(String name, Field mapField, ArrayList<Field> mapKeys) {
+    MongoRecords.getInstance().removeMapKeys(collectionName, name, mapField, mapKeys);
+  }
+
+  @Override
   public BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields) {
     return MongoRecords.getInstance().getAllRowsIterator(collectionName, nameField, fields);
   }
