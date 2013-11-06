@@ -1,31 +1,24 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.localnameserver.LNSListener;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.Header;
-import edu.umass.cs.gns.packet.Packet;
-import static edu.umass.cs.gns.packet.Packet.*;
-import edu.umass.cs.gns.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.packet.Transport;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static edu.umass.cs.gns.packet.Packet.getPacketType;
 
 //import edu.umass.cs.gnrs.nameserver.NameRecord;
 /**
@@ -249,7 +242,7 @@ public class Intercessor {
   public boolean sendAddRecordWithConfirmation(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending add: " + name + "->" + value);
-    AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULTTTLINSECONDS);
+    AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
     try {
       JSONObject json = pkt.toJSONObject();
       sendPacket(json);
@@ -321,7 +314,7 @@ public class Intercessor {
             name, new NameRecordKey(key),
             newValue,
             oldValue,
-            operation, localServerID, GNS.DEFAULTTTLINSECONDS);
+            operation, localServerID, GNS.DEFAULT_TTL_SECONDS);
     try {
       JSONObject json = pkt.toJSONObject();
       sendPacket(json);

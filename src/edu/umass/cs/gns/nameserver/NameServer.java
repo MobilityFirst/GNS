@@ -7,8 +7,8 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
+import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
@@ -16,10 +16,13 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.paxos.PaxosManager;
-import edu.umass.cs.gns.replicationframework.*;
+import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,8 +30,6 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class NameServer {
 
@@ -45,9 +46,11 @@ public class NameServer {
   public static ReplicationFrameworkInterface replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer2 tcpTransport;
-  public static Timer timer;
+  public static Timer timer = new Timer();
   public static NSPacketDemultiplexer nsDemultiplexer;
   public static ScheduledThreadPoolExecutor executorService;
+
+  public static int initialExpDelay = 1000;
 
   /**
    * Constructs a name server which uses a synthetic workload of integers as names in its record table. The size of the workload is
@@ -73,23 +76,11 @@ public class NameServer {
 
     this.replicationFramework = ReplicationFrameworkType.instantiateReplicationFramework(StartNameServer.replicationFramework);
 
-    // Timer object created.
-    timer = new Timer();
-
-//      ((Thread)timer).setPriority();
-
-
     // Executor service created.
-
     executorService = new ScheduledThreadPoolExecutor(StartNameServer.workerThreadCount);
-
 
     // Non-blocking IO created
     nsDemultiplexer = new NSPacketDemultiplexer();
-
-//    new Thread(worker).start();
-//    tcpTransport = new NioServer(nodeID, ConfigFileInfo.getIPAddress(nodeID),
-//            ConfigFileInfo.getNSTcpPort(nodeID), worker);
 
     new NSListenerUDP().start();
 
@@ -102,7 +93,7 @@ public class NameServer {
 
     if (StartNameServer.experimentMode) {
       try {
-        Thread.sleep(30000); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
+        Thread.sleep(initialExpDelay); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
       } catch (InterruptedException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
@@ -115,14 +106,10 @@ public class NameServer {
   }
 
   public void run() {
+
     // start paxos manager first.
+
     // this will recover state from paxos logs, if it exists
-
-
-    // Name server starts listening on UDP Port for messages.
-
-
-
     PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
 
     if (StartNameServer.experimentMode) {
@@ -143,20 +130,19 @@ public class NameServer {
     if (!(StartNameServer.replicationFramework == ReplicationFrameworkType.STATIC || StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL)) {
 
       // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
-      // longer term solution is to integrate geoIPlocation database at name servers.
+      // TODO  longer term solution is to integrate IP geo-location database at name servers.
 //        executorService.scheduleAtFixedRate(new SendNameRecordStats(),
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
 
-
-      long initialDelayMillis = 30000 + StartNameServer.analysisInterval + (new Random()).nextInt((int) StartNameServer.analysisInterval);
+      long initialDelayMillis = initialExpDelay + StartNameServer.analysisInterval + (new Random()).nextInt((int) StartNameServer.analysisInterval);
 
       GNS.getLogger().fine("ComputeNewActives Initial delay " + initialDelayMillis);
       executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,
               StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
 
-      // commenting keep alive messages
+      //  TODO commenting keep alive messages
 //        executorService.scheduleAtFixedRate(new SenderKeepAliveRC(),
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC + (new Random()).nextInt(SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC),
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC, TimeUnit.SECONDS);
@@ -358,6 +344,13 @@ public class NameServer {
     replicaController.reset();
   }
 
+
+  /**
+   * Wrapper method to send to LNS, uses either UDP/TCP depending on size of packet. uses udp for packet < 1000 bytes,
+   * tcp otherwise.
+   * @param json  json object to send
+   * @param lns   local name server ID
+   */
   public static void sendToLNS(JSONObject json, int lns) {
 
 

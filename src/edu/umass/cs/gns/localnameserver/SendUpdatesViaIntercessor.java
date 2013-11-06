@@ -29,18 +29,18 @@ public class SendUpdatesViaIntercessor {
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send update intercessor started. Number of queries. "
             + LocalNameServer.updateTrace.size());
 		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.updateRateRegular);
-    double delay = 0;
+
 
     double expectedDurationSec = (LocalNameServer.updateTrace.size()
             * StartLocalNameServer.updateRateRegular) / 1000;
-    String msg = "SendUpdateStart StartTime " + delay
-            + " Expected-Duration " + expectedDurationSec
-            + " Number-Queries " + LocalNameServer.updateTrace.size();
 
+    String msg = "SendUpdateStart Expected-Duration " + expectedDurationSec +
+            " Number-Queries " + LocalNameServer.updateTrace.size();
     GNS.getStatLogger().fine(msg);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
+
     int count = 0;
-//    delay +=
+    double delay = 0;
     for (UpdateTrace u : LocalNameServer.updateTrace) {
       count++;
       if (u.type == UpdateTrace.UPDATE) {
@@ -98,7 +98,7 @@ class SendUpdateIntercessorTask extends TimerTask {
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
             updateCount, updateCount, -1,
             name, NameRecordKey.EdgeRecord, newValue, null,
-            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULTTTLINSECONDS);
+            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS);
     try {
       LNSListener.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
     } catch (JSONException e) {
@@ -125,7 +125,7 @@ class SendAddIntercessorTask extends TimerTask {
     ResultValue newValue = new ResultValue();
     newValue.add(SendUpdatesViaIntercessor.getRandomString());
     AddRecordPacket packet = new AddRecordPacket(requestCount,name,NameRecordKey.EdgeRecord, newValue, 
-            LocalNameServer.nodeID, GNS.DEFAULTTTLINSECONDS);
+            LocalNameServer.nodeID, GNS.DEFAULT_TTL_SECONDS);
 
     try {
       LNSListener.demultiplexLNSPackets(packet.toJSONObject());

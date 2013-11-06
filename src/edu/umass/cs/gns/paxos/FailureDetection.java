@@ -2,6 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import org.json.JSONException;
@@ -107,19 +108,17 @@ import java.util.concurrent.locks.ReentrantLock;
       FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject());
       long initialDelay = r.nextInt(pingIntervalMillis);
       if (StartNameServer.experimentMode) {
-        initialDelay += 100000; // wait for all name servers to start up.
+        initialDelay += NameServer.initialExpDelay*3; // wait for all name servers to start up.
       }
 			PaxosManager.executorService.scheduleAtFixedRate(failureDetectionTask, r.nextInt(pingIntervalMillis),
               pingIntervalMillis, TimeUnit.MILLISECONDS);
 		} catch (JSONException e)
 		{
-
 			GNS.getLogger().severe("JSON EXCEPTION HERE !! " + e.getMessage());
 			e.printStackTrace();
 		}
 		if (StartNameServer.debugMode) GNS.getLogger().fine(nodeID + " started monitoring node " + monitoredNodeID);
 	}
-
 
 	/**
 	 * Stop monitoring this node.

@@ -35,7 +35,7 @@ import java.util.*;
 public class GenerateSyntheticRecordTable {
 
 
-  public static long sleepBetweenNames = 25;
+//  public static long sleepBetweenNames = 25;
 
 
   static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -66,7 +66,7 @@ public class GenerateSyntheticRecordTable {
       int numValues = 1;
       ValuesMap valuesMap = getValuesMapSynthetic(numValues);
 
-      NameRecord nameRecord = new NameRecord(strName,ConfigFileInfo.getAllNameServerIDs(),strName+"-2",valuesMap);
+      NameRecord nameRecord = new NameRecord(strName,ConfigFileInfo.getAllNameServerIDs(),strName+"-2",valuesMap, 0);
 //      nameRecord.handleNewActiveStart(ConfigFileInfo.getAllNameServerIDs(),
 //              strName +"-2", valuesMap);
       // first add name record, then create paxos instance for it.
@@ -160,7 +160,7 @@ public class GenerateSyntheticRecordTable {
           numActivesAdded++;
           ValuesMap valuesMap = new ValuesMap();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(randomString(10))));
-          ListenerReplicationPaxos.addNameRecordLocal(Integer.toString(name),nameActives.get(name),name + "-1",valuesMap,0);
+          ListenerReplicationPaxos.addNameRecordLocal(Integer.toString(name),nameActives.get(name),name + "-1",valuesMap,0, 0);
         }
 
       } catch (Exception e) {
@@ -258,7 +258,7 @@ public class GenerateSyntheticRecordTable {
           ValuesMap valuesMap = new ValuesMap();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(Integer.toString(address))));
           try {
-            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay);
+            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay, 0);
           } catch (FieldNotFoundException e) {
             GNS.getLogger().fine("Field not found exception. " + e.getMessage());
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -301,7 +301,7 @@ public class GenerateSyntheticRecordTable {
             }
           }
           try {
-            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay);
+            ReplicaController.handleNameRecordAddAtPrimary(nameRecordPrimary, valuesMap, initScoutDelay, defaultTTLRegularNames);
           } catch (FieldNotFoundException e) {
             GNS.getLogger().fine("Field not found exception. " + e.getMessage());
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

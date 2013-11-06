@@ -125,10 +125,6 @@ public class ReplicaController {
   }
 
 
-
-
-
-
   public static void handleIncomingPacket(JSONObject json) {
 
     try {
@@ -166,7 +162,7 @@ public class ReplicaController {
    * @throws FieldNotFoundException
    */
   public static void handleNameRecordAddAtPrimary(ReplicaControllerRecord recordEntry, ValuesMap valuesMap,
-                                                  long initScoutDelay) throws FieldNotFoundException{
+                                                  long initScoutDelay, int ttl) throws FieldNotFoundException{
 //        if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName() +
 //                "\tBefore Paxos instance created for name: " + recordEntry.getName()
 //                        + " Primaries: " + primaries);
@@ -181,7 +177,7 @@ public class ReplicaController {
     //		if (StartNameServer.debugMode) GNS.getLogger().fine(recordEntry.getName()  +
 
     ListenerReplicationPaxos.addNameRecordLocal(recordEntry.getName(), recordEntry.getActiveNameservers(),
-            recordEntry.getActivePaxosID(), valuesMap, initScoutDelay);
+            recordEntry.getActivePaxosID(), valuesMap, initScoutDelay, ttl);
 
     if (StartNameServer.debugMode) GNS.getLogger().fine(" Active-paxos and name record created. Name = " + recordEntry.getName());
 //				"\tPaxos instance created for name: " + recordEntry.getName()

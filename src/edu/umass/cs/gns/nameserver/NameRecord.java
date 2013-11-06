@@ -60,14 +60,14 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return
    */
   public NameRecord(String name, Set<Integer> activeNameServers, String activePaxosID,
-          ValuesMap values) {
+          ValuesMap values, int ttl) {
     hashMap = new HashMap<Field, Object>();
     hashMap.put(NAME, name);
     hashMap.put(ACTIVE_NAMESERVERS, activeNameServers);
     hashMap.put(PRIMARY_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
     hashMap.put(ACTIVE_PAXOS_ID, activePaxosID);
     hashMap.put(OLD_ACTIVE_PAXOS_ID, name + "-0");
-    hashMap.put(TIME_TO_LIVE, 0);
+    hashMap.put(TIME_TO_LIVE, ttl);
     hashMap.put(VALUES_MAP, values);
     hashMap.put(OLD_VALUES_MAP, new ValuesMap());
     hashMap.put(TOTAL_LOOKUP_REQUEST, 0);

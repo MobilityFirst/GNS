@@ -36,7 +36,7 @@ public class CacheEntry {
    * Notice that we have ONE TTL for the entire cache entry which means one TTL for the whole name records.
    * But we keep individual timestamps for each key / value mapping.
    */
-  private int timeToLive = GNS.DEFAULTTTLINSECONDS;
+  private int timeToLive = GNS.DEFAULT_TTL_SECONDS;
   /**
    * Time stamp when the value for each field was inserted into record.
    */
@@ -64,7 +64,7 @@ public class CacheEntry {
     this.name = packet.getQname();
     // this will depend on TTL sent by NS. 
     // UPDATE: NEVER LET IT BE -1 which means infinite
-    this.timeToLive = packet.getTTL() == -1 ? GNS.DEFAULTTTLINSECONDS : packet.getTTL();
+    this.timeToLive = packet.getTTL() == -1 ? GNS.DEFAULT_TTL_SECONDS : packet.getTTL();
     // pull all the keys and values out of the returned value and cache them
     for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
       String fieldKey = entry.getKey();

@@ -9,8 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
 /**
  * ***********************************************************
  * 
@@ -264,7 +262,7 @@ public class UpdateAddressPacket extends BasicPacket {
 //  	
     UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, 2323, "12322323",
             NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
-            GNS.DEFAULTTTLINSECONDS);
+            GNS.DEFAULT_TTL_SECONDS);
 
     int size = 0;
     try {

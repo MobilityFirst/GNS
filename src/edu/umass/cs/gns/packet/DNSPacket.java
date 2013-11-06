@@ -47,7 +47,7 @@ public class DNSPacket extends BasicPacket {
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
    */
-  private int ttl = GNS.DEFAULTTTLINSECONDS;
+  private int ttl = GNS.DEFAULT_TTL_SECONDS;
   /**
    * The value that is getting sent back to the client. MOST OF THE TIME THIS WILL HAVE JUST A SINGLE KEY/VALUE, but sometimes we
    * return the entire record. When it's a single key/value the key will be the same as the qrecordKey.

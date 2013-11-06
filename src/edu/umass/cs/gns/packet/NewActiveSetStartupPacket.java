@@ -1,17 +1,13 @@
 package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-
-import org.json.JSONArray;
+import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.util.JSONUtils;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 public class NewActiveSetStartupPacket extends BasicPacket {
 
@@ -26,6 +22,8 @@ public class NewActiveSetStartupPacket extends BasicPacket {
   private final static String OLD_ACTIVE_PAXOS_ID = "oldPaxosID";
   private final static String PREVIOUS_VALUE = "previousValue";
   private final static String PREVIOUS_VALUE_CORRECT = "pvCorrect";
+  private final static String TIME_TO_LIVE = "ttlAddress";
+
   /**
    * A unique ID to distinguish this packet at active replica
    */
@@ -71,6 +69,11 @@ public class NewActiveSetStartupPacket extends BasicPacket {
    * Value at the end of previous epoch.
    */
   boolean previousValueCorrect;
+
+  /**
+   * Time interval (in seconds) that the record may be cached before it should be discarded
+   */
+  private int ttl = 0;
 
   /**
    *
@@ -140,6 +143,8 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     //this.previousValue = new QueryResultValue(JSONUtils.JSONArrayToArrayList(json.getJSONArray(PREVIOUS_VALUE)));
 
     this.previousValueCorrect = json.getBoolean(PREVIOUS_VALUE_CORRECT);
+
+    this.ttl = json.getInt(TIME_TO_LIVE);
   }
 
   /**
@@ -171,6 +176,7 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     }
     //json.put(PREVIOUS_VALUE, new JSONArray(previousValue));
     json.put(PREVIOUS_VALUE_CORRECT, previousValueCorrect);
+    json.put(TIME_TO_LIVE, getTTL());
     return json;
   }
 
@@ -267,5 +273,13 @@ public class NewActiveSetStartupPacket extends BasicPacket {
 
   public void changePreviousValueCorrect(boolean previousValueCorrect) {
     this.previousValueCorrect = previousValueCorrect;
+  }
+
+  public void setTTL(int ttl) {
+    this.ttl = ttl;
+  }
+
+  public int getTTL() {
+    return ttl;
   }
 }

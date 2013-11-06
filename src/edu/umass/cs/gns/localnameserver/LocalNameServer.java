@@ -50,10 +50,7 @@ public class LocalNameServer {
    * Local Name Server ID *
    */
   public static int nodeID;
-  /**
-   * The starting address of a block of ports to use for TCP and UDP sockets
-   */
-  public static int startingPort = GNS.startingPort;
+
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    *
@@ -88,6 +85,7 @@ public class LocalNameServer {
   public static ConcurrentHashMap<Integer, Double> nameServerLoads;
   public static long startTime;
 
+  public static int intitalExpDelay = 1000;
   /**
    **
    * Constructs a local name server and assigns it a node id.
@@ -116,7 +114,7 @@ public class LocalNameServer {
     }
 
     if (StartLocalNameServer.lookupTraceFile != null) {
-      lookupTrace = readTrace(StartLocalNameServer.lookupTraceFile);
+      lookupTrace = readLookupTrace(StartLocalNameServer.lookupTraceFile);
     }
 
     if (StartLocalNameServer.updateTraceFile != null) {
@@ -175,7 +173,7 @@ public class LocalNameServer {
     return workloadSet;
   }
 
-  private static List<String> readTrace(String filename) throws IOException {
+  private static List<String> readLookupTrace(String filename) throws IOException {
     File file = new File(filename);
     if (!file.exists()) {
       return null;
@@ -258,7 +256,7 @@ public class LocalNameServer {
 
     if (StartLocalNameServer.experimentMode) {
 
-      Thread.sleep(30000); // so that all local name servers can start at the same time.
+      Thread.sleep(intitalExpDelay); // so that all local name servers can start at the same time.
 
 //        experimentSendRequestTimer = new Timer();
       //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Testing in experiment mode.");

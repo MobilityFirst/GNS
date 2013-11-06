@@ -1,16 +1,17 @@
 package edu.umass.cs.gns.main;
 
 //import edu.umass.cs.gnrs.nameserver.NSListenerUpdate;
-import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import static edu.umass.cs.gns.util.Util.println;
+import org.apache.commons.cli.*;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.apache.commons.cli.*;
+
+import static edu.umass.cs.gns.util.Util.println;
 
 /**
  * 
@@ -322,7 +323,7 @@ public class StartNameServer {
       regularWorkloadSize = Integer.parseInt(parser.getOptionValue("rworkload", DEFAULTREGULARWORKLOADSIZE));
       mobileWorkloadSize = Integer.parseInt(parser.getOptionValue("mworkload", DEFAULTMOBILEMOBILEWORKLOADSIZE));
 
-      GenerateSyntheticRecordTable.sleepBetweenNames = Integer.parseInt(parser.getOptionValue("syntheticWorkloadSleepTimeBetweenAddingNames", "0"));
+//      GenerateSyntheticRecordTable.sleepBetweenNames = Integer.parseInt(parser.getOptionValue("syntheticWorkloadSleepTimeBetweenAddingNames", "0"));
 
       if (parser.hasOption("static")) {
         replicationFramework = ReplicationFrameworkType.STATIC;
