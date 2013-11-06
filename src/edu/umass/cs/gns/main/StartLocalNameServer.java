@@ -5,14 +5,11 @@ import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import org.apache.commons.cli.*;
-
+import static edu.umass.cs.gns.util.Util.println;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import static edu.umass.cs.gns.util.Util.println;
-
+import org.apache.commons.cli.*;
 
 /**
  * ************************************************************
@@ -35,7 +32,6 @@ public class StartLocalNameServer {
   public static int numUpdate;
   public static boolean locationBasedReplication = false;
   public static long voteInterval;
-  
   public static boolean isSyntheticWorkload = false;
   public static String name;
   public static int cacheSize = 1000;
@@ -48,14 +44,12 @@ public class StartLocalNameServer {
   public static boolean optimalReplication = false;
   public static String optimalTrace = null;
   public static int replicationInterval = 0;
-
   public static double outputSampleRate = 1.0;
   /**
    * Variant of voting, in which votes are sent not for closest but for a random node among k-closest.
    * Name server chosen for a name is the (name modulo k)-th closest node.
    */
   public static int chooseFromClosestK = 1;
-  
   /**
    * Used for running experiments for Auspice paper.
    */
@@ -64,12 +58,10 @@ public class StartLocalNameServer {
    * Whether beehive replication is used or not.
    */
   public static boolean beehiveReplication = false;
-
   /**
    * Whether beehive replication is used or not.
    */
   public static boolean replicateAll = false;
-
   //Abhigyan: parameters related to retransmissions.
   // More parameters in util.AdaptiveRetransmission.java
   /**
@@ -79,14 +71,12 @@ public class StartLocalNameServer {
   /**
    * Maxmimum time a local name server waits for a response from name server query is logged as failed after this.
    */
-  public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME; 
+  public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
   /**
    * Fixed timeout after which a query retransmitted.
    */
   public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
-
 //  public static int MAX_RESTARTS = 3;
-
   /**
    * Whether use a fixed timeout or an adaptive timeout. By default, fixed timeout is used.
    */
@@ -104,15 +94,11 @@ public class StartLocalNameServer {
    * Requests are not sent to servers whose load is above this threshold.
    */
   public static double serverLoadThreshold = 5.0; // 
-
   public static boolean tinyQuery = false;
-  
   public static boolean delayScheduling = false;
-  
   public static double variation = 0.1; // 10 % addition
-
   public static boolean runHttpServer = true;
-  
+
   @SuppressWarnings("static-access")
   /**
    * ************************************************************
@@ -120,10 +106,6 @@ public class StartLocalNameServer {
    */
   private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
-    Option local = new Option("local", "Run Local NameServer instance on localhost");
-//    Option planetlab = new Option("planetlab", "Run Local NameServer instance on a PlanetLab Machine");
-//    OptionGroup environment = new OptionGroup().addOption(local).addOption(planetlab);
-
     Option debugMode = new Option("debugMode", "Run in debug mode");
     Option experimentMode = new Option("experimentMode", "Mode to run experiments for Auspice paper");
 
@@ -146,17 +128,17 @@ public class StartLocalNameServer {
     Option delta = new Option("delta", true, "Adaptive Retransmission: Weight assigned to latest sample in calculating moving average.");
     Option mu = new Option("mu", true, "Adaptive Retransmission: Co-efficient of estimated RTT in calculating timeout.");
     Option phi = new Option("phi", true, "Adaptive Retransmission: Co-efficient of deviation in calculating timeout.");
-    
-    Option  chooseFromClosestK = new Option("chooseFromClosestK", true, "chooseFromClosestK");
-    
+
+    Option chooseFromClosestK = new Option("chooseFromClosestK", true, "chooseFromClosestK");
+
     Option fileLoggingLevel = new Option("fileLoggingLevel", true, "fileLoggingLevel");
     Option consoleOutputLevel = new Option("consoleOutputLevel", true, "consoleOutputLevel");
     Option statFileLoggingLevel = new Option("statFileLoggingLevel", true, "statFileLoggingLevel");
     Option statConsoleOutputLevel = new Option("statConsoleOutputLevel", true, "statConsoleOutputLevel");
 
     Option tinyQuery = new Option("tinyQuery", "tiny query mode");
-    Option delayScheduling = new Option("delayScheduling",  "add packet delay equal to ping delay between two servers (used for emulation).");
-    Option variation = new Option("variation", true,"variation");
+    Option delayScheduling = new Option("delayScheduling", "add packet delay equal to ping delay between two servers (used for emulation).");
+    Option variation = new Option("variation", true, "variation");
 
     Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
             .withDescription("Node id")
@@ -184,7 +166,7 @@ public class StartLocalNameServer {
     Option updateTraceFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("Update Trace")
             .create("updateTrace");
-    Option outputSampleRate = new Option("outputSampleRate",true, "fraction of requests whose response time will be sampled");
+    Option outputSampleRate = new Option("outputSampleRate", true, "fraction of requests whose response time will be sampled");
 
     Option primaryReplicas = OptionBuilder.withArgName("#primaries").hasArg()
             .withDescription("Number of primary nameservers")
@@ -240,8 +222,6 @@ public class StartLocalNameServer {
     commandLineOptions = new Options();
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(local);
-    //commandLineOptions.addOptionGroup(environment);
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(workloadFile);
@@ -316,8 +296,6 @@ public class StartLocalNameServer {
    -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO
    -runHttpServer -debugMode
    */
-  
-  
   /**
    * ************************************************************
    * Main method that starts the local name server with the given command line options.
@@ -327,19 +305,19 @@ public class StartLocalNameServer {
    */
   public static void main(String[] args) {
     int id = 0;						//node id
-    boolean isLocal = false;	// flag indicating run all servers on local host
-    String nsFile = "";				//Nameserver file
+    String nsFile = "";
+    start(id, nsFile, args);
+  }//Nameserver file
 
+  public static void start(int id, String nsFile, String... args) {
     try {
       CommandLine parser = initializeOptions(args);
       if (parser.hasOption("help")) {
         printUsage();
         System.exit(1);
       }
-      isLocal = parser.hasOption("local");
-      //isPlanetLab = parser.hasOption("planetlab");
-      id = Integer.parseInt(parser.getOptionValue("id"));
-      nsFile = parser.getOptionValue("nsfile");
+      id = Integer.parseInt(parser.getOptionValue("id", Integer.toString(id)));
+      nsFile = parser.getOptionValue("nsfile", nsFile);
       cacheSize = (parser.hasOption("cacheSize"))
               ? Integer.parseInt(parser.getOptionValue("cacheSize")) : 1000;
       GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULTNUMPRIMARYREPLICAS)));
@@ -348,7 +326,7 @@ public class StartLocalNameServer {
       BeehiveDHTRouting.beehive_DHTbase = (beehiveReplication) ? Integer.parseInt(parser.getOptionValue("beehiveBase")) : 16;
       BeehiveDHTRouting.beehive_DHTleafsetsize = (beehiveReplication) ? Integer.parseInt(parser.getOptionValue("leafSet")) : 24;
 
-      
+
       loadDependentRedirection = parser.hasOption("loadDependentRedirection");
       nameServerLoadMonitorIntervalSeconds = (loadDependentRedirection) ? Integer.parseInt(parser.getOptionValue("nsLoadMonitorIntervalSeconds")) : 60;
 
@@ -358,7 +336,7 @@ public class StartLocalNameServer {
               ? Integer.parseInt(parser.getOptionValue("numberOfTransmissions")) : GNS.DEFAULT_NUMBER_OF_TRANSMISSIONS;
       queryTimeout = (parser.hasOption("queryTimeout"))
               ? Integer.parseInt(parser.getOptionValue("queryTimeout")) : GNS.DEFAULT_QUERY_TIMEOUT;
-              
+
       adaptiveTimeout = parser.hasOption("adaptiveTimeout");
       if (adaptiveTimeout) {
         if (parser.hasOption("delta")) {
@@ -385,9 +363,9 @@ public class StartLocalNameServer {
               ? Integer.parseInt(parser.getOptionValue("vInterval")) * 1000 : 0;
       // 
       if (locationBasedReplication && parser.hasOption("chooseFromClosestK")) {
-      	chooseFromClosestK = Integer.parseInt(parser.getOptionValue("chooseFromClosestK"));
+        chooseFromClosestK = Integer.parseInt(parser.getOptionValue("chooseFromClosestK"));
       }
-      
+
       name = parser.getOptionValue("name");
       isSyntheticWorkload = parser.hasOption("zipf");
       alpha = (isSyntheticWorkload)
@@ -414,7 +392,7 @@ public class StartLocalNameServer {
 
       debugMode = parser.hasOption("debugMode");
       experimentMode = parser.hasOption("experimentMode");
-      
+
       // Logging related options.
       if (parser.hasOption("fileLoggingLevel")) {
         GNS.fileLoggingLevel = parser.getOptionValue("fileLoggingLevel");
@@ -428,15 +406,16 @@ public class StartLocalNameServer {
       if (parser.hasOption("statConsoleOutputLevel")) {
         GNS.statConsoleOutputLevel = parser.getOptionValue("statConsoleOutputLevel");
       }
-      
+
       if (parser.hasOption("tinyQuery")) {
-    	  tinyQuery = parser.hasOption("tinyQuery");
+        tinyQuery = parser.hasOption("tinyQuery");
       }
-      
+
       if (parser.hasOption("delayScheduling")) {
-	      delayScheduling = parser.hasOption("delayScheduling");
-	      if(delayScheduling && parser.hasOption("variation")) 
-	      	variation = Double.parseDouble(parser.getOptionValue("variation"));
+        delayScheduling = parser.hasOption("delayScheduling");
+        if (delayScheduling && parser.hasOption("variation")) {
+          variation = Double.parseDouble(parser.getOptionValue("variation"));
+        }
       }
       if (parser.hasOption("runHttpServer")) {
         runHttpServer = true;
@@ -452,7 +431,6 @@ public class StartLocalNameServer {
     println("Date: " + dateFormat.format(date), debugMode);
     println("Id: " + id, debugMode);
     println("NS File: " + nsFile, debugMode);
-    println("Local: " + isLocal, debugMode);
     println("Regular Workload Size: " + regularWorkloadSize, debugMode);
     println("Mobile Workload Size: " + mobileWorkloadSize, debugMode);
     println("Workload File: " + workloadFile, debugMode);

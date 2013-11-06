@@ -69,10 +69,6 @@ public class StartNameServer {
    */
   private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
-    Option local = new Option("local", "Run NameServer instance on localhost");
-//    Option planetlab = new Option("planetlab", "Run NameServer instance on a PlanetLab Machine");
-//    OptionGroup environment = new OptionGroup().addOption(local).addOption(planetlab);
-
     Option staticReplication = new Option("static", "Fixed number of active nameservers per name");
     Option randomReplication = new Option("random", "Randomly select new active nameservers");
     Option locationBasedReplication = new Option("location", "Location Based selection of active nameserervs");
@@ -207,7 +203,6 @@ public class StartNameServer {
     commandLineOptions = new Options();
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(local);
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(syntheticWorkloadSleepTimeBetweenAddingNames);
@@ -272,7 +267,7 @@ public class StartNameServer {
   }
   /**
    *
-   * Main method that starts the local name server with the given command line options.
+   * Main method that starts the name server with the given command line options.
    *
    * @param args Command line arguments
    * @throws ParseException 
@@ -300,18 +295,20 @@ public class StartNameServer {
    */
   public static void main(String[] args) {
     int id = 0;					//node id
-    boolean isLocal = false;	//Flag indicating whether this instance is running all servers on local host
     String nsFile = "";			//Nameserver file
-
+    start(id, nsFile, args);
+  }
+  
+  public static void start(int id, String nsFile, String ... args) { 
     try {
       CommandLine parser = initializeOptions(args);
       if (parser.hasOption("help")) {
         printUsage();
         System.exit(1);
       }
-      isLocal = parser.hasOption("local");
-      id = Integer.parseInt(parser.getOptionValue("id"));
-      nsFile = parser.getOptionValue("nsfile");
+      id = Integer.parseInt(parser.getOptionValue("id", Integer.toString(id)));
+      nsFile = parser.getOptionValue("nsfile", nsFile);
+
       GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULTNUMPRIMARYREPLICAS)));
       aggregateInterval = Integer.parseInt(parser.getOptionValue("aInterval", DEFAULTAGGREGATEINTERVAL)) * 1000;
       analysisInterval = Integer.parseInt(parser.getOptionValue("rInterval", DEFAULTANALYSISINTERVAL)) * 1000;
@@ -460,30 +457,49 @@ public class StartNameServer {
       e1.printStackTrace();
       System.exit(1);
     }
-
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     Date date = new Date();
-    println("Date: " + dateFormat.format(date), debugMode);
-    println("Id: " + id, debugMode);
-    println("NS File: " + nsFile, debugMode);
-    println("Local: " + isLocal, debugMode);
-    println("Data Store: " + dataStore, debugMode);
-    println("Regular Workload Size: " + regularWorkloadSize, debugMode);
-    println("Mobile Workload Size: " + mobileWorkloadSize, debugMode);
-    println("Primary: " + GNS.numPrimaryReplicas, debugMode);
-    println("Replication: " + replicationFramework.toString(), debugMode);
-    println("C: " + C, debugMode);
-    println("DHT Base: " + base, debugMode);
-    println("Alpha: " + alpha, debugMode);
-    println("Aggregate Interval: " + aggregateInterval + "ms", debugMode);
-    println("Replication Interval: " + analysisInterval + "ms", debugMode);
-    println("Normalizing Constant: " + normalizingConstant, debugMode);
-    println("Moving Average Window: " + movingAverageWindowSize, debugMode);
-    println("TTL Constant: " + ttlConstant, debugMode);
-    println("Default TTL Regular Names: " + defaultTTLRegularName, debugMode);
-    println("Default TTL Mobile Names: " + defaultTTLMobileName, debugMode);
-    println("Debug Mode: " + debugMode, debugMode);
-    println("Experiment Mode: " + experimentMode, debugMode);
+
+    println(
+            "Date: " + dateFormat.format(date), debugMode);
+    println(
+            "Id: " + id, debugMode);
+    println(
+            "NS File: " + nsFile, debugMode);
+    println(
+            "Data Store: " + dataStore, debugMode);
+    println(
+            "Regular Workload Size: " + regularWorkloadSize, debugMode);
+    println(
+            "Mobile Workload Size: " + mobileWorkloadSize, debugMode);
+    println(
+            "Primary: " + GNS.numPrimaryReplicas, debugMode);
+    println(
+            "Replication: " + replicationFramework.toString(), debugMode);
+    println(
+            "C: " + C, debugMode);
+    println(
+            "DHT Base: " + base, debugMode);
+    println(
+            "Alpha: " + alpha, debugMode);
+    println(
+            "Aggregate Interval: " + aggregateInterval + "ms", debugMode);
+    println(
+            "Replication Interval: " + analysisInterval + "ms", debugMode);
+    println(
+            "Normalizing Constant: " + normalizingConstant, debugMode);
+    println(
+            "Moving Average Window: " + movingAverageWindowSize, debugMode);
+    println(
+            "TTL Constant: " + ttlConstant, debugMode);
+    println(
+            "Default TTL Regular Names: " + defaultTTLRegularName, debugMode);
+    println(
+            "Default TTL Mobile Names: " + defaultTTLMobileName, debugMode);
+    println(
+            "Debug Mode: " + debugMode, debugMode);
+    println(
+            "Experiment Mode: " + experimentMode, debugMode);
 
     try {
       HashFunction.initializeHashFunction();
