@@ -708,7 +708,7 @@ public class PaxosLogger2 extends Thread {
       GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIDs);
     }
 
-    paxosInstances.put(paxosID, new PaxosReplica(paxosID, PaxosManager.nodeID, nodeIDs));
+    paxosInstances.put(PaxosName.getPaxosNameFromPaxosID(paxosID), new PaxosReplica(paxosID, PaxosManager.nodeID, nodeIDs));
   }
 
   /**

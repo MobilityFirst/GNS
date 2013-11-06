@@ -56,7 +56,7 @@ public class StartNameServer {
   public static int maxReplica = 100;
   public static String nameActives;
   public static int loadMonitorWindow = 5000;
-  private static int quitAfterTime = -1; // only for testing: local name server will quit after this time
+  private static int quitAfterTimeSec = -1; // only for testing: local name server will quit after this time
   // in experiment mode, the default paxos coordinator will send prepare message at a random time between
   // paxosStartMinDelaySec  and paxosStartMaxDelaySec
   public static int paxosStartMinDelaySec = 0;
@@ -425,18 +425,18 @@ public class StartNameServer {
       // only for testing
       if (experimentMode) {
         if (parser.hasOption("quitAfterTime")) {
-          quitAfterTime = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
-          if (quitAfterTime >= 0) {
+          quitAfterTimeSec = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
+          if (quitAfterTimeSec >= 0) {
             Thread t = new Thread() {
               @Override
               public void run() {
-                System.out.println("Sleeping for " + quitAfterTime + " sec before quitting ...");
+                GNS.getLogger().severe("Sleeping for " + quitAfterTimeSec + " sec before quitting ...");
                 try {
-                  Thread.sleep(quitAfterTime * 1000);
+                  Thread.sleep(quitAfterTimeSec * 1000);
                 } catch (InterruptedException e) {
                   e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
-                System.out.println("SYSTEM EXIT.");
+                GNS.getLogger().severe("SYSTEM EXIT.");
                 System.exit(2);
 
               }

@@ -79,9 +79,10 @@ public class UpdateInfo {
 
   public synchronized String getUpdateStats(ConfirmUpdateLNSPacket confirmPkt, String name) {
     long latency = System.currentTimeMillis() - sendTime;
+    int numTransmissions = 0;
     String msg = "Success-UpdateRequest\t" + name + "\t" + latency
-            + "\t" + 3 + "\t" + 0
-            + "\t" + LocalNameServer.nodeID + "\t" + confirmPkt.getRequestID() + "\t" + System.currentTimeMillis();
+            + "\t" + numTransmissions + "\t" + nameserverID
+            + "\t" + LocalNameServer.nodeID + "\t" + confirmPkt.getRequestID() + "\t" + numRestarts + "\t" + System.currentTimeMillis();
     return msg;
   }
 
@@ -93,9 +94,14 @@ public class UpdateInfo {
     return  sendTime;
   }
 
+  public synchronized void setNameserverID(int nameserverID) {
+    this.nameserverID = nameserverID;
+  }
+
   public synchronized int getNumRestarts() {
     return numRestarts;
   }
+
   public synchronized long getLatency() {
     return System.currentTimeMillis() - sendTime;
   }
@@ -104,19 +110,22 @@ public class UpdateInfo {
   public synchronized String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID) {
     long latency = System.currentTimeMillis() - sendTime;
     String msg = "Failed-UpdateNoActiveResponse\t" + name + "\t" + latency
-            + "\t" + null + "\t" + activesQueried
-            + "\t" + lnsID + "\t" + requestID + "\t" + System.currentTimeMillis();
+            + "\t" + activesQueried.size() + "\t" + activesQueried
+            + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + System.currentTimeMillis();
     return msg;
   }
 
-  public static String getUpdateFailedStats(String name, Set<Integer> activesQueried, int lnsID, int requestID, long sendTime) {
+  public static String getUpdateFailedStats(String name, Set<Integer> activesQueried, int lnsID, int requestID,
+                                            long sendTime, int numRestarts) {
     String queryStatus = "Failed-UpdateNoActiveResponse";
     if (activesQueried.size() == 0) queryStatus = "Failed-UpdateNoPrimaryResponse";
 
     long latency = System.currentTimeMillis() - sendTime;
     String msg = queryStatus + "\t" + name + "\t" + latency
-            + "\t" + null + "\t" + activesQueried
-            + "\t" + lnsID + "\t" + requestID + "\t" + System.currentTimeMillis();
+            + "\t" + activesQueried.size() + "\t" + activesQueried
+            + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + System.currentTimeMillis();
     return msg;
   }
+
+
 }

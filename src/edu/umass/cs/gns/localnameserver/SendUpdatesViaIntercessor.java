@@ -90,7 +90,7 @@ class SendUpdateIntercessorTask extends TimerTask {
   @Override
   public void run() {
 
-
+//    if (name.equals("5242") == false) return;
 
     ResultValue newValue = new ResultValue();
     newValue.add(SendUpdatesViaIntercessor.getRandomString());

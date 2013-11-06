@@ -16,20 +16,19 @@ public class FailureDetectionPacket extends Packet{
 	public int responderNodeID;
 	
 	/**
-	 * Status of responder Node. true = node is up, false = node is down.  
+	 * Status of responder node. true = node is up, false = node is down.
 	 */
 	public boolean status;
 	
 	
 	public FailureDetectionPacket(int senderNodeID, int responderNodeID, 
-			boolean status, int packetType) {
+		boolean status, int packetType) {
 		this.senderNodeID = senderNodeID;
 		this.responderNodeID = responderNodeID;
 		this.packetType = packetType;
 		this.status = status;
 	}
-	
-	
+
 	public FailureDetectionPacket(JSONObject json) throws JSONException {
 		this.senderNodeID = json.getInt("sender");
 		this.responderNodeID = json.getInt("responder");

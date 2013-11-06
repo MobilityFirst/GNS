@@ -7,6 +7,7 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
@@ -86,9 +87,6 @@ public class NameServer {
     // Non-blocking IO created
     nsDemultiplexer = new NSPacketDemultiplexer();
 
-
-
-
 //    new Thread(worker).start();
 //    tcpTransport = new NioServer(nodeID, ConfigFileInfo.getIPAddress(nodeID),
 //            ConfigFileInfo.getNSTcpPort(nodeID), worker);
@@ -99,9 +97,12 @@ public class NameServer {
     tcpTransport = new NioServer2(nodeID, worker, new GNSNodeConfig());
     new Thread(tcpTransport).start();
 
+    // START ADMIN THREAD - DO NOT REMOVE THIS
+    if(StartLocalNameServer.experimentMode == false) new NSListenerAdmin().start(); // westy
+
     if (StartNameServer.experimentMode) {
       try {
-        Thread.sleep(30000); // wait so that other name servers can bind to respective TCP ports.
+        Thread.sleep(30000); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
       } catch (InterruptedException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
@@ -121,8 +122,6 @@ public class NameServer {
     // Name server starts listening on UDP Port for messages.
 
 
-    // START ADMIN THREAD - DO NOT REMOVE THIS
-    new NSListenerAdmin().start(); // westy
 
     PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
 

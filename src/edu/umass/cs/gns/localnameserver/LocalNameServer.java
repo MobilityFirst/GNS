@@ -243,7 +243,8 @@ public class LocalNameServer {
     }
 
 
-    new LNSListenerAdmin().start();
+    if(StartLocalNameServer.experimentMode == false) new LNSListenerAdmin().start();
+
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("LNS listener admin started.");
     }

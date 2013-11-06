@@ -544,7 +544,7 @@ public class ReplicaController {
       if (rcRecord.setOldActiveStopped(packet.getPaxosIDToBeStopped())) {
         if (StartNameServer.debugMode) GNS.getLogger().fine("OLD Active paxos stopped. Name: "+ rcRecord.getName()
                 + " Old Paxos ID: "+ packet.getPaxosIDToBeStopped());
-        if (isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
+//        if (isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
           StartupActiveSetTask startupTask = new StartupActiveSetTask(
                   rcRecord.getName(),
                   rcRecord.getOldActiveNameservers(),
@@ -552,9 +552,9 @@ public class ReplicaController {
                   rcRecord.getActivePaxosID(), rcRecord.getOldActivePaxosID(), null);
           // scheduled
           NameServer.timer.schedule(startupTask, 0, TIMEOUT_INTERVAL);
-        }
+//        }
       } else {
-        if (StartNameServer.debugMode) GNS.getLogger().fine("INGORE MSG: OLD PAXOS ID NOT FOUND IN ReplicaControllerRecord" +
+        GNS.getLogger().info("INGORE MSG: OLD PAXOS ID NOT FOUND IN ReplicaControllerRecord" +
                 " while setting it to inactive: " + packet.getPaxosIDToBeStopped());
       }
     } catch (RecordNotFoundException e) {
@@ -582,14 +582,18 @@ public class ReplicaController {
     );
 //		String name = packet.getName();
     RemoveRecordPacket removeRecordPacket = removeRecordRequests.remove(paxosID);
+    NameServer.replicaController.removeNameRecord(packet.getName());
+//    ReplicaControllerRecord record = new ReplicaControllerRecord(packet.getName());
+//    try {
+//      if (record != null) {
+//
+////        record.setRemoved();
+//      }
+//    } catch (FieldNotFoundException e) {
+//      GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
 
-    ReplicaControllerRecord record = new ReplicaControllerRecord(packet.getName());
-    try {
-      if (record != null) record.setRemoved();
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception. " + e.getMessage());
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
     if (StartNameServer.debugMode) GNS.getLogger().fine("RECORD MARKED AS REMOVED IN REPLICA CONTROLLER DB");
 
     if (removeRecordPacket != null) {
@@ -618,6 +622,7 @@ public class ReplicaController {
 
 
   /**
+   * /// **** we do not use this method any more **** ////
    * Executes the result of paxos message proposed by <code>oldActivesStoppedReceivedConfirmationFromActive</code>.
    * Writes to <code>ReplicaControllerRecord</code> that old actives have stopped; we notify new actives to start.
    * @param decision
@@ -625,9 +630,9 @@ public class ReplicaController {
    */
   public static void oldActiveStoppedWriteToNameRecord(String decision)
           throws JSONException {
+    /// **** we do not use this method any more **** ////
     ChangeActiveStatusPacket packet = new ChangeActiveStatusPacket(new JSONObject(decision));
     ArrayList<Field> fields = new ArrayList<Field>();
-
 
     ReplicaControllerRecord rcRecord;
     try {
@@ -662,6 +667,7 @@ public class ReplicaController {
 
   }
 
+
   public static void handleNodeFailure(FailureDetectionPacket fdPacket) {
     if (fdPacket.status == true) {
       return; // node was down and it came up, don't worry about that
@@ -689,13 +695,12 @@ public class ReplicaController {
                 && record.containsPrimaryNameserver(failedNode)
                 && record.isRemoved() == false) {
           if (StartNameServer.debugMode) {
-            GNS.getLogger().fine(" Handing Failure for Name: " + record.getName()
-                    + " NAME RECORD: " + record);
+            GNS.getLogger().fine(" Handing Failure for Name: " + record.getName() + " NAME RECORD: " + record);
           }
           handlePrimaryFailureForNameRecord(record, failedNode);
         }
       } catch (FieldNotFoundException e) {
-        GNS.getLogger().fine("Field not found exception. This should not happen because we read complete record. " + e.getMessage());
+        GNS.getLogger().severe("Field not found exception. This should not happen because we read complete record. " + e.getMessage());
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
     }
@@ -711,7 +716,7 @@ public class ReplicaController {
               + " Failed Node: " + failedNode + " STAGE = " + stage);
     }
     // worry only if I am smallest primary
-    if (isSmallestNodeRunning(nameRecord.getName(), nameRecord.getPrimaryNameservers()) == false) return;
+    if (isSmallestNodeRunningAfterFailedNode(failedNode, nameRecord.getName(), nameRecord.getPrimaryNameservers()) == false) return;
     GNS.getLogger().info(" Smallest node for name = " + nameRecord.getName());
     switch (stage) {
       case ACTIVE_RUNNING:
@@ -739,7 +744,7 @@ public class ReplicaController {
           GNS.getLogger().fine(" Started the old actives task. upon failure of node");
         }
         break;
-      case NO_ACTIVE_RUNNING:
+      case NO_ACTIVE_RUNNING: // Abhigyan: this case wont arise because
         // start to run new active replicas, since we do not know whether new active is running or not.
         // if isMarkedForRemoval() == true: then 
         //			(1) make sure new active has started 
@@ -792,6 +797,20 @@ public class ReplicaController {
 //    }
   }
 
+  public static boolean isSmallestNodeRunningAfterFailedNode(int failedNodeID, String name, Set<Integer> nameServers) {
+    Random r = new Random(name.hashCode());
+    ArrayList<Integer> x1  = new ArrayList<Integer>(nameServers);
+    Collections.sort(x1);
+    Collections.shuffle(x1, r);
+    boolean failedSeen = false;
+    for (int x: x1) {
+      if (x == failedNodeID) failedSeen = true;
+      if (PaxosManager.isNodeUp(x)) {
+        return failedSeen && x == NameServer.nodeID;
+      }
+    }
+    return false;
+  }
 
 
 

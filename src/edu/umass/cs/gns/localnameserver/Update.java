@@ -31,7 +31,6 @@ public class Update {
     GNS.getLogger().fine(" UPDATE PACKET RECVD. Operation: " + updateAddressPacket.getOperation());
 
     if (updateAddressPacket.getOperation().isUpsert()) {
-
       AddRemove.handleUpsert(updateAddressPacket, InetAddress.getByName(Transport.getReturnAddress(json)), Transport.getReturnPort(json));
     } else {
 
@@ -145,7 +144,7 @@ public class Update {
 //        return;
 //      }
 
-      GNS.getLogger().info(" Invalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.");
+      GNS.getLogger().info("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
 
       InetAddress address = null;
 
@@ -155,12 +154,14 @@ public class Update {
               updateInfo.getSendTime(),new HashSet<Integer>(), updateInfo.getNumRestarts() + 1);
 
       String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(),new HashSet<Integer>(),
-              LocalNameServer.nodeID,updateAddressPacket.getRequestID(),updateInfo.getSendTime());
+              LocalNameServer.nodeID,updateAddressPacket.getRequestID(),updateInfo.getSendTime(),
+              updateInfo.getNumRestarts() + 1);
 
-      PendingTasks.addToPendingRequests(updateInfo.getName(),task,
-              StartLocalNameServer.queryTimeout,address,updateInfo.senderPort,
-              ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(), failedStats,
-              StartLocalNameServer.queryTimeout);
+      long delay = StartLocalNameServer.queryTimeout;
+      if (updateInfo.getNumRestarts() == 0) delay = 0;
+      PendingTasks.addToPendingRequests(updateInfo.getName(),task, StartLocalNameServer.queryTimeout,
+              address,updateInfo.senderPort,
+              ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(), failedStats, delay);
 
 
 

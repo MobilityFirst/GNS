@@ -79,10 +79,7 @@ public class Lookup {
       //Match response to the query sent
       DNSRequestInfo query = LocalNameServer.removeDNSRequestInfo(dnsPacket.getQueryId());
 //        long t3 = System.currentTimeMillis();
-      if (query == null) {
-        return;
-      }
-
+      if (query == null) return;
 
 //        long t4 = System.currentTimeMillis();
       if (LocalNameServer.r.nextDouble() < StartLocalNameServer.outputSampleRate) {
@@ -193,9 +190,16 @@ public class Lookup {
               0,
               new HashSet<Integer>(), query.numRestarts + 1);
 
-      PendingTasks.addToPendingRequests(query.getqName(), queryTaskObject, StartLocalNameServer.queryTimeout, query.getSenderAddress(), query.getSenderPort(), DNSRequestTask.getErrorPacket(query.getIncomingPacket()),
-              DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),0,query.getLookupRecvdTime(),new HashSet<Integer>()),
-              StartLocalNameServer.queryTimeout);
+      long delay = StartLocalNameServer.queryTimeout;
+
+      if (query.numRestarts == 0) delay = 0;
+
+      String failureMsg = DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),
+              0, query.getLookupRecvdTime(), query.numRestarts + 1, new HashSet<Integer>());
+
+      PendingTasks.addToPendingRequests(query.getqName(), queryTaskObject, StartLocalNameServer.queryTimeout,
+              query.getSenderAddress(), query.getSenderPort(), DNSRequestTask.getErrorPacket(query.getIncomingPacket()),
+              failureMsg, delay);
 
       GNS.getLogger().fine(" Scheduled lookup task.");
 
@@ -207,7 +211,8 @@ public class Lookup {
           Intercessor.getInstance().checkForResult(DNSRequestTask.getErrorPacket(query.getIncomingPacket()));
         }
         GNS.getLogger().severe("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());
-        GNS.getStatLogger().fine(DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),0,query.getLookupRecvdTime(),new HashSet<Integer>()));
+        GNS.getStatLogger().fine(DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),
+                0,query.getLookupRecvdTime(), query.numRestarts, new HashSet<Integer>()));
 
       } catch (JSONException e) {
         e.printStackTrace();

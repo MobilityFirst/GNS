@@ -1,14 +1,17 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer2;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.paxospacket.*;
+import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.packet.paxospacket.StatePacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -271,7 +274,7 @@ public class PaxosManager extends Thread{
     startPaxosLogDeletionTask();
     startPaxosStateLogging();
 
-    startResendPendingMessages(); // Commenting this because it iterates over all paxos instances every second
+    startResendPendingMessages();
 
 
   }
@@ -507,7 +510,7 @@ public class PaxosManager extends Thread{
     // clear paxos logs
     PaxosLogger2.clearLogs();
     // run java gc
-    System.gc();
+
   }
 
   /**
@@ -711,16 +714,17 @@ public class PaxosManager extends Thread{
    * Some of them may elect a new co-ordinator.
    */
   static void informNodeStatus(FailureDetectionPacket fdPacket) {
-    GNS.getLogger().warning("Handling node failure = " + fdPacket.responderNodeID);
+    GNS.getLogger().severe("Handling node failure = " + fdPacket.responderNodeID);
     for (String x: paxosInstances.keySet()) {
       PaxosReplica r = paxosInstances.get(x);
 
       if (r.isNodeInPaxosInstance(fdPacket.responderNodeID)) {
         try
         {
-          JSONObject json = fdPacket.toJSONObject();
-          json.put(PAXOS_ID, x);
-          processMessage(new HandlePaxosMessageTask(json,fdPacket.packetType));
+          r.handleIncomingMessage(fdPacket.toJSONObject(), fdPacket.packetType);
+//          JSONObject json = ;
+//          json.put(PAXOS_ID, x);
+//          processMessage(new HandlePaxosMessageTask(json,fdPacket.packetType));
         } catch (JSONException e)
         {
           if (StartNameServer.debugMode) GNS.getLogger().fine(" JSON Exception");
@@ -1001,6 +1005,9 @@ class HandlePaxosMessageTask extends TimerTask {
   }
 }
 
+/**
+ * Resend proposals (for all paxos instances) that have not yet been accepted by majority.
+ */
 class ResendPendingMessagesTask extends TimerTask{
 
 //  @Override
@@ -1013,6 +1020,7 @@ class ResendPendingMessagesTask extends TimerTask{
 //      }
 //    }
 //  }
+
   @Override
   public  void run() {
     ArrayList<ProposalStateAtCoordinator> remove = new ArrayList<ProposalStateAtCoordinator>();

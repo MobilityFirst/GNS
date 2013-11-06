@@ -27,6 +27,7 @@ public class SendQueriesViaIntercessor // extends Thread
 //	}
 
   public static void schdeduleAllQueries() {
+
     if (LocalNameServer.lookupTrace == null)
     {
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Lookup trace is null. SendQueriesViaIntercessor thread quitting.");
@@ -95,7 +96,7 @@ class SendQueryIntercessorTask extends TimerTask {
 
   @Override
   public void run() {
-
+//    if (name.equals("5242") == false) return;
     DNSPacket queryRecord = new DNSPacket(lookupCount, name, NameRecordKey.EdgeRecord, LocalNameServer.nodeID);
     queryRecord.getHeader().setId(lookupCount);
 

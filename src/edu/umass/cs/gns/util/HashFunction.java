@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.main.GNS;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -180,9 +179,10 @@ public class HashFunction {
       e.printStackTrace();
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
     }
+//    catch (IOException e) {
+//      e.printStackTrace();
+//    }
 
   }
 }

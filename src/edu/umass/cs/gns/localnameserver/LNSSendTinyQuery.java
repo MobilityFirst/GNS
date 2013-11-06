@@ -33,31 +33,12 @@ public class LNSSendTinyQuery {
 				name, new HashSet<Integer>(), new HashSet<Integer>());
 
 		// send packet
-		if (StartLocalNameServer.delayScheduling) {
-			double latency = ConfigFileInfo.getPingLatency(nameServer) * 
-					( 1 + r.nextDouble() * StartLocalNameServer.variation);
-			long timerDelay = (long) latency;
-			try {
-				LocalNameServer.executorService.schedule(new SendQueryWithDelay(query.toJSONObject(), nameServer), timerDelay, TimeUnit.MILLISECONDS);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		else {
-			
-			try {
-
-				LNSListener.tcpTransport.sendToID(nameServer, query.toJSONObject());
-				if (StartLocalNameServer.debugMode) GNS.getLogger().fine("TINYQUERY SEND " + name + " count " + count + "\t");
-			} catch (IOException e) {
-//				TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
+    try {
+      LocalNameServer.sendToNS(query.toJSONObject(),nameServer);
+    } catch (JSONException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-		
+
 	}
 	
 	private static int getNameServerID(String name) {

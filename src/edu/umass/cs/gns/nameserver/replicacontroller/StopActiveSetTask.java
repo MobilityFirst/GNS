@@ -44,6 +44,7 @@ public class StopActiveSetTask extends TimerTask {
     this.oldActiveNameServers = oldActiveNameServers;
     this.oldActivesQueried = new HashSet<Integer>();
     this.oldPaxosID = oldPaxosID;
+    MAX_ATTEMPTS = oldActiveNameServers.size();
   }
 
 
@@ -96,7 +97,8 @@ public class StopActiveSetTask extends TimerTask {
         GNS.getLogger().severe("ERROR: Old Actives failed to STOP after " + MAX_ATTEMPTS + " attempts   Name = " + name
                 + "Old active name servers queried: " + oldActivesQueried + " All Old Actives " + oldActivesQueried);
 //      }
-      this.cancel();
+//      this.cancel();
+
       return;
     }
 
@@ -108,8 +110,11 @@ public class StopActiveSetTask extends TimerTask {
         GNS.getLogger().severe("ERROR: No more old active left to query. "
                 + "Old Active name servers queried: " + oldActivesQueried + ". Old Actives not STOPped yet..");
 //      }
-      this.cancel();
-      return;
+      oldActivesQueried.clear();
+      selectedOldActive = BestServerSelection.getSmallestLatencyNS(oldActiveNameServers, oldActivesQueried);
+      oldActivesQueried.add(selectedOldActive);
+//      this.cancel();
+//      return;
     } else {
       oldActivesQueried.add(selectedOldActive);
     }

@@ -100,7 +100,7 @@ public class DNSRequestInfo {
     str.append("\t" + LocalNameServer.nodeID);
     str.append("\t" + lookupRecvdTime);
 //		str.append("\t" + queryStatus);
-    str.append("\ta");
+    str.append("\t" + numRestarts);
 //		str.append("\t" + nameServerQueried);
     str.append("\t[]");
 //		str.append("\t" + nameServerQueriedPingLatency);

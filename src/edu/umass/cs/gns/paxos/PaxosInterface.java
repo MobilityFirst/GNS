@@ -23,10 +23,9 @@ public interface PaxosInterface {
 
     public abstract void handleFailureMessage(FailureDetectionPacket fdPacket);
 
-  public abstract String getState(String paxosID);
+    public abstract String getState(String paxosID);
 
-
-  public abstract void updateState(String paxosID, String state);
+    public abstract void updateState(String paxosID, String state);
 
 
 

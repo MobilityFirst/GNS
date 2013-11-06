@@ -49,8 +49,6 @@ public class SendUpdatesTask extends TimerTask
   {
     try {
 
-
-
       timeoutCount++;
 
 //      if (numRestarts > StartLocalNameServer.MAX_RESTARTS) { // just some defensive code.
@@ -98,7 +96,7 @@ public class SendUpdatesTask extends TimerTask
                     new SendUpdatesTask(updateAddressPacket, senderAddress, senderPort, requestRecvdTime, new HashSet<Integer>(), numRestarts + 1),
                     StartLocalNameServer.queryTimeout, senderAddress, senderPort,
                     ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(),
-                    UpdateInfo.getUpdateFailedStats(name,new HashSet<Integer>(),LocalNameServer.nodeID,updateAddressPacket.getRequestID(),requestRecvdTime),0);
+                    UpdateInfo.getUpdateFailedStats(name,new HashSet<Integer>(),LocalNameServer.nodeID,updateAddressPacket.getRequestID(),requestRecvdTime, numRestarts + 1),0);
 
           } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -140,7 +138,7 @@ public class SendUpdatesTask extends TimerTask
         String hostAddress = null;
         if (senderAddress != null) hostAddress = senderAddress.getHostAddress();
         updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-                System.currentTimeMillis(), hostAddress, senderPort, numRestarts, updateAddressPacket);
+                requestRecvdTime, hostAddress, senderPort, numRestarts, updateAddressPacket);
         if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
       } else {
 //        UpdateInfo updateInfo = LocalNameServer.getUpdateInfo(updateRequestID);
@@ -161,12 +159,16 @@ public class SendUpdatesTask extends TimerTask
       // and send it off
       try {
         JSONObject jsonToSend = pkt.toJSONObject();
-        if (StartLocalNameServer.delayScheduling) {
-          LNSListener.sendPacketWithDelay(jsonToSend,nameServerID);
-        } else {
+        LocalNameServer.sendToNS(jsonToSend,nameServerID);
+        UpdateInfo updateInfo = LocalNameServer.getUpdateInfo(nameServerID);
+        if (updateInfo != null) updateInfo.setNameserverID(nameServerID);
+//        if (StartLocalNameServer.delayScheduling) {
+//          LNSListener.sendPacketWithDelay(jsonToSend,nameServerID);
+//        } else {
           // for small packets use UDP
-          LocalNameServer.sendToNS(jsonToSend,nameServerID);
-        }
+
+
+//        }
         // remote status
 //        StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, pkt.getType(),
 //                name, updateAddressPacket.getUpdateValue().toString());
@@ -267,7 +269,7 @@ public class SendUpdatesTask extends TimerTask
     UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
     if (updateInfo == null) {
       if (timeoutCount == 0) GNS.getStatLogger().fine(UpdateInfo.getUpdateFailedStats(name,activesQueried,
-              LocalNameServer.nodeID,updateAddressPacket.getRequestID(),requestRecvdTime));
+              LocalNameServer.nodeID,updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts));
 //        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + updateAddressPacket);
     } else {
       GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.nodeID, updateAddressPacket.getRequestID()));
