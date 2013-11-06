@@ -111,7 +111,7 @@ public class StartLocalNameServer {
   
   public static double variation = 0.1; // 10 % addition
 
-  public static boolean runHttpServer = false;
+  public static boolean runHttpServer = true;
   
   @SuppressWarnings("static-access")
   /**
@@ -307,6 +307,17 @@ public class StartLocalNameServer {
     formatter.printHelp("StartLocalNameServer", commandLineOptions);
   }
 
+  /*
+   * Sample invocation
+   * 
+   java -Xmx2g -cp ../../build/jars/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer  -id 3 -nsfile name-server-info 
+   -cacheSize 10000 -primary 3 -location -vInterval 1000 -chooseFromClosestK 1 -lookupRate 10000 
+   -updateRateMobile 0 -updateRateRegular 10000 -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100
+   -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO
+   -runHttpServer -debugMode
+   */
+  
+  
   /**
    * ************************************************************
    * Main method that starts the local name server with the given command line options.

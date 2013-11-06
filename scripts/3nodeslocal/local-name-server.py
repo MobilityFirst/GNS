@@ -195,7 +195,7 @@ def num_events(trace_file):
     
 """ Executes an instance of the Local Name Server with the give parameters """
 def run_local_name_server():
-    command = 'java  -cp ' + local_name_server_jar + ' edu.umass.cs.gns.main.StartLocalNameServer '
+    command = 'java -Xmx2g -cp ' + local_name_server_jar + ' edu.umass.cs.gns.main.StartLocalNameServer '
     if is_local:
         command += ' ' + LOCAL_EXP
     #else:

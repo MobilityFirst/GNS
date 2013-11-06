@@ -7,6 +7,7 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
@@ -18,9 +19,6 @@ import edu.umass.cs.gns.replicationframework.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +26,8 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class NameServer {
 
@@ -41,7 +41,7 @@ public class NameServer {
 //  public static DatagramSocket dnsSocket;
   public static BasicRecordMap recordMap;
   public static BasicRecordMap replicaController;
-  public static ReplicationFramework replicationFramework;
+  public static ReplicationFrameworkInterface replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer2 tcpTransport;
   public static Timer timer;
@@ -70,19 +70,7 @@ public class NameServer {
             // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
 
-    // what type of replication?
-    if (StartNameServer.locationBasedReplication) {
-      this.replicationFramework = new LocationBasedReplication();
-    } else if (StartNameServer.randomReplication) {
-      this.replicationFramework = new RandomReplication();
-    } else if (StartNameServer.beehiveReplication) {
-      BeehiveReplication.generateReplicationLevel(StartNameServer.C,
-              StartNameServer.regularWorkloadSize + StartNameServer.mobileWorkloadSize,
-              StartNameServer.alpha, StartNameServer.base);
-      this.replicationFramework = new RandomReplication();
-    } else if (StartNameServer.kmediodsReplication) {
-      this.replicationFramework = new KMediods();
-    }
+    this.replicationFramework = ReplicationFrameworkType.instantiateReplicationFramework(StartNameServer.replicationFramework);
 
     // Timer object created.
     timer = new Timer();
@@ -153,7 +141,7 @@ public class NameServer {
     }
 
     // schedule periodic computation of new active name servers.
-    if (!(StartNameServer.staticReplication || StartNameServer.optimalReplication)) {
+    if (!(StartNameServer.replicationFramework == ReplicationFrameworkType.STATIC || StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL)) {
 
       // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
       // longer term solution is to integrate geoIPlocation database at name servers.

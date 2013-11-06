@@ -86,17 +86,17 @@ public class GNS {
   /**
    * Logging level for main logger
    */
-  public static String fileLoggingLevel = "FINE";
+  public static String fileLoggingLevel = "INFO";
   
   /**
    * Console output level for main logger
    */
-  public static String consoleOutputLevel = "FINE";
+  public static String consoleOutputLevel = "INFO";
 
   /**
    * Logging level for stat logger
    */
-  public static String statFileLoggingLevel = "FINE";
+  public static String statFileLoggingLevel = "INFO";
   
   /**
    * Console output level for stat logger

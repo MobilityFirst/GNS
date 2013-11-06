@@ -5,6 +5,7 @@ import edu.umass.cs.gns.database.Field;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.NewActiveProposalPacket;
@@ -206,7 +207,7 @@ public class ComputeNewActivesTask extends TimerTask
     int numReplica = numberOfReplica(rcRecord);
 
     // used for beehive.
-    if (StartNameServer.beehiveReplication) {
+    if (StartNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
       numReplica = BeehiveReplication.numActiveNameServers(rcRecord.getName()) - 3;
     }
 

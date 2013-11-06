@@ -16,7 +16,7 @@ import java.util.Set;
  * 
  * @author Hardeep Uppal
  ************************************************************/
-public class LocationBasedReplication implements ReplicationFramework {
+public class LocationBasedReplication implements ReplicationFrameworkInterface {
 
 	//  private Random random = new Random(System.currentTimeMillis());
 

@@ -5,6 +5,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 //import edu.umass.cs.gns.packet.QueryResultValue;
@@ -235,7 +236,7 @@ public class GenerateSyntheticRecordTable {
 
         // Add record into the name server's record table if the name server
         // is the primary replica if this name
-        if (StartNameServer.optimalReplication) {
+        if (StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL) {
           //Use the SHA-1 hash of the name as its address
           byte[] hash = HashFunction.SHA(strName, sha1);
           int address = ByteUtils.BAToInt(hash);

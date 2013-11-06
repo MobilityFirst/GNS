@@ -167,7 +167,7 @@ public class ConfigFileInfo {
 
   public static void addHostInfo(int id, InetAddress ipAddress, int startingPort, double pingLatency, double latitude, double longitude) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
-    GNS.getLogger().info(nodeInfo.toString());
+    GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
   }
 

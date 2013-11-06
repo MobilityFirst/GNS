@@ -12,33 +12,27 @@ import org.json.JSONObject;
  * @author abhigyan
  * 
  */
-public class NSListenerUDP extends Thread
-{
-	public static Transport udpTransport;
+public class NSListenerUDP extends Thread {
+
+  public static Transport udpTransport;
   public static boolean useUDP = true;
-	public NSListenerUDP()
-	{
-		udpTransport = new Transport(NameServer.nodeID,
-				ConfigFileInfo.getLNSUdpPort(NameServer.nodeID));
-	}
-	
-	@Override
-	public void run()
-	{
-		while (true)
-		{
-			try
-			{
-				JSONObject incomingJSON = udpTransport.readPacket();
-				NameServer.nsDemultiplexer.handleJSONObject(incomingJSON);
-			} catch (Exception e)
-			{
-				GNS.getLogger().fine("Exception in thread: " + e.getMessage());
-				e.printStackTrace();
-			}
-		}
-	}
 
+  public NSListenerUDP() {
+    udpTransport = new Transport(NameServer.nodeID,
+            ConfigFileInfo.getLNSUdpPort(NameServer.nodeID));
+  }
 
+  @Override
+  public void run() {
+    GNS.getLogger().info("NS Node " + NameServer.nodeID + " starting NSListenerUDP on port " + ConfigFileInfo.getLNSUdpPort(NameServer.nodeID));
+    while (true) {
+      try {
+        JSONObject incomingJSON = udpTransport.readPacket();
+        NameServer.nsDemultiplexer.handleJSONObject(incomingJSON);
+      } catch (Exception e) {
+        GNS.getLogger().fine("Exception in thread: " + e.getMessage());
+        e.printStackTrace();
+      }
+    }
+  }
 }
-

@@ -6,28 +6,22 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import org.apache.commons.cli.*;
-
+import static edu.umass.cs.gns.util.Util.println;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import static edu.umass.cs.gns.util.Util.println;
+import org.apache.commons.cli.*;
 
 /**
- * ************************************************************
+ * 
  * Starts a single instance of the Nameserver with the specified parameters.
  *
- * @author Hardeep Uppal ***********************************************************
  */
 public class StartNameServer {
 
+  public static ReplicationFrameworkType replicationFramework;
   public static int regularWorkloadSize;
   public static int mobileWorkloadSize;
-  public static boolean staticReplication = false;
-  public static boolean randomReplication = false;
-  public static boolean locationBasedReplication = false;
-  public static boolean beehiveReplication = false;
   public static double C;
   public static double base;
   public static double alpha;
@@ -49,16 +43,12 @@ public class StartNameServer {
   // is in experiment mode: abhigyan.
   // use this flag to make changes to code which will only run during experiments.
   public static boolean experimentMode = false;
-
   public static boolean delayScheduling = false;
   public static double variation = 0.1;
-
   public static int workerThreadCount = 5; // number of worker threads
   public static boolean tinyUpdate = false; // 
   private static HelpFormatter formatter = new HelpFormatter();
   private static Options commandLineOptions;
-  public static boolean optimalReplication = false;
-  public static boolean kmediodsReplication = false;
   public static int numberLNS;
   public static String lnsnsPingFile;
   public static String nsnsPingFile;
@@ -67,7 +57,6 @@ public class StartNameServer {
   public static String nameActives;
   public static int loadMonitorWindow = 5000;
   private static int quitAfterTime = -1; // only for testing: local name server will quit after this time
-
   // in experiment mode, the default paxos coordinator will send prepare message at a random time between
   // paxosStartMinDelaySec  and paxosStartMaxDelaySec
   public static int paxosStartMinDelaySec = 0;
@@ -159,12 +148,12 @@ public class StartNameServer {
     Option failureDetectionTimeoutInterval = new Option("failureDetectionTimeoutInterval", true,
             "Interval (in sec) after which a node is declared as failed");
 
-    Option paxosStartMinDelaySec = new Option("paxosStartMinDelaySec",true,"paxos starts at least this many seconds after start of experiment");
+    Option paxosStartMinDelaySec = new Option("paxosStartMinDelaySec", true, "paxos starts at least this many seconds after start of experiment");
 
-    Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec",true,"paxos starts at most this many seconds after start of experiment");
+    Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec", true, "paxos starts at most this many seconds after start of experiment");
 
-    Option delayScheduling = new Option("delayScheduling",  "add packet delay equal to ping delay between two servers (used for emulation).");
-    Option variation = new Option("variation", true,"variation");
+    Option delayScheduling = new Option("delayScheduling", "add packet delay equal to ping delay between two servers (used for emulation).");
+    Option variation = new Option("variation", true, "variation");
 
     Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Size of window to calculate the "
@@ -275,31 +264,40 @@ public class StartNameServer {
   }
 
   /**
-   * ************************************************************
-   * Prints command line usage ***********************************************************
+   *
+   * Prints command line usage
    */
   private static void printUsage() {
     formatter.printHelp("StartNameServer", commandLineOptions);
   }
   /**
-   * ************************************************************
+   *
    * Main method that starts the local name server with the given command line options.
    *
    * @param args Command line arguments
-   * @throws ParseException ***********************************************************
+   * @throws ParseException 
    */
-  private static final String DEFAULTAGGREGATEINTERVAL = "600"; // seconds
-  private static final String DEFAULTANALYSISINTERVAL = "600";  // seconds
-  private static final String DEFAULTNORMALIZINGCONSTANT = "1";
+  private static final String DEFAULTAGGREGATEINTERVAL = "1000"; // seconds
+  private static final String DEFAULTANALYSISINTERVAL = "1000";  // seconds
+  private static final String DEFAULTNORMALIZINGCONSTANT = "0.1";
   private static final String DEFAULTMOVINGAVERAGEWINDOWSIZE = "20";
-  private static final String DEFAULTTTLCONSTANT = "0.0000001";
+  private static final String DEFAULTTTLCONSTANT = "0.0";
   private static final String DEFAULTTTLREGULARNAME = "0";
   private static final String DEFAULTTTLMOBILENAME = "0";
   private static final String DEFAULTREGULARWORKLOADSIZE = "0";
   private static final String DEFAULTMOBILEMOBILEWORKLOADSIZE = "0";
   private static final String DEFAULTPAXOSLOGPATHNAME = "log/paxos_log";
   private static final DataStoreType DEFAULTDATASTORETYPE = DataStoreType.MONGO;
+  private static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
+  private static final int DEFAULT_NAMESERVER_VOTE_SIZE = 5;
 
+  /*
+   * Sample invocation
+   java -Xmx2g -cp ../../build/jars/GNS.jar edu.umass.cs.gns.main.StartNameServer -id 1 -nsfile name-server-info -primary 3
+   -aInterval 1000 -rInterval 1000 -nconstant 0.1 -mavg 20 -ttlconstant 0.0 -rttl 0 -mttl 0 -rworkload 0 -mworkload 0 -location -nsVoteSize 5 
+   -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO -dataStore MONGO -debugMode
+   *   
+   */
   public static void main(String[] args) {
     int id = 0;					//node id
     boolean isLocal = false;	//Flag indicating whether this instance is running all servers on local host
@@ -329,25 +327,36 @@ public class StartNameServer {
 
       GenerateSyntheticRecordTable.sleepBetweenNames = Integer.parseInt(parser.getOptionValue("syntheticWorkloadSleepTimeBetweenAddingNames", "0"));
 
-      staticReplication = parser.hasOption("static");
-      randomReplication = parser.hasOption("random");
+      if (parser.hasOption("static")) {
+        replicationFramework = ReplicationFrameworkType.STATIC;
+      } else if (parser.hasOption("random")) {
+        replicationFramework = ReplicationFrameworkType.RANDOM;
+      } else if (parser.hasOption("location")) {
+        replicationFramework = ReplicationFrameworkType.LOCATION;
+        nameServerVoteSize = Integer.parseInt(parser.getOptionValue("nsVoteSize"));
+      } else if (parser.hasOption("beehive")) {
+        replicationFramework = ReplicationFrameworkType.BEEHIVE;
+        C = Double.parseDouble(parser.getOptionValue("C"));
+        base = Double.parseDouble(parser.getOptionValue("base"));
+        alpha = Double.parseDouble(parser.getOptionValue("alpha"));
+      } else if (parser.hasOption("kmediods")) {
+        replicationFramework = ReplicationFrameworkType.KMEDIODS;
+        numberLNS = Integer.parseInt(parser.getOptionValue("numLNS"));
+        lnsnsPingFile = parser.getOptionValue("lnsnsping");
+        nsnsPingFile = parser.getOptionValue("nsnsping");
+      } else if (parser.hasOption("optimal")) {
+        replicationFramework = ReplicationFrameworkType.OPTIMAL;
+      } else {
+        replicationFramework = DEFAULT_REPLICATION_FRAMEWORK;
+        nameServerVoteSize = DEFAULT_NAMESERVER_VOTE_SIZE;
+      }
 
-      locationBasedReplication = parser.hasOption("location");
-      nameServerVoteSize = (locationBasedReplication)
-              ? Integer.parseInt(parser.getOptionValue("nsVoteSize")) : 0;
       if (parser.hasOption("minReplica")) {
         minReplica = Integer.parseInt(parser.getOptionValue("minReplica"));
       }
       if (parser.hasOption("maxReplica")) {
         maxReplica = Integer.parseInt(parser.getOptionValue("maxReplica"));
       }
-
-      beehiveReplication = parser.hasOption("beehive");
-      C = (beehiveReplication) ? Double.parseDouble(parser.getOptionValue("C")) : 0;
-      base = (beehiveReplication) ? Double.parseDouble(parser.getOptionValue("base")) : 0;
-      alpha = (beehiveReplication) ? Double.parseDouble(parser.getOptionValue("alpha")) : 0;
-
-      optimalReplication = parser.hasOption("optimal");
 
       debugMode = parser.hasOption("debugMode");
       experimentMode = parser.hasOption("experimentMode");
@@ -373,7 +382,6 @@ public class StartNameServer {
 
       if (parser.hasOption("paxosLogFolder") == false) {
         PaxosManager.setPaxosLogFolder(DEFAULTPAXOSLOGPATHNAME);
-
       } else {
         PaxosManager.setPaxosLogFolder(parser.getOptionValue("paxosLogFolder"));
       }
@@ -393,8 +401,9 @@ public class StartNameServer {
 
       if (parser.hasOption("delayScheduling")) {
         delayScheduling = parser.hasOption("delayScheduling");
-        if(delayScheduling && parser.hasOption("variation"))
+        if (delayScheduling && parser.hasOption("variation")) {
           variation = Double.parseDouble(parser.getOptionValue("variation"));
+        }
       }
 
       if (parser.hasOption("workerThreadCount")) {
@@ -402,11 +411,6 @@ public class StartNameServer {
       }
 
       tinyUpdate = parser.hasOption("tinyUpdate");
-
-      kmediodsReplication = parser.hasOption("kmediods");
-      numberLNS = (kmediodsReplication) ? Integer.parseInt(parser.getOptionValue("numLNS")) : 0;
-      lnsnsPingFile = (kmediodsReplication) ? parser.getOptionValue("lnsnsping") : null;
-      nsnsPingFile = (kmediodsReplication) ? parser.getOptionValue("nsnsping") : null;
 
       if (parser.hasOption("fileLoggingLevel")) {
         GNS.fileLoggingLevel = parser.getOptionValue("fileLoggingLevel");
@@ -445,9 +449,9 @@ public class StartNameServer {
         }
       }
 
-        // only for testing
+      // only for testing
       if (experimentMode) {
-        nameActives = parser.getOptionValue("nameActives","nameActives");
+        nameActives = parser.getOptionValue("nameActives", "nameActives");
       }
 
 //      NSListenerUpdate.doSignatureCheck = parser.hasOption("signatureCheck");
@@ -467,11 +471,7 @@ public class StartNameServer {
     println("Regular Workload Size: " + regularWorkloadSize, debugMode);
     println("Mobile Workload Size: " + mobileWorkloadSize, debugMode);
     println("Primary: " + GNS.numPrimaryReplicas, debugMode);
-    println("Static Replication: " + staticReplication, debugMode);
-    println("Random Replication: " + randomReplication, debugMode);
-    println("Location Based Replication: " + locationBasedReplication, debugMode);
-    println("Name Server Selection Vote Size: " + nameServerVoteSize, debugMode);
-    println("Beehive Replication: " + beehiveReplication, debugMode);
+    println("Replication: " + replicationFramework.toString(), debugMode);
     println("C: " + C, debugMode);
     println("DHT Base: " + base, debugMode);
     println("Alpha: " + alpha, debugMode);

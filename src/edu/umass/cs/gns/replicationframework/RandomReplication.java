@@ -12,7 +12,7 @@ import java.util.*;
  * 
  * @author Hardeep Uppal
  ************************************************************/
-public class RandomReplication implements ReplicationFramework {
+public class RandomReplication implements ReplicationFrameworkInterface {
 
 	@Override
 	public Set<Integer> newActiveReplica(ReplicaControllerRecord nameRecordPrimary, int numReplica, int count ) throws FieldNotFoundException{

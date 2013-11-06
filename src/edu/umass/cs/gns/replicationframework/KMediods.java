@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class KMediods  implements ReplicationFramework {
+public class KMediods  implements ReplicationFrameworkInterface {
 
 	/**
 	 * Returns set of active name servers using KMediods algorithm.
