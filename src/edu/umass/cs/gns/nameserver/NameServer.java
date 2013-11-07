@@ -53,7 +53,7 @@ public class NameServer {
   /**
    * Only used during experiments.
    */
-  public static int initialExpDelayMillis = 1000;
+  public static int initialExpDelayMillis = 30000;
 
   /**
    * Constructs a name server which uses a synthetic workload of integers as names in its record table. The size of the workload is
@@ -359,7 +359,7 @@ public class NameServer {
 
     if (json.toString().length() < 1000) {
       try {
-        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.LNS_UDP_PORT);
+        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.NS_UDP_PORT);
       } catch (JSONException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }

@@ -94,30 +94,30 @@ import java.util.concurrent.locks.ReentrantLock;
 		try {
 
 			if (nodeInfo.containsKey(monitoredNodeID)) return;
-			nodeInfo.put(monitoredNodeID, System.currentTimeMillis());
-			nodeStatus.put(monitoredNodeID, true);
 
-		} finally {
-			lock.unlock();
-		}
 
-		FailureDetectionPacket fail = new FailureDetectionPacket(nodeID, monitoredNodeID, false, PaxosPacketType.FAILURE_DETECT);
-    Random r = new Random();
-		try
-		{
-      FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject());
-      long initialDelay = r.nextInt(pingIntervalMillis);
-      if (StartNameServer.experimentMode) {
-        initialDelay += NameServer.initialExpDelayMillis *3; // wait for all name servers to start up.
+      FailureDetectionPacket fail = new FailureDetectionPacket(nodeID, monitoredNodeID, false, PaxosPacketType.FAILURE_DETECT);
+      Random r = new Random();
+      try
+      {
+        FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject());
+        long initialDelay = r.nextInt(pingIntervalMillis);
+        if (StartNameServer.experimentMode) {
+          initialDelay += NameServer.initialExpDelayMillis; // wait for all name servers to start up.
+        }
+        nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
+        nodeStatus.put(monitoredNodeID, true);
+        PaxosManager.executorService.scheduleAtFixedRate(failureDetectionTask, initialDelay,
+                pingIntervalMillis, TimeUnit.MILLISECONDS);
+      } catch (JSONException e)
+      {
+        GNS.getLogger().severe("JSON EXCEPTION HERE !! " + e.getMessage());
+        e.printStackTrace();
       }
-			PaxosManager.executorService.scheduleAtFixedRate(failureDetectionTask, r.nextInt(pingIntervalMillis),
-              pingIntervalMillis, TimeUnit.MILLISECONDS);
-		} catch (JSONException e)
-		{
-			GNS.getLogger().severe("JSON EXCEPTION HERE !! " + e.getMessage());
-			e.printStackTrace();
-		}
-		if (StartNameServer.debugMode) GNS.getLogger().fine(nodeID + " started monitoring node " + monitoredNodeID);
+      if (StartNameServer.debugMode) GNS.getLogger().fine(nodeID + " started monitoring node " + monitoredNodeID);
+    } finally {
+      lock.unlock();
+    }
 	}
 
 	/**

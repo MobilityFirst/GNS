@@ -89,7 +89,7 @@ public class LocalNameServer {
   /**
    * Only used during experiments.
    */
-  public static int initialExpDelayMillis = 1000;
+  public static int initialExpDelayMillis = 30000;
 
   /**
    **

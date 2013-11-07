@@ -344,7 +344,7 @@ public class ReplicaController {
 
 //  public static void startupNewActives(ReplicaControllerRecord nameRecord, ValuesMap initialValue) throws FieldNotFoundException{
 //    // this method will schedule a timer task to startup active replicas.
-//    StartupActiveSetTask startupTask = new StartupActiveSetTask(
+//    StartActiveSetTask startupTask = new StartActiveSetTask(
 //            nameRecord.getName(),
 //            nameRecord.getOldActiveNameservers(),
 //            nameRecord.getActiveNameservers(),
@@ -541,7 +541,7 @@ public class ReplicaController {
         if (StartNameServer.debugMode) GNS.getLogger().fine("OLD Active paxos stopped. Name: "+ rcRecord.getName()
                 + " Old Paxos ID: "+ packet.getPaxosIDToBeStopped());
 //        if (isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
-          StartupActiveSetTask startupTask = new StartupActiveSetTask(
+          StartActiveSetTask startupTask = new StartActiveSetTask(
                   rcRecord.getName(),
                   rcRecord.getOldActiveNameservers(),
                   rcRecord.getActiveNameservers(),
@@ -640,7 +640,7 @@ public class ReplicaController {
         if (StartNameServer.debugMode) GNS.getLogger().fine("OLD Active paxos stopped. Name: "+ rcRecord.getName()
                 + " Old Paxos ID: "+ packet.getPaxosID());
         if (isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
-          StartupActiveSetTask startupTask = new StartupActiveSetTask(
+          StartActiveSetTask startupTask = new StartActiveSetTask(
                   rcRecord.getName(),
                   rcRecord.getOldActiveNameservers(),
                   rcRecord.getActiveNameservers(),
@@ -751,7 +751,7 @@ public class ReplicaController {
         // actives failed to start at the time request was added,
         // since I do not have the initial value for name record the client sent, I will not try to start the actives.
 
-        StartupActiveSetTask startupTask = new StartupActiveSetTask(nameRecord.getName(),
+        StartActiveSetTask startupTask = new StartActiveSetTask(nameRecord.getName(),
                 nameRecord.getOldActiveNameservers(),
                 nameRecord.getActiveNameservers(),
                 nameRecord.getActivePaxosID(), nameRecord.getOldActivePaxosID(), null);

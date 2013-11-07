@@ -1,10 +1,13 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.*;
+import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.HashFunction;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -575,6 +578,14 @@ public class PaxosReplica {
 
   public static void main (String[] args) throws IOException {
 
+    ConfigFileInfo.setNumberOfNameServers(10);
+    String name = "0";
+    Set<Integer> primaries = HashFunction.getPrimaryReplicasNoCache(name);
+    int activeDefaultCoordinator = getDefaultCoordinatorReplica(name + "-1", primaries);
+    int primaryDefaultCoordinator = getDefaultCoordinatorReplica(name + "-P", primaries);
+    System.out.println("Name\t" + name + "\tPrimaries\t" + primaries + "\tActiveCoordinator\t" + activeDefaultCoordinator + "\tPrimaryCoordinator\t" + primaryDefaultCoordinator);
+    System.exit(2);
+
 //    String failedNamesFile = "/Users/abhigyan/Dropbox/gnrs/scripts/failed-names";
     String namedActivesFile = "/Users/abhigyan/Dropbox/gnrs/scripts/nameActives";
 
@@ -585,7 +596,7 @@ public class PaxosReplica {
 //    while (true) {
 //      String name = br.readLine();
 //      if (name == null) break;
-      String name  = nameInt.toString();
+      name  = nameInt.toString();
       String paxosID = name.trim() + "-1";
 //      int nameInt = Integer.parseInt(name);
 
@@ -2457,10 +2468,13 @@ class CheckPrepareMessageTask extends TimerTask {
   @Override
   public void run() {
     try {
-      if (replica.isStopped()) throw  new RuntimeException();
+      if (replica.isStopped()) throw  new GnsRuntimeException();
       boolean sendAgain = replica.resendPrepare(proposedBallot,preparePacket);
-      if (sendAgain == false || count == numRetry) throw  new RuntimeException();
+      if (sendAgain == false || count == numRetry) throw  new GnsRuntimeException();
     } catch (Exception e) {
+      if (e.getClass().equals(GnsRuntimeException.class)) {
+        throw new RuntimeException();
+      }
       GNS.getLogger().severe("Exception in Check prepare message task. " + e.getMessage());
       e.printStackTrace();
     }

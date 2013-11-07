@@ -67,7 +67,7 @@ public class NameServerVoteThread extends Thread {
 		try {
 			long x = voteInterval/2 + r.nextInt((int)voteInterval/2);
 			Thread.sleep(x);
-			System.out.println("NameServerVoteThread: Sleeping for " + x + "ms");
+			GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + x + "ms");
 		} catch (InterruptedException e) {
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Initial thread sleeping period.");
 		}
@@ -77,9 +77,9 @@ public class NameServerVoteThread extends Thread {
 			interval = System.currentTimeMillis() - startInterval;
 			if (count >=1 && interval < voteInterval) {
 				try {
-					long x = voteInterval - interval;
-					Thread.sleep(x);
-					System.out.println("NameServerVoteThread: Sleeping for " + x + "ms");
+//					long x = voteInterval - interval;
+					Thread.sleep(voteInterval);
+          GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + voteInterval + "ms");
 				} catch (InterruptedException e) {
 					if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Thread sleeping interrupted.");
 				}
@@ -105,7 +105,7 @@ public class NameServerVoteThread extends Thread {
 					if (vote == 0 && update == 0) {
 						continue;
 					}
-          GNS.getLogger().severe("\tVoteSent\t" + name +"\t" + vote +"\t" + update+"\t");
+          GNS.getLogger().fine("\tVoteSent\t" + name +"\t" + vote +"\t" + update+"\t");
 //					int uniqueVoteID = r.nextInt();
 					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.nodeID, 0);
 
@@ -118,7 +118,7 @@ public class NameServerVoteThread extends Thread {
 
 //					unackedVotes.put(uniqueVoteID, uniqueVoteID);
 
-          Thread.sleep(1);
+//          Thread.sleep(1);
 					
 //					// if not voted for by everyone,
 //					Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);

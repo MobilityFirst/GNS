@@ -381,7 +381,7 @@ public class Packet {
    * Returns port number for the specified port type. Return -1 if the specified port type does not exist.
    *
    * @param nameServerId Name server id //
-   * @param port	Port Number *
+   * @param portType	GNS port type*
    */
   public static int getPort(int nameServerId, GNS.PortType portType) {
     switch (portType) {
@@ -389,6 +389,8 @@ public class Packet {
         return ConfigFileInfo.getNSTcpPort(nameServerId);
       case LNS_TCP_PORT:
         return ConfigFileInfo.getLNSTcpPort(nameServerId);
+      case NS_UDP_PORT:
+        return ConfigFileInfo.getNSUdpPort(nameServerId);
       case LNS_UDP_PORT:
         return ConfigFileInfo.getLNSUdpPort(nameServerId);
       case NS_ADMIN_PORT:

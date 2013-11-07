@@ -25,7 +25,7 @@ import java.util.TimerTask;
  * @author abhigyan
  *
  */
-public class StartupActiveSetTask extends TimerTask {
+public class StartActiveSetTask extends TimerTask {
 
   int MAX_ATTEMPTS = 3;		 // number of actives contacted to start replica
   String name;
@@ -44,9 +44,9 @@ public class StartupActiveSetTask extends TimerTask {
    * @param oldActiveNameServers
    * @param newActiveNameServers
    */
-  public StartupActiveSetTask(String name, //NameRecordKey nameRecordKey, 
-                              Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers,
-                              String newActivePaxosID, String oldActivePaxosID, ValuesMap initialValue) {
+  public StartActiveSetTask(String name, //NameRecordKey nameRecordKey,
+                            Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers,
+                            String newActivePaxosID, String oldActivePaxosID, ValuesMap initialValue) {
     this.name = name;
     //this.nameRecordKey = nameRecordKey;
     this.oldActiveNameServers = oldActiveNameServers;
@@ -178,7 +178,7 @@ public class StartupActiveSetTask extends TimerTask {
     // else: 
     // 		send to a next active replica. schedule next timer event.
     } catch (Exception e) {
-      GNS.getLogger().severe("Exception in StartUp Active Set Task. " + e.getMessage());
+      GNS.getLogger().severe("Exception in Start Active Set Task. " + e.getMessage());
       e.printStackTrace();
     }
   }

@@ -232,6 +232,11 @@ public class ConfigFileInfo {
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UDP_PORT.getOffset();
   }
 
+  public static int getNSUdpPort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
+  }
+
   /**
    * Returns the Admin port of a Nameserver
    *
