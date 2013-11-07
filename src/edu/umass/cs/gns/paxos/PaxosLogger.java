@@ -613,7 +613,12 @@ public class PaxosLogger extends Thread {
       }
     } catch (Exception e) {
       if (StartNameServer.debugMode) {
-        GNS.getLogger().severe("Exception in reading paxos state from file. File:" + f.getAbsolutePath());
+        GNS.getLogger().severe("Exception in reading paxos state from file. File:" + f.getAbsolutePath() + ". Printing contents of file.");
+        try {
+          Runtime.getRuntime().exec("cat " + f.getAbsolutePath());
+        } catch (IOException e1) {
+          e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
       }
       e.printStackTrace();
     }
@@ -708,7 +713,7 @@ public class PaxosLogger extends Thread {
       GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIDs);
     }
 
-    paxosInstances.put(PaxosName.getPaxosNameFromPaxosID(paxosID), new PaxosReplica(paxosID, PaxosManager.nodeID, nodeIDs));
+    paxosInstances.put(PaxosManager.getPaxosNameFromPaxosID(paxosID), new PaxosReplica(paxosID, PaxosManager.nodeID, nodeIDs));
   }
 
   /**
@@ -1305,8 +1310,13 @@ class LogDeletionTask extends TimerTask {
 
   @Override
   public void run() {
-    PaxosLogger.deleteRedundantStateLogs();
-    PaxosLogger.deleteLogMessageFiles();
+    try {
+      PaxosLogger.deleteRedundantStateLogs();
+      PaxosLogger.deleteLogMessageFiles();
+    } catch (Exception e) {
+      GNS.getLogger().severe("Exception in Paxos log deletion. " + e.getMessage());
+      e.printStackTrace();
+    }
   }
 }
 

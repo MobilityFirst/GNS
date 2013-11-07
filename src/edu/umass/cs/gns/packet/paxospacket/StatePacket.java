@@ -5,7 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Created with IntelliJ IDEA.
+ * Represents the state of a paxos instance that is periodically logged to disk.
  * User: abhigyan
  * Date: 8/2/13
  * Time: 10:13 AM
@@ -26,7 +26,7 @@ public class StatePacket extends Packet{
 
   @Override
   public JSONObject toJSONObject() throws JSONException {
-    return null;
+    throw new UnsupportedOperationException();
 
   }
 

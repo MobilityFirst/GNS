@@ -44,7 +44,7 @@ public class StartNameServer {
   // is in experiment mode: abhigyan.
   // use this flag to make changes to code which will only run during experiments.
   public static boolean experimentMode = false;
-  public static boolean delayScheduling = false;
+  public static boolean emulatePingLatencies = false;
   public static double variation = 0.1;
   public static int workerThreadCount = 5; // number of worker threads
   public static boolean tinyUpdate = false; // 
@@ -149,7 +149,7 @@ public class StartNameServer {
 
     Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec", true, "paxos starts at most this many seconds after start of experiment");
 
-    Option delayScheduling = new Option("delayScheduling", "add packet delay equal to ping delay between two servers (used for emulation).");
+    Option emulatePingLatencies = new Option("emulatePingLatencies", "add packet delay equal to ping delay between two servers (used for emulation).");
     Option variation = new Option("variation", true, "variation");
 
     Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
@@ -236,7 +236,7 @@ public class StartNameServer {
     commandLineOptions.addOption(failureDetectionTimeoutInterval);
     commandLineOptions.addOption(paxosStartMinDelaySec);
     commandLineOptions.addOption(paxosStartMaxDelaySec);
-    commandLineOptions.addOption(delayScheduling);
+    commandLineOptions.addOption(emulatePingLatencies);
     commandLineOptions.addOption(variation);
 
     commandLineOptions.addOption(workerThreadCount);
@@ -397,9 +397,9 @@ public class StartNameServer {
       }
 
 
-      if (parser.hasOption("delayScheduling")) {
-        delayScheduling = parser.hasOption("delayScheduling");
-        if (delayScheduling && parser.hasOption("variation")) {
+      if (parser.hasOption("emulatePingLatencies")) {
+        emulatePingLatencies = parser.hasOption("emulatePingLatencies");
+        if (emulatePingLatencies && parser.hasOption("variation")) {
           variation = Double.parseDouble(parser.getOptionValue("variation"));
         }
       }

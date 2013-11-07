@@ -89,14 +89,14 @@ public class NSPaxosInterface implements PaxosInterface {
     if (ReplicaController.isPrimaryPaxosID(paxosID)) {
       String name = ReplicaController.getNameFromPrimaryPaxosID(paxosID);
       // read all fields of the record
-      ReplicaControllerRecord record = null;
+      ReplicaControllerRecord rcRecord;
       try {
-        record = NameServer.getNameRecordPrimary(name);
+        rcRecord = NameServer.getNameRecordPrimary(name);
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe("Record not found  for paxos ID " + paxosID);
         return null;
       }
-      return  (record == null) ? null: record.toString();
+      return  (rcRecord == null) ? null: rcRecord.toString();
 
     }
     else {

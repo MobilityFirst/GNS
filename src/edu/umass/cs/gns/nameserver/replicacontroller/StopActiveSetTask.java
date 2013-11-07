@@ -61,6 +61,7 @@ public class StopActiveSetTask extends TimerTask {
 
   @Override
   public void run() {
+    try {
     numAttempts ++;
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
 
@@ -156,7 +157,10 @@ public class StopActiveSetTask extends TimerTask {
     // 		log error message. cancel timer. return 
     // else:
     // 		send to next active replica. schedule next timer event.
-
+    } catch (Exception e) {
+      GNS.getLogger().severe("Exception in Stop Active Set Task. " + e.getMessage());
+      e.printStackTrace();
+    }
   }
 
   /**

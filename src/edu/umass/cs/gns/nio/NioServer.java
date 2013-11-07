@@ -231,7 +231,7 @@ public class NioServer implements Runnable {
   Random r = new Random();
 
   public boolean sendToID(int destID, JSONObject json) throws IOException {
-    if (StartNameServer.delayScheduling) {
+    if (StartNameServer.emulatePingLatencies) {
       long delay = (long)ConfigFileInfo.getPingLatency(destID);
       delay = (long) ((1.0  + StartNameServer.variation* r.nextDouble()) * delay);
       //    GNS.getLogger().severe("Delaying packet by " + delay + "ms");

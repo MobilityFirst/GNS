@@ -163,7 +163,7 @@ public class SendUpdatesTask extends TimerTask
         LocalNameServer.sendToNS(jsonToSend,nameServerID);
         UpdateInfo updateInfo = LocalNameServer.getUpdateInfo(nameServerID);
         if (updateInfo != null) updateInfo.setNameserverID(nameServerID);
-//        if (StartLocalNameServer.delayScheduling) {
+//        if (StartLocalNameServer.emulatePingLatencies) {
 //          LNSListener.sendPacketWithDelay(jsonToSend,nameServerID);
 //        } else {
           // for small packets use UDP

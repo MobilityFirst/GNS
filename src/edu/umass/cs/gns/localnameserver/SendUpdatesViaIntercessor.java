@@ -90,15 +90,13 @@ class SendUpdateIntercessorTask extends TimerTask {
   @Override
   public void run() {
 
-//    if (name.equals("5242") == false) return;
-
     ResultValue newValue = new ResultValue();
     newValue.add(SendUpdatesViaIntercessor.getRandomString());
 
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
             updateCount, updateCount, -1,
             name, NameRecordKey.EdgeRecord, newValue, null,
-            UpdateOperation.REMOVE_FIELD, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS);
+            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS);
     try {
       LNSListener.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
     } catch (JSONException e) {

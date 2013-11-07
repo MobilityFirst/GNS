@@ -357,7 +357,8 @@ class FailureDetectionTask extends TimerTask{
 	public FailureDetectionTask(int destNodeID, JSONObject json) {
 		this.destNodeID = destNodeID;
 		this.json = json;
-		if (StartNameServer.debugMode) GNS.getLogger().fine(FailureDetection.nodeID + " Started FailureDetectionTask for "  + destNodeID);
+		if (StartNameServer.debugMode) GNS.getLogger().fine(FailureDetection.nodeID + " Started FailureDetectionTask for "
+            + destNodeID);
 	}
 	
 	
@@ -366,7 +367,8 @@ class FailureDetectionTask extends TimerTask{
     try{
 		// send a FD packet
 		if (FailureDetection.nodeInfo.containsKey(destNodeID)) {
-			if (StartNameServer.debugMode && destNodeID == 0) GNS.getLogger().fine(FailureDetection.nodeID + "FD sent request " + destNodeID);
+			if (StartNameServer.debugMode && destNodeID == 0) GNS.getLogger().fine(FailureDetection.nodeID
+              + "FD sent request " + destNodeID);
 			PaxosManager.sendMessage(destNodeID, json);
 		}
 		else {
@@ -403,6 +405,8 @@ class HandleFailureDetectionPacketTask extends TimerTask{
 
     @Override
     public void run() {
+      try {
+
 
 
         if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT) {
@@ -423,6 +427,9 @@ class HandleFailureDetectionPacketTask extends TimerTask{
             FailureDetection.updateNodeInfo(fdPacket.responderNodeID);
         }
 
-
+      } catch (Exception e) {
+        GNS.getLogger().severe("Exception in failure detection packet task. " + fdPacket);
+        e.printStackTrace();
+      }
     }
 }

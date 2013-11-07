@@ -46,10 +46,13 @@ public class NameServer {
   public static ReplicationFrameworkInterface replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer tcpTransport;
-  public static Timer timer = new Timer();
   public static NSPacketDemultiplexer nsDemultiplexer;
+  public static Timer timer = new Timer();
   public static ScheduledThreadPoolExecutor executorService;
 
+  /**
+   * Only used during experiments.
+   */
   public static int initialExpDelayMillis = 1000;
 
   /**

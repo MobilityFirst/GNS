@@ -5,11 +5,13 @@ import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import static edu.umass.cs.gns.util.Util.println;
+import org.apache.commons.cli.*;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.apache.commons.cli.*;
+
+import static edu.umass.cs.gns.util.Util.println;
 
 /**
  * ************************************************************
@@ -45,6 +47,7 @@ public class StartLocalNameServer {
   public static int replicationInterval = 0;
   public static double outputSampleRate = 1.0;
   /**
+   * Option not used currently.
    * Variant of voting, in which votes are sent not for closest but for a random node among k-closest.
    * Name server chosen for a name is the (name modulo k)-th closest node.
    */
@@ -53,41 +56,57 @@ public class StartLocalNameServer {
    * Used for running experiments for Auspice paper.
    */
   public static boolean experimentMode = false;
-  public static boolean replicateAll = false;
-  //Abhigyan: parameters related to retransmissions.
-  // More parameters in util.AdaptiveRetransmission.java
   /**
+   * Used for running experiments with replicate everywhere strategy.
+   */
+  public static boolean replicateAll = false;
+
+//  Abhigyan: parameters related to retransmissions.
+//  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
+
+  /**
+   *
    * Maximum number of transmission of a query *
    */
   public static int numberOfTransmissions = GNS.DEFAULT_NUMBER_OF_TRANSMISSIONS;
+
   /**
    * Maximum time a local name server waits for a response from name server query is logged as failed after this.
    */
   public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
+
   /**
    * Fixed timeout after which a query retransmitted.
    */
   public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
-//  public static int MAX_RESTARTS = 3;
+
   /**
    * Whether use a fixed timeout or an adaptive timeout. By default, fixed timeout is used.
    */
   public static boolean adaptiveTimeout = false;
+
   // Abhigyan: parameters related to server load balancing.
   /**
    * Should local name server do load dependent redirection.
    */
   public static boolean loadDependentRedirection = false;
+
   /**
    * Frequency at which lns queries all name servers for load valus
    */
   public static int nameServerLoadMonitorIntervalSeconds = 180;
+
   /**
    * Requests are not sent to servers whose load is above this threshold.
    */
-  public static double serverLoadThreshold = 5.0; // 
+  public static double serverLoadThreshold = 5.0; //
+
   public static boolean tinyQuery = false;
-  public static boolean delayScheduling = false;
+
+  /**
+   *
+   */
+  public static boolean emulatePingLatencies = false;
   public static double variation = 0.1; // 10 % addition
   public static boolean runHttpServer = true;
 
@@ -134,7 +153,7 @@ public class StartLocalNameServer {
     Option statConsoleOutputLevel = new Option("statConsoleOutputLevel", true, "statConsoleOutputLevel");
 
     Option tinyQuery = new Option("tinyQuery", "tiny query mode");
-    Option delayScheduling = new Option("delayScheduling", "add packet delay equal to ping delay between two servers (used for emulation).");
+    Option delayScheduling = new Option("emulatePingLatencies", "add packet delay equal to ping delay between two servers (used for emulation).");
     Option variation = new Option("variation", true, "variation");
 
     Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
@@ -395,9 +414,9 @@ public class StartLocalNameServer {
         tinyQuery = parser.hasOption("tinyQuery");
       }
 
-      if (parser.hasOption("delayScheduling")) {
-        delayScheduling = parser.hasOption("delayScheduling");
-        if (delayScheduling && parser.hasOption("variation")) {
+      if (parser.hasOption("emulatePingLatencies")) {
+        emulatePingLatencies = parser.hasOption("emulatePingLatencies");
+        if (emulatePingLatencies && parser.hasOption("variation")) {
           variation = Double.parseDouble(parser.getOptionValue("variation"));
         }
       }

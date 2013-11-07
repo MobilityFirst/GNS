@@ -71,6 +71,9 @@ public class StartupActiveSetTask extends TimerTask {
 
   @Override
   public void run() {
+    try {
+
+
     numAttempts ++;
 
 
@@ -174,6 +177,10 @@ public class StartupActiveSetTask extends TimerTask {
     // 		log error message. cancel timer. 
     // else: 
     // 		send to a next active replica. schedule next timer event.
+    } catch (Exception e) {
+      GNS.getLogger().severe("Exception in StartUp Active Set Task. " + e.getMessage());
+      e.printStackTrace();
+    }
   }
 
   /**

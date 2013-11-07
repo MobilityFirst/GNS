@@ -635,7 +635,8 @@ class NewActiveStartInfo {
   }
 
   public synchronized boolean haveMajorityActivesResponded() {
-    if (sent == false && packet.getNewActiveNameServers().size() == activesResponded.size()) {
+
+    if (sent == false && activesResponded.size()*2 > packet.getNewActiveNameServers().size()) {
       sent = true;
       return true;
     }
@@ -701,6 +702,9 @@ class CopyStateFromOldActiveTask extends TimerTask {
 
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    } catch (Exception e) {
+      GNS.getLogger().severe("Exception in Copy State from old actives task. " + e.getMessage());
+      e.printStackTrace();
     }
   }
 }

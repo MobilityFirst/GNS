@@ -4,32 +4,15 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.packet.paxospacket.AcceptPacket;
-import edu.umass.cs.gns.packet.paxospacket.AcceptReplyPacket;
-import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.packet.paxospacket.PValuePacket;
-import edu.umass.cs.gns.packet.paxospacket.Packet;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.packet.paxospacket.PreparePacket;
-import edu.umass.cs.gns.packet.paxospacket.ProposalPacket;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
-import edu.umass.cs.gns.packet.paxospacket.SendCurrentStatePacket;
-import edu.umass.cs.gns.packet.paxospacket.StatePacket;
-import edu.umass.cs.gns.packet.paxospacket.SynchronizePacket;
-import edu.umass.cs.gns.packet.paxospacket.SynchronizeReplyPacket;
+import edu.umass.cs.gns.packet.paxospacket.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * An implementation of the paxos protocol.
@@ -831,8 +814,12 @@ public class PaxosReplica {
     try{
       acceptorLock.lock();
       synchronized (slotNumberLock) {
-        StatePacket packet = new StatePacket(acceptorBallot, slotNumber,
-                PaxosManager.clientRequestHandler.getState(paxosID));
+        String dbState = PaxosManager.clientRequestHandler.getState(paxosID);
+        if (dbState == null) {
+          GNS.getLogger().severe(paxosID + "\t" + nodeID + "\tError Exception Paxos state not logged because database state is null.");
+          return null;
+        }
+        StatePacket packet = new StatePacket(acceptorBallot, slotNumber, dbState);
         return  packet;
       }
     } finally {
@@ -1745,7 +1732,8 @@ public class PaxosReplica {
     int numberRetry = 50; //(int) (FailureDetection.timeoutIntervalMillis / PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS);
     CheckPrepareMessageTask task = new CheckPrepareMessageTask(this,prepare, ballotScout, numberRetry);
 
-    PaxosManager.executorService.scheduleAtFixedRate(task,PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS,PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+    PaxosManager.executorService.scheduleAtFixedRate(task,PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS,
+            PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
 
   }
 
@@ -2468,9 +2456,14 @@ class CheckPrepareMessageTask extends TimerTask {
 
   @Override
   public void run() {
-    if (replica.isStopped()) throw  new RuntimeException();
-    boolean sendAgain = replica.resendPrepare(proposedBallot,preparePacket);
-    if (sendAgain == false || count == numRetry) throw  new RuntimeException();
+    try {
+      if (replica.isStopped()) throw  new RuntimeException();
+      boolean sendAgain = replica.resendPrepare(proposedBallot,preparePacket);
+      if (sendAgain == false || count == numRetry) throw  new RuntimeException();
+    } catch (Exception e) {
+      GNS.getLogger().severe("Exception in Check prepare message task. " + e.getMessage());
+      e.printStackTrace();
+    }
   }
 }
 
@@ -2484,7 +2477,12 @@ class StartScoutTask extends TimerTask {
 
   @Override
   public void run() {
-    replica.initScout();
+    try{
+      replica.initScout();
+    }catch (Exception e) {
+      GNS.getLogger().severe("Exception in start scout .. " + e.getMessage());
+      e.printStackTrace();
+    }
   }
   
 }

@@ -27,7 +27,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -86,6 +85,10 @@ public class LocalNameServer {
   public static BeehiveDHTRouting beehiveDHTRouting;
   public static ConcurrentHashMap<Integer, Double> nameServerLoads;
   public static long startTime;
+
+  /**
+   * Only used during experiments.
+   */
   public static int initialExpDelayMillis = 1000;
 
   /**
@@ -1071,7 +1074,7 @@ public class LocalNameServer {
    */
   public static void sendToNS(JSONObject json, int ns) {
 
-    if (StartLocalNameServer.delayScheduling) { // during testing, this option is used to simulate artificial latency between lns and ns
+    if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
       double latency = ConfigFileInfo.getPingLatency(ns)
               * (1 + r.nextDouble() * StartLocalNameServer.variation);
       long timerDelay = (long) latency;
