@@ -75,6 +75,7 @@ public class Protocol {
   public final static String WITHIN = "within";
   public final static String NEAR = "near";
   public final static String MAXDISTANCE = "maxDistance";
+  public final static String REMOVEFIELD = "removeField";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";
@@ -211,40 +212,40 @@ public class Protocol {
             + urlPrefix + REMOVEALIAS + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + NAME + VALSEP + "<alias>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Removes the alias from the account associated with the GUID. Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered." + NEWLINE + NEWLINE
             //
-            + "DATABASE CREATE OPERATIONS" + NEWLINE + NEWLINE
+            + "GNS CREATE OPERATIONS" + NEWLINE + NEWLINE
             + urlPrefix + CREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Adds a key value pair to the database for the given GUID. See below for more on the signature. "
+            + "  Adds a key value pair to the GNS for the given GUID. See below for more on the signature. "
             + NEWLINE + NEWLINE
             //
             + urlPrefix + CREATELIST + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<JSON List>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Adds a key value pair to the database for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
+            + "  Adds a key value pair to the GNS for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
             + NEWLINE + NEWLINE
             //
             + urlPrefix + CREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Adds a key value pair to the database for the given GUID. See below for more on the signature. "
+            + "  Adds a key value pair to the GNS for the given GUID. See below for more on the signature. "
             + NEWLINE + NEWLINE
             // 
-            + "DATABASE UPSERT OPERATIONS - "
+            + "GNS UPSERT OPERATIONS - "
             + "are also SET OPERATIONS" + NEWLINE + NEWLINE
             //
             + urlPrefix + APPENDORCREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise append value onto existing value. See below for more on the signature. "
+            + "  Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise append value onto existing value. See below for more on the signature. "
             + NEWLINE + NEWLINE
             //
             + urlPrefix + APPENDORCREATELIST + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<JSON List>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise appends values onto existing value. Value is a list of items formated as a JSON list."
+            + "  Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise appends values onto existing value. Value is a list of items formated as a JSON list."
             + NEWLINE + NEWLINE
             //
             + urlPrefix + REPLACEORCREATE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID. See below for more on the signature. "
+            + "  Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID. See below for more on the signature. "
             + NEWLINE + NEWLINE
             //
             + urlPrefix + REPLACEORCREATELIST + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<JSON List>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + " Adds a key value pair to the database for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID with the value.  Value is a list of items formated as a JSON list."
+            + " Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise replaces the value of this key value pair for the given GUID with the value.  Value is a list of items formated as a JSON list."
             //
             + NEWLINE + NEWLINE
             //
-            + "DATABASE SET OPERATIONS - "
+            + "GNS SET OPERATIONS - "
             + "treat the value associated with the key as a set - duplicate items are removed or not added" + NEWLINE + NEWLINE
             + urlPrefix + APPEND + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Appends the value onto the key value pair for the given GUID. See below for more on the signature. "
@@ -261,7 +262,7 @@ public class Protocol {
             + "   Replaces oldvalue with newvalue in the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
             + NEWLINE + NEWLINE
             //
-            + "DATABASE LIST OPERATIONS - "
+            + "GNS LIST OPERATIONS - "
             + "treat the value associated with the key as a list - duplicate are allowed" + NEWLINE + NEWLINE
             + urlPrefix + APPENDWITHDUPLICATION + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Appends the value onto the key value pair for the given GUID. See below for more on the signature. "
@@ -271,7 +272,7 @@ public class Protocol {
             + "   Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
             + NEWLINE + NEWLINE
             //
-            + "DATABASE REMOVE OPERATIONS "
+            + "GNS REMOVE OPERATIONS "
             + "- remove all instances of value" + NEWLINE + NEWLINE
             + urlPrefix + REMOVE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Removes the value from the key value pair for the given GUID. See below for more on the signature. "
@@ -280,31 +281,50 @@ public class Protocol {
             + urlPrefix + REMOVELIST + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<JSON List>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Removes all the values from the key value pair for the given GUID. Value is a list of items formated as a JSON list. See below for more on the signature. "
             + NEWLINE + NEWLINE
-            + "DATABASE READ OPERATIONS" + NEWLINE + NEWLINE
+            //
+            + urlPrefix + REMOVEFIELD + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
+            + "  Removes the key value pair from the GNS. See below for more on the signature. "
+            + NEWLINE + NEWLINE
+            //
+            + "GNS READ OPERATIONS" + NEWLINE + NEWLINE
             + urlPrefix + READ + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority."
+            + "  Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
             + " Values are always returned as a JSON list."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object."
             + " See below for more on signature. "
             + NEWLINE + NEWLINE
             //
             + urlPrefix + READ + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + READER + VALSEP + "<readerguid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. "
+            + "  Returns one key value pair from the GNS for the given guid after authenticating that the readerguid (GUID making request) has access authority. "
             + "Values are always returned as a JSON list."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
             + " See below for more on signature. "
             + NEWLINE + NEWLINE
             //
+            + urlPrefix + READ + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + NEWLINE
+            + "  Returns one key value pair from the GNS. Does not require authentication but field must be set to be readable by everyone."
+            + " Values are always returned as a JSON list."
+            + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
+            + " See below for more on signature. "
+            + NEWLINE + NEWLINE
+            //
             + urlPrefix + READONE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns one key value pair from the database for the given guid after authenticating that GUID making request has access authority. "
+            + "  Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority. "
             + "Treats the value of key value pair as a singleton item and returns that item."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
             + " See below for more on signature. "
             + NEWLINE + NEWLINE
             //
             + urlPrefix + READONE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + READER + VALSEP + "<readerguid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
-            + "  Returns one key value pair from the database for the given guid after authenticating that the readerguid (GUID making request) has access authority. "
+            + "  Returns one key value pair from the GNS for the given guid after authenticating that the readerguid (GUID making request) has access authority. "
             + "Treats the value of key value pair as a singleton item and returns that item."
+            + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
+            + " See below for more on signature. "
+            + NEWLINE + NEWLINE
+            //
+            + urlPrefix + READONE + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + NEWLINE
+            + "  Returns one key value pair from the GNS for the given guid. Does not require authentication but field must be set to be readable by everyone."
+            + " Treats the value of key value pair as a singleton item and returns that item."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields. "
             + " See below for more on signature. "
             + NEWLINE + NEWLINE
@@ -313,7 +333,7 @@ public class Protocol {
             + "  Returns all records that have a field with the given value."
             + " Values are returned as a JSON array of JSON Objects."
             + NEWLINE + NEWLINE
-            + "DATABASE ACCESS CONTROL OPERATIONS "
+            + "GNS ACCESS CONTROL OPERATIONS "
             + "- regulate access to individual fields" + NEWLINE + NEWLINE
             + urlPrefix + ACLADD + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + FIELD + VALSEP + "<field>" + KEYSEP + ACCESSER + VALSEP + "<accesserguid>" + KEYSEP + ACLTYPE + VALSEP + "<ACL type>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Updates the access control list of the given GUID's field to include the allowedreader. " + NEWLINE
@@ -330,7 +350,7 @@ public class Protocol {
             + "  Returns the access control list for a GUID's field. See below for description of ACL type and signature. "
             + NEWLINE + NEWLINE
             //
-            + "DATABASE GROUP OPERATIONS "
+            + "GNS GROUP OPERATIONS "
             + "- all guids can act as a group GUID" + NEWLINE + NEWLINE
             + urlPrefix + ADDTOGROUP + QUERYPREFIX + GUID + VALSEP + "<guid>" + KEYSEP + MEMBER + VALSEP + "<member guid>" + KEYSEP + WRITER + VALSEP + "<writer guid>" + KEYSEP + SIGNATURE + VALSEP + "<signature>" + NEWLINE
             + "  Adds the member guid to the group specified by guid. Writer guid needs to have write access and sign the command." + NEWLINE + NEWLINE
@@ -375,13 +395,13 @@ public class Protocol {
             + urlPrefix + DELETEALLRECORDS + NEWLINE
             + "  [ONLY IN DEMO MODE] Deletes all records." + NEWLINE + NEWLINE
             + urlPrefix + RESETDATABASE + NEWLINE
-            + "  [ONLY IN DEMO MODE] Rests the database to an initialized state. The nuclear option." + NEWLINE + NEWLINE
+            + "  [ONLY IN DEMO MODE] Rests the GNS to an initialized state. The nuclear option." + NEWLINE + NEWLINE
             + urlPrefix + CLEARCACHE + NEWLINE
             + "  [ONLY IN DEMO MODE] Clears the local name server cache." + NEWLINE + NEWLINE
             + urlPrefix + DUMPCACHE + NEWLINE
             + "  [ONLY IN DEMO MODE] Returns the contents of the local name server cache." + NEWLINE + NEWLINE
             + urlPrefix + DUMP + NEWLINE
-            + "  [ONLY IN DEMO MODE] Returns the contents of the database." + NEWLINE + NEWLINE //            + urlPrefix + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + "<guid>" + NEWLINE
+            + "  [ONLY IN DEMO MODE] Returns the contents of the GNS." + NEWLINE + NEWLINE //            + urlPrefix + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + "<guid>" + NEWLINE
             //            + "  [ONLY IN DEMO MODE] Removes all records for the given." + NEWLINE + NEWLINE
             ;
 
@@ -697,8 +717,9 @@ public class Protocol {
     }
   }
 
-  public String processUpdateListOperation(String guid, String field, String value, String oldValue, String writer, String signature, String message,
-          UpdateOperation operation) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processUpdateListOperation(String guid, String field, String value, String oldValue,
+          String writer, String signature, String message, UpdateOperation operation)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -728,7 +749,8 @@ public class Protocol {
     }
   }
 
-  public String processRead(String guid, String field, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRead(String guid, String field, String reader, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -749,19 +771,8 @@ public class Protocol {
     }
   }
 
-  public String processSelect(String field, Object value) {
-    return fieldAccess.select(field, value);
-  }
-
-  public String processSelectWithin(String field, String value) {
-    return fieldAccess.selectWithin(field, value);
-  }
-
-  public String processSelectNear(String field, String value, String maxDistance) {
-    return fieldAccess.selectNear(field, value, maxDistance);
-  }
-
-  public String processReadOne(String guid, String field, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processReadOne(String guid, String field, String reader, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -782,7 +793,50 @@ public class Protocol {
     }
   }
 
-  public String processAclAdd(String accessType, String guid, String field, String accesser, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processUnsignedRead(String guid, String field) throws NoSuchAlgorithmException,
+          InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (!fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guidInfo, field).contains(EVERYONE)) {
+      return BADRESPONSE + " " + ACCESSDENIED;
+    } else if (ALLFIELDS.equals(field)) {
+      return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
+    } else {
+      return fieldAccess.lookup(guidInfo.getGuid(), field);
+    }
+  }
+
+  public String processUnsignedReadOne(String guid, String field) throws NoSuchAlgorithmException,
+          InvalidKeySpecException, InvalidKeyException, SignatureException {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (!fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guidInfo, field).contains(EVERYONE)) {
+      return BADRESPONSE + " " + ACCESSDENIED;
+    } else if (ALLFIELDS.equals(field)) {
+      return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
+    } else {
+      return fieldAccess.lookupOne(guidInfo.getGuid(), field);
+    }
+  }
+
+  public String processSelect(String field, Object value) {
+    return fieldAccess.select(field, value);
+  }
+
+  public String processSelectWithin(String field, String value) {
+    return fieldAccess.selectWithin(field, value);
+  }
+
+  public String processSelectNear(String field, String value, String maxDistance) {
+    return fieldAccess.selectNear(field, value, maxDistance);
+  }
+
+  public String processAclAdd(String accessType, String guid, String field, String accesser, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
@@ -799,7 +853,8 @@ public class Protocol {
     }
   }
 
-  public String processAclRemove(String accessType, String guid, String field, String accesser, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processAclRemove(String accessType, String guid, String field, String accesser, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
@@ -816,7 +871,8 @@ public class Protocol {
     }
   }
 
-  public String processRetrieveAcl(String accessType, String guid, String field, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRetrieveAcl(String accessType, String guid, String field, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
@@ -833,7 +889,8 @@ public class Protocol {
     }
   }
 
-  public String processAddToGroup(String guid, String member, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processAddToGroup(String guid, String member, String writer, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -854,7 +911,8 @@ public class Protocol {
     }
   }
 
-  public String processAddMembersToGroup(String guid, String members, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processAddMembersToGroup(String guid, String members, String writer, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -881,7 +939,8 @@ public class Protocol {
     }
   }
 
-  public String processRemoveFromGroup(String guid, String member, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRemoveFromGroup(String guid, String member, String writer, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -902,7 +961,8 @@ public class Protocol {
     }
   }
 
-  public String processRemoveMembersFromGroup(String guid, String members, String writer, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRemoveMembersFromGroup(String guid, String members, String writer, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -929,7 +989,8 @@ public class Protocol {
     }
   }
 
-  public String processGetGroupMembers(String guid, String reader, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processGetGroupMembers(String guid, String reader, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -950,7 +1011,8 @@ public class Protocol {
     }
   }
 
-  public String processRequestJoinGroup(String guid, String member, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRequestJoinGroup(String guid, String member, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, memberInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -971,7 +1033,8 @@ public class Protocol {
     }
   }
 
-  public String processRetrieveJoinGroupRequests(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRetrieveJoinGroupRequests(String guid, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -1000,7 +1063,8 @@ public class Protocol {
     }
   }
 
-  public String processGrantMemberships(String guid, ResultValue members, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processGrantMemberships(String guid, ResultValue members, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -1015,7 +1079,8 @@ public class Protocol {
     }
   }
 
-  public String processRequestLeaveGroup(String guid, String member, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRequestLeaveGroup(String guid, String member, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, memberInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -1036,7 +1101,8 @@ public class Protocol {
     }
   }
 
-  public String processRetrieveLeaveGroupRequests(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRetrieveLeaveGroupRequests(String guid, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -1146,14 +1212,8 @@ public class Protocol {
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + CLEARCACHE + QUERYPREFIX + inputLine;
   }
 
-//  public String processDeleteAllGuidRecords(String name) {
-//    if (demoMode) {
-//      Intercessor.getInstance().sendDeleteAllGuidRecords(name);
-//      return OKRESPONSE;
-//    }
-//    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + name;
-//  }
-  public String processAddTag(String guid, String tag, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processAddTag(String guid, String tag, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -1165,7 +1225,8 @@ public class Protocol {
     }
   }
 
-  public String processRemoveTag(String guid, String tag, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processRemoveTag(String guid, String tag, String signature, String message)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -1200,6 +1261,10 @@ public class Protocol {
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
     //String action = queryMap.get(ACTION);
     try {
+      
+      //
+      // !!!DON'T FORGET TO PUT THE ONES WITH SHORTER ARGUMENT LISTS *AFTER* THE ONES WITH LONGER ARGUMENT LISTS!!!
+      //
       // HELP
       if (HELP.equals(action)) {
         //return getHelpString(GnrsHttpServer.hostName + (GnrsHttpServer.address != 80 ? (":" + GnrsHttpServer.address) : ""));
@@ -1284,6 +1349,9 @@ public class Protocol {
       } else if (LOOKUPACCOUNTRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
         String guid = queryMap.get(GUID);
         return processLookupAccountInfo(guid);
+        //
+        // READ OPERATIONS
+        //
       } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
@@ -1306,7 +1374,18 @@ public class Protocol {
         String field = queryMap.get(FIELD);
         String signature = queryMap.get(SIGNATURE);
         return processReadOne(guid, field, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-
+        // UNSIGNED READ
+      } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        return processUnsignedRead(guid, field);
+      } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        return processUnsignedReadOne(guid, field);
+        //
+        // CREATE OPERATIONS
+        //
       } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
@@ -1344,7 +1423,9 @@ public class Protocol {
         String value = queryMap.get(VALUE);
         String signature = queryMap.get(SIGNATURE);
         return processCreateList(guid, field, value, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        //********************
+        //
+        // UPDATE OPERATIONS WITH DIFFERENT WRITER
+        //
       } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
@@ -1466,7 +1547,16 @@ public class Protocol {
         String signature = queryMap.get(SIGNATURE);
         return processUpdateOperation(guid, field, "", null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
                 UpdateOperation.CLEAR);
-        //**********************************
+      } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, WRITER, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String writer = queryMap.get(WRITER);
+        String signature = queryMap.get(SIGNATURE);
+        return processUpdateOperation(guid, field, "", null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+                UpdateOperation.REMOVE_FIELD);
+        //
+        // UPDATE OPERATIONS WITH NO WRITER
+        //
       } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String field = queryMap.get(FIELD);
@@ -1573,6 +1663,15 @@ public class Protocol {
         String signature = queryMap.get(SIGNATURE);
         return processUpdateOperation(guid, field, "", null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
                 UpdateOperation.CLEAR);
+      } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String signature = queryMap.get(SIGNATURE);
+        return processUpdateOperation(guid, field, "", null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+                UpdateOperation.REMOVE_FIELD);
+        //
+        // SELECT OPERATIONS
+        //
       } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, VALUE))) {
         String field = queryMap.get(FIELD);
         Object value = queryMap.get(VALUE);
@@ -1586,6 +1685,9 @@ public class Protocol {
         String field = queryMap.get(FIELD);
         String within = queryMap.get(WITHIN);
         return processSelectWithin(field, within);
+        //
+        // ACL OPERATIONS
+        //
         // ACLADD
       } else if (ACLADD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
         // syntax: aclAdd hash field allowedreader signature
@@ -1613,6 +1715,9 @@ public class Protocol {
         String aclType = queryMap.get(ACLTYPE);
         String signature = queryMap.get(SIGNATURE);
         return processRetrieveAcl(aclType, guid, field, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        //
+        // GROUP OPERATIONS
+        //
       } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String member = queryMap.get(MEMBER);
@@ -1704,6 +1809,9 @@ public class Protocol {
         String member = queryMap.get(MEMBER);
         String signature = queryMap.get(SIGNATURE);
         return processRevokeMembership(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+        //
+        // MISC OPERATIONS
+        //
         // DEMO
       } else if (DEMO.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
         // pass in the host to use as a passkey check
