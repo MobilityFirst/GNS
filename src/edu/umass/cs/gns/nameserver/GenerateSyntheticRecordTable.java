@@ -357,7 +357,7 @@ public class GenerateSyntheticRecordTable {
 
     NameServer.nodeID = 0;
     ConfigFileInfo.readHostInfo(args[0],0);
-    GNS.numPrimaryReplicas = GNS.DEFAULTNUMPRIMARYREPLICAS;
+    GNS.numPrimaryReplicas = GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
 
 //    ConfigFileInfo.setNumberOfNameServers(3);
     try{
@@ -406,7 +406,7 @@ public class GenerateSyntheticRecordTable {
     //StartNameServer.mongoPort = 12345;
     NameServer.nodeID = 0;
     ConfigFileInfo.readHostInfo(args[0],0);
-    GNS.numPrimaryReplicas = GNS.DEFAULTNUMPRIMARYREPLICAS;
+    GNS.numPrimaryReplicas = GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
 
 //    ConfigFileInfo.setNumberOfNameServers(3);
     try{

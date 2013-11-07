@@ -2,6 +2,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.Packet;
@@ -114,7 +115,7 @@ public class SendUpdatesTask extends TimerTask
 //        else
         if(StartLocalNameServer.loadDependentRedirection) {
           nameServerID = LocalNameServer.getBestActiveNameServerFromCache(name, activesQueried);
-        } else if (StartLocalNameServer.beehiveReplication) {
+        } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
             nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, activesQueried);
         }
         else {

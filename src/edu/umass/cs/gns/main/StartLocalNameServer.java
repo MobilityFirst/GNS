@@ -19,6 +19,7 @@ import org.apache.commons.cli.*;
  */
 public class StartLocalNameServer {
 
+  public static ReplicationFrameworkType replicationFramework;
   public static int regularWorkloadSize;
   public static int mobileWorkloadSize;
   public static double alpha;
@@ -30,8 +31,7 @@ public class StartLocalNameServer {
   public static String updateTraceFile;
   public static int numQuery;
   public static int numUpdate;
-  public static boolean locationBasedReplication = false;
-  public static long voteInterval;
+  public static long voteInterval = 1000;
   public static boolean isSyntheticWorkload = false;
   public static String name;
   public static int cacheSize = 1000;
@@ -41,7 +41,6 @@ public class StartLocalNameServer {
   public static double lookupRate;
   public static double updateRateMobile;
   public static double updateRateRegular;
-  public static boolean optimalReplication = false;
   public static String optimalTrace = null;
   public static int replicationInterval = 0;
   public static double outputSampleRate = 1.0;
@@ -54,13 +53,6 @@ public class StartLocalNameServer {
    * Used for running experiments for Auspice paper.
    */
   public static boolean experimentMode = false;
-  /**
-   * Whether beehive replication is used or not.
-   */
-  public static boolean beehiveReplication = false;
-  /**
-   * Whether beehive replication is used or not.
-   */
   public static boolean replicateAll = false;
   //Abhigyan: parameters related to retransmissions.
   // More parameters in util.AdaptiveRetransmission.java
@@ -69,7 +61,7 @@ public class StartLocalNameServer {
    */
   public static int numberOfTransmissions = GNS.DEFAULT_NUMBER_OF_TRANSMISSIONS;
   /**
-   * Maxmimum time a local name server waits for a response from name server query is logged as failed after this.
+   * Maximum time a local name server waits for a response from name server query is logged as failed after this.
    */
   public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
   /**
@@ -111,10 +103,15 @@ public class StartLocalNameServer {
 
 
     Option syntheticWorkload = new Option("zipf", "Use Zipf distribution to generate worklaod");
+
     Option locationBasedReplication = new Option("location", "Location Based selection of active nameserervs");
     Option optimalReplication = new Option("optimal", "Optimal replication");
-
     Option beehiveReplication = new Option("beehive", "Beehive replication");
+    OptionGroup replication = new OptionGroup()
+            .addOption(locationBasedReplication)
+            .addOption(beehiveReplication)
+            .addOption(optimalReplication);
+
     Option beehiveDHTbase = new Option("beehiveBase", true, "Beehive DHT base, default 16");
     Option beehiveLeafset = new Option("leafSet", true, "Beehive Leaf set size, must be less thant number of name servers, default 24");
 
@@ -215,8 +212,6 @@ public class StartLocalNameServer {
             .withDescription("Optimal trace file")
             .create("optimalTrace");
 
-
-
     Option runHttpServer = new Option("runHttpServer", "run the http server in the same process as local name server.");
 
     commandLineOptions = new Options();
@@ -234,27 +229,22 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(numUpdates);
     commandLineOptions.addOption(syntheticWorkload);
     commandLineOptions.addOption(name);
-    commandLineOptions.addOption(locationBasedReplication);
     commandLineOptions.addOption(voteInterval);
     commandLineOptions.addOption(chooseFromClosestK);
     commandLineOptions.addOption(cacheSize);
     commandLineOptions.addOption(lookupRate);
     commandLineOptions.addOption(updateRateMobile);
     commandLineOptions.addOption(updateRateRegular);
-    commandLineOptions.addOption(optimalReplication);
     commandLineOptions.addOption(replicationInverval);
     commandLineOptions.addOption(optimalTrace);
     commandLineOptions.addOption(debugMode);
     commandLineOptions.addOption(experimentMode);
     commandLineOptions.addOption(help);
-
-    commandLineOptions.addOption(beehiveReplication);
+    commandLineOptions.addOptionGroup(replication);
     commandLineOptions.addOption(beehiveDHTbase);
     commandLineOptions.addOption(beehiveLeafset);
-
     commandLineOptions.addOption(loadDependentRedirection);
     commandLineOptions.addOption(nsLoadMonitorIntervalSeconds);
-
     commandLineOptions.addOption(maxQueryWaitTime);
     commandLineOptions.addOption(numberOfTransmissions);
     commandLineOptions.addOption(queryTimeout);
@@ -262,17 +252,13 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(delta);
     commandLineOptions.addOption(mu);
     commandLineOptions.addOption(phi);
-
-
     commandLineOptions.addOption(fileLoggingLevel);
     commandLineOptions.addOption(consoleOutputLevel);
     commandLineOptions.addOption(statConsoleOutputLevel);
     commandLineOptions.addOption(statFileLoggingLevel);
-
     commandLineOptions.addOption(tinyQuery);
     commandLineOptions.addOption(delayScheduling);
     commandLineOptions.addOption(variation);
-
     commandLineOptions.addOption(runHttpServer);
 
     CommandLineParser parser = new GnuParser();
@@ -320,12 +306,26 @@ public class StartLocalNameServer {
       nsFile = parser.getOptionValue("nsfile", nsFile);
       cacheSize = (parser.hasOption("cacheSize"))
               ? Integer.parseInt(parser.getOptionValue("cacheSize")) : 1000;
-      GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULTNUMPRIMARYREPLICAS)));
+      GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULT_NUM_PRIMARY_REPLICAS)));
 
-      beehiveReplication = parser.hasOption("beehive");
-      BeehiveDHTRouting.beehive_DHTbase = (beehiveReplication) ? Integer.parseInt(parser.getOptionValue("beehiveBase")) : 16;
-      BeehiveDHTRouting.beehive_DHTleafsetsize = (beehiveReplication) ? Integer.parseInt(parser.getOptionValue("leafSet")) : 24;
 
+      if (parser.hasOption("location")) {
+        replicationFramework = ReplicationFrameworkType.LOCATION;
+        voteInterval = Integer.parseInt(parser.getOptionValue("vInterval"));
+        if (parser.hasOption("chooseFromClosestK")) {
+          chooseFromClosestK = Integer.parseInt(parser.getOptionValue("chooseFromClosestK"));
+        }
+      } else if (parser.hasOption("beehive")) {
+        replicationFramework = ReplicationFrameworkType.BEEHIVE;
+        BeehiveDHTRouting.beehive_DHTbase = Integer.parseInt(parser.getOptionValue("beehiveBase"));
+        BeehiveDHTRouting.beehive_DHTleafsetsize = Integer.parseInt(parser.getOptionValue("leafSet"));
+      } else if (parser.hasOption("optimal")) {
+        replicationFramework = ReplicationFrameworkType.OPTIMAL;
+        optimalTrace = parser.getOptionValue("optimalTrace");
+        replicationInterval = Integer.parseInt(parser.getOptionValue("rInterval")) * 1000;
+      } else {
+        replicationFramework = GNS.DEFAULT_REPLICATION_FRAMEWORK;
+      }
 
       loadDependentRedirection = parser.hasOption("loadDependentRedirection");
       nameServerLoadMonitorIntervalSeconds = (loadDependentRedirection) ? Integer.parseInt(parser.getOptionValue("nsLoadMonitorIntervalSeconds")) : 60;
@@ -348,22 +348,6 @@ public class StartLocalNameServer {
         if (parser.hasOption("phi")) {
           AdaptiveRetransmission.phi = Float.parseFloat(parser.getOptionValue("phi"));
         }
-      }
-
-      locationBasedReplication = parser.hasOption("location");
-
-      // parameters for optimal.
-      optimalReplication = parser.hasOption("optimal");
-      optimalTrace = (optimalReplication) ? parser.getOptionValue("optimalTrace") : null;
-      replicationInterval = (optimalReplication)
-              ? Integer.parseInt(parser.getOptionValue("rInterval")) * 1000 : 0;
-
-      // vote interval in ms
-      voteInterval = (locationBasedReplication)
-              ? Integer.parseInt(parser.getOptionValue("vInterval")) * 1000 : 0;
-      // 
-      if (locationBasedReplication && parser.hasOption("chooseFromClosestK")) {
-        chooseFromClosestK = Integer.parseInt(parser.getOptionValue("chooseFromClosestK"));
       }
 
       name = parser.getOptionValue("name");
@@ -445,7 +429,7 @@ public class StartLocalNameServer {
     println("Update Rate Regular: " + updateRateRegular + "ms", debugMode);
     println("Zipf Workload: " + isSyntheticWorkload, debugMode);
     println("Name: " + name, debugMode);
-    println("Location Based Replication: " + locationBasedReplication, debugMode);
+    println("Replication: " + replicationFramework.toString(), debugMode);
     println("Vote Interval: " + voteInterval + "ms", debugMode);
     println("Cache Size: " + cacheSize, debugMode);
     println("Experiment Mode: " + experimentMode, debugMode);

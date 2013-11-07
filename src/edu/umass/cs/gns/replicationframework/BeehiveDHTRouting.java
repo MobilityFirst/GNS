@@ -42,7 +42,7 @@ public class BeehiveDHTRouting {
 //	int numlns = 100;
 	public static int beehive_DHTbase = 16;
 //	double beehive_avgHopC = 0.5;
-	public static int beehive_DHTleafsetsize = 8;
+	public static int beehive_DHTleafsetsize = 24;
 //	double beehive_ZIPFalpha = 1.9;
 	
 	public BeehiveDHTRouting(){

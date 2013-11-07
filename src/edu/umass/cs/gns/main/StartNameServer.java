@@ -284,7 +284,7 @@ public class StartNameServer {
   private static final String DEFAULTMOBILEMOBILEWORKLOADSIZE = "0";
   private static final String DEFAULTPAXOSLOGPATHNAME = "log/paxos_log";
   private static final DataStoreType DEFAULTDATASTORETYPE = DataStoreType.MONGO;
-  private static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
+  
   private static final int DEFAULT_NAMESERVER_VOTE_SIZE = 5;
 
   /*
@@ -310,7 +310,7 @@ public class StartNameServer {
       id = Integer.parseInt(parser.getOptionValue("id", Integer.toString(id)));
       nsFile = parser.getOptionValue("nsfile", nsFile);
 
-      GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULTNUMPRIMARYREPLICAS)));
+      GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULT_NUM_PRIMARY_REPLICAS)));
       aggregateInterval = Integer.parseInt(parser.getOptionValue("aInterval", DEFAULTAGGREGATEINTERVAL)) * 1000;
       analysisInterval = Integer.parseInt(parser.getOptionValue("rInterval", DEFAULTANALYSISINTERVAL)) * 1000;
       normalizingConstant = Double.parseDouble(parser.getOptionValue("nconstant", DEFAULTNORMALIZINGCONSTANT));
@@ -345,7 +345,7 @@ public class StartNameServer {
       } else if (parser.hasOption("optimal")) {
         replicationFramework = ReplicationFrameworkType.OPTIMAL;
       } else {
-        replicationFramework = DEFAULT_REPLICATION_FRAMEWORK;
+        replicationFramework = GNS.DEFAULT_REPLICATION_FRAMEWORK;
         nameServerVoteSize = DEFAULT_NAMESERVER_VOTE_SIZE;
       }
 

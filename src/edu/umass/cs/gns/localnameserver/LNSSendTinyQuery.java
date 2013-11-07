@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.TinyQuery;
@@ -52,10 +53,10 @@ public class LNSSendTinyQuery {
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Name: " + name 
                                 //+ " / " + nameRecordKey.getName()
                                 + " Address invalid in cache" + "TimeAddress:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
-			if (StartLocalNameServer.beehiveReplication && StartLocalNameServer.loadDependentRedirection) {
+			if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE && StartLocalNameServer.loadDependentRedirection) {
 				nameServerID = LocalNameServer.getLoadAwareBeehiveNameServerFromCache(name, new HashSet<Integer>());
 			}
-			else if (StartLocalNameServer.beehiveReplication) {
+			else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
 				nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, new HashSet<Integer>());
 			} else if (StartLocalNameServer.loadDependentRedirection) {
 				nameServerID = LocalNameServer.getBestActiveNameServerFromCache(name, new HashSet<Integer>());
@@ -68,7 +69,7 @@ public class LNSSendTinyQuery {
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Name: " + name 
                                 //+ " / " + nameRecordKey.getName() 
                                 + " Both address and NS invalid. " + "TimeAddress:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
-			if (StartLocalNameServer.beehiveReplication) {
+			if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
 				nameServerID = LocalNameServer.getBeehivePrimaryNameServer(name, new HashSet<Integer>());
 			} else if (StartLocalNameServer.loadDependentRedirection) {
 				nameServerID = LocalNameServer.getBestPrimaryNameServer(name, new HashSet<Integer>());

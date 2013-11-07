@@ -10,6 +10,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
@@ -168,7 +169,7 @@ public class DNSRequestTask extends TimerTask {
         if (StartLocalNameServer.loadDependentRedirection) {
           ns = LocalNameServer.getBestActiveNameServerFromCache(incomingPacket.getQname(), nameserversQueried);
         }
-        else if (StartLocalNameServer.beehiveReplication) {
+        else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
           ns = LocalNameServer.getBeehiveNameServer(nameserversQueried, cacheEntry);
         }
         else {

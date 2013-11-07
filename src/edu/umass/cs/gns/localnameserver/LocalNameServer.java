@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameAndRecordKey;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
@@ -26,7 +27,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +53,6 @@ public class LocalNameServer {
    * Local Name Server ID *
    */
   public static int nodeID;
-
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    *
@@ -84,8 +86,8 @@ public class LocalNameServer {
   public static BeehiveDHTRouting beehiveDHTRouting;
   public static ConcurrentHashMap<Integer, Double> nameServerLoads;
   public static long startTime;
-
   public static int initialExpDelayMillis = 1000;
+
   /**
    **
    * Constructs a local name server and assigns it a node id.
@@ -241,7 +243,9 @@ public class LocalNameServer {
     }
 
 
-    if(StartLocalNameServer.experimentMode == false) new LNSListenerAdmin().start();
+    if (StartLocalNameServer.experimentMode == false) {
+      new LNSListenerAdmin().start();
+    }
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("LNS listener admin started.");
@@ -277,7 +281,7 @@ public class LocalNameServer {
       SendUpdatesViaIntercessor.schdeduleAllUpdates();
     }
 
-    if (StartLocalNameServer.locationBasedReplication) {
+    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
       new NameServerVoteThread(StartLocalNameServer.voteInterval).start();
     }
 
@@ -302,7 +306,7 @@ public class LocalNameServer {
     //Generate unique id for the query
     do {
       id = randomID.nextInt();
-    } while  (requestTransmittedMap.containsKey(id));
+    } while (requestTransmittedMap.containsKey(id));
 
     //Add query info
     DNSRequestInfo query = new DNSRequestInfo(id, name, recordKey, time,
@@ -311,7 +315,6 @@ public class LocalNameServer {
     requestTransmittedMap.put(id, query);
     return id;
   }
-
 
 //  /**
 //   * Same as the other addQueryInfo object. QueryID is already specified instead of being randomly chosen.
@@ -340,7 +343,6 @@ public class LocalNameServer {
 //    queryTransmittedMap.put(queryID, query);
 //    return queryID;
 //  }
-
   public static int addQueryInfo(String name, NameRecordKey recordKey,
           int nameserverID, long time, String queryStatus, int lookupNumber) {
     // ABHIGYAN
@@ -361,9 +363,8 @@ public class LocalNameServer {
 //    updateTransmittedMap.put(id, update);
 //    return id;
 //  }
-
   public static int addUpdateInfo(String name, int nameserverID, long time, String senderAddress, int senderPort,
-                                  int numRestarts, UpdateAddressPacket updateAddressPacket) {
+          int numRestarts, UpdateAddressPacket updateAddressPacket) {
     int id;
     //Generate unique id for the query
     do {
@@ -377,7 +378,7 @@ public class LocalNameServer {
   }
 
   public static int addQueryInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket,
-          InetAddress senderAddress, int senderPort,  Set<Integer> serverIds) {
+          InetAddress senderAddress, int senderPort, Set<Integer> serverIds) {
     int id;
     do {
       id = randomID.nextInt();
@@ -403,7 +404,7 @@ public class LocalNameServer {
   public static UpdateInfo removeUpdateInfo(int id) {
     return updateTransmittedMap.remove(id);
   }
-  
+
   public static SelectInfo removeQueryInfo(int id) {
     return queryTransmittedMap.remove(id);
   }
@@ -411,7 +412,7 @@ public class LocalNameServer {
   public static UpdateInfo getUpdateInfo(int id) {
     return updateTransmittedMap.get(id);
   }
-  
+
   public static SelectInfo getQueryInfo(int id) {
     return queryTransmittedMap.get(id);
   }
@@ -1012,16 +1013,25 @@ public class LocalNameServer {
 //	}
   /**
    **
-   * Prints local name server cache
+   * Prints local name server cache (and sorts it for convenience)
    */
   public static String cacheLogString(String preamble) {
     StringBuilder cacheTable = new StringBuilder();
-
-    for (CacheEntry entry : cache.asMap().values()) {
+    List<CacheEntry> list = new ArrayList(cache.asMap().values());
+    Collections.sort(list, new CacheComparator());
+    for (CacheEntry entry : list) {
       cacheTable.append("\n");
       cacheTable.append(entry.toString());
     }
     return preamble + cacheTable.toString();
+  }
+
+  static class CacheComparator implements Comparator<CacheEntry> {
+
+    @Override
+    public int compare(CacheEntry t1, CacheEntry t2) {
+      return t1.compareTo(t2);
+    }
   }
 
   /**
@@ -1062,12 +1072,11 @@ public class LocalNameServer {
   public static void sendToNS(JSONObject json, int ns) {
 
     if (StartLocalNameServer.delayScheduling) { // during testing, this option is used to simulate artificial latency between lns and ns
-      double latency = ConfigFileInfo.getPingLatency(ns) *
-              ( 1 + r.nextDouble() * StartLocalNameServer.variation);
+      double latency = ConfigFileInfo.getPingLatency(ns)
+              * (1 + r.nextDouble() * StartLocalNameServer.variation);
       long timerDelay = (long) latency;
       LocalNameServer.executorService.schedule(new SendQueryWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
-    }
-    else if (json.toString().length() < 1000) {
+    } else if (json.toString().length() < 1000) {
       try {
         LNSListener.udpTransport.sendPacket(json, ns, GNS.PortType.LNS_UDP_PORT);
       } catch (JSONException e) {
@@ -1085,7 +1094,7 @@ public class LocalNameServer {
   /**
    * Test *
    */
-  public static void main(String[] args) throws IOException {
+ // public static void main(String[] args) throws IOException {
 //  	ArrayList<Integer> nameServers = new ArrayList<Integer>();
 //
 //  	nameServers.add(10);
@@ -1169,5 +1178,5 @@ public class LocalNameServer {
     //    System.out.println(s.toString());
     //    System.out.println(names.toString());
     //    System.out.println(s.contains("804"));
-  }
+  //}
 }

@@ -64,12 +64,14 @@ public class GNS {
     }
   }
   
+  public static boolean enableEmailAccountAuthentication = false;
+  
   /**
    * Number of primary nameservers. Default is 3 *
    */
-  public static final int DEFAULTNUMPRIMARYREPLICAS = 3;
-  public static int numPrimaryReplicas = DEFAULTNUMPRIMARYREPLICAS;
-  public static boolean USELEGACYDNS = false;
+  public static final int DEFAULT_NUM_PRIMARY_REPLICAS = 3;
+  public static int numPrimaryReplicas = DEFAULT_NUM_PRIMARY_REPLICAS;
+  public static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
   /**
    * default query timeout in ms.
    */

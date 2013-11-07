@@ -166,13 +166,9 @@ public class AccountAccess {
   private static final String VERIFY_COMMAND = "account_verify";
   private static final String EMAIL_BODY = "This is an automated message informing you that an account has been created for %s on the GNS server.\n"
           + "To verify this account you can enter this query into a browser:\n\n"
-          
           + "http://%s/" + GNS.GNS_URL_PATH + "/verifyAccount?guid=%s&code=%s\n\n"
-          
           + "or enter this command into the GNS CLI that you used to create the account:\n\n"
-          
           + VERIFY_COMMAND + " %s %s\n\n"
-         
           + "If you did not create this account please ignore this message.";
   private static final String SUCCESS_NOTICE = "A confirmation email has been sent to %s. "
           + "Please follow the instructions in that email to verify your account.\n";
@@ -184,28 +180,30 @@ public class AccountAccess {
 
   public String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
     String response;
-    if ((response = addAccount(name, guid, publicKey, password)).equals(Protocol.OKRESPONSE)) {
-      String verifyCode = Util.randomString(6);
-      AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
-      accountInfo.setVerificationCode(verifyCode);
-      accountInfo.noteUpdate();
-      if (updateAccountInfo(accountInfo)) {
-        boolean emailOK = Email.emailSSL("GNS Account Verification", name,
-                String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
-        boolean adminEmailOK = Email.emailSSL("GNS Account Notification",
-                Email.ACCOUNT_CONTACT_EMAIL,
-                String.format(ADMIN_NOTICE, name, guid));
-        if (emailOK) {
-          return Protocol.OKRESPONSE;
+    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(Protocol.OKRESPONSE)) {
+      if (GNS.enableEmailAccountAuthentication) {
+        String verifyCode = Util.randomString(6);
+        AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
+        accountInfo.setVerificationCode(verifyCode);
+        accountInfo.noteUpdate();
+        if (updateAccountInfo(accountInfo)) {
+          boolean emailOK = Email.emailSSL("GNS Account Verification", name,
+                  String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
+          boolean adminEmailOK = Email.emailSSL("GNS Account Notification",
+                  Email.ACCOUNT_CONTACT_EMAIL,
+                  String.format(ADMIN_NOTICE, name, guid));
+          if (emailOK) {
+            return Protocol.OKRESPONSE;
+          } else {
+            // if we can't send the confirmation back out of the account creation
+            removeAccount(accountInfo);
+            return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to send email";
+          }
         } else {
-          // if we can't send the confirmation back out of the account creation
+          // if we do this we're probably housed anyway, but just in case try to remove the account
           removeAccount(accountInfo);
-          return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to send email";
+          return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to update account info";
         }
-      } else {
-        // if we do this we're probably housed anyway, but just in case try to remove the account
-        removeAccount(accountInfo);
-        return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to update account info";
       }
     }
     return response;
@@ -231,7 +229,7 @@ public class AccountAccess {
         } else {
           return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Bad verification code";
         }
-      }  else {
+      } else {
         return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Account already verified";
       }
     } else {
@@ -253,7 +251,7 @@ public class AccountAccess {
    * @param password
    * @return status result
    */
-  private String addAccount(String name, String guid, String publicKey, String password) {
+  private String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
     try {
       Intercessor client = Intercessor.getInstance();
       // do this first add to make sure this name isn't already registered
@@ -261,6 +259,10 @@ public class AccountAccess {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
+        // if email verifications are off we just set it to verified
+        if (!emailVerify) {
+          accountInfo.setVerified(true);
+        }
         if (client.sendAddRecordWithConfirmation(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           client.sendUpdateRecordWithConfirmation(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
