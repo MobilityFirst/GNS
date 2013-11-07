@@ -1081,7 +1081,7 @@ public class LocalNameServer {
       LocalNameServer.executorService.schedule(new SendQueryWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
     } else if (json.toString().length() < 1000) {
       try {
-        LNSListener.udpTransport.sendPacket(json, ns, GNS.PortType.LNS_UDP_PORT);
+        LNSListener.udpTransport.sendPacket(json, ns, GNS.PortType.NS_UDP_PORT);
       } catch (JSONException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }

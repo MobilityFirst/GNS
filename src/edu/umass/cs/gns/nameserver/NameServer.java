@@ -359,7 +359,7 @@ public class NameServer {
 
     if (json.toString().length() < 1000) {
       try {
-        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.NS_UDP_PORT);
+        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.LNS_UDP_PORT);
       } catch (JSONException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
