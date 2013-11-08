@@ -73,6 +73,7 @@ public class Intercessor {
     updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
 
     if (StartLocalNameServer.runHttpServer == false) {
+      GNS.getLogger().info("LNS Node " + LocalNameServer.nodeID + " starting Intercessor Transport on port " + PORT);
       transport = new Transport(-1, PORT); // -1 means use address instead of Host ID
       startCheckForResultThread();
       //startCheckForDumpThread();

@@ -36,6 +36,8 @@ public class LNSListener extends Thread {
 
   public LNSListener() throws IOException {
     super("LNSListener");
+    GNS.getLogger().info("LNS Node " + LocalNameServer.nodeID + " starting LNSListenerUDP on port " 
+            + ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
     udpTransport = new Transport(LocalNameServer.nodeID, ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
 //    udpTransport.s
 //    tcpTransport = new NioServer(LocalNameServer.nodeID,new ByteStreamToJSONObjects(this));
@@ -151,8 +153,8 @@ public class LNSListener extends Thread {
 
   public static void sendPacketWithDelay(JSONObject json, int destID) {
     Random r = new Random();
-    double latency = ConfigFileInfo.getPingLatency(destID) *
-            ( 1 + r.nextDouble() * StartLocalNameServer.variation);
+    double latency = ConfigFileInfo.getPingLatency(destID)
+            * (1 + r.nextDouble() * StartLocalNameServer.variation);
     long timerDelay = (long) latency;
 
     LocalNameServer.executorService.schedule(new SendQueryWithDelayLNS(json, destID), timerDelay, TimeUnit.MILLISECONDS);
@@ -183,8 +185,8 @@ class MyTask extends TimerTask {
     try {
       LNSListener.demultiplexLNSPackets(json);
     } catch (Exception e) {
-        GNS.getLogger().severe("Exception Exception Exception ... " + e.getMessage());
-        e.printStackTrace();
+      GNS.getLogger().severe("Exception Exception Exception ... " + e.getMessage());
+      e.printStackTrace();
     }
 //    long t1 = System.currentTimeMillis();
 //    if (t1 - t0 > 10) {

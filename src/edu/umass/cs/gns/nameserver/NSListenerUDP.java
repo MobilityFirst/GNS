@@ -18,13 +18,13 @@ public class NSListenerUDP extends Thread {
   public static boolean useUDP = true;
 
   public NSListenerUDP() {
+    GNS.getLogger().info("NS Node " + NameServer.nodeID + " starting NSListenerUDP on port " + ConfigFileInfo.getNSUdpPort(NameServer.nodeID));
     udpTransport = new Transport(NameServer.nodeID,
             ConfigFileInfo.getNSUdpPort(NameServer.nodeID));
   }
 
   @Override
   public void run() {
-    GNS.getLogger().info("NS Node " + NameServer.nodeID + " starting NSListenerUDP on port " + ConfigFileInfo.getNSUdpPort(NameServer.nodeID));
     while (true) {
       try {
         JSONObject incomingJSON = udpTransport.readPacket();

@@ -121,7 +121,26 @@ public class ConfigFileInfo {
         double pingLatency = Double.parseDouble(tokens[4]);
         double latitude = Double.parseDouble(tokens[5]);
         double longitude = Double.parseDouble(tokens[6]);
+        boolean isNameServer;
 
+        if (isNameServerString.startsWith("yes")
+                || isNameServerString.startsWith("Yes")
+                || isNameServerString.startsWith("YES")
+                || isNameServerString.startsWith("X")
+                || isNameServerString.startsWith("true")
+                || isNameServerString.startsWith("True")
+                || isNameServerString.startsWith("TRUE")) {
+          isNameServer = true;
+          nameServerMapping.put(id, id);
+          nameServerCount++;
+          //Update the id closest name server
+          if (pingLatency >= 0 && pingLatency < smallestPingLatency) {
+            smallestPingLatency = pingLatency;
+            closestNameServer = id;
+          }
+        } else {
+          isNameServer = false;
+        }
         InetAddress ipAddress = null;
         try {
           ipAddress = InetAddress.getByName(ipAddressString);
@@ -134,21 +153,7 @@ public class ConfigFileInfo {
         } else {
           startingPort = Integer.parseInt(startingPortString);
         }
-        if (isNameServerString.startsWith("yes")
-                || isNameServerString.startsWith("Yes")
-                || isNameServerString.startsWith("YES")
-                || isNameServerString.startsWith("X")
-                || isNameServerString.startsWith("true")
-                || isNameServerString.startsWith("True")
-                || isNameServerString.startsWith("TRUE")) {
-          nameServerMapping.put(id, id);
-          nameServerCount++;
-          //Update the id closest name server
-          if (pingLatency >= 0 && pingLatency < smallestPingLatency) {
-            smallestPingLatency = pingLatency;
-            closestNameServer = id;
-          }
-        }
+
 
         addHostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
       }
@@ -258,7 +263,7 @@ public class ConfigFileInfo {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_PORT.getOffset();
   }
-  
+
   /**
    * Returns the response port of a Local nameserver
    * 
@@ -304,12 +309,11 @@ public class ConfigFileInfo {
 
   public static void updatePingLatency(int id, long responseTime) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    if (nodeInfo!=null) nodeInfo.updatePingLatency(responseTime);
+    if (nodeInfo != null) {
+      nodeInfo.updatePingLatency(responseTime);
+    }
 //    return (nodeInfo == null) ? -1 : nodeInfo.getPingLatency();
   }
-
-
-
 
   /**
    * Tests *

@@ -59,19 +59,19 @@ public class Transport {
 
   /**
    * Note: You can specify -1 for the ID and it will use IP addresses instead.
-   * @param myID1
-   * @param myPort1
+   * @param id
+   * @param port
 //   * @param t
    */
-  public Transport(int myID1, int myPort1) {
-    this.myID = myID1;
-    this.myPort = myPort1;
+  public Transport(int id, int port) {
+    this.myID = id;
+    this.myPort = port;
     while (true) {
       try {
-        socket = new DatagramSocket(myPort1);
+        socket = new DatagramSocket(port);
         break;
       } catch (SocketException e) {
-        GNS.getLogger().severe("Unable to create Transport object due to socket issue: " + e.toString()
+        GNS.getLogger().severe("Unable to create Transport object on " + port + " due to socket issue: " + e.toString()
                 + "\n... waiting 3 seconds and trying again.");
         ThreadUtils.sleep(3000);
       }
@@ -90,7 +90,7 @@ public class Transport {
         socket = new DatagramSocket();
         break;
       } catch (SocketException e) {
-        GNS.getLogger().severe("Unable to create Transport object due to socket issue: " + e.toString()
+        GNS.getLogger().severe("Unable to create Transport object on a wildcard port due to socket issue: " + e.toString()
                 + "\n... waiting 3 seconds and trying again.");
         ThreadUtils.sleep(3000);
       }
