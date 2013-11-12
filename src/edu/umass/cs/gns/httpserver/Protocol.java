@@ -647,7 +647,7 @@ public class Protocol {
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + BADWRITERGUID + " " + writer;
+      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -671,7 +671,7 @@ public class Protocol {
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + BADWRITERGUID + " " + writer;
+      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     try {
       if (!verifySignature(writerGuidInfo, signature, message)) {
@@ -699,7 +699,7 @@ public class Protocol {
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + BADWRITERGUID + " " + writer;
+      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -727,7 +727,7 @@ public class Protocol {
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + BADWRITERGUID + " " + writer;
+      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -758,7 +758,7 @@ public class Protocol {
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
     } else if ((readerGuidInfo = accountAccess.lookupGuidInfo(reader)) == null) {
-      return BADRESPONSE + BADREADERGUID + " " + reader;
+      return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
     if (!verifySignature(readerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -780,7 +780,7 @@ public class Protocol {
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
     } else if ((readerGuidInfo = accountAccess.lookupGuidInfo(reader)) == null) {
-      return BADRESPONSE + BADREADERGUID + " " + reader;
+      return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
     if (!verifySignature(readerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -898,7 +898,7 @@ public class Protocol {
     if (writer.equals(guid)) {
       writerInfo = guidInfo;
     } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + BADWRITERGUID + " " + writer;
+      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -920,7 +920,7 @@ public class Protocol {
     if (writer.equals(guid)) {
       writerInfo = guidInfo;
     } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + BADWRITERGUID + " " + writer;
+      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;

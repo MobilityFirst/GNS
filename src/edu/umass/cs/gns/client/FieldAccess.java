@@ -11,9 +11,9 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
-import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A frontend to the the database which stores the fields and values.
@@ -23,6 +23,9 @@ import org.json.JSONException;
  * @author westy
  */
 public class FieldAccess {
+  
+  private static final String emptyJSONObjectString = new JSONObject().toString();
+  private static final String emptyJSONArrayString = new JSONArray().toString();
 
   // make it a singleton class
   public static FieldAccess getInstance() {
@@ -40,7 +43,7 @@ public class FieldAccess {
     if (result != null) {
       return new JSONArray(result).toString();
     } else {
-      return new String();
+      return emptyJSONArrayString;
     }
   }
 
@@ -54,7 +57,7 @@ public class FieldAccess {
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing multiple value return:" + e);
     }
-    return new String();
+    return emptyJSONObjectString;
   }
 
   public String lookupOne(String guid, String key) {
@@ -78,7 +81,7 @@ public class FieldAccess {
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing multiple value return:" + e);
     }
-    return new String();
+    return emptyJSONObjectString;
   }
 
   public boolean update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation) {
@@ -96,7 +99,7 @@ public class FieldAccess {
     if (result != null) {
       return result;
     } else {
-      return new String();
+      return emptyJSONArrayString;
     }
   }
 
@@ -105,7 +108,7 @@ public class FieldAccess {
     if (result != null) {
       return result;
     } else {
-      return new String();
+      return emptyJSONArrayString;
     }
   }
 
@@ -114,7 +117,7 @@ public class FieldAccess {
     if (result != null) {
       return result;
     } else {
-      return new String();
+      return emptyJSONArrayString;
     }
   }
   public static String Version = "$Revision$";

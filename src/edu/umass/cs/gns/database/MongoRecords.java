@@ -741,6 +741,8 @@ public class MongoRecords implements NoSQLRecords {
       queryTest(Integer.parseInt(args[0]), args[1], args[2], args[3]);
     } else {
     }
+    // important to include this!!
+    System.exit(0);
   }
 
   public static void dropAllDatabases() {

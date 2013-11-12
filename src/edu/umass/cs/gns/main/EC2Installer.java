@@ -609,28 +609,6 @@ public class EC2Installer {
     for (InstanceInfo info : idTable.values()) {
       System.out.println(info);
     }
-//    try {
-//      AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
-//      //Create Amazon Client object
-//      AmazonEC2 ec2 = new AmazonEC2Client(credentials);
-//      for (RegionRecord region : RegionRecord.values()) {
-//        AWSEC2.setRegion(ec2, region);
-//        for (Instance instance : AWSEC2.getInstances(ec2)) {
-//          if (!instance.getState().getName().equals(InstanceStateRecord.TERMINATED.getName())) {
-//            final String idString = getTagValue(instance, "id");
-//            if (idString != null && name.equals(getTagValue(instance, "runset"))) {
-//              int id = Integer.parseInt(idString);
-//              String hostname = instance.getPublicDnsName();
-//              //String hostname = retrieveHostname(name, id);
-//              System.out.println("Node " + id + " running on " + hostname);
-//            }
-//          }
-//        }
-//      }
-//    } catch (Exception e) {
-//      System.out.println("Problem contacting EC2 instances: " + e);
-//      e.printStackTrace();
-//    }
   }
 
   private static String getTagValue(Instance instance, String key) {
