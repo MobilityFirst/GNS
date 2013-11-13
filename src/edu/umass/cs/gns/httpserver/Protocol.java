@@ -92,12 +92,14 @@ public class Protocol {
   public final static String REVOKEMEMBERSHIP = "revokeMembership";
   //
   public final static String HELP = "help";
-  // demo commands (not accesible in "public" version")
-  public final static String DEMO = "demo";
+  // admin commands 
+  public final static String ADMIN = "admin";
   public final static String DELETEALLRECORDS = "deleteAllRecords";
   public final static String RESETDATABASE = "resetDatabase";
   public final static String CLEARCACHE = "clearCache";
   public final static String DUMPCACHE = "dumpCache";
+  public final static String SETPARAMETER = "setParameter";
+  public final static String GETPARAMETER = "getParameter";
   //public final static String DELETEALLGUIDRECORDS = "deleteAllGuidRecords";
   public final static String DUMP = "dump";
   public final static String ADDTAG = "addTag";
@@ -152,6 +154,7 @@ public class Protocol {
   public final static String OLDVALUE = "oldvalue";
   public final static String MEMBER = "member";
   public final static String MEMBERS = "members";
+  public final static String PARAMETER = "parameter";
   // Fields for HTTP get queries
   public final static String ACLTYPE = "aclType";
   // Special fields for ACL 
@@ -166,7 +169,7 @@ public class Protocol {
   public final static String PASSKEY = "passkey";
   //public final static String TABLE = "table";
   //
-  private boolean demoMode = false;
+  private boolean adminMode = false;
   private FieldAccess fieldAccess = FieldAccess.getInstance();
   private AccountAccess accountAccess = AccountAccess.getInstance();
   private FieldMetaData fieldMetaData = FieldMetaData.getInstance();
@@ -387,23 +390,23 @@ public class Protocol {
             + "  Removes all guids that contain the tag."
             + NEWLINE + NEWLINE;
 
-    String demo = "MISCELLANEOUS OPERATIONS " + NEWLINE + NEWLINE
-            + urlPrefix + DEMO + QUERYPREFIX + PASSKEY + VALSEP + "<value>" + NEWLINE
-            + "  Enters demo mode if supplied with the correct passkey. If passkey is 'off' turns demo mode off. " + NEWLINE
-            + "In demo mode signatures and access control is ignored and additional commands are enabled. "
+    String admin = "MISCELLANEOUS OPERATIONS " + NEWLINE + NEWLINE
+            + urlPrefix + ADMIN + QUERYPREFIX + PASSKEY + VALSEP + "<value>" + NEWLINE
+            + "  Enters admin mode if supplied with the correct passkey. If passkey is 'off' turns admin mode off. " + NEWLINE
+            + "In admin additional commands are enabled. "
             + NEWLINE + NEWLINE
             + urlPrefix + DELETEALLRECORDS + NEWLINE
-            + "  [ONLY IN DEMO MODE] Deletes all records." + NEWLINE + NEWLINE
+            + "  [ONLY IN ADMIN MODE] Deletes all records." + NEWLINE + NEWLINE
             + urlPrefix + RESETDATABASE + NEWLINE
-            + "  [ONLY IN DEMO MODE] Rests the GNS to an initialized state. The nuclear option." + NEWLINE + NEWLINE
+            + "  [ONLY IN ADMIN MODE] Rests the GNS to an initialized state. The nuclear option." + NEWLINE + NEWLINE
             + urlPrefix + CLEARCACHE + NEWLINE
-            + "  [ONLY IN DEMO MODE] Clears the local name server cache." + NEWLINE + NEWLINE
+            + "  [ONLY IN ADMIN MODE] Clears the local name server cache." + NEWLINE + NEWLINE
             + urlPrefix + DUMPCACHE + NEWLINE
-            + "  [ONLY IN DEMO MODE] Returns the contents of the local name server cache." + NEWLINE + NEWLINE
+            + "  [ONLY IN ADMIN MODE] Returns the contents of the local name server cache." + NEWLINE + NEWLINE
             + urlPrefix + DUMP + NEWLINE
-            + "  [ONLY IN DEMO MODE] Returns the contents of the GNS." + NEWLINE + NEWLINE //            + urlPrefix + DELETEALLGUIDRECORDS + QUERYPREFIX + GUID + VALSEP + "<guid>" + NEWLINE
-            //            + "  [ONLY IN DEMO MODE] Removes all records for the given." + NEWLINE + NEWLINE
-            ;
+            + "  [ONLY IN ADMIN MODE] Returns the contents of the GNS." + NEWLINE + NEWLINE
+            + urlPrefix + SETPARAMETER + QUERYPREFIX + PARAMETER + VALSEP + "<parameter>" + KEYSEP + VALUE + VALSEP + "<value>" + NEWLINE
+            + "  [ONLY IN ADMIN MODE] Changes a parameter value." + NEWLINE + NEWLINE;
 
     String post = "Notes: " + NEWLINE + NEWLINE
             + "o) The signature is a digest of the entire command signed by the private key associated with the GUID." + NEWLINE + NEWLINE
@@ -435,7 +438,7 @@ public class Protocol {
             + "      " + UPDATEERROR + " - a general error that occured while updating the ACCOUNT or GUID info" + NEWLINE
             + "      " + GENERICEERROR + " - covers those pesky cases where you just don't know" + NEWLINE
             + NEWLINE + "o) A JSON list with 3 values in it looks like this [value1, value2, value3]" + NEWLINE + NEWLINE;
-    return main + (demoMode ? demo : "") + post;
+    return main + (adminMode ? admin : "") + post;
   }
 
 //  @Deprecated
@@ -1147,40 +1150,65 @@ public class Protocol {
     }
   }
 
-  public String processDemo(String host, String passkey, String inputLine) {
+  public String processAdmin(String host, String passkey, String inputLine) {
     if (host.equals(passkey)) {
-      demoMode = true;
+      adminMode = true;
       return OKRESPONSE;
     } else if ("off".equals(passkey)) {
-      demoMode = false;
+      adminMode = false;
       return OKRESPONSE;
     }
-    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DEMO + QUERYPREFIX + inputLine;
+    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + ADMIN + QUERYPREFIX + inputLine;
+  }
+
+  // Currently only handles boolean parameters
+  public String processSetParameter(String parameterString, String value) {
+    if (adminMode) {
+      try {
+        SystemParameter.valueOf(parameterString.toUpperCase()).setFieldBoolean(Boolean.parseBoolean(value));
+        return OKRESPONSE;
+      } catch (Exception e) {
+        System.out.println("Problem setting parameter: " + e);
+      }
+    }
+    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + SETPARAMETER + " " + parameterString + " " + VALUE + " " + value;
+  }
+  
+  // Currently only handles boolean parameters
+  public String processGetParameter(String parameterString) {
+    if (adminMode) {
+      try {
+        return SystemParameter.valueOf(parameterString.toUpperCase()).getFieldBoolean().toString();
+      } catch (Exception e) {
+        System.out.println("Problem getting parameter: " + e);
+      }
+    }
+    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + GETPARAMETER + " " + parameterString;
   }
 
   public String processDump() {
-    if (demoMode) {
+    if (adminMode) {
       return Admintercessor.getInstance().sendDump();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP;
   }
 
   public String processDump(String tagName) {
-    if (demoMode) {
+    if (adminMode) {
       return new JSONArray(Admintercessor.getInstance().collectTaggedGuids(tagName)).toString();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP + QUERYPREFIX + NAME + VALSEP + tagName;
   }
 
   public String processDumpCache() {
-    if (demoMode) {
+    if (adminMode) {
       return Admintercessor.getInstance().sendDumpCache();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMPCACHE;
   }
 
   public String processDeleteAllRecords(String inputLine) {
-    if (demoMode) {
+    if (adminMode) {
       if (Admintercessor.getInstance().sendDeleteAllRecords()) {
         return OKRESPONSE;
       } else {
@@ -1191,7 +1219,7 @@ public class Protocol {
   }
 
   public String processResetDatabase(String inputLine) {
-    if (demoMode) {
+    if (adminMode) {
       if (Admintercessor.getInstance().sendResetDB()) {
         return OKRESPONSE;
       } else {
@@ -1202,7 +1230,7 @@ public class Protocol {
   }
 
   public String processClearCache(String inputLine) {
-    if (demoMode) {
+    if (adminMode) {
       if (Admintercessor.getInstance().sendClearCache()) {
         return OKRESPONSE;
       } else {
@@ -1261,7 +1289,7 @@ public class Protocol {
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
     //String action = queryMap.get(ACTION);
     try {
-      
+
       //
       // !!!DON'T FORGET TO PUT THE ONES WITH SHORTER ARGUMENT LISTS *AFTER* THE ONES WITH LONGER ARGUMENT LISTS!!!
       //
@@ -1812,11 +1840,17 @@ public class Protocol {
         //
         // MISC OPERATIONS
         //
-        // DEMO
-      } else if (DEMO.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
+        // ADMIN
+      } else if (ADMIN.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
         // pass in the host to use as a passkey check
-        return processDemo(host, queryMap.get(PASSKEY), queryString);
-        // CLEAR
+        return processAdmin(host, queryMap.get(PASSKEY), queryString);
+      } else if (SETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PARAMETER, VALUE))) {
+        String parameter = queryMap.get(PARAMETER);
+        String value = queryMap.get(VALUE);
+        return processSetParameter(parameter, value);
+      } else if (GETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PARAMETER))) {
+        String parameter = queryMap.get(PARAMETER);
+        return processGetParameter(parameter);
       } else if (DELETEALLRECORDS.equals(action)) {
         return processDeleteAllRecords(queryString);
       } else if (RESETDATABASE.equals(action)) {
@@ -1861,7 +1895,7 @@ public class Protocol {
   }
 
   private boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    if (demoMode) {
+    if (!GNS.enableSignatureVerification) {
       return true;
     }
     byte[] messageDigest = SHA1HashFunction.getInstance().hash(message.getBytes());

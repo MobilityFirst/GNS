@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.database.FieldType;
+import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -173,7 +173,7 @@ public class NameServer {
    * @return
    * @throws RecordNotFoundException
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields)
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> fields)
           throws RecordNotFoundException {
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, null));
   }
@@ -187,7 +187,7 @@ public class NameServer {
    * @return
    * @throws RecordNotFoundException
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, ArrayList<Field> userFields)
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> fields, ArrayList<ColumnField> userFields)
           throws RecordNotFoundException {
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFields));
   }
@@ -201,15 +201,15 @@ public class NameServer {
    * @return
    * @throws RecordNotFoundException 
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<Field> fields, String... userFieldNames)
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> fields, String... userFieldNames)
           throws RecordNotFoundException {
     return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
   }
 
-  private static ArrayList<Field> userFieldList(String... fieldNames) {
-    ArrayList<Field> result = new ArrayList<Field>();
+  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
+    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
     for (String name : fieldNames) {
-      result.add(new Field(name, FieldType.LIST_STRING));
+      result.add(new ColumnField(name, ColumnFieldType.LIST_STRING));
     }
     return result;
   }
@@ -295,9 +295,9 @@ public class NameServer {
     return replicaController.getNameRecordPrimary(name);
   }
 
-  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, Field... fields)
+  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ColumnField... fields)
           throws RecordNotFoundException {
-    return getNameRecordPrimaryMultiField(name, new ArrayList<Field>(Arrays.asList(fields)));
+    return getNameRecordPrimaryMultiField(name, new ArrayList<ColumnField>(Arrays.asList(fields)));
   }
 
   /**
@@ -307,7 +307,7 @@ public class NameServer {
    * @return
    * @throws RecordNotFoundException
    */
-  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ArrayList<Field> fields)
+  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ArrayList<ColumnField> fields)
           throws RecordNotFoundException {
     return new ReplicaControllerRecord(replicaController.lookup(name, ReplicaControllerRecord.NAME, fields));
   }

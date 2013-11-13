@@ -7,7 +7,7 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -146,9 +146,9 @@ public class ClientRequestWorker extends TimerTask {
     }
   }
   //
-  private static ArrayList<Field> addRecordLNSFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> addRecordLNSFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getAddRecordLNSFields() {
+  private static ArrayList<ColumnField> getAddRecordLNSFields() {
     synchronized (addRecordLNSFields) {
       if (addRecordLNSFields.size() > 0) {
         return addRecordLNSFields;
@@ -411,9 +411,9 @@ public class ClientRequestWorker extends TimerTask {
       }
     }
   }
-  private static ArrayList<Field> lnsUpdateFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> lnsUpdateFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getLNSUpdateFields() {
+  private static ArrayList<ColumnField> getLNSUpdateFields() {
     synchronized (lnsUpdateFields) {
       if (lnsUpdateFields.size() == 0) {
         lnsUpdateFields.add(NameRecord.ACTIVE_NAMESERVERS);
@@ -753,9 +753,9 @@ public class ClientRequestWorker extends TimerTask {
       return response;
     }
   }
-  private static ArrayList<Field> dnsField = new ArrayList<Field>();
+  private static ArrayList<ColumnField> dnsField = new ArrayList<ColumnField>();
 
-  public static ArrayList<Field> getDNSPacketFields() {
+  public static ArrayList<ColumnField> getDNSPacketFields() {
     synchronized (dnsField) {
       if (dnsField.size() == 0) {
         dnsField.add(NameRecord.ACTIVE_NAMESERVERS);

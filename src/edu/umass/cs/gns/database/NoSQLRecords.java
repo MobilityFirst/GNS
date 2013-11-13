@@ -112,7 +112,7 @@ public interface NoSQLRecords {
    * @param fields
    * @return
    */
-  public abstract HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields) throws RecordNotFoundException;
+  public abstract HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields) throws RecordNotFoundException;
 
   /**
    * For record with given name, return the values of given fields and from the values map field of the record,
@@ -124,8 +124,8 @@ public interface NoSQLRecords {
    * @param valuesMapKeys
    * @return
    */
-  public abstract HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields,
-          Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException;
+  public abstract HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException;
 
   /**
    * For the record with given name, replace the values of given fields to the given values.
@@ -133,7 +133,7 @@ public interface NoSQLRecords {
    * @param fields
    * @param values
    */
-  public abstract void update(String collection, String name, Field nameField, ArrayList<Field> fields, ArrayList<Object> values);
+  public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values);
 
   /**
    * For the record with given name, replace the values of given fields to the given values,
@@ -146,12 +146,12 @@ public interface NoSQLRecords {
    * @param valuesMapKeys
    * @param valuesMapValues
    */
-  public abstract void update(String collection, String name, Field nameField, ArrayList<Field> fields, ArrayList<Object> values,
-          Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
+  public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values,
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues);
 
 
-  public abstract void updateConditional(String collectionName, String guid, Field nameField,Field conditionField, Object conditionValue, ArrayList<Field> fields, ArrayList<Object> values,
-                                Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues);
+  public abstract void updateConditional(String collectionName, String guid, ColumnField nameField,ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
+                                ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues);
 
   /**
    * For the record with given name, increment the values of given fields by given values. (Another form of update).
@@ -159,7 +159,7 @@ public interface NoSQLRecords {
    * @param fields
    * @param values
    */
-  public abstract void increment(String collection, String name, ArrayList<Field> fields, ArrayList<Object> values);
+  public abstract void increment(String collection, String name, ArrayList<ColumnField> fields, ArrayList<Object> values);
 
   /**
    * For the record with given name, increment the values of given fields by given values.
@@ -172,8 +172,8 @@ public interface NoSQLRecords {
    * @param votesMapKeys
    * @param votesMapValues
    */
-  public void increment(String collectionName, String name, ArrayList<Field> fields, ArrayList<Object> values,
-          Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues);
+  public void increment(String collectionName, String name, ArrayList<ColumnField> fields, ArrayList<Object> values,
+          ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues);
 
   /**
    * For record with name, removes (unset) keys in list <code>mapKeys</code> from the map <code>mapField</code>.
@@ -183,7 +183,7 @@ public interface NoSQLRecords {
    * @param mapField
    * @param mapKeys
    */
-  public void removeMapKeys(String collectionName, String name, Field mapField, ArrayList<Field> mapKeys);
+  public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys);
 
   /**
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
@@ -194,7 +194,7 @@ public interface NoSQLRecords {
    * @param fields
    * @return 
    */
-  public BasicRecordCursor getAllRowsIterator(String collection, Field nameField, ArrayList<Field> fields);
+  public BasicRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields);
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
@@ -213,7 +213,7 @@ public interface NoSQLRecords {
    * @param value
    * @return BasicRecordCursor
    */
-  public BasicRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value);
+  public BasicRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value);
   /**
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
    * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
@@ -224,7 +224,7 @@ public interface NoSQLRecords {
    * @param value
    * @return BasicRecordCursor
    */
-  public BasicRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value);
+  public BasicRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value);
   
   /**
    * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple: 
@@ -237,7 +237,7 @@ public interface NoSQLRecords {
    * @param maxDistance
    * @return 
    */
-  public BasicRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Double maxDistance);
+  public BasicRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance);
   
   /**
    * Puts the database in a state where it has nothing in it.

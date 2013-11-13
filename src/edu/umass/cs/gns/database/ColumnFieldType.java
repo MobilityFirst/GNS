@@ -17,7 +17,7 @@ import org.json.JSONObject;
  * Time: 1:13 AM
  * To change this template use File | Settings | File Templates.
  */
-public enum FieldType {
+public enum ColumnFieldType {
   BOOLEAN,
   INTEGER,
   STRING,
@@ -35,10 +35,10 @@ public enum FieldType {
    * @param dbObject
    * @param fields
    */
-  public static void populateHashMap(HashMap<Field, Object> hashMap, DBObject dbObject, ArrayList<Field> fields) {
+  public static void populateHashMap(HashMap<ColumnField, Object> hashMap, DBObject dbObject, ArrayList<ColumnField> fields) {
 //        System.out.println("Object read ---> " +dbObject);
     if (fields != null) {
-      for (Field field : fields) {
+      for (ColumnField field : fields) {
         Object fieldValue = dbObject.get(field.getName());
         if (fieldValue == null) {
           hashMap.put(field, null); //.add(null);

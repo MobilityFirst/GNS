@@ -21,7 +21,7 @@ public abstract class BasicRecordCursor implements RecordCursorInterface {
   }
   
   @Override
-  public HashMap<Field, Object> nextHashMap() {
+  public HashMap<ColumnField, Object> nextHashMap() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   

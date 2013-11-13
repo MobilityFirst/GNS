@@ -244,11 +244,11 @@ public class MongoRecords implements NoSQLRecords {
    * @return a MongoRecordCursor
    */
   @Override
-  public MongoRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value) {
+  public MongoRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) {
     return selectRecords(collectionName, valuesMapField, key, value, false);
   }
 
-  private MongoRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value, boolean explain) {
+  private MongoRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
     // note that if the value of the key in the database is a list (which it is) this
@@ -272,11 +272,11 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value) {
+  public MongoRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) {
     return selectRecordsWithin(collectionName, valuesMapField, key, value, false);
   }
 
-  private MongoRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value, boolean explain) {
+  private MongoRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
 
@@ -319,11 +319,11 @@ public class MongoRecords implements NoSQLRecords {
   
   private final static double METERS_PER_DEGREE = 111.12 * 1000; // at the equator
   @Override
-  public MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Double maxDistance) {
+  public MongoRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) {
     return selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance, false);
   }
 
-  private MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Double maxDistance, boolean explain) {
+  private MongoRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
 
@@ -438,12 +438,12 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public HashMap<Field, Object> lookup(String collectionName, String guid, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookup(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
     return lookup(collectionName, guid, nameField, fields1, null, null);
   }
 
   @Override
-  public HashMap<Field, Object> lookup(String collectionName, String guid, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookup(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
     long t0 = System.currentTimeMillis();
     long tA = 0;
     long tB = 0;
@@ -468,7 +468,7 @@ public class MongoRecords implements NoSQLRecords {
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject projection = new BasicDBObject().append("_id", 0);
       if (fields1 != null) {
-        for (Field f : fields1) {
+        for (ColumnField f : fields1) {
           projection.append(f.getName(), 1);
         }
       }
@@ -489,13 +489,13 @@ public class MongoRecords implements NoSQLRecords {
 //      if (t1 - t0 > 20) {
 //        GNS.getLogger().severe("\t" + (t1 - t0) + "\t" + t0);
 //      }
-      HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
+      HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
 //      if (cursor.hasNext()) {
         hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
 //        t0 = System.currentTimeMillis();
 //        DBObject dbObject = cursor.next();
         tE = System.currentTimeMillis();
-        FieldType.populateHashMap(hashMap, dbObject, fields1);
+        ColumnFieldType.populateHashMap(hashMap, dbObject, fields1);
         tF = System.currentTimeMillis();
         if (valuesMapField != null && valuesMapKeys != null) {
           BSONObject bson = (BSONObject) dbObject.get(valuesMapField.getName());
@@ -513,7 +513,7 @@ public class MongoRecords implements NoSQLRecords {
               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
               continue;
             }
-            if (valuesMapKeys.get(i).type().equals(FieldType.LIST_STRING)) {
+            if (valuesMapKeys.get(i).type().equals(ColumnFieldType.LIST_STRING)) {
               try {
                 valuesMap.put(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(fieldValue));
               } catch (JSONException e) {
@@ -521,7 +521,7 @@ public class MongoRecords implements NoSQLRecords {
                 e.printStackTrace();
               }
             } else {
-              GNS.getLogger().fine("ERROR: Error: User keys field is not of type " + FieldType.LIST_STRING);
+              GNS.getLogger().fine("ERROR: Error: User keys field is not of type " + ColumnFieldType.LIST_STRING);
               System.exit(2);
             }
           }
@@ -539,13 +539,13 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void update(String collectionName, String guid, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
+  public void update(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
     update(collectionName, guid, nameField, fields1, values1, null, null, null);
   }
 
   @Override
-  public void update(String collectionName, String guid, Field nameField, ArrayList<Field> fields, ArrayList<Object> values,
-          Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void update(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values,
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     db.requestStart();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -556,7 +556,7 @@ public class MongoRecords implements NoSQLRecords {
       if (fields != null) {
         for (int i = 0; i < fields.size(); i++) {
           Object newValue;
-          if (fields.get(i).type().equals(FieldType.VALUES_MAP)) {
+          if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
             newValue = ((ValuesMap) values.get(i)).getMap();
           } else {
             newValue = values.get(i);
@@ -587,8 +587,8 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void updateConditional(String collectionName, String guid, Field nameField, Field conditionField, Object conditionValue, ArrayList<Field> fields, ArrayList<Object> values,
-                     Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void updateConditional(String collectionName, String guid, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
+                     ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     db.requestStart();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -601,7 +601,7 @@ public class MongoRecords implements NoSQLRecords {
       if (fields != null) {
         for (int i = 0; i < fields.size(); i++) {
           Object newValue;
-          if (fields.get(i).type().equals(FieldType.VALUES_MAP)) {
+          if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
             newValue = ((ValuesMap) values.get(i)).getMap();
           } else {
             newValue = values.get(i);
@@ -632,13 +632,13 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void increment(String collectionName, String guid, ArrayList<Field> fields, ArrayList<Object> values) {
+  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values) {
     increment(collectionName, guid, fields, values, null, null, null);
   }
 
   @Override
-  public void increment(String collectionName, String guid, ArrayList<Field> fields, ArrayList<Object> values,
-          Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values,
+          ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues) {
     db.requestStart();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -649,7 +649,7 @@ public class MongoRecords implements NoSQLRecords {
       if (fields != null) {
         for (int i = 0; i < fields.size(); i++) {
           Object newValue;
-          if (fields.get(i).type().equals(FieldType.VALUES_MAP)) {
+          if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
             newValue = ((ValuesMap) values.get(i)).getMap();
           } else {
             newValue = values.get(i);
@@ -672,7 +672,7 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public void removeMapKeys(String collectionName, String name, Field mapField, ArrayList<Field> mapKeys) {
+  public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys) {
     db.requestStart();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -697,7 +697,7 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public MongoRecordCursor getAllRowsIterator(String collectionName, Field nameField, ArrayList<Field> fields) {
+  public MongoRecordCursor getAllRowsIterator(String collectionName, ColumnField nameField, ArrayList<ColumnField> fields) {
     return new MongoRecordCursor(db, collectionName, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey(), fields);
   }
 
@@ -810,7 +810,7 @@ public class MongoRecords implements NoSQLRecords {
       }
     }
     System.out.println("***ALL RECORDS ACTIVE FIELD***");
-    cursor = instance.getAllRowsIterator(DBNAMERECORD, NameRecord.NAME, new ArrayList<Field>(Arrays.asList(NameRecord.ACTIVE_NAMESERVERS)));
+    cursor = instance.getAllRowsIterator(DBNAMERECORD, NameRecord.NAME, new ArrayList<ColumnField>(Arrays.asList(NameRecord.ACTIVE_NAMESERVERS)));
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject().toString());
     }

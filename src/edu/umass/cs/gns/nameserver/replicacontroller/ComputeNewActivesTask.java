@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -43,7 +43,7 @@ public class ComputeNewActivesTask extends TimerTask
 //      return;
 //    }
 
-    ArrayList<Field> readFields = new ArrayList<Field>();
+    ArrayList<ColumnField> readFields = new ArrayList<ColumnField>();
     readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
     readFields.add(ReplicaControllerRecord.PRIMARY_NAMESERVERS);
     readFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
@@ -83,7 +83,7 @@ public class ComputeNewActivesTask extends TimerTask
       BasicRecordCursor iterator = NameServer.replicaController.getIterator(ReplicaControllerRecord.NAME, readFields);
       while (iterator.hasNext()) {
         count++;
-        HashMap<Field, Object> hashMap = iterator.nextHashMap();
+        HashMap<ColumnField, Object> hashMap = iterator.nextHashMap();
         ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(hashMap);
         count++;
 
@@ -272,9 +272,9 @@ public class ComputeNewActivesTask extends TimerTask
     return replicaCount;
   }
 
-  private static ArrayList<Field> readFieldsApplyNewActivesProposed = new ArrayList<Field>();
+  private static ArrayList<ColumnField> readFieldsApplyNewActivesProposed = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getReadFieldsApplyNewActivesProposed() {
+  private static ArrayList<ColumnField> getReadFieldsApplyNewActivesProposed() {
     synchronized (readFieldsApplyNewActivesProposed) {
       if (readFieldsApplyNewActivesProposed.size() > 0) return readFieldsApplyNewActivesProposed;
 

@@ -4,7 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
@@ -58,9 +58,9 @@ public class StartActiveSetTask extends TimerTask {
   }
 
 
-  private static ArrayList<Field> getStartupActiveSetFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> getStartupActiveSetFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getGetStartupActiveSetFields() {
+  private static ArrayList<ColumnField> getGetStartupActiveSetFields() {
     synchronized (getStartupActiveSetFields) {
       if (getStartupActiveSetFields.size() > 0) return getStartupActiveSetFields;
       getStartupActiveSetFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);

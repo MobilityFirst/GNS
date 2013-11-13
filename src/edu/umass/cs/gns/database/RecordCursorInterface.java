@@ -18,6 +18,6 @@ public interface RecordCursorInterface extends Iterator<JSONObject> {
  
   public JSONObject nextJSONObject();
   
-  public HashMap<Field, Object> nextHashMap();
+  public HashMap<ColumnField, Object> nextHashMap();
   
 }

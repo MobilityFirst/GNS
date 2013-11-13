@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
@@ -49,51 +49,51 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
     return MongoRecords.getInstance().lookup(collectionName, name, nameField, fields1);
 //    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public HashMap<Field, Object> lookup(String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
     return MongoRecords.getInstance().lookup(collectionName, name, nameField, fields1, valuesMapField, valuesMapKeys);
   }
 
   @Override
-  public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
+  public void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
     MongoRecords.getInstance().update(collectionName, name, nameField, fields1, values1);
   }
 
   @Override
-  public void update(String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     MongoRecords.getInstance().update(collectionName, name, nameField, fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
   @Override
-  public void updateConditional(String name, Field nameField, Field conditionField, Object conditionValue,
-                                ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField,
-                                ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
+                                ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField,
+                                ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     MongoRecords.getInstance().updateConditional(collectionName, name, nameField, conditionField, conditionValue,
             fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
   @Override
-  public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1) {
+  public void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
     MongoRecords.getInstance().increment(collectionName, name, fields1, values1);
   }
 
   @Override
-  public void increment(String name, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+  public void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues) {
     MongoRecords.getInstance().increment(collectionName, name, fields1, values1, votesMapField, votesMapKeys, votesMapValues);
   }
 
   @Override
-  public void removeMapKeys(String name, Field mapField, ArrayList<Field> mapKeys) {
+  public void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys) {
     MongoRecords.getInstance().removeMapKeys(collectionName, name, mapField, mapKeys);
   }
 
   @Override
-  public BasicRecordCursor getIterator(Field nameField, ArrayList<Field> fields) {
+  public BasicRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) {
     return MongoRecords.getInstance().getAllRowsIterator(collectionName, nameField, fields);
   }
 
@@ -103,17 +103,17 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public BasicRecordCursor selectRecords(Field valuesMapField, String key, Object value) {
+  public BasicRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) {
     return MongoRecords.getInstance().selectRecords(collectionName, valuesMapField, key, value);
   }
   
   @Override
-  public BasicRecordCursor selectRecordsWithin(Field valuesMapField, String key, String value) {
+  public BasicRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) {
      return MongoRecords.getInstance().selectRecordsWithin(collectionName, valuesMapField, key, value);
   }
 
   @Override
-  public BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Double maxDistance) {
+  public BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
     return MongoRecords.getInstance().selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
   }
   

@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nameserver.replicacontroller;
 
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -208,7 +208,7 @@ public class ReplicaController {
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(removeRecord.getName());
 
-    ArrayList<Field> readFields = new ArrayList<Field>();
+    ArrayList<ColumnField> readFields = new ArrayList<ColumnField>();
     readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
 
     try {
@@ -254,9 +254,9 @@ public class ReplicaController {
   }
 
 
-  private static ArrayList<Field> applyMarkedForRemovalFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> applyMarkedForRemovalFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getApplyMarkedForRemovalFields() {
+  private static ArrayList<ColumnField> getApplyMarkedForRemovalFields() {
     synchronized (applyMarkedForRemovalFields) {
       if (applyMarkedForRemovalFields.size() > 0) return applyMarkedForRemovalFields;
 
@@ -401,9 +401,9 @@ public class ReplicaController {
   }
 
 
-  private static ArrayList<Field> newActiveStartedFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> newActiveStartedFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getNewActiveStartedFields() {
+  private static ArrayList<ColumnField> getNewActiveStartedFields() {
     synchronized (newActiveStartedFields) {
       if (newActiveStartedFields.size() > 0) return newActiveStartedFields;
       newActiveStartedFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
@@ -451,9 +451,9 @@ public class ReplicaController {
 
   }
 
-  private static ArrayList<Field> oldActiveStopConfirmFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> oldActiveStopConfirmFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getOldActiveStopConfirmFields() {
+  private static ArrayList<ColumnField> getOldActiveStopConfirmFields() {
     synchronized (oldActiveStopConfirmFields) {
       if (oldActiveStopConfirmFields.size() > 0) return oldActiveStopConfirmFields;
       oldActiveStopConfirmFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
@@ -601,9 +601,9 @@ public class ReplicaController {
     }
   }
 
-  private static ArrayList<Field> getOldActiveStoppedFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> getOldActiveStoppedFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getGetOldActiveStoppedFields() {
+  private static ArrayList<ColumnField> getGetOldActiveStoppedFields() {
     synchronized (getOldActiveStoppedFields) {
       if (getOldActiveStoppedFields.size() > 0) return getOldActiveStoppedFields;
       getOldActiveStoppedFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
@@ -628,7 +628,7 @@ public class ReplicaController {
           throws JSONException {
     /// **** we do not use this method any more **** ////
     ChangeActiveStatusPacket packet = new ChangeActiveStatusPacket(new JSONObject(decision));
-    ArrayList<Field> fields = new ArrayList<Field>();
+    ArrayList<ColumnField> fields = new ArrayList<ColumnField>();
 
     ReplicaControllerRecord rcRecord;
     try {

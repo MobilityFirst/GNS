@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.database.FieldType;
+import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -21,7 +21,7 @@ import java.util.Set;
  */
 public class NameRecord implements Comparable<NameRecord> {
 
-  public final static Field NAME = new Field("nr_name", FieldType.STRING);
+  public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
 
 //  public final static Field ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("nr_active", FieldType.SET_INTEGER) : new Field("nr2", FieldType.SET_INTEGER);
 //  public final static Field PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("nr_primary", FieldType.SET_INTEGER) : new Field("nr3", FieldType.SET_INTEGER);
@@ -34,19 +34,19 @@ public class NameRecord implements Comparable<NameRecord> {
 //  public final static Field TOTAL_LOOKUP_REQUEST = (StartNameServer.experimentMode == false) ? new Field("nr_totalLookupRequest", FieldType.INTEGER) : new Field("nr10", FieldType.INTEGER);
 
 
-  public final static Field ACTIVE_NAMESERVERS = new Field("nr_active", FieldType.SET_INTEGER);
-  public final static Field PRIMARY_NAMESERVERS = new Field("nr_primary", FieldType.SET_INTEGER);
-  public final static Field ACTIVE_PAXOS_ID = new Field("nr_paxosID", FieldType.STRING);
-  public final static Field OLD_ACTIVE_PAXOS_ID = new Field("nr_oldPaxosID", FieldType.STRING);
-  public final static Field TIME_TO_LIVE = new Field("nr_ttl", FieldType.INTEGER);
-  public final static Field VALUES_MAP = new Field("nr_valuesMap", FieldType.VALUES_MAP);
-  public final static Field OLD_VALUES_MAP = new Field("nr_oldValuesMap", FieldType.VALUES_MAP);
-  public final static Field TOTAL_UPDATE_REQUEST = new Field("nr_totalUpdate", FieldType.INTEGER);
-  public final static Field TOTAL_LOOKUP_REQUEST = new Field("nr_totalLookup", FieldType.INTEGER);
+  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("nr_active", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField ACTIVE_PAXOS_ID = new ColumnField("nr_paxosID", ColumnFieldType.STRING);
+  public final static ColumnField OLD_ACTIVE_PAXOS_ID = new ColumnField("nr_oldPaxosID", ColumnFieldType.STRING);
+  public final static ColumnField TIME_TO_LIVE = new ColumnField("nr_ttl", ColumnFieldType.INTEGER);
+  public final static ColumnField VALUES_MAP = new ColumnField("nr_valuesMap", ColumnFieldType.VALUES_MAP);
+  public final static ColumnField OLD_VALUES_MAP = new ColumnField("nr_oldValuesMap", ColumnFieldType.VALUES_MAP);
+  public final static ColumnField TOTAL_UPDATE_REQUEST = new ColumnField("nr_totalUpdate", ColumnFieldType.INTEGER);
+  public final static ColumnField TOTAL_LOOKUP_REQUEST = new ColumnField("nr_totalLookup", ColumnFieldType.INTEGER);
   /**
    * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
    */
-  private HashMap<Field, Object> hashMap;
+  private HashMap<ColumnField, Object> hashMap;
 
   /********************************************
    * CONSTRUCTORS
@@ -61,7 +61,7 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   public NameRecord(String name, Set<Integer> activeNameServers, String activePaxosID,
           ValuesMap values, int ttl) {
-    hashMap = new HashMap<Field, Object>();
+    hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
     hashMap.put(ACTIVE_NAMESERVERS, activeNameServers);
     hashMap.put(PRIMARY_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
@@ -82,7 +82,7 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   public NameRecord(JSONObject jsonObject) throws JSONException {
 
-    hashMap = new HashMap<Field, Object>();
+    hashMap = new HashMap<ColumnField, Object>();
     if (jsonObject.has(NAME.getName())) {
       hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
     }
@@ -132,7 +132,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Constructor used by the initialize values read from database
    * @param allValues
    */
-  public NameRecord(HashMap<Field, Object> allValues) {
+  public NameRecord(HashMap<ColumnField, Object> allValues) {
     this.hashMap = allValues;
   }
 
@@ -141,7 +141,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param name
    */
   public NameRecord(String name) {
-    hashMap = new HashMap<Field, Object>();
+    hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
   }
 
@@ -157,7 +157,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
   public JSONObject toJSONObject() throws JSONException {
     JSONObject jsonObject = new JSONObject();
-    for (Field f : hashMap.keySet()) {
+    for (ColumnField f : hashMap.keySet()) {
       JSONUtils.putFieldInJsonObject(f, hashMap.get(f), jsonObject);
     }
     return jsonObject;
@@ -320,7 +320,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * WRITE methods, these methods change one or more fields in database.
    * ******************************************/
   public void incrementLookupRequest() throws FieldNotFoundException {
-    ArrayList<Field> incrementFields = new ArrayList<Field>();
+    ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
     incrementFields.add(TOTAL_LOOKUP_REQUEST);
 
     ArrayList<Object> values = new ArrayList<Object>();
@@ -331,7 +331,7 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   public void incrementUpdateRequest() throws FieldNotFoundException {
-    ArrayList<Field> incrementFields = new ArrayList<Field>();
+    ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
     incrementFields.add(TOTAL_UPDATE_REQUEST);
 
     ArrayList<Object> values = new ArrayList<Object>();
@@ -345,8 +345,8 @@ public class NameRecord implements Comparable<NameRecord> {
 
     if (operation.equals(UpdateOperation.REMOVE_FIELD)) { // remove the field with name = key from values map.
 
-      ArrayList<Field> keys = new ArrayList<Field>();
-      keys.add(new Field(key,FieldType.LIST_STRING));
+      ArrayList<ColumnField> keys = new ArrayList<ColumnField>();
+      keys.add(new ColumnField(key,ColumnFieldType.LIST_STRING));
       NameServer.recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
       return true;
 
@@ -362,8 +362,8 @@ public class NameRecord implements Comparable<NameRecord> {
     boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation); //this updates the values map as well
     if (updated) {
       // commit update to database
-      ArrayList<Field> updatedFields = new ArrayList<Field>();
-      updatedFields.add(new Field(key, FieldType.LIST_STRING));
+      ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();
+      updatedFields.add(new ColumnField(key, ColumnFieldType.LIST_STRING));
       ArrayList<Object> updatedValues = new ArrayList<Object>();
       updatedValues.add(valuesMap.get(key));
 
@@ -373,9 +373,9 @@ public class NameRecord implements Comparable<NameRecord> {
     return updated;
   }
 
-  private static ArrayList<Field> currentActiveStopFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> currentActiveStopFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getCurrentActiveStopFields() {
+  private static ArrayList<ColumnField> getCurrentActiveStopFields() {
     synchronized (currentActiveStopFields) {
       if (currentActiveStopFields.size() > 0) {
         return currentActiveStopFields;
@@ -394,7 +394,7 @@ public class NameRecord implements Comparable<NameRecord> {
     ValuesMap valuesMap = getValuesMap();
 
 //    if (currentPaxosID != null && currentPaxosID.equals(paxosID)) {
-      ArrayList<Field> updateFields = getCurrentActiveStopFields();
+      ArrayList<ColumnField> updateFields = getCurrentActiveStopFields();
 
 
       ArrayList<Object> updateValues = new ArrayList<Object>();
@@ -414,9 +414,9 @@ public class NameRecord implements Comparable<NameRecord> {
       hashMap.put(VALUES_MAP, new ValuesMap());
 //    }
   }
-  private static ArrayList<Field> newActiveStartFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> newActiveStartFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getNewActiveStartFields() {
+  private static ArrayList<ColumnField> getNewActiveStartFields() {
     synchronized (newActiveStartFields) {
       if (newActiveStartFields.size() > 0) {
         return newActiveStartFields;
@@ -431,7 +431,7 @@ public class NameRecord implements Comparable<NameRecord> {
   public void handleNewActiveStart(Set<Integer> actives, String paxosID, ValuesMap currentValue)
           throws FieldNotFoundException {
 
-    ArrayList<Field> updateFields = getNewActiveStartFields();
+    ArrayList<ColumnField> updateFields = getNewActiveStartFields();
 
     ArrayList<Object> updateValues = new ArrayList<Object>();
     updateValues.add(actives);

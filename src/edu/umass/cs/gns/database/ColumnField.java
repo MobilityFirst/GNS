@@ -8,12 +8,12 @@ package edu.umass.cs.gns.database;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Field {
+public class ColumnField {
 
   final String name;
-  final FieldType type;
+  final ColumnFieldType type;
 
-  public Field(String name, FieldType type) {
+  public ColumnField(String name, ColumnFieldType type) {
     this.name = name;
     this.type = type;
   }
@@ -21,7 +21,7 @@ public class Field {
   public String getName() {
     return name;
   }
-  public FieldType type() {
+  public ColumnFieldType type() {
     return type;
   }
 
@@ -30,8 +30,8 @@ public class Field {
     return name + " " + type.toString();
   }
   
-  public static ArrayList<Field> keys(Field ... fields) {
-    return new ArrayList<Field>(Arrays.asList(fields));
+  public static ArrayList<ColumnField> keys(ColumnField ... fields) {
+    return new ArrayList<ColumnField>(Arrays.asList(fields));
   }
 
   public static ArrayList<Object> values(Object ... objects) {

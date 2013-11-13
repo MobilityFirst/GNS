@@ -5,8 +5,8 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.StatsInfo;
-import edu.umass.cs.gns.database.Field;
-import edu.umass.cs.gns.database.FieldType;
+import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -52,23 +52,23 @@ public class ReplicaControllerRecord {
 //  public final static Field MOV_AVG_WRITE = new Field("rcr_movAvgWrite", FieldType.LIST_INTEGER);
 //
 //  public final static Field KEEP_ALIVE_TIME = new Field("rcr_keepAlive", FieldType.INTEGER);
-  public final static Field NAME = new Field("rcr_name", FieldType.STRING);
-  public final static Field PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("rcr_primary", FieldType.SET_INTEGER) : new Field("rc1", FieldType.SET_INTEGER);
-  public final static Field ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("rcr_active", FieldType.SET_INTEGER) : new Field("rc2", FieldType.SET_INTEGER);
-  public final static Field OLD_ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("rcr_oldactive", FieldType.SET_INTEGER) : new Field("rc3", FieldType.SET_INTEGER);
-  public final static Field ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new Field("rcr_activeRunning", FieldType.BOOLEAN) : new Field("rc4", FieldType.BOOLEAN);
-  public final static Field OLD_ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new Field("rcr_oldActiveRunning", FieldType.BOOLEAN) : new Field("rc5", FieldType.BOOLEAN);
-  public final static Field ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new Field("rcr_activePaxosID", FieldType.STRING) : new Field("rc6", FieldType.STRING);
-  public final static Field OLD_ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new Field("rcr_oldActivePaxosID", FieldType.STRING) : new Field("rc7", FieldType.STRING);
-  public final static Field MARKED_FOR_REMOVAL = (StartNameServer.experimentMode == false) ? new Field("rcr_markedForRemoval", FieldType.INTEGER) : new Field("rc8", FieldType.INTEGER);
-  public final static Field VOTES_MAP = (StartNameServer.experimentMode == false) ? new Field("rcr_votesMap", FieldType.VOTES_MAP) : new Field("rc9", FieldType.VOTES_MAP);
-  public final static Field STATS_MAP = (StartNameServer.experimentMode == false) ? new Field("rcr_statsMap", FieldType.STATS_MAP) : new Field("rc10", FieldType.STATS_MAP);
-  public final static Field PREV_TOTAL_READ = (StartNameServer.experimentMode == false) ? new Field("rcr_prevTotalRead", FieldType.INTEGER) : new Field("rc11", FieldType.INTEGER);
-  public final static Field PREV_TOTAL_WRITE = (StartNameServer.experimentMode == false) ? new Field("rcr_prevTotalWrite", FieldType.INTEGER) : new Field("rc12", FieldType.INTEGER);
-  public final static Field MOV_AVG_READ = (StartNameServer.experimentMode == false) ? new Field("rcr_movAvgRead", FieldType.LIST_INTEGER) : new Field("rc13", FieldType.LIST_INTEGER);
-  public final static Field MOV_AVG_WRITE = (StartNameServer.experimentMode == false) ? new Field("rcr_movAvgWrite", FieldType.LIST_INTEGER) : new Field("rc14", FieldType.LIST_INTEGER);
-  public final static Field KEEP_ALIVE_TIME = (StartNameServer.experimentMode == false) ? new Field("rcr_keepAlive", FieldType.INTEGER) : new Field("rc15", FieldType.INTEGER);
-  private HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
+  public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);
+  public final static ColumnField PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER) : new ColumnField("rc1", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER) : new ColumnField("rc2", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField OLD_ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER) : new ColumnField("rc3", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc4", ColumnFieldType.BOOLEAN);
+  public final static ColumnField OLD_ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActiveRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc5", ColumnFieldType.BOOLEAN);
+  public final static ColumnField ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activePaxosID", ColumnFieldType.STRING) : new ColumnField("rc6", ColumnFieldType.STRING);
+  public final static ColumnField OLD_ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActivePaxosID", ColumnFieldType.STRING) : new ColumnField("rc7", ColumnFieldType.STRING);
+  public final static ColumnField MARKED_FOR_REMOVAL = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_markedForRemoval", ColumnFieldType.INTEGER) : new ColumnField("rc8", ColumnFieldType.INTEGER);
+  public final static ColumnField VOTES_MAP = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_votesMap", ColumnFieldType.VOTES_MAP) : new ColumnField("rc9", ColumnFieldType.VOTES_MAP);
+  public final static ColumnField STATS_MAP = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_statsMap", ColumnFieldType.STATS_MAP) : new ColumnField("rc10", ColumnFieldType.STATS_MAP);
+  public final static ColumnField PREV_TOTAL_READ = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_prevTotalRead", ColumnFieldType.INTEGER) : new ColumnField("rc11", ColumnFieldType.INTEGER);
+  public final static ColumnField PREV_TOTAL_WRITE = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_prevTotalWrite", ColumnFieldType.INTEGER) : new ColumnField("rc12", ColumnFieldType.INTEGER);
+  public final static ColumnField MOV_AVG_READ = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_movAvgRead", ColumnFieldType.LIST_INTEGER) : new ColumnField("rc13", ColumnFieldType.LIST_INTEGER);
+  public final static ColumnField MOV_AVG_WRITE = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER) : new ColumnField("rc14", ColumnFieldType.LIST_INTEGER);
+  public final static ColumnField KEEP_ALIVE_TIME = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER) : new ColumnField("rc15", ColumnFieldType.INTEGER);
+  private HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
 
   /********************************************
    * CONSTRUCTORS
@@ -79,7 +79,7 @@ public class ReplicaControllerRecord {
    */
   public ReplicaControllerRecord(String name, boolean initialize) {
 
-    hashMap = new HashMap<Field, Object>();
+    hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
 
     if (initialize == false) {
@@ -117,7 +117,7 @@ public class ReplicaControllerRecord {
    */
   public ReplicaControllerRecord(String name, Set<Integer> actives, boolean initialize) {
 
-    hashMap = new HashMap<Field, Object>();
+    hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME,name);
 
     if (initialize == false) return;
@@ -150,7 +150,7 @@ public class ReplicaControllerRecord {
    * @param name
    */
   public ReplicaControllerRecord(String name) {
-    hashMap = new HashMap<Field, Object>();
+    hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
 
   }
@@ -162,7 +162,7 @@ public class ReplicaControllerRecord {
    * @throws JSONException
    */
   public ReplicaControllerRecord(JSONObject json) throws JSONException {
-    hashMap = new HashMap<Field, Object>();
+    hashMap = new HashMap<ColumnField, Object>();
 
     if (json.has(NAME.getName())) {
       hashMap.put(NAME, json.getString(NAME.getName()));
@@ -225,7 +225,7 @@ public class ReplicaControllerRecord {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject jsonObject = new JSONObject();
     GNS.getLogger().fine("hash map --> " + hashMap);
-    for (Field f : hashMap.keySet()) {
+    for (ColumnField f : hashMap.keySet()) {
 
       JSONUtils.putFieldInJsonObject(f, hashMap.get(f), jsonObject);
     }
@@ -246,7 +246,7 @@ public class ReplicaControllerRecord {
    * Constructor used by the initialize values read from database
    * @param allValues
    */
-  public ReplicaControllerRecord(HashMap<Field, Object> allValues) {
+  public ReplicaControllerRecord(HashMap<ColumnField, Object> allValues) {
     this.hashMap = allValues;
   }
 
@@ -543,9 +543,9 @@ public class ReplicaControllerRecord {
   /********************************************
    * WRITE methods: these methods write one or more fields. they may read values of some fields using the above GETTER methods.
    * ******************************************/
-  private static ArrayList<Field> setMarkedForRemoval = new ArrayList<Field>();
+  private static ArrayList<ColumnField> setMarkedForRemoval = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getSetMarkedForRemoval() {
+  private static ArrayList<ColumnField> getSetMarkedForRemoval() {
     synchronized (setMarkedForRemoval) {
       if (setMarkedForRemoval.size() > 0) {
         return setMarkedForRemoval;
@@ -561,7 +561,7 @@ public class ReplicaControllerRecord {
   public void setMarkedForRemoval() throws FieldNotFoundException {
     int markedForRemoval = getMarkedForRemoval();
     if (markedForRemoval == 0) {
-      ArrayList<Field> fields = getSetMarkedForRemoval();
+      ArrayList<ColumnField> fields = getSetMarkedForRemoval();
 
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(1);
@@ -573,7 +573,7 @@ public class ReplicaControllerRecord {
 
   public void setRemoved() throws FieldNotFoundException {
 
-    ArrayList<Field> fields = getSetMarkedForRemoval();
+    ArrayList<ColumnField> fields = getSetMarkedForRemoval();
 
     ArrayList<Object> values = new ArrayList<Object>();
     values.add(2);
@@ -585,7 +585,7 @@ public class ReplicaControllerRecord {
 
   public void setAdded() throws FieldNotFoundException {
 
-    ArrayList<Field> updateFields = getSetMarkedForRemoval();
+    ArrayList<ColumnField> updateFields = getSetMarkedForRemoval();
 
     ArrayList<Object> values = new ArrayList<Object>();
     values.add(0);
@@ -611,9 +611,9 @@ public class ReplicaControllerRecord {
 //      }
 //    }
   }
-  private static ArrayList<Field> updateActiveNameServerFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> updateActiveNameServerFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getUpdateActiveNameServerFields() {
+  private static ArrayList<ColumnField> getUpdateActiveNameServerFields() {
     synchronized (updateActiveNameServerFields) {
       if (updateActiveNameServerFields.size() > 0) {
         return updateActiveNameServerFields;
@@ -640,7 +640,7 @@ public class ReplicaControllerRecord {
     Set<Integer> actives = getActiveNameservers();
     String activePaxosID = getActivePaxosID();
 
-    ArrayList<Field> updateFields = getUpdateActiveNameServerFields();
+    ArrayList<ColumnField> updateFields = getUpdateActiveNameServerFields();
 
     ArrayList<Object> updateValues = new ArrayList<Object>();
 
@@ -660,9 +660,9 @@ public class ReplicaControllerRecord {
     hashMap.put(OLD_ACTIVE_PAXOS_ID, activePaxosID);
     hashMap.put(ACTIVE_PAXOS_ID, newActivePaxosID);
   }
-  private static ArrayList<Field> setOldActiveStoppedFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> setOldActiveStoppedFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getSetOldActiveStoppedFields() {
+  private static ArrayList<ColumnField> getSetOldActiveStoppedFields() {
     synchronized (setOldActiveStoppedFields) {
       if (setOldActiveStoppedFields.size() > 0) {
         return setOldActiveStoppedFields;
@@ -676,7 +676,7 @@ public class ReplicaControllerRecord {
 
     if (oldActiveID.equals(this.getOldActivePaxosID())) {
 
-      ArrayList<Field> updateFields = getSetOldActiveStoppedFields();
+      ArrayList<ColumnField> updateFields = getSetOldActiveStoppedFields();
 
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(false);
@@ -687,9 +687,9 @@ public class ReplicaControllerRecord {
     }
     return false;
   }
-  private static ArrayList<Field> setNewActiveRunningFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> setNewActiveRunningFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getSetNewActiveRunningFields() {
+  private static ArrayList<ColumnField> getSetNewActiveRunningFields() {
     synchronized (setNewActiveRunningFields) {
       if (setNewActiveRunningFields.size() > 0) {
         return setNewActiveRunningFields;
@@ -709,7 +709,7 @@ public class ReplicaControllerRecord {
   public boolean setNewActiveRunning(String newActiveID) throws FieldNotFoundException {
     if (newActiveID.equals(this.getActivePaxosID())) {
 
-      ArrayList<Field> updateFields = getSetNewActiveRunningFields();
+      ArrayList<ColumnField> updateFields = getSetNewActiveRunningFields();
 
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(true);
@@ -743,7 +743,7 @@ public class ReplicaControllerRecord {
     readWriteRate[1] = updates.getAverage();
 
 
-    ArrayList<Field> updateFields = new ArrayList<Field>();
+    ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
     updateFields.add(PREV_TOTAL_READ);
     updateFields.add(PREV_TOTAL_WRITE);
     updateFields.add(MOV_AVG_READ);
@@ -773,14 +773,14 @@ public class ReplicaControllerRecord {
    */
   public void addReplicaSelectionVote(int id, int vote, int update) throws FieldNotFoundException { //
     NameServer.replicaController.increment(getName(),
-            Field.keys(PREV_TOTAL_READ, PREV_TOTAL_WRITE),
+            ColumnField.keys(PREV_TOTAL_READ, PREV_TOTAL_WRITE),
             //incrementFields, 
-            Field.values(vote, update),
+            ColumnField.values(vote, update),
             //incrementValues, 
             VOTES_MAP,
-            Field.keys(new Field(Integer.toString(id), FieldType.INTEGER)),
+            ColumnField.keys(new ColumnField(Integer.toString(id), ColumnFieldType.INTEGER)),
             //votesMapKeys,
-            Field.values(vote) //votesMapValues
+            ColumnField.values(vote) //votesMapValues
             );
   }
 
@@ -795,7 +795,7 @@ public class ReplicaControllerRecord {
 
     if (statsMap != null) {
       statsMap.put(id, new StatsInfo(readFrequency, writeFrequency));
-      ArrayList<Field> updateFields = new ArrayList<Field>();
+      ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
       updateFields.add(STATS_MAP);
 
       ArrayList<Object> values = new ArrayList<Object>();
@@ -877,7 +877,7 @@ public class ReplicaControllerRecord {
    * @param keepAliveTime set keep alive time
    */
   public void setKeepAliveTime(long keepAliveTime) throws FieldNotFoundException {
-    ArrayList<Field> fields = new ArrayList<Field>();
+    ArrayList<ColumnField> fields = new ArrayList<ColumnField>();
     fields.add(KEEP_ALIVE_TIME);
 
     ArrayList<Object> values = new ArrayList<Object>();

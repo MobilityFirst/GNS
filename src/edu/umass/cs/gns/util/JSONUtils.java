@@ -5,7 +5,7 @@
 package edu.umass.cs.gns.util;
 
 import com.google.common.collect.ImmutableSet;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.StatsInfo;
@@ -153,7 +153,7 @@ public class JSONUtils {
   }
 
 
-  public static Object getObject(Field field, JSONObject jsonObject) throws JSONException{
+  public static Object getObject(ColumnField field, JSONObject jsonObject) throws JSONException{
     if (jsonObject.has(field.getName())) {
       switch (field.type()) {
         case BOOLEAN:
@@ -203,7 +203,7 @@ public class JSONUtils {
 //  }
 
 
-  public static void putFieldInJsonObject(Field field, Object value, JSONObject jsonObject) throws JSONException {
+  public static void putFieldInJsonObject(ColumnField field, Object value, JSONObject jsonObject) throws JSONException {
     try{
     if (value == null) return;
     switch (field.type()) {

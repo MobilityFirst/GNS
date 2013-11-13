@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -386,8 +386,8 @@ class ReplicationWorkerPaxos extends TimerTask {
 
 
   }
-  private static  ArrayList<Field> activePaxosStopFields = new ArrayList<Field>();
-  static ArrayList<Field> getActivePaxosStopFields() {
+  private static  ArrayList<ColumnField> activePaxosStopFields = new ArrayList<ColumnField>();
+  static ArrayList<ColumnField> getActivePaxosStopFields() {
     synchronized (activePaxosStopFields) {
       if (activePaxosStopFields.size() > 0)return  activePaxosStopFields;
       activePaxosStopFields.add(NameRecord.ACTIVE_PAXOS_ID);
@@ -396,9 +396,9 @@ class ReplicationWorkerPaxos extends TimerTask {
     }
   }
 
-  private static ArrayList<Field> oldActiveStopFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> oldActiveStopFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getOldActiveStopFields() {
+  private static ArrayList<ColumnField> getOldActiveStopFields() {
     synchronized (oldActiveStopFields) {
       if (oldActiveStopFields.size() > 0) return  oldActiveStopFields;
       oldActiveStopFields.add(NameRecord.ACTIVE_PAXOS_ID);
@@ -407,9 +407,9 @@ class ReplicationWorkerPaxos extends TimerTask {
     }
   }
 
-  private static ArrayList<Field> prevValueRequestFields = new ArrayList<Field>();
+  private static ArrayList<ColumnField> prevValueRequestFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<Field> getPrevValueRequestFields() {
+  private static ArrayList<ColumnField> getPrevValueRequestFields() {
     synchronized (prevValueRequestFields) {
       if (prevValueRequestFields.size() > 0) return prevValueRequestFields;
       prevValueRequestFields.add(NameRecord.OLD_ACTIVE_PAXOS_ID);

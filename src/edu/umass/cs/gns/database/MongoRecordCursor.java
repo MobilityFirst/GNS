@@ -28,8 +28,8 @@ import org.json.JSONObject;
  */
 public class MongoRecordCursor extends BasicRecordCursor {
 
-  private Field nameField;
-  private ArrayList<Field> fields;
+  private ColumnField nameField;
+  private ArrayList<ColumnField> fields;
   private DBCursor cursor;
   private boolean allFields = false;
 
@@ -40,7 +40,7 @@ public class MongoRecordCursor extends BasicRecordCursor {
    * @param collectionName
    * @param nameField 
    */
-  public MongoRecordCursor(DB db, String collectionName, Field nameField) {
+  public MongoRecordCursor(DB db, String collectionName, ColumnField nameField) {
     this.nameField = nameField;
     this.allFields = true;
 
@@ -60,7 +60,7 @@ public class MongoRecordCursor extends BasicRecordCursor {
    * @param nameField
    * @param fields 
    */
-  public MongoRecordCursor(DB db, String collectionName, Field nameField, ArrayList<Field> fields) {
+  public MongoRecordCursor(DB db, String collectionName, ColumnField nameField, ArrayList<ColumnField> fields) {
     this.nameField = nameField;
     this.fields = fields;
     this.allFields = false;
@@ -72,7 +72,7 @@ public class MongoRecordCursor extends BasicRecordCursor {
     BasicDBObject projection = new BasicDBObject().append("_id", 0);
     projection.append(nameField.getName(), 1); // name field must be returned.
     if (fields != null) { // add other fields requested
-      for (Field f : fields) {
+      for (ColumnField f : fields) {
         projection.append(f.getName(), 1);
       }
     }
@@ -85,7 +85,7 @@ public class MongoRecordCursor extends BasicRecordCursor {
    * @param cursor
    * @param nameField 
    */
-  public MongoRecordCursor(DBCursor cursor, Field nameField) {
+  public MongoRecordCursor(DBCursor cursor, ColumnField nameField) {
     this.nameField = nameField;
     this.cursor = cursor;
     this.allFields = true;
@@ -117,14 +117,14 @@ public class MongoRecordCursor extends BasicRecordCursor {
    * 
    * @return HashMap
    */
-  private HashMap<Field, Object> nextSomeFieldsHashMap() {
+  private HashMap<ColumnField, Object> nextSomeFieldsHashMap() {
     if (cursor.hasNext()) {
-      HashMap<Field, Object> hashMap = new HashMap<Field, Object>();
+      HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
       DBObject dbObject = cursor.next();
 
       hashMap.put(nameField, dbObject.get(nameField.getName()).toString());// put the name in the hashmap!! very important!!
 
-      FieldType.populateHashMap(hashMap, dbObject, fields); // populate other fields in hashmap
+      ColumnFieldType.populateHashMap(hashMap, dbObject, fields); // populate other fields in hashmap
 
       return hashMap;
     } else {
@@ -153,7 +153,7 @@ public class MongoRecordCursor extends BasicRecordCursor {
    * @return HashMap
    */
   @Override
-  public HashMap<Field, Object> nextHashMap() {
+  public HashMap<ColumnField, Object> nextHashMap() {
     if (allFields) {
       throw new UnsupportedOperationException("Not supported yet.");
     } else {
@@ -205,9 +205,9 @@ public class MongoRecordCursor extends BasicRecordCursor {
     throw new UnsupportedOperationException("Not supported.");
   }
 
-  private JSONObject hashMapWithFieldsToJSONObject(HashMap<Field, Object> map) {
+  private JSONObject hashMapWithFieldsToJSONObject(HashMap<ColumnField, Object> map) {
     JSONObject json = new JSONObject();
-    for (Entry<Field, Object> entry : map.entrySet()) {
+    for (Entry<ColumnField, Object> entry : map.entrySet()) {
       try {
         json.put(entry.getKey().getName(), entry.getValue());
       } catch (JSONException e) {

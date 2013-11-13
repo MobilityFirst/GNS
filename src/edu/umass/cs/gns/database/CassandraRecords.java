@@ -262,47 +262,47 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields1) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public HashMap<Field, Object> lookup(String collection, String name, Field nameField, ArrayList<Field> fields1, Field valuesMapField, ArrayList<Field> valuesMapKeys) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void update(String collection, String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1) {
+  public void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void update(String collection, String name, Field nameField, ArrayList<Field> fields1, ArrayList<Object> values1, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void updateConditional(String collectionName, String guid, Field nameField, Field conditionField, Object conditionValue, ArrayList<Field> fields, ArrayList<Object> values, Field valuesMapField, ArrayList<Field> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void updateConditional(String collectionName, String guid, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void increment(String collection, String name, ArrayList<Field> fields1, ArrayList<Object> values1) {
+  public void increment(String collection, String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void increment(String collectionName, String guid, ArrayList<Field> fields1, ArrayList<Object> values1, Field votesMapField, ArrayList<Field> votesMapKeys, ArrayList<Object> votesMapValues) {
+  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void removeMapKeys(String collectionName, String name, Field mapField, ArrayList<Field> mapKeys) {
+  public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys) {
     //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public BasicRecordCursor getAllRowsIterator(String collection, Field nameField, ArrayList<Field> fields) {
+  public BasicRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -313,17 +313,17 @@ public class CassandraRecords implements NoSQLRecords {
   
  
   @Override
-  public BasicRecordCursor selectRecords(String collectionName, Field valuesMapField, String key, Object value) {
+  public BasicRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   
   @Override
-  public BasicRecordCursor selectRecordsWithin(String collectionName, Field valuesMapField, String key, String value) {
+  public BasicRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BasicRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Double maxDistance) {
+  public BasicRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

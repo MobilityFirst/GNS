@@ -6,11 +6,11 @@
 package edu.umass.cs.gns.exceptions;
 
 import edu.umass.cs.gns.exceptions.GnsException;
-import edu.umass.cs.gns.database.Field;
+import edu.umass.cs.gns.database.ColumnField;
 
 public class FieldNotFoundException extends GnsException{
-  Field missingField;
-  public FieldNotFoundException(Field f) {
+  ColumnField missingField;
+  public FieldNotFoundException(ColumnField f) {
     missingField = f;
   }
 

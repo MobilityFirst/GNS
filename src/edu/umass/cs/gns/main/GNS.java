@@ -66,6 +66,7 @@ public class GNS {
   }
   
   public static boolean enableEmailAccountAuthentication = false;
+  public static boolean enableSignatureVerification = true;
   
   /**
    * Number of primary nameservers. Default is 3 *
