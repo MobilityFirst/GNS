@@ -113,7 +113,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Object maxDistance) {
+  public BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Double maxDistance) {
     return MongoRecords.getInstance().selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
   }
   

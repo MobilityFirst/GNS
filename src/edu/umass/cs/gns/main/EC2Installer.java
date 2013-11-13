@@ -642,7 +642,7 @@ public class EC2Installer {
     Option restart = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("restart a runset")
             .create("restart");
-    Option removeLogs = new Option("removeLogs", "remove log files");
+    Option removeLogs = new Option("removeLogs", "remove log files (use with -restart)");
     Option deleteDatabase = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("delete the databases in a runset")
             .create("deleteDatabase");

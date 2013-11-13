@@ -279,7 +279,7 @@ public class NameServer {
    * @param maxDistance - the distance in radians
    * @return 
    */
-  public static BasicRecordCursor selectRecordsNear(String key, String value, Object maxDistance) {
+  public static BasicRecordCursor selectRecordsNear(String key, String value, Double maxDistance) {
     return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
   }
 

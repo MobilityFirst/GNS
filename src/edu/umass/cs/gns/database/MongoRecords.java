@@ -316,13 +316,14 @@ public class MongoRecords implements NoSQLRecords {
     }
     return box;
   }
-
+  
+  private final static double METERS_PER_DEGREE = 111.12 * 1000; // at the equator
   @Override
-  public MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance) {
+  public MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Double maxDistance) {
     return selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance, false);
   }
 
-  private MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance, boolean explain) {
+  private MongoRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Double maxDistance, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
 
@@ -330,6 +331,7 @@ public class MongoRecords implements NoSQLRecords {
 //                         { $near : [ <x> , <y> ] ,
 //                           $maxDistance: <distance>
 //                    } } )
+    double maxDistanceInRadians = maxDistance / METERS_PER_DEGREE;
     BasicDBList tuple = new BasicDBList();
     try {
       JSONArray json = new JSONArray(value);
@@ -339,7 +341,7 @@ public class MongoRecords implements NoSQLRecords {
       GNS.getLogger().severe("Unable to parse JSON: " + e);
     }
     String fieldName = valuesMapField.getName() + "." + key;
-    BasicDBObject nearClause = new BasicDBObject("$near", tuple).append("$maxDistance", maxDistance);
+    BasicDBObject nearClause = new BasicDBObject("$near", tuple).append("$maxDistance", maxDistanceInRadians);
     BasicDBObject query = new BasicDBObject(fieldName, nearClause);
     //System.out.println("***QUERY***: " + query.toString());
     DBCursor cursor = collection.find(query);
@@ -794,7 +796,7 @@ public class MongoRecords implements NoSQLRecords {
     if (search instanceof Double) {
       cursor = instance.selectRecords(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
     } else if (other != null) {
-      cursor = instance.selectRecordsNear(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, other, true);
+      cursor = instance.selectRecordsNear(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, (Double) other, true);
     } else {
       cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, true);
     }

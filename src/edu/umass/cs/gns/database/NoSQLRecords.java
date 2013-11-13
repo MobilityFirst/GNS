@@ -228,7 +228,7 @@ public interface NoSQLRecords {
   
   /**
    * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple: 
-   * [LONG, LAT]. maxDistance is in radians. The returned value is a BasicRecordCursor.
+   * [LONG, LAT]. maxDistance is in meters. The returned value is a BasicRecordCursor.
    * 
    * @param collectionName
    * @param valuesMapField
@@ -237,7 +237,7 @@ public interface NoSQLRecords {
    * @param maxDistance
    * @return 
    */
-  public BasicRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Object maxDistance);
+  public BasicRecordCursor selectRecordsNear(String collectionName, Field valuesMapField, String key, String value, Double maxDistance);
   
   /**
    * Puts the database in a state where it has nothing in it.

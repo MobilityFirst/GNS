@@ -241,7 +241,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Object maxDistance) {
+  public BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Double maxDistance) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

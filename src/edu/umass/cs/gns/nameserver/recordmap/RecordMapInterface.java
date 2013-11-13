@@ -107,7 +107,7 @@ public interface RecordMapInterface {
    * @param maxDistance - the distance in radians
    * @return 
    */
-  public abstract BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Object maxDistance);
+  public abstract BasicRecordCursor selectRecordsNear(Field valuesMapField, String key, String value, Double maxDistance);
 
   // Replica Controller
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;
