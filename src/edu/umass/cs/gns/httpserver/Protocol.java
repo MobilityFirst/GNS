@@ -154,7 +154,6 @@ public class Protocol {
   public final static String OLDVALUE = "oldvalue";
   public final static String MEMBER = "member";
   public final static String MEMBERS = "members";
-  public final static String PARAMETER = "parameter";
   // Fields for HTTP get queries
   public final static String ACLTYPE = "aclType";
   // Special fields for ACL 
@@ -405,7 +404,7 @@ public class Protocol {
             + "  [ONLY IN ADMIN MODE] Returns the contents of the local name server cache." + NEWLINE + NEWLINE
             + urlPrefix + DUMP + NEWLINE
             + "  [ONLY IN ADMIN MODE] Returns the contents of the GNS." + NEWLINE + NEWLINE
-            + urlPrefix + SETPARAMETER + QUERYPREFIX + PARAMETER + VALSEP + "<parameter>" + KEYSEP + VALUE + VALSEP + "<value>" + NEWLINE
+            + urlPrefix + SETPARAMETER + QUERYPREFIX + NAME + VALSEP + "<parameter>" + KEYSEP + VALUE + VALSEP + "<value>" + NEWLINE
             + "  [ONLY IN ADMIN MODE] Changes a parameter value." + NEWLINE + NEWLINE;
 
     String post = "Notes: " + NEWLINE + NEWLINE
@@ -1844,12 +1843,12 @@ public class Protocol {
       } else if (ADMIN.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
         // pass in the host to use as a passkey check
         return processAdmin(host, queryMap.get(PASSKEY), queryString);
-      } else if (SETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PARAMETER, VALUE))) {
-        String parameter = queryMap.get(PARAMETER);
+      } else if (SETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, VALUE))) {
+        String parameter = queryMap.get(NAME);
         String value = queryMap.get(VALUE);
         return processSetParameter(parameter, value);
-      } else if (GETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PARAMETER))) {
-        String parameter = queryMap.get(PARAMETER);
+      } else if (GETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
+        String parameter = queryMap.get(NAME);
         return processGetParameter(parameter);
       } else if (DELETEALLRECORDS.equals(action)) {
         return processDeleteAllRecords(queryString);

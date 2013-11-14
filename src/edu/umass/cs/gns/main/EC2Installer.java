@@ -391,7 +391,10 @@ public class EC2Installer {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     AWSEC2.executeBashScript(hostname, keyFile, "runLNS.sh",
             "#!/bin/bash\n"
+            + "cd /home/ec2-user\n"
+            + "if [ -f LNSlogfile ]; then\n"
             + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
+            + "fi\n"
             + "nohup java -cp " + GNSFile + " " + StartLNSClass + " "
             + "-id " + getLNSId(id)
             // at some point a bunch of these should become defaults
@@ -410,7 +413,10 @@ public class EC2Installer {
     StatusModel.getInstance().queueUpdate(id, "Starting name servers");
     AWSEC2.executeBashScript(hostname, keyFile, "runNS.sh",
             "#!/bin/bash\n"
+            + "cd /home/ec2-user\n"
+            + "if [ -f NSlogfile ]; then\n"
             + "mv --backup=numbered NSlogfile NSlogfile.save\n"
+            + "fi\n"
             + "nohup java -cp " + GNSFile + " " + StartNSClass + " "
             + " -id " + id
             // at some point a bunch of these should become defaults
@@ -423,6 +429,15 @@ public class EC2Installer {
             //+ " -debugMode "
             + " -nsfile name-server-info "
             + "> NSlogfile 2>&1 &");
+    // run this with sudo because it needs root access to bind port 80
+    AWSEC2.executeBashScript(hostname, keyFile, true, "runRS.sh",
+            "#!/bin/bash\n"
+            + "cd /home/ec2-user\n"
+            + "if [ -f RSlogfile ]; then\n"
+            + "mv --backup=numbered RSlogfile RSlogfile.save\n"
+            + "fi\n"
+            + "nohup java -cp " + GNSFile + " edu.umass.cs.gns.httpserver.RedirectServer "
+            + "> RSlogfile 2>&1 &");
     // now run as part of LNS
 //    StatusModel.getInstance().queueUpdate(id, "Starting HTTP servers");
 //    AWSEC2.executeBashScript(hostname, keyFile, "runHTTP.sh",
@@ -439,7 +454,7 @@ public class EC2Installer {
     StatusModel.getInstance().queueUpdate(id, "Killing servers");
     AWSEC2.executeBashScript(hostname, keyFile, "killAllServers.sh", "#!/bin/bash\nkillall java");
   }
-  
+
   private static void removeLogFiles(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     StatusModel.getInstance().queueUpdate(id, "Removing log files");
@@ -551,7 +566,7 @@ public class EC2Installer {
     populateIDTableForRunset(name);
     for (InstanceInfo info : idTable.values()) {
       threads.add(new UpdateThread(info.getId(), info.getHostname(), action));
-    } 
+    }
     for (int i = 0; i < threads.size(); i++) {
       threads.get(i).start();
     }
