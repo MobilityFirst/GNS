@@ -510,15 +510,12 @@ public class HTTPClient {
    * @throws SignatureException
    */
   private String signDigestOfMessage(String guid, String message) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
-    byte[] messageDigest = SHA1HashFunction.getInstance().hash(message.getBytes());
-
     KeyPair keyPair = getKeyPairFromPreferences(guid);
-    //KeyPair keyPair = guidToKeyPair.get(guid);
     PrivateKey privateKey = keyPair.getPrivate();
     Signature instance = Signature.getInstance(Protocol.SIGNATUREALGORITHM);
 
     instance.initSign(privateKey);
-    instance.update(messageDigest);
+    instance.update(message.getBytes());
     byte[] signature = instance.sign();
 
     return ByteUtils.toHex(signature);

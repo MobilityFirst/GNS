@@ -1897,8 +1897,6 @@ public class Protocol {
     if (!GNS.enableSignatureVerification) {
       return true;
     }
-    byte[] messageDigest = SHA1HashFunction.getInstance().hash(message.getBytes());
-
     byte[] encodedPublicKey = Base64.decode(guidInfo.getPublicKey());
     if (encodedPublicKey == null) { // bogus signature
       return false;
@@ -1909,7 +1907,7 @@ public class Protocol {
 
     Signature sig = Signature.getInstance(Protocol.SIGNATUREALGORITHM);
     sig.initVerify(publicKey);
-    sig.update(messageDigest);
+    sig.update(message.getBytes());
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
     GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;

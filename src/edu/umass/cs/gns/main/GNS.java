@@ -65,7 +65,7 @@ public class GNS {
     }
   }
   
-  public static boolean enableEmailAccountAuthentication = false;
+  public static boolean enableEmailAccountAuthentication = true;
   public static boolean enableSignatureVerification = true;
   
   /**
