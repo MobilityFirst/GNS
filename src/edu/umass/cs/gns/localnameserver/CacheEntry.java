@@ -89,16 +89,18 @@ public class CacheEntry implements Comparable<CacheEntry> {
   }
 
   /**
-   * Special case handling of TTLs for certain keys
+   * Allow special case handling of TTLs for certain keys
    * @param key 
    */
   private int getKeyTTL(String key) {
-    if (GNS.isInternalField(key)) {
-      // Fields used by the GNS are cached forever (or at least until they get updated).
-      return -1;
-    } else {
-      return timeToLiveInSeconds;
-    }
+    return timeToLiveInSeconds;
+    // maybe later... makes me nervous
+//    if (GNS.isInternalField(key)) {
+//      // Fields used by the GNS are cached forever (or at least until they get updated).
+//      return -1;
+//    } else {
+//      return timeToLiveInSeconds;
+//    }
   }
 
   /**
