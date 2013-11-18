@@ -23,7 +23,6 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.ScreenUtils;
-import edu.umass.cs.gns.util.XMLParser;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +61,6 @@ import org.apache.commons.cli.ParseException;
 public class EC2Installer {
 
   private static final String NEWLINE = System.getProperty("line.separator");
-  private static String EC2USERNAME = "ec2-user";
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String PRIVATEKEYFILEEXTENSION = ".pem";
   //private static final String PUBLICKEYFILEEXTENSION = ".pub";
@@ -70,12 +68,14 @@ public class EC2Installer {
   private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
   private static final String DEFAULT_LOG_LEVEL = "INFO";
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
+  private static final AMIRecordType DEFAULT_AMI_RECORD_TYPE = AMIRecordType.Amazon_Linux_AMI_2013_03_1;
+  private static final String DEFAULT_EC2_USERNAME = "ec2-user";
   //private static AmazonEC2 ec2;
   private static Preferences preferences = Preferences.userRoot().node(EC2Installer.class.getName());
   /**
    * Contains information read from config file on what hosts we are trying to start.
    */
-  private static List<RegionSpec> regionsList = new ArrayList<RegionSpec>();
+  private static List<EC2RegionSpec> regionsList = new ArrayList<EC2RegionSpec>();
   /**
    * Stores information about instances that have started.
    */
@@ -84,35 +84,8 @@ public class EC2Installer {
   private static final int STARTINGNODENUMBER = 0;
   private static ConcurrentHashMap<Integer, Integer> hostsThatDidNotStart = new ConcurrentHashMap<Integer, Integer>();
   private static DataStoreType dataStoreType = DEFAULT_DATA_STORE_TYPE;
-
-  /**
-   * Information read from config file on what hosts we are trying to start.
-   */
-  private static class RegionSpec {
-
-    private RegionRecord region;
-    private int cnt;
-    private String elasticIP;
-
-    public RegionSpec(RegionRecord region, int cnt, String elasticIP) {
-      this.region = region;
-      this.cnt = cnt;
-      this.elasticIP = elasticIP;
-    }
-
-    public RegionRecord getRegion() {
-      return region;
-    }
-
-    public int getCnt() {
-      return cnt;
-    }
-
-    public String getElasticIP() {
-      return elasticIP;
-    }
-  }
-
+  private static AMIRecordType amiRecordType = DEFAULT_AMI_RECORD_TYPE;
+  private static String ec2UserName = DEFAULT_EC2_USERNAME;
   /**
    * Information about instances that have started
    */
@@ -153,14 +126,24 @@ public class EC2Installer {
   }
 
   private static void loadConfig(String configName) {
-    XMLParser ec2parse = new XMLParser(configName);
-    for (int i = 0; i < ec2parse.size(); i++) {
-      String region = ec2parse.getAttribute(i, "name", true);
-      int cnt = Integer.parseInt(ec2parse.getAttribute(i, "cnt", true));
-      String elasticIP = ec2parse.getAttribute(i, "ip");
-      System.out.println(region + " " + cnt + " " + elasticIP);
-      regionsList.add(new RegionSpec(RegionRecord.valueOf(region), cnt, elasticIP));
+    EC2ConfigParser parser = new EC2ConfigParser(configName);
+    for (EC2RegionSpec spec : parser.getRegions()) {
+      //System.out.println(spec.toString());
+      regionsList.add(new EC2RegionSpec(spec.getRegion(), spec.getCount(), spec.getIp()));
     }
+    ec2UserName = parser.getEc2username();
+    dataStoreType = parser.getDataStoreType();
+    amiRecordType = parser.getAmiRecordType();
+    
+    
+//    XMLParser ec2parse = new XMLParser(configName);
+//    for (int i = 0; i < ec2parse.size(); i++) {
+//      String region = ec2parse.getAttribute(i, "name", true);
+//      int cnt = Integer.parseInt(ec2parse.getAttribute(i, "cnt", true));
+//      String elasticIP = ec2parse.getAttribute(i, "ip");
+//      System.out.println(region + " " + cnt + " " + elasticIP);
+//      regionsList.add(new RegionSpec(RegionRecord.valueOf(region), cnt, elasticIP));
+//    }
   }
 
   /**
@@ -174,10 +157,10 @@ public class EC2Installer {
     //String runSetName = nextRunSetName();
     // use threads to do a bunch of installs in parallel
     int cnt = STARTINGNODENUMBER;
-    for (RegionSpec regionSpec : regionsList) {
+    for (EC2RegionSpec regionSpec : regionsList) {
       int i;
-      for (i = 0; i < regionSpec.getCnt(); i++) {
-        threads.add(new InstallStartThread(runSetName, regionSpec.getRegion(), cnt, i == 0 ? regionSpec.elasticIP : null));
+      for (i = 0; i < regionSpec.getCount(); i++) {
+        threads.add(new InstallStartThread(runSetName, regionSpec.getRegion(), cnt, i == 0 ? regionSpec.getIp() : null));
         cnt = cnt + 1;
       }
     }
@@ -283,22 +266,16 @@ public class EC2Installer {
    */
   public static void installPhaseOne(RegionRecord region, String runSetName, int id, String elasticIP) {
     String installScript;
-    AMIRecord ami;
+    AMIRecord ami = AMIRecord.getAMI(amiRecordType, region);
     switch (dataStoreType) {
       case MONGO:
         installScript = mongoInstallScript;
-        EC2USERNAME = "ec2-user";
-        ami = AMIRecord.getAMI(AMIRecordType.Amazon_Linux_AMI_2013_03_1, region);
         break;
       case CASSANDRA:
         installScript = cassandraInstallScript;
-        EC2USERNAME = "ubuntu";
-        ami = AMIRecord.getAMI(AMIRecordType.Cassandra_Linux, region);
         break;
       default:
         installScript = mongoInstallScript;
-        EC2USERNAME = "ec2-user";
-        ami = AMIRecord.getAMI(AMIRecordType.Amazon_Linux_AMI_2013_03_1, region);
     }
 
     String idString = Integer.toString(id);
@@ -364,7 +341,7 @@ public class EC2Installer {
   private static void copyJARFiles(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     StatusModel.getInstance().queueUpdate(id, "Copying jar files");
-    SSHClient.scpTo(EC2USERNAME, hostname, keyFile, GNSJar, GNSFile);
+    SSHClient.scpTo(ec2UserName, hostname, keyFile, GNSJar, GNSFile);
   }
   private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
   private static final String CassandraRecordsClass = "edu.umass.cs.gns.database.CassandraRecords";
@@ -499,7 +476,7 @@ public class EC2Installer {
       result.append(NEWLINE);
     }
 
-    SSHClient.execWithSudoNoPass(EC2USERNAME, hostname, keyFile, "echo \"" + result.toString() + "\" > name-server-info");
+    SSHClient.execWithSudoNoPass(ec2UserName, hostname, keyFile, "echo \"" + result.toString() + "\" > name-server-info");
   }
 
   public static void terminateRunSet(String name) {
@@ -667,9 +644,9 @@ public class EC2Installer {
     Option describe = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("describe a runset")
             .create("describe");
-    Option configName = OptionBuilder.withArgName("config name").hasArg()
-            .withDescription("configuration file name")
-            .create("config");
+//    Option configName = OptionBuilder.withArgName("config name").hasArg()
+//            .withDescription("configuration file name")
+//            .create("config");
     Option dataStore = OptionBuilder.withArgName("data store type").hasArg()
             .withDescription("data store type")
             .create("datastore");
@@ -685,7 +662,7 @@ public class EC2Installer {
     commandLineOptions.addOption(deleteDatabase);
     //commandLineOptions.addOption(updateCurrent);
     commandLineOptions.addOption(describe);
-    commandLineOptions.addOption(configName);
+    //commandLineOptions.addOption(configName);
     commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(help);
 
@@ -720,8 +697,6 @@ public class EC2Installer {
   }
 
   public static void main(String[] args) {
-    //loadConfig();
-    //System.out.println("Current Run Set is " + currentRunSetName());
     try {
       CommandLine parser = initializeOptions(args);
       if (parser.hasOption("help")) {
@@ -738,7 +713,7 @@ public class EC2Installer {
       String runsetRestart = parser.getOptionValue("restart");
       String runsetDeleteDatabase = parser.getOptionValue("deleteDatabase");
       String runsetDescribe = parser.getOptionValue("describe");
-      String configName = parser.getOptionValue("config");
+      //String configName = parser.getOptionValue("config");
       String dataStoreName = parser.getOptionValue("datastore");
       boolean removeLogs = parser.hasOption("removeLogs");
 
@@ -751,12 +726,16 @@ public class EC2Installer {
         }
       }
 
+      String configName = createRunsetName != null ? createRunsetName : 
+              terminateRunsetName != null ? terminateRunsetName :
+              runsetUpdate != null ? runsetUpdate :
+              runsetRestart != null ? runsetRestart :
+              runsetDeleteDatabase != null ? runsetDeleteDatabase :
+              runsetDescribe != null ? runsetDescribe : null;
 
+      System.out.println("Config name: " + configName);
       if (configName != null) {
         loadConfig(configName);
-      } else if (createRunsetName != null) {
-        printUsage("-config must be specified with create");
-        System.exit(1);
       }
 
       if (createRunsetName != null) {
