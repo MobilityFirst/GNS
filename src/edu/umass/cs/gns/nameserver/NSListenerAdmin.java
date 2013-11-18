@@ -134,19 +134,25 @@ public class NSListenerAdmin extends Thread {
               String tag = dumpRequestPacket.getArgument();
               BasicRecordCursor cursor = NameServer.getAllRowsIterator();
               while (cursor.hasNext()) {
-                NameRecord nameRecord = new NameRecord(cursor.next());
-                //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-                // a bit of a hack here
+                NameRecord nameRecord = null;
+                JSONObject json = cursor.next();
                 try {
-                  if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
-                    GuidInfo userInfo = new GuidInfo(nameRecord.getKey(AccountAccess.GUID_INFO).toResultValueString());
-                    if (userInfo.containsTag(tag)) {
-                      jsonArray.put(nameRecord.toJSONObject());
+                  nameRecord = new NameRecord(json);
+                } catch (JSONException e) {
+                  GNS.getLogger().severe("Problem parsing json into NameRecord: " + e + " JSON is " + json.toString());
+                }
+                if (nameRecord != null) {
+                  try {
+                    if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
+                      GuidInfo userInfo = new GuidInfo(nameRecord.getKey(AccountAccess.GUID_INFO).toResultValueString());
+                      if (userInfo.containsTag(tag)) {
+                        jsonArray.put(nameRecord.toJSONObject());
+                      }
                     }
+                  } catch (FieldNotFoundException e) {
+                    GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                   }
-                } catch (FieldNotFoundException e) {
-                  GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
-                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
               }
               // OTHERWISE WE RETURN ALL THE RECORD
@@ -154,8 +160,16 @@ public class NSListenerAdmin extends Thread {
               //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
               BasicRecordCursor cursor = NameServer.getAllRowsIterator();
               while (cursor.hasNext()) {
-                NameRecord nameRecord = new NameRecord(cursor.next());
-                jsonArray.put(nameRecord.toJSONObject());
+                NameRecord nameRecord = null;
+                JSONObject json = cursor.next();
+                try {
+                  nameRecord = new NameRecord(json);
+                } catch (JSONException e) {
+                  GNS.getLogger().severe("Problem parsing record cursor into NameRecord: " + e + " JSON is " + json.toString());
+                }
+                if (nameRecord != null) {
+                  jsonArray.put(nameRecord.toJSONObject());
+                }
               }
             }
             if (GNS.getLogger().isLoggable(Level.FINER)) {

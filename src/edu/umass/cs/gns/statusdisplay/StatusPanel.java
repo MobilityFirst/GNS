@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.main.EC2Installer;
+import edu.umass.cs.gns.aws.EC2Installer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

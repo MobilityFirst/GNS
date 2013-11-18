@@ -1326,7 +1326,7 @@ public class Protocol {
         String code = queryMap.get(CODE);
         return processVerifyAccount(guid, code);
       } else if (REMOVEACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, SIGNATURE))) {
-        // syntax: register userName guid public_key
+        // syntax: remove userName guid public_key
         String userName = queryMap.get(NAME);
         String guid = queryMap.get(GUID);
         String signature = queryMap.get(SIGNATURE);

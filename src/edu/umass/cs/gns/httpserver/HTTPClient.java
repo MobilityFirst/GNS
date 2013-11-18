@@ -2,7 +2,7 @@ package edu.umass.cs.gns.httpserver;
 
 import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
 import static edu.umass.cs.gns.httpserver.Defs.*;
-import edu.umass.cs.gns.main.EC2Installer;
+import edu.umass.cs.gns.aws.EC2Installer;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Logging;

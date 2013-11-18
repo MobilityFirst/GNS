@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.main;
+package edu.umass.cs.gns.aws;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
@@ -7,10 +7,13 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 import edu.umass.cs.amazontools.AMIRecord;
+import edu.umass.cs.amazontools.AMIRecordType;
 import edu.umass.cs.amazontools.AWSEC2;
 import edu.umass.cs.amazontools.InstanceStateRecord;
 import edu.umass.cs.amazontools.RegionRecord;
 import edu.umass.cs.amazontools.SSHClient;
+import edu.umass.cs.gns.main.DataStoreType;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.statusdisplay.MapFrame;
 import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusFrame;
@@ -285,17 +288,17 @@ public class EC2Installer {
       case MONGO:
         installScript = mongoInstallScript;
         EC2USERNAME = "ec2-user";
-        ami = region.getDefaultAMI();
+        ami = AMIRecord.getAMI(AMIRecordType.Amazon_Linux_AMI_2013_03_1, region);
         break;
       case CASSANDRA:
         installScript = cassandraInstallScript;
         EC2USERNAME = "ubuntu";
-        ami = region.getCassandraAMI();
+        ami = AMIRecord.getAMI(AMIRecordType.Cassandra_Linux, region);
         break;
       default:
         installScript = mongoInstallScript;
         EC2USERNAME = "ec2-user";
-        ami = region.getDefaultAMI();
+        ami = AMIRecord.getAMI(AMIRecordType.Amazon_Linux_AMI_2013_03_1, region);
     }
 
     String idString = Integer.toString(id);
