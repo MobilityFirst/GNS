@@ -552,7 +552,7 @@ public class PaxosManager extends Thread{
       }
       else {
         if (r1 != null && r1.getPaxosID().equals(paxosID) == false) {
-          GNS.getLogger().severe("OldPaxos replica replaced .. so log a stop message .. " + r1.getPaxosID() + " new replica " + paxosID);
+          GNS.getLogger().info("OldPaxos replica replaced .. so log a stop message .. " + r1.getPaxosID() + " new replica " + paxosID);
           PaxosLogger.logPaxosStop(r1.getPaxosID());    // multiple stop msgs can get logged because other replica might stop in meanwhile.
         }
 
@@ -717,7 +717,7 @@ public class PaxosManager extends Thread{
    * Some of them may elect a new co-ordinator.
    */
   static void informNodeStatus(FailureDetectionPacket fdPacket) {
-    GNS.getLogger().severe("Handling node failure = " + fdPacket.responderNodeID);
+    GNS.getLogger().info("Handling node failure = " + fdPacket.responderNodeID);
     for (String x: paxosInstances.keySet()) {
       PaxosReplica r = paxosInstances.get(x);
 

@@ -121,7 +121,7 @@ public class ClientRequestWorker extends TimerTask {
       // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (Exception e) {
-      GNS.getLogger().severe(" EXCEPTION Exception Exception  in client request worker. " + e.getMessage());
+      GNS.getLogger().severe("Exception in client request worker. " + e.getMessage());
       e.printStackTrace();
     }
 
@@ -817,7 +817,7 @@ public class ClientRequestWorker extends TimerTask {
       try {
         NameServer.tcpTransport.sendToID(request.getLnsID(), failResponse.toJSONObject());
       } catch (Exception f) {
-        GNS.getLogger().severe("UNABLE TO SEND Failure SelectResponsePacket: " + f);
+        GNS.getLogger().severe("Unable to send Failure SelectResponsePacket: " + f);
         return;
       }
     }
@@ -908,10 +908,10 @@ public class ClientRequestWorker extends TimerTask {
       } else { // send invalid error msg.
         dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
-          GNS.getLogger().severe("Invalid actives. Name = " + qName);
+          GNS.getLogger().info("Invalid actives. Name = " + qName);
         }
         else {
-          GNS.getLogger().severe("Invalid actives. Name = " + qName + " Actives = " + nameRecord.getActiveNameServers());
+          GNS.getLogger().info("Invalid actives. Name = " + qName + " Actives = " + nameRecord.getActiveNameServers());
         }
       }
     } catch (FieldNotFoundException e) {

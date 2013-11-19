@@ -431,13 +431,13 @@ public class StartNameServer {
             Thread t = new Thread() {
               @Override
               public void run() {
-                GNS.getLogger().severe("Sleeping for " + quitAfterTimeSec + " sec before quitting ...");
+                GNS.getLogger().info("Sleeping for " + quitAfterTimeSec + " sec before quitting ...");
                 try {
                   Thread.sleep(quitAfterTimeSec * 1000);
                 } catch (InterruptedException e) {
                   e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
-                GNS.getLogger().severe("SYSTEM EXIT.");
+                GNS.getLogger().info("SYSTEM EXIT.");
                 System.exit(2);
 
               }

@@ -106,7 +106,7 @@ public class PendingTasks
       }
 
       if (runTasks.size() > 0) {
-        GNS.getLogger().severe("Running pending tasks. Sending error messages: Count " + runTasks.size());
+        GNS.getLogger().info("Running pending tasks. Sending error messages: Count " + runTasks.size());
         for (PendingTask task: runTasks) {
           GNS.getStatLogger().fine(task.errorLog);
           if (task.address != null && task.port > 0) {

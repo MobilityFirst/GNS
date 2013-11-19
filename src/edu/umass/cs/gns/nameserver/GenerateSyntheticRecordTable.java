@@ -73,7 +73,7 @@ public class GenerateSyntheticRecordTable {
       try {
         NameServer.addNameRecord(nameRecord);
       } catch (RecordExistsException e) {
-        GNS.getLogger().severe("Name record already exists. Name = " + strName);
+        GNS.getLogger().warning("Name record already exists. Name = " + strName);
         e.printStackTrace();
       }
       if (name > 0 && name % ((regularWorkloadSize + mobileWorkloadSize)/10) == 0) {
@@ -169,8 +169,8 @@ public class GenerateSyntheticRecordTable {
     }
 
     long t1 = System.currentTimeMillis();
-    GNS.getLogger().severe(" Number of records added in primary DB: " + numPrimariesAdded + " In active DB: " + numActivesAdded);
-    GNS.getLogger().severe(" Time to add all records " + (t1 - t0)/1000 + " sec");
+    GNS.getLogger().info(" Number of records added in primary DB: " + numPrimariesAdded + " In active DB: " + numActivesAdded);
+    GNS.getLogger().info(" Time to add all records " + (t1 - t0)/1000 + " sec");
 
 
   }

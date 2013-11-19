@@ -86,10 +86,6 @@ public class EC2ConfigParser {
         }
       }
       
-      System.out.println("EC2 User Name: " + ((Element) doc.getElementsByTagName("ec2username").item(0)).getAttribute("name"));
-      System.out.println("AMI Name: " + ((Element) doc.getElementsByTagName("ami").item(0)).getAttribute("name"));
-      System.out.println("Datastore: " + ((Element) doc.getElementsByTagName("datastore").item(0)).getAttribute("name"));
-
       ec2username = ((Element) doc.getElementsByTagName("ec2username").item(0)).getAttribute("name");
       amiRecordType = AMIRecordType.valueOf(((Element) doc.getElementsByTagName("ami").item(0)).getAttribute("name"));
       dataStoreType = DataStoreType.valueOf(((Element) doc.getElementsByTagName("datastore").item(0)).getAttribute("name"));

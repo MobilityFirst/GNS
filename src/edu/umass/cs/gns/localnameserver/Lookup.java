@@ -210,7 +210,7 @@ public class Lookup {
         } else if (StartLocalNameServer.runHttpServer) {
           Intercessor.getInstance().checkForResult(DNSRequestTask.getErrorPacket(query.getIncomingPacket()));
         }
-        GNS.getLogger().severe("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());
+        GNS.getLogger().warning("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());
         GNS.getStatLogger().fine(DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),
                 0,query.getLookupRecvdTime(), query.numRestarts, new HashSet<Integer>()));
 

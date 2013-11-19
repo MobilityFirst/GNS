@@ -530,7 +530,7 @@ public class MongoRecords implements NoSQLRecords {
         tG = System.currentTimeMillis();
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 20) {
-          GNS.getLogger().severe(" MongoLookup longlatency " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)) ;
+          GNS.getLogger().warning(" MongoLookup longlatency " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)) ;
         }
         return hashMap;
     } finally {

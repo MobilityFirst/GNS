@@ -185,7 +185,7 @@ class MyTask extends TimerTask {
     try {
       LNSListener.demultiplexLNSPackets(json);
     } catch (Exception e) {
-      GNS.getLogger().severe("Exception Exception Exception ... " + e.getMessage());
+      GNS.getLogger().severe("Exception handling packets: " + e.getMessage());
       e.printStackTrace();
     }
 //    long t1 = System.currentTimeMillis();

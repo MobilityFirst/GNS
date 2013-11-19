@@ -70,7 +70,7 @@ public class StopActiveSetTask extends TimerTask {
       nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, getStopActivesFields());
     } catch (RecordNotFoundException e) {
       if (StartNameServer.debugMode) {
-        GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name // + " Record Key = " + nameRecordKey
+        GNS.getLogger().severe("Name Record Does not Exist. Name = " + name // + " Record Key = " + nameRecordKey
         );
       }
       this.cancel();

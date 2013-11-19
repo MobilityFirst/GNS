@@ -9,11 +9,15 @@ import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimerTask;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.InetAddress;
-import java.util.*;
 
 public class SendUpdatesTask extends TimerTask
 {
