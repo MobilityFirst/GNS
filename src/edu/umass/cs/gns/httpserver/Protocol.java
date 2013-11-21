@@ -471,6 +471,8 @@ public class Protocol {
   public String processRegisterAccountWithGuid(String host, String name, String guid, String publicKey, String password) {
     String result = accountAccess.addAccountWithVerification(host, name, guid, publicKey, password);
     if (OKRESPONSE.equals(result)) {
+      // set up the default read access
+      fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
       return guid;
     } else {
       return result;
@@ -544,14 +546,14 @@ public class Protocol {
     }
   }
 
-  public String processAddGuid(String guid, String name, String publicKey, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public String processAddGuid(String accountGuid, String name, String publicKey, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     String newGuid = createGuidFromPublicKey(publicKey);
-    GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
+    GuidInfo accountGuidInfo;
+    if ((accountGuidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+    if (verifySignature(accountGuidInfo, signature, message)) {
+      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(accountGuid);
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
       } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
@@ -559,6 +561,11 @@ public class Protocol {
       } else {
         String result = accountAccess.addGuid(accountInfo, name, newGuid, publicKey);
         if (OKRESPONSE.equals(result)) {
+          // set up the default read access
+          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
+          // give account guid read and write access to all fields in the new guid
+          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          fieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
           return newGuid;
         } else {
           return result;
@@ -801,7 +808,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guidInfo, field).contains(EVERYONE)) {
+    if (!fieldReadableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
@@ -816,13 +823,18 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guidInfo, field).contains(EVERYONE)) {
+    if (!fieldReadableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
     } else {
       return fieldAccess.lookupOne(guidInfo.getGuid(), field);
     }
+  }
+
+  private boolean fieldReadableByEveryone(String guid, String field) {
+    return fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, field).contains(EVERYONE)
+            || fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
   }
 
   public String processSelect(String field, Object value) {
@@ -1172,7 +1184,7 @@ public class Protocol {
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + SETPARAMETER + " " + parameterString + " " + VALUE + " " + value;
   }
-  
+
   // Currently only handles boolean parameters
   public String processGetParameter(String parameterString) {
     if (adminMode) {

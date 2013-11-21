@@ -55,13 +55,25 @@ public class FieldMetaData {
    * Grabs the metadata indexed by type from the field from the guid.
    * 
    * @param type
-   * @param userInfo
+   * @param guidInfo
    * @param key
    * @return 
    */
-  public Set<String> lookup(MetaDataTypeName type, GuidInfo userInfo, String key) {
+  public Set<String> lookup(MetaDataTypeName type, GuidInfo guidInfo, String key) {
+    return lookup(type, guidInfo.getGuid(), key);
+  }
+  
+  /**
+   * Grabs the metadata indexed by type from the field from the guid.
+   * 
+   * @param type
+   * @param guid
+   * @param key
+   * @return 
+   */
+  public Set<String> lookup(MetaDataTypeName type, String guid, String key) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue result = client.sendQuery(userInfo.getGuid(), makeFieldMetaDataKey(type, key));
+    ResultValue result = client.sendQuery(guid, makeFieldMetaDataKey(type, key));
     if (result != null) {
       return new HashSet<String>(result.toStringSet());
     } else {
@@ -78,9 +90,21 @@ public class FieldMetaData {
    * @param value 
    */
   public void add(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
+    add(type, userInfo.getGuid(), key, value);
+  }
+  
+  /**
+   * Adds a value to the metadata of the field in the guid.
+   * 
+   * @param type
+   * @param guid
+   * @param key
+   * @param value 
+   */
+   public void add(MetaDataTypeName type, String guid, String key, String value) {
     Intercessor client = Intercessor.getInstance();
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    client.sendUpdateRecordWithConfirmation(userInfo.getGuid(), metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
+    client.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
   /**
@@ -92,9 +116,13 @@ public class FieldMetaData {
    * @param value 
    */
   public void remove(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
+    remove(type, userInfo.getGuid(), key, value);
+  }
+  
+  public void remove(MetaDataTypeName type, String guid, String key, String value) {
     Intercessor client = Intercessor.getInstance();
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    client.sendUpdateRecordWithConfirmation(userInfo.getGuid(), metaDataKey, value, null, UpdateOperation.REMOVE);
+    client.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.REMOVE);
   }
   //
   public static String Version = "$Revision$";
