@@ -9,20 +9,27 @@ import org.json.JSONObject;
 import java.util.HashSet;
 import java.util.TimerTask;
 
-public class SendActivesRequestTask extends TimerTask
+
+/**
+ * Send request to primary (replica controllers) to obtain set of actives.
+ *
+ * The repeat execution is cancelled when cache is found to contain valid set of active name servers.
+ * (or after waiting twice the query timeout period.
+ *
+ *
+ */
+public class RequestActivesTask extends TimerTask
 {
   int count = 0;
+
   String name;
-  //NameRecordKey recordKey;
+
   HashSet<Integer> nameServersQueried;
 
-  public SendActivesRequestTask(String name//, NameRecordKey recordKey
-  ) {
+  public RequestActivesTask(String name) {
     this.name = name;
-    //this.recordKey = recordKey;
     nameServersQueried = new HashSet<Integer>();
   }
-
 
   @Override
   public void run()
@@ -31,24 +38,48 @@ public class SendActivesRequestTask extends TimerTask
 
       count ++;
       // check whether actives Received
-      if (LocalNameServer.isValidNameserverInCache(name)) {
-        throw  new MyException();
+      synchronized (PendingTasks.allTasks) {
+        if (PendingTasks.allTasks.containsKey(name) == false) {
+          PendingTasks.requestActivesOngoing.remove(name);
+          throw  new MyException();
+        }
+
+        if (LocalNameServer.isValidNameserverInCache(name)) {
+          PendingTasks.requestActivesOngoing.remove(name);
+          PendingTasks.runPendingRequestsForName(name);
+          throw  new MyException();
+        }
       }
+
       // max number of attempts have been made,
       if (count > GNS.numPrimaryReplicas) {
-        try {
-          GNS.getLogger().info("No actives received for name: " + name + " sending error.");
-          PendingTasks.sendErrorMsgForName(name);
-        } catch (JSONException e) {
-          e.printStackTrace();
+
+        GNS.getLogger().warning("Error: No actives received for name: " + name + " after " + count + " attempts.");
+
+        if (count > 2*StartLocalNameServer.maxQueryWaitTime/StartLocalNameServer.queryTimeout) {
+          GNS.getLogger().severe("Error: No actives received for name. Requests failed. " + name + " after " + count +
+                  " attempts.");
+          try {
+            PendingTasks.sendErrorMsgForName(name);
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+          synchronized (PendingTasks.allTasks) {
+            PendingTasks.requestActivesOngoing.remove(name);
+          }
+          throw  new MyException();
         }
-        throw  new MyException();
       }
       // next primary to be queried
-      int primaryID = LocalNameServer.getClosestPrimaryNameServer(name, //recordKey,
-              nameServersQueried);
+      int primaryID = LocalNameServer.getClosestPrimaryNameServer(name, nameServersQueried);
       if (primaryID == -1) {
-        return;
+        nameServersQueried.clear();
+        primaryID = LocalNameServer.getClosestPrimaryNameServer(name, nameServersQueried);
+        if (primaryID == -1) {
+          GNS.getLogger().severe("No primary NS available. name = " + name);
+          throw  new MyException();
+        }
+
       }
       nameServersQueried.add(primaryID);
       // send packet to primary
@@ -69,8 +100,9 @@ public class SendActivesRequestTask extends TimerTask
 //   */
 //  public static void requestActives(String name) {
 //
-//    SendActivesRequestTask task = new SendActivesRequestTask(name);
-//    LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+//    RequestActivesTask task = new RequestActivesTask(name);
+//    LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout,
+// TimeUnit.MILLISECONDS);
 //  }
 
   /**
@@ -111,10 +143,12 @@ public class SendActivesRequestTask extends TimerTask
    */
   public static void handleActivesRequestReply(JSONObject json) throws JSONException {
     RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json);
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Recvd request actives packet: " + requestActivesPacket + " name\t" + requestActivesPacket.getName());
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Recvd request actives packet: " + requestActivesPacket +
+            " name\t" + requestActivesPacket.getName());
     if (requestActivesPacket.getActiveNameServers() == null ||
             requestActivesPacket.getActiveNameServers().size() == 0) {
-      GNS.getLogger().info("Null set of actives received for name " + requestActivesPacket.getName()  + " sending error");
+      GNS.getLogger().info("Null set of actives received for name " + requestActivesPacket.getName()  +
+              " sending error");
       PendingTasks.sendErrorMsgForName(requestActivesPacket.getName());
       return;
     }

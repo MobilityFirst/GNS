@@ -42,7 +42,7 @@ public class DNSRequestTask extends TimerTask {
   private int queryId = 0;
   private int numRestarts;
   private HashSet<Integer> nameserversQueried;
-
+  private int coordinatorID = -1;
   private static final boolean DISABLECACHE = false; // for testing - Westy
 
   public DNSRequestTask(DNSPacket incomingPacket,
@@ -113,7 +113,8 @@ public class DNSRequestTask extends TimerTask {
 //      tA = System.currentTimeMillis();
       if (transmissionCount > 1)   {
         if (queryId != 0 && LocalNameServer.containsDNSRequestInfo(queryId) == false) {
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query ID does not exist. Removed due to Invalid Active NS or response recvd Query ID = " + queryId + " \t " + transmissionCount + "\t" + nameserversQueried + "\t");
+          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query ID not found. Response recvd or invalid " +
+                  "active error. Query ID\t" + queryId + "\t" + transmissionCount + "\t" + nameserversQueried + "\t");
           throw new MyException();
           //    	return;
         }
@@ -125,9 +126,11 @@ public class DNSRequestTask extends TimerTask {
       } else {
 //      tB = System.currentTimeMillis();
         CacheEntry cacheEntry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
+
 //      tC = System.currentTimeMillis();
         if (cacheEntry != null) {
-
+          coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getQname(),
+                  cacheEntry.getActiveNameServers());
           ResultValue value = cacheEntry.getValue(incomingPacket.getQrecordKey());
 
           if (value != null) {
@@ -162,8 +165,8 @@ public class DNSRequestTask extends TimerTask {
 
           PendingTasks.addToPendingRequests(incomingPacket.getQname(),
                   queryTaskObject, StartLocalNameServer.queryTimeout,
-                  senderAddress, senderPort, getErrorPacket(incomingPacket),getFailureLogMessage(lookupNumber, incomingPacket.getQrecordKey(), incomingPacket.getQname(),transmissionCount,receivedTime, numRestarts + 1, nameserversQueried),0);
-//        SendActivesRequestTask.requestActives(incomingPacket.getQname());
+                  senderAddress, senderPort, getErrorPacket(incomingPacket),getFailureLogMessage(lookupNumber, incomingPacket.getQrecordKey(), incomingPacket.getQname(),transmissionCount,receivedTime, numRestarts + 1, -1, nameserversQueried),0);
+//        RequestActivesTask.requestActives(incomingPacket.getQname());
           throw new MyException();
         }
         if (StartLocalNameServer.loadDependentRedirection) {
@@ -318,11 +321,14 @@ public class DNSRequestTask extends TimerTask {
   }
 
   private void logFailureMessage() {
-    GNS.getStatLogger().fine(getFailureLogMessage(lookupNumber, incomingPacket.getQrecordKey(), incomingPacket.getQname(),transmissionCount,receivedTime, numRestarts, nameserversQueried));
+    GNS.getStatLogger().fine(getFailureLogMessage(lookupNumber, incomingPacket.getQrecordKey(),
+            incomingPacket.getQname(),transmissionCount,receivedTime, numRestarts, coordinatorID, nameserversQueried));
   }
 
 
-  public static String getFailureLogMessage(int lookupNumber, NameRecordKey recordKey, String name, int transmissionCount, long receivedTime, int numRestarts, Set<Integer> nameserversQueried) {
+  public static String getFailureLogMessage(int lookupNumber, NameRecordKey recordKey, String name,
+                                            int transmissionCount, long receivedTime, int numRestarts,
+                                            int coordinatorID, Set<Integer> nameserversQueried) {
     String failureCode = "Failed-LookupNoActiveResponse";
     if (nameserversQueried == null || nameserversQueried.isEmpty()) {
       failureCode = "Failed-LookupNoPrimaryResponse";
@@ -338,6 +344,7 @@ public class DNSRequestTask extends TimerTask {
             + transmissionCount + "\t"
             + receivedTime + "\t"
             + numRestarts + "\t"
+            + coordinatorID + "\t"
             + nameserversQueried);
   }
 }

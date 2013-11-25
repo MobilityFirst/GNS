@@ -3,6 +3,7 @@ package edu.umass.cs.gns.main;
 //import edu.umass.cs.gnrs.nameserver.NSListenerUpdate;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import org.apache.commons.cli.*;
@@ -57,16 +58,22 @@ public class StartNameServer {
   public static int maxReplica = 100;
   public static String nameActives;
   public static int loadMonitorWindow = 5000;
-  private static int quitAfterTimeSec = -1; // only for testing: local name server will quit after this time
+
   // in experiment mode, the default paxos coordinator will send prepare message at a random time between
   // paxosStartMinDelaySec  and paxosStartMaxDelaySec
   public static int paxosStartMinDelaySec = 0;
   public static int paxosStartMaxDelaySec = 0;
 
+
+  public static int quitNodeID = -1; // only for testing.
+  public static int quitAfterTimeSec = -1; // only for testing. Name server will quit after this time
+  public static FailureScenario failureScenario = FailureScenario.applyActiveNameServersRunning;
+
+
   @SuppressWarnings("static-access")
-  /**
-   * ************************************************************
-   * Initialized a command line parser ***********************************************************
+  /**************************************************************
+   * Initialized a command line parser
+   * ***********************************************************
    */
   private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
@@ -192,14 +199,12 @@ public class StartNameServer {
     Option lnsnsPingFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("File with all LNS-NS ping latencies")
             .create("lnsnsping");
-    Option signatureCheck = new Option("signatureCheck",
-            "whether an update operation checks signature or not");
+    Option signatureCheck = new Option("signatureCheck", "whether an update operation checks signature or not");
     // used for testing only
-    Option quitAfterTime = new Option("quitAfterTime", true,
-            "name server will quit after this time");
 
-    Option nameActives = new Option("nameActives", true,
-            "name server will quit after this time");
+    Option quitAfterTime = new Option("quitAfterTime", true, "name server will quit after this time");
+
+    Option nameActives = new Option("nameActives", true, "name server will quit after this time");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(nodeId);
@@ -427,23 +432,24 @@ public class StartNameServer {
       if (experimentMode) {
         if (parser.hasOption("quitAfterTime")) {
           quitAfterTimeSec = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
-          if (quitAfterTimeSec >= 0) {
-            Thread t = new Thread() {
-              @Override
-              public void run() {
-                GNS.getLogger().info("Sleeping for " + quitAfterTimeSec + " sec before quitting ...");
-                try {
-                  Thread.sleep(quitAfterTimeSec * 1000);
-                } catch (InterruptedException e) {
-                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-                GNS.getLogger().info("SYSTEM EXIT.");
-                System.exit(2);
+//          if (quitAfterTimeSec >= 0) {
+//            Thread t = new Thread() {
+//              @Override
+//              public void run() {
+//                GNS.getLogger().info("Sleeping for " + quitAfterTimeSec + " sec before quitting ...");
+//                try {
+//                  Thread.sleep(quitAfterTimeSec * 1000);
+//                } catch (InterruptedException e) {
+//                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//                }
+//                GNS.getLogger().info("SYSTEM EXIT.");
+//                System.exit(2);
+//
+//              }
+//            };
+//            t.start();
+//          }
 
-              }
-            };
-            t.start();
-          }
         }
       }
 
@@ -510,6 +516,18 @@ public class StartNameServer {
       new NameServer(id).run();
     } catch (Exception e) {
       e.printStackTrace();
+    }
+  }
+
+  /**
+   * Method used for testing by failing code at arbitrary failure scenarios.
+   * @param failureScenario
+   */
+  public static void checkFailure(FailureScenario failureScenario) {
+//    GNS.getLogger().fine("Node\t" + StartNameServer.quitNodeID + "\tFailureScenario\t" + failureScenario.toString());
+    if (NameServer.nodeID == StartNameServer.quitNodeID && failureScenario.equals(StartNameServer.failureScenario)) {
+      GNS.getLogger().severe("SYSTEM EXIT. Failure Scenario. " + failureScenario);
+      System.exit(2);
     }
   }
 }

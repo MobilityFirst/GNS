@@ -8,38 +8,68 @@ import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class PendingTasks
 {
-	
 
   static ConcurrentHashMap<String, ArrayList<PendingTask>> allTasks = new ConcurrentHashMap<String, ArrayList<PendingTask>>();
 
-	public static void addToPendingRequests(String name, TimerTask task, int period, InetAddress address, int port,
+  static HashSet<String> requestActivesOngoing = new HashSet<String>();
+
+
+  /**
+   * Request current set of actives for name, and queue this request to be executed once we receives the curent actives.
+   * @param name request actives for name
+   * @param task TimerTask to be executed once actives are received. Request represented in form of TimerTask
+   * @param period Frequency at which TimerTask is repeated
+   * @param address Address of end user who sent the request
+   * @param port Port of user
+   * @param errorMsg In case no actives received, error msg to be send to user.
+   * @param errorLog In case no actives received, error log entry to be written for this request.
+   * @param initialDelay Delay for sending request to name servers to get actives.
+   */
+  public static void addToPendingRequests(String name, TimerTask task, int period, InetAddress address, int port,
                                           JSONObject errorMsg, String errorLog, long initialDelay) {
 
 		synchronized (allTasks)
 		{
-        if (!allTasks.containsKey(name)) {
-          SendActivesRequestTask requestActivesTask = new SendActivesRequestTask(name);
-          LocalNameServer.executorService.scheduleAtFixedRate(requestActivesTask, initialDelay,
-                  StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-            allTasks.put(name, new ArrayList<PendingTask>());
-        }
-        allTasks.get(name).add(new PendingTask(name, task, period, address, port,errorMsg, errorLog));
+//      RequestActivesPacket packet = new RequestActivesPacket(name,LocalNameServer.nodeID);
+//      packet.setActiveNameServers(HashFunction.getPrimaryReplicasNoCache(name));
+//      LocalNameServer.addCacheEntry(packet);
+//      LocalNameServer.executorService.scheduleAtFixedRate(task,0,period, TimeUnit.MILLISECONDS);
+
+      // if allTasks already contains a request for this name,
+      // it means we have already sent a packet to get current actives for this name.
+      if (!allTasks.containsKey(name)) {
+        allTasks.put(name, new ArrayList<PendingTask>());
+      }
+      allTasks.get(name).add(new PendingTask(name, task, period, address, port,errorMsg, errorLog));
+
+      if (requestActivesOngoing.contains(name) == false) {
+        RequestActivesTask requestActivesTask = new RequestActivesTask(name);
+        LocalNameServer.executorService.scheduleAtFixedRate(requestActivesTask, initialDelay,
+                StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+        requestActivesOngoing.add(name);
+      }
+
 		}
 
 
 	}
 
   public static void addToPendingRequests(String name) {
-    LocalNameServer.executorService.scheduleAtFixedRate(new SendActivesRequestTask(name), 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-
+    LocalNameServer.executorService.scheduleAtFixedRate(new RequestActivesTask(name), 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
   }
-	public static void runPendingRequestsForName(String name) {
+
+  /**
+   *
+   * @param name
+   */
+  public static void runPendingRequestsForName(String name) {
 
     ArrayList<PendingTask> runTasks;
 
@@ -64,7 +94,8 @@ public class PendingTasks
 		
 		if (runTasks.size() > 0) {
 
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount " + runTasks.size());
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount " +
+              runTasks.size());
 			for (PendingTask task: runTasks) {
 				//
 				if (task.period > 0) {
@@ -73,7 +104,7 @@ public class PendingTasks
 //					LocalNameServer.timer.schedule(task.timerTask, 0, task.period);
 				}
 				else {
-					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. No repeat." );
+//					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. No repeat." );
           LocalNameServer.executorService.schedule(task.timerTask,0, TimeUnit.MILLISECONDS);
 //					LocalNameServer.timer.schedule(task.timerTask, 0);
 				}
@@ -82,6 +113,11 @@ public class PendingTasks
 		
 	}
 
+  public static boolean containsRequest(String name) throws  JSONException  {
+    synchronized (allTasks) {
+      return allTasks.containsKey(name);
+    }
+  }
     public  static  void sendErrorMsgForName(String name) throws JSONException {
 
       ArrayList<PendingTask> runTasks;

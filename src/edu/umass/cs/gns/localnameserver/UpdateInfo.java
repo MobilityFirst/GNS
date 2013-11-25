@@ -107,23 +107,24 @@ public class UpdateInfo {
   }
 
 
-  public synchronized String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID) {
+  public synchronized String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID,
+                                                  int coordinatorID) {
     long latency = System.currentTimeMillis() - sendTime;
     String msg = "Failed-UpdateNoActiveResponse\t" + name + "\t" + latency
             + "\t" + activesQueried.size() + "\t" + activesQueried
-            + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + System.currentTimeMillis();
+            + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + coordinatorID + "\t" + System.currentTimeMillis();
     return msg;
   }
 
   public static String getUpdateFailedStats(String name, Set<Integer> activesQueried, int lnsID, int requestID,
-                                            long sendTime, int numRestarts) {
+                                            long sendTime, int numRestarts, int coordinatorID) {
     String queryStatus = "Failed-UpdateNoActiveResponse";
     if (activesQueried.size() == 0) queryStatus = "Failed-UpdateNoPrimaryResponse";
 
     long latency = System.currentTimeMillis() - sendTime;
     String msg = queryStatus + "\t" + name + "\t" + latency
             + "\t" + activesQueried.size() + "\t" + activesQueried
-            + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + System.currentTimeMillis();
+            + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + coordinatorID + "\t" + System.currentTimeMillis();
     return msg;
   }
 

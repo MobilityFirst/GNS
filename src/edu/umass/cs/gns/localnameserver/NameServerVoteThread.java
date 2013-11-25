@@ -26,14 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Hardeep Uppal
  *************************************************************/
 public class NameServerVoteThread extends Thread {
-	
-	/**
-	 * Timeout interval for the ack of an vote before it is sent to second primary.
-	 */
-	public static int TIMEOUT = 5000;
+
 
 	/** Time interval in ms between transmitting votes **/
-	private long voteInterval;
+	private long voteIntervalMillis;
 	/** Start interval **/
 	private long startInterval;
 	
@@ -45,12 +41,12 @@ public class NameServerVoteThread extends Thread {
 	 * Constructs a new NameServerVoteThread that periodically 
 	 * multicast nameserver selection votes to primary nameservers 
 	 * of a name.
-	 * @param voteInterval Time interval in ms between transmitting
+	 * @param voteIntervalMillis Time interval in ms between transmitting
 	 * votes
 	 *************************************************************/
-	public NameServerVoteThread(long voteInterval) {
+	public NameServerVoteThread(long voteIntervalMillis) {
 		super("NameServerVoteThread");
-		this.voteInterval = voteInterval;
+		this.voteIntervalMillis = voteIntervalMillis;
 
 	}
 
@@ -65,7 +61,7 @@ public class NameServerVoteThread extends Thread {
     Random r = new Random();
 		
 		try {
-			long x = voteInterval/2 + r.nextInt((int)voteInterval/2);
+			long x = voteIntervalMillis / 4 + r.nextInt((int) voteIntervalMillis / 2);
 			Thread.sleep(x);
 			GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + x + "ms");
 		} catch (InterruptedException e) {
@@ -75,11 +71,11 @@ public class NameServerVoteThread extends Thread {
 		while (true) {
 			// sleep between loops
 			interval = System.currentTimeMillis() - startInterval;
-			if (count >=1 && interval < voteInterval) {
+			if (count >=1 && interval < voteIntervalMillis) {
 				try {
 //					long x = voteInterval - interval;
-					Thread.sleep(voteInterval);
-          GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + voteInterval + "ms");
+					Thread.sleep(voteIntervalMillis);
+          GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + voteIntervalMillis + "ms");
 				} catch (InterruptedException e) {
 					if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Thread sleeping interrupted.");
 				}

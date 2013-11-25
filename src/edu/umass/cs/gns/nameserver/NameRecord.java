@@ -390,7 +390,7 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   public void handleCurrentActiveStop(String paxosID) throws FieldNotFoundException {
-    String currentPaxosID = getActivePaxosID();
+
     ValuesMap valuesMap = getValuesMap();
 
 //    if (currentPaxosID != null && currentPaxosID.equals(paxosID)) {

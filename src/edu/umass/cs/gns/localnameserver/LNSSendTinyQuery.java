@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 public class LNSSendTinyQuery {
 	public static Random r= new Random();
@@ -108,21 +107,38 @@ public class LNSSendTinyQuery {
 }
 
 
+/**
+ * When we emulate ping latencies between LNS and NS, this task will actually send packets to NS.
+ * See option StartLocalNameServer.emulatePingLatencies
+ */
 class SendQueryWithDelay extends TimerTask {
+  /**
+   * Json object to send
+   */
 	JSONObject json;
-	int nameserver;
-	public SendQueryWithDelay(JSONObject json, int nameserver) {
+  /**
+   * Name server to send this packet to.
+   */
+	int nameServer;
+	public SendQueryWithDelay(JSONObject json, int nameServer) {
 		this.json = json;
-		this.nameserver = nameserver;
+		this.nameServer = nameServer;
 	}
+
 	@Override
 	public void run() {
-		// send packet
-		try {
-			LNSListener.tcpTransport.sendToID(nameserver, json);
-//			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("TINYQUERY SEND " + name + " count " + count + "\t");
-		} catch (IOException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    if (json.toString().length() < 1000) { // for small packets use UDP
+      try {
+        LNSListener.udpTransport.sendPacket(json, nameServer, GNS.PortType.NS_UDP_PORT);
+      } catch (JSONException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    } else { // for large packets,  use TCP
+      try {
+        LNSListener.tcpTransport.sendToID(nameServer, json);
+      } catch (IOException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
     }
 
   }

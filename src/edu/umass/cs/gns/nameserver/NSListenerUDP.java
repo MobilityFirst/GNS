@@ -15,7 +15,7 @@ import org.json.JSONObject;
 public class NSListenerUDP extends Thread {
 
   public static Transport udpTransport;
-  public static boolean useUDP = true;
+
 
   public NSListenerUDP() {
     GNS.getLogger().info("NS Node " + NameServer.nodeID + " starting NSListenerUDP on port " + ConfigFileInfo.getNSUdpPort(NameServer.nodeID));

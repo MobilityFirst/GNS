@@ -34,6 +34,7 @@ public class SendUpdatesTask extends TimerTask
   int timeoutCount = -1;
   long requestRecvdTime;
   int numRestarts;
+  int coordinatorID  = -1;
 
   public SendUpdatesTask(UpdateAddressPacket updateAddressPacket,
                          InetAddress senderAddress, int senderPort, long requestRecvdTime,
@@ -76,7 +77,7 @@ public class SendUpdatesTask extends TimerTask
 
       if (System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
         // send failed msg to user and log error
-        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + updateRequestID + " name = " + name);
         handleFailure();
         throw  new MyException();
       }
@@ -97,17 +98,19 @@ public class SendUpdatesTask extends TimerTask
 //          }
           // add to pending requests task
           try {
-            PendingTasks.addToPendingRequests(name, //nameRecordKey,
-                    new SendUpdatesTask(updateAddressPacket, senderAddress, senderPort, requestRecvdTime, new HashSet<Integer>(), numRestarts + 1),
+            PendingTasks.addToPendingRequests(name,
+                    new SendUpdatesTask(updateAddressPacket, senderAddress, senderPort, requestRecvdTime,
+                            new HashSet<Integer>(), numRestarts + 1),
                     StartLocalNameServer.queryTimeout, senderAddress, senderPort,
                     ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(),
-                    UpdateInfo.getUpdateFailedStats(name,new HashSet<Integer>(),LocalNameServer.nodeID,updateAddressPacket.getRequestID(),requestRecvdTime, numRestarts + 1),0);
+                    UpdateInfo.getUpdateFailedStats(name,new HashSet<Integer>(),LocalNameServer.nodeID,
+                            updateAddressPacket.getRequestID(),requestRecvdTime, numRestarts + 1, -1),0);
 
           } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
           }
           // request new actives
-          //      SendActivesRequestTask.requestActives(name);
+          //      RequestActivesTask.requestActives(name);
           if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Created a request actives task. " + numRestarts);
           // cancel this task
           throw  new MyException();
@@ -120,10 +123,12 @@ public class SendUpdatesTask extends TimerTask
         if(StartLocalNameServer.loadDependentRedirection) {
           nameServerID = LocalNameServer.getBestActiveNameServerFromCache(name, activesQueried);
         } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
-            nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, activesQueried);
+          nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, activesQueried);
         }
         else {
           nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, activesQueried);
+          CacheEntry entry = LocalNameServer.getCacheEntry(name);
+          if (entry != null) coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(name,entry.getActiveNameServers());
         }
 
       }
@@ -274,10 +279,10 @@ public class SendUpdatesTask extends TimerTask
     UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
     if (updateInfo == null) {
       if (timeoutCount == 0) GNS.getStatLogger().fine(UpdateInfo.getUpdateFailedStats(name,activesQueried,
-              LocalNameServer.nodeID,updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts));
+              LocalNameServer.nodeID,updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts, coordinatorID));
 //        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + updateAddressPacket);
     } else {
-      GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.nodeID, updateAddressPacket.getRequestID()));
+      GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.nodeID, updateAddressPacket.getRequestID(), coordinatorID));
 
     }
   }

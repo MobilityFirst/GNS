@@ -95,7 +95,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 			if (nodeInfo.containsKey(monitoredNodeID)) return;
 
-
       FailureDetectionPacket fail = new FailureDetectionPacket(nodeID, monitoredNodeID, false, PaxosPacketType.FAILURE_DETECT);
       Random r = new Random();
       try
@@ -103,7 +102,7 @@ import java.util.concurrent.locks.ReentrantLock;
         FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject());
         long initialDelay = r.nextInt(pingIntervalMillis);
         if (StartNameServer.experimentMode) {
-          initialDelay += NameServer.initialExpDelayMillis; // wait for all name servers to start up.
+          initialDelay += 2 * NameServer.initialExpDelayMillis; // wait for all name servers to start up.
         }
         nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
         nodeStatus.put(monitoredNodeID, true);

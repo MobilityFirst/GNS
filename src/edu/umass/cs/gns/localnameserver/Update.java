@@ -18,7 +18,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Update {
 
   static int updateCount = 0;
+
   static Object lock = new ReentrantLock();
+
   public static void handlePacketUpdateAddressLNS(JSONObject json)
           throws JSONException, UnknownHostException {
     synchronized (lock) {
@@ -155,7 +157,7 @@ public class Update {
 
       String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(),new HashSet<Integer>(),
               LocalNameServer.nodeID,updateAddressPacket.getRequestID(),updateInfo.getSendTime(),
-              updateInfo.getNumRestarts() + 1);
+              updateInfo.getNumRestarts() + 1, -1);
 
       long delay = StartLocalNameServer.queryTimeout;
       if (updateInfo.getNumRestarts() == 0) delay = 0;

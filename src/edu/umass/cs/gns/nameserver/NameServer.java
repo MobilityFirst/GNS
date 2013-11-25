@@ -56,8 +56,8 @@ public class NameServer {
   public static int initialExpDelayMillis = 30000;
 
   /**
-   * Constructs a name server which uses a synthetic workload of integers as names in its record table. The size of the workload is
-   * used to generate records and the integer value represents the name and its popularity.
+   * Constructs a name server which uses a synthetic workload of integers as names in its record table. The size of the
+   * workload is used to generate records and the integer value represents the name and its popularity.
    *
    * @param nodeID Name server id
    * @throws IOException
@@ -65,7 +65,8 @@ public class NameServer {
   public NameServer(int nodeID) throws IOException {
     NameServer.nodeID = nodeID;
 
-    GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data store");
+    GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data" +
+            " store");
 
 
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
@@ -77,7 +78,8 @@ public class NameServer {
             // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
 
-    this.replicationFramework = ReplicationFrameworkType.instantiateReplicationFramework(StartNameServer.replicationFramework);
+    this.replicationFramework = ReplicationFrameworkType.instantiateReplicationFramework(
+            StartNameServer.replicationFramework);
 
     // Executor service created.
     executorService = new ScheduledThreadPoolExecutor(StartNameServer.workerThreadCount);
@@ -113,11 +115,13 @@ public class NameServer {
     // start paxos manager first.
 
     // this will recover state from paxos logs, if it exists
-    PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport, new NSPaxosInterface(), executorService);
+    PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
+            new NSPaxosInterface(), executorService);
 
     if (StartNameServer.experimentMode) {
       // Name Records added for experiments
-//        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,StartNameServer.mobileWorkloadSize);
+//        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,
+// StartNameServer.mobileWorkloadSize);
 //        if (StartNameServer.staticReplication) {
       GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
               StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
@@ -130,7 +134,8 @@ public class NameServer {
     }
 
     // schedule periodic computation of new active name servers.
-    if (!(StartNameServer.replicationFramework == ReplicationFrameworkType.STATIC || StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL)) {
+    if (!(StartNameServer.replicationFramework == ReplicationFrameworkType.STATIC ||
+            StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL)) {
 
       // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
       // TODO  longer term solution is to integrate IP geo-location database at name servers.
@@ -139,9 +144,12 @@ public class NameServer {
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
 
-      long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval + (new Random()).nextInt((int) StartNameServer.analysisInterval);
+      long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval +
+              (new Random()).nextInt((int) StartNameServer.analysisInterval);
+      if (StartNameServer.experimentMode && StartNameServer.quitAfterTimeSec > 0)
+        initialDelayMillis = initialExpDelayMillis + (long)(StartNameServer.analysisInterval*1.5);
+      GNS.getLogger().info("ComputeNewActives Initial delay " + initialDelayMillis);
 
-      GNS.getLogger().fine("ComputeNewActives Initial delay " + initialDelayMillis);
       executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,
               StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
 

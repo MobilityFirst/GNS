@@ -27,9 +27,7 @@ import java.util.TimerTask;
  */
 public class StartActiveSetTask extends TimerTask {
 
-  int MAX_ATTEMPTS = 3;		 // number of actives contacted to start replica
   String name;
-  //NameRecordKey nameRecordKey;
   Set<Integer> oldActiveNameServers;
   Set<Integer> newActiveNameServers;
   Set<Integer> newActivesQueried;
@@ -37,6 +35,7 @@ public class StartActiveSetTask extends TimerTask {
   String oldActivePaxosID;
   ValuesMap initialValue;
   int numAttempts = 0;
+
   /**
    * Constructor object
    *
@@ -76,16 +75,13 @@ public class StartActiveSetTask extends TimerTask {
 
     numAttempts ++;
 
-
-
     ReplicaControllerRecord nameRecordPrimary;
     try {
       nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, getGetStartupActiveSetFields());
     } catch (RecordNotFoundException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       if (StartNameServer.debugMode) {
-        GNS.getLogger().severe(" Name Record Does not Exist. Name = " + name //+ " Record Key = " + nameRecordKey
-        );
+        GNS.getLogger().severe(" Name record does not exist. Name = " + name);
       }
       this.cancel();
       return;
@@ -94,14 +90,15 @@ public class StartActiveSetTask extends TimerTask {
     try {
       if (!nameRecordPrimary.getActivePaxosID().equals(newActivePaxosID)) {
         if (StartNameServer.debugMode) {
-          GNS.getLogger().fine(" Actives got accepted and replaced by new actives. Quitting. ");
+          GNS.getLogger().info(" Actives got accepted and replaced by new actives. Quitting. ");
         }
         this.cancel();
         return;
       }
-
-      if (nameRecordPrimary.isActiveRunning()) {
-        String msg = "New active name servers running. Startup done. Name = " + name + " All Actives: "
+      Integer progress = ReplicaController.groupChangeProgress.get(name);
+      if (progress == null || progress >= ReplicaController.NEW_ACTIVE_START) {
+//      if (ReplicaController.groupChangeProgress.get(newActivePaxosID) .isActiveRunning()) {
+        String msg = "New active name servers running. Name = " + name + " All Actives: "
                 + newActiveNameServers + " Actives Queried: " + newActivesQueried;
         if (StartNameServer.experimentMode) GNS.getLogger().severe(msg);
         else  GNS.getLogger().info(msg);
@@ -118,16 +115,17 @@ public class StartActiveSetTask extends TimerTask {
       return;
     }
 
-    if (numAttempts > MAX_ATTEMPTS) {
-      if (StartNameServer.debugMode) {
-        GNS.getLogger().severe("ERROR: New Actives failed to start after " + MAX_ATTEMPTS + ". "
-                + "Active name servers queried: " + newActivesQueried);
-      }
-      this.cancel();
-      return;
-    }
+      // Abhigyan: unlimited number of retries
+//    if (numAttempts > MAX_ATTEMPTS) {
+//      if (StartNameServer.debugMode) {
+//        GNS.getLogger().severe("ERROR: New Actives failed to start after " + MAX_ATTEMPTS + ". "
+//                + "Active name servers queried: " + newActivesQueried);
+//      }
+//      this.cancel();
+//      return;
+//    }
 
-    int selectedActive = BestServerSelection.getSmallestLatencyNS(newActiveNameServers, newActivesQueried);
+    int selectedActive = BestServerSelection.getSmallestLatencyNSNotFailed(newActiveNameServers, newActivesQueried);
 
     //selectNextActiveToQuery();
 
@@ -136,15 +134,21 @@ public class StartActiveSetTask extends TimerTask {
         GNS.getLogger().severe("ERROR: No more active left to query. "
                 + "Active name servers queried: " + newActivesQueried + " Actives not started.");
       }
-      this.cancel();
-      return;
+      newActivesQueried.clear();
+      selectedActive = BestServerSelection.getSmallestLatencyNSNotFailed(newActiveNameServers, newActivesQueried);
+      if (selectedActive == -1) {
+        GNS.getLogger().severe("ERROR: no actives available to query.");
+        this.cancel();
+        return;
+      }
+      newActivesQueried.add(selectedActive);
     }
     else {
       newActivesQueried.add(selectedActive);
     }
 
     if (StartNameServer.debugMode) {
-      GNS.getLogger().fine(" Active Name Server Selected to Query: " + selectedActive);
+      GNS.getLogger().info(" Active Name Server Selected to Query: " + selectedActive);
     }
 
     NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(name, //nameRecordKey,
@@ -155,17 +159,17 @@ public class StartActiveSetTask extends TimerTask {
       NameServer.tcpTransport.sendToID(selectedActive, packet.toJSONObject());
     } catch (IOException e) {
       if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("IO Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
+        GNS.getLogger().info("IO Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
       }
       e.printStackTrace();
     } catch (JSONException e) {
       if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("JSON Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
+        GNS.getLogger().info("JSON Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
       }
       e.printStackTrace();
     }
     if (StartNameServer.debugMode) {
-      GNS.getLogger().fine(" NEW ACTIVE STARTUP PACKET SENT: " + packet.toString());
+      GNS.getLogger().info(" NEW ACTIVE STARTUP PACKET SENT: " + packet.toString());
     }
 
     // 

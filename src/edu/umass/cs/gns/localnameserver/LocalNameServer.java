@@ -18,23 +18,11 @@ import edu.umass.cs.gns.util.UpdateTrace;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -197,7 +185,6 @@ public class LocalNameServer {
   private static List<UpdateTrace> readUpdateTrace(String filename) throws IOException {
     List<UpdateTrace> trace = new ArrayList<UpdateTrace>();
     BufferedReader br = new BufferedReader(new FileReader(filename));
-    HashMap<String, Integer> updateCounts = new HashMap<String, Integer>();
     while (br.ready()) {
       String line = br.readLine(); //.trim();
       if (line == null) {
@@ -285,7 +272,7 @@ public class LocalNameServer {
     }
 
     if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
-      new NameServerVoteThread(StartLocalNameServer.voteInterval).start();
+      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
 
     if (StartLocalNameServer.runHttpServer) {
@@ -1182,4 +1169,23 @@ public class LocalNameServer {
     //    System.out.println(names.toString());
     //    System.out.println(s.contains("804"));
   //}
+
+
+  public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
+
+//    int nodeProduct = 1;
+//    for (int x: nodeIDs) {
+//      nodeProduct =  nodeProduct*x;
+//    }
+    if (nodeIDs == null || nodeIDs.size() == 0) return  -1;
+    Random r = new Random(name.hashCode());
+    ArrayList<Integer> x1  = new ArrayList<Integer>(nodeIDs);
+    Collections.sort(x1);
+    Collections.shuffle(x1, r);
+    for (int x: x1) {
+      return x;
+    }
+    return  x1.get(0);
+//    return  x1.get(count);
+  }
 }

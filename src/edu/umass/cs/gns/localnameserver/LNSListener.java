@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class LNSListener extends Thread {
 
   public static Transport udpTransport;
+
   public static NioServer tcpTransport;
 
   public LNSListener() throws IOException {
@@ -114,7 +115,7 @@ public class LNSListener extends Thread {
           NameServerVoteThread.handleNameServerSelection(json);
           break;
         case REQUEST_ACTIVES:
-          SendActivesRequestTask.handleActivesRequestReply(json);
+          RequestActivesTask.handleActivesRequestReply(json);
           break;
         case SELECT_REQUEST:
           Select.handlePacketSelectRequest(json);

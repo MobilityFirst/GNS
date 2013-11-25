@@ -4,6 +4,7 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
@@ -56,10 +57,17 @@ public class PaxosManager extends Thread{
   static NioServer tcpTransport;
 
   /**
-   * a hash table of where K = paxosID, V = {@code PaxosReplica}
+   * Object stores all paxos instances.
    *
-   * IMPORTANT: the actual paxosID is stored in filed PaxosReplica.paxosID. This key that this map uses for a paxosreplica is
-   * given by getPaxosNameFromPaxosID(paxosID).
+   * V. IMP.: The paxosID of a  {@code PaxosReplica} is stored in its field 'paxosID'. The key that this map uses for a
+   * {@code PaxosReplica} is given by the method {@code getPaxosKeyFromPaxosID}.
+   *
+   * The paxosID for the paxos between primaries is defined as 'name-P', its key in this map is also 'name-P'.
+   * The paxosID for the paxos between actives is defined as 'name-X', where X is an int. Its key in this map is just
+   * 'name'. X changes every time the set of active replicas change. Defining the keys in this manner allows us to find
+   * the paxos instance among actives for a name, without knowing what the current 'X' is. Otherwise proposing a
+   * request would have needed an additional database lookup to find what the current X is for this name.
+   *
    */
   static ConcurrentHashMap<String, PaxosReplica> paxosInstances = new ConcurrentHashMap<String, PaxosReplica>();
 
@@ -147,13 +155,13 @@ public class PaxosManager extends Thread{
     // recover previous state if exists using logger
 //        ConcurrentHashMap<String, PaxosReplica> paxosInstances = PaxosLogger.initializePaxosLogger();
     // step 1: do local log recovery
-    paxosInstances = PaxosLogger.initLogger();
-    if (paxosInstances == null) paxosInstances = new ConcurrentHashMap<String, PaxosReplica>();
+    ConcurrentHashMap<String, PaxosReplica> myPaxosInstances = PaxosLogger.initLogger(nodeID);
+    if (myPaxosInstances != null) paxosInstances = myPaxosInstances;
 //    paxosInstances = new ConcurrentHashMap<PaxosName, PaxosReplica>();
 //    if (recoveredPaxosInstances != null) {
 //      for (String x: recoveredPaxosInstances.keySet()) {
-//        GNS.getLogger().severe("putting " + PaxosManager.getPaxosNameFromPaxosID(x));
-//        paxosInstances.put(PaxosManager.getPaxosNameFromPaxosID(x),recoveredPaxosInstances.get(x));
+//        GNS.getLogger().severe("putting " + PaxosManager.getPaxosKeyFromPaxosID(x));
+//        paxosInstances.put(PaxosManager.getPaxosKeyFromPaxosID(x),recoveredPaxosInstances.get(x));
 //      }
 //    }
     if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instances: " + paxosInstances.size());
@@ -234,7 +242,8 @@ public class PaxosManager extends Thread{
    * @param paxosLogFolder
    */
   public static void setPaxosLogFolder(String paxosLogFolder) {
-    PaxosLogger.logFolder = paxosLogFolder;
+    PaxosLogger.setLoggerParameters(paxosLogFolder);
+
   }
 
 
@@ -317,7 +326,7 @@ public class PaxosManager extends Thread{
     if (paxosInstances!=null) {
       for (String x: PaxosManager.paxosInstances.keySet()) {
         if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos Recovery: starting paxos replica .. " + x);
-        PaxosManager.paxosInstances.get(x).startReplica(0);
+        PaxosManager.paxosInstances.get(x).checkCoordinatorFailure();
       }
     }
 
@@ -459,7 +468,7 @@ public class PaxosManager extends Thread{
    * Create a paxos instance for testing/debugging.
    */
   private static void createDefaultPaxosInstance() {
-    if (paxosInstances.containsKey(PaxosManager.getPaxosNameFromPaxosID(defaultPaxosID))) {
+    if (paxosInstances.containsKey(PaxosManager.getPaxosKeyFromPaxosID(defaultPaxosID))) {
       if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance " + defaultPaxosID + " already exists.");
       return;
     }
@@ -521,7 +530,7 @@ public class PaxosManager extends Thread{
    */
   public static boolean createPaxosInstance(String paxosID, Set<Integer> nodeIDs, String initialState, long initScoutDelay) {
 
-    if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tEnter createPaxos");
+    if(StartNameServer.debugMode) GNS.getLogger().info(paxosID + "\tEnter createPaxos");
     if (nodeIDs.size() < 3) {
       GNS.getLogger().severe(nodeID + " less than three replicas " +
               "paxos instance cannot be created. SEVERE ERROR. EXCEPTION Exception.");
@@ -533,20 +542,20 @@ public class PaxosManager extends Thread{
       return false;
     }
 
-//      if (paxosInstances.containsKey(PaxosManager.getPaxosNameFromPaxosID(paxosID))) {
-//        if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance already exists. Paxos ID = " + paxosID);
+//      if (paxosInstances.containsKey(PaxosManager.getPaxosKeyFromPaxosID(paxosID))) {
+//        if (StartNameServer.debugMode) GNS.getLogger().info("Paxos instance already exists. Paxos ID = " + paxosID);
 //        return false;
 //      }
 
 //            paxosOccupancy.put(paxosID, 1);
 
-    boolean preelectcoordinator = true;
+//    boolean preElectCoordinator = false;
     PaxosReplica r;
     // paxosInstance object can be concurrently modified.
     synchronized (paxosInstances) {
-      PaxosReplica r1 = paxosInstances.get(PaxosManager.getPaxosNameFromPaxosID(paxosID));
+      PaxosReplica r1 = paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
       if (r1 != null && r1.getPaxosID().equals(paxosID)) {
-        GNS.getLogger().severe("Paxos replica already exists .. " + paxosID);
+        GNS.getLogger().warning("Paxos replica already exists .. " + paxosID);
         return false;
         //      paxosInstances.put(r1.getPaxosID(), r1);
       }
@@ -555,27 +564,22 @@ public class PaxosManager extends Thread{
           GNS.getLogger().info("OldPaxos replica replaced .. so log a stop message .. " + r1.getPaxosID() + " new replica " + paxosID);
           PaxosLogger.logPaxosStop(r1.getPaxosID());    // multiple stop msgs can get logged because other replica might stop in meanwhile.
         }
-
-        if (initialState != null && StartNameServer.experimentMode == false) { // During experiments, we disable state logging. This helps us load records faster into database.
-          PaxosLogger.logPaxosStart(paxosID, nodeIDs, new StatePacket(new Ballot(0, 0), 0, initialState));
-        }
-        if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tBefore creating replica.");
-
+        assert initialState != null;
         r = new PaxosReplica(paxosID, nodeID, nodeIDs);
-        paxosInstances.put(PaxosManager.getPaxosNameFromPaxosID(paxosID), r);
+        if (initialState != null) { // During experiments, we disable state logging. This helps us load records faster into database.
+          PaxosLogger.logPaxosStart(paxosID, nodeIDs, new StatePacket(r.getAcceptorBallot(), 0, initialState));
+        }
+        if(StartNameServer.debugMode) GNS.getLogger().info(paxosID + "\tBefore creating replica.");
+        paxosInstances.put(PaxosManager.getPaxosKeyFromPaxosID(paxosID), r);
       }
     }
-//    GNS.getLogger().severe("Paxos instance created. Paxos ID = " + paxosID);
 
-//    if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tStarting replica");
+//    if(StartNameServer.debugMode) GNS.getLogger().info(paxosID + "\tStarting replica");
     if (r!= null) {
-      if (preelectcoordinator) r.startReplicaWithPreelectedCoordinator();
-      else r.startReplica(initScoutDelay);
+      r.checkCoordinatorFailure(); // propose new ballot if default coordinator has failed
+//      if (preElectCoordinator) r.startReplicaWithPreelectedCoordinator();
+//      else r.startReplica(initScoutDelay);
     }
-
-    if(StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tExit create Paxos");
-
-
     return true;
   }
 
@@ -645,7 +649,7 @@ public class PaxosManager extends Thread{
   public static String propose(String paxosID, RequestPacket requestPacket) {
 
     if (!debug) { // running with GNS
-      PaxosReplica replica = paxosInstances.get(PaxosManager.getPaxosNameFromPaxosID(paxosID));
+      PaxosReplica replica = paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
       if (replica == null) return null;
       try {
         replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
@@ -699,10 +703,10 @@ public class PaxosManager extends Thread{
 //    }
     if (req.isStopRequest()) {
       synchronized (paxosInstances) {
-        PaxosReplica r = paxosInstances.get(PaxosManager.getPaxosNameFromPaxosID(paxosID));
+        PaxosReplica r = paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
         if (r.getPaxosID().equals(paxosID)) {
           if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance removed " + paxosID  + "\tReq " + req);
-          paxosInstances.remove(PaxosManager.getPaxosNameFromPaxosID(paxosID));
+          paxosInstances.remove(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
           r.logFullResponseAfterStop();
         } else {
           if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance already removed " + paxosID);
@@ -918,11 +922,12 @@ public class PaxosManager extends Thread{
 
   }
 
-  public static String getPaxosNameFromPaxosID(String paxosID) {
-    if (paxosID.endsWith("-P")) return paxosID;
-    else {
-      String[] split = paxosID.split("-");
-      return split[0];
+  public static String getPaxosKeyFromPaxosID(String paxosID) {
+    if (ReplicaController.isPrimaryPaxosID(paxosID)) return paxosID; // paxos between primaries
+    else { // paxos between actives.
+      int index = paxosID.lastIndexOf("-");
+      if (index == -1) return paxosID;
+      return paxosID.substring(0, index);
     }
   }
 
@@ -981,8 +986,11 @@ class PaxosPacketDemultiplexer extends PacketDemultiplexer {
 
 
 class HandlePaxosMessageTask extends TimerTask {
+
   JSONObject json;
+
   int packetType;
+
   HandlePaxosMessageTask(JSONObject json, int packetType){
     this.json = json;
     this.packetType = packetType;
@@ -998,7 +1006,7 @@ class HandlePaxosMessageTask extends TimerTask {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         return;
       }
-      PaxosReplica replica = PaxosManager.paxosInstances.get(PaxosManager.getPaxosNameFromPaxosID(paxosID));
+      PaxosReplica replica = PaxosManager.paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
       if (replica != null && replica.getPaxosID().equals(paxosID)) {
 //                if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tPAXOS PROCESS START " + paxosID + "\t" +  json);
         replica.handleIncomingMessage(json,packetType);
@@ -1041,7 +1049,7 @@ class ResendPendingMessagesTask extends TimerTask{
       for (ProposalStateAtCoordinator propState: PaxosManager.proposalStates) {
 
         if (propState.getTimeSinceAccept() > PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS) {
-          PaxosReplica replica = PaxosManager.paxosInstances.get(PaxosManager.getPaxosNameFromPaxosID(propState.paxosID));
+          PaxosReplica replica = PaxosManager.paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(propState.paxosID));
           if (replica!=null && replica.getPaxosID().equals(propState.paxosID)) {
             boolean result = replica.resendPendingProposal(propState);
             if (result == false) remove.add(propState);
@@ -1091,16 +1099,15 @@ class LogPaxosStateTask extends TimerTask {
 
       if (StartNameServer.experimentMode) {return;} // we do not log paxos state during experiments ..
 
-      for (String x: PaxosManager.paxosInstances.keySet()) {
-  //      if (PaxosLogger.resetStateChanged(x)) { //
-        PaxosReplica r = PaxosManager.paxosInstances.get(x);
-        if (x != null) {
-          StatePacket packet = r.getState();
+      for (String paxosKey: PaxosManager.paxosInstances.keySet()) {
+
+        PaxosReplica replica = PaxosManager.paxosInstances.get(paxosKey);
+        if (paxosKey != null) {
+          StatePacket packet = replica.getState();
           if (packet != null) {
-            PaxosLogger.logPaxosState(r.getPaxosID(), packet);
+            PaxosLogger.logPaxosState(replica.getPaxosID(), packet);
           }
         }
-  //      }
       }
     }catch(Exception e) {
       GNS.getLogger().severe("Exception IN paxos state logging " + e.getMessage());

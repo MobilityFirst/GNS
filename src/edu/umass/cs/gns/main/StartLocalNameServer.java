@@ -33,7 +33,7 @@ public class StartLocalNameServer {
   public static String updateTraceFile;
   public static int numQuery;
   public static int numUpdate;
-  public static long voteInterval = 1000;
+  public static long voteIntervalMillis = 1000;
   public static boolean isSyntheticWorkload = false;
   public static String name;
   public static int cacheSize = 1000;
@@ -330,7 +330,7 @@ public class StartLocalNameServer {
 
       if (parser.hasOption("location")) {
         replicationFramework = ReplicationFrameworkType.LOCATION;
-        voteInterval = Integer.parseInt(parser.getOptionValue("vInterval"));
+        voteIntervalMillis = Integer.parseInt(parser.getOptionValue("vInterval")) * 1000;
         if (parser.hasOption("chooseFromClosestK")) {
           chooseFromClosestK = Integer.parseInt(parser.getOptionValue("chooseFromClosestK"));
         }
@@ -449,7 +449,7 @@ public class StartLocalNameServer {
     println("Zipf Workload: " + isSyntheticWorkload, debugMode);
     println("Name: " + name, debugMode);
     println("Replication: " + replicationFramework.toString(), debugMode);
-    println("Vote Interval: " + voteInterval + "ms", debugMode);
+    println("Vote Interval: " + voteIntervalMillis + "ms", debugMode);
     println("Cache Size: " + cacheSize, debugMode);
     println("Experiment Mode: " + experimentMode, debugMode);
     println("Debug Mode: " + debugMode, debugMode);

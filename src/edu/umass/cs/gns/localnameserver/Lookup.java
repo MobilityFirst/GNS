@@ -195,7 +195,7 @@ public class Lookup {
       if (query.numRestarts == 0) delay = 0;
 
       String failureMsg = DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),
-              0, query.getLookupRecvdTime(), query.numRestarts + 1, new HashSet<Integer>());
+              0, query.getLookupRecvdTime(), query.numRestarts + 1, -1, new HashSet<Integer>());
 
       PendingTasks.addToPendingRequests(query.getqName(), queryTaskObject, StartLocalNameServer.queryTimeout,
               query.getSenderAddress(), query.getSenderPort(), DNSRequestTask.getErrorPacket(query.getIncomingPacket()),
@@ -212,7 +212,7 @@ public class Lookup {
         }
         GNS.getLogger().warning("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());
         GNS.getStatLogger().fine(DNSRequestTask.getFailureLogMessage(0,dnsPacket.getQrecordKey(),dnsPacket.getQname(),
-                0,query.getLookupRecvdTime(), query.numRestarts, new HashSet<Integer>()));
+                0,query.getLookupRecvdTime(), query.numRestarts, -1, new HashSet<Integer>()));
 
       } catch (JSONException e) {
         e.printStackTrace();

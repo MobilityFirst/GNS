@@ -29,35 +29,35 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ReplicaControllerRecord {
 
-//  public final static Field NAME = new Field("rcr_name", FieldType.STRING);
+  //  public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);
 //
-//  public final static Field PRIMARY_NAMESERVERS = new Field("rcr_primary", FieldType.SET_INTEGER);
-//  public final static Field ACTIVE_NAMESERVERS = new Field("rcr_active", FieldType.SET_INTEGER);
-//  public final static Field OLD_ACTIVE_NAMESERVERS = new Field("rcr_oldactive", FieldType.SET_INTEGER);
+//  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER);
+//  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER);
+//  public final static ColumnField OLD_ACTIVE_NAMESERVERS = new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER);
 //
-//  public final static Field ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_activeRunning", FieldType.BOOLEAN);
-//  public final static Field OLD_ACTIVE_NAMESERVERS_RUNNING = new Field("rcr_oldActiveRunning", FieldType.BOOLEAN);
+//  public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN);
+//  public final static ColumnField OLD_ACTIVE_NAMESERVERS_RUNNING = new ColumnField("rcr_oldActiveRunning", ColumnFieldType.BOOLEAN);
 //
-//  public final static Field ACTIVE_PAXOS_ID = new Field("rcr_activePaxosID", FieldType.STRING);
-//  public final static Field OLD_ACTIVE_PAXOS_ID = new Field("rcr_oldActivePaxosID", FieldType.STRING);
+//  public final static ColumnField ACTIVE_PAXOS_ID = new ColumnField("rcr_activePaxosID", ColumnFieldType.STRING);
+//  public final static ColumnField OLD_ACTIVE_PAXOS_ID = new ColumnField("rcr_oldActivePaxosID", ColumnFieldType.STRING);
 //
-//  public final static Field MARKED_FOR_REMOVAL = new Field("rcr_markedForRemoval", FieldType.INTEGER);
+//  public final static ColumnField MARKED_FOR_REMOVAL = new ColumnField("rcr_markedForRemoval", ColumnFieldType.INTEGER);
 //
-//  public final static Field VOTES_MAP = new Field("rcr_votesMap", FieldType.VOTES_MAP);
-//  public final static Field STATS_MAP = new Field("rcr_statsMap", FieldType.STATS_MAP);
+//  public final static ColumnField VOTES_MAP = new ColumnField("rcr_votesMap", ColumnFieldType.VOTES_MAP);
+//  public final static ColumnField STATS_MAP = new ColumnField("rcr_statsMap", ColumnFieldType.STATS_MAP);
 //
-//  public final static Field PREV_TOTAL_READ = new Field("rcr_prevTotalRead", FieldType.INTEGER);
-//  public final static Field PREV_TOTAL_WRITE = new Field("rcr_prevTotalWrite", FieldType.INTEGER);
-//  public final static Field MOV_AVG_READ = new Field("rcr_movAvgRead", FieldType.LIST_INTEGER);
-//  public final static Field MOV_AVG_WRITE = new Field("rcr_movAvgWrite", FieldType.LIST_INTEGER);
+//  public final static ColumnField PREV_TOTAL_READ = new ColumnField("rcr_prevTotalRead", ColumnFieldType.INTEGER);
+//  public final static ColumnField PREV_TOTAL_WRITE = new ColumnField("rcr_prevTotalWrite", ColumnFieldType.INTEGER);
+//  public final static ColumnField MOV_AVG_READ = new ColumnField("rcr_movAvgRead", ColumnFieldType.LIST_INTEGER);
+//  public final static ColumnField MOV_AVG_WRITE = new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER);
 //
-//  public final static Field KEEP_ALIVE_TIME = new Field("rcr_keepAlive", FieldType.INTEGER);
+//  public final static ColumnField KEEP_ALIVE_TIME = new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER);
   public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);
   public final static ColumnField PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER) : new ColumnField("rc1", ColumnFieldType.SET_INTEGER);
   public final static ColumnField ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER) : new ColumnField("rc2", ColumnFieldType.SET_INTEGER);
   public final static ColumnField OLD_ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER) : new ColumnField("rc3", ColumnFieldType.SET_INTEGER);
   public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc4", ColumnFieldType.BOOLEAN);
-  public final static ColumnField OLD_ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActiveRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc5", ColumnFieldType.BOOLEAN);
+  //  public final static ColumnField OLD_ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActiveRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc5", ColumnFieldType.BOOLEAN);
   public final static ColumnField ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activePaxosID", ColumnFieldType.STRING) : new ColumnField("rc6", ColumnFieldType.STRING);
   public final static ColumnField OLD_ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActivePaxosID", ColumnFieldType.STRING) : new ColumnField("rc7", ColumnFieldType.STRING);
   public final static ColumnField MARKED_FOR_REMOVAL = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_markedForRemoval", ColumnFieldType.INTEGER) : new ColumnField("rc8", ColumnFieldType.INTEGER);
@@ -89,7 +89,7 @@ public class ReplicaControllerRecord {
     hashMap.put(ACTIVE_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
     hashMap.put(OLD_ACTIVE_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
 
-    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
+//    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
 
     hashMap.put(ACTIVE_PAXOS_ID, name + "-1");
@@ -125,7 +125,7 @@ public class ReplicaControllerRecord {
     hashMap.put(ACTIVE_NAMESERVERS, actives);
     hashMap.put(OLD_ACTIVE_NAMESERVERS, actives);
 
-    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
+//    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
 
     hashMap.put(ACTIVE_PAXOS_ID, name + "-1");
@@ -178,9 +178,9 @@ public class ReplicaControllerRecord {
       hashMap.put(OLD_ACTIVE_NAMESERVERS, JSONUtils.getObject(OLD_ACTIVE_NAMESERVERS, json));
     }
 
-    if (json.has(OLD_ACTIVE_NAMESERVERS_RUNNING.getName())) {
-      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, JSONUtils.getObject(OLD_ACTIVE_NAMESERVERS_RUNNING, json));
-    }
+//    if (json.has(OLD_ACTIVE_NAMESERVERS_RUNNING.getName())) {
+//      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, JSONUtils.getObject(OLD_ACTIVE_NAMESERVERS_RUNNING, json));
+//    }
     if (json.has(ACTIVE_NAMESERVERS_RUNNING.getName())) {
       hashMap.put(ACTIVE_NAMESERVERS_RUNNING, JSONUtils.getObject(ACTIVE_NAMESERVERS_RUNNING, json));
     }
@@ -251,7 +251,7 @@ public class ReplicaControllerRecord {
   }
 
   /********************************************
-   * GETTER methods for each field in replica controller record
+   * GETTER methods for each ColumnField in replica controller record
    * ******************************************/
   /**
    * @return the name
@@ -308,15 +308,15 @@ public class ReplicaControllerRecord {
     throw new FieldNotFoundException(ACTIVE_NAMESERVERS_RUNNING);
   }
 
-  /**
-   * @return the oldActiveRunning
-   */
-  public boolean isOldActiveRunning() throws FieldNotFoundException {
-    if (hashMap.containsKey(OLD_ACTIVE_NAMESERVERS_RUNNING)) {
-      return (Boolean) hashMap.get(OLD_ACTIVE_NAMESERVERS_RUNNING);
-    }
-    throw new FieldNotFoundException(OLD_ACTIVE_NAMESERVERS_RUNNING);
-  }
+//  /**
+//   * @return the oldActiveRunning
+//   */
+//  public boolean isOldActiveRunning() throws FieldNotFoundException {
+//    if (hashMap.containsKey(OLD_ACTIVE_NAMESERVERS_RUNNING)) {
+//      return (Boolean) hashMap.get(OLD_ACTIVE_NAMESERVERS_RUNNING);
+//    }
+//    throw new FieldNotFoundException(OLD_ACTIVE_NAMESERVERS_RUNNING);
+//  }
 
   /**
    * return paxos ID for new activeNameServers
@@ -505,41 +505,41 @@ public class ReplicaControllerRecord {
     BOTH_ACTIVE_RUNNING_ERROR
   };
 
-  /**
-   * primary checks the current step of transition from old active name servers to new active name servers
-   *
-   * @return
-   */
-  public ACTIVE_STATE getNewActiveTransitionStage() throws FieldNotFoundException {
-    boolean active = isActiveRunning();
-    boolean oldActive = isOldActiveRunning();
-    if (!active && oldActive) {
-      return ACTIVE_STATE.OLD_ACTIVE_RUNNING; // new proposed but old not stop stopped
-    }
-    if (!active && !oldActive) {
-      return ACTIVE_STATE.NO_ACTIVE_RUNNING; // both are stopped, start new active
-    }
-    if (active && !oldActive) {
-      return ACTIVE_STATE.ACTIVE_RUNNING; // normal operation
-    }
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().severe("ERROR: Error  BOTH OLD & NEW ACTIVE RUNNING for NameRecord. An error condition.");
-    }
-    return ACTIVE_STATE.BOTH_ACTIVE_RUNNING_ERROR; // both cannot be running.
-  }
+//  /**
+//   * primary checks the current step of transition from old active name servers to new active name servers
+//   *
+//   * @return
+//   */
+//  public ACTIVE_STATE getNewActiveTransitionStage() throws FieldNotFoundException {
+//    boolean active = isActiveRunning();
+//    boolean oldActive = isOldActiveRunning();
+//    if (!active && oldActive) {
+//      return ACTIVE_STATE.OLD_ACTIVE_RUNNING; // new proposed but old not stopped
+//    }
+//    if (!active && !oldActive) {
+//      return ACTIVE_STATE.NO_ACTIVE_RUNNING; // both are stopped, start new active
+//    }
+//    if (active && !oldActive) {
+//      return ACTIVE_STATE.ACTIVE_RUNNING; // normal operation
+//    }
+//    if (StartNameServer.debugMode) {
+//      GNS.getLogger().severe("ERROR: Error  BOTH OLD & NEW ACTIVE RUNNING for NameRecord. An error condition.");
+//    }
+//    return ACTIVE_STATE.BOTH_ACTIVE_RUNNING_ERROR; // both cannot be running.
+//  }
 
-  /**
-   * Are oldActiveNameSevers stopped now?
-   *
-   * @return
-   */
-  public boolean isOldActiveStopped(String oldPaxosID) throws FieldNotFoundException {
-    String paxosID = getOldActivePaxosID();
-    if (paxosID.equals(oldPaxosID)) {
-      return !isOldActiveRunning();
-    }
-    return true;
-  }
+//  /**
+//   * Are oldActiveNameSevers stopped now?
+//   *
+//   * @return
+//   */
+//  public boolean isOldActiveStopped(String oldPaxosID) throws FieldNotFoundException {
+//    String paxosID = getOldActivePaxosID();
+//    if (paxosID.equals(oldPaxosID)) {
+//      return !isOldActiveRunning();
+//    }
+//    return true;
+//  }
   /********************************************
    * WRITE methods: these methods write one or more fields. they may read values of some fields using the above GETTER methods.
    * ******************************************/
@@ -618,7 +618,7 @@ public class ReplicaControllerRecord {
       if (updateActiveNameServerFields.size() > 0) {
         return updateActiveNameServerFields;
       }
-      updateActiveNameServerFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+//      updateActiveNameServerFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
       updateActiveNameServerFields.add(ACTIVE_NAMESERVERS_RUNNING);
       updateActiveNameServerFields.add(OLD_ACTIVE_NAMESERVERS);
       updateActiveNameServerFields.add(ACTIVE_NAMESERVERS);
@@ -636,7 +636,7 @@ public class ReplicaControllerRecord {
    */
   public void updateActiveNameServers(Set<Integer> newActiveNameServers, String newActivePaxosID) throws FieldNotFoundException {
 
-    boolean activeRunning = isActiveRunning();
+//    boolean activeRunning = isActiveRunning();
     Set<Integer> actives = getActiveNameservers();
     String activePaxosID = getActivePaxosID();
 
@@ -644,7 +644,7 @@ public class ReplicaControllerRecord {
 
     ArrayList<Object> updateValues = new ArrayList<Object>();
 
-    updateValues.add(activeRunning);
+//    updateValues.add(activeRunning);
     updateValues.add(false);
     updateValues.add(actives);
     updateValues.add(newActiveNameServers);
@@ -653,40 +653,42 @@ public class ReplicaControllerRecord {
 
     NameServer.replicaController.update(getName(), NAME, updateFields, updateValues);
 
-    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, activeRunning);
+//    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, activeRunning);
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, false);
     hashMap.put(OLD_ACTIVE_NAMESERVERS, actives);
     hashMap.put(ACTIVE_NAMESERVERS, newActiveNameServers);
     hashMap.put(OLD_ACTIVE_PAXOS_ID, activePaxosID);
     hashMap.put(ACTIVE_PAXOS_ID, newActivePaxosID);
   }
-  private static ArrayList<ColumnField> setOldActiveStoppedFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<ColumnField> getSetOldActiveStoppedFields() {
-    synchronized (setOldActiveStoppedFields) {
-      if (setOldActiveStoppedFields.size() > 0) {
-        return setOldActiveStoppedFields;
-      }
-      setOldActiveStoppedFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
-      return setOldActiveStoppedFields;
-    }
-  }
+//  private static ArrayList<ColumnField> setOldActiveStoppedFields = new ArrayList<ColumnField>();
+//
+//  private static ArrayList<ColumnField> getSetOldActiveStoppedFields() {
+//    synchronized (setOldActiveStoppedFields) {
+//      if (setOldActiveStoppedFields.size() > 0) {
+//        return setOldActiveStoppedFields;
+//      }
+//      setOldActiveStoppedFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+//      return setOldActiveStoppedFields;
+//    }
+//  }
 
-  public boolean setOldActiveStopped(String oldActiveID) throws FieldNotFoundException {
+//  public boolean setOldActiveStopped(String oldActiveID) throws FieldNotFoundException {
+//
+//    if (oldActiveID.equals(this.getOldActivePaxosID())) {
+//
+//      ArrayList<ColumnField> updateFields = getSetOldActiveStoppedFields();
+//
+//      ArrayList<Object> values = new ArrayList<Object>();
+//      values.add(false);
+//
+//      NameServer.replicaController.update(getName(), NAME, updateFields, values);
+//      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
+//      return true;
+//    }
+//    return false;
+//  }
 
-    if (oldActiveID.equals(this.getOldActivePaxosID())) {
-
-      ArrayList<ColumnField> updateFields = getSetOldActiveStoppedFields();
-
-      ArrayList<Object> values = new ArrayList<Object>();
-      values.add(false);
-
-      NameServer.replicaController.update(getName(), NAME, updateFields, values);
-      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
-      return true;
-    }
-    return false;
-  }
   private static ArrayList<ColumnField> setNewActiveRunningFields = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getSetNewActiveRunningFields() {
@@ -695,7 +697,7 @@ public class ReplicaControllerRecord {
         return setNewActiveRunningFields;
       }
       setNewActiveRunningFields.add(ACTIVE_NAMESERVERS_RUNNING);
-      setNewActiveRunningFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
+//      setNewActiveRunningFields.add(OLD_ACTIVE_NAMESERVERS_RUNNING);
       return setNewActiveRunningFields;
     }
   }
@@ -713,11 +715,11 @@ public class ReplicaControllerRecord {
 
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(true);
-      values.add(false);
+//      values.add(false);
 
       NameServer.replicaController.update(getName(),NAME,updateFields,values);
       hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
-      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
+//      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
 
       return true;
     }
@@ -781,7 +783,7 @@ public class ReplicaControllerRecord {
             ColumnField.keys(new ColumnField(Integer.toString(id), ColumnFieldType.INTEGER)),
             //votesMapKeys,
             ColumnField.values(vote) //votesMapValues
-            );
+    );
   }
 
   /**
@@ -807,7 +809,7 @@ public class ReplicaControllerRecord {
   }
 
   /********************************************
-   * SETTER methods, these methods write to database one field in the name record.
+   * SETTER methods, these methods write to database one ColumnField in the name record.
    * ******************************************/
   /**
    * @param activeNameservers the activeNameservers to set

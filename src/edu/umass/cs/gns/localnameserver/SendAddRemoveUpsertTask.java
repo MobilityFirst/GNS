@@ -83,8 +83,8 @@ public class SendAddRemoveUpsertTask extends TimerTask{
       } catch (UnknownHostException e) {
         e.printStackTrace();
       }
-      String updateStats = updateInfo.getUpdateFailedStats(primariesQueried, LocalNameServer.nodeID, updateRequestID);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(updateStats);
+      String updateStats = updateInfo.getUpdateFailedStats(primariesQueried, LocalNameServer.nodeID, updateRequestID, -1);
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(updateStats);
       GNS.getStatLogger().fine(updateStats);
 
       throw  new RuntimeException();

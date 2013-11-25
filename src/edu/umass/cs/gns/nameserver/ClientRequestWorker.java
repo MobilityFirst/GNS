@@ -532,8 +532,8 @@ public class ClientRequestWorker extends TimerTask {
 //      GNS.getLogger().severe(" Update proposed to paxosID = " + activePaxosID);
 //    }
 
-    String paxosID = PaxosManager.propose(activePaxosID,
-            new RequestPacket(updatePacket.getType().getInt(), updatePacket.toString(), PaxosPacketType.REQUEST, false));
+    String paxosID = PaxosManager.propose(activePaxosID, new RequestPacket(updatePacket.getType().getInt(),
+            updatePacket.toString(), PaxosPacketType.REQUEST, false));
 //    GNS.getLogger().severe(" PAXOS PROPOSAL: propose update request: " + updatePacket + "result = " + paxosID);
 
     if (paxosID == null) {

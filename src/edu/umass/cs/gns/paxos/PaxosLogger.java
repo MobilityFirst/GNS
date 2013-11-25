@@ -2,7 +2,6 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,14 +65,16 @@ public class PaxosLogger extends Thread {
   /**
    * folder used to store paxos log
    */
-  static String logFolder = null;
+  private static String logFolder = null;
+
+  private static int nodeID = -1;
   /**
    * {@code FileWriter} object currently used for logging
    */
 //  static FileWriter fileWriter;
   static String logFileName;
   /**
-   * file number of log file currently used for logging
+   * File number of log file currently used for logging
    */
   private static int logFileNumber = 0;
   /**
@@ -96,16 +97,34 @@ public class PaxosLogger extends Thread {
    * This sub-directory periodically stores most recent snapshot of all paxos instances
    */
   private static String stateFolderSubdir = "paxosState";
+
   private static String paxosStateFolder = null;
   /**
    * Lock object used to isolate access to writes to paxos IDs file
    */
   private static final ReentrantLock loggingLock = new ReentrantLock();
 
+  /**
+   * This variable is set to true when GNS is running. We set it to false during offline analysis of paxos logs
+   * that are collected during a test run of GNS. See class {@code edu.umass.cs.gns.paxos.PaxosLogAnalyzer} for the
+   * code that does the analysis.
+   */
+  private static boolean gnsRunning = true;
+
+
+  public static void setLoggerParameters(String paxosLogFolder) {
+    PaxosLogger.logFolder = paxosLogFolder;
+  }
+
   // ADDED NODE + NameServer.nodeID so we can run multiple servers on a single machine
   private static String getLogFolderPath() {
-    return logFolder + "/" + "NODE" + NameServer.nodeID;
+    return logFolder + "/" + "NODE" + nodeID;
   }
+
+  public static void setGnsRunning(boolean gnsRunning) {
+    PaxosLogger.gnsRunning = gnsRunning;
+  }
+
   // <state>
   // <last message>
   // <not logged>
@@ -115,11 +134,12 @@ public class PaxosLogger extends Thread {
   /**
    * This method is called on startup. It initializes paxos logs
    * and recovers state from existing logs when paxos starts up.
-   * @return {@code ConcurrentHashMap} of {@code PaxosReplica} objects recovered from logs, {@code null} if no object exists, keys
-   * of {@code ConcurrentHashMap} are paxos IDs
+   * @return {@code ConcurrentHashMap} of {@code PaxosReplica} objects recovered from logs, {@code null} if no logs
+   * exist, keys of {@code ConcurrentHashMap} are paxos keys, not paxos IDs. See method
+   * getPaxosKey).
    */
-  public static ConcurrentHashMap<String, PaxosReplica> initLogger() {
-
+  public static ConcurrentHashMap<String, PaxosReplica> initLogger(int nodeID) {
+    PaxosLogger.nodeID = nodeID;
     if (logFolder == null) {
       System.out.println("Specify paxosLogFolder. paxosLogFolder can't be null.");
       System.exit(2);
@@ -128,7 +148,7 @@ public class PaxosLogger extends Thread {
     // initialize folder
     paxosStateFolder = getLogFolderPath() + "/" + stateFolderSubdir;
 
-    ConcurrentHashMap<String, PaxosReplica> replicas = null;
+    ConcurrentHashMap<String, PaxosReplica> replicas;
 
     createLogDirs();
 
@@ -156,8 +176,9 @@ public class PaxosLogger extends Thread {
 
   /**
    * This method recovers paxos state from logs at system startup
-   * @return {@code ConcurrentHashMap} of {@code PaxosReplica} objects recovered from logs, {@code null} if no object exists, keys
-   * of {@code ConcurrentHashMap} are paxos IDs
+   * @return {@code ConcurrentHashMap} of {@code PaxosReplica} objects recovered from logs, {@code null}
+   * if no object exists. Keys of {@code ConcurrentHashMap} are paxos keys, not paxosIDs. See method
+   * getPaxosKey).
    */
   private static ConcurrentHashMap<String, PaxosReplica> recoverPaxosInstancesFromLogs() {
 
@@ -182,6 +203,33 @@ public class PaxosLogger extends Thread {
   }
 
   /**
+   * Method to be used only by {@code PaxosLogAnalyzer} class.
+   *
+   * This method reads all paxos logs and stores the log messages in {@code PaxosReplica} object.
+   * @return {@code ConcurrentHashMap} of {@code PaxosReplica} objects that includes log messages, {@code null}
+   * if no object exists. Keys of {@code ConcurrentHashMap} are paxosIDs, values are {@code PaxosReplica} objects.
+   */
+  public static ConcurrentHashMap<String, PaxosReplica> readAllPaxosLogs(int nodeID) {
+    PaxosLogger.nodeID = nodeID;
+    // step 1: recover list of paxos instances
+    ConcurrentHashMap<String, PaxosReplica> paxosInstances = recoverListOfPaxosInstances();
+    if (paxosInstances == null || paxosInstances.size() == 0) {
+      return paxosInstances;
+    }
+
+    // no need to read paxos log state
+    // step 3: read paxos logs for messages received after the paxos state was logged
+    recoverLogMessagesAfterLoggedState(paxosInstances);
+
+
+    if (StartNameServer.debugMode) {
+      GNS.getLogger().fine("Paxos Recovery: Complete.");
+    }
+
+    return paxosInstances;
+  }
+
+  /**
    * Recover list of paxos instances currently active.
    * @return
    */
@@ -189,6 +237,15 @@ public class PaxosLogger extends Thread {
 
     ConcurrentHashMap<String, PaxosReplica> paxosInstances = new ConcurrentHashMap<String, PaxosReplica>();
     // step 1: read paxosIDs active currently
+//    File f = new File(getLogFolderPath());
+//    if (!f.exists()) {
+//      if (StartNameServer.debugMode) {
+//        GNS.getLogger().fine("Paxos Recovery: " + getPaxosIDsFile() + " does not exist. "
+//                + "No further recovery possible.");
+//      }
+//      return new ConcurrentHashMap<String, PaxosReplica>();
+//    }
+
     File f = new File(getPaxosIDsFile());
 
     if (!f.exists()) {
@@ -196,7 +253,7 @@ public class PaxosLogger extends Thread {
         GNS.getLogger().fine("Paxos Recovery: " + getPaxosIDsFile() + " does not exist. "
                 + "No further recovery possible.");
       }
-      return null;
+      return new ConcurrentHashMap<String, PaxosReplica>();
     }
 
     if (StartNameServer.debugMode) {
@@ -220,7 +277,8 @@ public class PaxosLogger extends Thread {
       GNS.getLogger().fine("Paxos Recovery: completed reading paxos IDs file. "
               + "Number of Paxos IDs = " + paxosInstances.size());
     }
-    appendToFile(getPaxosIDsFile(), "\n");
+    if(gnsRunning) appendToFile(getPaxosIDsFile(), "\n"); // appends newline to log so that incomplete messages from the crash of the
+                                           // system terminates in newline
     return paxosInstances;
   }
 
@@ -232,46 +290,50 @@ public class PaxosLogger extends Thread {
     File f = new File(getPaxosStateFolder());
     if (f.exists() == false) {
       if (StartNameServer.debugMode) {
-        GNS.getLogger().fine(" ");
+        GNS.getLogger().severe("ERROR: the folder which stores most recent state of paxos instances does not exist.");
       }
       return;
     }
     File[] files = f.listFiles();
-    ConcurrentHashMap<String, PaxosStateFileName> mostRecentStateFile = new ConcurrentHashMap<String, PaxosStateFileName>();
+
+    ConcurrentHashMap<String, PaxosStateFileName> mostRecentStateFile = new ConcurrentHashMap<String,
+            PaxosStateFileName>();
     for (File f1 : files) {
       try {
-        PaxosStateFileName fname = new PaxosStateFileName(f1.getName());
-        if (!paxosInstances.containsKey(fname.paxosID)) {
+        PaxosStateFileName fName = new PaxosStateFileName(f1.getName());
+        if (!paxosInstances.containsKey(getPaxosKey(fName.paxosID))) {
           continue;
         }
         String state = getPaxosStateFromFile(f1);
         if (state == null) {
           continue;
         } else {
-          fname.updateState(state);
+          fName.updateState(state);
         }
-        if (mostRecentStateFile.containsKey(fname.paxosID) == false) {
-          GNS.getLogger().fine(" Put state in file " + f1.getName() + " for paxos ID " + fname.paxosID);
-          mostRecentStateFile.put(fname.paxosID, fname);
-        } else if (fname.compareTo(mostRecentStateFile.get(fname.paxosID)) > 0) {
-          GNS.getLogger().fine(" REPLACE: state in file " + f1.getName() + " for paxos ID " + fname.paxosID);
-          mostRecentStateFile.put(fname.paxosID, fname);
+        if (mostRecentStateFile.containsKey(fName.paxosID) == false) {
+          GNS.getLogger().fine(" Put state in file " + f1.getName() + " for paxos ID " + fName.paxosID);
+          mostRecentStateFile.put(fName.paxosID, fName);
+        } else if (fName.compareTo(mostRecentStateFile.get(fName.paxosID)) > 0) {
+          GNS.getLogger().fine(" REPLACE: state in file " + f1.getName() + " for paxos ID " + fName.paxosID);
+          mostRecentStateFile.put(fName.paxosID, fName);
         } else {
-          GNS.getLogger().fine(" IGNORE: state in file " + f1.getName() + " for paxos ID " + fname.paxosID);
+          GNS.getLogger().fine(" IGNORE: state in file " + f1.getName() + " for paxos ID " + fName.paxosID);
         }
       } catch (Exception e) {
         GNS.getLogger().fine(" ERROR Parsing log state file name: " + f1.getName());
       }
     }
 
-    for (String x : paxosInstances.keySet()) {
-      if (mostRecentStateFile.containsKey(x) == false) {
-        GNS.getLogger().severe("ERROR: No state logged for paxos instance = " + x + "\tThis case should not happen.");
+    for (String paxosKey: paxosInstances.keySet()) {
+      String paxosID = paxosInstances.get(paxosKey).getPaxosID();
+      if (mostRecentStateFile.containsKey(paxosID) == false) {
+        GNS.getLogger().severe("ERROR: No state logged for paxos instance = " + paxosKey +
+                "\tThis case should not happen.");
       } else {
-        PaxosStateFileName state = mostRecentStateFile.get(x);
-        paxosInstances.get(x).recoverCurrentBallotNumber(state.ballot);
-        paxosInstances.get(x).recoverSlotNumber(state.slotNumber);
-        PaxosManager.clientRequestHandler.updateState(x, state.state);
+        PaxosStateFileName state = mostRecentStateFile.get(paxosID);
+        paxosInstances.get(paxosKey).recoverCurrentBallotNumber(state.ballot);
+        paxosInstances.get(paxosKey).recoverSlotNumber(state.slotNumber);
+        PaxosManager.clientRequestHandler.updateState(paxosID, state.state);
       }
     }
   }
@@ -320,8 +382,10 @@ public class PaxosLogger extends Thread {
     }
 
     // execute decisions
-    for (String paxosID : paxosInstances.keySet()) {
-      paxosInstances.get(paxosID).executeRecoveredDecisions();
+    if (gnsRunning) {
+      for (String paxosKey : paxosInstances.keySet()) {
+        paxosInstances.get(paxosKey).executeRecoveredDecisions();
+      }
     }
   }
 
@@ -372,16 +436,19 @@ public class PaxosLogger extends Thread {
         parsePaxosStop(paxosInstances, logMessage.getPaxosID(), logMessage.getMessage());
         break;
       case PaxosPacketType.DECISION:
-        parseDecision(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+        parseDecision(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
+                logMessage.getMessage());
         break;
 //      case PaxosPacketType.PREPARE:
 //        parsePValue(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
 //        break;
       case PaxosPacketType.ACCEPT:
-        parseAccept(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+        parseAccept(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
+                logMessage.getMessage());
         break;
       case PaxosPacketType.PREPARE:
-        parsePrepare(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+        parsePrepare(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
+                logMessage.getMessage());
         break;
 
 //      case BALLOT:
@@ -397,6 +464,11 @@ public class PaxosLogger extends Thread {
 
   }
 
+  /**
+   * Creates folders where paxos logs are stored.
+   *
+   * A separate folder is created for storing most recent state of paxos instances, that is periodically logged.
+   */
   private static void createLogDirs() {
     File f = new File(getLogFolderPath());
     if (!f.exists()) { // paxos folder does not exist, then create dirs to store logs.
@@ -608,12 +680,14 @@ public class PaxosLogger extends Thread {
         return sb.toString();
       } else {
         if (StartNameServer.debugMode) {
-          GNS.getLogger().severe(" Size mismatch in reading paxos state. Msg size = " + size + " Actual size = " + sb.length());
+          GNS.getLogger().severe(" Size mismatch in reading paxos state. Msg size = " + size + " Actual size = " +
+                  sb.length());
         }
       }
     } catch (Exception e) {
       if (StartNameServer.debugMode) {
-        GNS.getLogger().severe("Exception in reading paxos state from file. File:" + f.getAbsolutePath() + ". Printing contents of file.");
+        GNS.getLogger().severe("Exception in reading paxos state from file. File:" + f.getAbsolutePath() +
+                ". Printing contents of file.");
         try {
           Runtime.getRuntime().exec("cat " + f.getAbsolutePath());
         } catch (IOException e1) {
@@ -635,17 +709,15 @@ public class PaxosLogger extends Thread {
   private static String getStateLogFileName(String paxosID, StatePacket packet) {
     return getLogFolderPath() + "/" + stateFolderSubdir + "/" + paxosID + "_" + packet.b + "_" + packet.slotNumber;
   }
-  private static String paxosIDFileComplete = null;
+//  private static String paxosIDFileComplete = null;
 
   /**
    *
    * @return
    */
   private static String getPaxosIDsFile() {
-    if (paxosIDFileComplete == null) {
-      paxosIDFileComplete = getLogFolderPath() + "/" + paxosIDsFile;
-    }
-    return paxosIDFileComplete;
+
+    return getLogFolderPath() + "/" + paxosIDsFile;
   }
 
   private static String getPaxosStateFolder() {
@@ -700,7 +772,7 @@ public class PaxosLogger extends Thread {
   public static void parsePaxosStart(ConcurrentHashMap<String, PaxosReplica> paxosInstances,
                                      String paxosID, String msg) {
 
-    if (paxosInstances.containsKey(paxosID)) {
+    if (paxosInstances.containsKey(getPaxosKey(paxosID))) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe(paxosID + "\tERROR: Paxos Instance already exists.");
       }
@@ -713,7 +785,8 @@ public class PaxosLogger extends Thread {
       GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIDs);
     }
 
-    paxosInstances.put(PaxosManager.getPaxosNameFromPaxosID(paxosID), new PaxosReplica(paxosID, PaxosManager.nodeID, nodeIDs));
+    paxosInstances.put(getPaxosKey(paxosID), new PaxosReplica(paxosID, PaxosManager.nodeID,
+            nodeIDs));
   }
 
   /**
@@ -723,8 +796,14 @@ public class PaxosLogger extends Thread {
    */
   private static void parsePaxosStop(ConcurrentHashMap<String, PaxosReplica> paxosInstances, String paxosID,
                                      String msg) {
-    PaxosReplica paxosReplica = paxosInstances.remove(paxosID);
 
+    if (gnsRunning) { //
+      PaxosReplica paxosReplica = paxosInstances.remove(paxosID);
+    }
+    else { //
+      PaxosReplica paxosReplica = paxosInstances.get(paxosID);
+      if (paxosReplica != null) paxosReplica.recoverStop();
+    }
     //TODO check this when implementing log synchronization
 
 //    if (paxosReplica !=null) {
@@ -745,6 +824,7 @@ public class PaxosLogger extends Thread {
 
   /**
    * Add to the set of decisions in new replica
+
    *
    * @param paxosReplica
    * @param message
@@ -825,7 +905,6 @@ public class PaxosLogger extends Thread {
           logCmdCopy = logCommands;
           logCommands = new ArrayList<LoggingCommand>();
         }
-
       }
 
       if (SLEEP_INTERVAL_MS > 0) {
@@ -839,8 +918,6 @@ public class PaxosLogger extends Thread {
       if (logCmdCopy == null) {
         continue;
       }
-//      continue;
-
 
       //        if (StartNameServer.debugMode) GNS.getLogger().fine(" Logging messages: " + msgsLogged.size());
       // log the msgs
@@ -859,8 +936,9 @@ public class PaxosLogger extends Thread {
         }
         fileWriter.close();
         long t1 = System.currentTimeMillis();
-        if (t1 - t0 > 20) {
-          GNS.getLogger().fine("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " Msgcount = " + logCmdCopy.size());
+        if (t1 - t0 > 50) {
+          GNS.getLogger().warning("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " MsgCount = " +
+                  logCmdCopy.size());
         }
         msgCount += logCmdCopy.size();
         if (msgCount > MSG_MAX) {
@@ -877,12 +955,12 @@ public class PaxosLogger extends Thread {
       for (LoggingCommand cmd : logCmdCopy) {
         if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_EXECUTE) {
           try {
-            PaxosManager.executorService.submit(new HandlePaxosMessageTask(cmd.getLogJson(), cmd.getLogJson().getInt(PaxosPacketType.ptype)));
+            PaxosManager.executorService.submit(new HandlePaxosMessageTask(cmd.getLogJson(),
+                    cmd.getLogJson().getInt(PaxosPacketType.ptype)));
           } catch (JSONException e) {
             e.printStackTrace();
           }
         } else if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_SEND_MSG) {
-
           PaxosManager.sendMessage(cmd.getDest(), cmd.getSendJson());
         }
 
@@ -890,7 +968,8 @@ public class PaxosLogger extends Thread {
 
 //      for (JSONObject jsonObject : msgsLogged) {
 //        try {
-//          PaxosManager.executorService.submit(new HandlePaxosMessageTask(jsonObject, jsonObject.getInt(PaxosPacketType.ptype)));
+//          PaxosManager.executorService.submit(new HandlePaxosMessageTask(jsonObject,
+// jsonObject.getInt(PaxosPacketType.ptype)));
 //        } catch (JSONException e) {
 //          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //        }
@@ -906,7 +985,7 @@ public class PaxosLogger extends Thread {
 ////                    try {
 ////                        sb.append(jsonObject.get((String) i.next())+ " ");
 ////                    } catch (JSONException e) {
-////                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+////                        e.printStackTrace();
 ////                    }
 ////
 ////                }
@@ -1006,7 +1085,7 @@ public class PaxosLogger extends Thread {
       ArrayList<PaxosStateFileName> files = allStateFiles.get(paxosID);
 
       // is paxos instance running?
-      if (PaxosManager.paxosInstances.containsKey(paxosID)) {
+      if (PaxosManager.paxosInstances.containsKey(getPaxosKey(paxosID))) {
         if (files.size() == 1) {
           continue;
         }
@@ -1024,7 +1103,8 @@ public class PaxosLogger extends Thread {
               File f2 = new File(paxosStateFolder + "/" + files.get(j).filename);
               boolean result = f2.delete();
               if (StartNameServer.debugMode) {
-                GNS.getLogger().fine("Deleting older state file for paxos ID = " + paxosID + " File name = " + files.get(j).filename + " Result = " + result);
+                GNS.getLogger().fine("Deleting older state file for paxos ID = " + paxosID + " File name = " +
+                        files.get(j).filename + " Result = " + result);
               }
             }
             break;
@@ -1035,7 +1115,8 @@ public class PaxosLogger extends Thread {
           File f1 = new File(paxosStateFolder + "/" + files.get(i).filename);
           boolean result = f1.delete();
           if (StartNameServer.debugMode) {
-            GNS.getLogger().fine("Deleting state file as paxos ID is stopped. paxos ID = " + paxosID + " File name = " + files.get(i).filename + " Result = " + result);
+            GNS.getLogger().fine("Deleting state file as paxos ID is stopped. paxos ID = " + paxosID + " File name = "
+                    + files.get(i).filename + " Result = " + result);
           }
         }
       }
@@ -1173,7 +1254,7 @@ public class PaxosLogger extends Thread {
   private static void filterStoppedPaxosIDs(HashSet<String> paxosIDs) {
     HashSet<String> deleteIDs = new HashSet<String>();
     for (String x : paxosIDs) {
-      if (PaxosManager.paxosInstances.containsKey(x)) {
+      if (PaxosManager.paxosInstances.containsKey(getPaxosKey(x))) {
         continue;
       }
       deleteIDs.add(x);
@@ -1252,7 +1333,8 @@ public class PaxosLogger extends Thread {
           AcceptPacket accept = new AcceptPacket(new JSONObject(logMsg.getMessage()));
 //          boolean result = false;
 //          if (stateFileName.slotNumber > accept.pValue.proposal.slot) result = true; // > sign is important
-//          GNS.getLogger().fine("MSG1. Slot1 " + stateFileName.slotNumber  + " Slot2 = " + accept.pValue.proposal.slot + " result = " + result );
+//          GNS.getLogger().fine("MSG1. Slot1 " + stateFileName.slotNumber  + " Slot2 = " + accept.pValue.proposal.slot
+// + " result = " + result );
           if (stateFileName.slotNumber > accept.pValue.proposal.slot) {
             return true; // > sign is important
           } else {
@@ -1262,7 +1344,8 @@ public class PaxosLogger extends Thread {
           PreparePacket prepare = new PreparePacket(new JSONObject(logMsg.getMessage()));
 //          result = false;
 //          if (stateFileName.ballot.compareTo(prepare.ballot) >= 0) result = true; // notice >= here
-//          GNS.getLogger().fine("MSG2. Ballot1 " + stateFileName.ballot + " Ballot2 = " + prepare.ballot + " result = " + result);
+//          GNS.getLogger().fine("MSG2. Ballot1 " + stateFileName.ballot + " Ballot2 = " + prepare.ballot +
+// " result = " + result);
           if (stateFileName.ballot.compareTo(prepare.ballot) >= 0) {
             return true; // notice >= here
           } else {
@@ -1272,7 +1355,8 @@ public class PaxosLogger extends Thread {
           ProposalPacket proposal = new ProposalPacket(new JSONObject(logMsg.getMessage()));
 //          result = false;
 //          if (stateFileName.slotNumber > proposal.slot) result = true; // > sign is important
-//          GNS.getLogger().fine("MSG1. Slot1 " + stateFileName.slotNumber  + " Slot2 = " + proposal.slot + " result = " + result);
+//          GNS.getLogger().fine("MSG1. Slot1 " + stateFileName.slotNumber  + " Slot2 = " + proposal.slot +
+// " result = " + result);
           if (stateFileName.slotNumber > proposal.slot) {
             return true; // > sign is important
           } else {
@@ -1283,6 +1367,12 @@ public class PaxosLogger extends Thread {
       e.printStackTrace();
     }
     return true;
+  }
+
+
+  private static String getPaxosKey(String paxosID) {
+    if (gnsRunning) return PaxosManager.getPaxosKeyFromPaxosID(paxosID);
+    return paxosID;
   }
 }
 
@@ -1445,7 +1535,7 @@ class PaxosLogMessage {
   }
 
   public PaxosLogMessage(String s) {
-    String[] tokens = s.split("\\s");
+    String[] tokens = s.split("\\s+");
     paxosID = tokens[0];
     logMessageType = Integer.parseInt(tokens[1]);
     message = s.substring(tokens[0].length() + tokens[1].length() + 2);
