@@ -167,6 +167,9 @@ public class Protocol {
   public final static String SIGNATURE = "signature";
   public final static String PASSKEY = "passkey";
   //public final static String TABLE = "table";
+   // Blessed field names
+  public static final String  LOCATION_FIELD_NAME          = "location";
+  public static final String  IPADDRESS_FIELD_NAME         = "ipAddress";
   //
   private boolean adminMode = false;
   private FieldAccess fieldAccess = FieldAccess.getInstance();

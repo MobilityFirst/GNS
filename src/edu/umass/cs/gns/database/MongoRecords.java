@@ -15,6 +15,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.httpserver.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -69,9 +70,9 @@ public class MongoRecords implements NoSQLRecords {
     // add location as another index
     //MongoCollectionSpec.getCollectionSpec(DBNAMERECORD).addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "location", 1));
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "location", "2d"));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Protocol.LOCATION_FIELD_NAME, "2d"));
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "ipAddress", 1));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Protocol.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + NameServer.nodeID;
@@ -343,7 +344,7 @@ public class MongoRecords implements NoSQLRecords {
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject nearClause = new BasicDBObject("$near", tuple).append("$maxDistance", maxDistanceInRadians);
     BasicDBObject query = new BasicDBObject(fieldName, nearClause);
-    //System.out.println("***QUERY***: " + query.toString());
+    //System.out.println("***SELECTNEARQUERY***: " + query.toString());
     DBCursor cursor = collection.find(query);
     if (explain) {
       System.out.println(cursor.explain().toString());
