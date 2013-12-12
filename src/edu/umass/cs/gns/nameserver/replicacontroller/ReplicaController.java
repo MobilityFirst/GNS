@@ -429,6 +429,7 @@ public class ReplicaController {
       oldActiveStopConfirmFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
       oldActiveStopConfirmFields.add(ReplicaControllerRecord.OLD_ACTIVE_PAXOS_ID);
       oldActiveStopConfirmFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
+      oldActiveStopConfirmFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
       return oldActiveStopConfirmFields;
     }
   }
