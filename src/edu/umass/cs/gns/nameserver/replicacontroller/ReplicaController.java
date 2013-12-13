@@ -346,7 +346,7 @@ public class ReplicaController {
 
       if (rcRecord.isActiveRunning()) { // if active is running, stop current actives
         updateGroupChangeProgress(rcRecord.getName(), STOP_SENT);
-        StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getOldActiveNameservers(),
+        StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
       } else {
@@ -663,7 +663,7 @@ public class ReplicaController {
       }
       if (rcRecord.isMarkedForRemoval() == true && removeRecordRequests.containsKey(packet.getName())) {
         updateGroupChangeProgress(rcRecord.getName(), STOP_SENT);
-        StopActiveSetTask stopTask = new StopActiveSetTask(packet.getName(), rcRecord.getOldActiveNameservers(),
+        StopActiveSetTask stopTask = new StopActiveSetTask(packet.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
       }
@@ -799,7 +799,7 @@ public class ReplicaController {
                 -1));
         // complete removing record
         updateGroupChangeProgress(rcRecord.getName(), STOP_SENT);
-        StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getOldActiveNameservers(),
+        StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
       }

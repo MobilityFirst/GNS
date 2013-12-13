@@ -56,6 +56,7 @@ public class StartLocalNameServer {
    * Used for running experiments for Auspice paper.
    */
   public static boolean experimentMode = false;
+  public static boolean noEmail = false;
   /**
    * Used for running experiments with replicate everywhere strategy.
    */

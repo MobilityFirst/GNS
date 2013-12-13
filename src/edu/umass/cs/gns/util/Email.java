@@ -6,9 +6,12 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import java.util.*;
+import edu.umass.cs.gns.main.StartLocalNameServer;
+
 import javax.mail.*;
-import javax.mail.internet.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
 
 public class Email {
 
@@ -49,6 +52,7 @@ public class Email {
 
    */
   public static boolean emailSSL(String subject, String recipient, String text) {
+    if (StartLocalNameServer.noEmail) return true;
     Properties props = new Properties();
     props.put("mail.smtp.host", smtpHost);
     props.put("mail.smtp.socketFactory.port", "465");

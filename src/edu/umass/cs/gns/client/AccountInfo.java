@@ -5,19 +5,17 @@
  */
 package edu.umass.cs.gns.client;
 
+import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ResultValueString;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Stores the Human Readable Name (HRN), GUID and public key for an account plus
@@ -62,6 +60,7 @@ public class AccountInfo {
     this.updated = new Date();
     this.password = password;
     this.verified = false;
+    if (StartLocalNameServer.noEmail) verified = true;
     this.verificationCode = null;
   }
 
