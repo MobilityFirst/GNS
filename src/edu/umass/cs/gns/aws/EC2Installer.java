@@ -457,7 +457,11 @@ public class EC2Installer {
   private static void removeLogFiles(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     StatusModel.getInstance().queueUpdate(id, "Removing log files");
-    AWSEC2.executeBashScript(hostname, keyFile, "removelogs.sh", "#!/bin/bash\nrm NSlogfile*\nrm LNSlogfile*\nrm -rf log");
+    AWSEC2.executeBashScript(hostname, keyFile, "removelogs.sh", "#!/bin/bash\n"
+            + "rm NSlogfile*\n"
+            + "rm LNSlogfile*\n"
+            + "rm RSlogfile*\n"
+            + "rm -rf log");
   }
 
   /**
