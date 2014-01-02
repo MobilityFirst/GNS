@@ -1,0 +1,47 @@
+
+Steps:
+
+
+(1) Install mongoDB, and check if you can run and kill mongo DB locally using these scripts. 
+
+run_mongodb_local.sh:    Script starts mongoDB instance. Set path variables as per your mongo installation.
+
+kill_mongodb_local.sh:   Script kills running mongoDB instance. Set path variables as per your mongo installation.
+
+
+(2) Set parameter values in exp_config.py. A description of each parameter is provided in the file. This file contains parameters related to both name servers and local name servers. In addition to parameters in this file, the files ‘name-server.py’ and ‘local-name-server.py’ contain additional parameters related to name servers and local name servers respectively.
+
+
+(3) Add information about set of nodes in the experiment by editing file ‘local_config’. The scripts assume there are N name servers and 1 local name server. 
+
+Format of each line:  
+
+nodeID YES/NO IP-address Port-number  Ping-latency Latitude Longitude
+
+Description of above fields:
+
+Node_id: If there are N name servers, their node IDs must be (0, .., N-1). Local name server has id = N
+
+YES/NO is YES for name servers, NO for the local name server.
+
+Ping-latency, Latitude, Longitude can be set to arbitrary values.
+
+
+(4) Create files with trace of lookup requests and update requests as follows:
+
+lookupLocal: this folder contains a file with a sequence of lookup requests. if name of the trace file is the nodeID of local name server.
+
+updateLocal: this folder contains a file with a sequence of lookup requests. if name of the trace file is the nodeID of local name server.
+
+
+(5) Run mongo DB (./run_mongodb_local.sh)  and run the experiment (./run_all_local.py).  Scripts ‘run_all_local.py’ Runs all name servers and the local name server.  If mongoDB is already running we don’t need to start mongoDB again before running next experiment.
+
+
+(6) Wait until experiment is over, then kill all GNS instances including name servers and local name servers. Run script (./kill_local.py). 
+
+(7) View the logs generated in folder ‘log_local’. Logs of name servers are stored in sub-folders starting with ‘log_ns_’, and logs of the local name server are stored in the sub-folder ‘log_lns_nodeID’. 
+
+A log entry containing ‘Success-Lookup’ is for a successful lookup, and likewise for phases ‘Failed-Lookup’, ‘Success-Update’, and  ‘Failed-Update’.
+
+I have some additional scripts to parse logs and generate graphs, will send them later.
+
