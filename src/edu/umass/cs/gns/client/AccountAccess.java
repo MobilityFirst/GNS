@@ -175,7 +175,7 @@ public class AccountAccess {
   private static final String PROBLEM_NOTICE = "There is some system problem in sending your confirmation email to %s. "
           + "Your account has been created. Please email us at %s and we will attempt to fix the problem.\n";
   //
-  private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server.\n"
+  private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server at %s.\n"
           + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
 
   public String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
@@ -191,7 +191,7 @@ public class AccountAccess {
                   String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
           boolean adminEmailOK = Email.emailSSL("GNS Account Notification",
                   Email.ACCOUNT_CONTACT_EMAIL,
-                  String.format(ADMIN_NOTICE, name, guid));
+                  String.format(ADMIN_NOTICE, name, host, guid));
           if (emailOK) {
             return Protocol.OKRESPONSE;
           } else {

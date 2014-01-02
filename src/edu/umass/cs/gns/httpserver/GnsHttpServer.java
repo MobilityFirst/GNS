@@ -157,6 +157,12 @@ public class GnsHttpServer {
         Set<String> keySet = requestHeaders.keySet();
         Iterator<String> iter = keySet.iterator();
 
+        String buildVersion = GNS.readBuildVersion();
+        String buildVersionInfo = "Unknown";
+        if (buildVersion != null) {
+          buildVersionInfo = "Build Version: " + buildVersion + "\n";
+        }
+        //
         String serverVersionInfo =
                 "Server Version: "
                 + Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
@@ -192,6 +198,7 @@ public class GnsHttpServer {
         String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() + "\n";
         String backingStoreClass = "Backing Store Class: " + StartNameServer.dataStore.getClassName() + "\n\n";
 
+        responseBody.write(buildVersionInfo.getBytes());
         responseBody.write(serverVersionInfo.getBytes());
         responseBody.write(protocolVersionInfo.getBytes());
         responseBody.write(recordVersionInfo.getBytes());
