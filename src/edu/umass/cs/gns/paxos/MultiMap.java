@@ -174,27 +174,23 @@ public class MultiMap {
 		MultiMap[] mmap = new MultiMap[size];
 		for(int i=0; i<size; i++) {
 			mmap[i] = new MultiMap();
-			
-			/* It looks like creating the hashmap and inserting the first 
-			 * element are expensive operations, but inserting additional
-			 * elements takes up only a few bytes. This is mainly where 
-			 * the benefits of aggregating multiple hashmaps into a multimap
-			 * can come from.
+
+			/* Each entry below seems to cost about 100B 
+			 * 
 			 */
 			mmap[i].put(29, 33.47);
 			RequestPacket p1 = new RequestPacket(3, "str", 56, true);
 			mmap[i].put(93,p1);
 			RequestPacket p2 = new RequestPacket(4, "str", 56, true);
-			mmap[i].put(93,p2);
+			mmap[i].put(99,p2);
 			RequestPacket p3 = new RequestPacket(5, "str", 56, true);
-			mmap[i].put(93,p3);
+			mmap[i].put(9,p3);
 			RequestPacket p4 = new RequestPacket(6, "str", 56, true);
-			mmap[i].put(93,p4);
-			
-			/* For some reason, putting Double values costs an extra 100B
-			 * per entry even neyond the first entry. But putting RequestPacket 
-			 * objects (and presumably other custom object types) doesn't 
-			 * cost that much. Maybe it tries to be cleverer with Double values.
+			mmap[i].put(23,p4);
+
+			/* Each additional Double also costs about 100B. It doesn't
+			 * seem to matter if the value is a Double or a custom Object
+			 * as presumably the hashmap is only storing references.
 			 */
 			/*
 			mmap[i].put(31, 35.93);
