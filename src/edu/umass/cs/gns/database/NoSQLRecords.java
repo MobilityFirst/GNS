@@ -62,6 +62,15 @@ public interface NoSQLRecords {
   public void insert(String collection, String name, JSONObject value) throws RecordExistsException;
 
   /**
+   * Do a bulk insert of all documents into the database.
+   *
+   * @param collection collection to be inserted into.
+   * @param values  list of records to be inserted
+   * @throws RecordExistsException
+   */
+  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws RecordExistsException;
+
+  /**
    * Update the record (row) with the given name using the JSONObject.
    * 
    * @param collection

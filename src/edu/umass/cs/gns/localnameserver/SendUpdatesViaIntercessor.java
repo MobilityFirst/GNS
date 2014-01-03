@@ -13,6 +13,7 @@ import edu.umass.cs.gns.util.UpdateTrace;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +60,7 @@ public class SendUpdatesViaIntercessor {
       delay += exponentialDistribution.exponential();// StartLocalNameServer.updateRateRegular;
 //      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send update scheduled: count " + count + " delay = " + delay);
     }
+    System.out.println("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
   }
 
@@ -72,6 +74,14 @@ public class SendUpdatesViaIntercessor {
     int intRange = 1000000;
     Integer x = intRange + rand.nextInt(1000000);
     return x.toString();
+  }
+
+  public static void main(String[] args) {
+     StartLocalNameServer.updateRateRegular = 1.0;
+    LocalNameServer.updateTrace = new ArrayList<UpdateTrace>();
+    int requests = 300000;
+    for (int i = 0; i < requests; i++) LocalNameServer.updateTrace.add(new UpdateTrace("0", UpdateTrace.UPDATE));
+    schdeduleAllUpdates();
   }
 }
 

@@ -77,7 +77,7 @@ public class LocalNameServer {
   /**
    * Only used during experiments.
    */
-  public static int initialExpDelayMillis = 30000;
+  public static int initialExpDelayMillis = 30;
 
   /**
    **
@@ -191,6 +191,7 @@ public class LocalNameServer {
         continue;
       }
       line = line.trim();
+      if (line.length() == 0) continue;
       // name type (add/remove/update)
       String[] tokens = line.split("\\s+");
       if (tokens.length == 2) {
@@ -275,7 +276,7 @@ public class LocalNameServer {
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
 
-    if (StartLocalNameServer.runHttpServer) {
+    if (StartLocalNameServer.experimentMode == false && StartLocalNameServer.runHttpServer) {
       GnsHttpServer.runHttp(LocalNameServer.nodeID);
     }
   }
@@ -817,8 +818,7 @@ public class LocalNameServer {
    * @throws UnsupportedEncodingException
    * @throws NoSuchAlgorithmException
    */
-  public static Set<Integer> getPrimaryNameServers(String name//, NameRecordKey recordKey
-          ) {
+  public static Set<Integer> getPrimaryNameServers(String name) {
     //NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
     //CacheEntry cacheEntry = cache.getIfPresent(nameAndType);
     CacheEntry cacheEntry = cache.getIfPresent(name);

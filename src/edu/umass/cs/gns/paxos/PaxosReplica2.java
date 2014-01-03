@@ -1,36 +1,28 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import net.sourceforge.sizeof.SizeOf;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+
+//import java.util.concurrent.ConcurrentHashMap;
+//import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * An implementation of the paxos protocol.
- *
- * Implementation is based on the document "Paxos Made Moderately Complex" by R van Renesse.
- * We have added the extension to the protocol made by Lamport in "Stoppable Paxos" to
- * be able to stop a paxos instance.
- *
- * User: abhigyan
- * Date: 6/26/13
- * Time: 12:09 AM
+ * Created by abhigyan on 12/30/13.
  */
-public class PaxosReplica {
-
-  public static String Version = "$Revision$";
+public class PaxosReplica2 implements Serializable{
+  public static String Version = "$Revision: 248 $";
 
   /**
    * Special no-op command.
@@ -65,18 +57,18 @@ public class PaxosReplica {
    * One command is decided in each slot number. The command in {@code slotNumber}
    * will be run next. All commands until {@code slotNumber - 1} have been run by the replica.
    */
-  private Integer slotNumber = 0;
+  private int slotNumber = 0;
 
-  /**
-   * Object used to synchronize access to {@code slotNumber}
-   */
-  private final ReentrantLock slotNumberLock = new ReentrantLock();
+//  /**
+//   * Object used to synchronize access to {@code slotNumber}
+//   */
+//  private final ReentrantLock slotNumberLock = new ReentrantLock();
 
   /**
    * contains decisions for recent slots. K = slot number , v = request packet.
    * once a decision is accepted by all nodes, it is deleted from {@code decisions}
    */
-  private ConcurrentHashMap<Integer, RequestPacket> decisions = new ConcurrentHashMap<Integer, RequestPacket>();
+  private HashMap<Integer, RequestPacket> decisions = new HashMap<Integer, RequestPacket>();
 
 
   /**
@@ -85,15 +77,15 @@ public class PaxosReplica {
    */
   private Ballot acceptorBallot;
 
-  /**
-   * object used to synchronize access to {@code acceptorBallot}
-   */
-  private final ReentrantLock acceptorLock = new ReentrantLock();
+//  /**
+//   * object used to synchronize access to {@code acceptorBallot}
+//   */
+//  private final ReentrantLock acceptorLock = new ReentrantLock();
 
   /**
    * Contains pValues that are accepted by this replica. When a slotNumber is
    */
-  private ConcurrentHashMap<Integer, PValuePacket> pValuesAccepted  = new ConcurrentHashMap<Integer,PValuePacket>();
+  private HashMap<Integer, PValuePacket> pValuesAccepted  = new HashMap<Integer,PValuePacket>();
 
 
   /**
@@ -106,12 +98,12 @@ public class PaxosReplica {
    */
   private long lastGarbageCollectionTime = 0;
 
-  /**
-   * Object used to synchronize access to {@code lastGarbageCollectionTime}.
-   */
-  private final ReentrantLock garbageCollectionLock = new ReentrantLock();
+//  /**
+//   * Object used to synchronize access to {@code lastGarbageCollectionTime}.
+//   */
+//  private final ReentrantLock garbageCollectionLock = new ReentrantLock();
 
-  private final ReentrantLock stopLock = new ReentrantLock();
+//  private final ReentrantLock stopLock = new ReentrantLock();
 
   private boolean isStopped = false;
 
@@ -131,10 +123,10 @@ public class PaxosReplica {
    */
   private Ballot coordinatorBallot;
 
-  /**
-   * Lock controlling access to {@code coordinatorBallotLock}
-   */
-  private final ReentrantLock coordinatorBallotLock = new ReentrantLock();
+//  /**
+//   * Lock controlling access to {@code coordinatorBallotLock}
+//   */
+//  private final ReentrantLock coordinatorBallotLock = new ReentrantLock();
 
   /**
    * {@code ballotScout} is the ballot currently proposed by coordinator
@@ -144,11 +136,11 @@ public class PaxosReplica {
    */
   private Ballot ballotScout;
 
-  /**
-   * object used to synchronize access to {@code ballotScout}, {@code waitForScout},
-   * and {@code pValuesScout}.
-   */
-  private final ReentrantLock scoutLock = new ReentrantLock();
+//  /**
+//   * object used to synchronize access to {@code ballotScout}, {@code waitForScout},
+//   * and {@code pValuesScout}.
+//   */
+//  private final ReentrantLock scoutLock = new ReentrantLock();
 
   /**
    * List of replicas who have accepted the ballot {@code ballotScout}
@@ -170,26 +162,26 @@ public class PaxosReplica {
   /**
    * Slot number for the next proposal by this coordinator.
    */
-  private Integer nextProposalSlotNumber = 0;
+  private int nextProposalSlotNumber = 0;
 
-  /**
-   * Object synchronizing access to {@code nextProposalSlotNumber}
-   */
-  private final ReentrantLock proposalNumberLock = new ReentrantLock();
+//  /**
+//   * Object synchronizing access to {@code nextProposalSlotNumber}
+//   */
+//  private final ReentrantLock proposalNumberLock = new ReentrantLock();
 
   /**
    * Stores information about commands that are currently proposed by
    * the coordinator, but not yet accepted. Key = slot number, Value = information
    * about command proposed in slot number.
    */
-  private ConcurrentHashMap<Integer, ProposalStateAtCoordinator> pValuesCommander
-          = new ConcurrentHashMap<Integer, ProposalStateAtCoordinator>();
+  private HashMap<Integer, ProposalStateAtCoordinator> pValuesCommander
+          = new HashMap<Integer, ProposalStateAtCoordinator>();
 
   /**
    * Stores mapping from nodes and their current slot numbers. State before
    * minimum slot numbers across nodes can be garbage collected.
    */
-  private ConcurrentHashMap<Integer,Integer> nodeAndSlotNumbers = new ConcurrentHashMap<Integer, Integer>();
+  private HashMap<Integer,Integer> nodeAndSlotNumbers = new HashMap<Integer, Integer>();
 
   // PAXOS-STOP
   /**
@@ -203,15 +195,15 @@ public class PaxosReplica {
    */
   private static long RESEND_TIMEOUT = 1000;
 
-  /**
-   * Time when coordinator completed the previous decision
-   */
-  static long lastDecisionTime = -1;
+//  /**
+//   * Time when coordinator completed the previous decision
+//   */
+//  static long lastDecisionTime = -1;
 
-  /**
-   * Object used to synchronize access to {@code lastDecisionTime}
-   */
-  private static final ReentrantLock lastDecisionTimeLock = new ReentrantLock();
+//  /**
+//   * Object used to synchronize access to {@code lastDecisionTime}
+//   */
+//  private static final ReentrantLock lastDecisionTimeLock = new ReentrantLock();
 
   /**
    * Used for testing. When did this node last tried to take over as coordinator.
@@ -233,7 +225,7 @@ public class PaxosReplica {
    * @param ID  ID of this node
    * @param nodeIDs set of IDs of nodes in this paxos group
    */
-  public PaxosReplica(String paxosID, int ID, Set<Integer> nodeIDs) {
+  public PaxosReplica2(String paxosID, int ID, Set<Integer> nodeIDs) {
 //    System.out.println("In constructor...");
     this.paxosID = paxosID;
 //    this.nodeID = ID;
@@ -249,7 +241,7 @@ public class PaxosReplica {
   }
 
 
-  public PaxosReplica(String paxosID, int ID, Set<Integer> nodeIDs, boolean isStopped, RequestPacket lastRequest) {
+  public PaxosReplica2(String paxosID, int ID, Set<Integer> nodeIDs, boolean isStopped, RequestPacket lastRequest) {
 
     this.paxosID = paxosID;
 //    this.nodeID = ID;
@@ -273,7 +265,7 @@ public class PaxosReplica {
    * Handle an incoming message as per message type.
    * @param json
    */
-  public void handleIncomingMessage(JSONObject json, int packetType) {
+  public synchronized void handleIncomingMessage(JSONObject json, int packetType) {
     try {
       if (isStopped) {
         GNS.getLogger().warning(paxosID +"\t Paxos instance = " + paxosID + " is stopped; message dropped.");
@@ -295,7 +287,7 @@ public class PaxosReplica {
         // coordinator --> replica
         case  PaxosPacketType.DECISION:
           proposal = new ProposalPacket(json);
-          handleDecision(proposal, json);
+          handleDecision(proposal, json, false);
           break;
         // coordinator --> replica
         case PaxosPacketType.PREPARE:
@@ -362,7 +354,7 @@ public class PaxosReplica {
    * Send message p to replica {@code destID}.
    * @throws JSONException
    **/
-  private void sendMessage(int destID, Packet p) {
+  private synchronized void sendMessage(int destID, Packet p) {
     try
     {
       if (destID == nodeID) {
@@ -385,7 +377,7 @@ public class PaxosReplica {
    * recover current ballot number from paxos logs
    * @param b
    */
-  public void recoverCurrentBallotNumber(Ballot b) {
+  public synchronized void recoverCurrentBallotNumber(Ballot b) {
     if (b == null) return;
     if (acceptorBallot == null || b.compareTo(acceptorBallot) > 0) {
       GNS.getLogger().fine(paxosID + "\t" + nodeID +
@@ -398,7 +390,7 @@ public class PaxosReplica {
    * recover current slot number from paxos logs.
    * @param slotNumber
    */
-  public void recoverSlotNumber(int slotNumber) {
+  public synchronized void recoverSlotNumber(int slotNumber) {
     if (slotNumber > this.slotNumber) {
       // update garbage collection slot
       GNS.getLogger().fine(paxosID + "\t" + nodeID +
@@ -411,7 +403,7 @@ public class PaxosReplica {
    * recover garbage collection slot number from paxos logs
    * @param garbageCollectionSlot
    */
-  public void recoverGarbageCollectionSlot(int garbageCollectionSlot) {
+  public synchronized void recoverGarbageCollectionSlot(int garbageCollectionSlot) {
     if (garbageCollectionSlot > this.garbageCollectionSlot) {
       GNS.getLogger().fine(paxosID + "\t" + nodeID +
               " Paxos Recovery: garbageCollectionSlot updated to " + garbageCollectionSlot);
@@ -423,7 +415,7 @@ public class PaxosReplica {
     }
   }
 
-  public void recoverDecision(ProposalPacket proposalPacket) {
+  public synchronized void recoverDecision(ProposalPacket proposalPacket) {
     if (slotNumber <= proposalPacket.slot) {
       GNS.getLogger().fine(paxosID + "\t" + nodeID +
               " Paxos Recovery: added decision for slot " + proposalPacket.slot);
@@ -431,7 +423,7 @@ public class PaxosReplica {
     }
   }
 
-  public void recoverAccept(AcceptPacket acceptPacket) {
+  public synchronized void recoverAccept(AcceptPacket acceptPacket) {
     PValuePacket pValuePacket = acceptPacket.pValue;
     if (slotNumber <= pValuePacket.proposal.slot) {
 
@@ -447,22 +439,22 @@ public class PaxosReplica {
     }
   }
 
-  public void recoverStop() {
+  public synchronized void recoverStop() {
     isStopped = true;
   }
 
 
 
 
-  public void recoverPrepare(PreparePacket preparePacket) {
+  public synchronized void recoverPrepare(PreparePacket preparePacket) {
     if (preparePacket.ballot.compareTo(acceptorBallot) > 0) {
       acceptorBallot = preparePacket.ballot;
     }
   }
 
-  public void executeRecoveredDecisions() {
+  public synchronized void executeRecoveredDecisions() {
     try{
-      handleDecision(null, null);
+      handleDecision(null, null, true);
     }catch (JSONException e) {
       e.printStackTrace();
     }
@@ -471,7 +463,7 @@ public class PaxosReplica {
    * Used only for testing!!
    * @return
    */
-  public Ballot getAcceptorBallot() {
+  public synchronized Ballot getAcceptorBallot() {
     return acceptorBallot;
   }
 
@@ -479,7 +471,7 @@ public class PaxosReplica {
    * Used only for testing!!
    * @return
    */
-  public int getSlotNumber() {
+  public synchronized int getSlotNumber() {
     return slotNumber;
   }
 
@@ -487,7 +479,7 @@ public class PaxosReplica {
    * Used only for testing!!
    * @return
    */
-  public int getGarbageCollectionSlot() {
+  public synchronized int getGarbageCollectionSlot() {
     return garbageCollectionSlot;
   }
 
@@ -495,7 +487,7 @@ public class PaxosReplica {
    * Used only for testing!!
    * @return
    */
-  public ConcurrentHashMap<Integer, PValuePacket> getPValuesAccepted() {
+  public synchronized HashMap<Integer, PValuePacket> getPValuesAccepted() {
     return pValuesAccepted;
   }
 
@@ -503,7 +495,7 @@ public class PaxosReplica {
    * Used only for testing!!
    * @return
    */
-  public ConcurrentHashMap<Integer, RequestPacket> getDecisions() {
+  public synchronized HashMap<Integer, RequestPacket> getDecisions() {
     return decisions;
   }
 
@@ -516,7 +508,7 @@ public class PaxosReplica {
 //
 //  private final ReentrantLock startLock = new ReentrantLock();
 //
-//  public void startReplicaWithPreelectedCoordinator() {
+//  public synchronized void startReplicaWithPreelectedCoordinator() {
 //    synchronized (startLock) {
 //      if (replicaStarted) return;
 //      replicaStarted = true;
@@ -524,7 +516,7 @@ public class PaxosReplica {
 //    startPreelectedCoordinator();
 //  }
 //
-//  public  void startReplica(long initScoutDelay) {
+//  public synchronized  void startReplica(long initScoutDelay) {
 //    synchronized (startLock) {
 //      if (replicaStarted) return;
 //      replicaStarted = true;
@@ -538,7 +530,7 @@ public class PaxosReplica {
 //  }
 
 
-  private int getInitialCoordinatorReplica() {
+  private synchronized int getInitialCoordinatorReplica() {
 
 //    int nodeProduct = 1;
 //    for (int x: nodeIDs) {
@@ -560,7 +552,7 @@ public class PaxosReplica {
 //    return  x1.get(count);
   }
 
-  private int getNextCoordinatorReplica() {
+  private synchronized int getNextCoordinatorReplica() {
 
 //    int nodeProduct = 1;
 //    for (int x: nodeIDs) {
@@ -603,6 +595,18 @@ public class PaxosReplica {
 
 
   public static void main (String[] args) throws IOException {
+    HashSet<Integer> nodeIDs = new HashSet<Integer>();
+    for (int i = 0; i < 10; i ++) nodeIDs.add(i);
+    PaxosReplica2 prNew = new PaxosReplica2("abcdfdf", 10, nodeIDs);
+
+    PaxosReplica pr2 = new PaxosReplica("abcdfdf", 10, nodeIDs);
+    SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
+    SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
+    SizeOf.skipFlyweightObject(false); //java.sizeOf will not compute well-known flyweight objects
+    System.out.println("Size of paxos object: " + SizeOf.deepSizeOf(prNew)); //this will print the object size in bytes
+    System.out.println("Size of previous paxos object: " + SizeOf.deepSizeOf(pr2)); //this will print the object size in bytes
+    System.exit(2);
+
     int numNS = 80;
     int numNames = 1;
 
@@ -660,7 +664,7 @@ public class PaxosReplica {
    * Used for testing. If true, this node will attempt to take over as coordinator.
    * @return true if node should take over as coordinator, false otherwise
    */
-//  private boolean takeOverAsCoordinator() {
+//  private synchronized boolean takeOverAsCoordinator() {
 //    // the node 0 will take over as coordinator
 ////        if(nodeID != 0) return false;
 //    synchronized (lastCoordinatorTakeoverTimeLock) {
@@ -680,14 +684,14 @@ public class PaxosReplica {
   /**
    * Deletes state on disk when this paxos instance is being stopped.
    */
-  public  void deleteState() {
+  public synchronized  void deleteState() {
 
   }
 
   /**
    * When paxos replica is starting/restarting, send exchange state with all paxos replicas.
    */
-  public  void sendCurrentStateToAllNodes() {
+  public synchronized  void sendCurrentStateToAllNodes() {
     for(int nodeID: nodeIDs) {
       if (nodeID == this.nodeID) continue;
       // send empty json object
@@ -701,23 +705,23 @@ public class PaxosReplica {
    * @param packetType
    * @param decisions
    */
-  private void sendCurrentState(int receiverNode, int packetType, JSONObject decisions) {
+  private synchronized void sendCurrentState(int receiverNode, int packetType, JSONObject decisions) {
     Ballot currentBallot = null;
-    try { acceptorLock.lock();
+//    try { acceptorLock.lock();
       if (acceptorBallot != null)
         currentBallot = new Ballot(acceptorBallot.getBallotNumber(), acceptorBallot.getCoordinatorID());
-    }finally {
-      acceptorLock.unlock();
-    }
+//    }finally {
+//      acceptorLock.unlock();
+//    }
 
     // if the coordinator is doing a prepare phase, and the prepare is still in progress.
     // send the prepare message as well.
     Ballot prepareBallot = resendPrepareMessage(receiverNode);
 
     int slot;
-    synchronized (slotNumberLock) {
+//    synchronized (slotNumberLock) {
       slot = slotNumber;
-    }
+//    }
     SendCurrentStatePacket sendCurrentState = new SendCurrentStatePacket(nodeID,
             currentBallot, prepareBallot, packetType, slot, decisions);
 
@@ -731,7 +735,7 @@ public class PaxosReplica {
    * @param sendState
    * @throws JSONException
    */
-  private  void handleSendState(SendCurrentStatePacket sendState) throws JSONException {
+  private synchronized  void handleSendState(SendCurrentStatePacket sendState) throws JSONException {
     GNS.getLogger().fine(paxosID + "\t" +nodeID + " Recvd current state from " + sendState.sendingNodeID + " state: " + sendState.toString());
     if (sendState.prepareBallot != null) {
       PreparePacket p = new PreparePacket(sendState.sendingNodeID, nodeID,
@@ -774,7 +778,7 @@ public class PaxosReplica {
    * @param slotNumber
    * @return a json object with all decisions
    */
-  private JSONObject getDecisionsAfterSlotNumber(int slotNumber) {
+  private synchronized JSONObject getDecisionsAfterSlotNumber(int slotNumber) {
     // For slots greater than or equal to the slot number, get list of decisions
     GNS.getLogger().fine(paxosID + "\t" +nodeID + " Send Decisions slot number " + slotNumber);
 
@@ -804,7 +808,7 @@ public class PaxosReplica {
    * @param json
    * @throws JSONException
    */
-  private void parseDecisionsReceived(JSONObject json) throws JSONException {
+  private synchronized void parseDecisionsReceived(JSONObject json) throws JSONException {
     GNS.getLogger().fine(paxosID + "\t" +json.toString());
     // iterate over each json item: json key = slot, json value = request packet
     for (Iterator i = json.keys(); i.hasNext();) {
@@ -822,7 +826,7 @@ public class PaxosReplica {
       }
     }
 
-    handleDecision(null, null);
+    handleDecision(null, null, false);
   }
 
   /**
@@ -830,7 +834,7 @@ public class PaxosReplica {
    * @param nodeID
    * @return true if node belongs to this paxos instance.
    */
-  public  boolean isNodeInPaxosInstance(int nodeID) {
+  public synchronized  boolean isNodeInPaxosInstance(int nodeID) {
     return nodeIDs.contains(nodeID);
   }
 
@@ -838,17 +842,17 @@ public class PaxosReplica {
    * is this paxos instance stopped?
    * @return
    */
-  public boolean isStopped() {
-    synchronized (stopLock) {
+  public synchronized boolean isStopped() {
+//    synchronized (stopLock) {
       return isStopped;
-    }
+//    }
   }
 
   /**
    *
    * @return
    */
-//  public RequestPacket getLastRequest() {
+//  public synchronized RequestPacket getLastRequest() {
 //    return lastRequest;
 //  }
 
@@ -856,16 +860,16 @@ public class PaxosReplica {
    *
    * @return
    */
-  public Set<Integer> getNodeIDs() {
+  public synchronized Set<Integer> getNodeIDs() {
     return nodeIDs;
   }
 
 
   StatePacket getState() {
 
-    try{
-      acceptorLock.lock();
-      synchronized (slotNumberLock) {
+//    try{
+//      acceptorLock.lock();
+//      synchronized (slotNumberLock) {
         String dbState = PaxosManager.clientRequestHandler.getState(paxosID);
         if (dbState == null) {
           GNS.getLogger().severe(paxosID + "\t" + nodeID + "\tError Exception Paxos state not logged because database state is null.");
@@ -873,14 +877,14 @@ public class PaxosReplica {
         }
         StatePacket packet = new StatePacket(acceptorBallot, slotNumber, dbState);
         return  packet;
-      }
-    } finally {
-      acceptorLock.unlock();
-    }
+//      }
+//    } finally {
+//      acceptorLock.unlock();
+//    }
 
   }
 
-  public String getPaxosID() {
+  public synchronized String getPaxosID() {
     return paxosID;
   }
 
@@ -890,7 +894,7 @@ public class PaxosReplica {
    * @param json
    * @throws JSONException
    */
-  public void handleRequest(JSONObject json) throws JSONException{
+  public synchronized void handleRequest(JSONObject json) throws JSONException{
 //        GNS.getLogger().fine(" Send request to coordinator .... ");
     // send proposal to coordinator.
 //        maxSlot = -1;
@@ -899,15 +903,15 @@ public class PaxosReplica {
 //        Ballot b = getBallot();
 //    int coordinatorID = -1;
     Ballot temp = null;
-    try{
-      acceptorLock.lock();
+//    try{
+//      acceptorLock.lock();
       if (acceptorBallot!=null) {
         temp = new Ballot(acceptorBallot.ballotNumber, acceptorBallot.coordinatorID);
 //        coordinatorID = acceptorBallot.getCoordinatorID();
       }
-    } finally {
-      acceptorLock.unlock();
-    }
+//    } finally {
+//      acceptorLock.unlock();
+//    }
 
     json.put(ProposalPacket.SLOT, 0);
     json.put(PaxosPacketType.ptype, PaxosPacketType.PROPOSAL);
@@ -931,35 +935,35 @@ public class PaxosReplica {
    * time when the replica (as a coordinator) last made a decision.
    * @return
    */
-  private long getLastDecisionTime() {
-    synchronized (lastDecisionTimeLock) {
-      if (lastDecisionTime == -1) lastDecisionTime = System.currentTimeMillis();
-      return lastDecisionTime;
-    }
-  }
-
-
-  private void setLastDecisionTime() {
-    if (r.nextDouble() > 0.1) return;
-    synchronized (lastDecisionTimeLock) {
-      lastDecisionTime = System.currentTimeMillis();
-    }
-  }
+//  private synchronized long getLastDecisionTime() {
+////    synchronized (lastDecisionTimeLock) {
+//      if (lastDecisionTime == -1) lastDecisionTime = System.currentTimeMillis();
+//      return lastDecisionTime;
+////    }
+//  }
+//
+//
+//  private synchronized void setLastDecisionTime() {
+//    if (r.nextDouble() > 0.1) return;
+////    synchronized (lastDecisionTimeLock) {
+//      lastDecisionTime = System.currentTimeMillis();
+////    }
+//  }
 
   boolean isAcceptorBallotUpdated(Ballot ballot) {
-    try {
-      acceptorLock.lock();
+//    try {
+//      acceptorLock.lock();
       return acceptorBallot.compareTo(ballot) > 0;
-    } finally {
-      acceptorLock.unlock();
-    }
+//    } finally {
+//      acceptorLock.unlock();
+//    }
   }
 //    /**
 //     * Handle decision response from coordinator.
 //     * @param prop
 //     * @throws JSONException
 //     */
-//    private void handleDecision2(ProposalPacket prop) throws JSONException{
+//    private synchronized void handleDecision2(ProposalPacket prop) throws JSONException{
 //
 //        if (prop != null) {
 //
@@ -1023,7 +1027,7 @@ public class PaxosReplica {
    * @param prop
    * @throws JSONException
    */
-  private void handleDecision(ProposalPacket prop, JSONObject json) throws JSONException{
+  private synchronized void handleDecision(ProposalPacket prop, JSONObject json, boolean recovery) throws JSONException{
 
     if (prop != null) {
       runGC(prop.gcSlot);
@@ -1034,11 +1038,11 @@ public class PaxosReplica {
               " Decision recvd at slot = " + prop.slot + " req = " + prop.req);
       // Add decision to slot. Union operation in Figure 1.
 //      PaxosManager.addToPaxosLog(json, paxosID);
-      if (decisions.size() > 20 || pValuesAccepted.size() > 20) {
-
-        GNS.getLogger().finer(paxosID + "\t" +nodeID + " Decision size = " + decisions.size() +
-                " Pvalue size = " + pValuesAccepted.size());
-      }
+//      if (decisions.size() > 20 || pValuesAccepted.size() > 20) {
+//
+//        GNS.getLogger().finer(paxosID + "\t" +nodeID + " Decision size = " + decisions.size() +
+//                " Pvalue size = " + pValuesAccepted.size());
+//      }
       decisions.put(prop.slot, prop.req);
 //      pValuesAccepted.remove(prop.slot);
 //            if (prop.req != null) {
@@ -1056,20 +1060,20 @@ public class PaxosReplica {
 
 //        GNS.getLogger().fine(" SLOT NUMBER BEFORE DECISION SET: " + slotNumber);
     while(true) {
-      synchronized (slotNumberLock) {
+//      synchronized (slotNumberLock) {
         if (prop!= null && prop.slot == slotNumber) {
-          perform(prop.req, slotNumber);
+          perform(prop.req, slotNumber, recovery);
 //          decisions.remove(slotNumber);
           slotNumber++;
 
         }
         else if (decisions.containsKey(slotNumber)) {
-          perform(decisions.get(slotNumber), slotNumber);
+          perform(decisions.get(slotNumber), slotNumber, recovery);
 //          decisions.remove(slotNumber);
           slotNumber++;
         }
         else break;
-      }
+//      }
 
     }
 
@@ -1080,7 +1084,7 @@ public class PaxosReplica {
    * @param req
    * @throws JSONException
    */
-  private void perform(RequestPacket req, int slotNumber) throws JSONException{
+  private synchronized void perform(RequestPacket req, int slotNumber, boolean recovery) throws JSONException{
     GNS.getLogger().info("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
     if (req.value.equals(NO_OP) ) {
 
@@ -1089,15 +1093,15 @@ public class PaxosReplica {
     }
 //        boolean stop = PaxosManager.isStopCommand(req.value);
     if (req.isStopRequest()) {
-      synchronized (stopLock) {
+//      synchronized (stopLock) {
         isStopped = true;
-      }
+//      }
       GNS.getLogger().fine(" Logging paxos stop " + req);
       PaxosLogger.logPaxosStop(paxosID);
     }
 
 
-    PaxosManager.handleDecision(paxosID, req, false); // TODO
+    PaxosManager.handleDecision(paxosID, req, recovery);
 
 //        GNS.getLogger().info("\tPAXOS-COMMIT\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
 
@@ -1109,7 +1113,7 @@ public class PaxosReplica {
    * Delete decisions which have been performed at all nodes
    * @param slotNumber slot number up to which all nodes have applied decisions.
    */
-  private void deleteDecisionsAcceptedByAll(int slotNumber) {
+  private synchronized void deleteDecisionsAcceptedByAll(int slotNumber) {
 //        System.out.println("Size of decisions = " + decisions.size());
 //        GNS.getLogger().fine("Size of decisions = " + decisions.size());
 
@@ -1152,7 +1156,7 @@ public class PaxosReplica {
    * @param proposal
    * @return
    */
-  private boolean isDecisionComplete(ProposalPacket proposal) {
+  private synchronized boolean isDecisionComplete(ProposalPacket proposal) {
     if (decisions.containsKey(proposal.slot) && decisions.get(proposal.slot).equals(proposal.req))
       return true;
     return false;
@@ -1162,7 +1166,7 @@ public class PaxosReplica {
 //  /**
 //   * Initialize the coordinator at this replica.
 //   */
-//  private void startCoordinator(long initScoutDelayMillis) {
+//  private synchronized void startCoordinator(long initScoutDelayMillis) {
 //
 //    coordinatorBallot = new Ballot(1, getNextCoordinatorReplica());
 //    StartScoutTask task = new StartScoutTask(this);
@@ -1179,7 +1183,7 @@ public class PaxosReplica {
 //    }
 //  }
 //
-//  private void startPreelectedCoordinator() {
+//  private synchronized void startPreelectedCoordinator() {
 //    coordinatorBallot  = new Ballot(0, getInitialCoordinatorReplica());
 //    if (coordinatorBallot.coordinatorID == nodeID) activeCoordinator = true;
 //    else if (PaxosManager.isNodeUp(nodeID) == false) {
@@ -1192,19 +1196,19 @@ public class PaxosReplica {
    *
    * @return
    */
-  private int getNextProposalSlotNumber() {
-    synchronized (proposalNumberLock) {
+  private synchronized int getNextProposalSlotNumber() {
+//    synchronized (proposalNumberLock) {
       if (stopCommandProposed) return -1;
       nextProposalSlotNumber += 1;
       return  nextProposalSlotNumber - 1;
-    }
+//    }
   }
 
-  private void updateNextProposalSlotNumber(int slotNumber) {
-    synchronized (proposalNumberLock) {
+  private synchronized void updateNextProposalSlotNumber(int slotNumber) {
+//    synchronized (proposalNumberLock) {
       if (stopCommandProposed) return;
       if (slotNumber > nextProposalSlotNumber) nextProposalSlotNumber = slotNumber;
-    }
+//    }
   }
 
   /**
@@ -1212,7 +1216,7 @@ public class PaxosReplica {
    * @param p
    * @throws JSONException
    */
-  private void handleProposal(ProposalPacket p) throws JSONException {
+  private synchronized void handleProposal(ProposalPacket p) throws JSONException {
 
     // PAXOS-STOP
 //        synchronized (proposalNumberLock) {
@@ -1228,7 +1232,7 @@ public class PaxosReplica {
 //        }
 
     Ballot b = null;
-    synchronized (coordinatorBallotLock) {
+//    synchronized (coordinatorBallotLock) {
       if (activeCoordinator) {
         GNS.getLogger().fine(paxosID + "C\t" +nodeID +
                 " Active coordinator yes: ");
@@ -1241,7 +1245,7 @@ public class PaxosReplica {
         GNS.getLogger().fine(paxosID + "C\t" +nodeID +
                 " Active coordinator no: ");
       }
-    }
+//    }
     if (b != null) {
       GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C " +
               "Coordinator starting commander at slot = " + p.slot);
@@ -1254,7 +1258,7 @@ public class PaxosReplica {
 
   }
 
-  private int getMaxSlotNumberAcrossNodes() {
+  private synchronized int getMaxSlotNumberAcrossNodes() {
     synchronized (nodeAndSlotNumbers) {
       int max = 0;
       for (int x: nodeAndSlotNumbers.keySet()) {
@@ -1269,7 +1273,7 @@ public class PaxosReplica {
    * ballot adopted, coordinator elected, get proposed values accepted.
    * @throws JSONException
    */
-  private void handleAdoptedNew() throws JSONException {
+  private synchronized void handleAdoptedNew() throws JSONException {
 //    if (StartNameServer.debugMode)
 
     GNS.getLogger().info(paxosID + "C\t" +nodeID + "C Ballot adopted. Handling proposals. Paxos ID = " + paxosID +
@@ -1343,11 +1347,11 @@ public class PaxosReplica {
     if (maxPValueSlot + 1 > temp) temp = maxPValueSlot + 1;
     updateNextProposalSlotNumber(temp);
     GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C Next proposal slot number is: " + temp);
-    synchronized (coordinatorBallotLock) {
+//    synchronized (coordinatorBallotLock) {
       coordinatorBallot = ballotScout;
       activeCoordinator = true;
       pValuesCommander.clear();
-    }
+//    }
 
     GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
             " Now starting commanders for pvalues ...");
@@ -1371,7 +1375,7 @@ public class PaxosReplica {
    * @return false if the stop command is not to be executed,
    * true if coordinator should propose the stop command.
    */
-  private boolean isStopCommandToBeProposed(int stopSlot) {
+  private synchronized boolean isStopCommandToBeProposed(int stopSlot) {
     Ballot stopBallot = pValuesScout.get(stopSlot).ballot;
     for (int x:pValuesScout.keySet()) {
       if (x > stopSlot) {
@@ -1390,7 +1394,7 @@ public class PaxosReplica {
    * @param slot slot number at which no-op command is to be proposed
    * @throws JSONException
    */
-  private void proposeNoopInSlot(int slot, Ballot b) throws JSONException {
+  private synchronized void proposeNoopInSlot(int slot, Ballot b) throws JSONException {
     ProposalPacket proposalPacket = new ProposalPacket(slot,
             new RequestPacket(0, PaxosReplica.NO_OP, PaxosPacketType.REQUEST, false),
             PaxosPacketType.PROPOSAL, 0);
@@ -1404,7 +1408,7 @@ public class PaxosReplica {
    * @param pValue
    * @throws JSONException
    */
-  private void initCommander(PValuePacket pValue) throws JSONException {
+  private synchronized void initCommander(PValuePacket pValue) throws JSONException {
     // keep record of value
     ProposalStateAtCoordinator propState = new ProposalStateAtCoordinator(paxosID, pValue, nodeIDs.size());
 
@@ -1414,16 +1418,16 @@ public class PaxosReplica {
             "C initialized commander values. Slot = " + pValue.proposal.slot);
 
     int minSlot;
-    synchronized (minSlotLock) {
+//    synchronized (minSlotLock) {
       minSlot = minSlotNumberAcrossNodes;
 //            if (r.nextDouble() <= 0.001) System.out.println("nodes and slot numbers: " + nodeAndSlotNumbers);
-    }
+//    }
     if (pValue.proposal.req.isStopRequest()) {
-      synchronized (proposalNumberLock){
+//      synchronized (proposalNumberLock){
         stopCommandProposed = true;
         GNS.getLogger().info(paxosID + "C\t" +nodeID + "C" +
                 " stop command proposed. in slot = " + pValue.proposal.slot);
-      }
+//      }
     }
     AcceptPacket accept = new AcceptPacket(this.nodeID, pValue,
             PaxosPacketType.ACCEPT, minSlot);
@@ -1483,7 +1487,7 @@ public class PaxosReplica {
    *
    * @param replyPacket
    */
-  private void handleSyncReplyPacket(SynchronizeReplyPacket replyPacket) {
+  private synchronized void handleSyncReplyPacket(SynchronizeReplyPacket replyPacket) {
 //        GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C here...");
     updateNodeAndSlotNumbers(replyPacket);
 
@@ -1526,7 +1530,7 @@ public class PaxosReplica {
    * @param accept
    * @throws JSONException
    */
-  private void handleAcceptMessageReply(AcceptReplyPacket accept) throws JSONException{
+  private synchronized void handleAcceptMessageReply(AcceptReplyPacket accept) throws JSONException{
     // resend missing requests
 //        updateNodeAndSlotNumbers(accept.nodeID, accept.slotNumberAtReplica);
 
@@ -1562,22 +1566,22 @@ public class PaxosReplica {
         //                    waitForCommander.remove(slot);
         GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
                 "higher ballot recvd. current ballot preempted.");
-        try {
-          acceptorLock.lock();
-          synchronized (coordinatorBallotLock) {
+//        try {
+//          acceptorLock.lock();
+//          synchronized (coordinatorBallotLock) {
             if (coordinatorBallot.compareTo(stateAtCoordinator.pValuePacket.ballot) == 0 && activeCoordinator == true) {
               activeCoordinator = false;
               coordinatorBallot = b;
               pValuesCommander.clear();
             }
-          }
+//          }
           if (stateAtCoordinator.pValuePacket.ballot.compareTo(acceptorBallot) > 0) {
             acceptorBallot = new Ballot(b.ballotNumber, b.coordinatorID);
 //                        PaxosLogger.logCurrentBallot(paxosID, acceptorBallot);
           }
-        }   finally {
-          acceptorLock.unlock();
-        }
+//        }   finally {
+//          acceptorLock.unlock();
+//        }
         if (getNextCoordinatorReplica() == nodeID) initScout();
       }
     }
@@ -1596,7 +1600,7 @@ public class PaxosReplica {
    * @param accept
    * @throws JSONException
    */
-  private void handleAcceptMessageReply2(AcceptPacket accept) throws JSONException{
+  private synchronized void handleAcceptMessageReply2(AcceptPacket accept) throws JSONException{
     // resend missing requests
 //        updateNodeAndSlotNumbers(accept.nodeID, accept.slotNumberAtReplica);
 
@@ -1630,22 +1634,22 @@ public class PaxosReplica {
         //                    waitForCommander.remove(slot);
         GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
                 "higher ballot recvd. current ballot preempted.");
-        try {
-          acceptorLock.lock();
-          synchronized (coordinatorBallotLock) {
+//        try {
+//          acceptorLock.lock();
+//          synchronized (coordinatorBallotLock) {
             if (coordinatorBallot.compareTo(stateAtCoordinator.pValuePacket.ballot) == 0 && activeCoordinator == true) {
               activeCoordinator = false;
               coordinatorBallot = accept.pValue.ballot;
               pValuesCommander.clear();
             }
-          }
+//          }
           if (stateAtCoordinator.pValuePacket.ballot.compareTo(acceptorBallot) > 0) {
             acceptorBallot = new Ballot(accept.pValue.ballot.ballotNumber, accept.pValue.ballot.coordinatorID);
 //                        PaxosLogger.logCurrentBallot(paxosID, acceptorBallot);
           }
-        }   finally {
-          acceptorLock.unlock();
-        }
+//        }   finally {
+//          acceptorLock.unlock();
+//        }
       }
 //                    handlePreempted(accept.pValues.ballot);
     }
@@ -1673,7 +1677,7 @@ public class PaxosReplica {
 //    }
   }
 
-  private void sendDecisionForSlot(int slot, ProposalStateAtCoordinator stateAtCoordinator) {
+  private synchronized void sendDecisionForSlot(int slot, ProposalStateAtCoordinator stateAtCoordinator) {
     // check if majority reached
     // FULLRESPONSE
 //    if (stateAtCoordinator.isFullResponse()) {
@@ -1713,10 +1717,10 @@ public class PaxosReplica {
 //
 //        }
     int minSlot;
-    synchronized (minSlotLock) {
+//    synchronized (minSlotLock) {
       minSlot = minSlotNumberAcrossNodes;
 //            if (r.nextDouble() <= 0.001) System.out.println("nodes and slot numbers: " + nodeAndSlotNumbers);
-    }
+//    }
 
     try {
       stateAtCoordinator.pValuePacket.proposal.gcSlot = minSlot;
@@ -1758,18 +1762,18 @@ public class PaxosReplica {
   /**
    * Send prepare packet to get new ballot accepted.
    */
-  public void initScout() {
+  public synchronized void initScout() {
 
-    synchronized (proposalNumberLock) {
+//    synchronized (proposalNumberLock) {
       if (stopCommandProposed) return;
-    }
+//    }
 
-    try{
-      scoutLock.lock();
-      try{
-        acceptorLock.lock();
-//            synchronized (acceptorBallot) {
-        synchronized (coordinatorBallotLock) {
+//    try{
+//      scoutLock.lock();
+//      try{
+//        acceptorLock.lock();
+////            synchronized (acceptorBallot) {
+//        synchronized (coordinatorBallotLock) {
 
 //          if (activeCoordinator) { // if coordinator is currently activeCoordinator, dont choose new ballot.
 ////                        if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C Init scout skipped. already active." );
@@ -1782,20 +1786,20 @@ public class PaxosReplica {
           else {
             ballotScout = new Ballot(acceptorBallot.ballotNumber + 1, nodeID);
           }
-        }
+//        }
 //            updateBallot(b);
-      }finally {
-        acceptorLock.unlock();
-      }
+//      }finally {
+//        acceptorLock.unlock();
+//      }
 
       GNS.getLogger().severe(paxosID + "C\t" + nodeID + "C Coordinator proposing new ballot: " + ballotScout);
 
 //            scoutingInProgress = true;
       waitForScout = new ArrayList<Integer>();
       pValuesScout = new HashMap<Integer,PValuePacket>();
-    }finally {
-      scoutLock.unlock();
-    }
+//    }finally {
+//      scoutLock.unlock();
+//    }
 
     // create prepare packet
     PreparePacket prepare = new PreparePacket(nodeID, 0, ballotScout, PaxosPacketType.PREPARE);
@@ -1822,9 +1826,9 @@ public class PaxosReplica {
    * @param prepare
    * @return
    */
-  public boolean resendPrepare(Ballot proposedBallot, PreparePacket prepare) {
-    try {
-      scoutLock.lock();
+  public synchronized boolean resendPrepare(Ballot proposedBallot, PreparePacket prepare) {
+//    try {
+//      scoutLock.lock();
       if (proposedBallot.equals(ballotScout) && waitForScout != null) {
         // what if majority have failed.
         int nodesUp = 0;
@@ -1845,9 +1849,9 @@ public class PaxosReplica {
                 proposedBallot);
         return false;
       }
-    } finally {
-      scoutLock.unlock();
-    }
+//    } finally {
+//      scoutLock.unlock();
+//    }
 
   }
 
@@ -1856,7 +1860,7 @@ public class PaxosReplica {
    * @param nodeID
    * @param slotNumber
    */
-  private void updateNodeAndSlotNumbers(int nodeID, int slotNumber) {
+  private synchronized void updateNodeAndSlotNumbers(int nodeID, int slotNumber) {
 //        synchronized (nodeAndSlotNumbers) {
     if (!nodeAndSlotNumbers.containsKey(nodeID) ||
             slotNumber > nodeAndSlotNumbers.get(nodeID)) {
@@ -1867,7 +1871,7 @@ public class PaxosReplica {
 //        }
   }
 
-  private static final ReentrantLock minSlotLock = new ReentrantLock();
+//  private synchronized static final ReentrantLock minSlotLock = new ReentrantLock();
 
   int minSlotNumberAcrossNodes = 0;
 
@@ -1875,7 +1879,7 @@ public class PaxosReplica {
    * Updates nodeAndSlotNumbers based on replyPacket
    * @param
    */
-  private void updateNodeAndSlotNumbers(SynchronizeReplyPacket replyPacket) {
+  private synchronized void updateNodeAndSlotNumbers(SynchronizeReplyPacket replyPacket) {
 //        if (replyPacket.maxDecisionSlot ==  -1) {
 //            return;
 //        }
@@ -1902,9 +1906,9 @@ public class PaxosReplica {
 //                    + " Update: slot number = " + minSlot);
       nodeAndSlotNumbers.put(node, minSlot);
     }
-    synchronized (minSlotLock){
+//    synchronized (minSlotLock){
       minSlotNumberAcrossNodes = getMinSlotNumberAcrossNodes();
-    }
+//    }
 
   }
 
@@ -1913,11 +1917,11 @@ public class PaxosReplica {
    * @param prepare
    * @throws JSONException
    */
-  private void handlePrepareMessageReply(PreparePacket prepare) throws JSONException{
+  private synchronized void handlePrepareMessageReply(PreparePacket prepare) throws JSONException{
 
     updateNodeAndSlotNumbers(prepare.receiverID, prepare.slotNumber);
 
-    try{scoutLock.lock();
+//    try{scoutLock.lock();
 //        synchronized (scoutingInProgress) {
       if (waitForScout == null) {
 //                GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C not getting ballot accepted now.");
@@ -1969,21 +1973,21 @@ public class PaxosReplica {
           handleAdoptedNew();
         }
       }
-    }finally {
-      scoutLock.unlock();
-    }
+//    }finally {
+//      scoutLock.unlock();
+//    }
   }
 
-  private Ballot resendPrepareMessage(int nodeID) {
-    try{scoutLock.lock();
+  private synchronized Ballot resendPrepareMessage(int nodeID) {
+//    try{scoutLock.lock();
 //        synchronized (scoutingInProgress) {
       if (waitForScout != null) {
         return ballotScout;
       }
 //        }
-    }finally {
-      scoutLock.unlock();
-    }
+//    }finally {
+//      scoutLock.unlock();
+//    }
     return null;
   }
 
@@ -1993,8 +1997,8 @@ public class PaxosReplica {
   void checkCoordinatorFailure() {
 
     int coordinatorID = -1;
-    try{
-      acceptorLock.lock();
+//    try{
+//      acceptorLock.lock();
 
       if (acceptorBallot != null ) {
         coordinatorID = acceptorBallot.coordinatorID;
@@ -2002,9 +2006,9 @@ public class PaxosReplica {
 //          coordinatorID = coordinatorBallot.getCoordinatorID();
 //        }
       }
-    } finally {
-      acceptorLock.unlock();
-    }
+//    } finally {
+//      acceptorLock.unlock();
+//    }
 
     if (PaxosManager.isNodeUp(coordinatorID) == false && getNextCoordinatorReplica() == nodeID) {
       GNS.getLogger().severe(paxosID + "C\t" +nodeID +"C coordinator failed. " +
@@ -2019,7 +2023,7 @@ public class PaxosReplica {
    * message reporting node failure.
    * @param packet
    */
-  private void handleNodeStatusUpdate(FailureDetectionPacket packet) {
+  private synchronized void handleNodeStatusUpdate(FailureDetectionPacket packet) {
 //    updateSelectNodes();
     if (packet.status == true) return; // node is up.
     try {
@@ -2034,17 +2038,17 @@ public class PaxosReplica {
       GNS.getLogger().fine(paxosID + "C\t" +nodeID + " Node failed:"  + packet.responderNodeID);
 
     int coordinatorID = -1;
-    try{
-      acceptorLock.lock();
+//    try{
+//      acceptorLock.lock();
 
       if (acceptorBallot != null ) {
-        synchronized (coordinatorBallotLock) {
+//        synchronized (coordinatorBallotLock) {
           coordinatorID = coordinatorBallot.getCoordinatorID();
-        }
+//        }
       }
-    } finally {
-      acceptorLock.unlock();
-    }
+//    } finally {
+//      acceptorLock.unlock();
+//    }
     if (packet.responderNodeID == coordinatorID // current coordinator has failed.
             && getNextCoordinatorReplica() == nodeID) { // I am next coordinator
 
@@ -2064,7 +2068,7 @@ public class PaxosReplica {
    * Minimum slot number in the list: nodeAndSlotNumbers.
    * @return
    */
-  private int getMinSlotNumberAcrossNodes( ) {
+  private synchronized int getMinSlotNumberAcrossNodes( ) {
 //    if (nodeAndSlotNumbers.size() < nodeIDs.size()) return -1;
     int minSlot = -1;
     for (int nodeID: nodeAndSlotNumbers.keySet()) {
@@ -2081,14 +2085,14 @@ public class PaxosReplica {
    * @param packet
    * @throws JSONException
    */
-  private void handlePrepare(JSONObject incomingJson, PreparePacket packet) throws JSONException {
+  private synchronized void handlePrepare(JSONObject incomingJson, PreparePacket packet) throws JSONException {
 //        PaxosLogger.logCurrentBallot(paxosID, packet.ballot);
     //
     GNS.getLogger().fine(paxosID + "\t" +nodeID + " Acceptor received PreparePacket: " +
             packet.toJSONObject().toString());
 //        Ballot b1 = null;
-    try{
-      acceptorLock.lock();
+//    try{
+//      acceptorLock.lock();
 //        synchronized (acceptorBallot) {
 //                b1 = new Ballot(acceptorBallot.getBallotNumber(), acceptorBallot.getCoordinatorID());
       if (acceptorBallot == null || packet.ballot.compareTo(acceptorBallot) > 0) {
@@ -2110,9 +2114,9 @@ public class PaxosReplica {
 
 //            b1 = new Ballot(acceptorBallot.getBallotNumber(), acceptorBallot.getCoordinatorID());
 //        }
-    }finally {
-      acceptorLock.unlock();
-    }
+//    }finally {
+//      acceptorLock.unlock();
+//    }
 
     GNS.getLogger().fine(paxosID + "\t" +"Reached here.");
 
@@ -2129,15 +2133,15 @@ public class PaxosReplica {
    * Handle accept messages from coordinator
    * @param accept
    */
-  private void handleAccept(JSONObject incomingJson, AcceptPacket accept) {
+  private synchronized void handleAccept(JSONObject incomingJson, AcceptPacket accept) {
     try {
       GNS.getLogger().fine(paxosID + "\t" + nodeID + "\tAcceptorslot\t" + accept.pValue.proposal.slot);
 
 //            PaxosLogger.logPValue(paxosID, accept.pValue);
 
       Ballot b1 = null;
-      try {
-        acceptorLock.lock();
+//      try {
+//        acceptorLock.lock();
         if (accept.pValue.ballot.compareTo(acceptorBallot) == 0) { // accept the pvalue
 
           pValuesAccepted.put(accept.pValue.proposal.slot, accept.pValue);
@@ -2188,9 +2192,9 @@ public class PaxosReplica {
 //                synchronized (garbageCollectionLock) {
 //                  if (slotAvailableForGC < accept.slotNumberAtReplica) slotAvailableForGC = accept.slotNumberAtReplica;
 //                }
-      } finally {
-        acceptorLock.unlock();
-      }
+//      } finally {
+//        acceptorLock.unlock();
+//      }
       // slot ballot node
 
 //      if (accept.pValue.proposal.slot%20 == 0) runGC(accept.slotNumberAtReplica);
@@ -2223,22 +2227,22 @@ public class PaxosReplica {
 
   }
 
-  private void runGC(int suggestedGCSlot) {
+  private synchronized void runGC(int suggestedGCSlot) {
 
-    synchronized (garbageCollectionLock) {
+//    synchronized (garbageCollectionLock) {
       long x = System.currentTimeMillis();
       if (x - lastGarbageCollectionTime > PaxosManager.MEMORY_GARBAGE_COLLECTION_INTERVAL) {
         lastGarbageCollectionTime = x;
         garbageCollectionSlot = suggestedGCSlot;
       }
       else return;
-    }
+//    }
 //            System.out.println("Checking gc "  + gc);
 
     int coordinatorID;
-    synchronized (acceptorBallot) {
+//    synchronized (acceptorBallot) {
       coordinatorID = acceptorBallot.getCoordinatorID();
-    }
+//    }
 //                System.out.println("DOING gc");
 //                PaxosLogger.logGarbageCollectionSlot(paxosID, accept.slotNumberAtReplica);
     deletePValuesDecided(suggestedGCSlot);
@@ -2251,7 +2255,7 @@ public class PaxosReplica {
   }
 
 // REMVOE THIS CODE
-//    public void doGarbageCollection() {
+//    public synchronized void doGarbageCollection() {
 //        boolean gc = false;
 //        int gcSlot = 0;
 //        synchronized (garbageCollectionLock) {
@@ -2280,7 +2284,7 @@ public class PaxosReplica {
    * return the current missing slot numbers and maximum slot number for which decision is received
    * @param packet
    */
-  private void handleSyncRequest(SynchronizePacket packet) {
+  private synchronized void handleSyncRequest(SynchronizePacket packet) {
     SynchronizeReplyPacket synchronizeReplyPacket = getSyncReply(true);
     GNS.getLogger().fine(paxosID + "\t" +nodeID + " " +
             "Handling Sync Request: " + synchronizeReplyPacket);
@@ -2291,7 +2295,7 @@ public class PaxosReplica {
    * calculate the current missing slot numbers and maximum slot number for which decision is received
    * @return a SynchronizeReplyPacket to be sent to coordinator
    */
-  private SynchronizeReplyPacket getSyncReply(boolean flag) {
+  private synchronized SynchronizeReplyPacket getSyncReply(boolean flag) {
 
     int maxDecision = -1;
     for (int slot: decisions.keySet()) {
@@ -2301,9 +2305,9 @@ public class PaxosReplica {
     }
 
     int slot;
-    synchronized (slotNumberLock) {
+//    synchronized (slotNumberLock) {
       slot = slotNumber;
-    }
+//    }
 
     ArrayList<Integer> missingSlotNumbers = new ArrayList<Integer>();
     for (int i = slot; i <= maxDecision; i++) {
@@ -2325,7 +2329,7 @@ public class PaxosReplica {
    * @param slotNumber all nodes have received all decisions for slots less than "slotNumber"
    *
    */
-  private void deletePValuesDecided(int slotNumber) {
+  private synchronized void deletePValuesDecided(int slotNumber) {
     GNS.getLogger().fine("Size of pvalues = " + pValuesAccepted.size());
 //    System.out.println("Size of pvalues = " + pValuesAccepted.size());
 
@@ -2361,15 +2365,15 @@ public class PaxosReplica {
    * resend accept messages for slots who which haven't received accept-reply from majority of replicas
    * {@code RESEND_TIMEOUT} interval
    */
-  public void resendPendingAccepts() {
+  public synchronized void resendPendingAccepts() {
 
-    synchronized (coordinatorBallotLock) {
+//    synchronized (coordinatorBallotLock) {
       if (!activeCoordinator) return;
-    }
+//    }
     int minSlot;
-    synchronized (minSlotLock) {
+//    synchronized (minSlotLock) {
       minSlot = minSlotNumberAcrossNodes;
-    }
+//    }
 
     for (int slot: pValuesCommander.keySet()) {
       ProposalStateAtCoordinator state = pValuesCommander.get(slot);
@@ -2394,22 +2398,22 @@ public class PaxosReplica {
     }
   }
 
-  public boolean resendPendingProposal(ProposalStateAtCoordinator state) {
+  public synchronized boolean resendPendingProposal(ProposalStateAtCoordinator state) {
 //    if (state.getNodesResponded()*2 > nodeIDs.size()) return false;
-    try {
-      acceptorLock.lock();
+//    try {
+//      acceptorLock.lock();
       if (StartNameServer.experimentMode)
         GNS.getLogger().info("\tResendingMessage\t" + state.paxosID + "\t" +
                 state.pValuePacket.proposal.slot + "\t" + acceptorBallot + "\t");
       if (state.pValuePacket.ballot.compareTo(acceptorBallot) != 0) return false;
-    }finally {
-      acceptorLock.unlock();
-    }
+//    }finally {
+//      acceptorLock.unlock();
+//    }
 
     int minSlot;
-    synchronized (minSlotLock) {
+//    synchronized (minSlotLock) {
       minSlot = minSlotNumberAcrossNodes;
-    }
+//    }
 
     for (int node: nodeIDs) {
       // ACCEPT-REPLY received from node?
@@ -2425,232 +2429,50 @@ public class PaxosReplica {
     return true;
   }
 
-  /**
-   * if replica is coordinator,
-   * check if all replicas have received the decisions until the last slot number decided.
-   */
-  public void checkIfReplicasUptoDate() {
-
-    synchronized (coordinatorBallotLock) {
-      if (!activeCoordinator) return;
-    }
-
-    // if (last decision is made less than 1 sec ago): continue
-    if (System.currentTimeMillis() - getLastDecisionTime() < RESEND_TIMEOUT) {
-      return;
-    }
-
-
-    int minSlot;
-    synchronized (minSlotLock) {
-      minSlot = minSlotNumberAcrossNodes;
-    }
-
-
-    int slotNumberCopy;
-    synchronized (slotNumberLock) {
-      slotNumberCopy = slotNumber;
-    }
-    if (minSlot == slotNumberCopy) {
-      return;
-    }
-
-    GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
-            "Sending sync messages Min slot = " +  minSlot + " Slot number = " + slotNumberCopy);
-
-    // if (all replicas excluding failed ones are up to date): continue
-    SynchronizePacket synchronizePacket = new SynchronizePacket(nodeID);
-    for (int x: nodeIDs) {
-      // ignore if node is detected as failed
-      if (!FailureDetection.isNodeUp(x)) continue;
-      // send a request to send current replicas if it is not up to date
-      if (nodeAndSlotNumbers.get(x) < slotNumberCopy) {
-//                GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
-//                        "Sending to node = " +  x);
-        sendMessage(x, synchronizePacket);
-      }
-    }
-  }
-}
-
-
-
-class ProposalStateAtCoordinator implements Comparable, Serializable{
-
-  public String paxosID;
-
-  private long acceptSentTime = -1;
-  PValuePacket pValuePacket;
-  private ConcurrentHashMap<Integer, Integer> nodes;
-  int numReplicas;
-
-  public ProposalStateAtCoordinator(String paxosID, PValuePacket pValuePacket, int numReplicas) {
-    this.paxosID = paxosID;
-    this.pValuePacket = pValuePacket;
-    this.nodes = new ConcurrentHashMap<Integer, Integer>();
-    acceptSentTime = System.currentTimeMillis();
-    this.numReplicas = numReplicas;
-  }
-
-  public void addNode(int node) {
-    nodes.put(node,node);
-  }
-
-  private boolean majority = false;
-
-  public synchronized boolean isMajorityReached() {
-    if (majority == true)  return false;
-
-    if (nodes.size() * 2 > numReplicas) {
-      majority = true;
-      return true;
-    }
-    return false;
-  }
-
-  private boolean fullResponse = false;
-
-  public synchronized boolean isFullResponse() {
-    if (fullResponse == true || majority == false)  return false;
-
-    if (nodes.size() == numReplicas) {
-      fullResponse = true;
-      return true;
-    }
-    return false;
-  }
-
-  public int getNodesResponded() {
-    return nodes.size();
-  }
-
-  public boolean hasNode(int node) {
-    return nodes.containsKey(node);
-  }
-
-
-  public long getTimeSinceAccept() {
-    if (acceptSentTime == -1) acceptSentTime = System.currentTimeMillis();
-    return  System.currentTimeMillis() - acceptSentTime;
-  }
-
-  public void updateAcceptSentTime() {
-    this.acceptSentTime = System.currentTimeMillis();
-  }
-
-
-  @Override
-  public int compareTo(Object o) {
-    ProposalStateAtCoordinator p = (ProposalStateAtCoordinator)o;
-    if (acceptSentTime < p.acceptSentTime) return -1;
-    else if (acceptSentTime > p.acceptSentTime) return 1;
-    return 0;
-  }
-}
-
-
-class CheckPrepareMessageTask extends TimerTask {
-
-  int numRetry;
-  int count = 0;
-  PaxosReplica2 replica;
-  PreparePacket preparePacket;
-  Ballot proposedBallot;
-  public CheckPrepareMessageTask(PaxosReplica replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
-
-  }
-  public CheckPrepareMessageTask(PaxosReplica2 replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
-    this.numRetry = numRetry;
-    this.replica = replica;
-    this.preparePacket = preparePacket;
-    this.proposedBallot = proposedBallot;
-
-  }
-
-  @Override
-  public void run() {
-    try {
-      if (replica.isStopped()) throw  new GnsRuntimeException();
-      boolean sendAgain = replica.resendPrepare(proposedBallot,preparePacket);
-      if (sendAgain == false || count == numRetry) throw  new GnsRuntimeException();
-    } catch (Exception e) {
-      if (e.getClass().equals(GnsRuntimeException.class)) {
-        throw new RuntimeException();
-      }
-      GNS.getLogger().severe("Exception in Check prepare message task. " + e.getMessage());
-      e.printStackTrace();
-    }
-  }
-}
-
-
-class StartScoutTask extends TimerTask {
-  PaxosReplica replica;
-  public StartScoutTask(PaxosReplica replica) {
-    this.replica = replica;
-  }
-
-  @Override
-  public void run() {
-    try{
-      replica.initScout();
-    }catch (Exception e) {
-      GNS.getLogger().severe("Exception in start scout .. " + e.getMessage());
-      e.printStackTrace();
-    }
-  }
-
-}
-
-/**
- *
- */
-class UpdateBallotTask extends TimerTask {
-
-  PaxosReplica2 replica;
-
-  Ballot ballot;
-
-  int count = 0;
-
-  ArrayList<Integer> nodes;
-
-  JSONObject json;
-  public UpdateBallotTask(PaxosReplica replica, Ballot ballot, JSONObject json) {
-
-  }
-  public UpdateBallotTask(PaxosReplica2 replica, Ballot ballot, JSONObject json) {
-    this.replica = replica;
-    this.ballot = ballot;
-    String paxosID1 = PaxosManager.getPaxosKeyFromPaxosID(replica.getPaxosID()); //paxosID.split("-")[0];
-    Random r = new Random(paxosID1.hashCode());
-    nodes = new ArrayList<Integer>(replica.getNodeIDs());
-    Collections.sort(nodes);
-    Collections.shuffle(nodes, r);
-    this.json = json;
-  }
-
-  @Override
-  public void run() {
-    if (count == nodes.size()) {
-      throw new RuntimeException();
-    }
-    PaxosReplica2 pr = PaxosManager.paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(replica.getPaxosID()));
-    if (pr == null || pr.getPaxosID().equals(replica.getPaxosID()) == false) {
-      throw new RuntimeException();
-    }
-    if (pr.isAcceptorBallotUpdated(ballot)) {
-      throw new RuntimeException();
-    }
-    int node = -1;
-    while(node == -1) {
-      if (count < nodes.size() && PaxosManager.isNodeUp(nodes.get(count))) {
-        node = nodes.get(count);
-      }
-      count += 1;
-    }
-    if (node > 0) {
-      PaxosManager.sendMessage(node, json);
-    }
-  }
+//  /**
+//   * if replica is coordinator,
+//   * check if all replicas have received the decisions until the last slot number decided.
+//   */
+//  public synchronized void checkIfReplicasUptoDate() {
+//
+////    synchronized (coordinatorBallotLock) {
+//      if (!activeCoordinator) return;
+////    }
+//
+//    // if (last decision is made less than 1 sec ago): continue
+//    if (System.currentTimeMillis() - getLastDecisionTime() < RESEND_TIMEOUT) {
+//      return;
+//    }
+//
+//
+//    int minSlot;
+////    synchronized (minSlotLock) {
+//      minSlot = minSlotNumberAcrossNodes;
+////    }
+//
+//
+//    int slotNumberCopy;
+////    synchronized (slotNumberLock) {
+//      slotNumberCopy = slotNumber;
+////    }
+//    if (minSlot == slotNumberCopy) {
+//      return;
+//    }
+//
+//    GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
+//            "Sending sync messages Min slot = " +  minSlot + " Slot number = " + slotNumberCopy);
+//
+//    // if (all replicas excluding failed ones are up to date): continue
+//    SynchronizePacket synchronizePacket = new SynchronizePacket(nodeID);
+//    for (int x: nodeIDs) {
+//      // ignore if node is detected as failed
+//      if (!FailureDetection.isNodeUp(x)) continue;
+//      // send a request to send current replicas if it is not up to date
+//      if (nodeAndSlotNumbers.get(x) < slotNumberCopy) {
+////                GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
+////                        "Sending to node = " +  x);
+//        sendMessage(x, synchronizePacket);
+//      }
+//    }
+//  }
 }

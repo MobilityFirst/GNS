@@ -6,10 +6,11 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.paxos.PaxosManager;
-import java.io.IOException;
-import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * All packets received at name server (TCP/UDP) pass through this demultiplexer.
@@ -38,6 +39,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         // client requests: ADD/REMOVE/UPDATE/LOOKUP
         case DNS:
         case UPDATE_ADDRESS_LNS:
+        case UPDATE_ADDRESS_NS:
         case NAME_SERVER_LOAD:
         case ADD_RECORD_LNS:
         case ADD_RECORD_NS:
@@ -63,6 +65,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
         case OLD_ACTIVE_STOP:
+        case ACTIVE_PAXOS_STOP:
           ListenerReplicationPaxos.handleIncomingPacket(json);
           break;
         // msgs to primary

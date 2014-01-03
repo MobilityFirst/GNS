@@ -1,10 +1,11 @@
 package edu.umass.cs.gns.packet.paxospacket;
 
+import edu.umass.cs.gns.paxos.Ballot;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import edu.umass.cs.gns.paxos.Ballot;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PreparePacket extends Packet {
@@ -16,7 +17,7 @@ public class PreparePacket extends Packet {
   public int receiverID;
 
   public int slotNumber;
-  public ConcurrentHashMap<Integer, PValuePacket> accepted;
+  public Map<Integer, PValuePacket> accepted;
 
   public PreparePacket(int coordinatorID, int receiverID, Ballot b, int packetType) {
     this.coordinatorID = coordinatorID;
@@ -27,7 +28,7 @@ public class PreparePacket extends Packet {
 
   }
 
-  public PreparePacket getPrepareReplyPacket(Ballot b, int receiverID, ConcurrentHashMap<Integer, PValuePacket> accepted, int slotNumber) {
+  public PreparePacket getPrepareReplyPacket(Ballot b, int receiverID, Map<Integer, PValuePacket> accepted, int slotNumber) {
 
     if (b.equals(this.ballot)) {
       PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,

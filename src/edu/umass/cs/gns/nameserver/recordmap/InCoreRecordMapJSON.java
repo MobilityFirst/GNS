@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nameserver.recordmap;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -37,6 +38,11 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     } catch (JSONException e) {
       GNS.getLogger().severe("Error getting json record: " + e);
     }
+  }
+
+  @Override
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws RecordExistsException {
+
   }
 
   @Override

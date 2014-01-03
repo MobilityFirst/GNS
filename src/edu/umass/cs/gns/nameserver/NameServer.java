@@ -18,16 +18,14 @@ import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Timer;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -53,7 +51,7 @@ public class NameServer {
   /**
    * Only used during experiments.
    */
-  public static int initialExpDelayMillis = 30000;
+  public static int initialExpDelayMillis = 30;
 
   /**
    * Constructs a name server which uses a synthetic workload of integers as names in its record table. The size of the
@@ -104,7 +102,6 @@ public class NameServer {
       }
     }
 
-
     // Load monitoring calculation initalized.
     loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
 
@@ -118,14 +115,18 @@ public class NameServer {
     PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
             new NSPaxosInterface(), executorService);
 
+    createPrimaryPaxosInstances();
+
     if (StartNameServer.experimentMode) {
       // Name Records added for experiments
 //        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,
 // StartNameServer.mobileWorkloadSize);
 //        if (StartNameServer.staticReplication) {
-      GenerateSyntheticRecordTable.generateRecordTable(StartNameServer.regularWorkloadSize,
-              StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
-              StartNameServer.defaultTTLMobileName);
+
+        GenerateSyntheticRecordTable.generateRecordTableBulkInsert(StartNameServer.regularWorkloadSize,
+                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
+                StartNameServer.defaultTTLMobileName);
+
 //        }  else {
 //          GenerateSyntheticRecordTable.generateRecordTableWithActives(StartNameServer.regularWorkloadSize,
 //                  StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
@@ -143,12 +144,13 @@ public class NameServer {
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
-
       long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval +
               (new Random()).nextInt((int) StartNameServer.analysisInterval);
       if (StartNameServer.experimentMode && StartNameServer.quitAfterTimeSec > 0)
         initialDelayMillis = initialExpDelayMillis + (long)(StartNameServer.analysisInterval*1.5);
       GNS.getLogger().info("ComputeNewActives Initial delay " + initialDelayMillis);
+
+//      initialDelayMillis = 100000;
 
       executorService.scheduleAtFixedRate(new ComputeNewActivesTask(), initialDelayMillis,
               StartNameServer.analysisInterval, TimeUnit.MILLISECONDS);
@@ -158,6 +160,41 @@ public class NameServer {
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC + (new Random()).nextInt(SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC),
 //                SenderKeepAliveRC.KEEP_ALIVE_INTERVAL_SEC, TimeUnit.SECONDS);
     }
+  }
+
+
+  public static void createPrimaryPaxosInstances() {
+
+    ArrayList<Integer> nodesSorted = new ArrayList<Integer>();
+    for (String s1: HashFunction.nsTreeMap.keySet()) {
+      nodesSorted.add(HashFunction.nsTreeMap.get(s1));
+    }
+
+    for (int i = 0; i < HashFunction.nsTreeMap.size(); i++) {
+      int paxosMemberIndex = i;
+      String paxosID = HashFunction.getMD5Hash(Integer.toString(nodesSorted.get(paxosMemberIndex))) + "-P";
+      HashSet<Integer> nodes = new HashSet<Integer>();
+      boolean containsNode = false;
+      while(nodes.size() < GNS.numPrimaryReplicas) {
+        if (nodesSorted.get(paxosMemberIndex) == nodeID) containsNode = true;
+        nodes.add(nodesSorted.get(paxosMemberIndex));
+        paxosMemberIndex += 1;
+        if (paxosMemberIndex == HashFunction.nsTreeMap.size()) paxosMemberIndex = 0;
+      }
+
+      if (containsNode) {
+        GNS.getLogger().info("Creating paxos instances: " + paxosID + "\t" + nodes);
+        PaxosManager.createPaxosInstance(paxosID, nodes, "", 0);
+      }
+    }
+
+//    for (int i = 0; i < GNS.numPrimaryReplicas; i++) {
+//      Map.Entry entry = HashFunction.nsTreeMap.lowerEntry(s);
+//      String paxosID = (String) entry.getKey();
+//
+//      s = entry.getKey();
+//    }
+
   }
 
   /******************************

@@ -5,7 +5,9 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.paxos.Ballot;
 
-public class PValuePacket extends Packet{
+import java.io.Serializable;
+
+public class PValuePacket extends Packet implements Serializable {
 
 	
 	public Ballot ballot;

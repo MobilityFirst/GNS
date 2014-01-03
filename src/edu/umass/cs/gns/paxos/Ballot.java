@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.paxos;
 
-public class Ballot implements Comparable<Ballot>{
+import java.io.Serializable;
+
+public class Ballot implements Comparable<Ballot>, Serializable{
 	public int ballotNumber;
 	public int coordinatorID;
 

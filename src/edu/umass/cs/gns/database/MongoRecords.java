@@ -371,6 +371,28 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
+  public void bulkInsert(String collectionName, ArrayList<JSONObject> values) throws RecordExistsException {
+    db.requestStart();
+    try {
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      ArrayList<DBObject> dbObjects = new ArrayList<DBObject>();
+      for (JSONObject json: values) {
+        dbObjects.add((DBObject) JSON.parse(json.toString()));
+      }
+      try {
+        collection.insert(dbObjects);
+      } catch (Exception e) {
+        throw new RecordExistsException(collectionName, "MultiInsert");
+//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    } finally {
+      db.requestDone();
+    }
+  }
+
+
+  @Override
   public void update(String collectionName, String guid, JSONObject value) {
     db.requestStart();
     try {

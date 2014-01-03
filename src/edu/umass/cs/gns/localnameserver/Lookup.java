@@ -152,6 +152,7 @@ public class Lookup {
 
   public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket dnsPacket) throws JSONException {
 
+    GNS.getLogger().fine("Recvd Lookup Error Response\t" + jsonObject);
 
 //    DNSRequestInfo query = LocalNameServer.getDNSRequestInfo(dnsPacket.getQueryId());
 //    if (query == null) return;

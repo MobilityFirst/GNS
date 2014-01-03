@@ -456,8 +456,8 @@ public class StartLocalNameServer {
     println("Debug Mode: " + debugMode, debugMode);
 
     try {
-      HashFunction.initializeHashFunction();
       ConfigFileInfo.readHostInfo(nsFile, id);
+      HashFunction.initializeHashFunction();
       //Start local name server 
       new LocalNameServer(id).run();
     } catch (Exception e) {

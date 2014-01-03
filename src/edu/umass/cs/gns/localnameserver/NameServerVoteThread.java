@@ -107,9 +107,11 @@ public class NameServerVoteThread extends Thread {
 
           // send to all primaries.
           Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);
+          GNS.getLogger().info("Primary name servers = " + primaryNameServers + " name = " + name);
           for (int primary: primaryNameServers) {
             LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);
           }
+          Thread.sleep(5);
 //          LNSListener.tcpTransport.sendToIDs(, nsSelectionPacket.toJSONObject());
 
 //					unackedVotes.put(uniqueVoteID, uniqueVoteID);

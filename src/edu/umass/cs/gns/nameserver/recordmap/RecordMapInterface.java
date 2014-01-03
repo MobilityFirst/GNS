@@ -30,6 +30,8 @@ public interface RecordMapInterface {
 
   public void addNameRecord(JSONObject json) throws RecordExistsException;
 
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws RecordExistsException;
+
   public void removeNameRecord(String name);
 
   public boolean containsName(String name);

@@ -9,6 +9,7 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -384,6 +385,11 @@ public class CassandraRecords implements NoSQLRecords {
     } else {
       GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
     }
+  }
+
+  @Override
+  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws RecordExistsException {
+        // todo
   }
 
   @Override

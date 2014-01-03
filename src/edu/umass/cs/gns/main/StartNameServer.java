@@ -45,6 +45,9 @@ public class StartNameServer {
   // is in experiment mode: abhigyan.
   // use this flag to make changes to code which will only run during experiments.
   public static boolean experimentMode = false;
+  public static boolean noLoadDB = false;
+  public static boolean eventualConsistency = false;
+
   public static boolean emulatePingLatencies = false;
   public static double variation = 0.1;
   public static int workerThreadCount = 5; // number of worker threads
@@ -97,6 +100,8 @@ public class StartNameServer {
 
     Option debugMode = new Option("debugMode", "Run in debug mode");
     Option experimentMode = new Option("experimentMode", "Run in experiment mode");
+    Option noLoadDB = new Option("noLoadDB", "Load items in database or not");
+    Option eventualConsistency = new Option("eventualConsistency", "Eventual consistency or paxos");
 
     Option dataStore = new Option("dataStore", true, "Which persistent data store to use for name records");
 
@@ -231,6 +236,8 @@ public class StartNameServer {
     commandLineOptions.addOption(alpha);
     commandLineOptions.addOption(debugMode);
     commandLineOptions.addOption(experimentMode);
+    commandLineOptions.addOption(noLoadDB);
+    commandLineOptions.addOption(eventualConsistency);
     commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(simpleDiskStore);
     commandLineOptions.addOption(dataFolder);
@@ -363,6 +370,11 @@ public class StartNameServer {
 
       debugMode = parser.hasOption("debugMode");
       experimentMode = parser.hasOption("experimentMode");
+      if (experimentMode) {
+        eventualConsistency = parser.hasOption("eventualConsistency");
+        noLoadDB = parser.hasOption("noLoadDB");
+      }
+
       String dataStoreString = parser.getOptionValue("dataStore");
       if (dataStoreString == null) {
         dataStore = DEFAULTDATASTORETYPE;
@@ -509,9 +521,9 @@ public class StartNameServer {
             "Experiment Mode: " + experimentMode, debugMode);
 
     try {
-      HashFunction.initializeHashFunction();
       //Generate name server lookup table
       ConfigFileInfo.readHostInfo(nsFile, id);
+      HashFunction.initializeHashFunction();
       //Start nameserver 
       new NameServer(id).run();
     } catch (Exception e) {

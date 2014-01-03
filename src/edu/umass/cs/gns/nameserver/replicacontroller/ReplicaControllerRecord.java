@@ -52,22 +52,41 @@ public class ReplicaControllerRecord {
 //  public final static ColumnField MOV_AVG_WRITE = new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER);
 //
 //  public final static ColumnField KEEP_ALIVE_TIME = new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER);
+
+
   public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);
-  public final static ColumnField PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER) : new ColumnField("rc1", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER) : new ColumnField("rc2", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField OLD_ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER) : new ColumnField("rc3", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc4", ColumnFieldType.BOOLEAN);
-  //  public final static ColumnField OLD_ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActiveRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc5", ColumnFieldType.BOOLEAN);
-  public final static ColumnField ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activePaxosID", ColumnFieldType.STRING) : new ColumnField("rc6", ColumnFieldType.STRING);
-  public final static ColumnField OLD_ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActivePaxosID", ColumnFieldType.STRING) : new ColumnField("rc7", ColumnFieldType.STRING);
-  public final static ColumnField MARKED_FOR_REMOVAL = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_markedForRemoval", ColumnFieldType.INTEGER) : new ColumnField("rc8", ColumnFieldType.INTEGER);
-  public final static ColumnField VOTES_MAP = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_votesMap", ColumnFieldType.VOTES_MAP) : new ColumnField("rc9", ColumnFieldType.VOTES_MAP);
-  public final static ColumnField STATS_MAP = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_statsMap", ColumnFieldType.STATS_MAP) : new ColumnField("rc10", ColumnFieldType.STATS_MAP);
-  public final static ColumnField PREV_TOTAL_READ = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_prevTotalRead", ColumnFieldType.INTEGER) : new ColumnField("rc11", ColumnFieldType.INTEGER);
-  public final static ColumnField PREV_TOTAL_WRITE = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_prevTotalWrite", ColumnFieldType.INTEGER) : new ColumnField("rc12", ColumnFieldType.INTEGER);
-  public final static ColumnField MOV_AVG_READ = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_movAvgRead", ColumnFieldType.LIST_INTEGER) : new ColumnField("rc13", ColumnFieldType.LIST_INTEGER);
-  public final static ColumnField MOV_AVG_WRITE = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER) : new ColumnField("rc14", ColumnFieldType.LIST_INTEGER);
-  public final static ColumnField KEEP_ALIVE_TIME = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER) : new ColumnField("rc15", ColumnFieldType.INTEGER);
+  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField OLD_ACTIVE_NAMESERVERS = new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN);
+    //  public final static ColumnField OLD_ACTIVE_NAMESERVERS_RUNNING = new ColumnField("rcr_oldActiveRunning", ColumnFieldType.BOOLEAN);
+  public final static ColumnField ACTIVE_PAXOS_ID = new ColumnField("rcr_activePaxosID", ColumnFieldType.STRING);
+  public final static ColumnField OLD_ACTIVE_PAXOS_ID = new ColumnField("rcr_oldActivePaxosID", ColumnFieldType.STRING);
+  public final static ColumnField MARKED_FOR_REMOVAL = new ColumnField("rcr_markedForRemoval", ColumnFieldType.INTEGER);
+  public final static ColumnField VOTES_MAP = new ColumnField("rcr_votesMap", ColumnFieldType.VOTES_MAP);
+  public final static ColumnField STATS_MAP = new ColumnField("rcr_statsMap", ColumnFieldType.STATS_MAP);
+  public final static ColumnField PREV_TOTAL_READ = new ColumnField("rcr_prevTotalRead", ColumnFieldType.INTEGER);
+  public final static ColumnField PREV_TOTAL_WRITE = new ColumnField("rcr_prevTotalWrite", ColumnFieldType.INTEGER);
+  public final static ColumnField MOV_AVG_READ = new ColumnField("rcr_movAvgRead", ColumnFieldType.LIST_INTEGER);
+  public final static ColumnField MOV_AVG_WRITE = new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER);
+  public final static ColumnField KEEP_ALIVE_TIME = new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER);
+
+//  public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);
+//  public final static ColumnField PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER) : new ColumnField("rc1", ColumnFieldType.SET_INTEGER);
+//  public final static ColumnField ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER) : new ColumnField("rc2", ColumnFieldType.SET_INTEGER);
+//  public final static ColumnField OLD_ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER) : new ColumnField("rc3", ColumnFieldType.SET_INTEGER);
+//  public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc4", ColumnFieldType.BOOLEAN);
+//  //  public final static ColumnField OLD_ACTIVE_NAMESERVERS_RUNNING = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActiveRunning", ColumnFieldType.BOOLEAN) : new ColumnField("rc5", ColumnFieldType.BOOLEAN);
+//  public final static ColumnField ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_activePaxosID", ColumnFieldType.STRING) : new ColumnField("rc6", ColumnFieldType.STRING);
+//  public final static ColumnField OLD_ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_oldActivePaxosID", ColumnFieldType.STRING) : new ColumnField("rc7", ColumnFieldType.STRING);
+//  public final static ColumnField MARKED_FOR_REMOVAL = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_markedForRemoval", ColumnFieldType.INTEGER) : new ColumnField("rc8", ColumnFieldType.INTEGER);
+//  public final static ColumnField VOTES_MAP = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_votesMap", ColumnFieldType.VOTES_MAP) : new ColumnField("rc9", ColumnFieldType.VOTES_MAP);
+//  public final static ColumnField STATS_MAP = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_statsMap", ColumnFieldType.STATS_MAP) : new ColumnField("rc10", ColumnFieldType.STATS_MAP);
+//  public final static ColumnField PREV_TOTAL_READ = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_prevTotalRead", ColumnFieldType.INTEGER) : new ColumnField("rc11", ColumnFieldType.INTEGER);
+//  public final static ColumnField PREV_TOTAL_WRITE = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_prevTotalWrite", ColumnFieldType.INTEGER) : new ColumnField("rc12", ColumnFieldType.INTEGER);
+//  public final static ColumnField MOV_AVG_READ = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_movAvgRead", ColumnFieldType.LIST_INTEGER) : new ColumnField("rc13", ColumnFieldType.LIST_INTEGER);
+//  public final static ColumnField MOV_AVG_WRITE = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER) : new ColumnField("rc14", ColumnFieldType.LIST_INTEGER);
+//  public final static ColumnField KEEP_ALIVE_TIME = (StartNameServer.experimentMode == false) ? new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER) : new ColumnField("rc15", ColumnFieldType.INTEGER);
   private HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
 
   /********************************************
@@ -93,9 +112,9 @@ public class ReplicaControllerRecord {
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
 
     hashMap.put(ACTIVE_PAXOS_ID, name + "-1");
-    hashMap.put(OLD_ACTIVE_PAXOS_ID, name + "-2");
+    hashMap.put(OLD_ACTIVE_PAXOS_ID, name + "-0");
 
-    hashMap.put(MARKED_FOR_REMOVAL, -1);
+    hashMap.put(MARKED_FOR_REMOVAL, 0);
 
     hashMap.put(VOTES_MAP, new ConcurrentHashMap<Integer, Integer>());
     hashMap.put(STATS_MAP, new ConcurrentHashMap<Integer, StatsInfo>());
@@ -224,7 +243,7 @@ public class ReplicaControllerRecord {
 
   public JSONObject toJSONObject() throws JSONException {
     JSONObject jsonObject = new JSONObject();
-    GNS.getLogger().fine("hash map --> " + hashMap);
+//    GNS.getLogger().fine("hash map --> " + hashMap);
     for (ColumnField f : hashMap.keySet()) {
 
       JSONUtils.putFieldInJsonObject(f, hashMap.get(f), jsonObject);
@@ -560,6 +579,7 @@ public class ReplicaControllerRecord {
    */
   public void setMarkedForRemoval() throws FieldNotFoundException {
     int markedForRemoval = getMarkedForRemoval();
+    GNS.getLogger().info("Marked for removal value: " + markedForRemoval);
     if (markedForRemoval == 0) {
       ArrayList<ColumnField> fields = getSetMarkedForRemoval();
 
@@ -567,6 +587,7 @@ public class ReplicaControllerRecord {
       values.add(1);
 
       NameServer.replicaController.update(getName(), NAME, fields, values);
+      GNS.getLogger().severe("Updating now ... ");
       hashMap.put(MARKED_FOR_REMOVAL, 1);
     }
   }

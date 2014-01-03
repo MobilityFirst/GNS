@@ -5,11 +5,10 @@ gnrs_dir = '/Users/abhigyan/Documents/workspace/GNSev/'  ## location of top-leve
 
 paxos_log_folder = '/Users/abhigyan/Documents/workspace/GNSev/local/paxoslog/'  ## folder where paxos logs are stored
 
-delete_paxos_log = True   ## if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
-
-
+delete_paxos_log = False    ## if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
+is_experiment_mode = False      ## set to True to run experiments, false otherwise.
 # SET
-experiment_run_time = 40    ## duration of experiment (seconds)
+experiment_run_time = 10    ## duration of experiment (seconds)
 
 # 
 num_ns = 8  ## NOT USED
@@ -17,7 +16,6 @@ num_lns = 8 ## NOT USED
 
 #lookupTrace = 'lookupTrace10'
 #updateTrace = 'updateTrace10'
-
 
 #set
 regular_workload = 10     ## number of names in the workload
@@ -27,7 +25,7 @@ mobile_workload = 0         ## NOT used
 queryTimeout = 2000   # ms    ## timeout value for a query (lookup/update)
 maxQueryWaitTime = 11000 # ms  ##  maximum wait time after which a query is declared failed
 
-replication_interval = 1000   ## interval (in sec) at which group changes are done. 
+replication_interval = 10   ## interval (in sec) at which group changes are done. 
 
 ns_sleep = 5      ## after starting name servers, wait for ns_sleep seconds before starting local name servers.
                  ## wait period is for loading names into database
@@ -38,7 +36,7 @@ load_balancing = False  ## Redirect to closest name server based on (RTT + serve
 
 primary_name_server = 3  ## number of primary name servers
 
-is_experiment_mode = True  ## set to True to run experiments, false otherwise.
+
 
 # 
 

@@ -104,6 +104,8 @@ public class GNS {
   private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
   public static boolean initRun = false;
 
+  public static double sampleFraction = 0.0;
+
   public static Logger getLogger() {
     if (!initRun) {
       Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");

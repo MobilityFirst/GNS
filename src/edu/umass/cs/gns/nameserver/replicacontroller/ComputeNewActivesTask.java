@@ -94,9 +94,9 @@ public class ComputeNewActivesTask extends TimerTask {
         }
 
         if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("\tComputeNewActivesConsidering\t" + rcRecord.getName() + "\tCount\t" + count + "\tRound\t" + replicationRound);
+          GNS.getLogger().fine("\tComputeNewActivesConsidering\t" + rcRecord.getName() + "\tCount\t" + count +
+                  "\tRound\t" + replicationRound);
         }
-
 
         if (!rcRecord.getPrimaryNameservers().contains(NameServer.nodeID)
                 || !ReplicaController.isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
@@ -106,7 +106,7 @@ public class ComputeNewActivesTask extends TimerTask {
 
         namesConsidered.add(rcRecord.getName());
         try {
-          Thread.sleep(5); // sleep between successive names so as to keep traffic smooth
+          Thread.sleep(10); // sleep between successive names so as to keep traffic smooth
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
@@ -129,20 +129,16 @@ public class ComputeNewActivesTask extends TimerTask {
             }
             GNS.getLogger().severe("SYSTEM EXIT.");
             System.exit(2);
-
           }
         };
         t.start();
       }
 
       for (String name : namesConsidered) {
-
-
         ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(name, readFields);
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("I will select new actives for name = " + rcRecord.getName());
         }
-
 
         Set<Integer> oldActiveNameServers = rcRecord.getActiveNameservers();
         Set<Integer> newActiveNameServers;
@@ -167,10 +163,11 @@ public class ComputeNewActivesTask extends TimerTask {
           RequestPacket requestPacket = new RequestPacket(Packet.PacketType.NEW_ACTIVE_PROPOSE.getInt(), activePropose.toString(),
                   PaxosPacketType.REQUEST, isStop);
 
-          PaxosManager.propose(paxosID, requestPacket);
+          GNS.getLogger().info("Proposal to paxosID: "  + paxosID);
+          String x = PaxosManager.propose(paxosID, requestPacket);
 
           if (StartNameServer.debugMode) {
-            GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done.");
+            GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done. Response: " + x);
           }
           try {
             Thread.sleep(100); // sleep between successive names so as to keep traffic smooth

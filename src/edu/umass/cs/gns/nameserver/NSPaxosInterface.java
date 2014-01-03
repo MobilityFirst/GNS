@@ -1,7 +1,10 @@
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
@@ -60,6 +63,9 @@ public class NSPaxosInterface implements PaxosInterface {
 //            else if (req.clientID == Packet.PacketType.OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY.getInt()) { // not used
 //                ReplicaController.oldActiveStoppedWriteToNameRecord(req.value);
 //            }
+      else if (req.clientID  == Packet.PacketType.ADD_RECORD_NS.getInt()) {
+        ClientRequestWorker.handleAddRecordNS(new JSONObject(req.value));
+      }
       else if (req.clientID  == Packet.PacketType.REMOVE_RECORD_LNS.getInt()) {
         ReplicaController.applyMarkedForRemoval(req.value);
       }
@@ -89,17 +95,22 @@ public class NSPaxosInterface implements PaxosInterface {
   public String getState(String paxosID) {
 
     if (ReplicaController.isPrimaryPaxosID(paxosID)) {
-      String name = ReplicaController.getNameFromPrimaryPaxosID(paxosID);
-      // read all fields of the record
-      ReplicaControllerRecord rcRecord;
-      try {
-        rcRecord = NameServer.getNameRecordPrimary(name);
-      } catch (RecordNotFoundException e) {
-        GNS.getLogger().severe("Record not found for paxos ID " + paxosID);
-        return null;
+      BasicRecordCursor iterator = NameServer.replicaController.getAllRowsIterator();
+//    if (StartNameServer.debugMode) GNS.getLogger().info("Got iterator : " + replicationRound);
+      StringBuilder sb = new StringBuilder();
+      int recordCount = 0;
+      while (iterator.hasNext()) {
+        try {
+          JSONObject jsonObject = iterator.next();
+          sb.append(jsonObject.toString());
+          sb.append("\n");
+          recordCount += 1;
+        } catch (Exception e) {
+          GNS.getLogger().severe("Problem creating ReplicaControllerRecord from JSON" + e);
+        }
       }
-      return  (rcRecord == null) ? null: rcRecord.toString();
-
+      GNS.getLogger().info("Number of records whose state is read from DB: " + recordCount);
+      return sb.toString();
     }
     else {
       String name = ReplicaController.getNameFromActivePaxosID(paxosID);
@@ -115,16 +126,71 @@ public class NSPaxosInterface implements PaxosInterface {
   }
 
   @Override
-  public void updateState(String paxosID, String state) {
+    public void updateState(String paxosID, String state) {
     try {
-      JSONObject json = new JSONObject(state);
+      GNS.getLogger().info("Update state: " + paxosID  + "\tState-length: " + state.length());
       if (ReplicaController.isPrimaryPaxosID(paxosID)) {
-        NameServer.updateNameRecordPrimary(new ReplicaControllerRecord(json));
+
+        if  (state.length() == 0) {
+          return;
+        }
+        GNS.getLogger().info("Here: " + paxosID);
+        int recordCount = 0;
+        int startIndex = 0;
+        GNS.getLogger().info("Update state: " + paxosID);
+        while (true) {
+          int endIndex = state.indexOf('\n', startIndex);
+          if (endIndex == -1) break;
+          String x = state.substring(startIndex, endIndex);
+          if (x.length() > 0) {
+            recordCount += 1;
+            JSONObject json = new JSONObject(x);
+            ReplicaControllerRecord rcr = new ReplicaControllerRecord(json);
+            GNS.getLogger().info("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
+            try {
+              NameServer.addNameRecordPrimary(rcr);
+            } catch (RecordExistsException e) {
+              NameServer.updateNameRecordPrimary(rcr);
+            }
+
+            try {
+              ReplicaControllerRecord rc2 = NameServer.getNameRecordPrimary(new ReplicaControllerRecord(json).getName());
+              GNS.getLogger().info("Read fresh copy RC from DB ....: " + rc2 + "\t");
+            } catch (RecordNotFoundException e) {
+              e.printStackTrace();
+            } catch (FieldNotFoundException e) {
+              e.printStackTrace();
+            }
+
+            startIndex = endIndex;
+          } else {
+            startIndex += 1;
+          }
+
+        }
+        GNS.getLogger().info("Number of rc records updated in DB: " + recordCount);
       } else {
-        NameServer.updateNameRecord(new NameRecord(json));
+        JSONObject json = new JSONObject(state);
+        GNS.getLogger().info("Updated name record in DB: " + paxosID + "\t" + state);
+        try {
+          NameServer.addNameRecord(new NameRecord(json));
+        } catch (RecordExistsException e) {
+          NameServer.updateNameRecord(new NameRecord(json));
+        }
+        try {
+          NameRecord nr2 = NameServer.getNameRecord(new NameRecord(json).getName());
+          GNS.getLogger().info("Read fresh copy from DB ....: " + nr2 + "\t");
+        } catch (RecordNotFoundException e) {
+          e.printStackTrace();
+        } catch (FieldNotFoundException e) {
+          e.printStackTrace();
+        }
       }
     } catch (JSONException e) {
+
       e.printStackTrace();
     }
   }
+
+
 }

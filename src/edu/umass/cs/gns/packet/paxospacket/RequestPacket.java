@@ -3,9 +3,10 @@ package edu.umass.cs.gns.packet.paxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class RequestPacket extends Packet {
+public class RequestPacket extends Packet implements Serializable{
 
 	public int clientID;
 
@@ -14,7 +15,6 @@ public class RequestPacket extends Packet {
 	public String value;
 
   private boolean stop = false;
-
 
 //    String CLIENT_ID = "y1";
 //    String PAXOS_REQUEST_ID = "y2";

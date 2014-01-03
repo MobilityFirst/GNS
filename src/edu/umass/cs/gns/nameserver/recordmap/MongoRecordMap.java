@@ -169,6 +169,13 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws RecordExistsException {
+    MongoRecords records = MongoRecords.getInstance();
+    records.bulkInsert(collectionName, jsons);
+    GNS.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
+  }
+
+  @Override
   public void updateNameRecord(NameRecord recordEntry) {
     try {
       MongoRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());

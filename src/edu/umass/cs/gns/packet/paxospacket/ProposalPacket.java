@@ -3,7 +3,9 @@ package edu.umass.cs.gns.packet.paxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ProposalPacket extends Packet{
+import java.io.Serializable;
+
+public class ProposalPacket extends Packet implements Serializable {
 	
 	public int slot;
 	
