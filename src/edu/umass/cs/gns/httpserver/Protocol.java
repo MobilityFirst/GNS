@@ -167,9 +167,9 @@ public class Protocol {
   public final static String SIGNATURE = "signature";
   public final static String PASSKEY = "passkey";
   //public final static String TABLE = "table";
-   // Blessed field names
-  public static final String  LOCATION_FIELD_NAME          = "location";
-  public static final String  IPADDRESS_FIELD_NAME         = "ipAddress";
+  // Blessed field names
+  public static final String LOCATION_FIELD_NAME = "location";
+  public static final String IPADDRESS_FIELD_NAME = "ipAddress";
   //
   private boolean adminMode = false;
   private FieldAccess fieldAccess = FieldAccess.getInstance();
@@ -461,7 +461,7 @@ public class Protocol {
    * @param password
    * @return GUID
    */
-  public String processRegisterAccount(String host, String name, String publicKey, String password) {
+  private String processRegisterAccount(String host, String name, String publicKey, String password) {
     String guid = createGuidFromPublicKey(publicKey);
     return processRegisterAccountWithGuid(host, name, guid, publicKey, password);
   }
@@ -471,7 +471,7 @@ public class Protocol {
     return ByteUtils.toHex(publicKeyDigest);
   }
 
-  public String processRegisterAccountWithGuid(String host, String name, String guid, String publicKey, String password) {
+  private String processRegisterAccountWithGuid(String host, String name, String guid, String publicKey, String password) {
     String result = accountAccess.addAccountWithVerification(host, name, guid, publicKey, password);
     if (OKRESPONSE.equals(result)) {
       // set up the default read access
@@ -482,11 +482,11 @@ public class Protocol {
     }
   }
 
-  public String processVerifyAccount(String guid, String code) {
+  private String processVerifyAccount(String guid, String code) {
     return accountAccess.verifyAccount(guid, code);
   }
 
-  public String processRemoveAccount(String name, String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+ private String processRemoveAccount(String name, String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -503,7 +503,7 @@ public class Protocol {
     }
   }
 
-  public String processAddAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processAddAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -522,7 +522,7 @@ public class Protocol {
     }
   }
 
-  public String processRemoveAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processRemoveAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -535,7 +535,7 @@ public class Protocol {
     }
   }
 
-  public String processRetrieveAliases(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processRetrieveAliases(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -549,7 +549,7 @@ public class Protocol {
     }
   }
 
-  public String processAddGuid(String accountGuid, String name, String publicKey, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processAddGuid(String accountGuid, String name, String publicKey, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     String newGuid = createGuidFromPublicKey(publicKey);
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
@@ -579,7 +579,7 @@ public class Protocol {
     }
   }
 
-  public String processRemoveGuid(String guid, String guid2, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processRemoveGuid(String guid, String guid2, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, guid2Info;
     if ((guid2Info = accountAccess.lookupGuidInfo(guid2)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid2;
@@ -595,7 +595,7 @@ public class Protocol {
     }
   }
 
-  public String processSetPassword(String guid, String password, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processSetPassword(String guid, String password, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -608,7 +608,7 @@ public class Protocol {
     }
   }
 
-  public String processLookupGuid(String name) {
+  private String processLookupGuid(String name) {
     // look for a primary guid
     String result = accountAccess.lookupGuid(name);
     if (result != null) {
@@ -618,7 +618,7 @@ public class Protocol {
     }
   }
 
-  public String processLookupGuidInfo(String guid) {
+  private String processLookupGuidInfo(String guid) {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -634,7 +634,7 @@ public class Protocol {
     }
   }
 
-  public String processLookupAccountInfo(String guid) {
+  private String processLookupAccountInfo(String guid) {
     AccountInfo acccountInfo;
     if ((acccountInfo = accountAccess.lookupAccountInfoFromGuid(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -650,7 +650,7 @@ public class Protocol {
     }
   }
 
-  public String processCreate(String guid, String field, String value, String writer, String signature, String message)
+  private String processCreate(String guid, String field, String value, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -674,7 +674,7 @@ public class Protocol {
     }
   }
 
-  public String processCreateList(String guid, String field, String value, String writer, String signature, String message)
+  private String processCreateList(String guid, String field, String value, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -702,7 +702,7 @@ public class Protocol {
     }
   }
 
-  public String processUpdateOperation(String guid, String field, String value, String oldValue, String writer, String signature, String message,
+  private String processUpdateOperation(String guid, String field, String value, String oldValue, String writer, String signature, String message,
           UpdateOperation operation) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -729,7 +729,7 @@ public class Protocol {
     }
   }
 
-  public String processUpdateListOperation(String guid, String field, String value, String oldValue,
+  private String processUpdateListOperation(String guid, String field, String value, String oldValue,
           String writer, String signature, String message, UpdateOperation operation)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
@@ -761,7 +761,49 @@ public class Protocol {
     }
   }
 
-  public String processRead(String guid, String field, String reader, String signature, String message)
+  private String processUnsignedUpdateOperation(String guid, String field, String value, String oldValue, UpdateOperation operation) {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (!fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
+      return BADRESPONSE + " " + ACCESSDENIED;
+    } else {
+      if (fieldAccess.update(guidInfo.getGuid(), field,
+              new ResultValue(Arrays.asList(value)),
+              oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
+              operation)) {
+        return OKRESPONSE;
+      } else {
+        return BADRESPONSE + " " + BADFIELD + " " + field;
+      }
+    }
+  }
+
+  private String processUnsignedUpdateListOperation(String guid, String field, String value, String oldValue, UpdateOperation operation) {
+    GuidInfo guidInfo;
+    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guid;
+    }
+    if (!fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
+      return BADRESPONSE + " " + ACCESSDENIED;
+    } else {
+      try {
+        if (fieldAccess.update(guidInfo.getGuid(), field,
+                JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
+                oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
+                operation)) {
+          return OKRESPONSE;
+        } else {
+          return BADRESPONSE + " " + BADFIELD + " " + field;
+        }
+      } catch (JSONException e) {
+        return BADRESPONSE + " " + JSONPARSEERROR;
+      }
+    }
+  }
+
+  private String processRead(String guid, String field, String reader, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -783,7 +825,7 @@ public class Protocol {
     }
   }
 
-  public String processReadOne(String guid, String field, String reader, String signature, String message)
+  private String processReadOne(String guid, String field, String reader, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -805,8 +847,7 @@ public class Protocol {
     }
   }
 
-  public String processUnsignedRead(String guid, String field) throws NoSuchAlgorithmException,
-          InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processUnsignedRead(String guid, String field) {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -820,8 +861,7 @@ public class Protocol {
     }
   }
 
-  public String processUnsignedReadOne(String guid, String field) throws NoSuchAlgorithmException,
-          InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processUnsignedReadOne(String guid, String field) {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -840,19 +880,24 @@ public class Protocol {
             || fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
   }
 
-  public String processSelect(String field, Object value) {
+  private boolean fieldWriteableByEveryone(String guid, String field) {
+    return fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, field).contains(EVERYONE)
+            || fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
+  }
+
+  private String processSelect(String field, Object value) {
     return fieldAccess.select(field, value);
   }
 
-  public String processSelectWithin(String field, String value) {
+  private String processSelectWithin(String field, String value) {
     return fieldAccess.selectWithin(field, value);
   }
 
-  public String processSelectNear(String field, String value, String maxDistance) {
+  private String processSelectNear(String field, String value, String maxDistance) {
     return fieldAccess.selectNear(field, value, maxDistance);
   }
 
-  public String processAclAdd(String accessType, String guid, String field, String accesser, String signature, String message)
+  private String processAclAdd(String accessType, String guid, String field, String accesser, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
@@ -870,7 +915,7 @@ public class Protocol {
     }
   }
 
-  public String processAclRemove(String accessType, String guid, String field, String accesser, String signature, String message)
+  private String processAclRemove(String accessType, String guid, String field, String accesser, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
@@ -888,7 +933,7 @@ public class Protocol {
     }
   }
 
-  public String processRetrieveAcl(String accessType, String guid, String field, String signature, String message)
+  private String processRetrieveAcl(String accessType, String guid, String field, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
@@ -906,7 +951,7 @@ public class Protocol {
     }
   }
 
-  public String processAddToGroup(String guid, String member, String writer, String signature, String message)
+  private String processAddToGroup(String guid, String member, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -928,7 +973,7 @@ public class Protocol {
     }
   }
 
-  public String processAddMembersToGroup(String guid, String members, String writer, String signature, String message)
+  private String processAddMembersToGroup(String guid, String members, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -956,7 +1001,7 @@ public class Protocol {
     }
   }
 
-  public String processRemoveFromGroup(String guid, String member, String writer, String signature, String message)
+  private String processRemoveFromGroup(String guid, String member, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -978,7 +1023,7 @@ public class Protocol {
     }
   }
 
-  public String processRemoveMembersFromGroup(String guid, String members, String writer, String signature, String message)
+  private String processRemoveMembersFromGroup(String guid, String members, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1006,7 +1051,7 @@ public class Protocol {
     }
   }
 
-  public String processGetGroupMembers(String guid, String reader, String signature, String message)
+  private String processGetGroupMembers(String guid, String reader, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1028,7 +1073,7 @@ public class Protocol {
     }
   }
 
-  public String processRequestJoinGroup(String guid, String member, String signature, String message)
+  private String processRequestJoinGroup(String guid, String member, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, memberInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1050,7 +1095,7 @@ public class Protocol {
     }
   }
 
-  public String processRetrieveJoinGroupRequests(String guid, String signature, String message)
+  private String processRetrieveJoinGroupRequests(String guid, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1066,12 +1111,12 @@ public class Protocol {
     }
   }
 
-  public String processGrantMembership(String guid, String member, String signature, String message)
+  private String processGrantMembership(String guid, String member, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     return processGrantMemberships(guid, new ResultValue(new ArrayList(Arrays.asList(member))), signature, message);
   }
 
-  public String processGrantMemberships(String guid, String members, String signature, String message)
+  private String processGrantMemberships(String guid, String members, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     try {
       return processGrantMemberships(guid, new ResultValue(members), signature, message);
@@ -1080,7 +1125,7 @@ public class Protocol {
     }
   }
 
-  public String processGrantMemberships(String guid, ResultValue members, String signature, String message)
+  private String processGrantMemberships(String guid, ResultValue members, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1096,7 +1141,7 @@ public class Protocol {
     }
   }
 
-  public String processRequestLeaveGroup(String guid, String member, String signature, String message)
+  private String processRequestLeaveGroup(String guid, String member, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, memberInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1118,7 +1163,7 @@ public class Protocol {
     }
   }
 
-  public String processRetrieveLeaveGroupRequests(String guid, String signature, String message)
+  private String processRetrieveLeaveGroupRequests(String guid, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1134,12 +1179,12 @@ public class Protocol {
     }
   }
 
-  public String processRevokeMembership(String guid, String member, String signature, String message)
+  private String processRevokeMembership(String guid, String member, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     return processRevokeMemberships(guid, new ResultValue(new ArrayList(Arrays.asList(member))), signature, message);
   }
 
-  public String processRevokeMemberships(String guid, String members, String signature, String message)
+  private String processRevokeMemberships(String guid, String members, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     try {
       return processRevokeMemberships(guid, new ResultValue(members), signature, message);
@@ -1148,7 +1193,7 @@ public class Protocol {
     }
   }
 
-  public String processRevokeMemberships(String guid, ResultValue members, String signature, String message)
+  private String processRevokeMemberships(String guid, ResultValue members, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1164,7 +1209,7 @@ public class Protocol {
     }
   }
 
-  public String processAdmin(String host, String passkey, String inputLine) {
+  private String processAdmin(String host, String passkey, String inputLine) {
     if (host.equals(passkey)) {
       adminMode = true;
       return OKRESPONSE;
@@ -1176,7 +1221,7 @@ public class Protocol {
   }
 
   // Currently only handles boolean parameters
-  public String processSetParameter(String parameterString, String value) {
+  private String processSetParameter(String parameterString, String value) {
     if (adminMode) {
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldBoolean(Boolean.parseBoolean(value));
@@ -1189,7 +1234,7 @@ public class Protocol {
   }
 
   // Currently only handles boolean parameters
-  public String processGetParameter(String parameterString) {
+  private String processGetParameter(String parameterString) {
     if (adminMode) {
       try {
         return SystemParameter.valueOf(parameterString.toUpperCase()).getFieldBoolean().toString();
@@ -1200,28 +1245,28 @@ public class Protocol {
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + GETPARAMETER + " " + parameterString;
   }
 
-  public String processDump() {
+  private String processDump() {
     if (adminMode) {
       return Admintercessor.getInstance().sendDump();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP;
   }
 
-  public String processDump(String tagName) {
+  private String processDump(String tagName) {
     if (adminMode) {
       return new JSONArray(Admintercessor.getInstance().collectTaggedGuids(tagName)).toString();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMP + QUERYPREFIX + NAME + VALSEP + tagName;
   }
 
-  public String processDumpCache() {
+  private String processDumpCache() {
     if (adminMode) {
       return Admintercessor.getInstance().sendDumpCache();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMPCACHE;
   }
 
-  public String processDeleteAllRecords(String inputLine) {
+  private String processDeleteAllRecords(String inputLine) {
     if (adminMode) {
       if (Admintercessor.getInstance().sendDeleteAllRecords()) {
         return OKRESPONSE;
@@ -1232,7 +1277,7 @@ public class Protocol {
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DELETEALLRECORDS + QUERYPREFIX + inputLine;
   }
 
-  public String processResetDatabase(String inputLine) {
+  private String processResetDatabase(String inputLine) {
     if (adminMode) {
       if (Admintercessor.getInstance().sendResetDB()) {
         return OKRESPONSE;
@@ -1243,7 +1288,7 @@ public class Protocol {
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + RESETDATABASE + QUERYPREFIX + inputLine;
   }
 
-  public String processClearCache(String inputLine) {
+  private String processClearCache(String inputLine) {
     if (adminMode) {
       if (Admintercessor.getInstance().sendClearCache()) {
         return OKRESPONSE;
@@ -1254,7 +1299,7 @@ public class Protocol {
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + CLEARCACHE + QUERYPREFIX + inputLine;
   }
 
-  public String processAddTag(String guid, String tag, String signature, String message)
+  private String processAddTag(String guid, String tag, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1267,7 +1312,7 @@ public class Protocol {
     }
   }
 
-  public String processRemoveTag(String guid, String tag, String signature, String message)
+  private String processRemoveTag(String guid, String tag, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -1280,12 +1325,12 @@ public class Protocol {
     }
   }
 
-  public String processGetTagged(String tagName) {
+  private String processGetTagged(String tagName) {
     return new JSONArray(Admintercessor.getInstance().collectTaggedGuids(tagName)).toString();
   }
   // currently doesn't handle subGuids that are tagged
 
-  public String processClearTagged(String tagName) {
+  private String processClearTagged(String tagName) {
     for (String guid : Admintercessor.getInstance().collectTaggedGuids(tagName)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       if (accountInfo != null) {
@@ -1296,7 +1341,7 @@ public class Protocol {
   }
 
   /**
-   * process queries for the http service *
+   * Top level routine to process queries for the http service *
    */
   public String processQuery(String host, String action, String queryString) {
     String fullString = action + QUERYPREFIX + queryString; // for signature check
@@ -1711,6 +1756,89 @@ public class Protocol {
         String signature = queryMap.get(SIGNATURE);
         return processUpdateOperation(guid, field, "", null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
                 UpdateOperation.REMOVE_FIELD);
+         //
+        // UNSIGNED UPDATE OPERATIONS
+        //
+      } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL);
+      } else if (APPENDWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND_WITH_DUPLICATION);
+      } else if (APPEND.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND);
+      } else if (APPENDORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND_OR_CREATE);
+      } else if (REPLACEORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL_OR_CREATE);
+      } else if (REMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REMOVE);
+      } else if (REPLACELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL);
+      } else if (APPENDLISTWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND_WITH_DUPLICATION);
+      } else if (APPENDLIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND);
+      } else if (APPENDORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND_OR_CREATE);
+      } else if (REPLACEORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL_OR_CREATE);
+      } else if (REMOVELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REMOVE);
+      } else if (SUBSTITUTE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        String oldValue = queryMap.get(OLDVALUE);
+        return processUnsignedUpdateOperation(guid, field, value, oldValue, UpdateOperation.SUBSTITUTE);
+      } else if (SUBSTITUTELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        String value = queryMap.get(VALUE);
+        String oldValue = queryMap.get(OLDVALUE);
+        return processUnsignedUpdateListOperation(guid, field, value, oldValue, UpdateOperation.SUBSTITUTE);
+      } else if (CLEAR.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        return processUnsignedUpdateOperation(guid, field, "", null, UpdateOperation.CLEAR);
+      } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+        String guid = queryMap.get(GUID);
+        String field = queryMap.get(FIELD);
+        return processUnsignedUpdateOperation(guid, field, "", null, UpdateOperation.REMOVE_FIELD);
         //
         // SELECT OPERATIONS
         //

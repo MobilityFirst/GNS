@@ -1,3 +1,2 @@
 #
-
-kill `ps -ef | grep /usr/bin/java | awk '{print $2}'`
+kill `ps -ef | grep GNS.jar | grep -v grep | awk '{print $2}'`
