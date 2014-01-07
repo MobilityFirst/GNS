@@ -16,10 +16,15 @@ import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.*;
 
 /**
  *
@@ -38,7 +43,7 @@ public class CassandraRecords implements NoSQLRecords {
   public static CassandraRecords getInstance() {
     return CassandraRecordCollectionHolder.INSTANCE;
   }
-
+  
   private static class CassandraRecordCollectionHolder {
 
     private static final CassandraRecords INSTANCE = new CassandraRecords();
@@ -325,6 +330,11 @@ public class CassandraRecords implements NoSQLRecords {
 
   @Override
   public BasicRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+  
+  @Override
+  public BasicRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

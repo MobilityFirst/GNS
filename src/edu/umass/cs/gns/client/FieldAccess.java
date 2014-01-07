@@ -6,9 +6,9 @@
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
 import org.json.JSONArray;
@@ -114,6 +114,15 @@ public class FieldAccess {
 
   public String selectNear(String key, String value, String maxDistance) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, new NameRecordKey(key), value, maxDistance);
+    if (result != null) {
+      return result;
+    } else {
+      return emptyJSONArrayString;
+    }
+  }
+  
+  public String selectQuery(String query) {
+    String result = SelectHandler.sendSelectQuery(query);
     if (result != null) {
       return result;
     } else {

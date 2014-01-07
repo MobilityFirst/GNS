@@ -10,11 +10,10 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import org.json.JSONObject;
 
 /**
  *
@@ -110,6 +109,8 @@ public interface RecordMapInterface {
    * @return 
    */
   public abstract BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance);
+  
+  public abstract BasicRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query);
 
   // Replica Controller
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;

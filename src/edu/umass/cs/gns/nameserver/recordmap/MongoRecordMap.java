@@ -11,12 +11,11 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MongoRecordMap extends BasicRecordMap {
 
@@ -115,6 +114,11 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
     return MongoRecords.getInstance().selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
+  }
+  
+   @Override
+  public BasicRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) {
+    return MongoRecords.getInstance().selectRecordsQuery(collectionName, valuesMapField, query);
   }
   
   @Override

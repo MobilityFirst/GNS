@@ -26,13 +26,17 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.UnknownHostException;
-import java.util.*;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -352,6 +356,21 @@ public class MongoRecords implements NoSQLRecords {
     return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
   }
 
+  @Override
+  public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) {
+    return selectRecordsQuery(collectionName, valuesMapField, query, false);
+  }
+
+  private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query, boolean explain) {
+    db.requestEnsureConnection();
+    DBCollection collection = db.getCollection(collectionName);
+    DBCursor cursor = collection.find((DBObject)JSON.parse(query));
+    if (explain) {
+      System.out.println(cursor.explain().toString());
+    }
+    return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
+  }
+  
   @Override
   public void insert(String collectionName, String guid, JSONObject value) throws RecordExistsException {
     db.requestStart();

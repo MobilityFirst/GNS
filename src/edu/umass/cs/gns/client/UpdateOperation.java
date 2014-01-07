@@ -8,13 +8,13 @@ package edu.umass.cs.gns.client;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * CREATE - creates the field with the given value
  * REPLACE_ALL - replaces the current values with this list;<br>
  * REMOVE - deletes the values from the current values;<br>
  * REPLACESINGLETON - treats the value as a singleton and replaces the current value with this one<br>
@@ -24,6 +24,8 @@ import java.util.Set;
  * REPLACE_ALL_OR_CREATE - an upsert operation similar to REPLACE_ALL that creates the record if it does not exist<br>
  * APPEND_WITH_DUPLICATION - appends the given value onto the current values TREATING THE LIST AS A LIST - duplicates are not removed<br>
  * SUBSTITUTE - replaces all instances of the old value with the new value - if old and new are lists does a pairwise replacement<br>
+ * 
+ * REMOVE_FIELD - slightly different than the rest in that it actually removes the field
  */
 public enum UpdateOperation {
 

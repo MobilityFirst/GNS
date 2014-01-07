@@ -15,21 +15,23 @@ public class SelectRequestPacket extends BasicPacket {
 
     EQUALS,
     NEAR,
-    WITHIN;
+    WITHIN,
+    QUERY;
   }
   //
   private final static String ID = "id";
   private final static String KEY = "key";
   private final static String VALUE = "value";
   private final static String OTHERVALUE = "otherValue";
+  private final static String QUERY = "query";
   private final static String LNSID = "lnsid";
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String OPERATION = "operation";
-  
   private int id;
   private NameRecordKey key;
   private Object value;
   private Object otherValue;
+  private String query;
   private int lnsID;
   private int lnsQueryId = -1;
   private SelectOperation operation;
@@ -50,6 +52,22 @@ public class SelectRequestPacket extends BasicPacket {
     this.otherValue = otherValue;
     this.lnsID = lns;
     this.operation = operation;
+    this.query = null;
+  }
+  
+  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query) {
+    this.type = Packet.PacketType.SELECT_REQUEST;
+    this.id = id;
+    this.query = query;
+    this.lnsID = lns;
+    this.operation = operation;
+    this.key = null;
+    this.value = null;
+    this.otherValue = null;
+  }
+  
+  public static SelectRequestPacket MakeQueryRequest(int id, int lns, String query) {
+    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query);
   }
 
   /**
@@ -64,9 +82,10 @@ public class SelectRequestPacket extends BasicPacket {
     }
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
-    this.key = NameRecordKey.valueOf(json.getString(KEY));
-    this.value = json.getString(VALUE);
+    this.key = json.has(KEY) ? NameRecordKey.valueOf(json.getString(KEY)) : null;
+    this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
+    this.query = json.optString(QUERY, null);
     this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.operation = SelectOperation.valueOf(json.getString(OPERATION));
@@ -88,10 +107,17 @@ public class SelectRequestPacket extends BasicPacket {
   private void addToJSONObject(JSONObject json) throws JSONException {
     Packet.putPacketType(json, getType());
     json.put(ID, id);
-    json.put(KEY, key.getName());
-    json.put(VALUE, value);
+    if (key != null) {
+      json.put(KEY, key.getName());
+    }
+    if (value != null) {
+      json.put(VALUE, value);
+    }
     if (otherValue != null) {
       json.put(OTHERVALUE, otherValue);
+    }
+     if (query != null) {
+      json.put(QUERY, query);
     }
     json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
@@ -129,5 +155,9 @@ public class SelectRequestPacket extends BasicPacket {
   public Object getOtherValue() {
     return otherValue;
   }
-  
+
+  public String getQuery() {
+    return query;
+  }
+ 
 }

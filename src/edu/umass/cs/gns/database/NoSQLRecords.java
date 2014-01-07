@@ -8,11 +8,10 @@ package edu.umass.cs.gns.database;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import org.json.JSONObject;
 
 /**
  * Provides an interface for insert, update, remove and lookup operations in a nosql database
@@ -247,6 +246,8 @@ public interface NoSQLRecords {
    * @return 
    */
   public BasicRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance);
+  
+  public BasicRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query);
   
   /**
    * Puts the database in a state where it has nothing in it.

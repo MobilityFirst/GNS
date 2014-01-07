@@ -327,6 +327,16 @@ public class NameServer {
   public static BasicRecordCursor selectRecordsNear(String key, String value, Double maxDistance) {
     return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
   }
+  
+  /**
+   * Returns all fields that match the query.
+   * 
+   * @param query
+   * @return 
+   */
+  public static BasicRecordCursor selectRecordsQuery(String query) {
+    return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
+  }
 
   /******************************
    * Replica controller methods

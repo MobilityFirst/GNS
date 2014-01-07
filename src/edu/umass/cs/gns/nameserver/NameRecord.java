@@ -340,6 +340,16 @@ public class NameRecord implements Comparable<NameRecord> {
     NameServer.recordMap.increment(getName(), incrementFields, values);
   }
 
+  /**
+   * Updates the value of the field associated with the key.
+   * 
+   * @param key
+   * @param newValues
+   * @param oldValues
+   * @param operation
+   * @return True if the update does anything, false otherwise.
+   * @throws FieldNotFoundException 
+   */
   public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues,
           UpdateOperation operation) throws FieldNotFoundException {
 
@@ -352,6 +362,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
     }
 
+    // WHY IS THERE A SPECIAL CASE HERE FOR REPLACE_ALL?
     ValuesMap valuesMap;
     if (operation.equals(UpdateOperation.REPLACE_ALL)) {
       valuesMap = new ValuesMap();

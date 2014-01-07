@@ -11,12 +11,11 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class CassandraRecordMap extends BasicRecordMap {
 
@@ -249,6 +248,11 @@ public class CassandraRecordMap extends BasicRecordMap {
 
   @Override
   public BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public BasicRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

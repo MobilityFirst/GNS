@@ -1002,6 +1002,9 @@ public class ClientRequestWorker extends TimerTask {
             return;
           }
           break;
+          case QUERY:
+            cursor = NameServer.selectRecordsQuery(request.getQuery());
+          break;
         default:
           return;
       }
