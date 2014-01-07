@@ -364,11 +364,22 @@ public class MongoRecords implements NoSQLRecords {
   private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query, boolean explain) {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
-    DBCursor cursor = collection.find((DBObject)JSON.parse(query));
+    DBCursor cursor = collection.find(parseMongoQuery(query, valuesMapField));
     if (explain) {
       System.out.println(cursor.explain().toString());
     }
     return new MongoRecordCursor(cursor, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
+  }
+  
+  private DBObject parseMongoQuery(String query, ColumnField valuesMapField) {
+    query = "{" + query + "}"; 
+    query = query.replace("(", "{");
+    query = query.replace(")", "}");
+    query = query.replace("~", valuesMapField.getName() + ".");
+    //GNS.getLogger().info("MONGO QUERY:" + query);
+    DBObject parse = (DBObject)JSON.parse(query);
+    //GNS.getLogger().info("MONGO QUERY as DB Object:" + parse.toString());
+    return parse;
   }
   
   @Override
@@ -382,7 +393,6 @@ public class MongoRecords implements NoSQLRecords {
         collection.insert(dbObject);
       } catch (Exception e) {
         throw new RecordExistsException(collectionName, guid);
-//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
     } finally {
       db.requestDone();
@@ -403,7 +413,6 @@ public class MongoRecords implements NoSQLRecords {
         collection.insert(dbObjects);
       } catch (Exception e) {
         throw new RecordExistsException(collectionName, "MultiInsert");
-//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
     } finally {
       db.requestDone();

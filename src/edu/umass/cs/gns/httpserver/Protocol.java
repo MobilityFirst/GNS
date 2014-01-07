@@ -74,6 +74,7 @@ public class Protocol {
   public final static String SELECT = "select";
   public final static String WITHIN = "within";
   public final static String NEAR = "near";
+  public final static String QUERY = "query";
   public final static String MAXDISTANCE = "maxDistance";
   public final static String REMOVEFIELD = "removeField";
   //
@@ -895,6 +896,10 @@ public class Protocol {
 
   private String processSelectNear(String field, String value, String maxDistance) {
     return fieldAccess.selectNear(field, value, maxDistance);
+  }
+  
+  private String processSelectQuery(String query) {
+    return fieldAccess.selectQuery(query);
   }
 
   private String processAclAdd(String accessType, String guid, String field, String accesser, String signature, String message)
@@ -1855,6 +1860,9 @@ public class Protocol {
         String field = queryMap.get(FIELD);
         String within = queryMap.get(WITHIN);
         return processSelectWithin(field, within);
+      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(QUERY))) {
+        String query = queryMap.get(QUERY);
+        return processSelectQuery(query);
         //
         // ACL OPERATIONS
         //

@@ -10,8 +10,8 @@ import java.util.Arrays;
 
 public class ColumnField {
 
-  final String name;
-  final ColumnFieldType type;
+  private final String name;
+  private final ColumnFieldType type;
 
   public ColumnField(String name, ColumnFieldType type) {
     this.name = name;

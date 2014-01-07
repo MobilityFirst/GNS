@@ -117,9 +117,10 @@ public class ClientRequestWorker extends TimerTask {
 
       }
     } catch (JSONException e) {
+      GNS.getLogger().severe("JSON Exception in client request worker. " + e.getMessage());
       e.printStackTrace();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
+       GNS.getLogger().severe("IO Exception in client request worker. " + e.getMessage());
       e.printStackTrace();
     } catch (Exception e) {
       GNS.getLogger().severe("Exception in client request worker. " + e.getMessage());
@@ -1019,6 +1020,7 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().fine("NS" + NameServer.nodeID + " sending back " + cnt + " records");
       NameServer.tcpTransport.sendToID(request.getLnsID(), response.toJSONObject());
     } catch (Exception e) {
+      GNS.getLogger().severe("Exception while handling select request: " + e);
       SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsQueryId(),
               NameServer.nodeID, e.getMessage());
       try {
