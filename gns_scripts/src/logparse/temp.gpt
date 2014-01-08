@@ -1,0 +1,28 @@
+#!/opt/local/bin/gnuplot -persist
+#
+#    
+#    	G N U P L O T
+#    	Version 4.6 patchlevel 0    last modified 2012-03-04 
+#    	Build System: Darwin x86_64
+#    
+#    	Copyright (C) 1986-1993, 1998, 2004, 2007-2012
+#    	Thomas Williams, Colin Kelley and many others
+#    
+#    	gnuplot home:     http://www.gnuplot.info
+#    	faq, bugs, etc:   type "help FAQ"
+#    	immediate help:   type "help"  (plot window: hit 'h')
+# set terminal aqua 0 title "Figure 0" size 846,594 font "Times-Roman,14" noenhanced solid
+# set output
+set terminal pdf  noenhanced
+
+set grid x
+set grid y
+set logscale x 10
+
+set xlabel "Latency (ms)"
+set ylabel "CDF"
+set yrange[0:1]
+set ytics 0.2
+set output "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/mean_by_name.pdf"
+plot  "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/cdf_5_all_by_name.txt" u 2:1 w l lw 6 t "ALL", "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/cdf_5_writes_by_name.txt" u 2:1 w l lw 6 t "WRITES", "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/cdf_5_reads_by_name.txt" u 2:1 w l lw 6 t "READS";
+

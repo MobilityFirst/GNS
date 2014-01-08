@@ -1,7 +1,6 @@
 
 Steps:
 
-
 (1) Install mongoDB, and check if you can run and kill mongo DB locally using these scripts. 
 
 run_mongodb_local.sh:    Script starts mongoDB instance. Set path variables as per your mongo installation.
