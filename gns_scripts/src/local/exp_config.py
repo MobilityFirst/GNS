@@ -9,8 +9,8 @@ gnrs_jar = '/Users/abhigyan/Documents/workspace/GNSev/dist/GNS.jar'
 # top level folder
 working_dir = '/Users/abhigyan/Documents/gns_output/'  # location of top-level folder checked out from SVN.
 
-# output folder
-output_folder = working_dir + '/local/log_local/'
+# output folder: GNS logs for name servers, and local name servers are stored in this folder 
+output_folder = working_dir + '/local/log_local/' 
 
 # paxos log folder
 paxos_log_folder = working_dir + '/local/paxoslog/'  # folder where paxos logs are stored
@@ -23,14 +23,14 @@ trace_folder = working_dir + '/local/trace/'
 
 
 # parameters used only by scripts for running experiments
-experiment_run_time = 10    # duration of experiment (seconds)
+experiment_run_time = 100    # duration of experiment (seconds)
 
 delete_paxos_log = True    # if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
 
-start_db = True   #
+start_db = False   #
 
 ns_sleep = 10      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
-extra_wait = 5   # extra wait time after LNS sends all requests
+extra_wait = 15   # extra wait time after LNS sends all requests
 
 failed_nodes = None   # NOT used
 
@@ -40,13 +40,13 @@ num_lns = 1  # must be set to 1
 #
 #
 # parameters for workload generator
-regular_workload = 1000     # number of names in the workload (GNS also read this parameter to load names into database)
+regular_workload = 100     # number of names in the workload (GNS also read this parameter to load names into database)
 mobile_workload = 0         # NOT used
 
 gen_workload = True   # if True, generate new workload,
 
-lookup_count = 200   # number of lookups at local name server,
-update_count = 200   # number of updates at local name server
+lookup_count = 3000   # number of lookups at local name server,
+update_count = 3000   # number of updates at local name server
 
 #
 #
@@ -65,7 +65,7 @@ schemes = {'beehive':0, 'locality':1, 'uniform':2, 'static3':3, 'replicate_all':
 # name server parameters
 replication_interval = 10000   # interval (in sec) at which group changes are done.
 
-name_actives = '/Users/abhigyan/Documents/workspace/GNSev/local/nameActives'  # NOT used
+name_actives = '' ## NOT used
 
 #
 #
