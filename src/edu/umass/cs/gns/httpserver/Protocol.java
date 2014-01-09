@@ -335,6 +335,11 @@ public class Protocol {
             + " See below for more on signature. "
             + NEWLINE + NEWLINE
             //
+             + "SELECT OPERATIONS "
+            + urlPrefix + SELECT + QUERYPREFIX + QUERY + VALSEP + "<query>" + NEWLINE
+            + "  Returns all records that satisfy the query. For details see http://mobilityfirst.cs.umass.edu/wiki/index.php/Query_Syntax"
+            + " Values are returned as a JSON array of JSON Objects."
+            + NEWLINE + NEWLINE
             + urlPrefix + SELECT + QUERYPREFIX + FIELD + VALSEP + "<field>" + KEYSEP + VALUE + VALSEP + "<value>" + NEWLINE
             + "  Returns all records that have a field with the given value."
             + " Values are returned as a JSON array of JSON Objects."

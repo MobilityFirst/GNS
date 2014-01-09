@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 /**
  * A frontend to the the database which stores the fields and values.
- * Provides conversion between the database to java objects
+ * Provides conversion between the database to java objects.
  *
  *
  * @author westy
