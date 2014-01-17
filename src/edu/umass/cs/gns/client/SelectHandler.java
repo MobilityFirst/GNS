@@ -5,7 +5,8 @@
  */
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.httpserver.Protocol;
+import edu.umass.cs.gns.clientprotocol.Defs;
+import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -59,7 +60,7 @@ public class SelectHandler {
         return null;
       }
     } else {
-      return Protocol.BADRESPONSE + " " + Protocol.SELECTERROR + " " + packet.getErrorMessage();
+      return Defs.BADRESPONSE + " " + Defs.SELECTERROR + " " + packet.getErrorMessage();
     }
   }
   

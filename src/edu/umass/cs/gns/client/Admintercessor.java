@@ -5,7 +5,8 @@
  */
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.httpserver.Protocol;
+import edu.umass.cs.gns.clientprotocol.Defs;
+import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -228,7 +229,7 @@ public class Admintercessor {
   public String sendDump() {
     int id;
     if ((id = sendDumpOutputHelper(null)) == -1) {
-      return Protocol.BADRESPONSE + " " + Protocol.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS";
+      return Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS";
     }
     waitForDumpResponse(id);
     Map<Integer, TreeSet<NameRecord>> result = dumpResult.get(id);

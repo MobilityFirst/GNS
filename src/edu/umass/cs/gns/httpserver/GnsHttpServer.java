@@ -15,6 +15,8 @@ import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.SelectHandler;
+import edu.umass.cs.gns.clientprotocol.Defs;
+import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
@@ -45,7 +47,7 @@ import org.apache.commons.cli.ParseException;
 public class GnsHttpServer {
 
   private static Protocol protocol = new Protocol();
-  protected static String GNSPATH = GNS.GNS_URL_PATH;
+  public static String GNSPATH = GNS.GNS_URL_PATH;
   public static int port = 8080;
   public static String hostName = "127.0.0.1";
   private static int localNameServerID;
@@ -120,7 +122,7 @@ public class GnsHttpServer {
             GNS.getLogger().fine("Action: " + action + " Query:" + query);
             response = protocol.processQuery(host, action, query);
           } else {
-            response = Protocol.BADRESPONSE + " " + Protocol.NOACTIONFOUND;
+            response = Defs.BADRESPONSE + " " + Defs.NOACTIONFOUND;
           }
           GNS.getLogger().fine("Response: " + response);
           responseBody.write(response.getBytes());
@@ -130,7 +132,7 @@ public class GnsHttpServer {
         GNS.getLogger().severe("Error: " + e);
         e.printStackTrace();
         try {
-          String response = Protocol.BADRESPONSE + " " + Protocol.QUERYPROCESSINGERROR + " " + e;
+          String response = Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + e;
           OutputStream responseBody = exchange.getResponseBody();
           responseBody.write(response.getBytes());
           responseBody.close();

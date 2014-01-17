@@ -362,7 +362,21 @@ public class NameRecord implements Comparable<NameRecord> {
 
     }
 
-    // WHY IS THERE A SPECIAL CASE HERE FOR REPLACE_ALL?
+    /* 
+     * Some update operations e.g., SUBSTITUTE, require that record is first read from DB, modified, and then written. 
+     * That is 1 DB read + 1 DB write. REPLACE_ALL does not require record to be read, but we can directly do a write. 
+     * This saves us a database read.
+     * 
+     * To implement this, we require some changes to both ClientRequestWorker.updateAdddressNS and NameRecord.updateKey. 
+     * Abhighyan had made both these changes but unknowingly commented out the change in ClientRequestWorker.updateAdddressNS.
+     * I will uncomment it, so that a REPLACE_ALL can proceed without doing a database read.
+     * There could be other operations like REPLACE_ALL which could proceed without DB read, 
+     * and should be handled similar to REPLACE_ALL. In my experiments, I was using REPLACE_ALL so I have
+     * included it as a special case for it.
+     * 
+     * Westy - I will be augmenting the UpdateOperation class with some notion of operations that don't require a read before
+     * the write and then use that to redo the "if (operation.equals(UpdateOperation.REPLACE_ALL))" clause.
+     */
     ValuesMap valuesMap;
     if (operation.equals(UpdateOperation.REPLACE_ALL)) {
       valuesMap = new ValuesMap();

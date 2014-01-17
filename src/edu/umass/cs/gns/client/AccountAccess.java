@@ -5,7 +5,8 @@
  */
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.httpserver.Protocol;
+import edu.umass.cs.gns.clientprotocol.Defs;
+import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.Email;
@@ -180,7 +181,7 @@ public class AccountAccess {
 
   public String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
     String response;
-    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(Protocol.OKRESPONSE)) {
+    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(Defs.OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
         String verifyCode = Util.randomString(6);
         AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
@@ -193,16 +194,16 @@ public class AccountAccess {
                   Email.ACCOUNT_CONTACT_EMAIL,
                   String.format(ADMIN_NOTICE, name, host, guid));
           if (emailOK) {
-            return Protocol.OKRESPONSE;
+            return Defs.OKRESPONSE;
           } else {
             // if we can't send the confirmation back out of the account creation
             removeAccount(accountInfo);
-            return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to send email";
+            return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to send email";
           }
         } else {
           // if we do this we're probably housed anyway, but just in case try to remove the account
           removeAccount(accountInfo);
-          return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to update account info";
+          return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
         }
       }
     }
@@ -219,21 +220,21 @@ public class AccountAccess {
             accountInfo.setVerified(true);
             accountInfo.noteUpdate();
             if (updateAccountInfo(accountInfo)) {
-              return Protocol.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
+              return Defs.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
             } else {
-              return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to update account info";
+              return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
             }
           } else {
-            return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Code not correct";
+            return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct";
           }
         } else {
-          return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Bad verification code";
+          return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code";
         }
       } else {
-        return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Account already verified";
+        return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified";
       }
     } else {
-      return Protocol.BADRESPONSE + " " + Protocol.VERIFICATIONERROR + " " + "Unable to read account info";
+      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info";
     }
   }
 
@@ -266,18 +267,18 @@ public class AccountAccess {
         if (client.sendAddRecordWithConfirmation(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           client.sendUpdateRecordWithConfirmation(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
-          return Protocol.OKRESPONSE;
+          return Defs.OKRESPONSE;
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           client.sendRemoveRecordWithConfirmation(name);
-          return Protocol.BADRESPONSE + " " + Protocol.DUPLICATEGUID;
+          return Defs.BADRESPONSE + " " + Defs.DUPLICATEGUID;
         }
       } else {
-        return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
+        return Defs.BADRESPONSE + " " + Defs.DUPLICATENAME;
       }
     } catch (JSONException e) {
-      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
+      return Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR;
     }
   }
 
@@ -299,9 +300,9 @@ public class AccountAccess {
       for (String guid : accountInfo.getGuids()) {
         client.sendRemoveRecordWithConfirmation(guid);
       }
-      return Protocol.OKRESPONSE;
+      return Defs.OKRESPONSE;
     } else {
-      return Protocol.BADRESPONSE + " " + Protocol.BADACCOUNT;
+      return Defs.BADRESPONSE + " " + Defs.BADACCOUNT;
     }
   }
 
@@ -323,7 +324,7 @@ public class AccountAccess {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid) != null) {
-        return Protocol.BADRESPONSE + " " + Protocol.DUPLICATEGUID;
+        return Defs.BADRESPONSE + " " + Defs.DUPLICATEGUID;
       }
       // do this first so if there is an execption we don't have to back out of anything
       ResultValue guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
@@ -340,14 +341,14 @@ public class AccountAccess {
           // add a link the new GUID to primary GUID
           client.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.CREATE);
-          return Protocol.OKRESPONSE;
+          return Defs.OKRESPONSE;
         }
       }
       // otherwise roll it back
       accountInfo.removeGuid(guid);
-      return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
+      return Defs.BADRESPONSE + " " + Defs.DUPLICATENAME;
     } catch (JSONException e) {
-      return Protocol.BADRESPONSE + " " + Protocol.JSONPARSEERROR;
+      return Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR;
     }
   }
 
@@ -366,12 +367,12 @@ public class AccountAccess {
       accountInfo.removeGuid(guid.getGuid());
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {
-        return Protocol.OKRESPONSE;
+        return Defs.OKRESPONSE;
       } else {
-        return Protocol.BADRESPONSE + Protocol.UPDATEERROR;
+        return Defs.BADRESPONSE + Defs.UPDATEERROR;
       }
     } else {
-      return Protocol.BADRESPONSE + " " + Protocol.BADGUID;
+      return Defs.BADRESPONSE + " " + Defs.BADGUID;
     }
   }
 
@@ -392,16 +393,16 @@ public class AccountAccess {
     // insure that that name does not already exist
     if (client.sendAddRecordWithConfirmation(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
       if (updateAccountInfo(accountInfo)) {
-        return Protocol.OKRESPONSE;
+        return Defs.OKRESPONSE;
       } else {
         client.sendRemoveRecordWithConfirmation(alias);
         accountInfo.removeAlias(alias);
-        return Protocol.BADRESPONSE + " " + Protocol.BADALIAS;
+        return Defs.BADRESPONSE + " " + Defs.BADALIAS;
       }
     }
     // roll this back
     accountInfo.removeAlias(alias);
-    return Protocol.BADRESPONSE + " " + Protocol.DUPLICATENAME;
+    return Defs.BADRESPONSE + " " + Defs.DUPLICATENAME;
   }
 
   /**
@@ -419,10 +420,10 @@ public class AccountAccess {
       accountInfo.removeAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {
-        return Protocol.OKRESPONSE;
+        return Defs.OKRESPONSE;
       }
     }
-    return Protocol.BADRESPONSE + " " + Protocol.BADALIAS;
+    return Defs.BADRESPONSE + " " + Defs.BADALIAS;
   }
 
   /**
@@ -436,9 +437,9 @@ public class AccountAccess {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo)) {
-      return Protocol.OKRESPONSE;
+      return Defs.OKRESPONSE;
     }
-    return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
+    return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
   }
 
   /**
@@ -452,10 +453,10 @@ public class AccountAccess {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
-      return Protocol.OKRESPONSE;
+      return Defs.OKRESPONSE;
     }
     guidInfo.removeTag(tag);
-    return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
+    return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
   }
 
   /**
@@ -469,9 +470,9 @@ public class AccountAccess {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
-      return Protocol.OKRESPONSE;
+      return Defs.OKRESPONSE;
     }
-    return Protocol.BADRESPONSE + " " + Protocol.UPDATEERROR;
+    return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
   }
 
   private boolean updateAccountInfo(AccountInfo accountInfo) {

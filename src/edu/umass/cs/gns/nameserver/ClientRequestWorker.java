@@ -5,12 +5,13 @@
  */
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.clientprotocol.Defs;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.httpserver.Protocol;
+import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
@@ -1049,7 +1050,7 @@ public class ClientRequestWorker extends TimerTask {
 
       NameRecord nameRecord = null;
       try {
-        if (Protocol.ALLFIELDS.equals(dnsPacket.getQrecordKey().getName())) {
+        if (Defs.ALLFIELDS.equals(dnsPacket.getQrecordKey().getName())) {
           // need everything so just grab all the fields
           nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
         } else {
@@ -1103,7 +1104,7 @@ public class ClientRequestWorker extends TimerTask {
             dnsPacket.setSingleReturnValue(nameRecord.getKey(qKey));
             GNS.getLogger().fine("NS sending DNS lookup response: Name = " + qName);
 
-          } else if (Protocol.ALLFIELDS.equals(qKey)) {
+          } else if (Defs.ALLFIELDS.equals(qKey)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + qName);
           } else { // send error msg.
