@@ -11,19 +11,21 @@ public class PaxosPacketType {
 	/**
 	 * Response from Paxos replica to client.
 	 */
-	public static final int RESPONSE = 8;
+	public static final int RESPONSE = 0;
 	
 	/**
 	 * 
 	 */
 	public static final int PREPARE = 2;
 	public static final int ACCEPT = 3;
+
+  public static final int RESEND_ACCEPT = 4;
+
+	public static final int PROPOSAL = 5;
+	public static final int DECISION = 6;
 	
-	public static final int PROPOSAL = 4;
-	public static final int DECISION = 5;
-	
-	public static final int PREPARE_REPLY = 6;
-	public static final int ACCEPT_REPLY = 7;
+	public static final int PREPARE_REPLY = 7;
+	public static final int ACCEPT_REPLY = 8;
 	
 	public static final int FAILURE_DETECT = 9;
 	public static final int FAILURE_RESPONSE = 10;

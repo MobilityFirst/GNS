@@ -18,7 +18,7 @@ public class PValuePacket extends Packet implements Serializable {
 		this.proposal = p;
 	}
 
-    String BALLOT = "b1";
+    static String BALLOT = "b1";
 
 	public PValuePacket(JSONObject json) throws JSONException{
         this.proposal = new ProposalPacket(json);
