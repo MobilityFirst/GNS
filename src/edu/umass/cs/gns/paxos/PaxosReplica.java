@@ -866,7 +866,11 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
   @Override
   public void removePendingProposals() {
-    // TODO: not done
+    synchronized (stopLock) {
+      isStopped = true; // ensures that when resendPendingProposals checks this replica,
+      // it will know that replica is stopped, and requests wont be resent.
+
+    }
   }
 
 
@@ -2421,10 +2425,13 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   public boolean resendPendingProposal(ProposalStateAtCoordinator state) {
+    synchronized (stopLock) {
+      if (isStopped) return false;
+    }
 //    if (state.getNodesResponded()*2 > nodeIDs.size()) return false;
     try {
       acceptorLock.lock();
-      if (StartNameServer.experimentMode)
+      if (StartNameServer.debugMode)
         GNS.getLogger().info("\tResendingMessage\t" + paxosID + "\t" +
                 state.pValuePacket.proposal.slot + "\t" + acceptorBallot + "\t");
       if (state.pValuePacket.ballot.compareTo(acceptorBallot) != 0) return false;
