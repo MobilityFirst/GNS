@@ -37,6 +37,8 @@ public class Lookup {
       address = InetAddress.getByName(Transport.getReturnAddress(json));
     }
     LocalNameServer.incrementLookupRequest(dnsPacket.getQname()); // important: used to count votes for names.
+//    if (StartLocalNameServer.experimentMode) return;
+
 //        numQueries++;
     //		if (StartLocalNameServer.debugMode) GNRS.getLogger().finer("Query-" + numQueries + "\t" + System.currentTimeMillis() + "\t"
     //                + dnsPacket.getQname() + "\tRecvd-packet");
@@ -119,15 +121,16 @@ public class Lookup {
 //        long t2 = System.currentTimeMillis();
       // Abhigyan: need to update cache even for TTL == 0, because active name servers are updated.
       CacheEntry cacheEntry = LocalNameServer.updateCacheEntry(dnsPacket);
+      if (cacheEntry == null) {
+        cacheEntry = LocalNameServer.addCacheEntry(dnsPacket);
+        GNS.getLogger().finer("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
+      }
 
       //Cache response at the local name server, and update the set of active name servers.
 //			if ( ==)) {
 //				;
 //				if (StartLocalNameServer.debugMode) GNRS.getLogger().finer("LNSListenerResponse: Updating cache QueryID:" + dnsPacket.getQueryId());
-      if (cacheEntry == null) {
-        cacheEntry = LocalNameServer.addCacheEntry(dnsPacket);
-        GNS.getLogger().finer("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
-      }
+
 
       // Add to NameRecordStats.
 //        LocalNameServer.incrementLookupResponse(dnsPacket.getQname());

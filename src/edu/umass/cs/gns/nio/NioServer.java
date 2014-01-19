@@ -163,6 +163,31 @@ public class NioServer implements Runnable {
     sendToIDs(destIDs, json, -1);
   }
 
+  public void sendToIDs(short[] destIDs, JSONObject json) throws IOException {
+    sendToIDs(destIDs, json, -1);
+  }
+
+  public void sendToIDs(short[]destIDs, JSONObject json, int excludeID) throws IOException {
+//    if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
+//      ArrayList e = new ArrayList();
+//      e.add(json);
+//      workerObject.getPacketDemux().handleJSONObjects(e);
+//    }
+
+    for (int destID: destIDs) {
+      if (destID == excludeID) {
+        continue;
+      }
+      else if (destID == ID) {
+        ArrayList e = new ArrayList();
+        e.add(json);
+        workerObject.getPacketDemux().handleJSONObjects(e);
+        continue;
+      }
+      sendToID(destID, json);
+    }
+  }
+
   public void sendToIDs(Set<Integer> destIDs, JSONObject json, int excludeID) throws IOException {
     if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
       ArrayList e = new ArrayList();

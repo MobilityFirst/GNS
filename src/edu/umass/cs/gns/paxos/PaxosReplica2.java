@@ -6,13 +6,15 @@ import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.Util;
+import net.sourceforge.sizeof.SizeOf;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import net.sourceforge.sizeof.SizeOf;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 //import java.util.concurrent.ConcurrentHashMap;
 //import java.util.concurrent.locks.ReentrantLock;
@@ -20,7 +22,7 @@ import org.json.JSONObject;
 /**
  * Created by abhigyan on 12/30/13.
  */
-public class PaxosReplica2 implements Serializable{
+public class PaxosReplica2 extends PaxosReplicaInterface implements Serializable {
   public static String Version = "$Revision: 248 $";
 
   /**
@@ -67,8 +69,7 @@ public class PaxosReplica2 implements Serializable{
    * contains decisions for recent slots. K = slot number , v = request packet.
    * once a decision is accepted by all nodes, it is deleted from {@code decisions}
    */
-  private HashMap<Integer, RequestPacket> decisions = new HashMap<Integer, RequestPacket>();
-
+  private HashMap<Integer, RequestPacket> decisions = new HashMap<Integer, RequestPacket>(2,2);
 
   /**
    * Ballot currently accepted by the replica. If this replica is coordinator,
@@ -84,7 +85,7 @@ public class PaxosReplica2 implements Serializable{
   /**
    * Contains pValues that are accepted by this replica. When a slotNumber is
    */
-  private HashMap<Integer, PValuePacket> pValuesAccepted  = new HashMap<Integer,PValuePacket>();
+  private HashMap<Integer, PValuePacket> pValuesAccepted  = new HashMap<Integer,PValuePacket>(2,2);
 
 
   /**
@@ -174,13 +175,13 @@ public class PaxosReplica2 implements Serializable{
    * about command proposed in slot number.
    */
   private HashMap<Integer, ProposalStateAtCoordinator> pValuesCommander
-          = new HashMap<Integer, ProposalStateAtCoordinator>();
+          = new HashMap<Integer, ProposalStateAtCoordinator>(2,2);
 
   /**
    * Stores mapping from nodes and their current slot numbers. State before
    * minimum slot numbers across nodes can be garbage collected.
    */
-  private HashMap<Integer,Integer> nodeAndSlotNumbers = new HashMap<Integer, Integer>();
+  private HashMap<Integer,Integer> nodeAndSlotNumbers = new HashMap<Integer, Integer>(2,2);
 
   // PAXOS-STOP
   /**
@@ -459,7 +460,7 @@ public class PaxosReplica2 implements Serializable{
     }
   }
   /**
-   * Used only for testing!!
+   *
    * @return
    */
   public synchronized Ballot getAcceptorBallot() {
@@ -593,76 +594,10 @@ public class PaxosReplica2 implements Serializable{
 
 
 
-  public static void main (String[] args) throws IOException {
-    HashSet<Integer> nodeIDs = new HashSet<Integer>();
-    for (int i = 0; i < 10; i ++) nodeIDs.add(i);
-    PaxosReplica2 prNew = new PaxosReplica2("abcdfdf", 10, nodeIDs);
-
-    PaxosReplica pr2 = new PaxosReplica("abcdfdf", 10, nodeIDs);
-    SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
-    SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
-    SizeOf.skipFlyweightObject(false); //java.sizeOf will not compute well-known flyweight objects
-    System.out.println("Size of paxos object: " + SizeOf.deepSizeOf(prNew)); //this will print the object size in bytes
-    System.out.println("Size of previous paxos object: " + SizeOf.deepSizeOf(pr2)); //this will print the object size in bytes
-    System.exit(2);
-
-    int numNS = 80;
-    int numNames = 1;
-
-    ConfigFileInfo.setNumberOfNameServers(numNS);
-
-//    FileWriter fileWriter = new FileWriter("nameCoordinator.txt");
-
-    for (int i = 0; i < numNames; i++) {
-      String name = "9707";//Integer.toString(i);
-//      Set<Integer> primaries = HashFunction.getPrimaryReplicasNoCache(name);
-      int[] actives = {68,1,69,2,71,5,66,67,7,8,9,77,10,12,74,15,23,22,25,28,31,30,34,35,37,40,47,44,52,62,61};
-      Set<Integer> primaries = new HashSet<Integer>();
-      for (int x: actives)
-        primaries.add(x);
-      int activeDefaultCoordinator = getDefaultCoordinatorReplica(name + "-1", primaries);
-      System.out.println(name + "\t" + activeDefaultCoordinator + "\n");
-//      fileWriter.write(name + "\t" + activeDefaultCoordinator + "\n");
-//    int primaryDefaultCoordinator = getDefaultCoordinatorReplica(name + "-P", primaries);
-//    System.out.println("Name\t" + name + "\tPrimaries\t" + primaries + "\tActiveCoordinator\t" +
-//        activeDefaultCoordinator + "\tPrimaryCoordinator\t" + primaryDefaultCoordinator);
-    }
-//    fileWriter.close();
-    System.exit(2);
-
-//    String failedNamesFile = "/Users/abhigyan/Dropbox/gnrs/scripts/failed-names";
-    String namedActivesFile = "/Users/abhigyan/Dropbox/gnrs/scripts/nameActives";
-
-    HashMap<Integer, Set<Integer>> nameActives = GenerateSyntheticRecordTable.readActives(namedActivesFile);
-//    BufferedReader br = new BufferedReader(new FileReader(failedNamesFile));
-    HashMap<Integer, Integer> nodeCoordinators = new HashMap<Integer, Integer>();
-    for (Integer nameInt: nameActives.keySet()) {
-//    while (true) {
-//      String name = br.readLine();
-//      if (name == null) break;
-      String name  = nameInt.toString();
-      String paxosID = name.trim() + "-1";
-//      int nameInt = Integer.parseInt(name);
-
-      int defaultCoordinator = getDefaultCoordinatorReplica(paxosID, nameActives.get(nameInt));
-      System.out.println(name + "\t" + defaultCoordinator);
-      if (nodeCoordinators.containsKey(defaultCoordinator)) nodeCoordinators.put(defaultCoordinator, nodeCoordinators.get(defaultCoordinator) + 1);
-      else nodeCoordinators.put(defaultCoordinator,1);
-    }
-    HashMap<Integer,Integer> serverCount = new HashMap<Integer, Integer>();
-
-    for (Integer nodeID: nodeCoordinators.keySet()) {
-      if (serverCount.containsKey(nodeID%8)) serverCount.put(nodeID%8, serverCount.get(nodeID%8) + nodeCoordinators.get(nodeID));
-      else serverCount.put(nodeID%8,nodeCoordinators.get(nodeID));
-      System.out.println("\t" + nodeID + "\t" + nodeCoordinators.get(nodeID));
-    }
-    System.out.println(serverCount);
-  }
-
-  /**
-   * Used for testing. If true, this node will attempt to take over as coordinator.
-   * @return true if node should take over as coordinator, false otherwise
-   */
+//  /**
+//   * Used for testing. If true, this node will attempt to take over as coordinator.
+//   * @return true if node should take over as coordinator, false otherwise
+//   */
 //  private synchronized boolean takeOverAsCoordinator() {
 //    // the node 0 will take over as coordinator
 ////        if(nodeID != 0) return false;
@@ -847,10 +782,10 @@ public class PaxosReplica2 implements Serializable{
 //    }
   }
 
-  /**
-   *
-   * @return
-   */
+//  /**
+//   *
+//   * @return
+//   */
 //  public synchronized RequestPacket getLastRequest() {
 //    return lastRequest;
 //  }
@@ -863,8 +798,13 @@ public class PaxosReplica2 implements Serializable{
     return nodeIDs;
   }
 
+  @Override
+  public void removePendingProposals() {
+    // TODO not done yet
+  }
 
-  StatePacket getState() {
+
+  public StatePacket getState() {
 
 //    try{
 //      acceptorLock.lock();
@@ -949,7 +889,7 @@ public class PaxosReplica2 implements Serializable{
 ////    }
 //  }
 
-  boolean isAcceptorBallotUpdated(Ballot ballot) {
+  public boolean isAcceptorBallotUpdated(Ballot ballot) {
 //    try {
 //      acceptorLock.lock();
       return acceptorBallot.compareTo(ballot) > 0;
@@ -1084,7 +1024,7 @@ public class PaxosReplica2 implements Serializable{
    * @throws JSONException
    */
   private synchronized void perform(RequestPacket req, int slotNumber, boolean recovery) throws JSONException{
-    GNS.getLogger().info("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
+    GNS.getLogger().fine("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
     if (req.value.equals(NO_OP) ) {
 
       GNS.getLogger().fine(paxosID + "\t" +nodeID + " " + NO_OP + " decided in slot = " + slotNumber);
@@ -1409,7 +1349,7 @@ public class PaxosReplica2 implements Serializable{
    */
   private synchronized void initCommander(PValuePacket pValue) throws JSONException {
     // keep record of value
-    ProposalStateAtCoordinator propState = new ProposalStateAtCoordinator(paxosID, pValue, nodeIDs.size());
+    ProposalStateAtCoordinator propState = new ProposalStateAtCoordinator(this, pValue, nodeIDs.size());
 
     pValuesCommander.put(pValue.proposal.slot, propState);
     PaxosManager.addToActiveProposals(propState);
@@ -1418,14 +1358,14 @@ public class PaxosReplica2 implements Serializable{
 
     int minSlot;
 //    synchronized (minSlotLock) {
-      minSlot = minSlotNumberAcrossNodes;
+    minSlot = minSlotNumberAcrossNodes;
 //            if (r.nextDouble() <= 0.001) System.out.println("nodes and slot numbers: " + nodeAndSlotNumbers);
 //    }
     if (pValue.proposal.req.isStopRequest()) {
 //      synchronized (proposalNumberLock){
-        stopCommandProposed = true;
-        GNS.getLogger().info(paxosID + "C\t" +nodeID + "C" +
-                " stop command proposed. in slot = " + pValue.proposal.slot);
+      stopCommandProposed = true;
+      GNS.getLogger().info(paxosID + "C\t" +nodeID + "C" +
+              " stop command proposed. in slot = " + pValue.proposal.slot);
 //      }
     }
     AcceptPacket accept = new AcceptPacket(this.nodeID, pValue,
@@ -1993,7 +1933,7 @@ public class PaxosReplica2 implements Serializable{
   /**
    * check whether coordinator is UP.
    */
-  void checkCoordinatorFailure() {
+  public void checkCoordinatorFailure() {
 
     int coordinatorID = -1;
 //    try{
@@ -2118,7 +2058,6 @@ public class PaxosReplica2 implements Serializable{
 //    }
 
     GNS.getLogger().fine(paxosID + "\t" +"Reached here.");
-
   }
 
   Random r = new Random();
@@ -2402,7 +2341,7 @@ public class PaxosReplica2 implements Serializable{
 //    try {
 //      acceptorLock.lock();
       if (StartNameServer.experimentMode)
-        GNS.getLogger().info("\tResendingMessage\t" + state.paxosID + "\t" +
+        GNS.getLogger().info("\tResendingMessage\t" + paxosID + "\t" +
                 state.pValuePacket.proposal.slot + "\t" + acceptorBallot + "\t");
       if (state.pValuePacket.ballot.compareTo(acceptorBallot) != 0) return false;
 //    }finally {
@@ -2474,4 +2413,151 @@ public class PaxosReplica2 implements Serializable{
 //      }
 //    }
 //  }
+
+
+  public static void main(String[] args) throws IOException {
+    SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
+    SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
+    SizeOf.skipFlyweightObject(false); //java.sizeOf will not compute well-known flyweight objects
+
+    int numNodes = 10;
+
+    // 300 byte implementation
+
+    // replace hash set with array lists
+    Set<Integer> nodeIDs = new HashSet<Integer>();
+    for (int i = 0; i < 3; i ++) nodeIDs.add(i);
+    long sizeNodeIDs = SizeOf.deepSizeOf(nodeIDs);
+    System.out.println("Size of hash set object: " + SizeOf.deepSizeOf(nodeIDs)); //this will print the object size in bytes
+
+//    short[] nodeArray = new short[100];
+//    System.out.println("Size of array: " + SizeOf.deepSizeOf(nodeArray)); //this will print the object size in bytes
+
+//    System.exit(2);
+    PaxosReplica2 prNew = new PaxosReplica2("abcdfdf", 10, nodeIDs);
+
+    PaxosReplica pr = new PaxosReplica("abcdfdf", 10, nodeIDs);
+
+    System.out.println("Size of paxos object: " + (SizeOf.deepSizeOf(prNew) - sizeNodeIDs)); //this will print the object size in bytes
+    System.out.println("Size of previous paxos object: " + (SizeOf.deepSizeOf(pr) - sizeNodeIDs)); //this will print the object size in bytes
+    System.out.println();
+    System.out.println();
+
+
+    RequestPacket requestPacket = new RequestPacket(100, Util.randomString(40), 10, false);
+    System.out.println("Size request packet: " + SizeOf.deepSizeOf(requestPacket) + "\tString length: " + SizeOf.deepSizeOf(Util.randomString(40)));
+
+    HashMap<Integer, RequestPacket> requestPacketHashMap = new HashMap<Integer, RequestPacket>(2,2);
+    System.out.println("Size request packet: " + SizeOf.deepSizeOf(requestPacketHashMap));
+    for (int i = 0; i < 2; i++) {
+      requestPacket = new RequestPacket(100, Util.randomString(40), 10, false);
+      requestPacketHashMap.put(i, requestPacket);
+      System.out.println("Size request packet: " + requestPacketHashMap.size() + "\t" + SizeOf.deepSizeOf(requestPacketHashMap));
+    }
+
+    System.out.println();
+    System.out.println();
+
+    PValuePacket pValuePacket = new PValuePacket(new Ballot(0, 1), new ProposalPacket(0, requestPacket, 10, 3));
+    System.out.println("PValue packe sizet: " + SizeOf.deepSizeOf(pValuePacket));
+
+    HashMap<Integer, PValuePacket> pValuePacketHashMap = new HashMap<Integer, PValuePacket>();
+    System.out.println("PValuePacket HashMap: " + SizeOf.deepSizeOf(pValuePacketHashMap));
+
+    for (int i = 0; i < 2; i++) {
+      requestPacket = new RequestPacket(100, Util.randomString(40), 10, false);
+      pValuePacket = new PValuePacket(new Ballot(0, 1), new ProposalPacket(0, requestPacket, 10, 3));
+      pValuePacketHashMap.put(i, pValuePacket);
+      System.out.println("PValue packet: " + pValuePacketHashMap.size() + "\t" + SizeOf.deepSizeOf(pValuePacketHashMap));
+    }
+
+
+    System.out.println();
+    System.out.println();
+    System.exit(2);
+
+//  HashMap<Integer, Integer> hashMap1 = new HashMap<Integer, Integer>();
+
+
+//    System.out.println("Size of hash map: " + SizeOf.deepSizeOf(hashMap1)); //this will print the object size in bytes
+//    hashMap1.put(10, 10);
+//    System.out.println("Size of hash map (add object): " + SizeOf.deepSizeOf(hashMap1)); //this will print the object size in bytes
+//    hashMap1.put(20, 20);
+//    System.out.println("Size of hash map (add object): " + SizeOf.deepSizeOf(hashMap1)); //this will print the object size in bytes
+
+    HashMap<Integer, String> hashMap2 = new HashMap<Integer, String>(2, 10);
+
+
+    int sLength = 1;
+    int numEntry = 5;
+
+    System.out.println("Size random string: " + SizeOf.deepSizeOf(Util.randomString(sLength)));
+
+    for (int i = 0; i < numEntry; i ++) {
+      hashMap2.put(i, Util.randomString(sLength));
+      System.out.println("Size of hash map: len:\t" + hashMap2.size() + "\tsize:\t" + SizeOf.deepSizeOf(hashMap2)); //this will print the object size in bytes
+    }
+
+    ArrayList<String> arrayList = new ArrayList<String>(4);
+    System.out.println("Size of array list: " + SizeOf.deepSizeOf(arrayList)); //this will print the object size in bytes
+    for (int i = 0; i < numEntry; i ++) {
+      arrayList.add(Util.randomString(sLength));
+      System.out.println("Size of array list: len:\t" + arrayList.size() + " \tsize:\t" + SizeOf.deepSizeOf(arrayList)); //this will print the object size in bytes
+    }
+
+    System.exit(2);
+
+    int numNS = 80;
+    int numNames = 1;
+
+    ConfigFileInfo.setNumberOfNameServers(numNS);
+
+//    FileWriter fileWriter = new FileWriter("nameCoordinator.txt");
+
+    for (int i = 0; i < numNames; i++) {
+      String name = "9707";//Integer.toString(i);
+//      Set<Integer> primaries = HashFunction.getPrimaryReplicasNoCache(name);
+      int[] actives = {68,1,69,2,71,5,66,67,7,8,9,77,10,12,74,15,23,22,25,28,31,30,34,35,37,40,47,44,52,62,61};
+      Set<Integer> primaries = new HashSet<Integer>();
+      for (int x1: actives)
+        primaries.add(x1);
+      int activeDefaultCoordinator = getDefaultCoordinatorReplica(name + "-1", primaries);
+      System.out.println(name + "\t" + activeDefaultCoordinator + "\n");
+//      fileWriter.write(name + "\t" + activeDefaultCoordinator + "\n");
+//    int primaryDefaultCoordinator = getDefaultCoordinatorReplica(name + "-P", primaries);
+//    System.out.println("Name\t" + name + "\tPrimaries\t" + primaries + "\tActiveCoordinator\t" +
+//        activeDefaultCoordinator + "\tPrimaryCoordinator\t" + primaryDefaultCoordinator);
+    }
+//    fileWriter.close();
+    System.exit(2);
+
+//    String failedNamesFile = "/Users/abhigyan/Dropbox/gnrs/scripts/failed-names";
+    String namedActivesFile = "/Users/abhigyan/Dropbox/gnrs/scripts/nameActives";
+
+    HashMap<Integer, Set<Integer>> nameActives = GenerateSyntheticRecordTable.readActives(namedActivesFile);
+//    BufferedReader br = new BufferedReader(new FileReader(failedNamesFile));
+    HashMap<Integer, Integer> nodeCoordinators = new HashMap<Integer, Integer>();
+    for (Integer nameInt: nameActives.keySet()) {
+//    while (true) {
+//      String name = br.readLine();
+//      if (name == null) break;
+      String name  = nameInt.toString();
+      String paxosID = name.trim() + "-1";
+//      int nameInt = Integer.parseInt(name);
+
+      int defaultCoordinator = getDefaultCoordinatorReplica(paxosID, nameActives.get(nameInt));
+      System.out.println(name + "\t" + defaultCoordinator);
+      if (nodeCoordinators.containsKey(defaultCoordinator)) nodeCoordinators.put(defaultCoordinator, nodeCoordinators.get(defaultCoordinator) + 1);
+      else nodeCoordinators.put(defaultCoordinator,1);
+    }
+    HashMap<Integer,Integer> serverCount = new HashMap<Integer, Integer>();
+
+    for (Integer nodeID: nodeCoordinators.keySet()) {
+      if (serverCount.containsKey(nodeID%8)) serverCount.put(nodeID%8, serverCount.get(nodeID%8) + nodeCoordinators.get(nodeID));
+      else serverCount.put(nodeID%8,nodeCoordinators.get(nodeID));
+      System.out.println("\t" + nodeID + "\t" + nodeCoordinators.get(nodeID));
+    }
+    System.out.println(serverCount);
+  }
+
 }

@@ -61,7 +61,7 @@ public class NameServerVoteThread extends Thread {
     Random r = new Random();
 		
 		try {
-			long x = voteIntervalMillis / 4 + r.nextInt((int) voteIntervalMillis / 2);
+			long x = voteIntervalMillis / 2 + r.nextInt((int) voteIntervalMillis / 2);
 			Thread.sleep(x);
 			GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + x + "ms");
 		} catch (InterruptedException e) {
@@ -86,10 +86,14 @@ public class NameServerVoteThread extends Thread {
       int update;
 			NameServerSelectionPacket nsSelectionPacket;
 //			JSONObject json;
-      int nsToVoteFor = selectNSToVoteFor("0"); // TODO is name server selection independent of name?
+      int nsToVoteFor = selectNSToVoteFor("0"); // name server selection does not depend on name
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" NameRecordStats Key Set: " + LocalNameServer.getNameRecordStatsKeySet());
+      int nameCount = 0;
+      int allNames = 0;
+      long t0  = System.currentTimeMillis();
 			for (String name : LocalNameServer.getNameRecordStatsKeySet()) {
-                GNS.getLogger().fine(" BEGIN VOTING: " + name);
+        allNames ++;
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" BEGIN VOTING: " + name);
 				//String name = nameAndType.getName();
 				//NameRecordKey recordKey = nameAndType.getRecordKey();
 				try {
@@ -101,17 +105,18 @@ public class NameServerVoteThread extends Thread {
 					if (vote == 0 && update == 0) {
 						continue;
 					}
-          GNS.getLogger().fine("\tVoteSent\t" + name +"\t" + vote +"\t" + update+"\t");
+          nameCount++;
+          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("\tVoteSent\t" + name +"\t" + vote +"\t" + update+"\t");
 //					int uniqueVoteID = r.nextInt();
 					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.nodeID, 0);
 
           // send to all primaries.
           Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);
-          GNS.getLogger().info("Primary name servers = " + primaryNameServers + " name = " + name);
+          if (StartLocalNameServer.debugMode) GNS.getLogger().info("Primary name servers = " + primaryNameServers + " name = " + name);
           for (int primary: primaryNameServers) {
             LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);
           }
-          Thread.sleep(5);
+          Thread.sleep(2);
 //          LNSListener.tcpTransport.sendToIDs(, nsSelectionPacket.toJSONObject());
 
 //					unackedVotes.put(uniqueVoteID, uniqueVoteID);
@@ -140,10 +145,11 @@ public class NameServerVoteThread extends Thread {
         } catch (Exception e) {
           e.printStackTrace();
         }
-
-
         //				LocalNameServer.printNameRecordStatsMap( debugMode );
 			}
+      long t1 = System.currentTimeMillis();
+      GNS.getLogger().severe("Round " + count +  ". Votes sent for " + nameCount + " names / " + allNames + " names. " +
+              "Time = " + (t1 - t0) + " ms");
 		}
 	}
 

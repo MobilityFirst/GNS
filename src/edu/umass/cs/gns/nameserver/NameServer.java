@@ -21,7 +21,6 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -76,7 +75,7 @@ public class NameServer {
             // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
 
-    this.replicationFramework = ReplicationFrameworkType.instantiateReplicationFramework(
+    NameServer.replicationFramework = ReplicationFrameworkType.instantiateReplicationFramework(
             StartNameServer.replicationFramework);
 
     // Executor service created.
@@ -105,6 +104,8 @@ public class NameServer {
     // Load monitoring calculation initalized.
     loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
 
+    timer.schedule(new WriteMemUsage(), 10000, 10000); // write stats about system
+
   }
 
   public void run() {
@@ -122,13 +123,13 @@ public class NameServer {
 //        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,
 // StartNameServer.mobileWorkloadSize);
 //        if (StartNameServer.staticReplication) {
-
-        GenerateSyntheticRecordTable.generateRecordTableBulkInsert(StartNameServer.regularWorkloadSize,
-                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
-                StartNameServer.defaultTTLMobileName);
-
+//        GenerateSyntheticRecordTable.generateRecordTableBulkInsert(StartNameServer.regularWorkloadSize,
+//                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
+//                StartNameServer.defaultTTLMobileName);
 //        }  else {
-//          GenerateSyntheticRecordTable.generateRecordTableWithActives(StartNameServer.regularWorkloadSize,
+          GenerateSyntheticRecordTable.generateRecordTableWithActivesNew(StartNameServer.nameActives);
+
+//      StartNameServer.regularWorkloadSize,
 //                  StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
 //                  StartNameServer.defaultTTLMobileName, StartNameServer.nameActives);
 //        }
@@ -144,11 +145,12 @@ public class NameServer {
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),
 //                StartNameServer.aggregateInterval, TimeUnit.MILLISECONDS);
 
-      long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval +
-              (new Random()).nextInt((int) StartNameServer.analysisInterval);
-      if (StartNameServer.experimentMode && StartNameServer.quitAfterTimeSec > 0)
+      long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval + // wait for one interval for estimating demand
+              (new Random()).nextInt((int) StartNameServer.analysisInterval); // randomize to avoid synchronization among replicas.
+      if (StartNameServer.experimentMode && StartNameServer.quitAfterTimeSec > 0) {
         initialDelayMillis = initialExpDelayMillis + (long)(StartNameServer.analysisInterval*1.5);
-      GNS.getLogger().info("ComputeNewActives Initial delay " + initialDelayMillis);
+      }
+      GNS.getLogger().severe("ComputeNewActives Initial delay " + initialDelayMillis);
 
 //      initialDelayMillis = 100000;
 
@@ -410,20 +412,42 @@ public class NameServer {
    * @param lns   local name server ID
    */
   public static void sendToLNS(JSONObject json, int lns) {
-
-
-    if (json.toString().length() < 1000) {
+//    if (json.toString().length() < 1000) {
+//      try {
+//        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.LNS_UDP_PORT);
+//      } catch (JSONException e) {
+//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//      }
+//    } else { // for large packets,  use TCP
       try {
-        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.LNS_UDP_PORT);
-      } catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
-    } else { // for large packets,  use TCP
-      try {
-        NameServer.tcpTransport.sendToID(lns, json);
+        NameServer.tcpTransport.sendToIDActual(lns, json);
       } catch (IOException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
-    }
+//    }
+  }
+}
+
+
+class WriteMemUsage extends TimerTask {
+  int count = 0;
+  @Override
+  public void run() {
+    count ++;
+    GenerateSyntheticRecordTable.outputMemoryUse(Integer.toString(count) + "sec ");
+    GNS.getLogger().severe("\tTasksSubmitted\t" + NameServer.executorService.getTaskCount() + "\tTasksCompleted\t" +
+            NameServer.executorService.getCompletedTaskCount());
+//    Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+//    for (Thread t: threadSet) {
+//      StackTraceElement[] traceElements = t.getStackTrace();
+//      StringBuilder sb = new StringBuilder();
+//      for (StackTraceElement e: traceElements) {
+//        sb.append(e.toString());
+//        sb.append("\n");
+//
+//      }
+//      GNS.getLogger().severe("New thread.");
+//      GNS.getLogger().severe(sb.toString());
+//    }
   }
 }

@@ -16,8 +16,10 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
+import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.HashFunction;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -129,8 +131,7 @@ public class DNSRequestTask extends TimerTask {
 
 //      tC = System.currentTimeMillis();
         if (cacheEntry != null) {
-          coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getQname(),
-                  cacheEntry.getActiveNameServers());
+
           ResultValue value = cacheEntry.getValue(incomingPacket.getQrecordKey());
 
           if (value != null) {
@@ -143,8 +144,14 @@ public class DNSRequestTask extends TimerTask {
           }
         }
 //      tD = System.currentTimeMillis();
+        if (cacheEntry == null) {
+          RequestActivesPacket pkt = new RequestActivesPacket(incomingPacket.getQname(), LocalNameServer.nodeID);
+          pkt.setActiveNameServers(HashFunction.getPrimaryReplicas(incomingPacket.getQname()));
+          cacheEntry = LocalNameServer.addCacheEntry(pkt);
+        }
+
         if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
-//        GNS.getLogger().severe("here invalid name server ....");
+          GNS.getLogger().severe("here invalid name server .... "  + incomingPacket.getQname());
           if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
 
 
@@ -169,6 +176,7 @@ public class DNSRequestTask extends TimerTask {
 //        RequestActivesTask.requestActives(incomingPacket.getQname());
           throw new MyException();
         }
+
         if (StartLocalNameServer.loadDependentRedirection) {
           ns = LocalNameServer.getBestActiveNameServerFromCache(incomingPacket.getQname(), nameserversQueried);
         }
@@ -176,6 +184,8 @@ public class DNSRequestTask extends TimerTask {
           ns = LocalNameServer.getBeehiveNameServer(nameserversQueried, cacheEntry);
         }
         else {
+          coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getQname(),
+                  cacheEntry.getActiveNameServers());
           ns = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserversQueried);
         }
       }
@@ -228,6 +238,7 @@ public class DNSRequestTask extends TimerTask {
 //          GNS.getLogger().severe(" LNSQuerytask longlatency " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)) ;
 //        }
 //          break;
+//        if (StartLocalNameServer.experimentMode) throw new MyException();
       }
     }catch (Exception e) {
       if (e.getClass().equals(MyException.class)) {

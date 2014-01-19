@@ -23,6 +23,11 @@ public class HashFunction {
   /** Cache hash results **/
   private static Cache<String, Set<Integer>> cache;
 
+  /**
+   * Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
+   */
+  public static TreeMap<String, Integer> nsTreeMap = new TreeMap<String, Integer>();
+
   /*************************************************************
    * Initialize hash funtions
    * @throws NoSuchAlgorithmException
@@ -35,10 +40,15 @@ public class HashFunction {
 //    hashFunctions.add(MessageDigest.getInstance("SHA-512"));
 
     cache = CacheBuilder.newBuilder().concurrencyLevel(2).maximumSize(10000).build();
-    initializeHashFunctionNew();
+    // Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
+    nsTreeMap = new TreeMap<String, Integer>();
+    for (int i = 0; i < ConfigFileInfo.getNumberOfNameServers(); i++) {
+      nsTreeMap.put(getMD5Hash(Integer.toString(i)), i);
+    }
+    System.out.println(nsTreeMap);
   }
 
-  public static TreeMap<String, Integer> nsTreeMap = new TreeMap<String, Integer>();
+
 
   public static String getMD5Hash(String name) {
     MessageDigest md = null;
@@ -53,39 +63,10 @@ public class HashFunction {
     return s;
   }
 
-  static void initializeHashFunctionNew(){
-    nsTreeMap = new TreeMap<String, Integer>();
-    for (int i = 0; i < ConfigFileInfo.getNumberOfNameServers(); i++) {
-      nsTreeMap.put(getMD5Hash(Integer.toString(i)), i);
-    }
-    System.out.println(nsTreeMap);
-  }
 
-  static HashSet<Integer> getPrimaryNameServers(String name){
-    String s = getMD5Hash(name);
-    HashSet<Integer> primaryNameServers = new HashSet<Integer>();
-    while(true) {
-      Map.Entry entry = nsTreeMap.higherEntry(s);
-      if (entry == null) break;
-      primaryNameServers.add((Integer) entry.getValue());
-      s = (String) entry.getKey();
-//        System.out.println("x\t" + entry.getValue());
-      if (primaryNameServers.size() == GNS.numPrimaryReplicas) return primaryNameServers;
-    }
+//  static HashSet<Integer> getPrimaryNameServers(String name){
 
-    Map.Entry entry = nsTreeMap.firstEntry();
-    primaryNameServers.add((Integer) entry.getValue());
-//      System.out.println("y\t" + entry.getValue());
-    s = (String) entry.getKey();
-    while(primaryNameServers.size() != GNS.numPrimaryReplicas) {
-      entry = nsTreeMap.higherEntry(s);
-      primaryNameServers.add((Integer) entry.getValue());
-      s = (String) entry.getKey();
-//        System.out.println("z\t" + entry.getValue());
-    }
-    return primaryNameServers;
-
-  }
+//  }
 
   /*************************************************************
    * Computes the SHA of a string
@@ -125,8 +106,38 @@ public class HashFunction {
     return primaryReplicas;
   }
 
+  /**
+   * Primary replicas for a name are obtained by consistent hashing.
+   * First, all nodes are mapped on to key space by hashing. Then, the name is hashed on to the key space.
+   * if 'k' primary replicas are to be selected, they are the higher
+   * @param name
+   * @return
+   */
   public static Set<Integer> getPrimaryReplicasNoCache(String name) {
-    return getPrimaryNameServers(name);
+    String s = getMD5Hash(name);
+    HashSet<Integer> primaryNameServers = new HashSet<Integer>();
+    while(true) {
+      Map.Entry entry = nsTreeMap.higherEntry(s);
+      if (entry == null) break;
+      primaryNameServers.add((Integer) entry.getValue());
+      s = (String) entry.getKey();
+//        System.out.println("x\t" + entry.getValue());
+      if (primaryNameServers.size() == GNS.numPrimaryReplicas) return primaryNameServers;
+    }
+
+    Map.Entry entry = nsTreeMap.firstEntry();
+    primaryNameServers.add((Integer) entry.getValue());
+//      System.out.println("y\t" + entry.getValue());
+    s = (String) entry.getKey();
+    while(primaryNameServers.size() != GNS.numPrimaryReplicas) {
+      entry = nsTreeMap.higherEntry(s);
+      primaryNameServers.add((Integer) entry.getValue());
+      s = (String) entry.getKey();
+//        System.out.println("z\t" + entry.getValue());
+    }
+    return primaryNameServers;
+
+//    return getPrimaryNameServers(name);
   }
 
   public static Set<Integer> getPrimaryReplicasNoCache2(String name) {
@@ -178,7 +189,7 @@ public class HashFunction {
       int nameServers = 5;
       int names = 0;
       ConfigFileInfo.setNumberOfNameServers(nameServers);
-      HashFunction.initializeHashFunctionNew();
+      HashFunction.initializeHashFunction();
       for (int i = 0; i < nameServers; i++) {
         NameServer.nodeID = i;
         System.out.println( "Set nodeID = " + i);
@@ -187,7 +198,7 @@ public class HashFunction {
       HashMap<Integer, Integer> nodeNameCount = new HashMap<Integer, Integer>();
       for (int i = 0; i < names; i++) {
         String name = Integer.toString(i);
-        Set<Integer> primaryNameServers = getPrimaryNameServers(name);
+        Set<Integer> primaryNameServers = getPrimaryReplicasNoCache(name);
         for (int primary: primaryNameServers){
           if (nodeNameCount.containsKey(primary)) nodeNameCount.put(primary, nodeNameCount.get(primary) + 1);
           else nodeNameCount.put(primary, 1);

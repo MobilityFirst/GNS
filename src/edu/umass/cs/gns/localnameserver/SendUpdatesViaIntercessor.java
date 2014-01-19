@@ -14,6 +14,7 @@ import edu.umass.cs.gns.workloads.ExponentialDistribution;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +32,6 @@ public class SendUpdatesViaIntercessor {
             + LocalNameServer.updateTrace.size());
 		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.updateRateRegular);
 
-
     double expectedDurationSec = (LocalNameServer.updateTrace.size()
             * StartLocalNameServer.updateRateRegular) / 1000;
 
@@ -40,26 +40,41 @@ public class SendUpdatesViaIntercessor {
     GNS.getStatLogger().fine(msg);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
 
+    int requests = 0;
+    if (LocalNameServer.lookupTrace != null) requests += LocalNameServer.lookupTrace.size();
+    if (LocalNameServer.updateTrace != null) requests += LocalNameServer.updateTrace.size();
+    double delay = (requests)/100000 * 1000;
+
+    GNS.getLogger().severe(" Initial update delay: " + delay);
+    List<Double> delays = new ArrayList<Double>();
+    List<TimerTask> tasks = new ArrayList<TimerTask>();
     int count = 0;
-    double delay = 0;
     for (UpdateTrace u : LocalNameServer.updateTrace) {
       count++;
       if (u.type == UpdateTrace.UPDATE) {
-        LocalNameServer.executorService.schedule(
-                new SendUpdateIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
+        tasks.add(new SendUpdateIntercessorTask(u.name, count));
+//        LocalNameServer.executorService.schedule(
+//                new SendUpdateIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
       }
       else if (u.type == UpdateTrace.ADD) {
-        LocalNameServer.executorService.schedule(
-                new SendAddIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
+        tasks.add(new SendAddIntercessorTask(u.name, count));
+//        LocalNameServer.executorService.schedule(
+//                new SendAddIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
       } else if (u.type == UpdateTrace.REMOVE) {
-        LocalNameServer.executorService.schedule(
-                new SendRemoveIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
-
+        tasks.add(new SendRemoveIntercessorTask(u.name, count));
+//        LocalNameServer.executorService.schedule(
+//                new SendRemoveIntercessorTask(u.name, count), (long) delay, TimeUnit.MILLISECONDS);
       }
-
-      delay += exponentialDistribution.exponential();// StartLocalNameServer.updateRateRegular;
+      delays.add(delay);
+      delay += StartLocalNameServer.updateRateRegular; //exponentialDistribution.exponential();
 //      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send update scheduled: count " + count + " delay = " + delay);
     }
+    long t0 = System.currentTimeMillis();
+    for (int i = 0; i < LocalNameServer.updateTrace.size(); i++) {
+      LocalNameServer.executorService.schedule(tasks.get(i), (long) delays.get(i).intValue(), TimeUnit.MILLISECONDS);
+    }
+    long t1 = System.currentTimeMillis();
+    GNS.getLogger().severe(" Time to submit all updates: " + (t1 - t0));
     System.out.println("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
   }

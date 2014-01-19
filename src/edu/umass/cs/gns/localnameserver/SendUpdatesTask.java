@@ -6,9 +6,11 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.HashFunction;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -82,7 +84,15 @@ public class SendUpdatesTask extends TimerTask
       if (StartLocalNameServer.replicateAll) {
         nameServerID = BestServerSelection.getSmallestLatencyNS(ConfigFileInfo.getAllNameServerIDs(), activesQueried);
       } else {
-        if (LocalNameServer.isValidNameserverInCache(name) == false) {
+        CacheEntry cacheEntry = LocalNameServer.getCacheEntry(name);
+
+        if (cacheEntry == null) {
+          RequestActivesPacket pkt = new RequestActivesPacket(name, LocalNameServer.nodeID);
+          pkt.setActiveNameServers(HashFunction.getPrimaryReplicas(name));
+          cacheEntry = LocalNameServer.addCacheEntry(pkt);
+        }
+
+        if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
           // remove update info from LNS
           if (timeoutCount > 0) LocalNameServer.removeUpdateInfo(updateRequestID);
 
@@ -121,9 +131,8 @@ public class SendUpdatesTask extends TimerTask
           nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, activesQueried);
         }
         else {
-          nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, activesQueried);
-          CacheEntry entry = LocalNameServer.getCacheEntry(name);
-          if (entry != null) coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(name,entry.getActiveNameServers());
+          nameServerID = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), activesQueried);
+          coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(name,cacheEntry.getActiveNameServers());
         }
 
       }
@@ -186,7 +195,7 @@ public class SendUpdatesTask extends TimerTask
 //      catch (IOException e) {
 //        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //      }
-
+//      if (StartLocalNameServer.experimentMode) throw new MyException();
     }catch (Exception e) {
       if (e.getClass().equals(MyException.class)) throw new RuntimeException();
       GNS.getLogger().severe("Exception Exception Exception ... ");

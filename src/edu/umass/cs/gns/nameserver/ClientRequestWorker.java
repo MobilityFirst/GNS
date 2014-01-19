@@ -5,13 +5,13 @@
  */
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.clientprotocol.Defs;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
@@ -66,6 +66,7 @@ public class ClientRequestWorker extends TimerTask {
   @Override
   public void run() {
     //
+    long t0 = System.currentTimeMillis();
     try {
       switch (packetType) {
         case DNS:
@@ -127,7 +128,9 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().severe("Exception in client request worker. " + e.getMessage());
       e.printStackTrace();
     }
-
+    long t1 = System.currentTimeMillis();
+    if (t1 - t0 > 100)
+      GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + incomingJSON);
   }
 
   private void handleNameServerLoadPacket() throws JSONException {
@@ -681,8 +684,8 @@ public class ClientRequestWorker extends TimerTask {
 
     // Save request info to send confirmation to LNS later.
     updatePacket.setNameServerId(NameServer.nodeID); // to check that I had proposed this message
-    int updateID = incrementUpdateID();
-    updatePacket.setNSRequestID(updateID); // to check the request ID.
+//    int updateID = incrementUpdateID();
+//    updatePacket.setNSRequestID(updateID); // to check the request ID.
     updatePacket.setType(Packet.PacketType.UPDATE_ADDRESS_NS); //
 //    ConfirmUpdateLNSPacket confirmPacket = ConfirmUpdateLNSPacket.createSuccessPacket(updatePacket);
     if (StartNameServer.eventualConsistency) {
@@ -719,10 +722,10 @@ public class ClientRequestWorker extends TimerTask {
     }
 //    proposedUpdates.put(updateID, confirmPacket);
 
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine(" Update Packet : " + updatePacket);
-    }
+    if (StartNameServer.debugMode) GNS.getLogger().fine(" Update Packet : " + updatePacket);
+
     // Propose to paxos
+
     String activePaxosID = updatePacket.getName(); // nameRecord.getActivePaxosID();
 //    if (StartNameServer.debugMode) {
 //      GNS.getLogger().severe(" Update proposed to paxosID = " + activePaxosID);
@@ -825,19 +828,19 @@ public class ClientRequestWorker extends TimerTask {
     UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
 //    GNS.getLogger().severe("PAXOS DECISION: Update Confirmed Name " + updatePacket);
     NameRecord nameRecord;
-    try {
-      nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
+
+    if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) { // we don't need to read for replace-all
+      nameRecord = new NameRecord(updatePacket.getName());
+    } else {
+      try {
+        nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
 //      GNS.getLogger().severe("reading name record for update.  Operation: " +  updatePacket.getOperation());
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + updatePacket.getName());
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + updatePacket.getName());
 //      e.printStackTrace();
-      return;
+        return;
+      }
     }
-//    if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) { // we don't need to read for replace-all
-//      nameRecord = new NameRecord(updatePacket.getName());
-//    } else {
-//
-//    }
     // Apply update
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
@@ -1250,3 +1253,4 @@ class UpdateStatus {
     return false;
   }
 }
+

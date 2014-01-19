@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.util.JSONUtils;
+import net.sourceforge.sizeof.SizeOf;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ public class UpdateAddressPacket extends BasicPacket {
 
 //  private final static String SEQUENCENUMBER = "sequencenumber";
   private final static String REQUESTID = "reqID";
-  private final static String LocalNSREQUESTID = "LSNreqID";
+  private final static String LocalNSREQUESTID = "LNSreqID";
   private final static String NameServerREQUESTID = "NSreqID";
   private final static String NAME = "name";
   private final static String RECORDKEY = "recordkey";
@@ -78,7 +79,7 @@ public class UpdateAddressPacket extends BasicPacket {
    */
   private int nameServerId;
   /**
-   * Time to live *
+   * Time to live
    */
   private int ttl;
 
@@ -264,6 +265,10 @@ public class UpdateAddressPacket extends BasicPacket {
             NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
             GNS.DEFAULT_TTL_SECONDS);
 
+    SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
+    SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
+    SizeOf.skipFlyweightObject(false); //java.sizeOf will not compute well-known flyweight objects
+    printSize(up);
     int size = 0;
     try {
       size = up.toJSONObject().toString().getBytes().length;
@@ -273,5 +278,9 @@ public class UpdateAddressPacket extends BasicPacket {
     }
     System.out.println("Size = " + size);
 
+  }
+
+  static void printSize(Object paxosReplicaNew){
+    System.out.println("Size: " + SizeOf.deepSizeOf(paxosReplicaNew)); //this will print the object size in bytes
   }
 }

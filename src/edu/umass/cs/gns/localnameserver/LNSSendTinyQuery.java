@@ -9,7 +9,6 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
@@ -127,20 +126,7 @@ class SendQueryWithDelay extends TimerTask {
 
 	@Override
 	public void run() {
-    if (json.toString().length() < 1000) { // for small packets use UDP
-      try {
-        LNSListener.udpTransport.sendPacket(json, nameServer, GNS.PortType.NS_UDP_PORT);
-      } catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
-    } else { // for large packets,  use TCP
-      try {
-        LNSListener.tcpTransport.sendToID(nameServer, json);
-      } catch (IOException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
-    }
-
+    LocalNameServer.sendToNSActual(json, nameServer);
   }
 	
 	

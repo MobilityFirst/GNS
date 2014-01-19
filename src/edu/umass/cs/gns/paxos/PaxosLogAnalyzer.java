@@ -29,7 +29,7 @@ public class PaxosLogAnalyzer {
   /**
    * Log messages at all nodes for all paxos instances. A nested HashMap data structure is used to store the messages.
    */
-  HashMap<Integer, ConcurrentHashMap<String, PaxosReplica2>> paxosAllNS;
+  HashMap<Integer, ConcurrentHashMap<String, PaxosReplicaInterface>> paxosAllNS;
 
   /**
    * Constructor
@@ -39,7 +39,7 @@ public class PaxosLogAnalyzer {
   public PaxosLogAnalyzer(String paxosLogFolder, int numNS) {
     this.paxosLogFolder = paxosLogFolder;
     this.numNS = numNS;
-    paxosAllNS = new HashMap<Integer, ConcurrentHashMap<String, PaxosReplica2>>();
+    paxosAllNS = new HashMap<Integer, ConcurrentHashMap<String, PaxosReplicaInterface>>();
   }
 
   /**
@@ -53,7 +53,7 @@ public class PaxosLogAnalyzer {
       String nodeLogFolder = getNodeLogFolder(nodeID);
       PaxosLogger.setLoggerParameters(nodeLogFolder);
       long t0 = System.currentTimeMillis();
-      ConcurrentHashMap<String, PaxosReplica2> paxosInstances = PaxosLogger.readAllPaxosLogs(nodeID);
+      ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = PaxosLogger.readAllPaxosLogs(nodeID);
       paxosAllNS.put(nodeID, paxosInstances);
       System.out.println("Read log: Node " + nodeID + "\tPaxosIDs: " + paxosInstances.size()
               + "\t" + (System.currentTimeMillis() - t0)/ 1000 + " sec");
@@ -105,7 +105,7 @@ public class PaxosLogAnalyzer {
       int slotCount = -1;
 
       for (Integer nodeID: paxosNodeIDs.get(paxosID)) {
-        PaxosReplica2 replica = paxosAllNS.get(nodeID).get(paxosID);
+        PaxosReplicaInterface replica = paxosAllNS.get(nodeID).get(paxosID);
         if (replica == null) continue;
         for (int slot: replica.getPValuesAccepted().keySet()) {
           if (slot > slotCount) slotCount = slot;
@@ -116,7 +116,7 @@ public class PaxosLogAnalyzer {
 
       boolean lastRequestStop = false; // true if request proposed in last episode is a stop request
       for (Integer nodeID: paxosNodeIDs.get(paxosID)) {
-        PaxosReplica2 replica = paxosAllNS.get(nodeID).get(paxosID);
+        PaxosReplicaInterface replica = paxosAllNS.get(nodeID).get(paxosID);
         if (replica == null) continue;
         if((replica.getDecisions().containsKey(slotCount - 1) &&
                 replica.getDecisions().get(slotCount - 1).isStopRequest()) ||
@@ -139,7 +139,7 @@ public class PaxosLogAnalyzer {
             commitCountFailed += 1;
 
           }
-          PaxosReplica2 replica = paxosAllNS.get(nodeID).get(paxosID);
+          PaxosReplicaInterface replica = paxosAllNS.get(nodeID).get(paxosID);
           if (replica == null) {
             // paxos instance not created at node:
 //            System.err.println("PaxosID\t" + paxosID + "\tnot created at node\t" + nodeID);

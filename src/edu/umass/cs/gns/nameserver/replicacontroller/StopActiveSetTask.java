@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
@@ -64,17 +63,17 @@ public class StopActiveSetTask extends TimerTask {
     numAttempts ++;
     //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(name);
 
-    ReplicaControllerRecord replicaControllerRecord;
-    try {
-      replicaControllerRecord = NameServer.getNameRecordPrimaryMultiField(name, getStopActivesFields());
-    } catch (RecordNotFoundException e) {
-      if (StartNameServer.debugMode) {
-
-        GNS.getLogger().severe("Name Record Does not Exist. Name = " + name);
-      }
-      this.cancel();
-      return;
-    }
+//    ReplicaControllerRecord replicaControllerRecord;
+//    try {
+//      replicaControllerRecord = NameServer.getNameRecordPrimaryMultiField(name, getStopActivesFields());
+//    } catch (RecordNotFoundException e) {
+//      if (StartNameServer.debugMode) {
+//
+//        GNS.getLogger().severe("Name Record Does not Exist. Name = " + name);
+//      }
+//      this.cancel();
+//      return;
+//    }
 
     Integer progress = ReplicaController.groupChangeProgress.get(name);
     if (progress == null || progress >= ReplicaController.OLD_ACTIVE_STOP) {
@@ -86,7 +85,6 @@ public class StopActiveSetTask extends TimerTask {
       return;
     }
 
-      // Abhigyan: unlimited number of retries
 //    if (numAttempts > MAX_ATTEMPTS) {
 ////      if (StartNameServer.debugMode) {
 //        GNS.getLogger().severe("ERROR: Old Actives failed to STOP after " + MAX_ATTEMPTS + " attempts   Name = " + name
@@ -101,24 +99,28 @@ public class StopActiveSetTask extends TimerTask {
             //selectNextActiveToQuery();
 
     if (selectedOldActive == -1) {
+      ReplicaController.groupChangeProgress.remove(name);
+      ReplicaController.groupChangeStartTimes.remove(name);
 //      if (StartNameServer.debugMode) {
-        GNS.getLogger().severe("ERROR: No more old active left to query. "
-                + "Old Active name servers queried: " + oldActivesQueried + ". Old Actives not stopped.");
+      GNS.getLogger().severe("ERROR: No more old active left to query. "
+                + "Old Active name servers queried: " + oldActivesQueried + ". Old Actives not stopped. OldpaxosID " + oldPaxosID);
 //      }
-      oldActivesQueried.clear();
-      selectedOldActive = BestServerSelection.getSmallestLatencyNSNotFailed(oldActiveNameServers, oldActivesQueried);
-      if (selectedOldActive == -1) {
-        GNS.getLogger().severe("ERROR: no actives available to query.");
-        this.cancel();
-        return;
-      }
-      oldActivesQueried.add(selectedOldActive);
+      this.cancel();
+      return;
+//      oldActivesQueried.clear();
+//      selectedOldActive = BestServerSelection.getSmallestLatencyNSNotFailed(oldActiveNameServers, oldActivesQueried);
+//      if (selectedOldActive == -1) {
+//        GNS.getLogger().severe("ERROR: no actives available to query. ");
+//        this.cancel();
+//        return;
+//      }
+//      oldActivesQueried.add(selectedOldActive);
+
 //      this.cancel();
 //      return;
     } else {
       oldActivesQueried.add(selectedOldActive);
     }
-
 
     if (StartNameServer.debugMode) {
       GNS.getLogger().info(" Old Active Name Server Selected to Query: " + selectedOldActive);

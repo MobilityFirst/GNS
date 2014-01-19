@@ -35,6 +35,7 @@ public class NSPaxosInterface implements PaxosInterface {
 
   @Override
   public void handlePaxosDecision(String paxosID, RequestPacket req) {
+    long t0 = System.currentTimeMillis();
     try {
 
       // messages decided in to paxos between actives
@@ -82,7 +83,9 @@ public class NSPaxosInterface implements PaxosInterface {
       GNS.getLogger().severe(" Exception Exception Exception ... " + e.getMessage());
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-
+    long t1 = System.currentTimeMillis();
+    if (t1 - t0 > 100)
+      GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + req.value);
   }
 
   @Override
@@ -166,7 +169,6 @@ public class NSPaxosInterface implements PaxosInterface {
           } else {
             startIndex += 1;
           }
-
         }
         GNS.getLogger().info("Number of rc records updated in DB: " + recordCount);
       } else {
@@ -177,14 +179,14 @@ public class NSPaxosInterface implements PaxosInterface {
         } catch (RecordExistsException e) {
           NameServer.updateNameRecord(new NameRecord(json));
         }
-        try {
-          NameRecord nr2 = NameServer.getNameRecord(new NameRecord(json).getName());
-          GNS.getLogger().info("Read fresh copy from DB ....: " + nr2 + "\t");
-        } catch (RecordNotFoundException e) {
-          e.printStackTrace();
-        } catch (FieldNotFoundException e) {
-          e.printStackTrace();
-        }
+//        try {
+//          NameRecord nr2 = NameServer.getNameRecord(new NameRecord(json).getName());
+//          GNS.getLogger().info("Read fresh copy from DB ....: " + nr2 + "\t");
+//        } catch (RecordNotFoundException e) {
+//          e.printStackTrace();
+//        } catch (FieldNotFoundException e) {
+//          e.printStackTrace();
+//        }
       }
     } catch (JSONException e) {
 

@@ -10,6 +10,8 @@ import edu.umass.cs.gns.workloads.ExponentialDistribution;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
@@ -68,15 +70,28 @@ public class SendQueriesViaIntercessor // extends Thread
 //    } catch (InterruptedException e) {
 //      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //    }
-    long delay = 0;
+    int requests = 0;
+    if (LocalNameServer.lookupTrace != null) requests += LocalNameServer.lookupTrace.size();
+    if (LocalNameServer.updateTrace != null) requests += LocalNameServer.updateTrace.size();
+    double delay = (requests)/100000 * 1000;
+
+    GNS.getLogger().severe(" Initial lookup delay: " + delay);
+    List<Double> delays = new ArrayList<Double>();
+    List<TimerTask> tasks = new ArrayList<TimerTask>();
     int count = 0;
 		for( String name : LocalNameServer.lookupTrace) {
 			count++;
-			LocalNameServer.executorService.schedule(new SendQueryIntercessorTask(name,count), (long) delay, TimeUnit.MILLISECONDS);
-			delay += exponentialDistribution.exponential(); //StartLocalNameServer.lookupRate;
+      tasks.add(new SendQueryIntercessorTask(name, count));
+      delays.add(delay);
+			delay += StartLocalNameServer.lookupRate; //exponentialDistribution.exponential();
 //			if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send query scheduled: count " + count + " delay = " + delay);
 		}
-
+    long t0 = System.currentTimeMillis();
+    for (int i = 0; i < LocalNameServer.lookupTrace.size(); i++) {
+      LocalNameServer.executorService.schedule(tasks.get(i), (long) delays.get(i).intValue(), TimeUnit.MILLISECONDS);
+    }
+    long t1 = System.currentTimeMillis();
+    GNS.getLogger().severe(" Time to submit all updates: " + (t1 - t0));
 //    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay/1000 + " Expected-duration " + expectedDurationSec);
   }
 

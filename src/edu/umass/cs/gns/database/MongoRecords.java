@@ -5,13 +5,7 @@
  */
 package edu.umass.cs.gns.database;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.clientprotocol.Defs;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
@@ -27,17 +21,13 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -582,7 +572,7 @@ public class MongoRecords implements NoSQLRecords {
         tG = System.currentTimeMillis();
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 20) {
-          GNS.getLogger().warning(" MongoLookup longlatency " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)) ;
+          GNS.getLogger().severe(" mongoLookup Long delay " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)); ;
         }
         return hashMap;
     } finally {
@@ -628,7 +618,7 @@ public class MongoRecords implements NoSQLRecords {
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 10) {
           //System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t" + t0);
-          GNS.getLogger().warning(" Long latency mongoUpdate " + (t1 - t0));
+          GNS.getLogger().severe("mongoDB  Long delay " + (t1 - t0) + "ms");
 
         }
 //        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );

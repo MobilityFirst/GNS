@@ -52,6 +52,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * A list of Active Nameservers for the name.
    */
   private Set<Integer> activeNameServer;
+  private Set<Integer> activeNameServers;
 
   /**
    * Constructs a cache entry using data from a DNS packet
@@ -73,6 +74,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     }
     // Also update this
     this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
+    this.activeNameServer = packet.getActiveNameServers();
   }
 
   public CacheEntry(RequestActivesPacket packet) {
@@ -308,4 +310,8 @@ public class CacheEntry implements Comparable<CacheEntry> {
   public int compareTo(CacheEntry d) {
     return (this.getName()).compareTo(d.getName());
   }
+
+//  public void setActiveNameServers(Set<Integer> activeNameServers) {
+//    this.activeNameServers = activeNameServers;
+//  }
 }

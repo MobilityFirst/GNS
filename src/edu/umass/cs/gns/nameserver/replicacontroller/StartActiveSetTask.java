@@ -72,7 +72,6 @@ public class StartActiveSetTask extends TimerTask {
   public void run() {
     try {
 
-
     numAttempts ++;
 
     ReplicaControllerRecord nameRecordPrimary;
@@ -130,18 +129,22 @@ public class StartActiveSetTask extends TimerTask {
     //selectNextActiveToQuery();
 
     if (selectedActive == -1) {
+      ReplicaController.groupChangeProgress.remove(name);
+      ReplicaController.groupChangeStartTimes.remove(name);
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe("ERROR: No more active left to query. "
                 + "Active name servers queried: " + newActivesQueried + " Actives not started.");
       }
-      newActivesQueried.clear();
-      selectedActive = BestServerSelection.getSmallestLatencyNSNotFailed(newActiveNameServers, newActivesQueried);
-      if (selectedActive == -1) {
-        GNS.getLogger().severe("ERROR: no actives available to query.");
-        this.cancel();
-        return;
-      }
-      newActivesQueried.add(selectedActive);
+      this.cancel();
+      return;
+//      newActivesQueried.clear();
+//      selectedActive = BestServerSelection.getSmallestLatencyNSNotFailed(newActiveNameServers, newActivesQueried);
+//      if (selectedActive == -1) {
+//        GNS.getLogger().severe("ERROR: no actives available to query.");
+//        this.cancel();
+//        return;
+//      }
+//      newActivesQueried.add(selectedActive);
     }
     else {
       newActivesQueried.add(selectedActive);

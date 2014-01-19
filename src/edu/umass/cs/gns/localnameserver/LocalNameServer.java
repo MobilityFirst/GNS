@@ -15,7 +15,6 @@ import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.UpdateTrace;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -537,9 +536,10 @@ public class LocalNameServer {
     cache.put(entry.getName(), entry);
   }
 
-  public static void addCacheEntry(RequestActivesPacket packet) {
+  public static CacheEntry addCacheEntry(RequestActivesPacket packet) {
     CacheEntry entry = new CacheEntry(packet);
     cache.put(entry.getName(), entry);
+    return entry;
   }
 
   /**
@@ -1066,19 +1066,25 @@ public class LocalNameServer {
               * (1 + r.nextDouble() * StartLocalNameServer.variation);
       long timerDelay = (long) latency;
       LocalNameServer.executorService.schedule(new SendQueryWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
-    } else if (json.toString().length() < 1000) {
+    } else {
+      sendToNSActual(json, ns);
+    }
+  }
+
+  public static void sendToNSActual(JSONObject json, int ns) {
+//    if (json.toString().length() < 1000) {
+//      try {
+//        LNSListener.udpTransport.sendPacket(json, ns, GNS.PortType.NS_UDP_PORT);
+//      } catch (JSONException e) {
+//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//      }
+//    } else { // for large packets,  use TCP
       try {
-        LNSListener.udpTransport.sendPacket(json, ns, GNS.PortType.NS_UDP_PORT);
-      } catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
-    } else { // for large packets,  use TCP
-      try {
-        LNSListener.tcpTransport.sendToID(ns, json);
+        LNSListener.tcpTransport.sendToIDActual(ns, json);
       } catch (IOException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
-    }
+//    }
   }
 
   /**

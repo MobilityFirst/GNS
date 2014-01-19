@@ -37,7 +37,7 @@ public class Update {
     } else {
 
       LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
-
+//      if (StartLocalNameServer.experimentMode) return;
       InetAddress senderAddress = null;
       int senderPort = -1;
       senderPort = Transport.getReturnPort(json);

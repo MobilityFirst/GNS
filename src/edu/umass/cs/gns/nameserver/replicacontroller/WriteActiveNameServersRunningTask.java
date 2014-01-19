@@ -34,6 +34,8 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
 
   int count = 0;
 
+  int MAX_RETRY = 5;
+
   public WriteActiveNameServersRunningTask(String name, String paxosID) {
     this.name = name;
     this.paxosID = paxosID;
@@ -60,7 +62,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
         return;
       }
 
-      if (rcRecord.isActiveRunning() == true) {
+      if (rcRecord.isActiveRunning()) {
         GNS.getLogger().info("Group change complete. Record updated. Name " + name + "\tPaxosID\t" + paxosID);
         this.cancel();
         return;
@@ -69,6 +71,11 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       GNS.getLogger().severe("Field Not Found Exception " + e.getMessage() + "\tPaxosID\t" + paxosID + "\tcount" +
               count);
+      this.cancel();
+      return;
+    }
+    if (count == MAX_RETRY) {
+      GNS.getLogger().severe(" ERROR: Max retries reached: Active name servers not written. ");
       this.cancel();
       return;
     }

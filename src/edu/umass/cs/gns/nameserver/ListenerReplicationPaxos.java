@@ -82,6 +82,10 @@ public class ListenerReplicationPaxos {
 
   public static void createPaxosInstanceForName(String name, Set<Integer> activeNameServers, String activePaxosID,
                                                 ValuesMap previousValue, long initScoutDelay, int ttl){
+    NameRecord nameRecord = new NameRecord(name, activeNameServers, activePaxosID, previousValue, ttl);
+    createPaxosInstanceForName(nameRecord, initScoutDelay);
+  }
+    public static void createPaxosInstanceForName(NameRecord nameRecord, long initScoutDelay){
     try {
 //      long initScoutDelay = 0;
 //      if (StartNameServer.paxosStartMinDelaySec > 0 && StartNameServer.paxosStartMaxDelaySec > 0) {
@@ -89,17 +93,17 @@ public class ListenerReplicationPaxos {
 //      }
       // try add: if add fails, try update.
 //      try {
-        NameRecord nameRecord = new NameRecord(name, activeNameServers, activePaxosID, previousValue, ttl);
+//        NameRecord nameRecord = new NameRecord(name, activeNameServers, activePaxosID, previousValue, ttl);
 
         if (StartNameServer.eventualConsistency == false) {
-          boolean created = PaxosManager.createPaxosInstance(activePaxosID, activeNameServers,
+          boolean created = PaxosManager.createPaxosInstance(nameRecord.getActivePaxosID(), nameRecord.getActiveNameServers(),
                   nameRecord.toString(), initScoutDelay);
           if (StartNameServer.debugMode) GNS.getLogger().info(" NAME RECORD ADDED AT ACTIVE NODE: "
-                  + "name record = " + name);
+                  + "name record = " + nameRecord.getName());
           if (created) {
-            if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. " + name);
+            if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. " + nameRecord.getName());
           } else {
-            if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE NOT CREATED. "  + name);
+            if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE NOT CREATED. "  + nameRecord.getName());
           }
         }
 //      } catch (RecordExistsException e) {
@@ -679,7 +683,7 @@ class CopyStateFromOldActiveTask extends TimerTask {
       }
 
       if (!ListenerReplicationPaxos.activeStartupPacketsReceived.containsKey(packet.getID())) {
-        if (StartNameServer.debugMode) GNS.getLogger().info(" COPY State from Old Active Successful! Cancel Task; Actives Queried: " + oldActivesQueried);
+        GNS.getLogger().info(" COPY State from Old Active Successful! Cancel Task; Actives Queried: " + oldActivesQueried);
         this.cancel();
         return;
       }
@@ -690,7 +694,7 @@ class CopyStateFromOldActiveTask extends TimerTask {
       int oldActive = BestServerSelection.getSmallestLatencyNSNotFailed(packet.getOldActiveNameServers(), oldActivesQueried);
 
       if (oldActive == -1) {
-        GNS.getLogger().severe(" Exception ERROR:  No More Actives Left To Query. Cancel Task!!!");
+        GNS.getLogger().severe(" Exception ERROR:  No More Actives Left To Query. Cancel Task!!! paxosID " + packet);
         this.cancel();
         return;
       }
@@ -705,10 +709,10 @@ class CopyStateFromOldActiveTask extends TimerTask {
 //        NameServer.tcpTransport.sendToID(packet2.toJSONObject(), oldActive, GNS.PortType.PERSISTENT_TCP_PORT);
         NameServer.tcpTransport.sendToID(oldActive, packet2.toJSONObject());
       } catch (IOException e) {
-        GNS.getLogger().info(" IOException here: " + e.getMessage());
+        GNS.getLogger().severe(" IOException here: " + e.getMessage());
         e.printStackTrace();
       } catch (JSONException e) {
-        GNS.getLogger().info(" JSONException here: " + e.getMessage());
+        GNS.getLogger().severe(" JSONException here: " + e.getMessage());
         e.printStackTrace();
       }
       if (StartNameServer.debugMode) GNS.getLogger().info(" REQUESTED VALUE from OLD ACTIVE. PACKET: " + packet2);

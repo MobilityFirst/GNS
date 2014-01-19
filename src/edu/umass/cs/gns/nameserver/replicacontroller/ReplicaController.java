@@ -701,6 +701,7 @@ public class ReplicaController {
       ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(),
               getNewActiveStartedFields());
       groupChangeComplete(packet.getName());
+      GNS.getLogger().info("Group change complete. name = " + rcRecord.getName() + " PaxosID " + rcRecord.getActivePaxosID());
       if (rcRecord.setNewActiveRunning(packet.getPaxosID())) {
         if (StartNameServer.debugMode)  GNS.getLogger().info("New Active paxos running for name : " + packet.getName()
                 + " Paxos ID: " + packet.getPaxosID());

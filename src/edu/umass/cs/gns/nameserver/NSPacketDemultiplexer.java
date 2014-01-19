@@ -29,8 +29,11 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
   }
 
   public void handleJSONObject(JSONObject json) {
+
+
     try {
       Packet.PacketType type = Packet.getPacketType(json);
+//      if (count % 60 == 0) GNS.getLogger().info("Recvd msg " + count + " Type" + type.getInt() + "\t" + json);
       switch (type) {
         case PAXOS_PACKET:
           PaxosManager.handleIncomingPacket(json);
@@ -93,6 +96,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
       // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (IOException e) {
+      e.printStackTrace();
+    } catch (Exception e) {
+      GNS.getLogger().severe("Exception here:");
       e.printStackTrace();
     }
   }
