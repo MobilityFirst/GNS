@@ -188,9 +188,9 @@ public class AccountAccess {
         accountInfo.setVerificationCode(verifyCode);
         accountInfo.noteUpdate();
         if (updateAccountInfo(accountInfo)) {
-          boolean emailOK = Email.emailSSL("GNS Account Verification", name,
+          boolean emailOK = Email.email("GNS Account Verification", name,
                   String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
-          boolean adminEmailOK = Email.emailSSL("GNS Account Notification",
+          boolean adminEmailOK = Email.email("GNS Account Notification",
                   Email.ACCOUNT_CONTACT_EMAIL,
                   String.format(ADMIN_NOTICE, name, host, guid));
           if (emailOK) {

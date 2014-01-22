@@ -8,16 +8,15 @@ package edu.umass.cs.gns.util;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 
-import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
+import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
 
 public class Email {
-
-  public static final String ACCOUNT_CONTACT_EMAIL = "admin@gnrs.name";
-  private static final String password = "deadDOG8";
-  private static final String smtpHost = "mail.gnrs.name";
 
   /**
    * Example Email application
@@ -34,8 +33,20 @@ public class Email {
       System.out.println("Usage: Email [to] [message]");
       System.exit(-1);
     } else {
-      boolean result = emailSSL("Testing Subject SSL", args[0], args[1]);
+      boolean result = email("Testing Subject", args[0], args[1]);
       System.exit(result ? 0 : -1);
+    }
+  }
+
+  public static boolean email(String subject, String recipient, String text) {
+    if (emailLocal(subject, recipient, text)) {
+      return true;
+    } else if (emailSSL(subject, recipient, text)) {
+      return true;
+    } else if (emailTLS(subject, recipient, text)) {
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -51,24 +62,31 @@ public class Email {
    props.setProperty("mail.password", "mypwd");
 
    */
-  public static boolean emailSSL(String subject, String recipient, String text) {
-    if (StartLocalNameServer.noEmail) return true;
-    Properties props = new Properties();
-    props.put("mail.smtp.host", smtpHost);
-    props.put("mail.smtp.socketFactory.port", "465");
-    props.put("mail.smtp.socketFactory.class",
-            "javax.net.ssl.SSLSocketFactory");
-    props.put("mail.smtp.auth", "true");
-    props.put("mail.smtp.port", "465");
+  public static final String ACCOUNT_CONTACT_EMAIL = "admin@gnrs.name";
+  private static final String password = "deadDOG8";
+  private static final String smtpHost = "mail.gnrs.name";
 
-    Session session = Session.getDefaultInstance(props,
-            new javax.mail.Authenticator() {
-              @Override
-              protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(ACCOUNT_CONTACT_EMAIL, password);
-              }
-            });
+  public static boolean emailSSL(String subject, String recipient, String text) {
+    if (StartLocalNameServer.noEmail) {
+      return true;
+    }
     try {
+      Properties props = new Properties();
+      props.put("mail.smtp.host", smtpHost);
+      props.put("mail.smtp.socketFactory.port", "465");
+      props.put("mail.smtp.socketFactory.class",
+              "javax.net.ssl.SSLSocketFactory");
+      props.put("mail.smtp.auth", "true");
+      props.put("mail.smtp.port", "465");
+
+      Session session = Session.getDefaultInstance(props,
+              new javax.mail.Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                  return new PasswordAuthentication(ACCOUNT_CONTACT_EMAIL, password);
+                }
+              });
+
       Message message = new MimeMessage(session);
       message.setFrom(new InternetAddress(ACCOUNT_CONTACT_EMAIL));
       message.setRecipients(Message.RecipientType.TO,
@@ -80,7 +98,7 @@ public class Email {
       GNS.getLogger().fine("Successfully sent email to " + recipient + " with message: " + text);
       return true;
 
-    } catch (MessagingException e) {
+    } catch (Exception e) {
       GNS.getLogger().warning("Unable to send email: " + e);
       return false;
     }
@@ -91,21 +109,22 @@ public class Email {
     final String username = "bear@westy.org";
     final String password = "deadDOG8";
 
-    Properties props = new Properties();
-    props.put("mail.smtp.auth", "true");
-    props.put("mail.smtp.starttls.enable", "true");
-    props.put("mail.smtp.host", "smtp.gmail.com");
-    props.put("mail.smtp.port", "587");
-
-    Session session = Session.getInstance(props,
-            new javax.mail.Authenticator() {
-              @Override
-              protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-              }
-            });
-
     try {
+      Properties props = new Properties();
+      props.put("mail.smtp.auth", "true");
+      props.put("mail.smtp.starttls.enable", "true");
+      props.put("mail.smtp.host", "smtp.gmail.com");
+      props.put("mail.smtp.port", "587");
+
+      Session session = Session.getInstance(props,
+              new javax.mail.Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                  return new PasswordAuthentication(username, password);
+                }
+              });
+
+
 
       Message message = new MimeMessage(session);
       message.setFrom(new InternetAddress(ACCOUNT_CONTACT_EMAIL));
@@ -118,9 +137,8 @@ public class Email {
       GNS.getLogger().fine("Successfully sent email to " + recipient + " with message: " + text);
       return true;
 
-    } catch (MessagingException e) {
+    } catch (Exception e) {
       GNS.getLogger().warning("Unable to send email: " + e);
-      e.printStackTrace();
       return false;
     }
   }
@@ -130,8 +148,8 @@ public class Email {
     Properties properties = System.getProperties();
 
     properties.setProperty("mail.smtp.host", "localhost");
-    properties.setProperty("mail.user", "westy");
-    properties.setProperty("mail.password", "");
+    //properties.setProperty("mail.user", "westy");
+    //properties.setProperty("mail.password", "");
 
     // Get the default Session object.
     Session session = Session.getDefaultInstance(properties);
@@ -157,9 +175,8 @@ public class Email {
       Transport.send(message);
       GNS.getLogger().fine("Successfully sent email to " + recipient + " with message: " + text);
       return true;
-    } catch (MessagingException mex) {
-      GNS.getLogger().warning("Unable to send email: " + mex);
-      mex.printStackTrace();
+    } catch (Exception m) {
+      GNS.getLogger().warning("Unable to send email: " + m);
       return false;
     }
 

@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.clientprotocol.Defs;
-import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.nameserver.NameRecordKey;
@@ -37,7 +42,7 @@ public class SelectRequestPacket extends BasicPacket {
   private int lnsID;
   private int lnsQueryId = -1;
   private SelectOperation operation;
-  private String guid;
+  private String guid; // the group GUID we are maintaning or null for simple select
 
   /**
    * Constructs a new QueryResponsePacket
@@ -98,7 +103,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.operation = SelectOperation.valueOf(json.getString(OPERATION));
-    this.query = json.optString(GUID, null);
+    this.guid = json.optString(GUID, null);
   }
 
   /**
