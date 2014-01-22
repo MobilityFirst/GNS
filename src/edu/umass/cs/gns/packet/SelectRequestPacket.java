@@ -7,6 +7,7 @@ import org.json.JSONObject;
 /**
  * A SelectRequestPacket is like a DNS packet without a GUID, but with a key and value. 
  * The semantics is that we want to look up all the records that have a field named key with the given value.
+ * We also use this to do automatic group GUID maintenence.
  * @author westy
  */
 public class SelectRequestPacket extends BasicPacket {
@@ -27,6 +28,7 @@ public class SelectRequestPacket extends BasicPacket {
   private final static String LNSID = "lnsid";
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String OPERATION = "operation";
+  private final static String GUID = "guid"; // for auto group guid this is the guid to be maintained
   private int id;
   private NameRecordKey key;
   private Object value;
@@ -35,6 +37,7 @@ public class SelectRequestPacket extends BasicPacket {
   private int lnsID;
   private int lnsQueryId = -1;
   private SelectOperation operation;
+  private String guid;
 
   /**
    * Constructs a new QueryResponsePacket
@@ -53,9 +56,10 @@ public class SelectRequestPacket extends BasicPacket {
     this.lnsID = lns;
     this.operation = operation;
     this.query = null;
+    this.guid = null;
   }
-  
-  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query) {
+
+  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query, String guid) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
@@ -64,10 +68,15 @@ public class SelectRequestPacket extends BasicPacket {
     this.key = null;
     this.value = null;
     this.otherValue = null;
+    this.guid = guid;
   }
-  
+
   public static SelectRequestPacket MakeQueryRequest(int id, int lns, String query) {
-    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query);
+    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query, null);
+  }
+
+  public static SelectRequestPacket MakeGroupQueryRequest(int id, int lns, String query, String guid) {
+    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query, guid);
   }
 
   /**
@@ -89,6 +98,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.operation = SelectOperation.valueOf(json.getString(OPERATION));
+    this.query = json.optString(GUID, null);
   }
 
   /**
@@ -116,12 +126,15 @@ public class SelectRequestPacket extends BasicPacket {
     if (otherValue != null) {
       json.put(OTHERVALUE, otherValue);
     }
-     if (query != null) {
+    if (query != null) {
       json.put(QUERY, query);
     }
     json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
     json.put(OPERATION, operation.name());
+    if (guid != null) {
+      json.put(GUID, guid);
+    }
   }
 
   public void setLnsQueryId(int lnsQueryId) {
@@ -159,5 +172,9 @@ public class SelectRequestPacket extends BasicPacket {
   public String getQuery() {
     return query;
   }
- 
+
+  public String getGuid() {
+    return guid;
+  }
+  
 }
