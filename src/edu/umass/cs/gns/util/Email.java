@@ -7,14 +7,13 @@ package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 public class Email {
 
@@ -62,9 +61,9 @@ public class Email {
    props.setProperty("mail.password", "mypwd");
 
    */
-  public static final String ACCOUNT_CONTACT_EMAIL = "admin@gnrs.name";
+  public static final String ACCOUNT_CONTACT_EMAIL = "admin@gns.name";
   private static final String password = "deadDOG8";
-  private static final String smtpHost = "mail.gnrs.name";
+  private static final String smtpHost = "smtp.gmail.com";
 
   public static boolean emailSSL(String subject, String recipient, String text) {
     if (StartLocalNameServer.noEmail) {
@@ -79,7 +78,7 @@ public class Email {
       props.put("mail.smtp.auth", "true");
       props.put("mail.smtp.port", "465");
 
-      Session session = Session.getDefaultInstance(props,
+      Session session = Session.getInstance(props,
               new javax.mail.Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
@@ -95,7 +94,7 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      GNS.getLogger().fine("Successfully sent email to " + recipient + " with message: " + text);
+      GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       return true;
 
     } catch (Exception e) {
@@ -106,7 +105,7 @@ public class Email {
 
   // TLS doesn't work with Dreamhost
   public static boolean emailTLS(String subject, String recipient, String text) {
-    final String username = "bear@westy.org";
+    final String username = "admin@gns.name";
     final String password = "deadDOG8";
 
     try {
@@ -124,8 +123,6 @@ public class Email {
                 }
               });
 
-
-
       Message message = new MimeMessage(session);
       message.setFrom(new InternetAddress(ACCOUNT_CONTACT_EMAIL));
       message.setRecipients(Message.RecipientType.TO,
@@ -134,7 +131,7 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      GNS.getLogger().fine("Successfully sent email to " + recipient + " with message: " + text);
+      GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       return true;
 
     } catch (Exception e) {
@@ -173,7 +170,7 @@ public class Email {
 
       // Send message
       Transport.send(message);
-      GNS.getLogger().fine("Successfully sent email to " + recipient + " with message: " + text);
+      GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       return true;
     } catch (Exception m) {
       GNS.getLogger().warning("Unable to send email: " + m);
