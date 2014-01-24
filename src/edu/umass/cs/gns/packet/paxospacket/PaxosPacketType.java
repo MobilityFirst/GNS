@@ -12,7 +12,7 @@ public class PaxosPacketType {
   /**
    * Request sent from client to Paxos Replica.
    */
-  public static final int REQUEST = 10;
+  public static final int REQUEST = 1;
   /**
    * Response from Paxos replica to client.
    */
@@ -20,21 +20,21 @@ public class PaxosPacketType {
   /**
    * 
    */
-  public static final int PREPARE = 20;
-  public static final int ACCEPT = 30;
-  public static final int RESEND_ACCEPT = 40;
-  public static final int PROPOSAL = 50;
-  public static final int DECISION = 60;
-  public static final int PREPARE_REPLY = 70;
-  public static final int ACCEPT_REPLY = 80;
-  public static final int FAILURE_DETECT = 90;
-  public static final int FAILURE_RESPONSE = 100;
-  public static final int NODE_STATUS = 110;
-  public static final int SEND_STATE = 210;
-  public static final int SEND_STATE_NO_RESPONSE = 220;
-  public static final int REQUEST_STATE = 230;
-  public static final int SYNC_REQUEST = 310;
-  public static final int SYNC_REPLY = 320;
-  public static final int START = 410;
-  public static final int STOP = 420;
+  public static final int PREPARE = 2;
+  public static final int ACCEPT = 3;
+  public static final int RESEND_ACCEPT = 4;
+  public static final int PROPOSAL = 5;
+  public static final int DECISION = 6;
+  public static final int PREPARE_REPLY = 7;
+  public static final int ACCEPT_REPLY = 8;
+  public static final int FAILURE_DETECT = 9;
+  public static final int FAILURE_RESPONSE = 10;
+  public static final int NODE_STATUS = 11;
+  public static final int SEND_STATE = 21;
+  public static final int SEND_STATE_NO_RESPONSE = 22;
+  public static final int REQUEST_STATE = 23;
+  public static final int SYNC_REQUEST = 31;
+  public static final int SYNC_REPLY = 32;
+  public static final int START = 41;
+  public static final int STOP = 42;
 }

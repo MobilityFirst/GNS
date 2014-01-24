@@ -25,14 +25,18 @@ public class SelectResponsePacket extends BasicPacket {
   //
   private final static String ID = "id";
   private final static String JSON = "json";
+  private final static String LNSID = "lnsid";
   private final static String LNSQUERYID = "lnsQueryId";
+  private final static String NSQUERYID = "nsQueryId";
   private final static String NAMESERVER = "ns";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
   private final static String GUID = "guid"; // for auto group guid this is the guid to be maintained
   
   private int id;
+  private int lnsID; // the local name server handling this request
   private int lnsQueryId;
+  private int nsQueryId;
   private int nameServer;
   private JSONArray jsonArray;
   private ResponseCode responseCode;
@@ -44,11 +48,13 @@ public class SelectResponsePacket extends BasicPacket {
    * @param id
    * @param jsonObject 
    */
-  private SelectResponsePacket(int id, int lnsQueryId, int nameServer, JSONArray jsonArray, ResponseCode responseCode,
+  private SelectResponsePacket(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray jsonArray, ResponseCode responseCode,
           String errorMessage, String guid) {
     this.type = Packet.PacketType.SELECT_RESPONSE;
     this.id = id;
+    this.lnsID = lns;
     this.lnsQueryId = lnsQueryId;
+    this.nsQueryId = nsQueryId;
     this.nameServer = nameServer;
     this.jsonArray = jsonArray;
     this.responseCode = responseCode;
@@ -56,16 +62,16 @@ public class SelectResponsePacket extends BasicPacket {
     this.guid = guid;
   }
 
-  public static SelectResponsePacket makeSuccessPacket(int id, int lnsQueryId, int nameServer, JSONArray jsonArray) {
-    return new SelectResponsePacket(id, lnsQueryId, nameServer, jsonArray, ResponseCode.NOERROR, null, null);
+  public static SelectResponsePacket makeSuccessPacket(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray jsonArray) {
+    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, jsonArray, ResponseCode.NOERROR, null, null);
   }
 
-  public static SelectResponsePacket makeFailPacket(int id, int lnsQueryId, int nameServer, String errorMessage) {
-    return new SelectResponsePacket(id, lnsQueryId, nameServer, null, ResponseCode.ERROR, errorMessage, null);
+  public static SelectResponsePacket makeFailPacket(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, String errorMessage) {
+    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, null, ResponseCode.ERROR, errorMessage, null);
   }
   
-  public static SelectResponsePacket makeGuidSuccessResponse(int id, int lnsQueryId, int nameServer, JSONArray jsonArray, String guid) {
-    return new SelectResponsePacket(id, lnsQueryId, nameServer, jsonArray, ResponseCode.NOERROR, null, guid);
+  public static SelectResponsePacket makeGuidSuccessResponse(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray jsonArray, String guid) {
+    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, jsonArray, ResponseCode.NOERROR, null, guid);
   }
 
   /**
@@ -81,7 +87,9 @@ public class SelectResponsePacket extends BasicPacket {
     }
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
+    this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
+    this.nsQueryId = json.getInt(NSQUERYID);
     this.nameServer = json.getInt(NAMESERVER); 
     this.responseCode = ResponseCode.valueOf(json.getString(RESPONSECODE));
     // either of these could be null
@@ -101,7 +109,9 @@ public class SelectResponsePacket extends BasicPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(ID, id);
+    json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
+    json.put(NSQUERYID, nsQueryId);
     json.put(NAMESERVER, nameServer);
     json.put(RESPONSECODE, responseCode.name());
     if (jsonArray != null) {
@@ -120,12 +130,20 @@ public class SelectResponsePacket extends BasicPacket {
     return id;
   }
 
+  public int getLnsID() {
+    return lnsID;
+  }
+
   public JSONArray getJsonArray() {
     return jsonArray;
   }
 
   public int getLnsQueryId() {
     return lnsQueryId;
+  }
+
+  public int getNsQueryId() {
+    return nsQueryId;
   }
 
   public int getNameServer() {

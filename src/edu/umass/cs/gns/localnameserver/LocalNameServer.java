@@ -388,15 +388,14 @@ public class LocalNameServer {
   }
 
   public static int addQueryInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket,
-          InetAddress senderAddress, int senderPort, Set<Integer> serverIds) {
+          InetAddress senderAddress, int senderPort) {
     int id;
     do {
       id = randomID.nextInt();
     } while (requestTransmittedMap.containsKey(id));
 
     //Add query info
-    SelectInfo query = new SelectInfo(id, recordKey,
-            incomingPacket, senderAddress, senderPort, serverIds);
+    SelectInfo query = new SelectInfo(id, senderAddress, senderPort);
     queryTransmittedMap.put(id, query);
     return id;
   }

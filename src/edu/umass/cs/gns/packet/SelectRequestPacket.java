@@ -32,15 +32,20 @@ public class SelectRequestPacket extends BasicPacket {
   private final static String QUERY = "query";
   private final static String LNSID = "lnsid";
   private final static String LNSQUERYID = "lnsQueryId";
+  private final static String NSID = "nsid";
+  private final static String NSQUERYID = "nsQueryId";
   private final static String OPERATION = "operation";
   private final static String GUID = "guid"; // for auto group guid this is the guid to be maintained
+  //
   private int id;
   private NameRecordKey key;
   private Object value;
   private Object otherValue;
   private String query;
-  private int lnsID;
-  private int lnsQueryId = -1;
+  private int lnsID; // the local name server handling this request
+  private int lnsQueryId = -1; // used by the local name server to maintain state
+  private int nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
+  private int nsQueryId = -1; // used by the name server to maintain state
   private SelectOperation operation;
   private String guid; // the group GUID we are maintaning or null for simple select
 
@@ -59,6 +64,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.value = value;
     this.otherValue = otherValue;
     this.lnsID = lns;
+    this.nsID = -1;
     this.operation = operation;
     this.query = null;
     this.guid = null;
@@ -69,6 +75,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.id = id;
     this.query = query;
     this.lnsID = lns;
+    this.nsID = -1;
     this.operation = operation;
     this.key = null;
     this.value = null;
@@ -102,6 +109,8 @@ public class SelectRequestPacket extends BasicPacket {
     this.query = json.optString(QUERY, null);
     this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
+    this.nsID = json.getInt(NSID);
+    this.nsQueryId = json.getInt(NSQUERYID);
     this.operation = SelectOperation.valueOf(json.getString(OPERATION));
     this.guid = json.optString(GUID, null);
   }
@@ -136,6 +145,8 @@ public class SelectRequestPacket extends BasicPacket {
     }
     json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
+    json.put(NSID, nsID);
+    json.put(NSQUERYID, nsQueryId);
     json.put(OPERATION, operation.name());
     if (guid != null) {
       json.put(GUID, guid);
@@ -144,6 +155,14 @@ public class SelectRequestPacket extends BasicPacket {
 
   public void setLnsQueryId(int lnsQueryId) {
     this.lnsQueryId = lnsQueryId;
+  }
+
+  public void setNsQueryId(int nsQueryId) {
+    this.nsQueryId = nsQueryId;
+  }
+
+  public void setNsID(int nsID) {
+    this.nsID = nsID;
   }
 
   public int getId() {
@@ -166,6 +185,14 @@ public class SelectRequestPacket extends BasicPacket {
     return lnsQueryId;
   }
 
+  public int getNsID() {
+    return nsID;
+  }
+
+  public int getNsQueryId() {
+    return nsQueryId;
+  }
+  
   public SelectOperation getOperation() {
     return operation;
   }

@@ -111,10 +111,9 @@ public class ClientRequestWorker extends TimerTask {
           ReplicaController.handleNameRecordRemoveRequestAtPrimary(incomingJSON);
           break;
 
-        // UPDATE
-
+        // SELECT
         case SELECT_REQUEST:
-          handleSelectRequest();
+          Select.handleSelectRequest(incomingJSON);
           break;
 
       }
@@ -739,68 +738,6 @@ public class ClientRequestWorker extends TimerTask {
         dnsField.add(NameRecord.TIME_TO_LIVE);
       }
       return dnsField;
-    }
-  }
-
-  private void handleSelectRequest() {
-
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
-    SelectRequestPacket request;
-    try {
-      request = new SelectRequestPacket(incomingJSON);
-    } catch (JSONException e) {
-      GNS.getLogger().severe("UNABLE TO PARSE SelectRequestPacket: " + incomingJSON + " error: " + e);
-      return;
-    }
-    try {
-      JSONArray jsonRecords = new JSONArray();
-      // actually only need name and values map... fix this
-      BasicRecordCursor cursor;
-      switch (request.getOperation()) {
-        case EQUALS:
-          cursor = NameServer.selectRecords(request.getKey().getName(), request.getValue());
-          break;
-        case NEAR:
-          if (request.getValue() instanceof String) {
-            cursor = NameServer.selectRecordsNear(request.getKey().getName(), (String) request.getValue(),
-                    Double.parseDouble((String)request.getOtherValue()));
-          } else {
-            return;
-          }
-          break;
-        case WITHIN:
-          if (request.getValue() instanceof String) {
-            cursor = NameServer.selectRecordsWithin(request.getKey().getName(), (String) request.getValue());
-          } else {
-            return;
-          }
-          break;
-          case QUERY:
-            cursor = NameServer.selectRecordsQuery(request.getQuery());
-          break;
-        default:
-          return;
-      }
-
-      int cnt = 0; // just for debugging message
-      while (cursor.hasNext()) {
-        jsonRecords.put(cursor.next());
-        cnt++;
-      }
-      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacket(request.getId(), request.getLnsQueryId(),
-              NameServer.nodeID, jsonRecords);
-      GNS.getLogger().fine("NS" + NameServer.nodeID + " sending back " + cnt + " records");
-      NameServer.tcpTransport.sendToID(request.getLnsID(), response.toJSONObject());
-    } catch (Exception e) {
-      GNS.getLogger().severe("Exception while handling select request: " + e);
-      SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsQueryId(),
-              NameServer.nodeID, e.getMessage());
-      try {
-        NameServer.tcpTransport.sendToID(request.getLnsID(), failResponse.toJSONObject());
-      } catch (Exception f) {
-        GNS.getLogger().severe("Unable to send Failure SelectResponsePacket: " + f);
-        return;
-      }
     }
   }
 

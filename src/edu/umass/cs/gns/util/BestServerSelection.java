@@ -3,7 +3,6 @@ package edu.umass.cs.gns.util;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
-
 import java.util.Set;
 
 public class BestServerSelection
