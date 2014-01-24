@@ -143,8 +143,8 @@ public class Defs {
   public final static String PASSKEY = "passkey";
   //public final static String TABLE = "table";
   // Blessed field names
-  public static final String LOCATION_FIELD_NAME = "location";
-  public static final String IPADDRESS_FIELD_NAME = "ipAddress";
+  public static final String LOCATION_FIELD_NAME = "geoLocation";
+  public static final String IPADDRESS_FIELD_NAME = "netAddress";
   
   
   
