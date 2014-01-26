@@ -668,6 +668,7 @@ public class PaxosManager extends Thread{
       PaxosReplicaInterface replica = paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
       if (replica == null) return null;
       try {
+          GNS.getLogger().info(" Proposing to  " + replica.getPaxosID());
         replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
       } catch (JSONException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -686,7 +687,7 @@ public class PaxosManager extends Thread{
 
     } catch (JSONException e)
     {
-      if (StartNameServer.debugMode) GNS.getLogger().fine(" JSON Exception" + e.getMessage());
+      if (StartNameServer.debugMode) GNS.getLogger().severe(" JSON Exception" + e.getMessage());
       e.printStackTrace();
     }
     return paxosID;

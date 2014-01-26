@@ -209,7 +209,7 @@ public class StartNameServer {
 
     Option quitAfterTime = new Option("quitAfterTime", true, "name server will quit after this time");
 
-    Option nameActives = new Option("nameActives", true, "name server will quit after this time");
+    Option nameActives = new Option("nameActives", false, "list of name actives provided to this file");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(nodeId);
@@ -467,7 +467,7 @@ public class StartNameServer {
 
       // only for testing
       if (experimentMode) {
-        nameActives = parser.getOptionValue("nameActives", "nameActives");
+        nameActives = parser.getOptionValue("nameActives", null);
       }
 
 //      NSListenerUpdate.doSignatureCheck = parser.hasOption("signatureCheck");

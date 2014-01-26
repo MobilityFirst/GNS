@@ -119,20 +119,15 @@ public class NameServer {
     createPrimaryPaxosInstances();
 
     if (StartNameServer.experimentMode) {
-      // Name Records added for experiments
-//        GenerateSyntheticRecordTable.addNameRecordsToDB(StartNameServer.regularWorkloadSize,
-// StartNameServer.mobileWorkloadSize);
-//        if (StartNameServer.staticReplication) {
-//        GenerateSyntheticRecordTable.generateRecordTableBulkInsert(StartNameServer.regularWorkloadSize,
-//                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
-//                StartNameServer.defaultTTLMobileName);
-//        }  else {
-          GenerateSyntheticRecordTable.generateRecordTableWithActivesNew(StartNameServer.nameActives);
 
-//      StartNameServer.regularWorkloadSize,
-//                  StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
-//                  StartNameServer.defaultTTLMobileName, StartNameServer.nameActives);
-//        }
+      if (StartNameServer.nameActives == null) {
+        GenerateSyntheticRecordTable.generateRecordTableBulkInsert(StartNameServer.regularWorkloadSize,
+                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
+                StartNameServer.defaultTTLMobileName);
+      } else {
+        GenerateSyntheticRecordTable.generateRecordTableWithActivesNew(StartNameServer.nameActives);
+      }
+
     }
 
     // schedule periodic computation of new active name servers.
