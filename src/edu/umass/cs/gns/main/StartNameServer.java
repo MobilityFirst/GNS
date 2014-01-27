@@ -73,6 +73,7 @@ public class StartNameServer {
   public static FailureScenario failureScenario = FailureScenario.applyActiveNameServersRunning;
 
 
+
   @SuppressWarnings("static-access")
   /**************************************************************
    * Initialized a command line parser
@@ -314,7 +315,15 @@ public class StartNameServer {
   
   public static void start(int id, String nsFile, String ... args) { 
     try {
-      CommandLine parser = initializeOptions(args);
+      CommandLine parser = null;
+      try {
+        parser = initializeOptions(args);
+
+      } catch (ParseException e) {
+        printUsage();
+        System.exit(1);
+        e.printStackTrace();
+      }
       if (parser.hasOption("help")) {
         printUsage();
         System.exit(1);

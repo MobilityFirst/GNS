@@ -317,7 +317,14 @@ public class StartLocalNameServer {
 
   public static void start(int id, String nsFile, String... args) {
     try {
-      CommandLine parser = initializeOptions(args);
+      CommandLine parser = null;
+      try {
+        parser = initializeOptions(args);
+      } catch (ParseException e) {
+        e.printStackTrace();
+        printUsage();
+        System.exit(1);
+      }
       if (parser.hasOption("help")) {
         printUsage();
         System.exit(1);
