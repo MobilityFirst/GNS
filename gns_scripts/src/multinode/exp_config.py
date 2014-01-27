@@ -1,20 +1,25 @@
 import os, sys
 
-output_folder = '/home/abhigyan/gnrs/results/jan26/pkgtest/'
 
-ns_file = '/home/abhigyan/gnrs/pkg_data/hosts_ns.txt'  # list of name servers
-lns_file = '/home/abhigyan/gnrs/pkg_data/hosts_lns.txt'  # list of name servers
+# values of these variables are pathnames on the machine where the script is running
+output_folder = '/home/abhigyan/gnrs/results/jan26/pkgtest/'  # path where output from experiment will be stored
+ns_file = '/home/abhigyan/gnrs/pkg_data/hosts_ns.txt'  # file with list of name servers (one per line)
+lns_file = '/home/abhigyan/gnrs/pkg_data/hosts_lns.txt'  # file with list of local name servers (one per line)
 user = 'abhigyan'  # user name to log in to every machine
-ssh_key = '/home/abhigyan/.ssh/id_rsa'
+ssh_key = '/home/abhigyan/.ssh/id_rsa'  # ssh key used for looging into remore machine
+jar_file =  '/home/abhigyan/gnrs/GNS.jar'  # path of the GNS jar on local machine 
 
-jar_file =  '/home/abhigyan/gnrs/GNS.jar'
+
+# values of these variables are pathnames on the remote machine
+jar_file_remote = '/state/partition1/gnrs/GNS.jar'  # path name on remote machine where jar will be stored
+gns_output_logs = '/state/partition1/gnslogs/'  # remote folder where gns output will be stored
+paxos_log_folder = '/state/partition1/paxos_log/' # remote folder where paxos logs will be stored
+run_db = False        # either True/False. if 'True', running mongodb instances on remote machine are killed, new instances are run, and all previous data is deleted from disk.
+                      # if False,  already running mongo instances are used. Database state with same  
+db_folder = '/state/partition1/gnsdb/'  #  remote folder where mongodb will store its logs
 
 
-jar_file_remote = '/state/partition1/gnrs/GNS.jar'
-gns_output_logs = '/state/partition1/gnslogs/'
-paxos_log_folder = '/state/partition1/paxos_log/'
-run_db = False        # whether we run DB or not
-db_folder = '/state/partition1/gnsdb/'  # database folder
+#### Variables above
 
 #num_ns = 3
 #num_lns = 3
@@ -24,7 +29,7 @@ primary_name_server = 3
 replication_interval = 1000000
 
 mongo_sleep = 5
-ns_sleep = 10
+ns_sleep = 20
 experiment_run_time = 30  # duration for which requests are sent
 extra_wait = 20
 
@@ -40,7 +45,7 @@ is_experiment_mode = True
 emulate_ping_latencies = True
 variation = 0.10
 
-copy_jar = True
+copy_jar = False
 
 hosts_ns_file = 'pl_ns'
 remote_cpu_folder = '/media/ephemeral0/gnslogs/cpuUsageFolder'
@@ -52,33 +57,29 @@ gen_workload = 'test'   # write 'test' to generate test workload with random val
 
 # folder where workload is generated
 lookupTrace = os.path.join(output_folder, 'workload/lookupTrace') # '/home/abhigyan/gnrs/ec2_data/workload/lookupTrace/'
-updateTrace = os.path.join(output_folder, 'workload/lookupTrace') #'/home/abhigyan/gnrs/ec2_data/workload/updateTrace/'
+updateTrace = os.path.join(output_folder, 'workload/updateTrace') #'/home/abhigyan/gnrs/ec2_data/workload/updateTrace/'
 other_data = os.path.join(output_folder, 'workload/otherData')#  data to generate placement, e.g., read rate, write rate, etc. are output in this folder.
 #'/home/abhigyan/gnrs/ec2_data/workload/otherData/'
 
 # workload parameters
 regular_workload = 0  # number of regular/service names in the workload
-mobile_workload = 10  # number of mobile device names in the workload
+mobile_workload = 1000  # number of mobile device names in the workload
 
-lookup_count = 1 # approx mobile lookups (for mobile workload generation)
-update_count = 0 # approx mobile updates (for mobile workload generation)
+lookup_count = 1000 # approx mobile lookups (for mobile workload generation)
+update_count = 1000 # approx mobile updates (for mobile workload generation)
 lookup_count_regular = 0 # fixed (for regular workload, number of lookups in lookup_regular_folder)
 
 # folder where config files for each node are generated: this is not necessary anymore
 config_folder = os.path.join(output_folder, 'configFolder') #'/home/abhigyan/gnrs/ec2_data/configFolder'
 
 
-
 update_trace_url = ''  #'https://s3.amazonaws.com/update100m/lookup_'
 lookup_trace_url = ''  #'https://s3.amazonaws.com/lookup100m/update_'
-
-
 
 
 load = 1  # used for cluster to generate workload
 loads = [1]
 
-gen_test_workload = False # if true, use simple test workload
 
 # Data collected from planetlab used for generating workload
 #pl_latency_folder = '/home/abhigyan/gnrs/ec2_data/pl_data/pl_latency/'
@@ -126,7 +127,6 @@ cache_size = 10000000
 normalizing_constant = 0.5  # this value is used. set in name-server.py
 
 name_server_selection_vote_size = 5
-
 
 eventual_consistency = False
 no_load_db = False
