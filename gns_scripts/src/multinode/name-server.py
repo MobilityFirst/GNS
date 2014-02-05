@@ -160,6 +160,8 @@ worker_thread_count = exp_config.worker_thread_count
 
 max_log_name = exp_config.max_log_name
 
+java_bin = exp_config.java_bin
+
 """ Prints usage message """
 def usage():
     print 'USAGE: name-server.py [options...]' 
@@ -202,7 +204,7 @@ def usage():
     
 """ Executes an instance of Name Server with the give parameters """
 def run_name_server():
-    command = 'nohup java -Xmx3000m -cp ' + name_server_jar + ' ' + exp_config.ns_main
+    command = 'nohup ' + java_bin +  '/java -Xmx4000m -cp ' + name_server_jar + ' ' + exp_config.ns_main
     if is_local:
         command += ' ' + LOCAL_EXP
     #else:

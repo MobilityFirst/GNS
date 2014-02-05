@@ -1,7 +1,9 @@
-hosts=$1
-nameActivesRemote=$2
+user=$1
+ssh_key=$2
+hosts=$3
+nameActivesRemote=$4
 
 echo "Unzipping nameActives file "$nameActivesRemote"  ..."
-cat $hosts | parallel -j+100 ssh -i auspice.pem -oStrictHostKeyChecking=no -oConnectTimeout=60 ec2-user@{} "gzip -f -d $nameActivesRemote.gz"
+cat $hosts | parallel -j+100 ssh -i $ssh_key -oStrictHostKeyChecking=no -oConnectTimeout=60 $user@{} "gzip -f -d $nameActivesRemote.gz"
 
 echo "Name actives copy complete. " $hosts

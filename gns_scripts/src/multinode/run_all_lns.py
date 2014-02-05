@@ -14,15 +14,15 @@ def run_all_lns(gns_folder):
     cmds = []
     pl_lns = read_col_from_file(exp_config.lns_file)
 
-    update_trace_param = exp_config.update_trace_url
-    lookup_trace_param = exp_config.lookup_trace_url
+    update_trace_param = ''#exp_config.update_trace_url
+    lookup_trace_param = '' #exp_config.lookup_trace_url
     for i, lns in enumerate(pl_lns):
         node_id = str(i + num_ns)
-        if exp_config.update_trace_url == '':
-            update_trace_param = 'update_' + lns # may be nod id
-        if exp_config.lookup_trace_url == '':
-            lookup_trace_param = 'lookup_' + lns
-    
+
+        update_trace_param = 'update' # + node_id # may be nod id
+
+        lookup_trace_param = 'lookup' # + node_id
+
         cmd = 'ssh -i ' + exp_config.ssh_key + '  -oConnectTimeout=60 -oStrictHostKeyChecking=no -l ' + exp_config.user + ' ' + lns + ' "mkdir -p ' + \
             gns_folder + '; cd ' + gns_folder + '; python local-name-server.py  --lookupTrace ' \
             + lookup_trace_param + ' --updateTrace ' + update_trace_param + ' --id ' + node_id + '"'
@@ -39,6 +39,7 @@ def run_all_ns(gns_folder):
     cmds = []
     pl_ns = read_col_from_file(exp_config.ns_file)
     for i, ns in enumerate(pl_ns):
+
         node_id = str(i)
         cmd = 'ssh -i ' + exp_config.ssh_key + ' -oConnectTimeout=60 -oStrictHostKeyChecking=no -l ' + exp_config.user + ' ' + ns + ' "mkdir -p ' + \
               gns_folder + '; cd ' + gns_folder + '; python name-server.py --id ' + node_id + '"'

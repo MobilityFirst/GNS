@@ -1,1 +1,2 @@
-ssh -l ec2-user -i auspice.pem $1
+source config.sh
+ssh -l $user -i $ssh_key $1

@@ -28,9 +28,9 @@ def check_install_mongo_java():
         print 'Java exists.'
 
 def install_mongo():
-    os.system('cd ' + home_folder + '; rm  -rf mongodb-linux-x86_64-2.4.8.tgz*; wget https://s3.amazonaws.com/auspice-gns/mongodb-linux-x86_64-2.4.8.tgz')
-    os.system('cd ' + home_folder + '; tar -xzf mongodb-linux-x86_64-2.4.8.tgz; mv mongodb-linux-x86_64-2.4.8 ' + mongo_folder)
-    os.system('cd ' + home_folder + '; rm -rf mongodb-linux-x86_64-2.4.8.tgz')
+    os.system('cd ' + home_folder + '; rm  -rf mongodb-linux-x86_64-2.4.9.tgz*; wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.4.9.tgz')
+    os.system('cd ' + home_folder + '; tar -xzf mongodb-linux-x86_64-2.4.9.tgz; mv mongodb-linux-x86_64-2.4.9 ' + mongo_folder)
+    os.system('cd ' + home_folder + '; rm -rf mongodb-linux-x86_64-2.4.9.tgz')
     print 'mongodb installed.'
 
 

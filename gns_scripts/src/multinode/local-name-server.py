@@ -136,7 +136,6 @@ delta = exp_config.delta;                                   # Weight assigned to
 mu = exp_config.mu;                                       # Co-efficient of estimated RTT in calculating timeout.
 phi = exp_config.phi;                                      # Co-efficient of deviation in calculating timeout.
 
-
 tinyQuery = False
 
 emulate_ping_latencies = exp_config.emulate_ping_latencies
@@ -151,6 +150,8 @@ file_logging_level = exp_config.lnslog
 console_output_level = exp_config.lnslog
 stat_file_logging_level = exp_config.lnslogstat
 stat_console_output_level = exp_config.lnslogstat
+
+java_bin = exp_config.java_bin
 
 """ Prints Usage Message """
 def usage():
@@ -203,13 +204,14 @@ def get_event_rate(exp_time,trace_file):
 def num_events(trace_file):
     """Count number of events in trace file"""
     if trace_file == '' or not os.path.isfile(trace_file):
-        print 'trace file does not exist'
+        print 'Trace file does not exist: ', trace_file
         return 1
     f = open(trace_file, 'r')
     num_lookups = 0.0
     for line in f:
         name = line.split()
         if name:
+            #if int(line) >= 10000000:
             num_lookups += 1.0
     if num_lookups > 0:
     	return num_lookups
@@ -220,7 +222,7 @@ def num_events(trace_file):
     
 """ Executes an instance of the Local Name Server with the give parameters """
 def run_local_name_server():
-    command = 'nohup java -Xmx2000m -cp ' + local_name_server_jar + ' ' + exp_config.lns_main
+    command = 'nohup ' + java_bin +  '/java -Xmx3000m -cp ' + local_name_server_jar + ' ' + exp_config.lns_main
     
     if is_local:
         command += ' ' + LOCAL_EXP
@@ -277,8 +279,9 @@ def run_local_name_server():
     command += ' ' + NUMER_OF_TRANSMISSIONS  + ' ' + str(numberOfTransmissions)
     command += ' ' + MAX_QUERY_WAIT_TIME  + ' ' + str(maxQueryWaitTime)
     command += ' ' + QUERY_TIMEOUT + ' ' + str(queryTimeout)
-    
-    #command += ' ' + NAME_ACTIVES + ' ' + str(name_actives)
+
+    if name_actives != '': # local name server may not want to do planned placement at all.
+        command += ' ' + NAME_ACTIVES + ' ' + str(name_actives)
     
     if adaptiveTimeout == True:
         command += ' ' + ADAPTIVE_TIMEOUT
@@ -501,13 +504,14 @@ def main(argv):
     if node_id == -1 and not name_server_file == '':
         node_id = get_node_id()
         print 'Node ID', node_id
-    
+    #lookup_rate = experiment_run_time
     lookup_rate = get_event_rate(experiment_run_time,lookup_trace_file)
-    lookup_rate = lookup_rate * exp_config.reducequeryratefactor
-    print 'Lookup Rate:', lookup_rate 
+    #lookup_rate = lookup_rate * exp_config.reducequeryratefactor
+    print 'Lookup rate:', lookup_rate
+    #update_rate_regular = experiment_run_time
     update_rate_regular = get_event_rate(experiment_run_time,update_trace_file)
     #update_rate_regular = update_rate_regular * exp_config.reducequeryratefactor
-    print 'Update Rate:', update_rate_regular 
+    print 'Update Rate:', update_rate_regular
     
     
     #print_options()

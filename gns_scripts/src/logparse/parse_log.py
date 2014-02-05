@@ -55,7 +55,6 @@ exclude_lns = []
 
 script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # script directory
 
-
 def main():
     global local, script_folder
     log_files_dir = sys.argv[1]
@@ -134,8 +133,14 @@ def parse_log(log_files_dir, output_dir, local1, filter = None):
     from plot_groupchange_latency import plot_groupchange_latency
     plot_groupchange_latency(log_files_dir)
     
-    from latency_over_time import failed_over_time
+    from latency_over_time import failed_over_time, latency_over_time
+    
     failed_over_time(os.path.join(output_dir, 'all_tuples.txt'))
+
+    latency_over_time(os.path.join(output_dir, 'all_tuples.txt'))
+
+    #from latency_over_time import failed_over_time
+    #failed_over_time(os.path.join(output_dir, 'all_tuples.txt'))
     
     #from count_incomplete_response import count_incomplete_response
     #count_incomplete_response(log_files_dir)
@@ -177,15 +182,18 @@ def extract_data_from_log(log_files_dir, local, filter):
     
     global latencies, read_latencies, write_latencies
     
-    os.system('gzip -d '+ log_files_dir + '/log_lns_*/gns_stat* ' + log_files_dir + '/log_lns_*/log/gns_stat* 1> /dev/null 2>/dev/null')
-    #os.system('gzip -d '+ log_files_dir + '/log_ns_*/gns.xml.*')
+    #os.system('gzip -d '+ log_files_dir + '/log_*/* '+ log_files_dir + '/log_*/gns_stat* ' + log_files_dir + '/log_*/log/gns_stat* 1> /dev/null 2>/dev/null')
+    os.system('gzip -d '+ log_files_dir + '/log_*/pl*gz')
+
     host_files = get_all_files_local(log_files_dir)
     #if local == True:
     #    
     #else:
     #    host_files = get_all_files(log_files_dir)
 
-    if not local: fill_lns_ids(log_files_dir)
+    if not local:
+        fill_lns_ids(log_files_dir)
+        print lns_ids
     
     fill_closest_ns_latency_table(log_files_dir)
     #print 'Number of lns ids', len(lns_ids)
@@ -196,10 +204,13 @@ def extract_data_from_log(log_files_dir, local, filter):
 
 def fill_lns_ids(log_files_dir):
     """read a pl_config to fill lns_ids mapping"""
+    
     global lns_ids
     files = os.listdir(log_files_dir)
     for f in files:
-        if f.startswith('log_lns') and os.path.exists( log_files_dir + '/' + f + '/pl_config'):
+        if f.startswith('log_lns') and (os.path.exists(log_files_dir + '/' + f + '/pl_config') or os.path.exists(log_files_dir + '/' + f + '/pl_config.gz')):
+            if os.path.exists(log_files_dir + '/' + f + '/pl_config.gz'):
+                os.system('gzip -d ' + log_files_dir + '/' + f + '/pl_config.gz')
             f = open(log_files_dir + '/' + f + '/pl_config')
             lns_ids = {}
             for line in f:
@@ -224,6 +235,7 @@ def get_all_files(mydir):
                     cur_host_files.append(filename)
                     print filename
                 i = i - 1
+
 #            xml_files = os.listdir(mydir + '/' + f)
 #            cur_host_files = []
 #            for xml_file in xml_files:
@@ -231,6 +243,7 @@ def get_all_files(mydir):
 #                    cur_host_files.append(mydir + '/' + f + '/' + xml_file)
             host_files[hostname] = cur_host_files
     return host_files
+
 
 def get_all_files_local(mydir):
     """Returns a dict such that key = hostname, value = list of log files."""
@@ -240,12 +253,17 @@ def get_all_files_local(mydir):
     for f in all_files:
         if f.startswith('log_lns_') and os.path.isdir(mydir + '/' + f):
             hostname = f[len('log_lns_'):]
+
             cur_host_files = []
-            i = 10
+            i = 100
             while i >= 0:
                 filename = mydir + '/' + f + '/log/gns_stat.xml.' + str(i)
+                filename_gz = mydir + '/' + f + '/log/gns_stat.xml.' + str(i) + '.gz'
+                #print 'checking ..', filename
                 if os.path.exists(filename):
                     cur_host_files.append(filename)
+                elif os.path.exists(filename_gz):
+                    cur_host_files.append(filename_gz)
                     #print filename
                 i = i - 1
             #            xml_files = os.listdir(mydir + '/' + f)
@@ -254,6 +272,9 @@ def get_all_files_local(mydir):
             #                if xml_file.startswith(log_file_name) and not xml_file.endswith('.lck'):
             #                    cur_host_files.append(mydir + '/' + f + '/' + xml_file)
             host_files[hostname] = cur_host_files
+            print 'Host files are: ', cur_host_files, hostname
+
+    #print host_files
     return host_files
 
 
@@ -308,6 +329,7 @@ def get_closest_ns_latency_from_config_file(config_file):
                 continue
     return least_latency
 
+
 def get_all_latencies(host_files, filter):
     """Get latency from all hosts"""
     global success, failed, host_success, host_failed, lns_cache_hit, total_reads, total_writes, all_tuples
@@ -348,14 +370,22 @@ def get_all_latencies(host_files, filter):
 
 
 def get_host_latencies(filenames, hostname, filter):
+    #print 'get host latencies ...'
     # initialize
     read_l1 = []
     write_l1 = []
     host_tuples1 = []
     ping_host1 = []
     closest_host1 = []
-    
+    for filename in filenames:
+        print filename
+        print filename[-2:]
+        if filename[-2:] == 'gz':
+            #print 'gzipping ..'
+            os.system('gzip -d ' + filename) #newchange
     for i,filename in enumerate(filenames):
+        if filename[-2:] == 'gz':
+            filename = filename[:-3] # remove .gz prefix #newchange
         # get tuples from this log file
         read_l, write_l, host_tuples, ping_host, closest_host = \
                 get_latencies(i,filename, hostname, filter)
@@ -365,13 +395,15 @@ def get_host_latencies(filenames, hostname, filter):
         host_tuples1.extend(host_tuples)
         ping_host1.extend(ping_host)
         closest_host1.extend(closest_host)
-
+        #print 'zipping ... ', filename
+        os.system('gzip ' + filename)  # compress file back
     # exclude initial / final queries
     read_l1 = exclude_queries(read_l1)
     write_l1 = exclude_queries(write_l1)
     host_tuples1 = exclude_queries(host_tuples1)
     ping_host1 = exclude_queries(ping_host1)
     closest_host1 = exclude_queries(closest_host1)
+
     return read_l1, write_l1, host_tuples1, ping_host1, closest_host1
 
 first_start = -1 ## first successful read at a LNS was recorded at this time, used to assign a time to other requests at that LNS.
@@ -394,6 +426,7 @@ def get_latencies(filecount, filename, hostname, filter = None):
         this_local_name_server = hostname
     else:
         this_local_name_server = lns_ids[hostname]
+    
     closest_ns_latency = 0
     if not local:
         closest_ns_latency = closest_ns_latency_dict[hostname]
@@ -414,6 +447,9 @@ def get_latencies(filecount, filename, hostname, filter = None):
 
                 latency, start_time, ping_latency, name, ns1, lns, num_transmissions, num_restarts = \
                     parse_line_query_success(tokens)
+                #nameInt = int(name)
+                #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
+                #    continue
                 #if latency > 900:
                 #    continue
                 if first_start == -1:
@@ -441,6 +477,11 @@ def get_latencies(filecount, filename, hostname, filter = None):
         elif tokens[0].startswith('<message>Success-Update'):
             latency, name, name_server, local_name_server, start_time, num_restarts = \
                 parse_line_update_success(tokens)
+            #nameInt = int(name)
+            #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
+            #        continue
+            if first_start == -1:
+                first_start = start_time
             cur_time = start_time
             host_tuples.append([name, local_name_server, name_server, 1, latency, 'w', start_time - first_start, start_time - first_start + latency, num_restarts])
             write_latencies.append(latency)
@@ -449,16 +490,24 @@ def get_latencies(filecount, filename, hostname, filter = None):
                 contact_primary += 1
         elif tokens[0].startswith('<message>Failed-Lookup'):
             #if tokens[0].startswith('<message>Failed-LookupNoResponseReceived'):
+            name = tokens[3]
+            #nameInt = int(name)
+            #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
+            #        continue
             try:
                 ns = int(tokens[7]) #int(tokens[7][1:-len('</message>') -1].split(',')[0])
-                host_tuples.append([tokens[3], this_local_name_server, ns, 0, -1.0, 'rf', cur_time - first_start, 0, 0, 0])
+                host_tuples.append([name, this_local_name_server, ns, 0, -1.0, 'rf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
         elif tokens[0].startswith('<message>Failed-Update'):
+            name = tokens[3]
+            #nameInt = int(name)
+            #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
+            #        continue
             try:
                 ns = int(tokens[8])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
-                host_tuples.append([tokens[1], this_local_name_server, ns, 0, -1.0, 'wf', cur_time - first_start, 0, 0, 0])
+                host_tuples.append([name, this_local_name_server, ns, 0, -1.0, 'wf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -469,7 +518,7 @@ def get_latencies(filecount, filename, hostname, filter = None):
     if host_retrans > 0:
         retrans_percent = host_retrans  / host_success
     
-    print '\tRetransmissions', host_retrans,
+    #print '\tRetransmissions', host_retrans,
     return read_latencies, write_latencies, host_tuples, ping_latencies, closest_ns_latencies
 
 

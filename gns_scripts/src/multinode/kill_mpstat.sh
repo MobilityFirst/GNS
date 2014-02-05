@@ -1,15 +1,16 @@
-
-hosts_file=$1
-remote_folder=$2
-local_folder=$3
+user=$1
+ssh_key=$2
+hosts_file=$3
+remote_folder=$4
+local_folder=$5
 
 echo "Killing mpstat ..."
-cat $hosts_file | parallel ssh -i auspice.pem ec2-user@{} "killall -9 mpstat"
+cat $hosts_file | parallel ssh -i $ssh_key $user@{} "killall -9 mpstat"
 
 rm -rf $local_folder
 mkdir -p $local_folder
 
 echo "Copy files ..."
-cat $hosts_file | parallel scp -r -i auspice.pem ec2-user@{}:$remote_folder/{} $local_folder/{}
+cat $hosts_file | parallel scp -r -i $ssh_key $user@{}:$remote_folder/{} $local_folder/{}
 
 echo "Done."

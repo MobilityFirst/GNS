@@ -1,51 +1,67 @@
 import os, sys
 
+############### UPDATE VALUES BELOW ####################
 
 # values of these variables are pathnames on the machine where the script is running
-output_folder = '/home/abhigyan/gnrs/results/jan26/pkgtest/'  # path where output from experiment will be stored
-ns_file = '/home/abhigyan/gnrs/pkg_data/hosts_ns.txt'  # file with list of name servers (one per line)
-lns_file = '/home/abhigyan/gnrs/pkg_data/hosts_lns.txt'  # file with list of local name servers (one per line)
-user = 'abhigyan'  # user name to log in to every machine
-ssh_key = '/home/abhigyan/.ssh/id_rsa'  # ssh key used for looging into remore machine
-jar_file =  '/home/abhigyan/gnrs/GNS.jar'  # path of the GNS jar on local machine 
+output_folder = '/home/abhigyan/gnrs/results/jan30/gns_output2/'  # path where output from experiment will be stored
+ns_file = '/home/abhigyan/gnrs/pkg_data/pl_ns'  # file with list of name servers (one per line)
+lns_file = '/home/abhigyan/gnrs/pkg_data/pl_lns'  # file with list of local name servers (one per line)
 
+user = 'ec2-user'  # user name to log in to every machine
+ssh_key = '/home/abhigyan/ec2/id_rsa'  # ssh key used for logging into remote machine
+jar_file = '/home/abhigyan/gnrs/GNS.jar'  # path of the GNS jar on local machine,
 
 # values of these variables are pathnames on the remote machine
-jar_file_remote = '/state/partition1/gnrs/GNS.jar'  # path name on remote machine where jar will be stored
-gns_output_logs = '/state/partition1/gnslogs/'  # remote folder where gns output will be stored
-paxos_log_folder = '/state/partition1/paxos_log/' # remote folder where paxos logs will be stored
-run_db = False        # either True/False. if 'True', running mongodb instances on remote machine are killed, new instances are run, and all previous data is deleted from disk.
-                      # if False,  already running mongo instances are used. Database state with same  
-db_folder = '/state/partition1/gnsdb/'  #  remote folder where mongodb will store its logs
+java_bin = '/home/ec2-user/jdk/bin/'   # java binaries are located at this folder on remote machine
+mongo_bin = '/home/ec2-user/mongodb/bin/'  # mongodb binaries are located at this folder on remote machine
+jar_file_remote = '/home/ec2-user/GNS.jar'  # path name on remote machine where jar will be stored
+gns_output_logs = '/home/ec2-user/gnslogs/'  # remote folder where gns output will be stored
+paxos_log_folder = '/home/ec2-user/paxos_log/' # remote folder where paxos logs will be stored
+run_db = True        # either True/False. if 'True', running mongodb instances on remote machine are killed, new instances are run, and all previous data is deleted from disk.
+                      # if False,  already running mongo instances are used. Database state with same
+db_folder = '/home/ec2-user/gnsdb/'  #  remote folder where mongodb will store its logs
+
+##########################################################
+
+# Dont need to change values below to run a test experiment
+
+primary_name_server = 3  # Number of primary name servers. Must be less than number of name servers.
+                         # To run with static placement, set primary_name_server to the number of replicas per name.
+                         # and set replication_interval to a value more than the duration of the experiment.
+
+replication_interval = 100000   ## (in seconds). Intervals at which auspice compute new set of active replicas.
 
 
-#### Variables above
+ns_geo_file = 'abcd'
+lns_geo_file = 'abcd'    ### needed for generating workload
 
-#num_ns = 3
-#num_lns = 3
 
-primary_name_server = 3
+restore_db = False # if true, backup state from DB
+db_folder_backup = '/media/ephemeral0/gnsdb-backup/'  #  remote folder where mongodb will store its logs
+no_load_db = False    # must set to true, if records already loaded in DB,
 
-replication_interval = 1000000
 
-mongo_sleep = 5
+mongo_sleep = 60
 ns_sleep = 20
-experiment_run_time = 30  # duration for which requests are sent
-extra_wait = 20
+experiment_run_time = 60  # duration for which requests are sent
+extra_wait = 30
 
 failed_nodes = None
 
 scheme = 'locality'
 schemes = {'beehive':0, 'locality':1, 'uniform':2, 'static3':3, 'replicate_all':4}
 
-debug_mode = True
+debug_mode = False
 
 is_experiment_mode = True
 
 emulate_ping_latencies = True
+
 variation = 0.10
 
-copy_jar = False
+copy_jar = True # if true, copy jar to remote machines from given location
+download_jar = False   # if true, download jar from S3
+
 
 hosts_ns_file = 'pl_ns'
 remote_cpu_folder = '/media/ephemeral0/gnslogs/cpuUsageFolder'
@@ -65,21 +81,21 @@ other_data = os.path.join(output_folder, 'workload/otherData')#  data to generat
 regular_workload = 0  # number of regular/service names in the workload
 mobile_workload = 1000  # number of mobile device names in the workload
 
-lookup_count = 1000 # approx mobile lookups (for mobile workload generation)
-update_count = 1000 # approx mobile updates (for mobile workload generation)
+lookup_count = 10000 # approx mobile lookups (for mobile workload generation)
+update_count = 10000 # approx mobile updates (for mobile workload generation)
 lookup_count_regular = 0 # fixed (for regular workload, number of lookups in lookup_regular_folder)
 
 # folder where config files for each node are generated: this is not necessary anymore
-config_folder = os.path.join(output_folder, 'configFolder') #'/home/abhigyan/gnrs/ec2_data/configFolder'
+#config_folder = os.path.join(output_folder, 'configFolder') #'
+gen_config = True
+config_folder = '/home/abhigyan/gnrs/ec2_data/ec2_config/'
 
 
 update_trace_url = ''  #'https://s3.amazonaws.com/update100m/lookup_'
 lookup_trace_url = ''  #'https://s3.amazonaws.com/lookup100m/update_'
 
-
 load = 1  # used for cluster to generate workload
 loads = [1]
-
 
 # Data collected from planetlab used for generating workload
 #pl_latency_folder = '/home/abhigyan/gnrs/ec2_data/pl_data/pl_latency/'
@@ -98,11 +114,10 @@ reducequeryratefactor = 1.0
 
 output_sample_rate = 1.0    # fraction of requests that are logged
 
-name_actives_url = 'https://s3.amazonaws.com/workload100m/nameActives_all.gz' ##** match with name of name_actives_remote
+download_name_actives = False
 name_actives_remote = '' # location of remote name actives file
-
-name_actives_local = '/home/abhigyan/gnrs/nameActives_list/ec2/nameActives'
-
+name_actives_url = '' ##** match with name of name_actives_remote
+name_actives_local = ''
 
 max_log_name = int(output_sample_rate * (regular_workload + mobile_workload))
 
@@ -121,15 +136,14 @@ phi = 4.0
 
 lns_main = 'edu.umass.cs.gns.main.StartLocalNameServer'
 
-cache_size = 10000000
+cache_size = 1000000
 
 ################## NS parameters ######################
-normalizing_constant = 0.5  # this value is used. set in name-server.py
+normalizing_constant = 1  # this value is used. set in name-server.py
 
 name_server_selection_vote_size = 5
 
 eventual_consistency = False
-no_load_db = False
 
 #paxos_log_folder = 'paxos_log/'
 
@@ -155,9 +169,9 @@ quit_node_id = -1
 
 ##################### LOGGING #########################
 
-nslog = 'FINE'
-nslogstat = 'FINE'
-lnslog = 'FINE'
+nslog = 'WARNING'
+nslogstat = 'FINE'  # records write propagation times
+lnslog = 'WARNING'
 lnslogstat = 'FINE'
 
 ##################### SCHEMES #########################

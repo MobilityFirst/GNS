@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 import os
 import sys
+import random
 
 from read_pl_latencies import read_pl_latencies
 import exp_config
+from haversine import haversine
 
-
-pl_lns_workload = exp_config.pl_lns_workload
+pl_lns_workload = exp_config.lns_file
 
 hosts_file_ns = exp_config.ns_file #'/home/abhigyan/gnrs/ec2_scripts/pl_ns'
 hosts_file_lns = exp_config.lns_file # '/home/abhigyan/gnrs/ec2_scripts/pl_lns'
+hosts_file_ns_geo = exp_config.ns_geo_file
+hosts_file_lns_geo = exp_config.lns_geo_file
 
 config_dir = exp_config.config_folder
 config_file = 'config'
 
 pl_latency_folder = exp_config.pl_latency_folder
-
 
 lookup_trace = exp_config.lookupTrace
 update_trace = exp_config.updateTrace
@@ -28,25 +30,31 @@ def main():
     load = exp_config.load
     generate_ec2_config_file(load)
 
+
 def generate_ec2_config_file(load):
+    print 'start'
     from read_array_from_file import read_col_from_file
     ns_hostnames = read_col_from_file(hosts_file_ns)
     ns = len(ns_hostnames)
     lns_hostnames = read_col_from_file(hosts_file_lns)
     lns = len(lns_hostnames)
     if exp_config.gen_workload == 'locality':
-        print 'ERROR: locality based workload generator not implemented yet.'
-        sys.exit(2)
-        #generate_workload(ns, lns, ns_hostnames, lns_hostnames, load)
+        print 'Generating locality-based workload'
+        #sys.exit(2)
+        generate_workload(ns, lns, ns_hostnames, lns_hostnames, load)
+        print 'Generated'
         #print 'Generate full workload. Nodes = ', lns
     elif exp_config.gen_workload == 'test':
-        generate_test_workload(ns, lns_hostnames[ns - ns]) # id of lns is 'ns'
-        print 'Generated single LNS test workload.'
+        for i in range(lns):
+            generate_test_workload(ns + i, lns_hostnames[ns + i - ns]) # id of lns is 'ns'
+        print 'Generated single LNS test workload'
+    print 'after workload'
 
-    #
-            
+    # generate EC2 config file:
+    if exp_config.gen_config == False:
+        return
 #    global pl_latencies
-    
+    compute_latency_between_nodes(hosts_file_ns, hosts_file_lns, hosts_file_ns_geo, hosts_file_lns_geo)
     # config files
     os.system('mkdir -p ' + config_dir+ '; rm -rf ' + config_dir + '/*')
     
@@ -68,13 +76,57 @@ def generate_ec2_config_file(load):
 
 pl_latencies = {}
 
+
 def get_pl_latency(node1, node2):
     return pl_latencies[node1][node2]
 
 
+def compute_latency_between_nodes(hosts_file_ns, hosts_file_lns, hosts_file_ns_geo, hosts_file_lns_geo):
+    pl_ns, pl_ns_geo = read_pl_lns_geo(hosts_file_ns, hosts_file_ns_geo)
+    pl_lns, pl_lns_geo = read_pl_lns_geo(hosts_file_lns, hosts_file_lns_geo)
+    global pl_latencies
+    print pl_ns
+    print pl_ns_geo
+    print pl_lns
+    print pl_lns_geo
+
+    for i in range(len(pl_ns) + len(pl_lns)):
+        pl_latencies[i] =  {}
+        for j in range(len(pl_ns) + len(pl_lns)):
+            pl_latencies[i][j] =  1
+    if not os.path.exists(hosts_file_ns_geo):
+        return
+    for i in range(len(pl_ns)):
+        for j in range(len(pl_ns)):
+
+            pl_latencies[j][i] = haversine(pl_ns_geo[j][0], pl_ns_geo[j][1], pl_lns_geo[i][0], pl_lns_geo[i][1])
+
+    for i in range(len(pl_lns)):
+        i1 = i + len(pl_ns)
+        for j in range(len(pl_ns)):
+            pl_latencies[i1][j] = haversine(pl_lns_geo[i][0], pl_ns_geo[i][1], pl_lns_geo[j][0], pl_lns_geo[j][1])
+
+
+def read_pl_lns_geo(pl_lns, pl_lns_geo):
+    """returns list of lns, and a dict with pairwise distances between lns."""
+    lns = []
+    f = open(pl_lns)
+    for line in f:
+        lns.append(line.split()[0].strip())
+
+    if not os.path.exists(pl_lns_geo):
+        return lns,[]
+    lns_geo = []
+    f = open(pl_lns_geo)
+    for line in f:
+        tokens = line.split()
+        lns_geo.append([float(tokens[1]), float(tokens[2])])
+    return lns, lns_geo
+
+
 def write_config_file(node_id, config_file, ns, lns, hosts_file_ns, hosts_file_lns):
     from read_array_from_file import read_col_from_file
-    from random import random    
+    
     #hosts = ['compute-0-13']
     
     hosts = read_col_from_file(hosts_file_ns)
@@ -85,7 +137,8 @@ def write_config_file(node_id, config_file, ns, lns, hosts_file_ns, hosts_file_l
     for i in range(ns):
         port_number += port_per_node
         #s = '\t'.join([str(i), 'yes', hosts[host_count], str(port_number), str(random()), '100.0', '100.0'])
-        latency = 10.0 #get_pl_latency(node_id, i)
+        latency = pl_latencies[node_id][i]  # latency from node_id to (i)  #(1 + random.random()) * 10
+        #latency = 10.0 #get_pl_latency(node_id, i)
         s = '\t'.join([str(i), 'yes', hosts[host_count], str(port_number), str(latency), '100.0', '100.0'])
         fw.write(s + '\n')
         #print s
@@ -96,7 +149,8 @@ def write_config_file(node_id, config_file, ns, lns, hosts_file_ns, hosts_file_l
     #port_number = 20000
     for i in range(lns):
         port_number += port_per_node
-        latency = 10.0 #get_pl_latency(node_id, i + ns)
+        latency = pl_latencies[node_id][i + ns] # latency from node_id to (i+ns)  #(1 + random.random()) * 10
+        #latency = 10.0 #get_pl_latency(node_id, i + ns)
         s = '\t'.join([str(i + ns), 'no', hosts[host_count], str(port_number), str(latency), '100.0', '100.0'])
         fw.write(s + '\n')
         #print s
@@ -137,7 +191,7 @@ def generate_workload(ns, lns, ns_hostnames, lns_hostnames, load):
 
     from trace_generator import trace_generator
     trace_generator(load, lookup_temp, update_temp, other_data)
-
+    print 'after trace here .....'
     #os.system('/home/abhigyan/gnrs/trace_generator.py ' + str(load))
     # trace generator outputs in following folders
     

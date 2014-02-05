@@ -12,14 +12,14 @@ import exp_config
 #updateTraceFolder = 'updateTrace'
 #lookupTraceFolder = 'lookupTrace'
 
-pl_lns = exp_config.pl_lns_workload
-pl_lns_geo = exp_config.pl_lns_geo_workload
+pl_lns = exp_config.lns_file
+pl_lns_geo = exp_config.lns_geo_file
 
-num_lns = exp_config.num_lns
+#num_lns = exp_config.num_lns
 #pl_lns_geo = '/home/abhigyan/gnrs/configs/validationTrace/pl_lns_geo'
-locality_parameter = 10    ## requests will be generated with locality parameter 1 to locality_parameter
+locality_parameter = 1    ## requests will be generated with locality parameter 1 to locality_parameter
 
-locality_percent =  0.75
+locality_percent = 0.75
 
 exp_duration = exp_config.experiment_run_time
 
@@ -60,7 +60,7 @@ def generate_mobile_trace2(load, lookupTraceFolder, updateTraceFolder, other_dat
     
     os.system('mkdir -p ' + lookupTraceFolder + ' ' + updateTraceFolder)
     os.system('rm  ' + lookupTraceFolder + '/update_* '  + updateTraceFolder + '/lookup_* 2> /dev/null')
-    
+    num_lns = -1
     lns_list, lns_dist, lns_nbrs_ordered_bydist = read_pl_lns_geo(pl_lns, pl_lns_geo, num_lns)
     # get a mobile
     # get number of queries, get number of updates.
@@ -70,6 +70,9 @@ def generate_mobile_trace2(load, lookupTraceFolder, updateTraceFolder, other_dat
     # Randomize queries/updates. Write all arrays to files.
     min_update = int(number_updates*1.0/number_mobiles*0.5)
     max_update = int(number_updates*1.0/number_mobiles*1.5)
+    if number_updates > 0 and max_update == 0:
+        print 'Script error: max updates per mobile name = 0'
+        sys.exit(2)
 
     min_query = int(number_queries*1.0/number_mobiles*0.5)
     max_query = int(number_queries*1.0/number_mobiles*1.5)
@@ -110,7 +113,7 @@ def generate_mobile_trace2(load, lookupTraceFolder, updateTraceFolder, other_dat
     import time
     t0 = time.time()
     for i in range(number_mobiles):
-        if i%100000 == 0:
+        if i != 0 and i%100000 == 0:
             print 'Name', i, 'Time', int(time.time() - t0), 'Queries', total_queries, 'Updates', total_updates
 #            for lns in lns_list:
 #                lookupTraceFile = os.path.join(lookupTraceFolder, 'lookup_' + lns)
@@ -125,7 +128,7 @@ def generate_mobile_trace2(load, lookupTraceFolder, updateTraceFolder, other_dat
         #random.seed(i + 1)
         mobile_name_updates = random.randint(min_update, max_update)
         mobile_name_queries = random.randint(min_query, max_query)
-        
+
         #mobile_name_updates = ((random.random() + 0.5) * number_updates*1.0/number_mobiles)
         #mobile_name_queries = ((random.random() + 0.5) * number_queries*1.0/number_mobiles)
         #frac = mobile_name_updates - int(mobile_name_updates)
@@ -186,6 +189,7 @@ def generate_mobile_trace2(load, lookupTraceFolder, updateTraceFolder, other_dat
         locality_queries = int(locality_percent*mobile_name_queries)
         qcount = 0
         write_to_file(fw_lookup[x], fw_namelnslookup, x, mobile_name, q)
+
         #query_dict[update_location].append([mobile_name, q])
         locality_queries -= q
         qcount += q
@@ -267,8 +271,11 @@ def generate_mobile_trace2(load, lookupTraceFolder, updateTraceFolder, other_dat
     fw_readwrite.close()
     fw_namelnslookup.close()
 
-    #randomize_trace_file(lookupTraceFile)
-    #randomize_trace_file(updateTraceFile)
+    for i, lns in enumerate(lns_list):
+        lookupTraceFile = os.path.join(lookupTraceFolder, 'lookup_' + lns)
+        updateTraceFile = os.path.join(updateTraceFolder, 'update_' + lns)
+        randomize_trace_file(lookupTraceFile)
+        randomize_trace_file(updateTraceFile)
 
     #from write_array_to_file import write_tuple_array
     #output_file = '/home/abhigyan/gnrs/optimalnew/lns_mobilename_lse_folder/lns_mobilename_lse_load' + str(int(load))
@@ -333,6 +340,8 @@ def read_pl_lns_geo(pl_lns, pl_lns_geo, num_lns):
         tokens = line.split()
         lns_geo[tokens[0]] = [float(tokens[1]), float(tokens[2])]
     lns_dist = {}
+    if num_lns < 0:
+        num_lns = len(lns)
     lns = lns[:num_lns]
     for lns1 in lns:
         lns_dist[lns1] = {}

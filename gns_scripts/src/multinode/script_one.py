@@ -11,9 +11,10 @@ import inspect
 script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
 parent_folder = os.path.split(script_folder)[0]
 
-log_parse_script='/home/abhigyan/gnrs/logparse/parse_log.py'
 sys.path.append(parent_folder)
 from logparse.parse_log import parse_log  # added parent_folder to path to import parse_log module here
+
+
 
 def main():
     """Runs this main file."""
@@ -36,19 +37,11 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     time1 = time.time()
     
     if os.path.exists(output_folder):
-        os.system('rm -rf ' + output_folder)
-        #print '***** QUITTING!!! Output folder already exists:', output_folder, '*******'
-        #sys.exit(2)
+        #os.system('rm -rf ' + output_folder)
+        print '***** QUITTING!!! Output folder already exists:', output_folder, '*******'
+        sys.exit(2)
     if output_folder.endswith('/'):
         output_folder = output_folder[:-1]
-    
-    #run mongo db
-    if exp_config.run_db:
-        os.system('./kill_mongodb_pl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.db_folder)
-
-        os.system('./run_mongodb_pl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.db_folder)
-        os.system('sleep ' + str(exp_config.mongo_sleep)) # ensures mongo is fully running
-    
     # copy config files to record experiment configuration
     print 'Creating local output folder: ' + output_folder
     os.system('mkdir -p ' + output_folder)
@@ -58,43 +51,56 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
 
     # used for workload generation
     generate_ec2_config_file(exp_config.load)
-    
-    
+
     os.system('date')
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file)
     os.system('./rmLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' +  exp_config.paxos_log_folder + ' ' + exp_config.gns_output_logs)
-            
+
+    if exp_config.download_name_actives:
+        downloadNameActives()
+
     # ./cpPl.sh
     os.system('./cpPl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' + exp_config.config_folder + ' ' + exp_config.gns_output_logs) #
-    
+
     # ./cpWLU.sh
     os.system('./cpWLU.sh '+ exp_config.user + ' ' + exp_config.ssh_key + ' ' +  exp_config.lns_file + ' ' + exp_config.gns_output_logs + ' ' + lookupTrace + ' ' + updateTrace)
-    #
 
     # ./cpNameActives.sh
     #name_actives_local = exp_config.name_actives_local # should be uncompressed filename
     #name_actives_remote = exp_config.name_actives_remote
-    
     #if os.path.exists(name_actives_local): # if uncompressed version exists: compress it
     #    os.system('gzip -f ' + name_actives_local)
-    #name_actives_local = exp_config.name_actives_local + '.gz' 
+    #name_actives_local = exp_config.name_actives_local + '.gz'
     #if not os.path.exists(name_actives_local):
     #    print 'Name actives does not exist:', name_actives_local
     #    sys.exit(2)
-    
+
     #os.system('./cpNameActives.sh ' + name_actives_local  + ' ' + name_actives_remote  + ' ')
 
     if exp_config.copy_jar:
         remote_jar_folder = os.path.split(exp_config.jar_file_remote)[0]
         print remote_jar_folder
         os.system('./rmcpJar.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' + exp_config.jar_file  + ' ' + remote_jar_folder  + ' ' + exp_config.jar_file_remote)
-        
-        #os.system('./getJarS3.sh')
-    
-            # +' 1>/dev/null 2>/dev/null')
+    elif exp_config.download_jar:
+        # url of jar file is hardcoded
+        # location of jar file is hard coded
+        os.system('./getJarS3.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file)
+
+    #run mongo db
+    if exp_config.run_db:
+        os.system('./kill_mongodb_pl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.db_folder)
+        os.system('./run_mongodb_pl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.mongo_bin + ' ' + exp_config.db_folder)
+        os.system('sleep ' + str(exp_config.mongo_sleep))  # ensures mongo is fully running
+        print "Waiting for mongod process to start fully ..."
+    elif exp_config.restore_db:
+        os.system('./kill_mongodb_pl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.db_folder)
+        os.system('./restore_backup.sh '  + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file + ' ' + exp_config.db_folder_backup + ' ' + exp_config.db_folder)
+        os.system('./run_mongodb_pl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.mongo_bin + ' ' + exp_config.db_folder)
+        os.system('sleep ' + str(exp_config.mongo_sleep)) # ensures mongo is fully running
+
     #sys.exit(2)
     # start cpu use monitoring
-    #os.system('./run_mpstat.sh ' + exp_config.hosts_ns_file + ' ' + exp_config.remote_cpu_folder)
+    #os.system('./run_mpstat.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.hosts_ns_file + ' ' + exp_config.remote_cpu_folder)
 
     # ./name-server.sh
     #os.system('./name-server.sh')
@@ -107,7 +113,6 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
         sleep_for_time(exp_config.ns_sleep)
     except:
         print 'NS sleep interrupted. Starting LNS ...'
-        sys.exit(2)
 
     # ./local-name-server.sh
     #os.system('./local-name-server.sh')
@@ -123,27 +128,25 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
         return
     sleep_time = 0
     while sleep_time < exp_time_sec + excess_wait:
-        os.system('sleep 10')
-        sleep_time += 10
+        os.system('sleep 60')
+        sleep_time += 60
         if sleep_time % 60 == 0: print 'Time = ', sleep_time/60, 'min /', (exp_time_sec + excess_wait)/60, 'min'
 
     # ./endExperiment.sh output_folder
     print 'Ending experiment ..'
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file)
 
-    os.system('./getLog.sh '  + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' + output_folder + '  ' + exp_config.gns_output_logs)
+    os.system('./getLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' + output_folder + '  ' + exp_config.gns_output_logs)
     
     # stop cpu use monitoring and copy cpu use data
-    #os.system('./kill_mpstat.sh ' + exp_config.hosts_ns_file + ' ' + exp_config.remote_cpu_folder + ' ' + exp_config.local_cpu_folder)
+    #os.system('./kill_mpstat.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.hosts_ns_file + ' ' + exp_config.remote_cpu_folder + ' ' + exp_config.local_cpu_folder)
 
-    #os.system('./kill_mongodb_pl.sh')
-    
     # ./parse_log.py output_folder
     #os.system('logparse/parse_log.py ' + output_folder)
     stats_folder = output_folder + '_stats'
     if output_folder.endswith('/'):
         stats_folder = output_folder[:-1] + '_stats'
-    parse_log(output_folder, stats_folder, True)
+    parse_log(output_folder, stats_folder, False)
 
     #os.system(log_parse_script + ' ' + output_folder  + ' ' + output_folder + '_stats local')
 
@@ -152,6 +155,24 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     diff = time2 - time1
     print 'TOTAL EXPERIMENT TIME:', int(diff/60), 'minutes'
     sys.exit(2)
+
+
+def downloadNameActives():
+    """ """
+    nameActivesURL = exp_config.name_actives_url
+    nameActivesRemote = exp_config.name_actives_remote
+
+    nameActivesFile = nameActivesURL.split('/')[-1]
+    output_folder = os.path.split(nameActivesRemote)[0]
+    #nameActivesRemote = os.path.join(output_folder, nameActivesFile)
+
+    os.system('./download_file.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file + ' ' + nameActivesURL + ' ' + nameActivesFile + ' ' + output_folder)
+    os.system('./cpNameActives_S3.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file + ' ' +  nameActivesRemote)
+
+
+    os.system('./download_file.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.lns_file + ' ' + nameActivesURL + ' ' + nameActivesFile + ' ' + output_folder)
+    os.system('./cpNameActives_S3.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.lns_file + ' ' +  nameActivesRemote)
+
 
 def sleep_for_time(sleep_time):
     

@@ -158,7 +158,7 @@ set key bottom
 set fit noerrorvariables
 set yrange[0:1]
 set output "latencies_cdf.pdf"
-plot "alllatencies_cdf.txt" u 2:1 w l lw 4 t "ALL",  "writelatencies_cdf.txt" u 2:1 w l lw 4 t "WRITES",  "readlatencies_cdf.txt" u 2:1 w l lw 4 t "READS";
+plot "writelatencies_cdf.txt" u 2:1 w l lw 4 t "WRITES",  "readlatencies_cdf.txt" u 2:1 w l lw 4 t "READS";
 
 set output "ping_vs_mean.pdf"
 plot  "readlatencies_cdf.txt" u 2:1 w l lw 4 t "READS", "ping_latency.txt" u 2:1 w l lw 4 t "PINGS", "closest_ns_latency.txt" u 2:1 w l lw 4 t "Closest-NS";

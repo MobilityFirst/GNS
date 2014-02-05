@@ -30,7 +30,7 @@ def main():
 
 
 def trace_generator(load, lookup_trace, update_trace, other_data):
-    mobile_only = False
+    mobile_only = True
     
     regular_updates = 0 #int(20 * load)
     regular_names = exp_config.regular_workload
@@ -56,8 +56,6 @@ def trace_generator(load, lookup_trace, update_trace, other_data):
     generate_mobile_trace(load, mobile_lookup_trace, mobile_update_trace, mobile_other_data)
     
     if mobile_only:
-        print 'not implemented ... exiting'
-        sys.exit(2)
         os.system('mv ' + mobile_update_trace + '/* ' + update_trace + '/')
         os.system('mv ' + mobile_lookup_trace + '/* ' + lookup_trace + '/')
         os.system('rm -rf ' + mobile_update_trace + ' ' + mobile_lookup_trace)
@@ -73,8 +71,7 @@ def trace_generator(load, lookup_trace, update_trace, other_data):
     
     for line in f:
         host_name = line.split()[0].strip()
-        
-        
+
         #print 'Load = ', load1
         lookup_regular_orig_file = os.path.join(lookup_regular_folder, 'lookup_' + host_name)
         cmd = 'cat ' + ' '.join([lookup_regular_orig_file]*load1) + ' ' + \
@@ -124,6 +121,7 @@ def trace_generator(load, lookup_trace, update_trace, other_data):
     fw.write(str(total_write_rate) + '\n')
     fw.close()
     print 'finalized other data ... '
+
 
 def update_other_data_folder_with_regular_data(folder, mobile_folder, regular_name_count):
     os.system('mkdir -p ' + folder)

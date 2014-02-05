@@ -34,6 +34,7 @@ def latency_over_time(tuples_file):
         p = random.random()
         if p > p_th:
             continue
+        tokens = line.split()
         select_lines.append(line)
     
     from write_array_to_file import write_array
