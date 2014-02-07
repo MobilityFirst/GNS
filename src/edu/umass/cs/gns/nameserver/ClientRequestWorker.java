@@ -116,7 +116,9 @@ public class ClientRequestWorker extends TimerTask {
         case SELECT_REQUEST:
           Select.handleSelectRequest(incomingJSON);
           break;
-
+        case SELECT_RESPONSE:
+          Select.handleSelectResponse(incomingJSON);
+          break;
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON Exception in client request worker. " + e.getMessage());

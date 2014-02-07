@@ -51,6 +51,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         case REMOVE_RECORD_LNS:
         case REQUEST_ACTIVES:
         case SELECT_REQUEST:
+        case SELECT_RESPONSE:
           ClientRequestWorker.handleIncomingPacket(json, type);
           break;
 

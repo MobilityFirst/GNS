@@ -85,7 +85,7 @@ public class Select {
     }
   }
 
-  public static void handlePacketSelectResponse(JSONObject json) throws JSONException {
+  public static void handleSelectResponse(JSONObject json) throws JSONException {
     GNS.getLogger().info("NS" + NameServer.nodeID + " recvd QueryResponse: " + json);
     SelectResponsePacket packet = new SelectResponsePacket(json);
     GNS.getLogger().info("NS" + NameServer.nodeID + " recvd from NS" + packet.getNameServer());
