@@ -38,8 +38,7 @@ public class AddRemove {
             senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
                         addRecordPacket.getLocalNameServerID();
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Add  Task Scheduled. " +
-            "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
+    GNS.getLogger().fine(" Add  Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
   }
 
   /**

@@ -47,7 +47,7 @@ public class Select {
     packet.setNsID(NameServer.nodeID);
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " sending select " + outgoingJSON + " to " + serverIds);
+    GNS.getLogger().info("NS" + NameServer.nodeID + " sending select " + outgoingJSON + " to " + serverIds);
     // send to everybody except us (we'll do our stuff below)
     try {
       NameServer.tcpTransport.sendToIDs(serverIds, outgoingJSON, NameServer.nodeID);
@@ -62,14 +62,14 @@ public class Select {
   }
 
   public static void handleSelectRequestFromNS(JSONObject incomingJSON) throws JSONException {
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
+    GNS.getLogger().info("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request);
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacket(request.getId(), request.getLnsID(),
               request.getLnsQueryId(), request.getNsQueryId(), NameServer.nodeID, jsonRecords);
-      GNS.getLogger().fine("NS" + NameServer.nodeID + " sending back " + jsonRecords.length() + " records");
+      GNS.getLogger().info("NS" + NameServer.nodeID + " sending back " + jsonRecords.length() + " records");
       // and send them back to the originating NS
       NameServer.tcpTransport.sendToID(request.getNsID(), response.toJSONObject());
     } catch (Exception e) {
@@ -86,23 +86,23 @@ public class Select {
   }
 
   public static void handlePacketSelectResponse(JSONObject json) throws JSONException {
-    GNS.getLogger().finer("NS" + NameServer.nodeID + " recvd QueryResponse: " + json);
+    GNS.getLogger().info("NS" + NameServer.nodeID + " recvd QueryResponse: " + json);
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd from NS" + packet.getNameServer());
+    GNS.getLogger().info("NS" + NameServer.nodeID + " recvd from NS" + packet.getNameServer());
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " located query info:" + info.serversYetToRespond());
+    GNS.getLogger().info("NS" + NameServer.nodeID + " located query info:" + info.serversYetToRespond());
     // if there is no error update our results list
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getJsonArray(), info);
     } else { // error response
-      GNS.getLogger().fine("NS" + NameServer.nodeID + " processing error response: " + packet.getErrorMessage());
+      GNS.getLogger().info("NS" + NameServer.nodeID + " processing error response: " + packet.getErrorMessage());
       // SHOULD SEND BACK AN ERROR TO LNS HERE
     }
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " removing server " + packet.getNameServer());
+    GNS.getLogger().info("NS" + NameServer.nodeID + " removing server " + packet.getNameServer());
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServer());
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " servers yet to respond:" + info.serversYetToRespond());
+    GNS.getLogger().info("NS" + NameServer.nodeID + " servers yet to respond:" + info.serversYetToRespond());
     // If all the servers have sent us a response we're done.
     // Pull the records out of the info structure and send a response back to the LNS
     if (info.allServersResponded()) {

@@ -22,7 +22,7 @@ import java.util.TimerTask;
  * Time: 4:59 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SendAddRemoveUpsertTask extends TimerTask{
+public class SendAddRemoveUpsertTask extends TimerTask {
 
   String name;
   BasicPacket packet;
@@ -34,9 +34,8 @@ public class SendAddRemoveUpsertTask extends TimerTask{
   long requestRecvdTime;
 
   public SendAddRemoveUpsertTask(BasicPacket packet, String name,
-                                 InetAddress senderAddress, int senderPort, long requestRecvdTime,
-                                 HashSet<Integer> primariesQueried)
-  {
+          InetAddress senderAddress, int senderPort, long requestRecvdTime,
+          HashSet<Integer> primariesQueried) {
     this.name = name;
     this.packet = packet;
     this.senderAddress = senderAddress;
@@ -46,14 +45,17 @@ public class SendAddRemoveUpsertTask extends TimerTask{
   }
 
   @Override
-  public void run()
-  {
+  public void run() {
     timeoutCount++;
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
+    }
 
     if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
-      throw  new RuntimeException();
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+      }
+      throw new RuntimeException();
 //      return;
     }
 
@@ -61,14 +63,13 @@ public class SendAddRemoveUpsertTask extends TimerTask{
       UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
 
       if (updateInfo == null) {
-        if (StartLocalNameServer.debugMode)
-          GNS.getLogger().fine("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
-        throw  new RuntimeException();
+        GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
+        throw new RuntimeException();
       }
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
-      ConfirmUpdateLNSPacket confirmPkt = getConfirmPacket(packet);
+      GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
+      ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(packet);
       try {
-        if (confirmPkt!= null) {
+        if (confirmPkt != null) {
           if (updateInfo.senderAddress != null && updateInfo.senderAddress.length() > 0 && updateInfo.senderPort > 0) {
             LNSListener.udpTransport.sendPacket(confirmPkt.toJSONObject(),
                     InetAddress.getByName(updateInfo.senderAddress), updateInfo.senderPort);
@@ -76,7 +77,7 @@ public class SendAddRemoveUpsertTask extends TimerTask{
             Intercessor.getInstance().checkForResult(confirmPkt.toJSONObject());
           }
         } else {
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("ERROR: Confirm update is NULL. Cannot sent response to client.");
+          GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
         }
       } catch (JSONException e) {
         e.printStackTrace();
@@ -84,32 +85,35 @@ public class SendAddRemoveUpsertTask extends TimerTask{
         e.printStackTrace();
       }
       String updateStats = updateInfo.getUpdateFailedStats(primariesQueried, LocalNameServer.nodeID, updateRequestID, -1);
-//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(updateStats);
+//      if (StartLocalNameServer.debugMode) GNS.getLogger().info(updateStats);
       GNS.getStatLogger().fine(updateStats);
 
-      throw  new RuntimeException();
+      throw new RuntimeException();
     }
-    if (primariesQueried.size() == GNS.numPrimaryReplicas) primariesQueried.clear();
+    if (primariesQueried.size() == GNS.numPrimaryReplicas) {
+      primariesQueried.clear();
+    }
     int nameServerID = LocalNameServer.getClosestPrimaryNameServer(name, primariesQueried);
 
     if (nameServerID == -1) {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + primariesQueried);
+      GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried " + primariesQueried);
       return;
-    }
-    else {
+    } else {
       primariesQueried.add(nameServerID);
     }
     if (timeoutCount == 0) {
       String hostAddress = null;
-      if (senderAddress != null) hostAddress = senderAddress.getHostAddress();
+      if (senderAddress != null) {
+        hostAddress = senderAddress.getHostAddress();
+      }
       updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-              requestRecvdTime, hostAddress, senderPort, 0,null);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
+              requestRecvdTime, hostAddress, senderPort, 0, null);
+      GNS.getLogger().info("Update Info Added: Id = " + updateRequestID);
       updatePacketWithRequestID(packet, updateRequestID);
     }
     // create the packet that we'll send to the primary
 
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
+    GNS.getLogger().info("Sending Update to Node: " + nameServerID);
 
     // and send it off
     try {
@@ -119,34 +123,33 @@ public class SendAddRemoveUpsertTask extends TimerTask{
 //        StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.UPDATE_PORT, pkt.getType(), name,
 //                //nameRecordKey.getName(),
 //                updateAddressPacket.getUpdateValue().toString());
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("SendAddRequest: Send to: " + nameServerID +
-              " Name:" + name + " Id:" + updateRequestID + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
+      GNS.getLogger().info("SendAddRequest: Send to: " + nameServerID
+              + " Name:" + name + " Id:" + updateRequestID + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
     } catch (JSONException e) {
       e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-
   }
 
-
-  private ConfirmUpdateLNSPacket getConfirmPacket(BasicPacket packet) {
+  // This code screams for using a super class other than BasicPacket
+  private ConfirmUpdateLNSPacket getConfirmFailurePacket(BasicPacket packet) {
     ConfirmUpdateLNSPacket confirm;
     switch (packet.getType()) {
       case ADD_RECORD_LNS:
         confirm = new ConfirmUpdateLNSPacket(false, (AddRecordPacket) packet);
-        return  confirm;
+        return confirm;
       case REMOVE_RECORD_LNS:
-        confirm = new ConfirmUpdateLNSPacket(false, (RemoveRecordPacket)packet);
-        return  confirm;
+        confirm = new ConfirmUpdateLNSPacket(false, (RemoveRecordPacket) packet);
+        return confirm;
       case UPDATE_ADDRESS_LNS:
-        confirm = ConfirmUpdateLNSPacket.createFailPacket((UpdateAddressPacket)packet);
+        confirm = ConfirmUpdateLNSPacket.createFailPacket((UpdateAddressPacket) packet);
         return confirm;
     }
     return null;
   }
 
-
+  // This code screams for using a super class other than BasicPacket
   private void updatePacketWithRequestID(BasicPacket packet, int requestID) {
 
     switch (packet.getType()) {
@@ -165,7 +168,4 @@ public class SendAddRemoveUpsertTask extends TimerTask{
     }
 
   }
-
-
-
 }

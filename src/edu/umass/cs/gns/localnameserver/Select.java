@@ -16,6 +16,7 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +27,7 @@ import org.json.JSONObject;
  * @author westy
  */
 public class Select {
-
+  
   public static void handlePacketSelectRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
 
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
@@ -42,8 +43,14 @@ public class Select {
     packet.setLnsQueryId(queryId);
     JSONObject outgoingJSON = packet.toJSONObject();
     // Pick one NS to send it to
+    
+    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " potential servers are " + serverIds.toString());
     int serverID = BestServerSelection.simpleLatencyLoadHeuristic(serverIds);
-    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
+    // above might return -1 if the configuration info is not set.. so pick one randomly
+    if (serverID == -1) {
+      serverID = BestServerSelection.randomServer(serverIds);
+    }
+    GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
     try {
       if (!LNSListener.tcpTransport.sendToID(serverID, outgoingJSON)) {
         GNS.getLogger().severe("Failed to transmit QueryRequest to NS" + serverID);
