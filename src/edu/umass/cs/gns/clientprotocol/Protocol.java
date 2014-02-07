@@ -37,7 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
- * Implements the GNS server protocol
+ * Implements the GNS server protocol. Used by the 
  *
  * @author westy
  */

@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.clientprotocol.Defs;
-import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -25,6 +24,7 @@ import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Implements some admin functions for accessing the GNS.
+ * Implements some administrative functions for accessing the GNS.
  * 
  * @author westy
  */
@@ -43,7 +43,6 @@ public class Admintercessor {
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   private static Random randomID;
   private int localServerID = 0;
-  
   /**
    * Used for the general admin wait / notify handling
    */
@@ -52,7 +51,6 @@ public class Admintercessor {
    * This is where the admin response results are put.
    */
   private static ConcurrentMap<Integer, JSONObject> adminResult;
-
   /**
    * Used for the dump wait / notify handling
    */
@@ -99,7 +97,7 @@ public class Admintercessor {
             + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
             + " Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
   }
-  
+
   // the nuclear option
   public boolean sendResetDB() {
     try {
@@ -130,7 +128,7 @@ public class Admintercessor {
     }
     return false;
   }
-  
+
   public String sendDumpCache() {
     int id = nextAdminRequestID();
     try {
@@ -145,9 +143,9 @@ public class Admintercessor {
     } catch (Exception e) {
       GNS.getLogger().warning("Ignoring error while sending DUMPCACHE request: " + e);
       return null;
-    } 
+    }
   }
-  
+
   private void waitForAdminResponse(int id) {
     try {
       GNS.getLogger().finer("Waiting for admin response id: " + id);
@@ -161,7 +159,7 @@ public class Admintercessor {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
     }
   }
-  
+
   private void startCheckForAdminResponseThread() {
     new Thread("Admintercessor-CheckForAdminResponse") {
       @Override
@@ -211,7 +209,7 @@ public class Admintercessor {
       GNS.getLogger().warning("JSON error while getting packet type: " + e);
     }
   }
-  
+
   private ServerSocket getAdminResponseSocket() {
     GNS.getLogger().finer("Waiting for responses dump");
     ServerSocket adminSocket;
@@ -223,9 +221,8 @@ public class Admintercessor {
     }
     return adminSocket;
   }
-  
-  // DUMP
 
+  // DUMP
   public String sendDump() {
     int id;
     if ((id = sendDumpOutputHelper(null)) == -1) {
@@ -245,10 +242,18 @@ public class Admintercessor {
     try {
       GNS.getLogger().finer("Waiting for dump response id: " + id);
       synchronized (dumpMonitor) {
+        long timeoutExpiredMs = System.currentTimeMillis() + 10000;
         while (!dumpResult.containsKey(id)) {
-          dumpMonitor.wait();
+          dumpMonitor.wait(timeoutExpiredMs - System.currentTimeMillis());
+          if (System.currentTimeMillis() >= timeoutExpiredMs) {
+            // we timed out... only got partial results{
+            dumpResult.put(id, dumpStorage.get(id));
+            dumpStorage.remove(id);
+            break;
+          }
         }
       }
+
       GNS.getLogger().finer("Dump response id received: " + id);
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
@@ -257,7 +262,16 @@ public class Admintercessor {
 
   private String formatDumpRecords(Map<Integer, TreeSet<NameRecord>> recordsMap) {
     // now process all the records we received
+    
     StringBuilder result = new StringBuilder();
+    // are there any NSs that didn't respond?
+    Set<Integer>missingIDs = new HashSet(ConfigFileInfo.getAllNameServerIDs());
+    missingIDs.removeAll(recordsMap.keySet());
+    if (missingIDs.size() > 0) {
+      result.append("Missing NSs: " + missingIDs.toString());
+      result.append(LINE_SEPARATOR);
+    }
+    // process all the entries into a nice string
     for (Map.Entry<Integer, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
       result.append("Nameserver: " + entry.getKey() + " (" + ConfigFileInfo.getIPAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
@@ -423,8 +437,8 @@ public class Admintercessor {
     } while (dumpResult.containsKey(id));
     return id;
   }
-  
-   private int nextAdminRequestID() {
+
+  private int nextAdminRequestID() {
     int id;
     do {
       id = randomID.nextInt();

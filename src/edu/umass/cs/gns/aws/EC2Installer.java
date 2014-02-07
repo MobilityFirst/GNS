@@ -428,15 +428,16 @@ public class EC2Installer {
             //+ " -debugMode "
             + " -nsfile name-server-info "
             + "> NSlogfile 2>&1 &");
-    // run this with sudo because it needs root access to bind port 80
-    AWSEC2.executeBashScript(hostname, keyFile, true, "runRS.sh",
-            "#!/bin/bash\n"
-            + "cd /home/ec2-user\n"
-            + "if [ -f RSlogfile ]; then\n"
-            + "mv --backup=numbered RSlogfile RSlogfile.save\n"
-            + "fi\n"
-            + "nohup java -cp " + GNSFile + " edu.umass.cs.gns.httpserver.RedirectServer "
-            + "> RSlogfile 2>&1 &");
+    // THIS NEVER WORKED AND WE DON'T NEED IT UNLESS ANYMORE... WAS TRYING TO RUN A SIMPLE HTTP SERVICE ON PORT 80
+//    // run this with sudo because it needs root access to bind port 80
+//    AWSEC2.executeBashScript(hostname, keyFile, true, "runRS.sh",
+//            "#!/bin/bash\n"
+//            + "cd /home/ec2-user\n"
+//            + "if [ -f RSlogfile ]; then\n"
+//            + "mv --backup=numbered RSlogfile RSlogfile.save\n"
+//            + "fi\n"
+//            + "nohup java -cp " + GNSFile + " edu.umass.cs.gns.httpserver.RedirectServer "
+//            + "> RSlogfile 2>&1 &");
     // now run as part of LNS
 //    StatusModel.getInstance().queueUpdate(id, "Starting HTTP servers");
 //    AWSEC2.executeBashScript(hostname, keyFile, "runHTTP.sh",
