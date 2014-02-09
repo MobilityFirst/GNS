@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ByteStreamToJSONObjects implements Runnable {
+  public class ByteStreamToJSONObjects implements Runnable {
 
   HashMap socketData = new HashMap();
 

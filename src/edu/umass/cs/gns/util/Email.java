@@ -28,19 +28,20 @@ public class Email {
    * @param args message
    */
   public static void main(String[] args) {
-    if (args.length < 2) {
-      System.out.println("Usage: Email [to] [message]");
-      System.exit(-1);
-    } else {
-      boolean result = email("Testing Subject", args[0], args[1]);
-      System.exit(result ? 0 : -1);
-    }
+      email("abcd", "abhigyan.sharma@gmail.com", "first message");
+//    if (args.length < 2) {
+//      System.out.println("Usage: Email [to] [message]");
+//      System.exit(-1);
+//    } else {
+//      boolean result = email("Testing Subject", args[0], args[1]);
+//      System.exit(result ? 0 : -1);
+//    }
   }
 
   public static boolean email(String subject, String recipient, String text) {
-    if (emailLocal(subject, recipient, text)) {
-      return true;
-    } else if (emailSSL(subject, recipient, text)) {
+      if (emailSSL(subject, recipient, text)) {
+          return true;
+      } else if (emailLocal(subject, recipient, text)) {
       return true;
     } else if (emailTLS(subject, recipient, text)) {
       return true;

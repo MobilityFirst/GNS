@@ -68,7 +68,10 @@ def main():
             run_local_name_server(id, output_folder, config_file)
 
     # kill local
-
+    if exp_config.is_experiment_mode == False:
+        print 'Not experiment mode. GNS running.'
+        return
+        
     print 'Sleeping until experiment finishes ...'
     time.sleep(exp_config.experiment_run_time + exp_config.extra_wait)
 

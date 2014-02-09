@@ -4,7 +4,7 @@ import sys
 # *** MUST set values of 'gnrs_jar' and 'working_dir' ***
 
 # gns jar
-gnrs_jar = '/Users/abhigyan/Documents/workspace/GNSev/dist/GNS.jar'
+gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS-latest/dist/GNS.jar'
 
 # top level folder
 working_dir = '/Users/abhigyan/Documents/gns_output/'  # location of top-level folder checked out from SVN.
@@ -51,7 +51,7 @@ update_count = 3000   # number of updates at local name server
 #
 #
 # GNS parameters common to name server / local name servers
-is_experiment_mode = True  # set to True to run experiments, false otherwise.
+is_experiment_mode = False  # set to True to run experiments, false otherwise.
 primary_name_server = 3  # number of primary name servers
 
 #lookupTrace = 'lookupTrace10'
@@ -78,9 +78,9 @@ load_balancing = False  # Redirect to closest name server based on (RTT + server
 
 #
 # logging options
-nslog = 'OFF'       # Set to  FINER for more verbose output, and INFO, and SEVERE for less verbose output
-nslogstat = 'OFF'  # Set to  FINER for more verbose output, and INFO, and SEVERE for less verbose output
-lnslog = 'OFF'    # Set to  FINER for more verbose output, and INFO, and SEVERE for less verbose output
+nslog = 'FINE'       # Set to  FINER for more verbose output, and INFO, and SEVERE for less verbose output
+nslogstat = 'FINE'  # Set to  FINER for more verbose output, and INFO, and SEVERE for less verbose output
+lnslog = 'FINE'    # Set to  FINER for more verbose output, and INFO, and SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 

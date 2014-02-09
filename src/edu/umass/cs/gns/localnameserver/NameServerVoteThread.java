@@ -155,31 +155,30 @@ public class NameServerVoteThread extends Thread {
 
 	
 	private int selectNSToVoteFor(String name) {
-		
-		if (StartLocalNameServer.chooseFromClosestK == 1  
-				&& StartLocalNameServer.loadDependentRedirection == false) {
+
+    if (StartLocalNameServer.loadDependentRedirection) {
+      Set<Integer> allNS = ConfigFileInfo.getAllNameServerIDs();
+      return BestServerSelection.simpleLatencyLoadHeuristic(allNS);
+    } else {
 			return ConfigFileInfo.getClosestNameServer();
 		}
-		else if (StartLocalNameServer.loadDependentRedirection) {
-			Set<Integer> allNS = ConfigFileInfo.getAllNameServerIDs();
-			return BestServerSelection.simpleLatencyLoadHeuristic(allNS);
-		}
-		else {// if (StartLocalNameServer.chooseFromClosestK > 1) {
-			int nameInt = Integer.parseInt(name);
-			int closestK = (nameInt % StartLocalNameServer.chooseFromClosestK) + 1;
-			if (closestK == 1) return ConfigFileInfo.getClosestNameServer();
-			
-			Set<Integer> allNS = ConfigFileInfo.getAllNameServerIDs();
-			
-			HashSet<Integer> excludeNS = new HashSet<Integer>();
-			excludeNS.add(ConfigFileInfo.getClosestNameServer());
-			
-			while (excludeNS.size()  + 1 < closestK) {
-				int x = BestServerSelection.getSmallestLatencyNS(allNS, excludeNS);
-				excludeNS.add(x);
-			}
-			return BestServerSelection.getSmallestLatencyNS(allNS, excludeNS);
-		}
+
+//		else {// if (StartLocalNameServer.chooseFromClosestK > 1) {
+//			int nameInt = Integer.parseInt(name);
+//			int closestK = (nameInt % StartLocalNameServer.chooseFromClosestK) + 1;
+//			if (closestK == 1) return ConfigFileInfo.getClosestNameServer();
+//
+//			Set<Integer> allNS = ConfigFileInfo.getAllNameServerIDs();
+//
+//			HashSet<Integer> excludeNS = new HashSet<Integer>();
+//			excludeNS.add(ConfigFileInfo.getClosestNameServer());
+//
+//			while (excludeNS.size()  + 1 < closestK) {
+//				int x = BestServerSelection.getSmallestLatencyNS(allNS, excludeNS);
+//				excludeNS.add(x);
+//			}
+//			return BestServerSelection.getSmallestLatencyNS(allNS, excludeNS);
+//		}
 	}
 
 	/**

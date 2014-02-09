@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 public class GNS {
 
-  public static final int DEFAULT_TTL_SECONDS = 2;
+  public static final int DEFAULT_TTL_SECONDS = 0;
   public static int startingPort = 24400;
   public static final String INTERNAL_PREFIX = "_GNS_";
   public static final String GNS_URL_PATH = "GNS";

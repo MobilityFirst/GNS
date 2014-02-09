@@ -122,8 +122,8 @@ public class NameServer {
 
       if (StartNameServer.nameActives == null) {
         GenerateSyntheticRecordTable.generateRecordTableBulkInsert(StartNameServer.regularWorkloadSize,
-                StartNameServer.mobileWorkloadSize, StartNameServer.defaultTTLRegularName,
-                StartNameServer.defaultTTLMobileName);
+                StartNameServer.mobileWorkloadSize, StartNameServer.TTLRegularName,
+                StartNameServer.TTLMobileName);
       } else {
         GenerateSyntheticRecordTable.generateRecordTableWithActivesNew(StartNameServer.nameActives);
       }

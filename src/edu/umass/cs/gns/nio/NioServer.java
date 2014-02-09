@@ -340,6 +340,10 @@ public class NioServer implements Runnable {
           }
           if (queue == null) {
             queue = new ArrayList();
+          } else {
+            if (queue.size() > 0) {
+
+            }
           }
 
           queue.add(ByteBuffer.wrap(data));
