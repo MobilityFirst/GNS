@@ -9,20 +9,26 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.*;
+import static edu.umass.cs.gns.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import static edu.umass.cs.gns.packet.Packet.getPacketType;
 
-//import edu.umass.cs.gnrs.nameserver.NameRecord;
 /**
- *
+ * An implementation of client support in the GNS server. Implemented
+ * as a singleton class.
+ * 
+ * Provides basic methods for reading and writing fields in the GNS. Used 
+ * by the various classes in the client package to implement writing of fields 
+ * (for both user data and system data), meta data, groups and perform more
+ * sophisticated queries (the select queries).
+ * 
  * @author westy
  */
 public class Intercessor {
@@ -53,6 +59,9 @@ public class Intercessor {
   /* Used for sending updates and getting confirmations */
   public static Transport transport;
   private static ConcurrentMap<Integer, Boolean> updateSuccessResult;
+  
+  // Instrumentation
+  private static ConcurrentMap<Integer, Date> queryTimeStamp;
 
   public int getLocalServerID() {
     return localServerID;
@@ -70,6 +79,7 @@ public class Intercessor {
 
     randomID = new Random();
     queryResult = new ConcurrentHashMap<Integer, ValuesMap>(10, 0.75f, 3);
+    queryTimeStamp = new ConcurrentHashMap<Integer, Date>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
 
     if (StartLocalNameServer.runHttpServer == false) {
@@ -156,13 +166,16 @@ public class Intercessor {
   }
 
   public ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalFields) {
-    GNS.getLogger().finer("Sending query ... " + name + " " + key);
+    GNS.getLogger().finer("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
+    
+    
     DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.nodeID);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-
+      // instrumentation
+      queryTimeStamp.put(id, new Date());
       sendPacket(json);
 
     } catch (JSONException e) {
@@ -172,21 +185,27 @@ public class Intercessor {
 
     // now we wait until the correct packet comes back
     try {
-      GNS.getLogger().finer("waiting for query id ... " + id);
+      GNS.getLogger().finer("Waiting for query id: " + id);
       synchronized (monitor) {
         while (!queryResult.containsKey(id)) {
-
           monitor.wait();
         }
       }
-      GNS.getLogger().finer("query id response received ... " + id);
+      GNS.getLogger().finer("Query id response received: " + id);
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
 
     }
     ValuesMap result = queryResult.get(id);
     queryResult.remove(id);
+    Date now = new Date();
+    Date sentTime = queryTimeStamp.get(id);
+    queryTimeStamp.remove(id);
+    long rtt = now.getTime() - sentTime.getTime();
+    GNS.getLogger().info("Query (" + id + ") RTT = " + rtt + "ms");
     GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
+    // instrumentation
+    result.setRoundTripTime(rtt);
     
     if (removeInternalFields) {
       result = removeInternalFields(result);
@@ -211,6 +230,7 @@ public class Intercessor {
         valuesMap.remove(key);
       }
     }
+    
     return valuesMap;
   }
 
@@ -353,6 +373,13 @@ public class Intercessor {
     }
   }
 
+  /**
+   * Helper function for sending JSON packets to the Local Name Server. 
+   * This usually does not require a socket based send (just a dispatch)
+   * as the LNS runs in the same process as the HTTP server.
+   * 
+   * @param jsonObject 
+   */
   public void sendPacket(JSONObject jsonObject) {
     if (StartLocalNameServer.runHttpServer) {
       LNSListener.demultiplexLNSPackets(jsonObject);
@@ -364,4 +391,6 @@ public class Intercessor {
       }
     }
   }
+  
+  
 }

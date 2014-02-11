@@ -8,13 +8,13 @@ import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.httpserver.Defs;
-import edu.umass.cs.gns.httpserver.GnsHttpServer;
-import edu.umass.cs.gns.httpserver.SHA1HashFunction;
-import edu.umass.cs.gns.httpserver.SystemParameter;
-import static edu.umass.cs.gns.httpserver.Defs.*;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.httpserver.Defs;
+import static edu.umass.cs.gns.httpserver.Defs.*;
+import edu.umass.cs.gns.httpserver.GnsHttpServer;
+import edu.umass.cs.gns.httpserver.SystemParameter;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.Base64;
@@ -33,8 +33,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
+import edu.umass.cs.gns.nameserver.ValuesMap;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * Implements the GNS server protocol. Used by the 
@@ -43,6 +47,7 @@ import org.json.JSONException;
  */
 public class Protocol {
   //
+
   private boolean adminMode = false;
   private FieldAccess fieldAccess = FieldAccess.getInstance();
   private AccountAccess accountAccess = AccountAccess.getInstance();
@@ -206,7 +211,7 @@ public class Protocol {
             + " See below for more on signature. "
             + NEWLINE + NEWLINE
             //
-             + "SELECT OPERATIONS "
+            + "SELECT OPERATIONS "
             + urlPrefix + SELECT + QUERYPREFIX + QUERY + VALSEP + "<query>" + NEWLINE
             + "  Returns all records that satisfy the query. For details see http://mobilityfirst.cs.umass.edu/wiki/index.php/Query_Syntax"
             + " Values are returned as a JSON array of JSON Objects."
@@ -339,13 +344,8 @@ public class Protocol {
    * @return GUID
    */
   private String processRegisterAccount(String host, String name, String publicKey, String password) {
-    String guid = createGuidFromPublicKey(publicKey);
+    String guid = ClientUtils.createGuidFromPublicKey(publicKey);
     return processRegisterAccountWithGuid(host, name, guid, publicKey, password);
-  }
-
-  private String createGuidFromPublicKey(String publicKey) {
-    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(publicKey.getBytes());
-    return ByteUtils.toHex(publicKeyDigest);
   }
 
   private String processRegisterAccountWithGuid(String host, String name, String guid, String publicKey, String password) {
@@ -363,7 +363,7 @@ public class Protocol {
     return accountAccess.verifyAccount(guid, code);
   }
 
- private String processRemoveAccount(String name, String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processRemoveAccount(String name, String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -427,7 +427,7 @@ public class Protocol {
   }
 
   private String processAddGuid(String accountGuid, String name, String publicKey, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    String newGuid = createGuidFromPublicKey(publicKey);
+    String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
@@ -773,7 +773,7 @@ public class Protocol {
   private String processSelectNear(String field, String value, String maxDistance) {
     return fieldAccess.selectNear(field, value, maxDistance);
   }
-  
+
   private String processSelectQuery(String query) {
     return fieldAccess.selectQuery(query);
   }
@@ -1147,6 +1147,22 @@ public class Protocol {
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMPCACHE;
   }
 
+  private String processChangeLogLevel(String levelString) {
+    if (adminMode) {
+      try {
+        Level level = Level.parse(levelString);
+        if (Admintercessor.getInstance().sendChangeLogLevel(level)) {
+          return OKRESPONSE;
+        } else {
+          return BADRESPONSE;
+        }
+      } catch (IllegalArgumentException e) {
+        return BADRESPONSE + " " + GENERICEERROR + " Bad level " + levelString;
+      }
+    }
+    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + DUMPCACHE;
+  }
+
   private String processDeleteAllRecords(String inputLine) {
     if (adminMode) {
       if (Admintercessor.getInstance().sendDeleteAllRecords()) {
@@ -1219,6 +1235,10 @@ public class Protocol {
       }
     }
     return OKRESPONSE;
+  }
+
+  private String processRttTest() {
+    return PerformanceTests.runRttPerformanceTest();
   }
 
   /**
@@ -1637,7 +1657,7 @@ public class Protocol {
         String signature = queryMap.get(SIGNATURE);
         return processUpdateOperation(guid, field, "", null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
                 UpdateOperation.REMOVE_FIELD);
-         //
+        //
         // UNSIGNED UPDATE OPERATIONS
         //
       } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
@@ -1885,6 +1905,9 @@ public class Protocol {
         return processClearCache(queryString);
       } else if (DUMPCACHE.equals(action)) {
         return processDumpCache();
+      } else if (CHANGELOGLEVEL.equals(action) && queryMap.keySet().containsAll(Arrays.asList(LEVEL))) {
+        String level = queryMap.get(LEVEL);
+        return processChangeLogLevel(level);
       } else if (ADDTAG.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
         String guid = queryMap.get(GUID);
         String tagName = queryMap.get(NAME);
@@ -1906,6 +1929,9 @@ public class Protocol {
         return processDump(tagName);
       } else if (DUMP.equals(action)) {
         return processDump();
+      } else if (RTTTEST.equals(action)) {
+        return processRttTest();
+
       } else {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
       }
@@ -2006,6 +2032,7 @@ public class Protocol {
     GNS.getLogger().finer("result = " + result);
     return result;
   }
+  // WHEN JAVA STOPS FUCKING UP THIS WILL GET MOVED
   
   public static String Version = "$Revision$";
 }

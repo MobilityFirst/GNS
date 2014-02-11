@@ -211,6 +211,11 @@ public class NSListenerAdmin extends Thread {
                 PaxosManager.resetAll();
                 NameServer.resetDB();
                 break;
+              case CHANGELOGLEVEL:
+                Level level = Level.parse(adminRequestPacket.getArgument());
+                GNS.getLogger().info("Changing log level to " + level.getName());
+                GNS.getLogger().setLevel(level);
+
 
 //              case DELETEALLGUIDRECORDS:
 //                // delete all the records that have a name (GUID) given by the argument in the packet

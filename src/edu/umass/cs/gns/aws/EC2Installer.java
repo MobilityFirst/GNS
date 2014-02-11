@@ -399,7 +399,7 @@ public class EC2Installer {
             // at some point a bunch of these should become defaults
             + " -cacheSize 10000 "
             + " -primary 3 -location -vInterval 1000"
-            + " -chooseFromClosestK 1 -lookupRate 10000 -updateRateMobile 0 -updateRateRegular 10000 "
+            + " -lookupRate 10000 -updateRateMobile 0 -updateRateRegular 10000 "
             + " -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100 "
             //+ " -adaptiveTimeout -delta 0.05 -mu 1.0 -phi 6.0 "
             + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL

@@ -26,6 +26,8 @@ import org.json.JSONObject;
 public class ValuesMap {
 
   private Map<String, ResultValue> content;
+  // Instrumentation
+  private long roundTripTime; // how long this query took
 
   public ValuesMap() {
     this.content = new HashMap<String, ResultValue>();
@@ -133,4 +135,13 @@ public class ValuesMap {
   public String toString() {
     return content.toString();
   }
+
+  public long getRoundTripTime() {
+    return roundTripTime;
+  }
+
+  public void setRoundTripTime(long roundTripTime) {
+    this.roundTripTime = roundTripTime;
+  }
+  
 }

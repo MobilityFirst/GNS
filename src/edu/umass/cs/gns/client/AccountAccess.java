@@ -108,7 +108,7 @@ public class AccountAccess {
   }
 
   /**
-   * Returns the GUID associated with name which is a HRN.
+   * Returns the GUID associated with name which is a HRN or null if one of that name does not exist.
    * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
@@ -240,6 +240,9 @@ public class AccountAccess {
 
   /**
    * Create a new GNS user account.
+   * 
+   * THIS CAN BYPASS THE EMAIL VERIFICATION if you set emailVerify to false;
+   * 
    * <p>
    * This adds three records to the GNS for the account:<br>
    * NAME: "_GNS_GUID" -> guid<br>
@@ -252,7 +255,7 @@ public class AccountAccess {
    * @param password
    * @return status result
    */
-  private String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
+  public String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
     try {
       Intercessor client = Intercessor.getInstance();
       // do this first add to make sure this name isn't already registered

@@ -106,6 +106,7 @@ public class LocalNameServer {
    * @throws IOException
    */
   public LocalNameServer(int nodeID) throws IOException {
+    GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion() + "\n");
     LocalNameServer.nodeID = nodeID;
 
     requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);

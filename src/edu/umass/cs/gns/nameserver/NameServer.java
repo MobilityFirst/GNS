@@ -61,7 +61,7 @@ public class NameServer {
    */
   public NameServer(int nodeID) throws IOException {
     NameServer.nodeID = nodeID;
-
+    GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion() + "\n");
     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data" +
             " store");
 

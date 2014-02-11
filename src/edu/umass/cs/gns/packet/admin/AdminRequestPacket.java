@@ -20,7 +20,7 @@ public class AdminRequestPacket extends BasicPacket {
 
         DELETEALLRECORDS, CLEARCACHE, 
         //DELETEALLGUIDRECORDS, 
-        RESETDB, DUMPCACHE
+        RESETDB, DUMPCACHE, CHANGELOGLEVEL
     };
     public final static String ID = "id";
     private final static String OPERATION = "operation";

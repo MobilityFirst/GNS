@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.cs.gns.httpserver;
+package edu.umass.cs.gns.clientprotocol;
 
+import edu.umass.cs.gns.httpserver.BasicHashFunction;
 import edu.umass.cs.gns.main.GNS;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

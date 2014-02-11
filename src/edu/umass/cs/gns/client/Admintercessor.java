@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -144,6 +145,17 @@ public class Admintercessor {
       GNS.getLogger().warning("Ignoring error while sending DUMPCACHE request: " + e);
       return null;
     }
+  }
+  
+  public boolean sendChangeLogLevel(Level level) {
+    try {
+      AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
+      sendAdminPacket(packet.toJSONObject());
+      return true;
+    } catch (Exception e) {
+      GNS.getLogger().warning("Ignoring error while sending CHANGELOGLEVEL request: " + e);
+    }
+    return false;
   }
 
   private void waitForAdminResponse(int id) {

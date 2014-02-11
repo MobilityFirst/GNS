@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
 import org.json.JSONObject;
 
 /**
@@ -177,6 +178,17 @@ public class LNSListenerAdmin extends Thread {
                         ConfigFileInfo.getLNSAdminResponsePort(LocalNameServer.nodeID));
                 Packet.sendTCPPacket(responsePacket.toJSONObject(), socketOut);
               }
+              break;
+            case CHANGELOGLEVEL:
+              Level level = Level.parse(incomingPacket.getArgument());
+              GNS.getLogger().info("Changing log level to " + level.getName());
+              GNS.getLogger().setLevel(level);
+              // send it on to the NSs
+              GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.nodeID + ") "
+                      + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
+              serverIds = ConfigFileInfo.getAllNameServerIDs();
+              Packet.multicastTCP(serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
+              break;
             }
           break;
         case STATUS_INIT:

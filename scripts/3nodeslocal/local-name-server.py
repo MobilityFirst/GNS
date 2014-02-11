@@ -28,7 +28,6 @@ NAME = '-name'
 NUM_LOOKUP = '-nlookup'
 NUM_Update = '-nUpdate'
 VOTE_INTERVAL = '-vInterval'
-CHOOSE_FROM_CLOSEST_K = '-chooseFromClosestK'
 LOOKUP_RATE = '-lookupRate'
 UPDATE_RATE_MOBILE = '-updateRateMobile'
 UPDATE_RATE_REGULAR = '-updateRateRegular'
@@ -88,7 +87,6 @@ is_location_replication = True                      #Select location aware repli
                                                     #(once every vote_interval) votes for its closest name server
                                                     #Set it to False for random replication                                                    
 vote_interval = 1000                                 #Time between votes (in seconds)
-choose_from_closest_k = 1                           #Choose from K-closest to vote for a name
 
 # Load balance
 load_balancing = False                              # local name servers start load balancing among name servers
@@ -207,7 +205,6 @@ def run_local_name_server():
     if is_location_replication:
         command += ' ' + LOCATION_REPLICATION
         command += ' ' + VOTE_INTERVAL + ' ' + str(vote_interval)
-        command += ' ' + CHOOSE_FROM_CLOSEST_K + ' ' + str(choose_from_closest_k)
     if is_optimal_replication:
 	command += ' ' + OPTIMAL_REPLICATION
 	command += ' ' + REPLICATION_INTERVAL + ' ' + str(replication_interval)

@@ -73,6 +73,8 @@ public class Defs {
   public final static String RESETDATABASE = "resetDatabase";
   public final static String CLEARCACHE = "clearCache";
   public final static String DUMPCACHE = "dumpCache";
+  public final static String CHANGELOGLEVEL = "changeLogLevel";
+  public final static String LEVEL = "level";
   public final static String SETPARAMETER = "setParameter";
   public final static String GETPARAMETER = "getParameter";
   //public final static String DELETEALLGUIDRECORDS = "deleteAllGuidRecords";
@@ -81,6 +83,7 @@ public class Defs {
   public final static String REMOVETAG = "removeTag";
   public final static String GETTAGGED = "getTagged";
   public final static String CLEARTAGGED = "clearTagged";
+  public final static String RTTTEST = "rttTest";
   //
   public final static String OKRESPONSE = "+OK+";
   public final static String NULLRESPONSE = "+EMPTY+";
