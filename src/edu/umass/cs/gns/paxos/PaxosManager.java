@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author abhigyan
  *
  */
-public class PaxosManager extends Thread{
+public class  PaxosManager extends Thread{
 
   static final String PAXOS_ID = "PXS";
 
@@ -328,7 +328,7 @@ public class PaxosManager extends Thread{
     if (paxosInstances!=null) {
       for (String x: PaxosManager.paxosInstances.keySet()) {
         if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos Recovery: starting paxos replica .. " + x);
-        PaxosManager.paxosInstances.get(x).checkCoordinatorFailure();
+        PaxosManager.paxosInstances.get(x).checkInitScout();
       }
     }
   }
@@ -713,7 +713,7 @@ public class PaxosManager extends Thread{
    * @param req
    */
   static void handleDecision(String paxosID, RequestPacket req, boolean recovery) {
-    clientRequestHandler.handlePaxosDecision(paxosID, req);
+    clientRequestHandler.handlePaxosDecision(paxosID, req, recovery);
 //    if (recovery) return;
 //    if (paxosInstances.containsKey(paxosID)) {
 //
@@ -1051,7 +1051,7 @@ class HandlePaxosMessageTask extends TimerTask {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         return;
       }
-//      GNS.getLogger().severe("StartP:" + paxosID);
+
       PaxosReplicaInterface replica = PaxosManager.paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
       if (replica != null && replica.getPaxosID().equals(paxosID)) {
 //                if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\tPAXOS PROCESS START " + paxosID + "\t" +  json);

@@ -60,8 +60,10 @@ public class NameServer {
    * @throws IOException
    */
   public NameServer(int nodeID) throws IOException {
+
     NameServer.nodeID = nodeID;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion() + "\n");
+
     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data" +
             " store");
 
@@ -74,6 +76,8 @@ public class NameServer {
     NameServer.replicaController = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
             // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
+
+    resetDB();
 
     NameServer.replicationFramework = ReplicationFrameworkType.instantiateReplicationFramework(
             StartNameServer.replicationFramework);

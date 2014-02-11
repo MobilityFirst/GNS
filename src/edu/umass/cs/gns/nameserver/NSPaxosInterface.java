@@ -34,7 +34,7 @@ public class NSPaxosInterface implements PaxosInterface {
   }
 
   @Override
-  public void handlePaxosDecision(String paxosID, RequestPacket req) {
+  public void handlePaxosDecision(String paxosID, RequestPacket req, boolean recovery) {
     long t0 = System.currentTimeMillis();
     try {
 
@@ -65,7 +65,7 @@ public class NSPaxosInterface implements PaxosInterface {
 //                ReplicaController.oldActiveStoppedWriteToNameRecord(req.value);
 //            }
       else if (req.clientID  == Packet.PacketType.ADD_RECORD_NS.getInt()) {
-        ClientRequestWorker.handleAddRecordNS(new JSONObject(req.value));
+        ClientRequestWorker.handleAddRecordNS(new JSONObject(req.value), recovery);
       }
       else if (req.clientID  == Packet.PacketType.REMOVE_RECORD_LNS.getInt()) {
         ReplicaController.applyMarkedForRemoval(req.value);
@@ -149,21 +149,21 @@ public class NSPaxosInterface implements PaxosInterface {
             recordCount += 1;
             JSONObject json = new JSONObject(x);
             ReplicaControllerRecord rcr = new ReplicaControllerRecord(json);
-            GNS.getLogger().info("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
+            GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
             try {
               NameServer.addNameRecordPrimary(rcr);
             } catch (RecordExistsException e) {
               NameServer.updateNameRecordPrimary(rcr);
             }
 
-            try {
-              ReplicaControllerRecord rc2 = NameServer.getNameRecordPrimary(new ReplicaControllerRecord(json).getName());
-              GNS.getLogger().info("Read fresh copy RC from DB ....: " + rc2 + "\t");
-            } catch (RecordNotFoundException e) {
-              e.printStackTrace();
-            } catch (FieldNotFoundException e) {
-              e.printStackTrace();
-            }
+//            try {
+//              ReplicaControllerRecord rc2 = NameServer.getNameRecordPrimary(new ReplicaControllerRecord(json).getName());
+//              GNS.getLogger().info("Read fresh copy RC from DB ....: " + rc2 + "\t");
+//            } catch (RecordNotFoundException e) {
+//              e.printStackTrace();
+//            } catch (FieldNotFoundException e) {
+//              e.printStackTrace();
+//            }
 
             startIndex = endIndex;
           } else {

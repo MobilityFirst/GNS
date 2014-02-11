@@ -273,6 +273,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
    * @param json
    */
   public void handleIncomingMessage(JSONObject json, int packetType) {
+//    GNS.getLogger().fine("PaxosReplica " + paxosID + "\thandling\t" + json);
     try {
       if (isStopped) {
         GNS.getLogger().warning(paxosID +"\t Paxos instance = " + paxosID + " is stopped; message dropped.");
@@ -460,12 +461,39 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   public void executeRecoveredDecisions() {
+//    GNS.getLogger().fine(" "  + paxosID + "\texecute-decision-before\t" + slotNumber + "\t" + decisions.size() + "\t" + decisions.keySet());
     try{
       handleDecision(null, null, true);
+      synchronized (coordinatorBallotLock) {
+        activeCoordinator = false;
+      }
+
     }catch (JSONException e) {
       e.printStackTrace();
     }
+//    GNS.getLogger().fine(" "  + paxosID + "\texecute-decision-after\t" + slotNumber + "\t" + decisions.size() + "\t" + decisions.keySet());
   }
+
+  public void checkInitScout() {
+    boolean startScout = false;
+    try {
+      acceptorLock.lock();
+
+      if (acceptorBallot.coordinatorID == nodeID) {
+        startScout = true;
+      } else if (PaxosManager.isNodeUp(acceptorBallot.coordinatorID) == false && getNextCoordinatorReplica() == nodeID) {
+        startScout = true;
+      }
+    } finally {
+      acceptorLock.unlock();
+    }
+    if (startScout) initScout();
+  }
+
+  private void updateCoordinatorState() {
+    // re-propose
+  }
+
   /**
    * Used only for testing!!
    * @return
@@ -1032,7 +1060,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
 //    }
 
   private void handleDecision(ProposalPacket prop, JSONObject json, boolean recovery) throws JSONException{
-    boolean stop = handleDecisionActual(prop, json);
+
+    boolean stop = handleDecisionActual(prop, json, recovery);
     if (recovery) return;
     if (stop) {
       synchronized (PaxosManager.paxosInstances) {
@@ -1053,8 +1082,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
    * @param prop
    * @throws JSONException
    */
-  private boolean handleDecisionActual(ProposalPacket prop, JSONObject json) throws JSONException{
-
+  private boolean handleDecisionActual(ProposalPacket prop, JSONObject json, boolean recovery) throws JSONException{
+//    GNS.getLogger().fine("handling decision; " + paxosID + json);
     if (prop != null) {
       runGC(prop.gcSlot);
 //      if (prop.slot%10 == 1)
@@ -1081,22 +1110,23 @@ public class PaxosReplica extends PaxosReplicaInterface{
 ////
 ////                }
 //            }
-
     }
+
     boolean stop = false;
-//        GNS.getLogger().fine(" SLOT NUMBER BEFORE DECISION SET: " + slotNumber);
+
     while(true) {
       synchronized (slotNumberLock) {
+//        GNS.getLogger().fine(" SLOT NUMBER BEFORE DECISION SET: " + slotNumber + "\t" + paxosID);
         if (prop!= null && prop.slot == slotNumber) {
           if (prop.req.isStopRequest()) stop = true;
-          perform(prop.req, slotNumber);
+          perform(prop.req, slotNumber, recovery);
 //          decisions.remove(slotNumber);
           slotNumber++;
 
         }
         else if (decisions.containsKey(slotNumber)) {
-          if (prop.req.isStopRequest()) stop = true;
-          perform(decisions.get(slotNumber), slotNumber);
+          if (decisions.get(slotNumber).isStopRequest()) stop = true;
+          perform(decisions.get(slotNumber), slotNumber, recovery);
 //          decisions.remove(slotNumber);
           slotNumber++;
         }
@@ -1112,8 +1142,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
    * @param req
    * @throws JSONException
    */
-  private void perform(RequestPacket req, int slotNumber) throws JSONException{
-    GNS.getLogger().info("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
+  private void perform(RequestPacket req, int slotNumber, boolean recovery) throws JSONException{
+    GNS.getLogger().fine("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber + "\t" + req.value);
     if (req.value.equals(NO_OP) ) {
 
       GNS.getLogger().fine(paxosID + "\t" +nodeID + " " + NO_OP + " decided in slot = " + slotNumber);
@@ -1129,7 +1159,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
     }
 
 
-    PaxosManager.handleDecision(paxosID, req, false); // TODO
+    PaxosManager.handleDecision(paxosID, req, recovery); // TODO
 
 //        GNS.getLogger().info("\tPAXOS-COMMIT\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
 
@@ -2021,7 +2051,6 @@ public class PaxosReplica extends PaxosReplicaInterface{
    * check whether coordinator is UP.
    */
   public void checkCoordinatorFailure() {
-
     int coordinatorID = -1;
     try{
       acceptorLock.lock();
@@ -2595,12 +2624,13 @@ class CheckPrepareMessageTask extends TimerTask {
   PaxosReplicaInterface replica;
   PreparePacket preparePacket;
   Ballot proposedBallot;
-  public CheckPrepareMessageTask(PaxosReplica replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
 
-  }
-  public CheckPrepareMessageTask(PaxosReplica2 replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
-
-  }
+//  public CheckPrepareMessageTask(PaxosReplica replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
+//
+//  }
+//  public CheckPrepareMessageTask(PaxosReplica2 replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
+//
+//  }
 
   public CheckPrepareMessageTask(PaxosReplicaInterface replica, PreparePacket preparePacket, Ballot proposedBallot, int numRetry) {
     this.numRetry = numRetry;

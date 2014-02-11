@@ -26,7 +26,7 @@ public class DefaultPaxosInterface implements PaxosInterface {
 //    }
 
     @Override
-    public void handlePaxosDecision(String paxosID, RequestPacket requestPacket) {
+    public void handlePaxosDecision(String paxosID, RequestPacket requestPacket, boolean recovery) {
         if (PaxosManager.nodeID == 0)
         // if I received this request from client, i will send reply to client.
 //        if (requestsReceived.remove(requestPacket.requestID) != null) {

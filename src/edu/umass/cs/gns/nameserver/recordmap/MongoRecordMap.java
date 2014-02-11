@@ -147,7 +147,7 @@ public class MongoRecordMap extends BasicRecordMap {
         return;
       }
     }
-    GNS.getLogger().fine("here ..");
+//    GNS.getLogger().fine("here ..");
     try {
       addNameRecord(recordEntry.toJSONObject());
       //MongoRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
@@ -156,7 +156,7 @@ public class MongoRecordMap extends BasicRecordMap {
       GNS.getLogger().severe("Error adding name record: " + e);
       return;
     }
-    GNS.getLogger().fine("here 2 ..");
+//    GNS.getLogger().fine("here 2 ..");
   }
 
   @Override

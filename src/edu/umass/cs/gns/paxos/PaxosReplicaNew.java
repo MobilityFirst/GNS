@@ -1310,6 +1310,11 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 //    // is this necessary?
 //  }
 
+  @Override
+  public void checkInitScout() {
+
+  }
+
   /**
    * check whether coordinator is UP.
    */

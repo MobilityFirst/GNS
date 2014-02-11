@@ -190,7 +190,7 @@ public class ClientRequestWorker extends TimerTask {
 
   }
 
-  public static void handleAddRecordNS(JSONObject incomingJSON) throws JSONException, IOException {
+  public static void handleAddRecordNS(JSONObject incomingJSON, boolean recover) throws JSONException, IOException {
 
     AddRecordPacket addRecordPacket;
     String name;
@@ -207,6 +207,11 @@ public class ClientRequestWorker extends TimerTask {
     try {
       NameServer.addNameRecordPrimary(rcRecord);
 
+      if (recover) {
+        GNS.getLogger().fine("Adding record: " + addRecordPacket.getName());
+        return;
+      }
+
       ValuesMap valuesMap = new ValuesMap();
       valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
       try {
@@ -214,6 +219,7 @@ public class ClientRequestWorker extends TimerTask {
                 valuesMap, addRecordPacket.getTTL());
         try {
           NameServer.addNameRecord(nameRecord);
+
         } catch (RecordExistsException e) {
           GNS.getLogger().severe("ERROR: Exception: name record exists but replica controller does not exist. This should never happen ");
           e.printStackTrace();

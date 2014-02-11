@@ -193,7 +193,7 @@ public class PaxosLogger extends Thread {
     recoverMostRecentStateOfPaxosInstances(paxosInstances);
 
     // step 3: read paxos logs for messages received after the paxos state was logged
-    GNS.getLogger().fine("key set ::: " + paxosInstances.keySet());
+    GNS.getLogger().fine("key set: " + paxosInstances.keySet());
 //    System.exit(2);
     recoverLogMessagesAfterLoggedState(paxosInstances);
 

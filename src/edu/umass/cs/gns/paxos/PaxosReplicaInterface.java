@@ -11,6 +11,7 @@ import java.util.Set;
  */
 public abstract class PaxosReplicaInterface{
 
+  public abstract void checkInitScout();
 
   public abstract void checkCoordinatorFailure();
 

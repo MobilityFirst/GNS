@@ -1930,6 +1930,11 @@ public class PaxosReplica2 extends PaxosReplicaInterface implements Serializable
     return null;
   }
 
+  @Override
+  public void checkInitScout() {
+
+  }
+
   /**
    * check whether coordinator is UP.
    */

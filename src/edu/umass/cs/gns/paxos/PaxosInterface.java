@@ -19,7 +19,7 @@ public interface PaxosInterface {
    * @param paxosID
    * @param requestPacket
    */
-    public abstract void handlePaxosDecision(String paxosID, RequestPacket requestPacket);
+    public abstract void handlePaxosDecision(String paxosID, RequestPacket requestPacket, boolean recovery);
 
     public abstract void handleFailureMessage(FailureDetectionPacket fdPacket);
 
