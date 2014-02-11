@@ -174,8 +174,7 @@ public class Intercessor {
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      // instrumentation
-      queryTimeStamp.put(id, new Date());
+      queryTimeStamp.put(id, new Date()); // rtt instrumentation
       sendPacket(json);
 
     } catch (JSONException e) {
@@ -196,16 +195,15 @@ public class Intercessor {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
 
     }
+    Date receiptTime = new Date(); // instrumentation
     ValuesMap result = queryResult.get(id);
     queryResult.remove(id);
-    Date now = new Date();
-    Date sentTime = queryTimeStamp.get(id);
-    queryTimeStamp.remove(id);
-    long rtt = now.getTime() - sentTime.getTime();
+    Date sentTime = queryTimeStamp.get(id); // instrumentation
+    queryTimeStamp.remove(id); // instrumentation
+    long rtt = receiptTime.getTime() - sentTime.getTime();
     GNS.getLogger().info("Query (" + id + ") RTT = " + rtt + "ms");
     GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
-    // instrumentation
-    result.setRoundTripTime(rtt);
+    result.setRoundTripTime(rtt); // instrumentation
     
     if (removeInternalFields) {
       result = removeInternalFields(result);

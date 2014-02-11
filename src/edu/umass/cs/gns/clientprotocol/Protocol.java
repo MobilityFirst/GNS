@@ -1237,8 +1237,8 @@ public class Protocol {
     return OKRESPONSE;
   }
 
-  private String processRttTest() {
-    return PerformanceTests.runRttPerformanceTest();
+  private String processRttTest(int size) {
+    return PerformanceTests.runRttPerformanceTest(size);
   }
 
   /**
@@ -1928,9 +1928,12 @@ public class Protocol {
         String tagName = queryMap.get(NAME);
         return processDump(tagName);
       } else if (DUMP.equals(action)) {
-        return processDump();
-      } else if (RTTTEST.equals(action)) {
-        return processRttTest();
+        return processDump();} else if (CHANGELOGLEVEL.equals(action) && queryMap.keySet().containsAll(Arrays.asList(LEVEL))) {
+        String level = queryMap.get(LEVEL);
+        return processChangeLogLevel(level);
+      } else if (RTTTEST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(N))) {
+        int size = Integer.parseInt(queryMap.get(N));
+        return processRttTest(size);
 
       } else {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;

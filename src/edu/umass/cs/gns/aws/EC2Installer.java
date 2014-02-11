@@ -59,7 +59,7 @@ import org.apache.commons.cli.ParseException;
  * @author westy
  */
 public class EC2Installer {
-  
+
   private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String PRIVATEKEYFILEEXTENSION = ".pem";
@@ -91,41 +91,41 @@ public class EC2Installer {
    * Information about instances that have started
    */
   private static class InstanceInfo {
-    
+
     private int id;
     private String hostname;
     private String ip;
     private Point2D location;
-    
+
     public InstanceInfo(int id, String hostname, String ip, Point2D location) {
       this.id = id;
       this.hostname = hostname;
       this.ip = ip;
       this.location = location;
     }
-    
+
     public int getId() {
       return id;
     }
-    
+
     public String getHostname() {
       return hostname;
     }
-    
+
     public String getIp() {
       return ip;
     }
-    
+
     public Point2D getLocation() {
       return location;
     }
-    
+
     @Override
     public String toString() {
       return "InstanceInfo{" + "id=" + id + ", hostname=" + hostname + ", ip=" + ip + ", location=" + location + '}';
     }
   }
-  
+
   private static void loadConfig(String configName) {
     EC2ConfigParser parser = new EC2ConfigParser(configName);
     for (EC2RegionSpec spec : parser.getRegions()) {
@@ -180,7 +180,7 @@ public class EC2Installer {
     } catch (Exception e) {
       System.out.println("Problem joining threads: " + e);
     }
-    
+
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
     System.out.println(idTable.toString());
     // after we know all the hosts are we run the last part
@@ -203,7 +203,7 @@ public class EC2Installer {
     } catch (Exception e) {
       System.out.println("Problem joining threads: " + e);
     }
-    
+
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
     System.out.println("Finished creation of Run Set " + runSetName);
     // do some bookeeping
@@ -262,7 +262,7 @@ public class EC2Installer {
           + "/usr/bin/mysql_install_db \n"
           + "/usr/bin/mysqladmin -u root password 'toorbar'\n"
           + "mysqladmin -u root --password=toorbar -v create gns";
-  
+
   /**
    * This is called to initialize an EC2 host for use as A GNS server in a region. It starts the host, loads all the necessary
    * software and copies the JAR files over. We also collect info about this host, like it's IP address and geographic location.
@@ -294,9 +294,9 @@ public class EC2Installer {
           default:
             System.out.println("Invalid combination of " + amiRecordType + " and " + dataStoreType);
             return;
-        }      
+        }
     }
-    
+
     String idString = Integer.toString(id);
     StatusModel.getInstance().queueAddEntry(id); // for the gui
     StatusModel.getInstance().queueUpdate(id, region.name() + ": [Unknown hostname]", null, null);
@@ -356,7 +356,7 @@ public class EC2Installer {
     writeNSFile(hostname, keyFile);
     startServers(id, hostname);
   }
-  
+
   private static void copyJARFiles(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     StatusModel.getInstance().queueUpdate(id, "Copying jar files");
@@ -364,7 +364,7 @@ public class EC2Installer {
   }
   private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
   private static final String CassandraRecordsClass = "edu.umass.cs.gns.database.CassandraRecords";
-  
+
   private static void deleteDatabase(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     AWSEC2.executeBashScript(hostname, keyFile, "deleteDatabase.sh",
@@ -374,7 +374,7 @@ public class EC2Installer {
   private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
   private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
   private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
-  
+
   private static int getLNSId(int id) {
     return id + idTable.size();
   }
@@ -408,7 +408,7 @@ public class EC2Installer {
             + " -nsfile name-server-info  "
             + "  -runHttpServer "
             + "> LNSlogfile 2>&1 &");
-    
+
     StatusModel.getInstance().queueUpdate(id, "Starting name servers");
     AWSEC2.executeBashScript(hostname, keyFile, "runNS.sh",
             "#!/bin/bash\n"
@@ -448,13 +448,13 @@ public class EC2Installer {
 //            id);
     StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING, "All servers started");
   }
-  
+
   private static void killAllServers(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     StatusModel.getInstance().queueUpdate(id, "Killing servers");
     AWSEC2.executeBashScript(hostname, keyFile, "killAllServers.sh", "#!/bin/bash\nkillall java");
   }
-  
+
   private static void removeLogFiles(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     StatusModel.getInstance().queueUpdate(id, "Removing log files");
@@ -499,10 +499,10 @@ public class EC2Installer {
       result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getX()) : 0.0);
       result.append(NEWLINE);
     }
-    
+
     SSHClient.execWithSudoNoPass(ec2UserName, hostname, keyFile, "echo \"" + result.toString() + "\" > name-server-info");
   }
-  
+
   public static void terminateRunSet(String name) {
     try {
       AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
@@ -530,7 +530,7 @@ public class EC2Installer {
       e.printStackTrace();
     }
   }
-  
+
   private static void terminateAllRunSets() {
     try {
       AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
@@ -551,13 +551,14 @@ public class EC2Installer {
       e.printStackTrace();
     }
   }
-  
+
   public enum UpdateAction {
-    
+
     UPDATE,
     RESTART,
     REMOVE_LOGS_AND_RESTART,
-    DELETE_DATABASE
+    REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART,
+    DELETE_DATABASE_AND_RESTART
   };
 
   /**
@@ -583,7 +584,7 @@ public class EC2Installer {
       System.out.println("Problem joining threads: " + e);
     }
   }
-  
+
   private static void populateIDTableForRunset(String name) {
     AWSCredentials credentials = null;
     try {
@@ -612,7 +613,7 @@ public class EC2Installer {
       }
     }
   }
-  
+
   private static String getHostIPSafe(String hostname) {
     InetAddress inetAddress;
     try {
@@ -622,14 +623,14 @@ public class EC2Installer {
       return "Unknown";
     }
   }
-  
+
   public static void describeRunSet(final String name) {
     populateIDTableForRunset(name);
     for (InstanceInfo info : idTable.values()) {
       System.out.println(info);
     }
   }
-  
+
   private static String getTagValue(Instance instance, String key) {
     for (Tag tag : instance.getTags()) {
       if (key.equals(tag.getKey())) {
@@ -641,10 +642,10 @@ public class EC2Installer {
   // COMMAND LINE STUFF
   private static HelpFormatter formatter = new HelpFormatter();
   private static Options commandLineOptions;
-  
+
   private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
-    
+
     Option terminate = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("terminate a runset's instances")
             .create("terminate");
@@ -662,9 +663,7 @@ public class EC2Installer {
             .withDescription("restart a runset")
             .create("restart");
     Option removeLogs = new Option("removeLogs", "remove log files (use with -restart)");
-    Option deleteDatabase = OptionBuilder.withArgName("runSet name").hasArg()
-            .withDescription("delete the databases in a runset")
-            .create("deleteDatabase");
+    Option deleteDatabase = new Option("deleteDatabase", "delete the databases in a runset (use with -restart)");
     Option describe = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("describe a runset")
             .create("describe");
@@ -674,7 +673,7 @@ public class EC2Installer {
     Option dataStore = OptionBuilder.withArgName("data store type").hasArg()
             .withDescription("data store type")
             .create("datastore");
-    
+
     commandLineOptions = new Options();
     commandLineOptions.addOption(terminate);
     //commandLineOptions.addOption(terminateAll);
@@ -689,19 +688,19 @@ public class EC2Installer {
     //commandLineOptions.addOption(configName);
     commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(help);
-    
+
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
   }
-  
+
   private static void printUsage() {
     formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", commandLineOptions);
   }
-  
+
   private static void printUsage(String header) {
     formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", header, commandLineOptions, "");
   }
-  
+
   private static void startAllMonitoringAndGUIProcesses() {
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override
@@ -719,7 +718,7 @@ public class EC2Installer {
       System.out.println("Unable to start Status Listener: " + e.getMessage());
     }
   }
-  
+
   public static void main(String[] args) {
     try {
       CommandLine parser = initializeOptions(args);
@@ -735,12 +734,12 @@ public class EC2Installer {
       //Boolean updateCurrent = parser.hasOption("updateCurrent");
       String runsetUpdate = parser.getOptionValue("update");
       String runsetRestart = parser.getOptionValue("restart");
-      String runsetDeleteDatabase = parser.getOptionValue("deleteDatabase");
       String runsetDescribe = parser.getOptionValue("describe");
       //String configName = parser.getOptionValue("config");
       String dataStoreName = parser.getOptionValue("datastore");
       boolean removeLogs = parser.hasOption("removeLogs");
-      
+      boolean deleteDatabase = parser.hasOption("deleteDatabase");
+
       if (dataStoreName != null) {
         try {
           dataStoreType = DataStoreType.valueOf(dataStoreName);
@@ -749,19 +748,18 @@ public class EC2Installer {
           System.exit(1);
         }
       }
-      
+
       String configName = createRunsetName != null ? createRunsetName
               : terminateRunsetName != null ? terminateRunsetName
               : runsetUpdate != null ? runsetUpdate
               : runsetRestart != null ? runsetRestart
-              : runsetDeleteDatabase != null ? runsetDeleteDatabase
               : runsetDescribe != null ? runsetDescribe : null;
-      
+
       System.out.println("Config name: " + configName);
       if (configName != null) {
         loadConfig(configName);
       }
-      
+
       if (createRunsetName != null) {
         createRunSetMulti(createRunsetName);
 //      } else if (createOne) {
@@ -773,16 +771,16 @@ public class EC2Installer {
       } else if (runsetUpdate != null) {
         updateRunSet(runsetUpdate, UpdateAction.UPDATE);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetRestart, (removeLogs ? UpdateAction.REMOVE_LOGS_AND_RESTART : UpdateAction.RESTART));
-      } else if (runsetDeleteDatabase != null) {
-        updateRunSet(runsetDeleteDatabase, UpdateAction.DELETE_DATABASE);
+        updateRunSet(runsetRestart, (removeLogs
+                ? (deleteDatabase ? UpdateAction.REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART : UpdateAction.REMOVE_LOGS_AND_RESTART)
+                : (deleteDatabase ? UpdateAction.DELETE_DATABASE_AND_RESTART : UpdateAction.RESTART)));
       } else if (runsetDescribe != null) {
         describeRunSet(runsetDescribe);
       } else {
         printUsage();
         System.exit(1);
       }
-      
+
     } catch (Exception e1) {
       e1.printStackTrace();
       printUsage();
@@ -790,14 +788,14 @@ public class EC2Installer {
     }
     System.exit(0);
   }
-  
+
   static class InstallStartThread extends Thread {
-    
+
     String runSetName;
     RegionRecord region;
     int id;
     String ip;
-    
+
     public InstallStartThread(String runSetName, RegionRecord region, int id, String ip) {
       super("Install Start " + id);
       this.runSetName = runSetName;
@@ -805,43 +803,43 @@ public class EC2Installer {
       this.id = id;
       this.ip = ip;
     }
-    
+
     @Override
     public void run() {
       EC2Installer.installPhaseOne(region, runSetName, id, ip);
     }
   }
-  
+
   static class InstallFinishThread extends Thread {
-    
+
     String hostname;
     int id;
-    
+
     public InstallFinishThread(int id, String hostname) {
       super("Install Finish " + id);
       this.hostname = hostname;
       this.id = id;
     }
-    
+
     @Override
     public void run() {
       EC2Installer.installPhaseTwo(id, hostname);
     }
   }
-  
+
   static class UpdateThread extends Thread {
-    
+
     String hostname;
     int id;
     UpdateAction action;
-    
+
     public UpdateThread(int id, String hostname, UpdateAction action) {
       super("Update " + id);
       this.hostname = hostname;
       this.id = id;
       this.action = action;
     }
-    
+
     @Override
     public void run() {
       System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
@@ -855,7 +853,11 @@ public class EC2Installer {
         case REMOVE_LOGS_AND_RESTART:
           removeLogFiles(id, hostname);
           break;
-        case DELETE_DATABASE:
+        case DELETE_DATABASE_AND_RESTART:
+          deleteDatabase(id, hostname);
+          break;
+        case REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART:
+          removeLogFiles(id, hostname);
           deleteDatabase(id, hostname);
           break;
       }
@@ -877,11 +879,11 @@ public class EC2Installer {
   public static String currentRunSetName() {
     return preferences.get(RUNSETNAME, "1");
   }
-  
+
   private static void storeHostname(String runSetName, int id, String hostname) {
     preferences.put(runSetName + "-" + id, hostname);
   }
-  
+
   public static String retrieveHostname(String runSetName, int id) {
     return preferences.get(runSetName + "-" + id, null);
   }
