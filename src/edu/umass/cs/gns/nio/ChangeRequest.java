@@ -1,6 +1,11 @@
 package edu.umass.cs.gns.nio;
 import java.nio.channels.SocketChannel;
 
+/* Used by NIOTrasnport. Currently used only for
+ * registering channels and for connect events. Read
+ * events are monitored by default. Write events are
+ * set through pendingWrites.
+ */
 public class ChangeRequest {
 	public static final int REGISTER = 1;
 	public static final int CHANGEOPS = 2;
@@ -13,5 +18,9 @@ public class ChangeRequest {
 		this.socket = socket;
 		this.type = type;
 		this.ops = ops;
+	}
+	
+	public String toString() {
+		return "" + socket + ":" + type + ":" + ops;
 	}
 }

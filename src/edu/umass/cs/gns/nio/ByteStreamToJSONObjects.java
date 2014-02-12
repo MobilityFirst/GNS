@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+/* This class is deprecated. The plan is to move to JSONMessageWorker instead. */
+
+
   public class ByteStreamToJSONObjects implements Runnable {
 
   HashMap socketData = new HashMap();
@@ -31,6 +34,7 @@ import java.util.List;
     return packetDemux;
   }
 
+  /*
   public void processData2(NioServer server, SocketChannel socket, byte[] data, int count) {
 
     byte[] dataCopy = new byte[count];
@@ -39,7 +43,7 @@ import java.util.List;
       queue.add(new ServerDataEvent(server, socket, dataCopy));
       queue.notify();
     }
-  }
+  }*/
   public void processData(SocketChannel socket, byte[] data, int count) {
     String y = new String(data, 0, count);
     if (!socketData.containsKey(socket)) {

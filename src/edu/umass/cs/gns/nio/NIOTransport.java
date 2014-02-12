@@ -10,7 +10,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gns.main.GNS;
@@ -346,7 +348,7 @@ public class NIOTransport implements Runnable {
 		synchronized(this.SockAddrToSockChannel) {
 			SocketChannel sock = (SocketChannel)this.SockAddrToSockChannel.get(isa);
 			if(sock!=null && (sock.isConnected() || sock.isConnectionPending())) return true;
-			log.finest("Node " + myID + " socket channel " + sock + " not connected");
+			log.finest("Node " + myID + " socket channel [" + sock + "] not connected");
 		}
 		return false;
 	}
@@ -483,6 +485,12 @@ public class NIOTransport implements Runnable {
 	}
 
 	public static void main(String[] args) {
+	    ConsoleHandler handler = new ConsoleHandler();
+        handler.setLevel(Level.FINEST);
+        Logger log = Logger.getLogger(NIOTransport.class.getName()); 
+        log.addHandler(handler);
+	    log.setLevel(Level.FINEST);
+
 		int port = 2000;
 		int nNodes=100;
 		SampleNodeConfig snc = new SampleNodeConfig(port);

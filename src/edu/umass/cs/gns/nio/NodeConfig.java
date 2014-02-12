@@ -9,6 +9,11 @@ import java.net.InetAddress;
  * Time: 7:45 PM
  * To change this template use File | Settings | File Templates.
  */
+
+
+/* An interface to translate from integere IDs to socket addresses.
+ * 
+ */
 public interface NodeConfig {
 
     public abstract boolean containsNodeInfo(int ID);

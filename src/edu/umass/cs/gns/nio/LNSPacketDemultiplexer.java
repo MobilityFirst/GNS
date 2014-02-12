@@ -11,7 +11,7 @@ import edu.umass.cs.gns.packet.Packet;
 public class LNSPacketDemultiplexer extends PacketDemultiplexer{
 
 	@Override
-	public void handleJSONObjects(ArrayList jsonObjects) {
+	public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
 		for (Object j: jsonObjects) {
 			handleJSONObject((JSONObject) j);
 		}
@@ -25,7 +25,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer{
 			case CONFIRM_ADD_LNS:
 			case UPDATE_ADDRESS_LNS:
       case CONFIRM_UPDATE_LNS:
-//				LNSListenerUpdate.handleJSONObject(json);
+//				Do nothing.
 				break;
 			
 			}

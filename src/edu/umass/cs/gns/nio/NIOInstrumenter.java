@@ -2,6 +2,8 @@ package edu.umass.cs.gns.nio;
 /**
 @author V. Arun
  */
+/* Helps instrument read/write stats in NIOTransport. Used for testing only. */
+
 public class NIOInstrumenter {
 	private int totalSent=0;
 	private int totalRcvd=0;

@@ -8,6 +8,9 @@ package edu.umass.cs.gns.nio;
  * To change this template use File | Settings | File Templates.
  */
 
+
+/* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
+
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.util.ConfigFileInfo;
