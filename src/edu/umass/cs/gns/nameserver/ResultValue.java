@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +18,13 @@ import org.json.JSONException;
  * This class is the underlying representation used to transmit the value in the key / value store from
  * the client to the server.
  * 
+ * This is extends ArrayList (like a JSONArray), but we made a class for this (as opposed to just using a
+ * ArrayList or a JSONArray) so we can dispatch off it in methods and also more easily instrument it.
+ * 
  * One of the ideas here is to make it easy to mess with the implementation of this.
- * The other idea is that we want to support Strings AND Numbers in this list at some point.
+ * The other idea is that we also support Strings AND Numbers in this list at some point.
+ * 
+ * See also ValuesMap.
  * 
  * @author westy
  */

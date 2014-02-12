@@ -21,8 +21,12 @@ import org.json.JSONObject;
 
 
 /**
- * An implementation of client support in the GNS server. Implemented
- * as a singleton class.
+ * One of a number of class that implement client support in the GNS server. 
+ * Implemented as a singleton class.
+ * 
+ * The intercessor is the primary liason class between the HTTP server and the Protocol
+ * class and the Local Name Server. It provides support for the AccountAccess, Field Access,
+ * FieldMetaData, GroupAccess, and SelectHandler classes.
  * 
  * Provides basic methods for reading and writing fields in the GNS. Used 
  * by the various classes in the client package to implement writing of fields 

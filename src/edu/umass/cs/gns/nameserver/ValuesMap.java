@@ -18,6 +18,10 @@ import org.json.JSONObject;
 
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
+ * 
+ * This is essentially a Map of keys and values, but we made a class for this (as opposed to just using a
+ * Map) so we can dispatch off it in methods and also more easily instrument it.
+ * 
  *
  * Keys are strings and values are always a list (see also QueryResultValue).
  *
@@ -26,7 +30,9 @@ import org.json.JSONObject;
 public class ValuesMap {
 
   private Map<String, ResultValue> content;
-  // Instrumentation
+  /** 
+   * Instrumentation - records the time between the LNS sending the request to the NS and the return message.
+   */
   private long roundTripTime; // how long this query took
 
   public ValuesMap() {
@@ -136,12 +142,19 @@ public class ValuesMap {
     return content.toString();
   }
 
+  /** 
+   * Instrumentation - holds the time between the LNS sending the request to the NS and the return message
+   * being received.
+   */
   public long getRoundTripTime() {
     return roundTripTime;
   }
 
+  /** 
+   * Instrumentation - holds the time between the LNS sending the request to the NS and the return message
+   * being received.
+   */
   public void setRoundTripTime(long roundTripTime) {
     this.roundTripTime = roundTripTime;
   }
-  
 }
