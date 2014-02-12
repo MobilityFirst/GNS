@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.localnameserver.original;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

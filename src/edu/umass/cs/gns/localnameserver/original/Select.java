@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.localnameserver.original;
 
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;

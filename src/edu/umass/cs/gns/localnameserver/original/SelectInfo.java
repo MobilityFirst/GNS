@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.localnameserver.original;
 
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.SelectRequestPacket;

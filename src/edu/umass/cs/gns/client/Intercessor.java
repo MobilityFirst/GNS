@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.localnameserver.LNSListener;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
+import edu.umass.cs.gns.localnameserver.original.LNSListener;
+import edu.umass.cs.gns.localnameserver.original.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.main.StartLocalNameServer;

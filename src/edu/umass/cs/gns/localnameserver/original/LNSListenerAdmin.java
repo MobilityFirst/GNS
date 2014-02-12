@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.localnameserver.original;
 
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
@@ -22,9 +22,8 @@ import java.util.logging.Level;
 import org.json.JSONObject;
 
 /**
- *
- * This class implements a thread that returns a list of active name servers for a name. The thread waits for request packet over a
- * UDP socket and sends a response containing the current active nameserver for a name record.
+ * A separate thread that runs in the LNS that handles administrative (AKA non-data related, non-user)
+ * type operations. All of the things in here are for server administration and debugging.
  *
  * @author Westy
  */

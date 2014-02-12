@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.localnameserver.original;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
