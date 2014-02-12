@@ -306,31 +306,6 @@ import java.util.concurrent.locks.ReentrantLock;
 		}
 	}
 
-
-//
-//	/**
-//	 * send message to the node  destReplicaID 
-//	 * @param destReplicaID
-//	 * @param json
-//	 */
-//	public void sendMessage(int destReplicaID, JSONObject json,  int portNumber) {
-//		try
-//		{
-//			byte[] buffer = json.toString().getBytes();
-//			DatagramPacket packet = new DatagramPacket(buffer, buffer.length, 
-//					InetAddress.getLocalHost(), portNumber);
-//			socket.send(packet);
-//		} catch (UnknownHostException e)
-//		{
-//			// Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (IOException e)
-//		{
-//			// Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-//	
 	
 }
 
@@ -368,7 +343,7 @@ class FailureDetectionTask extends TimerTask{
 		if (FailureDetection.nodeInfo.containsKey(destNodeID)) {
 			if (StartNameServer.debugMode && destNodeID == 0) GNS.getLogger().fine(FailureDetection.nodeID
               + "FD sent request " + destNodeID);
-			PaxosManager.sendMessage(destNodeID, json);
+			PaxosManager.sendMessage(destNodeID, json, null);
 		}
 		else {
 			GNS.getLogger().severe("Failure Detection: Canceling Timer Task. " + this.destNodeID);
@@ -383,9 +358,6 @@ class FailureDetectionTask extends TimerTask{
       e.printStackTrace();
     }
 	}
-
-
-
 }
 
 
@@ -416,7 +388,7 @@ class HandleFailureDetectionPacketTask extends TimerTask{
             {
                 if(StartNameServer.debugMode)
                     GNS.getLogger().finer(FailureDetection.nodeID + "FD sent response " + fdPacket.senderNodeID);
-                PaxosManager.sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject());
+                PaxosManager.sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject(), null);
             } catch (JSONException e)
             {
                 GNS.getLogger().severe("JSON Exception " + e.getMessage());

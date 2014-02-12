@@ -44,20 +44,4 @@ public class Ballot implements Comparable<Ballot>, Serializable{
 		return ballotNumber + ":" + coordinatorID;
 	}
 
-//    public synchronized int getBallotNumber() {
-//        return ballotNumber;
-//    }
-//
-//    public synchronized int getCoordinatorID() {
-//        return coordinatorID;
-//    }
-
-//    public  synchronized boolean testAndUpdateBallot(Ballot b) {
-//        if (compareTo(b) >0) {
-//            this.ballotNumber = b.ballotNumber;
-//            this.coordinatorID = b.coordinatorID;
-//            return true;
-//        }
-//        return  false;
-//    }
 }

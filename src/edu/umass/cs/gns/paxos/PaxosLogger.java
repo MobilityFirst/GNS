@@ -983,7 +983,7 @@ public class PaxosLogger extends Thread {
             e.printStackTrace();
           }
         } else if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_SEND_MSG) {
-          PaxosManager.sendMessage(cmd.getDest(), cmd.getSendJson());
+          PaxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
         }
 
       }

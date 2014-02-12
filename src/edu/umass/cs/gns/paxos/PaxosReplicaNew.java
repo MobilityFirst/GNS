@@ -109,7 +109,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
         // coordinator --> replica
         case  PaxosPacketType.DECISION:
           proposal = new ProposalPacket(json);
-          handleDecision(proposal, json, false);
+          handleDecision(proposal, false);
           break;
         // coordinator --> replica
         case PaxosPacketType.PREPARE:
@@ -408,7 +408,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     json.put(PaxosManager.PAXOS_ID, paxosID);
 
     if (temp != null && PaxosManager.isNodeUp(temp.coordinatorID)) {
-      PaxosManager.sendMessage(temp.coordinatorID,json);
+      PaxosManager.sendMessage(temp.coordinatorID,json, paxosID);
       if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\t" + nodeID +
               " Send proposal packet. Coordinator =  " + temp.coordinatorID + " Packet = " + json);
     } else {
@@ -424,8 +424,8 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
   }
 
 
-  private void handleDecision(ProposalPacket prop, JSONObject json, boolean recovery) throws JSONException {
-    boolean stop = handleDecisionActual(prop, json, recovery);
+  private void handleDecision(ProposalPacket prop, boolean recovery) throws JSONException {
+    boolean stop = handleDecisionActual(prop, recovery);
     if (stop) {
       synchronized (PaxosManager.paxosInstances) {
         PaxosReplicaInterface r = PaxosManager.paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
@@ -445,7 +445,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
    * @param prop
    * @throws JSONException
    */
-  private synchronized boolean handleDecisionActual(ProposalPacket prop, JSONObject json, boolean recovery) throws JSONException {
+  private synchronized boolean handleDecisionActual(ProposalPacket prop, boolean recovery) throws JSONException {
 
     if (prop != null) {
       if (prop.slot < slotNumber) return false;
@@ -558,7 +558,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     if (slotNumber < statePkt.slotNumber) {
       PaxosManager.clientRequestHandler.updateState(paxosID, statePkt.dbState);
       slotNumber = statePkt.slotNumber;
-      handleDecision(null,null, false);
+      handleDecision(null, false);
     }
     if (acceptorBallot.compareTo(statePkt.currentBallot) < 0) {
       acceptorBallot = statePkt.currentBallot;

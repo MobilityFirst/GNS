@@ -31,7 +31,7 @@ public class DefaultPaxosInterface implements PaxosInterface {
         // if I received this request from client, i will send reply to client.
 //        if (requestsReceived.remove(requestPacket.requestID) != null) {
             try {
-                PaxosManager.sendMessage(requestPacket.clientID, requestPacket.toJSONObject());
+                PaxosManager.sendMessage(requestPacket.clientID, requestPacket.toJSONObject(), null);
             } catch (JSONException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }

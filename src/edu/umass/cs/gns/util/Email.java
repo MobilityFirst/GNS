@@ -7,13 +7,14 @@ package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import java.util.Properties;
+
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.util.Properties;
 
 public class Email {
 
@@ -28,7 +29,7 @@ public class Email {
    * @param args message
    */
   public static void main(String[] args) {
-      email("abcd", "abhigyan.sharma@gmail.com", "first message");
+      emailSSL("abcd", "abhigyan.sharma@gmail.com", "first message");
 //    if (args.length < 2) {
 //      System.out.println("Usage: Email [to] [message]");
 //      System.exit(-1);

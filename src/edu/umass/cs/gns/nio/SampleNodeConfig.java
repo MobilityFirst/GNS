@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nio;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 /**
@@ -18,8 +19,12 @@ public class SampleNodeConfig implements NodeConfig {
 
 	public void localSetup(int nNodes) {
 		for(int i=0; i<nNodes; i++) {
-			this.add(i, InetAddress.getLoopbackAddress());
-		}
+      try {
+        this.add(i, InetAddress.getLocalHost());
+      } catch (UnknownHostException e) {
+        e.printStackTrace();
+      }
+    }
 	}
 	
 	@Override
@@ -59,8 +64,12 @@ public class SampleNodeConfig implements NodeConfig {
 		SampleNodeConfig snc = new SampleNodeConfig(dp);
 
 		System.out.println("Adding node 0, printing nodes 0 and 1");
-		snc.add(0, InetAddress.getLoopbackAddress());
-		System.out.println("0 : " + snc.getNodeAddress(0) + ":" + snc.getNodePort(0));
+    try {
+      snc.add(0, InetAddress.getLocalHost());
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+    }
+    System.out.println("0 : " + snc.getNodeAddress(0) + ":" + snc.getNodePort(0));
 		System.out.println("1 : " + snc.getNodeAddress(1) + ":" + snc.getNodePort(1));
 
 		System.out.println("Adding nodes 0 to 9 and printing all");

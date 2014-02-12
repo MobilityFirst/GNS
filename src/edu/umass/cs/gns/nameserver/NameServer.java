@@ -185,7 +185,7 @@ public class NameServer {
 
       if (containsNode) {
         GNS.getLogger().info("Creating paxos instances: " + paxosID + "\t" + nodes);
-        PaxosManager.createPaxosInstance(paxosID, nodes, "", 0);
+        PaxosManager.createPaxosInstance(paxosID, nodes, "");
       }
     }
 
