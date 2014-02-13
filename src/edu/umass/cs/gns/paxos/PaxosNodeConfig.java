@@ -32,7 +32,7 @@ public class PaxosNodeConfig implements NodeConfig {
     nodesInfo = new HashMap<Integer, NodeInfo>();
     for (int i = 0; i < numNodes; i++) {
       try {
-        nodesInfo.put(i, new NodeInfo(i, InetAddress.getLocalHost(), startingPort + i));
+        nodesInfo.put(i, new NodeInfo(i, InetAddress.getByName("localhost"), startingPort + i));
       } catch (UnknownHostException e) {
         e.printStackTrace();
       }
