@@ -120,6 +120,8 @@ public class Defs {
   public static final String RASALGORITHM = "RSA";
   public static final String SIGNATUREALGORITHM = "SHA1withRSA";
   public final static String NEWLINE = System.getProperty("line.separator");
+  // This one is special, used for the action part of the command
+  public final static String COMMANDNAME = "COMMANDNAME"; // aka "action"
   // Fields for HTTP get queries
   public final static String NAME = "name";
   public final static String GUID = "guid";

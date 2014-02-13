@@ -8,27 +8,22 @@ import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
-import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.client.UpdateOperation;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.commands.CommandModule;
+import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.httpserver.Defs;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.httpserver.SystemParameter;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.util.Base64;
-import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.Util;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -36,9 +31,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
-import edu.umass.cs.gns.nameserver.ValuesMap;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.json.JSONObject;
 
 /**
  * Implements the GNS server protocol. Used by the 
@@ -325,24 +318,6 @@ public class Protocol {
     return main + (adminMode ? admin : "") + post;
   }
 
-//  @Deprecated
-//  private GroupInfo getGroupInfoV1(String guid) {
-//    GroupEntry result = groupAccessV1.lookupFromGuid(guid);
-//    if (result != null) {
-//      return result.getGroupInfo();
-//    } else {
-//      return null;
-//    }
-//  }
-  /**
-   * RegisterAccount. Name is human readable name of primary guid of this account.
-   *
-   * @param name
-   * @param guid
-   * @param publicKey
-   * @param password
-   * @return GUID
-   */
   private String processRegisterAccount(String host, String name, String publicKey, String password) {
     String guid = ClientUtils.createGuidFromPublicKey(publicKey);
     return processRegisterAccountWithGuid(host, name, guid, publicKey, password);
@@ -368,7 +343,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromName(name);
       if (accountInfo != null) {
         return accountAccess.removeAccount(accountInfo);
@@ -385,7 +360,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
@@ -404,7 +379,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       return accountAccess.removeAlias(accountInfo, alias);
     } else {
@@ -417,7 +392,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       ArrayList<String> aliases = accountInfo.getAliases();
       return new JSONArray(aliases).toString();
@@ -432,7 +407,7 @@ public class Protocol {
     if ((accountGuidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
-    if (verifySignature(accountGuidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(accountGuid);
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
@@ -464,7 +439,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       return accountAccess.removeGuid(accountInfo, guid2Info);
     } else {
@@ -477,7 +452,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
       return accountAccess.setPassword(accountInfo, password);
     } else {
@@ -538,9 +513,9 @@ public class Protocol {
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(writerGuidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       if (fieldAccess.create(guidInfo.getGuid(), field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))))) {
@@ -563,9 +538,9 @@ public class Protocol {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     try {
-      if (!verifySignature(writerGuidInfo, signature, message)) {
+      if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
         return BADRESPONSE + " " + BADSIGNATURE;
-      } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
+      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
         return BADRESPONSE + " " + ACCESSDENIED;
       } else {
         if (fieldAccess.create(guidInfo.getGuid(), field, new ResultValue(value))) {
@@ -590,9 +565,9 @@ public class Protocol {
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(writerGuidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       if (fieldAccess.update(guidInfo.getGuid(), field,
@@ -618,9 +593,9 @@ public class Protocol {
     } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(writerGuidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
@@ -643,7 +618,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
+    if (!AccessSupport.fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       if (fieldAccess.update(guidInfo.getGuid(), field,
@@ -662,7 +637,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
+    if (!AccessSupport.fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
@@ -691,9 +666,9 @@ public class Protocol {
     } else if ((readerGuidInfo = accountAccess.lookupGuidInfo(reader)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
-    if (!verifySignature(readerGuidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
@@ -713,9 +688,9 @@ public class Protocol {
     } else if ((readerGuidInfo = accountAccess.lookupGuidInfo(reader)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
-    if (!verifySignature(readerGuidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
@@ -729,7 +704,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!fieldReadableByEveryone(guidInfo.getGuid(), field)) {
+    if (!AccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
@@ -743,23 +718,13 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!fieldReadableByEveryone(guidInfo.getGuid(), field)) {
+    if (!AccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
       return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
     } else {
       return fieldAccess.lookupOne(guidInfo.getGuid(), field);
     }
-  }
-
-  private boolean fieldReadableByEveryone(String guid, String field) {
-    return fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, field).contains(EVERYONE)
-            || fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
-  }
-
-  private boolean fieldWriteableByEveryone(String guid, String field) {
-    return fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, field).contains(EVERYONE)
-            || fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
   }
 
   private String processSelect(String field, Object value) {
@@ -788,7 +753,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       fieldMetaData.add(access, guidInfo, field, accesser);
       return OKRESPONSE;
     } else {
@@ -806,7 +771,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       fieldMetaData.remove(access, guidInfo, field, accesser);
       return OKRESPONSE;
     } else {
@@ -824,7 +789,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       Set<String> values = fieldMetaData.lookup(access, guidInfo, field);
       return new JSONArray(values).toString();
     } else {
@@ -843,9 +808,9 @@ public class Protocol {
     } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(writerInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (groupAccess.addToGroup(guid, member)) {
       return OKRESPONSE;
@@ -865,9 +830,9 @@ public class Protocol {
     } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(writerInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
@@ -893,9 +858,9 @@ public class Protocol {
     } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(writerInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (groupAccess.removeFromGroup(guid, member)) {
       return OKRESPONSE;
@@ -915,9 +880,9 @@ public class Protocol {
     } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
-    if (!verifySignature(writerInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
@@ -943,9 +908,9 @@ public class Protocol {
     } else if ((readInfo = accountAccess.lookupGuidInfo(reader)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
-    if (!verifySignature(readInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(readInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       ResultValue values = groupAccess.lookup(guid);
@@ -965,7 +930,7 @@ public class Protocol {
     } else if ((memberInfo = accountAccess.lookupGuidInfo(member)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + member;
     }
-    if (!verifySignature(memberInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else {
       if (groupAccess.requestJoinGroup(guid, member)) {
@@ -982,7 +947,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!verifySignature(guidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else {
@@ -1012,7 +977,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!verifySignature(guidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else if (groupAccess.grantMembership(guid, members)) {
@@ -1033,7 +998,7 @@ public class Protocol {
     } else if ((memberInfo = accountAccess.lookupGuidInfo(member)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + member;
     }
-    if (!verifySignature(memberInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else {
       if (groupAccess.requestLeaveGroup(guid, member)) {
@@ -1050,7 +1015,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!verifySignature(guidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else {
@@ -1080,7 +1045,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (!verifySignature(guidInfo, signature, message)) {
+    if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else if (groupAccess.revokeMembership(guid, members)) {
@@ -1202,7 +1167,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       return accountAccess.addTag(guidInfo, tag);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -1215,7 +1180,7 @@ public class Protocol {
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       return accountAccess.removeTag(guidInfo, tag);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -1240,6 +1205,8 @@ public class Protocol {
   private String processRttTest(int size) {
     return PerformanceTests.runRttPerformanceTest(size);
   }
+  //new command processing
+  CommandModule commandModule = new CommandModule();
 
   /**
    * Top level routine to process queries for the http service *
@@ -1247,697 +1214,28 @@ public class Protocol {
   public String processQuery(String host, String action, String queryString) {
     String fullString = action + QUERYPREFIX + queryString; // for signature check
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
-    //String action = queryMap.get(ACTION);
+
+    //new command processing
+    queryMap.put(COMMANDNAME, action);
+    if (queryMap.keySet().contains(SIGNATURE)) {
+      String signature = queryMap.get(SIGNATURE);
+      String message = AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
+      queryMap.put("message", message);
+    }
+    JSONObject json = new JSONObject(queryMap);
+    GnsCommand command = commandModule.lookupCommand(json);
+
     try {
-
-      //
-      // !!!DON'T FORGET TO PUT THE ONES WITH SHORTER ARGUMENT LISTS *AFTER* THE ONES WITH LONGER ARGUMENT LISTS!!!
-      //
-      // HELP
-      if (HELP.equals(action)) {
-        //return getHelpString(GnrsHttpServer.hostName + (GnrsHttpServer.address != 80 ? (":" + GnrsHttpServer.address) : ""));
-        return getHelpString(host);
-      } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, PUBLICKEY, PASSWORD))) {
-        // syntax: register userName guid public_key
-        String userName = queryMap.get(NAME);
-        String guid = queryMap.get(GUID);
-        String publicKey = queryMap.get(PUBLICKEY);
-        String password = queryMap.get(PASSWORD);
-        return processRegisterAccountWithGuid(host, userName, guid, publicKey, password);
-      } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, PUBLICKEY, PASSWORD))) {
-        // syntax: register userName guid public_key
-        String userName = queryMap.get(NAME);
-        String publicKey = queryMap.get(PUBLICKEY);
-        String password = queryMap.get(PASSWORD);
-        return processRegisterAccount(host, userName, publicKey, password);
-      } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, PUBLICKEY))) {
-        // syntax: register userName guid public_key
-        String userName = queryMap.get(NAME);
-        String guid = queryMap.get(GUID);
-        String publicKey = queryMap.get(PUBLICKEY);
-        return processRegisterAccountWithGuid(host, userName, guid, publicKey, null);
-      } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, PUBLICKEY))) {
-        // syntax: register userName guid public_key
-        String userName = queryMap.get(NAME);
-        String publicKey = queryMap.get(PUBLICKEY);
-        return processRegisterAccount(host, userName, publicKey, null);
-      } else if (VERIFYACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, CODE))) {
-        // syntax: register userName guid public_key
-        String guid = queryMap.get(GUID);
-        String code = queryMap.get(CODE);
-        return processVerifyAccount(guid, code);
-      } else if (REMOVEACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, SIGNATURE))) {
-        // syntax: remove userName guid public_key
-        String userName = queryMap.get(NAME);
-        String guid = queryMap.get(GUID);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveAccount(userName, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (ADDGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, PUBLICKEY, SIGNATURE))) {
-        // syntax: register userName guid public_key
-        String guid = queryMap.get(GUID);
-        String userName = queryMap.get(NAME);
-        String publicKey = queryMap.get(PUBLICKEY);
-        String signature = queryMap.get(SIGNATURE);
-        return processAddGuid(guid, userName, publicKey, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REMOVEGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, GUID2, SIGNATURE))) {
-        // syntax: register userName guid public_key
-        String guid = queryMap.get(GUID);
-        String guid2 = queryMap.get(GUID2);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveGuid(guid, guid2, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (ADDALIAS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
-        // syntax: register userName guid public_key
-        String guid = queryMap.get(GUID);
-        String name = queryMap.get(NAME);
-        String signature = queryMap.get(SIGNATURE);
-        return processAddAlias(guid, name, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REMOVEALIAS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
-        // syntax: register userName guid public_key
-        String guid = queryMap.get(GUID);
-        String name = queryMap.get(NAME);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveAlias(guid, name, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (RETRIEVEALIASES.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String signature = queryMap.get(SIGNATURE);
-        return processRetrieveAliases(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (SETPASSWORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, PASSWORD, SIGNATURE))) {
-        // syntax: register userName guid public_key
-        String guid = queryMap.get(GUID);
-        String password = queryMap.get(PASSWORD);
-        String signature = queryMap.get(SIGNATURE);
-        return processSetPassword(guid, password, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        // LOOKUP
-      } else if (LOOKUPGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
-        String userName = queryMap.get(NAME);
-        return processLookupGuid(userName);
-      } else if (LOOKUPGUIDRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
-        String guid = queryMap.get(GUID);
-        return processLookupGuidInfo(guid);
-      } else if (LOOKUPACCOUNTRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
-        String guid = queryMap.get(GUID);
-        return processLookupAccountInfo(guid);
-        //
-        // READ OPERATIONS
-        //
-      } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String reader = queryMap.get(READER);
-        String signature = queryMap.get(SIGNATURE);
-        return processRead(guid, field, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String signature = queryMap.get(SIGNATURE);
-        return processRead(guid, field, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String reader = queryMap.get(READER);
-        String signature = queryMap.get(SIGNATURE);
-        return processReadOne(guid, field, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String signature = queryMap.get(SIGNATURE);
-        return processReadOne(guid, field, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        // UNSIGNED READ
-      } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        return processUnsignedRead(guid, field);
-      } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        return processUnsignedReadOne(guid, field);
-        //
-        // CREATE OPERATIONS
-        //
-      } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processCreate(guid, field, value, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processCreate(guid, field, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processCreate(guid, field, value, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String signature = queryMap.get(SIGNATURE);
-        return processCreate(guid, field, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processCreateList(guid, field, value, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processCreateList(guid, field, value, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        //
-        // UPDATE OPERATIONS WITH DIFFERENT WRITER
-        //
-      } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL);
-      } else if (APPENDWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_WITH_DUPLICATION);
-      } else if (APPEND.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND);
-      } else if (APPENDORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_OR_CREATE);
-      } else if (REPLACEORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL_OR_CREATE);
-      } else if (REMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REMOVE);
-      } else if (REPLACELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL);
-      } else if (APPENDLISTWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_WITH_DUPLICATION);
-      } else if (APPENDLIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND);
-      } else if (APPENDORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_OR_CREATE);
-      } else if (REPLACEORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL_OR_CREATE);
-      } else if (REMOVELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REMOVE);
-      } else if (SUBSTITUTE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String oldValue = queryMap.get(OLDVALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, oldValue, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.SUBSTITUTE);
-      } else if (SUBSTITUTELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String oldValue = queryMap.get(OLDVALUE);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, oldValue, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.SUBSTITUTE);
-      } else if (CLEAR.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, "", null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.CLEAR);
-      } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, "", null, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REMOVE_FIELD);
-        //
-        // UPDATE OPERATIONS WITH NO WRITER
-        //
-      } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL);
-      } else if (APPENDWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_WITH_DUPLICATION);
-      } else if (APPEND.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND);
-      } else if (APPENDORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_OR_CREATE);
-      } else if (REPLACEORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL_OR_CREATE);
-      } else if (REMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REMOVE);
-      } else if (REPLACELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL);
-      } else if (APPENDLISTWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_WITH_DUPLICATION);
-      } else if (APPENDLIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND);
-      } else if (APPENDORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.APPEND_OR_CREATE);
-      } else if (REPLACEORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REPLACE_ALL_OR_CREATE);
-      } else if (REMOVELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REMOVE);
-      } else if (SUBSTITUTE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String oldValue = queryMap.get(OLDVALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, value, oldValue, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.SUBSTITUTE);
-      } else if (SUBSTITUTELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String oldValue = queryMap.get(OLDVALUE);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateListOperation(guid, field, value, oldValue, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.SUBSTITUTE);
-      } else if (CLEAR.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, "", null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.CLEAR);
-      } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String signature = queryMap.get(SIGNATURE);
-        return processUpdateOperation(guid, field, "", null, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
-                UpdateOperation.REMOVE_FIELD);
-        //
-        // UNSIGNED UPDATE OPERATIONS
-        //
-      } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL);
-      } else if (APPENDWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND_WITH_DUPLICATION);
-      } else if (APPEND.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND);
-      } else if (APPENDORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND_OR_CREATE);
-      } else if (REPLACEORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL_OR_CREATE);
-      } else if (REMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REMOVE);
-      } else if (REPLACELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL);
-      } else if (APPENDLISTWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND_WITH_DUPLICATION);
-      } else if (APPENDLIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND);
-      } else if (APPENDORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND_OR_CREATE);
-      } else if (REPLACEORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL_OR_CREATE);
-      } else if (REMOVELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REMOVE);
-      } else if (SUBSTITUTE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String oldValue = queryMap.get(OLDVALUE);
-        return processUnsignedUpdateOperation(guid, field, value, oldValue, UpdateOperation.SUBSTITUTE);
-      } else if (SUBSTITUTELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String value = queryMap.get(VALUE);
-        String oldValue = queryMap.get(OLDVALUE);
-        return processUnsignedUpdateListOperation(guid, field, value, oldValue, UpdateOperation.SUBSTITUTE);
-      } else if (CLEAR.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        return processUnsignedUpdateOperation(guid, field, "", null, UpdateOperation.CLEAR);
-      } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        return processUnsignedUpdateOperation(guid, field, "", null, UpdateOperation.REMOVE_FIELD);
-        //
-        // SELECT OPERATIONS
-        //
-      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, VALUE))) {
-        String field = queryMap.get(FIELD);
-        Object value = queryMap.get(VALUE);
-        return processSelect(field, value);
-      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, NEAR, MAXDISTANCE))) {
-        String field = queryMap.get(FIELD);
-        String near = queryMap.get(NEAR);
-        String maxDistance = queryMap.get(MAXDISTANCE);
-        return processSelectNear(field, near, maxDistance);
-      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, WITHIN))) {
-        String field = queryMap.get(FIELD);
-        String within = queryMap.get(WITHIN);
-        return processSelectWithin(field, within);
-      } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(QUERY))) {
-        String query = queryMap.get(QUERY);
-        return processSelectQuery(query);
-        //
-        // ACL OPERATIONS
-        //
-        // ACLADD
-      } else if (ACLADD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
-        // syntax: aclAdd hash field allowedreader signature
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String accesser = queryMap.get(ACCESSER);
-        String aclType = queryMap.get(ACLTYPE);
-        String signature = queryMap.get(SIGNATURE);
-        return processAclAdd(aclType, guid, field, accesser, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        // ACLREMOVE
-      } else if (ACLREMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
-        // syntax: aclRemove guid field allowedreader signature
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String accesser = queryMap.get(ACCESSER);
-        String aclType = queryMap.get(ACLTYPE);
-        String signature = queryMap.get(SIGNATURE);
-        return processAclRemove(aclType, guid, field, accesser, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        // ACL
-      } else if (ACLRETRIEVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACLTYPE, SIGNATURE))) {
-        // show the acl list for user's field
-        // syntax: acl guid field signature
-        String guid = queryMap.get(GUID);
-        String field = queryMap.get(FIELD);
-        String aclType = queryMap.get(ACLTYPE);
-        String signature = queryMap.get(SIGNATURE);
-        return processRetrieveAcl(aclType, guid, field, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        //
-        // GROUP OPERATIONS
-        //
-      } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String signature = queryMap.get(SIGNATURE);
-        return processAddToGroup(guid, member, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processAddToGroup(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String members = queryMap.get(MEMBERS);
-        String signature = queryMap.get(SIGNATURE);
-        return processAddMembersToGroup(guid, members, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String members = queryMap.get(MEMBERS);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processAddMembersToGroup(guid, members, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveFromGroup(guid, member, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveFromGroup(guid, member, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String members = queryMap.get(MEMBERS);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveMembersFromGroup(guid, members, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, WRITER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String members = queryMap.get(MEMBERS);
-        String writer = queryMap.get(WRITER);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveMembersFromGroup(guid, members, writer, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (GETGROUPMEMBERS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, READER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String reader = queryMap.get(READER);
-        String signature = queryMap.get(SIGNATURE);
-        return processGetGroupMembers(guid, reader, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (GETGROUPMEMBERS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String signature = queryMap.get(SIGNATURE);
-        return processGetGroupMembers(guid, guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REQUESTJOINGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String signature = queryMap.get(SIGNATURE);
-        return processRequestJoinGroup(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (RETRIEVEGROUPJOINREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String signature = queryMap.get(SIGNATURE);
-        return processRetrieveJoinGroupRequests(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (GRANTMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String members = queryMap.get(MEMBERS);
-        String signature = queryMap.get(SIGNATURE);
-        return processGrantMemberships(guid, members, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (GRANTMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String signature = queryMap.get(SIGNATURE);
-        return processGrantMembership(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REQUESTLEAVEGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String signature = queryMap.get(SIGNATURE);
-        return processRequestLeaveGroup(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (RETRIEVEGROUPLEAVEREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String signature = queryMap.get(SIGNATURE);
-        return processRetrieveLeaveGroupRequests(guid, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REVOKEMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String members = queryMap.get(MEMBERS);
-        String signature = queryMap.get(SIGNATURE);
-        return processRevokeMemberships(guid, members, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REVOKEMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String member = queryMap.get(MEMBER);
-        String signature = queryMap.get(SIGNATURE);
-        return processRevokeMembership(guid, member, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-        //
-        // MISC OPERATIONS
-        //
-        // ADMIN
-      } else if (ADMIN.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
-        // pass in the host to use as a passkey check
-        return processAdmin(host, queryMap.get(PASSKEY), queryString);
-      } else if (SETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, VALUE))) {
-        String parameter = queryMap.get(NAME);
-        String value = queryMap.get(VALUE);
-        return processSetParameter(parameter, value);
-      } else if (GETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
-        String parameter = queryMap.get(NAME);
-        return processGetParameter(parameter);
-      } else if (DELETEALLRECORDS.equals(action)) {
-        return processDeleteAllRecords(queryString);
-      } else if (RESETDATABASE.equals(action)) {
-        return processResetDatabase(queryString);
-      } else if (CLEARCACHE.equals(action)) {
-        return processClearCache(queryString);
-      } else if (DUMPCACHE.equals(action)) {
-        return processDumpCache();
-      } else if (CHANGELOGLEVEL.equals(action) && queryMap.keySet().containsAll(Arrays.asList(LEVEL))) {
-        String level = queryMap.get(LEVEL);
-        return processChangeLogLevel(level);
-      } else if (ADDTAG.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String tagName = queryMap.get(NAME);
-        String signature = queryMap.get(SIGNATURE);
-        return processAddTag(guid, tagName, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (REMOVETAG.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
-        String guid = queryMap.get(GUID);
-        String tagName = queryMap.get(NAME);
-        String signature = queryMap.get(SIGNATURE);
-        return processRemoveTag(guid, tagName, signature, removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      } else if (CLEARTAGGED.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
-        String tagName = queryMap.get(NAME);
-        return processClearTagged(tagName);
-      } else if (GETTAGGED.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
-        String tagName = queryMap.get(NAME);
-        return processGetTagged(tagName);
-      } else if (DUMP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
-        String tagName = queryMap.get(NAME);
-        return processDump(tagName);
-      } else if (DUMP.equals(action)) {
-        return processDump();} else if (CHANGELOGLEVEL.equals(action) && queryMap.keySet().containsAll(Arrays.asList(LEVEL))) {
-        String level = queryMap.get(LEVEL);
-        return processChangeLogLevel(level);
-      } else if (RTTTEST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(N))) {
-        int size = Integer.parseInt(queryMap.get(N));
-        return processRttTest(size);
-
+      //new command processing
+      if (command != null) {
+        GNS.getLogger().info("Executing command: " + command.toString());
+        return command.execute(json);
       } else {
-        return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
+        // this guy stays around until we port all the commands to the new format
+        return oldQueryProcessor(host, action, queryMap, queryString, fullString);
       }
+    } catch (JSONException e) {
+      return BADRESPONSE + " " + JSONPARSEERROR + " " + e;
     } catch (NoSuchAlgorithmException e) {
       return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
     } catch (InvalidKeySpecException e) {
@@ -1949,93 +1247,697 @@ public class Protocol {
     }
   }
 
-  private boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-    if (!GNS.enableSignatureVerification) {
-      return true;
-    }
-    byte[] encodedPublicKey = Base64.decode(guidInfo.getPublicKey());
-    if (encodedPublicKey == null) { // bogus signature
-      return false;
-    }
-    KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
-    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
-    PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+  private String oldQueryProcessor(String host, String action, Map<String, String> queryMap, String queryString, String fullString)
+          throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NumberFormatException, SignatureException {
+    //
+    // !!!DON'T FORGET TO PUT THE ONES WITH SHORTER ARGUMENT LISTS *AFTER* THE ONES WITH LONGER ARGUMENT LISTS!!!
+    //
+    // HELP
+    if (HELP.equals(action)) {
+      //return getHelpString(GnrsHttpServer.hostName + (GnrsHttpServer.address != 80 ? (":" + GnrsHttpServer.address) : ""));
+      return getHelpString(host);
+    } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, PUBLICKEY, PASSWORD))) {
+      // syntax: register userName guid public_key
+      String userName = queryMap.get(NAME);
+      String guid = queryMap.get(GUID);
+      String publicKey = queryMap.get(PUBLICKEY);
+      String password = queryMap.get(PASSWORD);
+      return processRegisterAccountWithGuid(host, userName, guid, publicKey, password);
+    } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, PUBLICKEY, PASSWORD))) {
+      // syntax: register userName guid public_key
+      String userName = queryMap.get(NAME);
+      String publicKey = queryMap.get(PUBLICKEY);
+      String password = queryMap.get(PASSWORD);
+      return processRegisterAccount(host, userName, publicKey, password);
+    } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, PUBLICKEY))) {
+      // syntax: register userName guid public_key
+      String userName = queryMap.get(NAME);
+      String guid = queryMap.get(GUID);
+      String publicKey = queryMap.get(PUBLICKEY);
+      return processRegisterAccountWithGuid(host, userName, guid, publicKey, null);
+    } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, PUBLICKEY))) {
+      // syntax: register userName guid public_key
+      String userName = queryMap.get(NAME);
+      String publicKey = queryMap.get(PUBLICKEY);
+      return processRegisterAccount(host, userName, publicKey, null);
+    } else if (VERIFYACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, CODE))) {
+      // syntax: register userName guid public_key
+      String guid = queryMap.get(GUID);
+      String code = queryMap.get(CODE);
+      return processVerifyAccount(guid, code);
+    } else if (REMOVEACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, SIGNATURE))) {
+      // syntax: remove userName guid public_key
+      String userName = queryMap.get(NAME);
+      String guid = queryMap.get(GUID);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveAccount(userName, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (ADDGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, PUBLICKEY, SIGNATURE))) {
+      // syntax: register userName guid public_key
+      String guid = queryMap.get(GUID);
+      String userName = queryMap.get(NAME);
+      String publicKey = queryMap.get(PUBLICKEY);
+      String signature = queryMap.get(SIGNATURE);
+      return processAddGuid(guid, userName, publicKey, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REMOVEGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, GUID2, SIGNATURE))) {
+      // syntax: register userName guid public_key
+      String guid = queryMap.get(GUID);
+      String guid2 = queryMap.get(GUID2);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveGuid(guid, guid2, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (ADDALIAS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
+      // syntax: register userName guid public_key
+      String guid = queryMap.get(GUID);
+      String name = queryMap.get(NAME);
+      String signature = queryMap.get(SIGNATURE);
+      return processAddAlias(guid, name, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REMOVEALIAS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
+      // syntax: register userName guid public_key
+      String guid = queryMap.get(GUID);
+      String name = queryMap.get(NAME);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveAlias(guid, name, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (RETRIEVEALIASES.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String signature = queryMap.get(SIGNATURE);
+      return processRetrieveAliases(guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (SETPASSWORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, PASSWORD, SIGNATURE))) {
+      // syntax: register userName guid public_key
+      String guid = queryMap.get(GUID);
+      String password = queryMap.get(PASSWORD);
+      String signature = queryMap.get(SIGNATURE);
+      return processSetPassword(guid, password, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      // LOOKUP
+    } else if (LOOKUPGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
+      String userName = queryMap.get(NAME);
+      return processLookupGuid(userName);
+    } else if (LOOKUPGUIDRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
+      String guid = queryMap.get(GUID);
+      return processLookupGuidInfo(guid);
+    } else if (LOOKUPACCOUNTRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
+      String guid = queryMap.get(GUID);
+      return processLookupAccountInfo(guid);
+      //
+      // READ OPERATIONS
+      //
+    } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String reader = queryMap.get(READER);
+      String signature = queryMap.get(SIGNATURE);
+      return processRead(guid, field, reader, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String signature = queryMap.get(SIGNATURE);
+      return processRead(guid, field, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String reader = queryMap.get(READER);
+      String signature = queryMap.get(SIGNATURE);
+      return processReadOne(guid, field, reader, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String signature = queryMap.get(SIGNATURE);
+      return processReadOne(guid, field, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      // UNSIGNED READ
+    } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      return processUnsignedRead(guid, field);
+    } else if (READONE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      return processUnsignedReadOne(guid, field);
+      //
+      // CREATE OPERATIONS
+      //
+    } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processCreate(guid, field, value, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processCreate(guid, field, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processCreate(guid, field, value, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String signature = queryMap.get(SIGNATURE);
+      return processCreate(guid, field, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processCreateList(guid, field, value, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processCreateList(guid, field, value, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      //
+      // UPDATE OPERATIONS WITH DIFFERENT WRITER
+      //
+    } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL);
+    } else if (APPENDWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_WITH_DUPLICATION);
+    } else if (APPEND.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND);
+    } else if (APPENDORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_OR_CREATE);
+    } else if (REPLACEORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL_OR_CREATE);
+    } else if (REMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REMOVE);
+    } else if (REPLACELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL);
+    } else if (APPENDLISTWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_WITH_DUPLICATION);
+    } else if (APPENDLIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND);
+    } else if (APPENDORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_OR_CREATE);
+    } else if (REPLACEORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL_OR_CREATE);
+    } else if (REMOVELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REMOVE);
+    } else if (SUBSTITUTE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String oldValue = queryMap.get(OLDVALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, oldValue, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.SUBSTITUTE);
+    } else if (SUBSTITUTELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String oldValue = queryMap.get(OLDVALUE);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, oldValue, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.SUBSTITUTE);
+    } else if (CLEAR.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, "", null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.CLEAR);
+    } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, "", null, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REMOVE_FIELD);
+      //
+      // UPDATE OPERATIONS WITH NO WRITER
+      //
+    } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL);
+    } else if (APPENDWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_WITH_DUPLICATION);
+    } else if (APPEND.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND);
+    } else if (APPENDORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_OR_CREATE);
+    } else if (REPLACEORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL_OR_CREATE);
+    } else if (REMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REMOVE);
+    } else if (REPLACELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL);
+    } else if (APPENDLISTWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_WITH_DUPLICATION);
+    } else if (APPENDLIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND);
+    } else if (APPENDORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.APPEND_OR_CREATE);
+    } else if (REPLACEORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REPLACE_ALL_OR_CREATE);
+    } else if (REMOVELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REMOVE);
+    } else if (SUBSTITUTE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String oldValue = queryMap.get(OLDVALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, value, oldValue, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.SUBSTITUTE);
+    } else if (SUBSTITUTELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String oldValue = queryMap.get(OLDVALUE);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateListOperation(guid, field, value, oldValue, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.SUBSTITUTE);
+    } else if (CLEAR.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, "", null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.CLEAR);
+    } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String signature = queryMap.get(SIGNATURE);
+      return processUpdateOperation(guid, field, "", null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature),
+              UpdateOperation.REMOVE_FIELD);
+      //
+      // UNSIGNED UPDATE OPERATIONS
+      //
+    } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL);
+    } else if (APPENDWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND_WITH_DUPLICATION);
+    } else if (APPEND.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND);
+    } else if (APPENDORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.APPEND_OR_CREATE);
+    } else if (REPLACEORCREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL_OR_CREATE);
+    } else if (REMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateOperation(guid, field, value, null, UpdateOperation.REMOVE);
+    } else if (REPLACELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL);
+    } else if (APPENDLISTWITHDUPLICATION.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND_WITH_DUPLICATION);
+    } else if (APPENDLIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND);
+    } else if (APPENDORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.APPEND_OR_CREATE);
+    } else if (REPLACEORCREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REPLACE_ALL_OR_CREATE);
+    } else if (REMOVELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      return processUnsignedUpdateListOperation(guid, field, value, null, UpdateOperation.REMOVE);
+    } else if (SUBSTITUTE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String oldValue = queryMap.get(OLDVALUE);
+      return processUnsignedUpdateOperation(guid, field, value, oldValue, UpdateOperation.SUBSTITUTE);
+    } else if (SUBSTITUTELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, OLDVALUE))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String value = queryMap.get(VALUE);
+      String oldValue = queryMap.get(OLDVALUE);
+      return processUnsignedUpdateListOperation(guid, field, value, oldValue, UpdateOperation.SUBSTITUTE);
+    } else if (CLEAR.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      return processUnsignedUpdateOperation(guid, field, "", null, UpdateOperation.CLEAR);
+    } else if (REMOVEFIELD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD))) {
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      return processUnsignedUpdateOperation(guid, field, "", null, UpdateOperation.REMOVE_FIELD);
+      //
+      // SELECT OPERATIONS
+      //
+    } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, VALUE))) {
+      String field = queryMap.get(FIELD);
+      Object value = queryMap.get(VALUE);
+      return processSelect(field, value);
+    } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, NEAR, MAXDISTANCE))) {
+      String field = queryMap.get(FIELD);
+      String near = queryMap.get(NEAR);
+      String maxDistance = queryMap.get(MAXDISTANCE);
+      return processSelectNear(field, near, maxDistance);
+    } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(FIELD, WITHIN))) {
+      String field = queryMap.get(FIELD);
+      String within = queryMap.get(WITHIN);
+      return processSelectWithin(field, within);
+    } else if (SELECT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(QUERY))) {
+      String query = queryMap.get(QUERY);
+      return processSelectQuery(query);
+      //
+      // ACL OPERATIONS
+      //
+      // ACLADD
+    } else if (ACLADD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
+      // syntax: aclAdd hash field allowedreader signature
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String accesser = queryMap.get(ACCESSER);
+      String aclType = queryMap.get(ACLTYPE);
+      String signature = queryMap.get(SIGNATURE);
+      return processAclAdd(aclType, guid, field, accesser, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      // ACLREMOVE
+    } else if (ACLREMOVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE))) {
+      // syntax: aclRemove guid field allowedreader signature
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String accesser = queryMap.get(ACCESSER);
+      String aclType = queryMap.get(ACLTYPE);
+      String signature = queryMap.get(SIGNATURE);
+      return processAclRemove(aclType, guid, field, accesser, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      // ACL
+    } else if (ACLRETRIEVE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, ACLTYPE, SIGNATURE))) {
+      // show the acl list for user's field
+      // syntax: acl guid field signature
+      String guid = queryMap.get(GUID);
+      String field = queryMap.get(FIELD);
+      String aclType = queryMap.get(ACLTYPE);
+      String signature = queryMap.get(SIGNATURE);
+      return processRetrieveAcl(aclType, guid, field, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      //
+      // GROUP OPERATIONS
+      //
+    } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String signature = queryMap.get(SIGNATURE);
+      return processAddToGroup(guid, member, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processAddToGroup(guid, member, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String members = queryMap.get(MEMBERS);
+      String signature = queryMap.get(SIGNATURE);
+      return processAddMembersToGroup(guid, members, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (ADDTOGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String members = queryMap.get(MEMBERS);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processAddMembersToGroup(guid, members, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveFromGroup(guid, member, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveFromGroup(guid, member, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String members = queryMap.get(MEMBERS);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveMembersFromGroup(guid, members, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REMOVEFROMGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, WRITER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String members = queryMap.get(MEMBERS);
+      String writer = queryMap.get(WRITER);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveMembersFromGroup(guid, members, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (GETGROUPMEMBERS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, READER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String reader = queryMap.get(READER);
+      String signature = queryMap.get(SIGNATURE);
+      return processGetGroupMembers(guid, reader, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (GETGROUPMEMBERS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String signature = queryMap.get(SIGNATURE);
+      return processGetGroupMembers(guid, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REQUESTJOINGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String signature = queryMap.get(SIGNATURE);
+      return processRequestJoinGroup(guid, member, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (RETRIEVEGROUPJOINREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String signature = queryMap.get(SIGNATURE);
+      return processRetrieveJoinGroupRequests(guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (GRANTMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String members = queryMap.get(MEMBERS);
+      String signature = queryMap.get(SIGNATURE);
+      return processGrantMemberships(guid, members, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (GRANTMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String signature = queryMap.get(SIGNATURE);
+      return processGrantMembership(guid, member, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REQUESTLEAVEGROUP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String signature = queryMap.get(SIGNATURE);
+      return processRequestLeaveGroup(guid, member, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (RETRIEVEGROUPLEAVEREQUESTS.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String signature = queryMap.get(SIGNATURE);
+      return processRetrieveLeaveGroupRequests(guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REVOKEMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBERS, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String members = queryMap.get(MEMBERS);
+      String signature = queryMap.get(SIGNATURE);
+      return processRevokeMemberships(guid, members, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REVOKEMEMBERSHIP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, MEMBER, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String member = queryMap.get(MEMBER);
+      String signature = queryMap.get(SIGNATURE);
+      return processRevokeMembership(guid, member, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      //
+      // MISC OPERATIONS
+      //
+      // ADMIN
+    } else if (ADMIN.equals(action) && queryMap.keySet().containsAll(Arrays.asList(PASSKEY))) {
+      // pass in the host to use as a passkey check
+      return processAdmin(host, queryMap.get(PASSKEY), queryString);
+    } else if (SETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, VALUE))) {
+      String parameter = queryMap.get(NAME);
+      String value = queryMap.get(VALUE);
+      return processSetParameter(parameter, value);
+    } else if (GETPARAMETER.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
+      String parameter = queryMap.get(NAME);
+      return processGetParameter(parameter);
+    } else if (DELETEALLRECORDS.equals(action)) {
+      return processDeleteAllRecords(queryString);
+    } else if (RESETDATABASE.equals(action)) {
+      return processResetDatabase(queryString);
+    } else if (CLEARCACHE.equals(action)) {
+      return processClearCache(queryString);
+    } else if (DUMPCACHE.equals(action)) {
+      return processDumpCache();
+    } else if (CHANGELOGLEVEL.equals(action) && queryMap.keySet().containsAll(Arrays.asList(LEVEL))) {
+      String level = queryMap.get(LEVEL);
+      return processChangeLogLevel(level);
+    } else if (ADDTAG.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String tagName = queryMap.get(NAME);
+      String signature = queryMap.get(SIGNATURE);
+      return processAddTag(guid, tagName, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (REMOVETAG.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
+      String guid = queryMap.get(GUID);
+      String tagName = queryMap.get(NAME);
+      String signature = queryMap.get(SIGNATURE);
+      return processRemoveTag(guid, tagName, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+    } else if (CLEARTAGGED.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
+      String tagName = queryMap.get(NAME);
+      return processClearTagged(tagName);
+    } else if (GETTAGGED.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
+      String tagName = queryMap.get(NAME);
+      return processGetTagged(tagName);
+    } else if (DUMP.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME))) {
+      String tagName = queryMap.get(NAME);
+      return processDump(tagName);
+    } else if (DUMP.equals(action)) {
+      return processDump();
+    } else if (CHANGELOGLEVEL.equals(action) && queryMap.keySet().containsAll(Arrays.asList(LEVEL))) {
+      String level = queryMap.get(LEVEL);
+      return processChangeLogLevel(level);
+    } else if (RTTTEST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(N))) {
+      int size = Integer.parseInt(queryMap.get(N));
+      return processRttTest(size);
 
-    Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
-    sig.initVerify(publicKey);
-    sig.update(message.getBytes());
-    boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
-    return result;
-  }
-
-  /**
-   * Checks to see if the reader given in readerInfo can access all of the fields of the user given by guidInfo.
-   *
-   * @param access
-   * @param contectInfo
-   * @param readerInfo
-   * @return
-   */
-  private boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo) {
-    return verifyAccess(access, contectInfo, ALLFIELDS, readerInfo);
-  }
-
-  /**
-   * Checks to see if the reader given in readerInfo can access the field of the user given by guidInfo. Access type is some combo
-   * of read, write, blacklist and whitelist. Note: Blacklists are currently not activated.
-   *
-   * @param access
-   * @param guidInfo
-   * @param field
-   * @param accessorInfo
-   * @return
-   */
-  private boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
-    GNS.getLogger().finer("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
-    if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
-      return true; // can always read your own stuff
     } else {
-      Set<String> allowedusers = fieldMetaData.lookup(access, guidInfo, field);
-      GNS.getLogger().fine(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
-      if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
-        GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access user " + guidInfo.getName() + "'s " + field + " field");
-        return true;
-      }
-      // otherwise find any users that can access all of the fields
-      allowedusers = fieldMetaData.lookup(access, guidInfo, ALLFIELDS);
-      if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
-        GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access all of user " + guidInfo.getName() + "'s fields");
-        return true;
-      }
-    }
-    GNS.getLogger().fine("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
-    return false;
-  }
-
-  private boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers) {
-    if (allowedusers.contains(accesserGuid)) {
-      return true;
-    } else if (allowedusers.contains(EVERYONE)) {
-      return true;
-    } else {
-      // map over the allowedusers and see if any of them are groups that the user belongs to
-      for (String potentialGroupGuid : allowedusers) {
-        if (groupAccess.lookup(potentialGroupGuid).contains(accesserGuid)) {
-          return true;
-        }
-      }
-      return false;
+      return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
     }
   }
-
-  private String removeSignature(String fullString, String fullSignatureField) {
-    GNS.getLogger().finer("fullstring = " + fullString + " fullSignatureField = " + fullSignatureField);
-    String result = fullString.substring(0, fullString.lastIndexOf(fullSignatureField));
-    GNS.getLogger().finer("result = " + result);
-    return result;
-  }
-  // WHEN JAVA STOPS FUCKING UP THIS WILL GET MOVED
-  
   public static String Version = "$Revision$";
 }
