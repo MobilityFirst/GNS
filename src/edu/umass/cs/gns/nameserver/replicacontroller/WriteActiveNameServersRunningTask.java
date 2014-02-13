@@ -88,7 +88,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
             Packet.PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY);
 
     // write to replica controller record object using Primary-paxos that newActive is running
-    PaxosManager.propose(ReplicaController.getPrimaryPaxosID(name), new RequestPacket(
+    NameServer.paxosManager.propose(ReplicaController.getPrimaryPaxosID(name), new RequestPacket(
             Packet.PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY.getInt(), proposePacket.toString(),
             PaxosPacketType.REQUEST, false));
   }

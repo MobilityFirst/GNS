@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -13,7 +12,6 @@ import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.PaxosInterface;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +28,7 @@ public class NSPaxosInterface implements PaxosInterface {
 
   //    @Override
   public void proposeRequestToPaxos(String paxosID, RequestPacket requestPacket) {
-    PaxosManager.propose(paxosID, requestPacket);
+//    NameServer.paxosManager.propose(paxosID, requestPacket);
   }
 
   @Override
@@ -191,6 +189,16 @@ public class NSPaxosInterface implements PaxosInterface {
     } catch (JSONException e) {
 
       e.printStackTrace();
+    }
+  }
+
+  @Override
+  public String getPaxosKeyForPaxosID(String paxosID) {
+    if (ReplicaController.isPrimaryPaxosID(paxosID)) return paxosID; // paxos between primaries
+    else { // paxos between actives.
+      int index = paxosID.lastIndexOf("-");
+      if (index == -1) return paxosID;
+      return paxosID.substring(0, index);
     }
   }
 

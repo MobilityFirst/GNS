@@ -103,7 +103,7 @@ public class ListenerNameRecordStats extends Thread {
     String paxosID = ReplicaController.getPrimaryPaxosID(statsPacket.getName());
     RequestPacket requestPacket = new RequestPacket(PacketType.NAME_RECORD_STATS_RESPONSE.getInt(),
             statsPacket.toString(), PaxosPacketType.REQUEST, false);
-    PaxosManager.propose(paxosID, requestPacket);
+    NameServer.paxosManager.propose(paxosID, requestPacket);
     if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Stats Packet proposed. ");
 
   }

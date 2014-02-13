@@ -47,13 +47,15 @@ public class PaxosLogAnalyzer {
    */
   public void readLogData() {
 
-    PaxosLogger.setGnsRunning(false);
+//    PaxosLogger.setGnsRunning(false);
 
     for (int nodeID = 0; nodeID < numNS; nodeID++) {
+
       String nodeLogFolder = getNodeLogFolder(nodeID);
-      PaxosLogger.setLoggerParameters(nodeLogFolder);
+      PaxosLogger logger = new PaxosLogger(nodeLogFolder, nodeID, false);
+//      PaxosLogger.setLoggerParameters(nodeLogFolder);
       long t0 = System.currentTimeMillis();
-      ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = PaxosLogger.readAllPaxosLogs(nodeID);
+      ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = logger.readAllPaxosLogs();
       paxosAllNS.put(nodeID, paxosInstances);
       System.out.println("Read log: Node " + nodeID + "\tPaxosIDs: " + paxosInstances.size()
               + "\t" + (System.currentTimeMillis() - t0)/ 1000 + " sec");
@@ -62,7 +64,7 @@ public class PaxosLogAnalyzer {
 //      System.out.println("Node " + nodeID);
 //      for (String paxosID: paxosAllNS.get(nodeID).keySet()) {
 //        System.out.println("\t" + paxosID + "\t" + paxosAllNS.get(nodeID).get(paxosID).getPValuesAccepted().keySet().size()
-//                + "\t" + paxosAllNS.get(nodeID).get(paxosID).getDecisions().keySet().size());
+//                + "\t" + paxosAllNS.get(nodeID).get(paxosID).getCommittedRequests().keySet().size());
 //      }
 //      System.out.println();
 //    }
@@ -98,7 +100,8 @@ public class PaxosLogAnalyzer {
     for (String paxosID: paxosNodeIDs.keySet()) {
 
       int paxosGroupSize = paxosNodeIDs.get(paxosID).size();
-      int defaultCoordinator = PaxosReplica.getDefaultCoordinatorReplica(paxosID, paxosNodeIDs.get(paxosID));
+      int defaultCoordinator = -1; // TODO fix this.
+//      int defaultCoordinator = PaxosReplica.getDefaultCoordinatorReplica(paxosID, paxosNodeIDs.get(paxosID));
 
       // check which slots have any activity, print deficit info.
       // paxosID slot numreplica commitdeficit acceptdeficit defaultcoordinator
@@ -118,8 +121,8 @@ public class PaxosLogAnalyzer {
       for (Integer nodeID: paxosNodeIDs.get(paxosID)) {
         PaxosReplicaInterface replica = paxosAllNS.get(nodeID).get(paxosID);
         if (replica == null) continue;
-        if((replica.getDecisions().containsKey(slotCount - 1) &&
-                replica.getDecisions().get(slotCount - 1).isStopRequest()) ||
+        if((replica.getCommittedRequests().containsKey(slotCount - 1) &&
+                replica.getCommittedRequests().get(slotCount - 1).isStopRequest()) ||
                 (replica.getPValuesAccepted().containsKey(slotCount - 1)
                         && replica.getPValuesAccepted().get(slotCount - 1).proposal.req.isStopRequest())) {
           lastRequestStop = true;
@@ -151,7 +154,7 @@ public class PaxosLogAnalyzer {
             if (failedNodes.contains(nodeID) == false) acceptCountFailed += 1;
           }
 
-          if (replica.getDecisions().containsKey(slot)) {
+          if (replica.getCommittedRequests().containsKey(slot)) {
             commitCount += 1;
             if (failedNodes.contains(nodeID) == false) commitCountFailed += 1;
           }

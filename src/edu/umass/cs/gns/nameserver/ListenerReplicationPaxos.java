@@ -1,11 +1,11 @@
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
@@ -13,13 +13,15 @@ import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.BestServerSelection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -96,7 +98,7 @@ public class ListenerReplicationPaxos {
 //        NameRecord nameRecord = new NameRecord(name, activeNameServers, activePaxosID, previousValue, ttl);
 
         if (StartNameServer.eventualConsistency == false) {
-          boolean created = PaxosManager.createPaxosInstance(nameRecord.getActivePaxosID(), nameRecord.getActiveNameServers(),
+          boolean created = NameServer.paxosManager.createPaxosInstance(nameRecord.getActivePaxosID(), nameRecord.getActiveNameServers(),
                   nameRecord.toString());
           if (StartNameServer.debugMode) GNS.getLogger().info(" NAME RECORD ADDED AT ACTIVE NODE: "
                   + "name record = " + nameRecord.getName());
@@ -160,7 +162,6 @@ public class ListenerReplicationPaxos {
 //      if (StartNameServer.debugMode) GNS.getLogger().info(" NEW_ACTIVE_START_PREV_VALUE_RESPONSE. "
 //              + "Name Record Value: " + nameRecord);
 //      // fire up paxos instance
-
 
     } catch (Exception e) {
       GNS.getLogger().info(" Exception Exception Exception: ****************");
@@ -333,7 +334,7 @@ class ReplicationWorkerPaxos extends TimerTask {
               if (StartNameServer.eventualConsistency) {
                 NameServer.tcpTransport.sendToIDs(nameRecord1.getActiveNameServers(), oldActiveStopPacket.toJSONObject());
               } else {
-              PaxosManager.propose(paxosID, new RequestPacket(PacketType.ACTIVE_PAXOS_STOP.getInt(),
+              NameServer.paxosManager.propose(paxosID, new RequestPacket(PacketType.ACTIVE_PAXOS_STOP.getInt(),
                       oldActiveStopPacket.toString(), PaxosPacketType.REQUEST, true));
               }
 //              Long groupChangeStartTime = ReplicaController.groupChangeStartTimes.get(oldActiveStopPacket.getName());
@@ -477,7 +478,7 @@ class ReplicationWorkerPaxos extends TimerTask {
         if (StartNameServer.debugMode) GNS.getLogger().info(" NAME RECORD ADDED AT ACTIVE NODE: "
                 + "name record = " + originalPacket.getName());
         if (StartNameServer.eventualConsistency == false) {
-          boolean created = PaxosManager.createPaxosInstance(originalPacket.getNewActivePaxosID(),
+          boolean created = NameServer.paxosManager.createPaxosInstance(originalPacket.getNewActivePaxosID(),
                   originalPacket.getNewActiveNameServers(), nameRecord.toString());
           if (created) {
             if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. " + nameRecord.getName());
@@ -495,7 +496,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           nameRecord.handleNewActiveStart(originalPacket.getNewActiveNameServers(),
                   originalPacket.getNewActivePaxosID(), previousValue);
           if (StartNameServer.eventualConsistency == false) {
-            boolean created = PaxosManager.createPaxosInstance(originalPacket.getNewActivePaxosID(),
+            boolean created = NameServer.paxosManager.createPaxosInstance(originalPacket.getNewActivePaxosID(),
                     originalPacket.getNewActiveNameServers(), nameRecord.toString());
             if (created) {
               if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. " + nameRecord.getName());

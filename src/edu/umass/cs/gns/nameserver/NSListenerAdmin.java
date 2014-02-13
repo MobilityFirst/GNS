@@ -208,7 +208,7 @@ public class NSListenerAdmin extends Thread {
                 break;
               case RESETDB:
                 GNS.getLogger().fine("NSListenerAdmin (" + NameServer.nodeID + ") : Handling RESETDB request");
-                PaxosManager.resetAll();
+                NameServer.paxosManager.resetAll();
                 NameServer.resetDB();
                 break;
               case CHANGELOGLEVEL:

@@ -71,7 +71,7 @@ public class SendNameRecordStats extends TimerTask {
         }
         int selectedPrimaryNS = -1;
         for (int x : HashFunction.getPrimaryReplicas(name)) {
-          if (PaxosManager.isNodeUp(x)) {
+          if (NameServer.paxosManager.isNodeUp(x)) {
             selectedPrimaryNS = x;
             break;
           }

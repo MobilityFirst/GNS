@@ -46,6 +46,7 @@ public class NameServer {
   public static NSPacketDemultiplexer nsDemultiplexer;
   public static Timer timer = new Timer();
   public static ScheduledThreadPoolExecutor executorService;
+  public static PaxosManager paxosManager;
 
   /**
    * Only used during experiments.
@@ -117,8 +118,9 @@ public class NameServer {
     // start paxos manager first.
 
     // this will recover state from paxos logs, if it exists
-    PaxosManager.initializePaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
-            new NSPaxosInterface(), executorService);
+    paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
+            new NSPaxosInterface(), executorService, StartNameServer.paxosLogFolder, StartNameServer.failureDetectionPingInterval,
+            StartNameServer.failureDetectionTimeoutInterval);
 
     createPrimaryPaxosInstances();
 
@@ -185,7 +187,7 @@ public class NameServer {
 
       if (containsNode) {
         GNS.getLogger().info("Creating paxos instances: " + paxosID + "\t" + nodes);
-        PaxosManager.createPaxosInstance(paxosID, nodes, "");
+        NameServer.paxosManager.createPaxosInstance(paxosID, nodes, "");
       }
     }
 

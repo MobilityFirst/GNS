@@ -52,79 +52,97 @@ public class PaxosLogger extends Thread {
   /**
    * lock object controlling access to {@code logCommands}
    */
-  private static final Object logQueueLock = new ReentrantLock();
+  private  final Object logQueueLock = new ReentrantLock();
   /**
    * messages currently queued for logging
    */
-  private static ArrayList<LoggingCommand> logCommands = new ArrayList<LoggingCommand>();
+  private  ArrayList<LoggingCommand> logCommands = new ArrayList<LoggingCommand>();
 
   /**
    * if {@code msgs} is empty (no new messages for logging), then the logging thread
    * will sleep for {@code SLEEP_INTERVAL_MS} before checking the {@code msgs} again.
    */
-  private static int SLEEP_INTERVAL_MS = 1;
+  private  int SLEEP_INTERVAL_MS = 1;
   /**
    * folder used to store paxos log
    */
-  private static String logFolder = null;
+  private  String logFolder = null;
 
-  private static int nodeID = -1;
+  private  int nodeID = -1;
   /**
    * {@code FileWriter} object currently used for logging
    */
-//  static FileWriter fileWriter;
-  static String logFileName;
+//   FileWriter fileWriter;
+   String logFileName;
   /**
    * File number of log file currently used for logging
    */
-  private static int logFileNumber = 0;
+  private  int logFileNumber = 0;
   /**
    * number of messages written to current log file
    */
-  private static int msgCount = 0;
+  private  int msgCount = 0;
   /**
    * after writing {@code MSG_MAX} messages to a file, a new log file is used
    */
-  private static int MSG_MAX = 10000;
+  private  int MSG_MAX = 10000;
   /**
    * name of file which stores
    */
-  private static String paxosIDsFile = "paxosIDs";
+  private  String paxosIDsFile = "paxosIDs";
   /**
    * names of  paxos log files start with following prefix
    */
-  private static String logFilePrefix = "paxoslog_";
+  private  String logFilePrefix = "paxoslog_";
   /**
    * This sub-directory periodically stores most recent snapshot of all paxos instances
    */
-  private static String stateFolderSubdir = "paxosState";
+  private  String stateFolderSubdir = "paxosState";
 
-  private static String paxosStateFolder = null;
+  private  String paxosStateFolder = null;
   /**
    * Lock object used to isolate access to writes to paxos IDs file
    */
-  private static final ReentrantLock loggingLock = new ReentrantLock();
+  private  final ReentrantLock loggingLock = new ReentrantLock();
 
   /**
    * This variable is set to true when GNS is running. We set it to false during offline analysis of paxos logs
    * that are collected during a test run of GNS. See class {@code edu.umass.cs.gns.paxos.PaxosLogAnalyzer} for the
    * code that does the analysis.
    */
-  private static boolean gnsRunning = true;
+  private  boolean gnsRunning = true;
 
 
-  public static void setLoggerParameters(String paxosLogFolder) {
-    PaxosLogger.logFolder = paxosLogFolder;
+  private PaxosManager paxosManager;
+
+  public PaxosLogger(String logFolder, int nodeID, PaxosManager paxosManager) {
+    this.logFolder = logFolder;
+    this.nodeID = nodeID;
+    this.paxosManager = paxosManager;
+    paxosStateFolder = getLogFolderPath() + "/" + stateFolderSubdir;
+
+    createLogDirs();
+    logFileName = getNextFileName();
+
   }
 
+  public PaxosLogger(String logFolder, int nodeID, boolean gnsRunning) {
+    this.logFolder = logFolder;
+    this.nodeID = nodeID;
+    this.gnsRunning = gnsRunning;
+    paxosStateFolder = getLogFolderPath() + "/" + stateFolderSubdir;
+
+  }
+
+
   // ADDED NODE + NameServer.nodeID so we can run multiple servers on a single machine
-  private static String getLogFolderPath() {
+  private  String getLogFolderPath() {
     return logFolder + "/" + "NODE" + nodeID;
   }
 
-  public static void setGnsRunning(boolean gnsRunning) {
-    PaxosLogger.gnsRunning = gnsRunning;
-  }
+//  public  void setGnsRunning(boolean gnsRunning) {
+//    PaxosLogger.gnsRunning = gnsRunning;
+//  }
 
   // <state>
   // <last message>
@@ -139,20 +157,16 @@ public class PaxosLogger extends Thread {
    * exist, keys of {@code ConcurrentHashMap} are paxos keys, not paxos IDs. See method
    * getPaxosKey).
    */
-  public static ConcurrentHashMap<String, PaxosReplicaInterface> initLogger(int nodeID) {
-    PaxosLogger.nodeID = nodeID;
-    if (logFolder == null) {
-      System.out.println("Specify paxosLogFolder. paxosLogFolder can't be null.");
-      System.exit(2);
-    }
+  public ConcurrentHashMap<String, PaxosReplicaInterface> initLogger() {
+//    PaxosLogger.nodeID = nodeID;
+//    if (logFolder == null) {
+//      System.out.println("Specify paxosLogFolder. paxosLogFolder can't be null.");
+//      System.exit(2);
+//    }
 
     // initialize folder
-    paxosStateFolder = getLogFolderPath() + "/" + stateFolderSubdir;
 
     ConcurrentHashMap<String, PaxosReplicaInterface> replicas;
-
-    createLogDirs();
-
     replicas = recoverPaxosInstancesFromLogs();
 
     logFileName = getNextFileName();
@@ -166,13 +180,24 @@ public class PaxosLogger extends Thread {
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine(" File Writer created.");
     }
-    LoggingThread thread = new LoggingThread();
-    thread.start();
+
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine(" Thread started.");
     }
 
     return replicas;
+  }
+
+
+  @Override
+  public void run() {
+    try {
+
+      doLogging();
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -181,7 +206,7 @@ public class PaxosLogger extends Thread {
    * if no object exists. Keys of {@code ConcurrentHashMap} are paxos keys, not paxosIDs. See method
    * getPaxosKey).
    */
-  private static ConcurrentHashMap<String, PaxosReplicaInterface> recoverPaxosInstancesFromLogs() {
+  private  ConcurrentHashMap<String, PaxosReplicaInterface> recoverPaxosInstancesFromLogs() {
 
     // step 1: recover list of paxos instances
     ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = recoverListOfPaxosInstances();
@@ -212,8 +237,8 @@ public class PaxosLogger extends Thread {
    * @return {@code ConcurrentHashMap} of {@code PaxosReplica} objects that includes log messages, {@code null}
    * if no object exists. Keys of {@code ConcurrentHashMap} are paxosIDs, values are {@code PaxosReplica} objects.
    */
-  public static ConcurrentHashMap<String, PaxosReplicaInterface> readAllPaxosLogs(int nodeID) {
-    PaxosLogger.nodeID = nodeID;
+  public  ConcurrentHashMap<String, PaxosReplicaInterface> readAllPaxosLogs() {
+//    this.nodeID = nodeID;
     // step 1: recover list of paxos instances
     ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = recoverListOfPaxosInstances();
     if (paxosInstances == null || paxosInstances.size() == 0) {
@@ -236,7 +261,7 @@ public class PaxosLogger extends Thread {
    * Recover list of paxos instances currently active.
    * @return
    */
-  private static ConcurrentHashMap<String, PaxosReplicaInterface> recoverListOfPaxosInstances() {
+  private  ConcurrentHashMap<String, PaxosReplicaInterface> recoverListOfPaxosInstances() {
 
     ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
     // step 1: read paxosIDs active currently
@@ -289,7 +314,7 @@ public class PaxosLogger extends Thread {
    * Update the paxos instances with most recently logged state found in logs for each instance
    * @param paxosInstances
    */
-  private static void recoverMostRecentStateOfPaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
+  private  void recoverMostRecentStateOfPaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
     GNS.getLogger().fine("Keys in paxos instance: " + paxosInstances.keySet());
     File f = new File(getPaxosStateFolder());
     if (f.exists() == false) {
@@ -340,7 +365,7 @@ public class PaxosLogger extends Thread {
         PaxosStateFileName state = mostRecentStateFile.get(paxosID);
         paxosInstances.get(paxosKey).recoverCurrentBallotNumber(state.ballot);
         paxosInstances.get(paxosKey).recoverSlotNumber(state.slotNumber);
-        PaxosManager.clientRequestHandler.updateState(paxosID, state.state);
+        paxosManager.clientRequestHandler.updateState(paxosID, state.state);
       }
     }
   }
@@ -350,7 +375,7 @@ public class PaxosLogger extends Thread {
    * each instance
    * @param paxosInstances
    */
-  private static void recoverLogMessagesAfterLoggedState(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
+  private  void recoverLogMessagesAfterLoggedState(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
 
     // get list of log files
     String[] fileList = getSortedLogFileList();
@@ -401,7 +426,7 @@ public class PaxosLogger extends Thread {
    * @param paxosInstances set of paxos instances
    * @param line paxos log line
    */
-  private static void parseLine(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String line) {
+  private  void parseLine(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String line) {
     if (line.length() <= 1) {
       return;
     }
@@ -426,7 +451,7 @@ public class PaxosLogger extends Thread {
 
   }
 
-  private static void updatePaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
+  private  void updatePaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
                                            PaxosLogMessage logMessage) throws JSONException {
     if (paxosInstances == null || logMessage == null) {
       if (StartNameServer.debugMode) {
@@ -476,7 +501,7 @@ public class PaxosLogger extends Thread {
    *
    * A separate folder is created for storing most recent state of paxos instances, that is periodically logged.
    */
-  private static void createLogDirs() {
+  private  void createLogDirs() {
     File f = new File(getLogFolderPath());
     if (!f.exists()) { // paxos folder does not exist, then create dirs to store logs.
       f.mkdirs(); // create getLogFolderPath()
@@ -492,7 +517,7 @@ public class PaxosLogger extends Thread {
   /**
    * Clear all the paxos logs. Used for testing only.
    */
-  static void clearLogs() {
+   void clearLogs() {
     if (logFolder != null) {
       getLogFolderPath().length();
       File f = new File(getLogFolderPath());
@@ -506,7 +531,7 @@ public class PaxosLogger extends Thread {
    * Recursively deletes the given file
    * @param f
    */
-  private static void deleteDir(File f) {
+  private  void deleteDir(File f) {
     if (f.exists() == false) {
       return;
     }
@@ -532,7 +557,7 @@ public class PaxosLogger extends Thread {
    * @param nodeIDs
    * @param initialState
    */
-  static void logPaxosStart(String paxosID, Set<Integer> nodeIDs, StatePacket initialState) {
+   void logPaxosStart(String paxosID, Set<Integer> nodeIDs, StatePacket initialState) {
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine(" Paxos ID = " + paxosID);
     }
@@ -560,7 +585,7 @@ public class PaxosLogger extends Thread {
    * @param filename
    * @param logString
    */
-  private static void appendToFile(String filename, String logString) {
+  private  void appendToFile(String filename, String logString) {
     try {
       FileWriter fw = new FileWriter(filename, true);
       fw.write(logString);
@@ -570,7 +595,7 @@ public class PaxosLogger extends Thread {
     }
   }
 
-  private static String setIntegerToString(Set<Integer> integerSet) {
+  private  String setIntegerToString(Set<Integer> integerSet) {
     StringBuilder sb = new StringBuilder();
     boolean first = true;
     for (int x : integerSet) {
@@ -584,7 +609,7 @@ public class PaxosLogger extends Thread {
     return sb.toString();
   }
 
-  private static Set<Integer> stringToSetInteger(String string) {
+  private  Set<Integer> stringToSetInteger(String string) {
 //    System.out.println(string);
     Set<Integer> integerSet = new HashSet<Integer>();
     String[] tokens = string.split(":");
@@ -599,7 +624,7 @@ public class PaxosLogger extends Thread {
    * @param paxosID
    * @param initialState
    */
-  private static void logInitialPaxosState(String paxosID, String initialState) {
+  private  void logInitialPaxosState(String paxosID, String initialState) {
     //
   }
 
@@ -607,7 +632,7 @@ public class PaxosLogger extends Thread {
    * TODO add doc here
    * @param paxosID
    */
-  static void logPaxosStop(String paxosID) {
+   void logPaxosStop(String paxosID) {
 
     String paxosIDsFile1 = getPaxosIDsFile();
 
@@ -628,7 +653,7 @@ public class PaxosLogger extends Thread {
    * @param paxosID
    * @param packet
    */
-  static void logPaxosState(String paxosID, StatePacket packet) {
+   void logPaxosState(String paxosID, StatePacket packet) {
 
     synchronized (loggingLock) {
       String name = getStateLogFileName(paxosID, packet);
@@ -659,7 +684,7 @@ public class PaxosLogger extends Thread {
    * @param f
    * @return
    */
-  private static String getPaxosStateFromFile(File f) {
+  private  String getPaxosStateFromFile(File f) {
 
     try {
       StringBuilder sb = new StringBuilder();
@@ -715,21 +740,21 @@ public class PaxosLogger extends Thread {
    * @param packet
    * @return
    */
-  private static String getStateLogFileName(String paxosID, StatePacket packet) {
+  private  String getStateLogFileName(String paxosID, StatePacket packet) {
     return getLogFolderPath() + "/" + stateFolderSubdir + "/" + paxosID + "_" + packet.b + "_" + packet.slotNumber;
   }
-//  private static String paxosIDFileComplete = null;
+//  private  String paxosIDFileComplete = null;
 
   /**
    *
    * @return
    */
-  private static String getPaxosIDsFile() {
+  private  String getPaxosIDsFile() {
 
     return getLogFolderPath() + "/" + paxosIDsFile;
   }
 
-  private static String getPaxosStateFolder() {
+  private  String getPaxosStateFolder() {
     return paxosStateFolder;
   }
 
@@ -741,7 +766,7 @@ public class PaxosLogger extends Thread {
    *
    * @return
    */
-  private static String[] getSortedLogFileList() {
+  private  String[] getSortedLogFileList() {
 
     String[] fileList = new File(getLogFolderPath()).list(new FilenameFilter() {
       @Override
@@ -778,7 +803,7 @@ public class PaxosLogger extends Thread {
    * @param paxosID
    * @param msg
    */
-  public static void parsePaxosStart(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
+  public  void parsePaxosStart(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
                                      String paxosID, String msg) {
 
     if (paxosInstances.containsKey(getPaxosKey(paxosID)) &&
@@ -795,7 +820,7 @@ public class PaxosLogger extends Thread {
       GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIDs);
     }
 
-    paxosInstances.put(getPaxosKey(paxosID), PaxosManager.createPaxosReplicaObject(paxosID, PaxosManager.nodeID, nodeIDs));
+    paxosInstances.put(getPaxosKey(paxosID), paxosManager.createPaxosReplicaObject(paxosID, paxosManager.nodeID, nodeIDs));
   }
 
   /**
@@ -803,7 +828,7 @@ public class PaxosLogger extends Thread {
    * @param paxosInstances
    * @param paxosID
    */
-  private static void parsePaxosStop(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String paxosID,
+  private  void parsePaxosStop(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String paxosID,
                                      String msg) {
 
     if (gnsRunning) { //
@@ -824,7 +849,7 @@ public class PaxosLogger extends Thread {
 //      // add a paxos replica whose state is deleted.
 //      try {
 //        paxosInstances.remove()
-//        paxosInstances.put(paxosID, new PaxosReplica(paxosID,PaxosManager.nodeID,paxosReplica.getNodeIDs(),true,
+//        paxosInstances.put(paxosID, new PaxosReplica(paxosID,paxosManager.nodeID,paxosReplica.getNodeIDs(),true,
 //                new RequestPacket(new JSONObject(msg))));
 //      } catch (JSONException e) {
 //        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -843,7 +868,7 @@ public class PaxosLogger extends Thread {
    * @param paxosReplica
    * @param message
    */
-  private static void parseDecision(PaxosReplicaInterface paxosReplica, String message) throws JSONException {
+  private  void parseDecision(PaxosReplicaInterface paxosReplica, String message) throws JSONException {
     if (paxosReplica != null && message != null) {
       ProposalPacket proposalPacket = new ProposalPacket(new JSONObject(message));
       paxosReplica.recoverDecision(proposalPacket);
@@ -856,7 +881,7 @@ public class PaxosLogger extends Thread {
    * @param replica
    * @param msg
    */
-  private static void parsePrepare(PaxosReplicaInterface replica, String msg) throws JSONException {
+  private  void parsePrepare(PaxosReplicaInterface replica, String msg) throws JSONException {
     if (replica != null && msg != null) {
       PreparePacket packet = new PreparePacket(new JSONObject(msg));
       replica.recoverPrepare(packet);
@@ -869,7 +894,7 @@ public class PaxosLogger extends Thread {
    * @param replica
    * @param msg
    */
-  private static void parseAccept(PaxosReplicaInterface replica, String msg) throws JSONException {
+  private  void parseAccept(PaxosReplicaInterface replica, String msg) throws JSONException {
     if (replica != null && msg != null) {
       AcceptPacket packet = new AcceptPacket(new JSONObject(msg));
       replica.recoverAccept(packet);
@@ -882,7 +907,7 @@ public class PaxosLogger extends Thread {
    * @param logFileName
    * @return log file number
    */
-  private static int getLogFileNumber(String logFileName) throws NumberFormatException {
+  private  int getLogFileNumber(String logFileName) throws NumberFormatException {
     String[] tokens = logFileName.split("/");
     String fileNumberStr = tokens[tokens.length - 1].substring(logFilePrefix.length());
 
@@ -893,7 +918,7 @@ public class PaxosLogger extends Thread {
    * Add a msg to logging queue
    * @param command
    */
-  static void logMessage(LoggingCommand command) {
+   void logMessage(LoggingCommand command) {
     synchronized (logQueueLock) {
       logCommands.add(command);
     }
@@ -902,7 +927,7 @@ public class PaxosLogger extends Thread {
     }
   }
 
-  private static String getNextFileName() {
+  private  String getNextFileName() {
     logFileNumber++;
     return getLogFolderPath() + "/" + logFilePrefix + logFileNumber;
   }
@@ -910,7 +935,7 @@ public class PaxosLogger extends Thread {
   /**
    * log the current msgs in queue
    */
-  static void doLogging() {
+   void doLogging() {
     while (true) {
       ArrayList<LoggingCommand> logCmdCopy = null;
 
@@ -977,13 +1002,13 @@ public class PaxosLogger extends Thread {
       for (LoggingCommand cmd : logCmdCopy) {
         if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_EXECUTE) {
           try {
-            PaxosManager.executorService.submit(new HandlePaxosMessageTask(cmd.getLogJson(),
-                    cmd.getLogJson().getInt(PaxosPacketType.ptype)));
+            paxosManager.executorService.submit(new HandlePaxosMessageTask(cmd.getLogJson(),
+                    cmd.getLogJson().getInt(PaxosPacketType.ptype), paxosManager));
           } catch (JSONException e) {
             e.printStackTrace();
           }
         } else if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_SEND_MSG) {
-          PaxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
+          paxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
         }
 
       }
@@ -1054,11 +1079,11 @@ public class PaxosLogger extends Thread {
 
   }
 
-  private static String getLogString(String paxosID, int msgType, String msg) {
+  private  String getLogString(String paxosID, int msgType, String msg) {
     return paxosID + "\t" + msgType + "\t" + msg + "\n";
   }
 
-  private static String getLogString(String paxosID, JSONObject jsonObject) throws JSONException {
+  private  String getLogString(String paxosID, JSONObject jsonObject) throws JSONException {
     StringBuilder sb = new StringBuilder();
     sb.append(paxosID);
     sb.append("\t");
@@ -1075,7 +1100,7 @@ public class PaxosLogger extends Thread {
    * instances that have been deleted (2) a newer state file for the same paxos instance
    * is logged.
    */
-  static void deleteRedundantStateLogs() {
+   void deleteRedundantStateLogs() {
     String stateFolder = getPaxosStateFolder();
     File f = new File(stateFolder);
     String[] state = f.list(); // read names of all files
@@ -1107,7 +1132,7 @@ public class PaxosLogger extends Thread {
       ArrayList<PaxosStateFileName> files = allStateFiles.get(paxosID);
 
       // is paxos instance running?
-      if (PaxosManager.paxosInstances.containsKey(getPaxosKey(paxosID))) {
+      if (paxosManager.paxosInstances.containsKey(getPaxosKey(paxosID))) {
         if (files.size() == 1) {
           continue;
         }
@@ -1153,7 +1178,7 @@ public class PaxosLogger extends Thread {
    * A log file can be deleted if for all x \in X, either (1) 'x' is stopped or (2) the latest state
    * for 'x' was logged on disk after all log messages for 'x' in this log file were written.
    */
-  public static void deleteLogMessageFiles() {
+  public  void deleteLogMessageFiles() {
 
     // select all log files
     String[] logFiles = getSortedLogFileList();
@@ -1176,7 +1201,7 @@ public class PaxosLogger extends Thread {
 
   }
 
-  public static void main(String[] args) throws IOException {
+  public  void main(String[] args) throws IOException {
 
     for (int i = 0; i < 100000; i++) {
       long t0 = System.currentTimeMillis();
@@ -1203,7 +1228,7 @@ public class PaxosLogger extends Thread {
    * @param logFileName
    * @return
    */
-  static boolean isLogFileDeletable(String logFileName) {
+   boolean isLogFileDeletable(String logFileName) {
 
     HashSet<String> paxosIDs = getPaxosInstanceSet(logFileName);
 
@@ -1247,7 +1272,7 @@ public class PaxosLogger extends Thread {
    * @param logFileName
    * @return Set of paxosIDs
    */
-  private static HashSet<String> getPaxosInstanceSet(String logFileName) {
+  private  HashSet<String> getPaxosInstanceSet(String logFileName) {
     HashSet<String> paxosIDs = new HashSet<String>();
     try {
       BufferedReader br = new BufferedReader(new FileReader(new File(getLogFolderPath() + "/" + logFileName)));
@@ -1273,10 +1298,10 @@ public class PaxosLogger extends Thread {
    * remove paxosIDs from this set which have been stopped.
    * @param paxosIDs
    */
-  private static void filterStoppedPaxosIDs(HashSet<String> paxosIDs) {
+  private  void filterStoppedPaxosIDs(HashSet<String> paxosIDs) {
     HashSet<String> deleteIDs = new HashSet<String>();
     for (String x : paxosIDs) {
-      if (PaxosManager.paxosInstances.containsKey(getPaxosKey(x))) {
+      if (paxosManager.paxosInstances.containsKey(getPaxosKey(x))) {
         continue;
       }
       deleteIDs.add(x);
@@ -1291,7 +1316,7 @@ public class PaxosLogger extends Thread {
    * @param paxosIDs
    * @return
    */
-  private static HashMap<String, PaxosStateFileName> readPaxosState(HashSet<String> paxosIDs) {
+  private  HashMap<String, PaxosStateFileName> readPaxosState(HashSet<String> paxosIDs) {
 
     String stateFolder = getPaxosStateFolder();
     File f = new File(stateFolder);
@@ -1348,7 +1373,7 @@ public class PaxosLogger extends Thread {
    * @param stateFileName
    * @return
    */
-  static boolean isStateAfterLogMessage(PaxosLogMessage logMsg, PaxosStateFileName stateFileName) {
+   boolean isStateAfterLogMessage(PaxosLogMessage logMsg, PaxosStateFileName stateFileName) {
     try {
       switch (logMsg.getLogMessageType()) {
         case PaxosPacketType.ACCEPT:
@@ -1392,27 +1417,19 @@ public class PaxosLogger extends Thread {
   }
 
 
-  private static String getPaxosKey(String paxosID) {
-    if (gnsRunning) return PaxosManager.getPaxosKeyFromPaxosID(paxosID);
+  private  String getPaxosKey(String paxosID) {
+    if (gnsRunning) return paxosManager.getPaxosKeyFromPaxosID(paxosID);
     return paxosID;
   }
+
 }
 
 /**
  * This thread does the logging for PREPARE, ACCEPT, and DECISON messages for all paxos instances.
  */
-class LoggingThread extends Thread {
+class LoggingThread{
 
-  @Override
-  public void run() {
-    try {
 
-      PaxosLogger.doLogging();
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-      e.printStackTrace();
-    }
-  }
 }
 
 /**
@@ -1420,11 +1437,17 @@ class LoggingThread extends Thread {
  */
 class LogDeletionTask extends TimerTask {
 
+  PaxosLogger paxosLogger;
+
+  public LogDeletionTask(PaxosLogger paxosLogger) {
+    this.paxosLogger = paxosLogger;
+  }
+
   @Override
   public void run() {
     try {
-      PaxosLogger.deleteRedundantStateLogs();
-      PaxosLogger.deleteLogMessageFiles();
+      paxosLogger.deleteRedundantStateLogs();
+      paxosLogger.deleteLogMessageFiles();
     } catch (Exception e) {
       GNS.getLogger().severe("Exception in Paxos log deletion. " + e.getMessage());
       e.printStackTrace();
@@ -1494,7 +1517,7 @@ class PaxosStateFileName implements Comparable {
 class LoggingCommand {
 
   public static int LOG_AND_EXECUTE = 1;
-  public static int LOG_AND_SEND_MSG = 2;
+  public static  int LOG_AND_SEND_MSG = 2;
   private String paxosID;
   private JSONObject logJson;
   private int actionAfterLog;

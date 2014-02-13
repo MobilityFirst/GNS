@@ -6,7 +6,6 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.BestServerSelection;
 import org.json.JSONException;
 
@@ -173,7 +172,7 @@ public class StopActiveSetTask extends TimerTask {
   private int selectNextActiveToQuery() {
     int selectedActive = -1;
     for (int x : oldActiveNameServers) {
-      if (oldActivesQueried.contains(x) || !PaxosManager.isNodeUp(x)) {
+      if (oldActivesQueried.contains(x) || !NameServer.paxosManager.isNodeUp(x)) {
         continue;
       }
       selectedActive = x;

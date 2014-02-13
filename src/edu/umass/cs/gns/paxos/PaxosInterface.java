@@ -19,15 +19,15 @@ public interface PaxosInterface {
    * @param paxosID
    * @param requestPacket
    */
-    public abstract void handlePaxosDecision(String paxosID, RequestPacket requestPacket, boolean recovery);
+  public abstract void handlePaxosDecision(String paxosID, RequestPacket requestPacket, boolean recovery);
 
-    public abstract void handleFailureMessage(FailureDetectionPacket fdPacket);
+  public abstract void handleFailureMessage(FailureDetectionPacket fdPacket);
 
-    public abstract String getState(String paxosID);
+  public abstract String getState(String paxosID);
 
-    public abstract void updateState(String paxosID, String state);
+  public abstract void updateState(String paxosID, String state);
 
-
+  public abstract String getPaxosKeyForPaxosID(String paxosID);
 
 
 }

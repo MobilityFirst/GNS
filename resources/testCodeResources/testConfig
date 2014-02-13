@@ -1,0 +1,21 @@
+
+# number of paxos nodes
+NumberOfReplicas 10
+
+# number of client requests
+NumberOfRequests 1000
+
+# duration of test 
+TestDurationSeconds 10
+
+# paxos logs are stored in this folder
+PaxosLogFolder mypaxoslog
+
+# paxos garbage collects its in-memory state at this interval
+GarbageCollectionInterval 100
+
+# number of threads at each paxos replica
+MaxThreads 2
+
+# a text output with statistics is stored in this folder at the end of experiment
+OutputFolder mypaxosoutput

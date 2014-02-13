@@ -2,7 +2,8 @@ package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.localnameserver.original.LocalNameServer;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.nameserver.NameServer;
+
 import java.util.Random;
 import java.util.Set;
 
@@ -168,14 +169,14 @@ public class BestServerSelection {
     if (nameServers.contains(ConfigFileInfo.getClosestNameServer())
             && nameServersQueried != null && !nameServersQueried.contains(ConfigFileInfo.getClosestNameServer())
             && ConfigFileInfo.getPingLatency(ConfigFileInfo.getClosestNameServer()) >= 0
-            && PaxosManager.isNodeUp(ConfigFileInfo.getClosestNameServer())) {
+            && NameServer.paxosManager.isNodeUp(ConfigFileInfo.getClosestNameServer())) {
       return ConfigFileInfo.getClosestNameServer();
     }
     double lowestLatency = Double.MAX_VALUE;
     int nameServerID = -1;
     double pingLatency;
     for (Integer nsID : nameServers) {
-      if (nameServersQueried != null && nameServersQueried.contains(nsID) || PaxosManager.isNodeUp(nsID) == false) {
+      if (nameServersQueried != null && nameServersQueried.contains(nsID) || NameServer.paxosManager.isNodeUp(nsID) == false) {
         continue;
       }
       pingLatency = ConfigFileInfo.getPingLatency(nsID);

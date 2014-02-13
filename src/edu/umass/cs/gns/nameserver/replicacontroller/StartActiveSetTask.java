@@ -1,15 +1,14 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
+import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.BestServerSelection;
 import org.json.JSONException;
 
@@ -198,7 +197,7 @@ public class StartActiveSetTask extends TimerTask {
   private int selectNextActiveToQuery() {
     int selectedActive = -1;
     for (int x : newActiveNameServers) {
-      if (newActivesQueried.contains(x) || !PaxosManager.isNodeUp(x)) {
+      if (newActivesQueried.contains(x) || !NameServer.paxosManager.isNodeUp(x)) {
         continue;
       }
       selectedActive = x;

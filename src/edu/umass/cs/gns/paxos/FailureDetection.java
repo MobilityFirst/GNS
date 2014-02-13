@@ -2,7 +2,6 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import org.json.JSONException;
@@ -11,6 +10,7 @@ import org.json.JSONObject;
 import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,37 +19,37 @@ import java.util.concurrent.locks.ReentrantLock;
 	/**
 	 * Frequency of pinging a node.
 	 */
-	static int pingIntervalMillis = 10000;
+	 int pingIntervalMillis = 10000;
 
   /**
    * Interval after which a node is declared as failed is no response is received
    */
-	static int timeoutIntervalMillis = 31000;
+	 int timeoutIntervalMillis = 31000;
 
 	/**
 	 * number of nodes.
 	 */
-	static int N;
+	 int N;
 	
 	/**
 	 * ID of this node.
 	 */
-	static int nodeID;
+	 int nodeID;
 
 	/**
 	 * Last time a message is received from this node.
 	 */
-	static ConcurrentHashMap<Integer,Long> nodeInfo = new ConcurrentHashMap<Integer, Long>();
+	 ConcurrentHashMap<Integer,Long> nodeInfo = new ConcurrentHashMap<Integer, Long>();
 	
 	/**
 	 * Current status (up or down) of all nodes.
 	 */
-	static ConcurrentHashMap<Integer,Boolean> nodeStatus = new ConcurrentHashMap<Integer, Boolean>();
+	 ConcurrentHashMap<Integer,Boolean> nodeStatus = new ConcurrentHashMap<Integer, Boolean>();
 
 	/**
 	 * 
 	 */
-	static ReentrantLock lock = new ReentrantLock();
+	 ReentrantLock lock = new ReentrantLock();
 
 //	public DatagramSocket socket;
 
@@ -61,18 +61,25 @@ import java.util.concurrent.locks.ReentrantLock;
 	/**
 	 * starting time of failure detector
 	 */
-	static long startingTime;
+	 long startingTime;
+
+     ScheduledThreadPoolExecutor executorService;
+     PaxosManager paxosManager;
 
 	/**
 	 * initialize the failure detection module
 	 * @param N number of nodes
 	 * @param nodeID ID of this node 
 	 */
-	static void initializeFailureDetection(int N, int nodeID) {
-		FailureDetection.nodeID = nodeID;
-		FailureDetection.N =  N;
-		FailureDetection.startingTime = System.currentTimeMillis();
-				
+	 public FailureDetection(int N, int nodeID, ScheduledThreadPoolExecutor executorService,
+                                         PaxosManager paxosManager, int pingIntervalMillis, int timeoutIntervalMillis) {
+		 this.nodeID = nodeID;
+     this.N =  N;
+     this.startingTime = System.currentTimeMillis();
+     this.executorService = executorService;
+     this.paxosManager = paxosManager;
+     this.pingIntervalMillis = pingIntervalMillis;
+     this.timeoutIntervalMillis = timeoutIntervalMillis;
 		for (int i = 0; i < N; i++) {
 			if (i == nodeID) {
 				nodeStatus.put(nodeID, true);
@@ -89,7 +96,7 @@ import java.util.concurrent.locks.ReentrantLock;
 	 * if node is already being monitored, method makes no change.
 	 * @param monitoredNodeID
 	 */
-	static void startNodeMonitoring(int monitoredNodeID){
+	 void startNodeMonitoring(int monitoredNodeID){
     lock.lock();
 		try {
 
@@ -99,14 +106,14 @@ import java.util.concurrent.locks.ReentrantLock;
       Random r = new Random();
       try
       {
-        FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject());
-        long initialDelay = r.nextInt(pingIntervalMillis);
-        if (StartNameServer.experimentMode) {
-          initialDelay += 2 * NameServer.initialExpDelayMillis; // wait for all name servers to start up.
-        }
+        FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject(), this);
+        long initialDelay = timeoutIntervalMillis + r.nextInt(pingIntervalMillis);
+//        if (StartNameServer.experimentMode) {
+//          initialDelay += 2 * NameServer.initialExpDelayMillis; // wait for all name servers to start up.
+//        }
         nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
         nodeStatus.put(monitoredNodeID, true);
-        PaxosManager.executorService.scheduleAtFixedRate(failureDetectionTask, initialDelay,
+        executorService.scheduleAtFixedRate(failureDetectionTask, initialDelay,
                 pingIntervalMillis, TimeUnit.MILLISECONDS);
       } catch (JSONException e)
       {
@@ -143,7 +150,7 @@ import java.util.concurrent.locks.ReentrantLock;
 //	 * handle an incoming message: either a failure detection query or a response of a query sent.
 //	 * @param json
 //	 */
-//	public static void handleIncomingMessage(JSONObject json) {
+//	public  void handleIncomingMessage(JSONObject json) {
 //        PaxosManager.timer.schedule(new HandleFailureDetectionPacketTask(json),0);
 ////        NameServer.executorService.submit();
 //
@@ -153,7 +160,7 @@ import java.util.concurrent.locks.ReentrantLock;
 	 * Update node info for the fdPacket.
 //	 * @param fdPacket
 	 */
-	static void updateNodeInfo(int responderNodeID) {
+	 void updateNodeInfo(int responderNodeID) {
 		
 		// this condition should never be true.
 //		if (fdPacket.senderNodeID != nodeID) return;
@@ -173,7 +180,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 	}
 
-    static void resetNodeInfo(int responderNodeID) {
+     void resetNodeInfo(int responderNodeID) {
 
         // this condition should never be true.
 //		if (fdPacket.senderNodeID != nodeID) return;
@@ -196,7 +203,7 @@ import java.util.concurrent.locks.ReentrantLock;
 	 * @param nodeID ID of the node.
 	 * @return true if node = nodeID is up, false otherwise.
 	 */
-	static boolean isNodeUp(int nodeID) {
+	 boolean isNodeUp(int nodeID) {
 //    return true;
 		return nodeStatus.get(nodeID);
 	}
@@ -266,7 +273,7 @@ import java.util.concurrent.locks.ReentrantLock;
 	 * notify local replica.
 	 * @param monitoredNode
 	 */
-	 static void notifyNodeOfStatusChange(int monitoredNode) {
+	  void notifyNodeOfStatusChange(int monitoredNode) {
 //		 if (monitoredNode == 0) GNS.getLogger().severe("FDEnter ... ");
 		FailureDetectionPacket fdPacket = null;
 		lock.lock();
@@ -292,7 +299,7 @@ import java.util.concurrent.locks.ReentrantLock;
 							false, PaxosPacketType.NODE_STATUS);
 //                    resetNodeInfo(monitoredNode);
           GNS.getLogger().severe(nodeID + "\tFDNodeFailed\t" + nodeID + "\t"  + monitoredNode + "\t" + delay + "\t" +
-                  (System.currentTimeMillis() - FailureDetection.startingTime) + "\t" + (System.currentTimeMillis() - nodeInfo.get(monitoredNode))  + "\t");
+                  (System.currentTimeMillis() - startingTime) + "\t" + (System.currentTimeMillis() - nodeInfo.get(monitoredNode))  + "\t");
 
         }
 
@@ -302,7 +309,7 @@ import java.util.concurrent.locks.ReentrantLock;
 		}
 
 		if (fdPacket != null) { // status has changed, down to up or up to down.
-			PaxosManager.informNodeStatus(fdPacket);
+      paxosManager.informNodeStatus(fdPacket);
 		}
 	}
 
@@ -323,15 +330,18 @@ class FailureDetectionTask extends TimerTask{
 	 */
 	int destNodeID;
 
+  FailureDetection failureDetection;
+
 	/**
 	 * Constructor
 	 * @param destNodeID which node to monitor
 	 * @param json failure detection packet to send
 	 */
-	public FailureDetectionTask(int destNodeID, JSONObject json) {
+	public FailureDetectionTask(int destNodeID, JSONObject json, FailureDetection failureDetection) {
 		this.destNodeID = destNodeID;
 		this.json = json;
-		if (StartNameServer.debugMode) GNS.getLogger().fine(FailureDetection.nodeID + " Started FailureDetectionTask for "
+    this.failureDetection = failureDetection;
+		if (StartNameServer.debugMode) GNS.getLogger().fine(failureDetection.nodeID + " Started FailureDetectionTask for "
             + destNodeID);
 	}
 	
@@ -340,10 +350,10 @@ class FailureDetectionTask extends TimerTask{
 	public void run() {
     try{
 		// send a FD packet
-		if (FailureDetection.nodeInfo.containsKey(destNodeID)) {
-			if (StartNameServer.debugMode && destNodeID == 0) GNS.getLogger().fine(FailureDetection.nodeID
+		if (failureDetection.nodeInfo.containsKey(destNodeID)) {
+			if (StartNameServer.debugMode && destNodeID == 0) GNS.getLogger().fine(failureDetection.nodeID
               + "FD sent request " + destNodeID);
-			PaxosManager.sendMessage(destNodeID, json, null);
+      failureDetection.paxosManager.sendMessage(destNodeID, json, null);
 		}
 		else {
 			GNS.getLogger().severe("Failure Detection: Canceling Timer Task. " + this.destNodeID);
@@ -352,7 +362,7 @@ class FailureDetectionTask extends TimerTask{
 		}
 		
 		// check if node has failed, or come up.
-		FailureDetection.notifyNodeOfStatusChange(destNodeID);
+		failureDetection.notifyNodeOfStatusChange(destNodeID);
     }catch (Exception e) {
       GNS.getLogger().severe("Exception in failure detection ... " + e.getMessage());
       e.printStackTrace();
@@ -365,8 +375,9 @@ class HandleFailureDetectionPacketTask extends TimerTask{
 
     FailureDetectionPacket fdPacket;
 
-    HandleFailureDetectionPacketTask(JSONObject json) {
-
+  FailureDetection failureDetection;
+    HandleFailureDetectionPacketTask(JSONObject json, FailureDetection failureDetection) {
+      this.failureDetection = failureDetection;
         try {
             fdPacket = new FailureDetectionPacket(json);
         } catch (JSONException e) {
@@ -378,24 +389,22 @@ class HandleFailureDetectionPacketTask extends TimerTask{
     public void run() {
       try {
 
-
-
         if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT) {
 
             FailureDetectionPacket fdResponse = fdPacket.getFailureDetectionResponse();
-            FailureDetection.resetNodeInfo(fdPacket.senderNodeID);
+            failureDetection.resetNodeInfo(fdPacket.senderNodeID);
             try
             {
                 if(StartNameServer.debugMode)
-                    GNS.getLogger().finer(FailureDetection.nodeID + "FD sent response " + fdPacket.senderNodeID);
-                PaxosManager.sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject(), null);
+                    GNS.getLogger().finer(failureDetection.nodeID + "FD sent response " + fdPacket.senderNodeID);
+              failureDetection.paxosManager.sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject(), null);
             } catch (JSONException e)
             {
                 GNS.getLogger().severe("JSON Exception " + e.getMessage());
             }
         }
         else if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_RESPONSE) {
-            FailureDetection.updateNodeInfo(fdPacket.responderNodeID);
+          failureDetection.updateNodeInfo(fdPacket.responderNodeID);
         }
 
       } catch (Exception e) {

@@ -2,7 +2,6 @@ package edu.umass.cs.gns.main;
 
 //import edu.umass.cs.gnrs.nameserver.NSListenerUpdate;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
@@ -181,6 +180,11 @@ public class StartNameServer {
   public static int quitAfterTimeSec = -1; // only for testing. Name server will quit after this time
   public static FailureScenario failureScenario = FailureScenario.applyActiveNameServersRunning;
 
+  public static String paxosLogFolder;
+
+  public static int failureDetectionPingInterval;
+
+  public static int failureDetectionTimeoutInterval;
 
   @SuppressWarnings("static-access")
   /**************************************************************
@@ -798,16 +802,18 @@ public class StartNameServer {
       }
 
       if (allValues.containsKey(PAXOS_LOG_FOLDER)) {
-        PaxosManager.setPaxosLogFolder(allValues.get(PAXOS_LOG_FOLDER));
+        paxosLogFolder = allValues.get(PAXOS_LOG_FOLDER);
       } else {
-        PaxosManager.setPaxosLogFolder(DEFAULTPAXOSLOGPATHNAME);
+        paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
       }
 
       if (allValues.containsKey(FAILURE_DETECTION_MSG_INTERVAL)) {
-        PaxosManager.setFailureDetectionPingInterval(Integer.parseInt(allValues.get(FAILURE_DETECTION_MSG_INTERVAL)) * 1000);
+        failureDetectionPingInterval = Integer.parseInt(allValues.get(FAILURE_DETECTION_MSG_INTERVAL)) * 1000;
+//        PaxosManager.setFailureDetectionPingInterval();
       }
       if (allValues.containsKey(FAILURE_DETECTION_TIMEOUT_INTERVAL)) {
-        PaxosManager.setFailureDetectionTimeoutInterval(Integer.parseInt(allValues.get(FAILURE_DETECTION_TIMEOUT_INTERVAL)) * 1000);
+        failureDetectionTimeoutInterval = Integer.parseInt(allValues.get(FAILURE_DETECTION_MSG_INTERVAL)) * 1000;
+//        PaxosManager.setFailureDetectionTimeoutInterval(Integer.parseInt(allValues.get(FAILURE_DETECTION_TIMEOUT_INTERVAL)) * 1000);
       }
 
 //      if (experimentMode) {

@@ -36,7 +36,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
 //      if (count % 60 == 0) GNS.getLogger().info("Recvd msg " + count + " Type" + type.getInt() + "\t" + json);
       switch (type) {
         case PAXOS_PACKET:
-          PaxosManager.handleIncomingPacket(json);
+          NameServer.paxosManager.handleIncomingPacket(json);
 //          msg = 2;
           break;
         // client requests: ADD/REMOVE/UPDATE/LOOKUP

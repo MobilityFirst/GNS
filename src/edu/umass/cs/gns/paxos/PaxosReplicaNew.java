@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.GenerateSyntheticRecordTable;
@@ -54,13 +53,15 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 
   PaxosCoordinator coordinator;
 
+  PaxosManager paxosManager;
+
   /**
    * Constructor.
    * @param paxosID ID of this paxos group
    * @param ID  ID of this node
    * @param nodeIDs1 set of IDs of nodes in this paxos group
    */
-  public PaxosReplicaNew(String paxosID, int ID, Set<Integer> nodeIDs1) {
+  public PaxosReplicaNew(String paxosID, int ID, Set<Integer> nodeIDs1, PaxosManager paxosManager) {
 //    System.out.println("In constructor...");
     this.paxosID = paxosID;
 
@@ -80,6 +81,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       coordinator.coordinatorBallot = new Ballot(acceptorBallot.ballotNumber, acceptorBallot.coordinatorID);
     }
     replicaMessages = new ArrayList<Object>(4);
+    this.paxosManager = paxosManager;
   }
 
   /**
@@ -166,7 +168,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 //                requestStateTaskScheduled = false;
 //            }
       if (logCmd != null) {
-        PaxosLogger.logMessage(logCmd);
+        paxosManager.paxosLogger.logMessage(logCmd);
       }
     } catch (JSONException e) {
       e.printStackTrace();
@@ -197,7 +199,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       }
       else {
         JSONObject json =  p.toJSONObject();
-        PaxosManager.sendMessage(destID, json, paxosID);
+        paxosManager.sendMessage(destID, json, paxosID);
       }
     } catch (JSONException e) {
       e.printStackTrace();
@@ -256,7 +258,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     Collections.sort(x1);
     Collections.shuffle(x1, r);
     for (int x: x1) {
-      if (PaxosManager.isNodeUp(x)) return x;
+      if (paxosManager.isNodeUp(x)) return x;
     }
     return  x1.get(0);
 //    return  x1.get(count);
@@ -287,20 +289,13 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 
   public synchronized StatePacket getState() {
 
-//    try{
-//      acceptorLock.lock();
-//      synchronized (slotNumberLock) {
-    String dbState = PaxosManager.clientRequestHandler.getState(paxosID);
+    String dbState = paxosManager.clientRequestHandler.getState(paxosID);
     if (dbState == null) {
       GNS.getLogger().severe(paxosID + "\t" + nodeID + "\tError Exception Paxos state not logged because database state is null.");
       return null;
     }
     StatePacket packet = new StatePacket(acceptorBallot, slotNumber, dbState);
     return  packet;
-//      }
-//    } finally {
-//      acceptorLock.unlock();
-//    }
 
   }
 
@@ -405,16 +400,16 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 
     json.put(ProposalPacket.SLOT, 0);
     json.put(PaxosPacketType.ptype, PaxosPacketType.PROPOSAL);
-    json.put(PaxosManager.PAXOS_ID, paxosID);
+    json.put(paxosManager.PAXOS_ID, paxosID);
 
-    if (temp != null && PaxosManager.isNodeUp(temp.coordinatorID)) {
-      PaxosManager.sendMessage(temp.coordinatorID,json, paxosID);
+    if (temp != null && paxosManager.isNodeUp(temp.coordinatorID)) {
+      paxosManager.sendMessage(temp.coordinatorID,json, paxosID);
       if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\t" + nodeID +
               " Send proposal packet. Coordinator =  " + temp.coordinatorID + " Packet = " + json);
     } else {
       // if coordinator has failed, resend to other nodes who may be coordinators
-      UpdateBallotTask ballotTask = new UpdateBallotTask(this, temp, json);
-      PaxosManager.executorService.scheduleAtFixedRate(ballotTask, 0, PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS,
+      UpdateBallotTask ballotTask = new UpdateBallotTask(paxosManager, this, temp, json);
+      paxosManager.executorService.scheduleAtFixedRate(ballotTask, 0, paxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS,
               TimeUnit.MILLISECONDS);
     }
   }
@@ -427,12 +422,12 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
   private void handleDecision(ProposalPacket prop, boolean recovery) throws JSONException {
     boolean stop = handleDecisionActual(prop, recovery);
     if (stop) {
-      synchronized (PaxosManager.paxosInstances) {
-        PaxosReplicaInterface r = PaxosManager.paxosInstances.get(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
+      synchronized (paxosManager.paxosInstances) {
+        PaxosReplicaInterface r = paxosManager.paxosInstances.get(paxosManager.getPaxosKeyFromPaxosID(paxosID));
         if (r == null) return;
         if (r.getPaxosID().equals(paxosID)) {
           if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance removed " + paxosID  + "\tReq ");
-          PaxosManager.paxosInstances.remove(PaxosManager.getPaxosKeyFromPaxosID(paxosID));
+          paxosManager.paxosInstances.remove(paxosManager.getPaxosKeyFromPaxosID(paxosID));
   //          r.logFullResponseAfterStop();
         } else {
           if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance already removed " + paxosID);
@@ -476,8 +471,8 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 
     }
 
-//    GNS.getLogger().info("Paxos ID: " + paxosID + " Slot " + slotNumber + " Tasks: " + PaxosManager.executorService.getTaskCount()
-//            + " " + (PaxosManager.executorService.getTaskCount() - PaxosManager.executorService.getCompletedTaskCount()));
+//    GNS.getLogger().info("Paxos ID: " + paxosID + " Slot " + slotNumber + " Tasks: " + paxosManager.executorService.getTaskCount()
+//            + " " + (paxosManager.executorService.getTaskCount() - paxosManager.executorService.getCompletedTaskCount()));
 
     // sort through all and see if next executable exists
     boolean stop = false;
@@ -534,7 +529,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       return;
     }
 
-//        boolean stop = PaxosManager.isStopCommand(req.value);
+//        boolean stop = paxosManager.isStopCommand(req.value);
     if (req.isStopRequest()) {
 //      synchronized (stopLock) {
       isStopped = true;
@@ -544,11 +539,9 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 
 //      }
       GNS.getLogger().fine(" Logging paxos stop " + req);
-      PaxosLogger.logPaxosStop(paxosID);
+      paxosManager.paxosLogger.logPaxosStop(paxosID);
     }
-
-
-    PaxosManager.handleDecision(paxosID, req, recovery);
+    paxosManager.handleDecision(paxosID, req, recovery);
 
 //        GNS.getLogger().info("\tPAXOS-COMMIT\t" + paxosID + "\t" + nodeID + "\t" + slotNumber  + "\t" + req.value);
 
@@ -556,7 +549,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 
   private synchronized void handleSendState(SendCurrentStatePacket2 statePkt) throws JSONException{
     if (slotNumber < statePkt.slotNumber) {
-      PaxosManager.clientRequestHandler.updateState(paxosID, statePkt.dbState);
+      paxosManager.clientRequestHandler.updateState(paxosID, statePkt.dbState);
       slotNumber = statePkt.slotNumber;
       handleDecision(null, false);
     }
@@ -769,8 +762,8 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     ProposalStateAtCoordinator propState = new ProposalStateAtCoordinator(this, pValue, nodeIDs.length);
 
     coordinator.pValuesCommander.put(pValue.proposal.slot, propState);
-    PaxosManager.addToActiveProposals(propState);
-//    PaxosManager.executorService.scheduleAtFixedRate(new CheckAcceptMessageTask(this,propState, 10),
+    paxosManager.addToActiveProposals(propState);
+//    paxosManager.executorService.scheduleAtFixedRate(new CheckAcceptMessageTask(this,propState, 10),
 //            PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS, PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
     if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C initialized commander values. Slot = " + pValue.proposal.slot);
 
@@ -793,7 +786,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     JSONObject jsonObject = accept.toJSONObject();
 //    GNS.getLogger().fine("This is json = " + jsonObject.toString());
 //    jsonObject.put(PaxosManager.PAXOS_ID, paxosID);
-    PaxosManager.sendMessage(nodeIDs, jsonObject, paxosID, nodeID);
+    paxosManager.sendMessage(nodeIDs, jsonObject, paxosID, nodeID);
     sendMessage(nodeID, accept);
 //    PaxosManager.sendMessage(nodeIDs,jsonObject,paxosID);
 
@@ -847,7 +840,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 //        GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C here...");
 //    updateNodeAndSlotNumbers(replyPacket);
     if (replyPacket.maxDecisionSlot < slotNumber) { // IMP: max decision slot is in fact slotNumber.
-      String dbState = PaxosManager.clientRequestHandler.getState(paxosID);
+      String dbState = paxosManager.clientRequestHandler.getState(paxosID);
       SendCurrentStatePacket2 statePkt = new SendCurrentStatePacket2(nodeID, acceptorBallot, slotNumber, dbState,
               null, PaxosPacketType.SEND_STATE);
       sendMessage(replyPacket.nodeID, statePkt);
@@ -925,7 +918,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       stateAtCoordinator = coordinator.pValuesCommander.remove(slot);
 
       if (stateAtCoordinator != null) {
-        PaxosManager.removeFromActiveProposals(stateAtCoordinator);
+        paxosManager.removeFromActiveProposals(stateAtCoordinator);
         //                    waitForCommander.remove(slot);
         GNS.getLogger().severe(paxosID + "C\t" + nodeID + "C " + "higher ballot recvd. current ballot preempted.");
 //        try {
@@ -981,7 +974,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     stateAtCoordinator = coordinator.pValuesCommander.remove(slot);
     if (stateAtCoordinator == null) return null;
 
-    PaxosManager.removeFromActiveProposals(stateAtCoordinator);
+    paxosManager.removeFromActiveProposals(stateAtCoordinator);
 
     // if object deleted return
 
@@ -1011,7 +1004,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       stateAtCoordinator.pValuePacket.proposal.gcSlot = minSlot;
       JSONObject jsonObject = stateAtCoordinator.pValuePacket.proposal.toJSONObject();
 //      jsonObject.put(PaxosManager.PAXOS_ID, paxosID);
-      PaxosManager.sendMessage(nodeIDs, jsonObject, paxosID, nodeID);
+      paxosManager.sendMessage(nodeIDs, jsonObject, paxosID, nodeID);
 
       return new LoggingCommand(paxosID, jsonObject, LoggingCommand.LOG_AND_EXECUTE);
 
@@ -1111,7 +1104,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     // PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS);
     CheckPrepareMessageTask task = new CheckPrepareMessageTask(this,prepare, coordinator.ballotScout, numberRetry);
 
-    PaxosManager.executorService.scheduleAtFixedRate(task,PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS,
+    paxosManager.executorService.scheduleAtFixedRate(task,PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS,
             PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
 
   }
@@ -1137,12 +1130,12 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
     // what if majority have failed.
     int nodesUp = 0;
     for (int x: nodeIDs)
-      if (FailureDetection.isNodeUp(x)) nodesUp++;
+      if (paxosManager.isNodeUp(x)) nodesUp++;
     if (nodesUp*2 < nodeIDs.length) return false; // more than half node down, give up resending prepare
     // TODO: what do we do when more nodes come back up?
     boolean resend = false;
     for (int x: nodeIDs) {
-      if (coordinator.waitForScout.contains(x) == false && FailureDetection.isNodeUp(x)) {
+      if (coordinator.waitForScout.contains(x) == false && paxosManager.isNodeUp(x)) {
         sendMessage(x, prepare); // send message to the node if it is up and has not responded.
         resend = true;
         GNS.getLogger().fine(paxosID + "\t" + nodeID + "C\t Ballot = " + proposedBallot + " resend to node " + x);
@@ -1171,9 +1164,14 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
   }
 
   @Override
-  public Map<Integer, RequestPacket> getDecisions() {
+  public Map<Integer, RequestPacket> getCommittedRequests() {
     // TODO not implemented
     return null;
+  }
+
+  @Override
+  public int getSlotNumber() {
+    return slotNumber;
   }
 
 //  /**
@@ -1319,7 +1317,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
    * check whether coordinator is UP.
    */
   public synchronized void checkCoordinatorFailure() {
-    if (PaxosManager.isNodeUp(acceptorBallot.coordinatorID) == false && getNextCoordinatorReplica() == nodeID) {
+    if (paxosManager.isNodeUp(acceptorBallot.coordinatorID) == false && getNextCoordinatorReplica() == nodeID) {
       GNS.getLogger().severe(paxosID + "C\t" +nodeID +"C coordinator failed. " + acceptorBallot.coordinatorID);
       initScout();
     }
@@ -1590,7 +1588,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
   @Override
   public synchronized void removePendingProposals() {
     if (coordinator != null) {
-      for (ProposalStateAtCoordinator p: coordinator.pValuesCommander.values()) PaxosManager.removeFromActiveProposals(p);
+      for (ProposalStateAtCoordinator p: coordinator.pValuesCommander.values()) paxosManager.removeFromActiveProposals(p);
       coordinator = null;
     }
   }
@@ -1629,7 +1627,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       for (int j = 0; j < 10; j++) {
         nodeIDs.add(j);
       }
-      paxosList.add(new PaxosReplicaNew(Util.randomString(5), 0, nodeIDs));
+      paxosList.add(new PaxosReplicaNew(Util.randomString(5), 0, nodeIDs, null));
     }
     GenerateSyntheticRecordTable.outputMemoryUse("Before");
     System.gc();
@@ -1705,32 +1703,32 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 
 
 
-class CheckAcceptMessageTask extends TimerTask {
-
-  int numRetry;
-  int count = 0;
-  PaxosReplicaInterface replica;
-  ProposalStateAtCoordinator proposalState;
-
-  public CheckAcceptMessageTask(PaxosReplicaInterface replica, ProposalStateAtCoordinator proposalState, int numRetry) {
-    this.numRetry = numRetry;
-    this.replica = replica;
-    this.proposalState = proposalState;
-  }
-
-  @Override
-  public void run() {
-    try {
-      if (replica.isStopped()) throw  new GnsRuntimeException();
-
-      boolean sendAgain = replica.resendPendingProposal(proposalState);
-      if (sendAgain == false || count == numRetry) throw  new GnsRuntimeException();
-    } catch (Exception e) {
-      if (e.getClass().equals(GnsRuntimeException.class)) {
-        throw new RuntimeException();
-      }
-      GNS.getLogger().severe("Exception in CheckPrepareMessageTask: " + e.getMessage());
-      e.printStackTrace();
-    }
-  }
-}
+//class CheckAcceptMessageTask extends TimerTask {
+//
+//  int numRetry;
+//  int count = 0;
+//  PaxosReplicaInterface replica;
+//  ProposalStateAtCoordinator proposalState;
+//
+//  public CheckAcceptMessageTask(PaxosReplicaInterface replica, ProposalStateAtCoordinator proposalState, int numRetry) {
+//    this.numRetry = numRetry;
+//    this.replica = replica;
+//    this.proposalState = proposalState;
+//  }
+//
+//  @Override
+//  public void run() {
+//    try {
+//      if (replica.isStopped()) throw  new GnsRuntimeException();
+//
+//      boolean sendAgain = replica.resendPendingProposal(proposalState);
+//      if (sendAgain == false || count == numRetry) throw  new GnsRuntimeException();
+//    } catch (Exception e) {
+//      if (e.getClass().equals(GnsRuntimeException.class)) {
+//        throw new RuntimeException();
+//      }
+//      GNS.getLogger().severe("Exception in CheckPrepareMessageTask: " + e.getMessage());
+//      e.printStackTrace();
+//    }
+//  }
+//}

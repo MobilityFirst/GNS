@@ -7,7 +7,6 @@ package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.clientprotocol.Defs;
-import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
@@ -19,10 +18,8 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.HashFunction;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -186,7 +183,7 @@ public class ClientRequestWorker extends TimerTask {
     RequestPacket requestPacket = new RequestPacket(Packet.PacketType.ADD_RECORD_NS.getInt(),
             addRecordPacket.toString(), PaxosPacketType.REQUEST, false);
     String primaryPaxosID = ReplicaController.getPrimaryPaxosID(name);
-    PaxosManager.propose(primaryPaxosID, requestPacket);
+    NameServer.paxosManager.propose(primaryPaxosID, requestPacket);
 
   }
 
@@ -508,7 +505,7 @@ public class ClientRequestWorker extends TimerTask {
 //      GNS.getLogger().severe(" Update proposed to paxosID = " + activePaxosID);
 //    }
 
-    String paxosID = PaxosManager.propose(activePaxosID, new RequestPacket(updatePacket.getType().getInt(),
+    String paxosID = NameServer.paxosManager.propose(activePaxosID, new RequestPacket(updatePacket.getType().getInt(),
             updatePacket.toString(), PaxosPacketType.REQUEST, false));
 //    GNS.getLogger().severe(" PAXOS PROPOSAL: propose update request: " + updatePacket + "result = " + paxosID);
 

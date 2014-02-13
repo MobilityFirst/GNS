@@ -11,22 +11,32 @@ import java.util.Set;
  */
 public abstract class PaxosReplicaInterface{
 
+  public abstract String getPaxosID();
+
+  public abstract boolean isNodeInPaxosInstance(int responderNodeID);
+
+  public abstract Set<Integer> getNodeIDs();
+
+  public abstract boolean isStopped();
+
+  public abstract void handleIncomingMessage(JSONObject jsonObject, int packetType);
+
   public abstract void checkInitScout();
 
   public abstract void checkCoordinatorFailure();
 
-  public abstract String getPaxosID();
+  public abstract StatePacket getState();
 
-  public abstract Ballot getAcceptorBallot();
+  public abstract boolean isAcceptorBallotUpdated(Ballot ballot);
 
-  public abstract void handleIncomingMessage(JSONObject jsonObject, int packetType);
-
-  public abstract boolean isNodeInPaxosInstance(int responderNodeID);
+  public abstract boolean resendPrepare(Ballot proposedBallot, PreparePacket preparePacket);
 
   public abstract boolean resendPendingProposal(ProposalStateAtCoordinator propState);
 
-  public abstract StatePacket getState();
+  public abstract void removePendingProposals();
 
+
+  /*** Methods related to recovering from logs ***/
   public abstract void recoverCurrentBallotNumber(Ballot ballot);
 
   public abstract void recoverSlotNumber(int slotNumber);
@@ -41,17 +51,17 @@ public abstract class PaxosReplicaInterface{
 
   public abstract void recoverAccept(AcceptPacket packet);
 
-  public abstract boolean isAcceptorBallotUpdated(Ballot ballot);
 
-  public abstract boolean isStopped();
 
-  public abstract boolean resendPrepare(Ballot proposedBallot, PreparePacket preparePacket);
-
-  public abstract Set<Integer> getNodeIDs();
-
-  public abstract void removePendingProposals();
+  /*** Methods used by class PaxosLogAnalayzer to compare logs at different nodes. Do not use it for
+   * anything else ***/
 
   public abstract Map<Integer, PValuePacket> getPValuesAccepted();
 
-  public abstract Map<Integer,RequestPacket> getDecisions();
+  public abstract Map<Integer,RequestPacket> getCommittedRequests();
+
+  public abstract int getSlotNumber();
+
+  public abstract Ballot getAcceptorBallot();
+
 }

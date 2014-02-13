@@ -311,7 +311,7 @@ public class ReplicaController {
       }
       // propose this to primary paxos
       String primaryPaxosID = getPrimaryPaxosID(rcRecord);
-      PaxosManager.propose(primaryPaxosID, new RequestPacket(removeRecord.getType().getInt(), removeRecord.toString(),
+      NameServer.paxosManager.propose(primaryPaxosID, new RequestPacket(removeRecord.getType().getInt(), removeRecord.toString(),
               PaxosPacketType.REQUEST, false));
       if (StartNameServer.debugMode) {
         GNS.getLogger().info("PAXOS PROPOSAL: Proposed mark for removal in primary paxos. Packet = " + removeRecord);
@@ -529,7 +529,7 @@ public class ReplicaController {
 //        rcRecord.setOldActiveStopped(packet.getPaxosIDToBeStopped()); // IMPORTANT : this ensures that
 //        // StopPaxosID task will see the paxos instance as completed.
 
-        PaxosManager.propose(paxosID, new RequestPacket(PacketType.PRIMARY_PAXOS_STOP.getInt(), packet.toString(),
+        NameServer.paxosManager.propose(paxosID, new RequestPacket(PacketType.PRIMARY_PAXOS_STOP.getInt(), packet.toString(),
                 PaxosPacketType.REQUEST, false));
         if (StartNameServer.debugMode) {
           GNS.getLogger().info("PAXOS PROPOSAL PROPOSED STOP COMMAND because name record is " +
@@ -671,7 +671,7 @@ public class ReplicaController {
               packet.getName(), PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY);
 
       // write to replica controller record object using Primary-paxos that newActive is running
-      PaxosManager.propose(paxosID, new RequestPacket(PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY.getInt(),
+      NameServer.paxosManager.propose(paxosID, new RequestPacket(PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY.getInt(),
               proposePacket.toString(), PaxosPacketType.REQUEST, false));
       if (StartNameServer.debugMode) {
         GNS.getLogger().info("PAXOS PROPOSAL: New Active Started for Name: " + packet.getName()
@@ -981,7 +981,7 @@ public class ReplicaController {
     Collections.sort(x1);
     Collections.shuffle(x1, r);
     for (int x: x1) {
-      if (PaxosManager.isNodeUp(x) ) {
+      if (NameServer.paxosManager.isNodeUp(x) ) {
         return  x == NameServer.nodeID;
       }
     }
@@ -1013,7 +1013,7 @@ public class ReplicaController {
     boolean failedSeen = false;
     for (int x: x1) {
       if (x == failedNodeID) failedSeen = true;
-      if (PaxosManager.isNodeUp(x)) {
+      if (NameServer.paxosManager.isNodeUp(x)) {
         return failedSeen && x == NameServer.nodeID;
       }
     }

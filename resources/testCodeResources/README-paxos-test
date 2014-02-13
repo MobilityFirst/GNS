@@ -1,0 +1,11 @@
+ Paxos module can be tested by running this java file: NewClient.java.
+
+     The current test sends a given  number of requests from a client to one of the paxos replicas.
+
+     All paxos replicas agree on the ordering of the request and return the same request back to client.
+
+     At the end, the test outputs the number of requests sent, number of responses received, and the average latency of requests.
+
+     The test requires a config file, a sample config file is located at resources/testCodeResources/testConfig.
+
+     The sample file explains the parameters you can vary in running the test.
