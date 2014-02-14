@@ -13,10 +13,15 @@ import static edu.umass.cs.gns.clientprotocol.Defs.*;
  *
  * @author westy
  */
-public class ReadUnsigned extends Read {
+public class ReadOneUnsigned extends Read {
 
-  public ReadUnsigned(CommandModule module) {
+  public ReadOneUnsigned(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public String getCommandName() {
+    return READONE;
   }
 
   @Override
@@ -26,8 +31,8 @@ public class ReadUnsigned extends Read {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS. Does not require authentication but field must be set to be readable by everyone."
-            + " Values are always returned as a JSON list."
+    return "Returns one key value pair from the GNS for the given guid. Does not require authentication but field must be set to be readable by everyone."
+            + " Treats the value of key value pair as a singleton item and returns that item."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields. ";
   }
 }

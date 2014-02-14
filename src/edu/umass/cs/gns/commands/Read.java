@@ -30,24 +30,24 @@ public class Read extends GnsCommand {
   
   @Override
   public String[] getCommandParameters() {
-    return new String[]{"guid", "field", "reader", "signature", "message"};
+    return new String[]{GUID, FIELD, READER, SIGNATURE, "message"};
   }
   
   @Override
   public String getCommandName() {
-    return "read";
+    return READ;
   }
   
   @Override
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String guid = json.getString("guid");
-    String field = json.getString("field");
+    String guid = json.getString(GUID);
+    String field = json.getString(FIELD);
     // the opt hair below is for the subclasses... cute, huh?
     // reader might be same as guid
-    String reader = json.optString("reader", guid);
+    String reader = json.optString(READER, guid);
     // signature and message can be empty for unsigned cases
-    String signature = json.optString("signature");
+    String signature = json.optString(SIGNATURE);
     String message = json.optString("message");
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
@@ -73,11 +73,20 @@ public class Read extends GnsCommand {
         return BADRESPONSE + " " + ACCESSDENIED;
       }
     }
+
     // all checks passed, get the value to return
-    if (ALLFIELDS.equals(field)) {
-      return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
+    if (getCommandName().equals(READONE)) {
+      if (ALLFIELDS.equals(field)) {
+        return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
+      } else {
+        return fieldAccess.lookupOne(guidInfo.getGuid(), field);
+      }
     } else {
-      return fieldAccess.lookup(guidInfo.getGuid(), field);
+      if (ALLFIELDS.equals(field)) {
+        return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
+      } else {
+        return fieldAccess.lookup(guidInfo.getGuid(), field);
+      }
     }
   }
   

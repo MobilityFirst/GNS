@@ -21,7 +21,7 @@ public class ReadSelf extends Read {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{"guid", "field", "signature", "message"};
+    return new String[]{GUID, FIELD, READER, SIGNATURE, "message"};
   }
 
   @Override

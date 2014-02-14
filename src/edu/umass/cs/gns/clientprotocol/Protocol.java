@@ -1222,12 +1222,14 @@ public class Protocol {
       String message = AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
       queryMap.put("message", message);
     }
+    commandModule.setHost(host); // not terribly happy with this
     JSONObject json = new JSONObject(queryMap);
     GnsCommand command = commandModule.lookupCommand(json);
 
     try {
       //new command processing
-      if (command != null) {
+      //if (command != null) { // TURN THIS OFF FOR NOW
+      if (false) {
         GNS.getLogger().info("Executing command: " + command.toString());
         return command.execute(json);
       } else {
@@ -1256,6 +1258,9 @@ public class Protocol {
     if (HELP.equals(action)) {
       //return getHelpString(GnrsHttpServer.hostName + (GnrsHttpServer.address != 80 ? (":" + GnrsHttpServer.address) : ""));
       return getHelpString(host);
+      //
+      // Converted
+      //
     } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, PUBLICKEY, PASSWORD))) {
       // syntax: register userName guid public_key
       String userName = queryMap.get(NAME);
@@ -1339,6 +1344,10 @@ public class Protocol {
       //
       // READ OPERATIONS
       //
+      
+      //
+      // CONVERTED
+      //
     } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
@@ -1397,6 +1406,10 @@ public class Protocol {
       String field = queryMap.get(FIELD);
       String signature = queryMap.get(SIGNATURE);
       return processCreate(guid, field, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      //
+      // END CONVERTED
+      //
+    
     } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
@@ -1404,6 +1417,9 @@ public class Protocol {
       String writer = queryMap.get(WRITER);
       String signature = queryMap.get(SIGNATURE);
       return processCreateList(guid, field, value, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      
+    
+    
     } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);

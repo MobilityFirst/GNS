@@ -23,6 +23,7 @@ import org.json.JSONException;
 public class CommandModule {
   
   TreeSet<GnsCommand> commands;
+  String host;
   
   public CommandModule() {
     initCommands();
@@ -87,4 +88,13 @@ public class CommandModule {
     }
     return true;
   }
+
+  public String getHost() {
+    return host;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+  
 }
