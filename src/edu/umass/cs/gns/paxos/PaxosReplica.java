@@ -1605,7 +1605,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
 
     updateNodeAndSlotNumbers(prepare.receiverID, prepare.slotNumber); // keep track of slot number at each replica.
-
+    boolean tryReelect = false;
     try{
       scoutLock.lock();
 
@@ -1628,6 +1628,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
       else if (prepare.ballot.compareTo(ballotScout) > 0) {
         GNS.getLogger().fine(paxosID + "C\t" +nodeID  + "C Ballot pre-empted.");
         waitForScout = null;
+        tryReelect = true;
       }
       else {
         GNS.getLogger().finer(paxosID + "C\t" + nodeID + "C Ballot accepted " +
@@ -1654,8 +1655,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
     }finally {
       scoutLock.unlock();
     }
-    // if I should be the next coordinator based of set of active nodes, I will try to get relected.
-    if (getNextCoordinatorReplica() == nodeID) initScout();
+    // if I should be the next coordinator based of set of active nodes, I will try to get re-elected.
+    if (tryReelect && getNextCoordinatorReplica() == nodeID) initScout();
   }
 
   /**

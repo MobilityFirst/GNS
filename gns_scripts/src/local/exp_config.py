@@ -25,7 +25,7 @@ trace_folder = working_dir + '/local/trace/'
 # parameters used only by scripts for running experiments
 experiment_run_time = 100    # duration of experiment (seconds)
 
-delete_paxos_log = True    # if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
+delete_paxos_log = False   # if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
 
 start_db = False   #
 

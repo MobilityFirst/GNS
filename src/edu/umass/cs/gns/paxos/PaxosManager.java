@@ -98,9 +98,8 @@ public class  PaxosManager {
 
   /********************BEGIN: public methods for paxos manager********************/
 
-  public PaxosManager(int numberOfNodes, int nodeID, NioServer nioServer,
-                        PaxosInterface outputHandler, ScheduledThreadPoolExecutor executorService,
-                        String paxosLogFolder, int failureDetectionPing, int failureDetectionTimeout) {
+  public PaxosManager(int numberOfNodes, int nodeID, NioServer nioServer, PaxosInterface outputHandler,
+                      ScheduledThreadPoolExecutor executorService, String paxosLogFolder) {
     this.N = numberOfNodes;
     this.nodeID = nodeID;
     this.nioServer = nioServer;
@@ -109,25 +108,33 @@ public class  PaxosManager {
 
     this.executorService = executorService;
 
-    failureDetection = new FailureDetection(N, nodeID, executorService, this, failureDetectionPing, failureDetectionTimeout);
-
     // recover previous state if exists using logger
     paxosLogger = new PaxosLogger(paxosLogFolder, nodeID, this);
+    long t0 = System.currentTimeMillis();
     ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.initLogger();
 
+    long t1 = System.currentTimeMillis();
+    GNS.getLogger().info("Time to recover paxos logs ... " + (t1 - t0)/1000 + " seconds");
     if (myPaxosInstances != null) paxosInstances = myPaxosInstances;
     paxosLogger.start();
     if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instances: " + paxosInstances.size());
 
 //    if (debug && paxosInstances.size() == 0) createTestPaxosInstance();
-    startAllPaxosReplicas();
 
-    startPaxosMaintenanceActions();
 
     GNS.getLogger().info("Paxos manager initialization complete");
 
   }
 
+  public void startPaxos(int failureDetectionPing, int failureDetectionTimeout) {
+
+    failureDetection = new FailureDetection(N, nodeID, executorService, this, failureDetectionPing,
+            failureDetectionTimeout);
+
+    //
+    startAllPaxosReplicas();
+    startPaxosMaintenanceActions();
+  }
   /**
    * Constructor used during testing.
    * @param testConfigFile
@@ -273,6 +280,7 @@ public class  PaxosManager {
    * @return <code>true</code> if failure detector tells node is up
    */
   public  boolean isNodeUp(int nodeID) {
+    if (failureDetection == null) return true;
     return failureDetection.isNodeUp(nodeID);
   }
 

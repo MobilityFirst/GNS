@@ -89,11 +89,25 @@ public class NameServer {
     // Non-blocking IO created
     nsDemultiplexer = new NSPacketDemultiplexer();
 
+    // start listening on UDP socket
     new NSListenerUDP().start();
 
+    // create a TCP transport object because we need to pass it to paxos manager.
+    // Don't start the listening socket because paxos manager is not initialized yet. Also,
+    // we are still doing log recovery and don't want to process new messages.
     ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
     tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
+
+    // create paxos manager and do log recovery (if logs exist). paxos manager wont send any messages yet.
+    paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
+            new NSPaxosInterface(), executorService, StartNameServer.paxosLogFolder);
+
+    // start listening socket
     new Thread(tcpTransport).start();
+
+    // now listening socket is running, start failure detector and other process in paxos which require sending messages.
+    paxosManager.startPaxos(StartNameServer.failureDetectionPingInterval, StartNameServer.failureDetectionTimeoutInterval);
+
 
     // START ADMIN THREAD - DO NOT REMOVE THIS
     if(StartLocalNameServer.experimentMode == false) new NSListenerAdmin().start(); // westy
@@ -109,7 +123,7 @@ public class NameServer {
     // Load monitoring calculation initalized.
     loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
 
-    timer.schedule(new WriteMemUsage(), 10000, 10000); // write stats about system
+    timer.schedule(new WriteMemUsage(), 100000, 100000); // write stats about system
 
   }
 
@@ -118,9 +132,7 @@ public class NameServer {
     // start paxos manager first.
 
     // this will recover state from paxos logs, if it exists
-    paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
-            new NSPaxosInterface(), executorService, StartNameServer.paxosLogFolder, StartNameServer.failureDetectionPingInterval,
-            StartNameServer.failureDetectionTimeoutInterval);
+
 
     createPrimaryPaxosInstances();
 
