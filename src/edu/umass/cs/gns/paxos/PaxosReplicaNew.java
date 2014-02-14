@@ -137,12 +137,12 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
         // replica --> replica
         case PaxosPacketType.RESEND_ACCEPT:
           handleResendAccept(json);
-        case PaxosPacketType.SEND_STATE:
-        case PaxosPacketType.SEND_STATE_NO_RESPONSE:
-//          SendCurrentStatePacket sendState = new SendCurrentStatePacket(json);
-//          handleSendState(sendState);
-          handleSendState(new SendCurrentStatePacket2(json));
-          break;
+//        case PaxosPacketType.SEND_STATE:
+//        case PaxosPacketType.SEND_STATE_NO_RESPONSE:
+////          SendCurrentStatePacket sendState = new SendCurrentStatePacket(json);
+////          handleSendState(sendState);
+//          handleSendState(new SendCurrentStatePacket2(json));
+//          break;
 
         // local failure detector --> replica
         case PaxosPacketType.NODE_STATUS:
@@ -841,9 +841,9 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 //    updateNodeAndSlotNumbers(replyPacket);
     if (replyPacket.maxDecisionSlot < slotNumber) { // IMP: max decision slot is in fact slotNumber.
       String dbState = paxosManager.clientRequestHandler.getState(paxosID);
-      SendCurrentStatePacket2 statePkt = new SendCurrentStatePacket2(nodeID, acceptorBallot, slotNumber, dbState,
-              null, PaxosPacketType.SEND_STATE);
-      sendMessage(replyPacket.nodeID, statePkt);
+//      SendCurrentStatePacket2 statePkt = new SendCurrentStatePacket2(nodeID, acceptorBallot, slotNumber, dbState,
+//              null, PaxosPacketType.SEND_STATE);
+      sendMessage(replyPacket.nodeID, null);
     }
 //    if (replyPacket.missingSlotNumbers != null) {
 ////      ArrayList<ProposalPacket> missingPackets = new ArrayList<ProposalPacket>();

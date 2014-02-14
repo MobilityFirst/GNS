@@ -20,6 +20,8 @@ import java.util.HashMap;
  */
 public class PaxosNodeConfig implements NodeConfig {
 
+  private  HashMap<Integer,NodeInfo> nodesInfo;
+
   /**
    * Stores list of nodes, their IP address, and port numbers
    * @param nodeConfigFile
@@ -39,7 +41,7 @@ public class PaxosNodeConfig implements NodeConfig {
     }
   }
 
-  private  HashMap<Integer,NodeInfo> nodesInfo;
+
 
   private void readConfigFile(String configFile) {
     nodesInfo = new HashMap<Integer, NodeInfo>();
@@ -62,8 +64,6 @@ public class PaxosNodeConfig implements NodeConfig {
     } catch (IOException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-
-
   }
 
   @Override

@@ -45,7 +45,10 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * * decision: a message from coordinator to a replica indicating that a request is committed in a given slot.
  *
- * TODO synchronization primitive
+ *
+ * Following this order in acquiring and releasing locks.
+ * <code>scoutLock</code> <code>acceptorLock</code> <code>coordinatorLock</code>
+ *
  *
  * Limitations of current implementation:
  * (1) We garbage collection state for slots numbers which are committed, but this requires that all replicas are up
@@ -234,7 +237,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
   private int minSlotNumberAcrossNodes = 0;
 
   /**
-   * TODO document this
+   * paxos manager object used for several things.
    */
   PaxosManager paxosManager;
   /**
@@ -330,8 +333,11 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
     try{
       handleCommittedRequest(null, true);
-      synchronized (coordinatorBallotLock) {
+      try{
+        coordinatorBallotLock.lock();
         activeCoordinator = false;
+      } finally {
+        coordinatorBallotLock.unlock();
       }
     }catch (JSONException e) {
       e.printStackTrace();
@@ -440,6 +446,9 @@ public class PaxosReplica extends PaxosReplicaInterface{
           break;
         case PaxosPacketType.SYNC_REPLY:
           handleSyncReplyPacket(new SynchronizeReplyPacket(json));
+          break;
+        default:
+          GNS.getLogger().severe("Received packet of type not found:" + json);
           break;
       }
     } catch (JSONException e) {
@@ -811,6 +820,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
   /**
    * New ballot proposed by a replica, handle the proposed ballot.
+   *
    * @param incomingJson json object received by node of type <code>PREPARE_PACKET</code>
    * @throws JSONException
    */
@@ -890,6 +900,12 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
   }
 
+  /**
+   * Garbage collect all slots less than <code>suggestedGCSlot</code>.
+   * Do not run garbage collection if it was run less than
+   * <code>MEMORY_GARBAGE_COLLECTION_INTERVAL</code> algo.
+   * @param suggestedGCSlot
+   */
   private void runGC(int suggestedGCSlot) {
 
     synchronized (garbageCollectionLock) {
@@ -916,7 +932,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * handle sync request message from a coordinator,
+   * Handle sync request message from a coordinator,
    * return the current missing slot numbers and maximum slot number for which decision is received
    * @param packet packet sent by coordinator
    */
@@ -927,7 +943,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * calculate the current missing slot numbers and maximum slot number for which decision is received
+   * Calculate the current missing slot numbers and maximum slot number for which decision is received
    * @return a SynchronizeReplyPacket to be sent to coordinator
    */
   private SynchronizeReplyPacket getSyncReply(boolean flag) {
@@ -993,6 +1009,11 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
   /*****************BEGIN: Cooordinator-related private methods*****************/
 
+  /**
+   * This method returns the slot number for next request which coordinator will propose.
+   * If the coordinator has already proposed stop command, this method returns -1,
+   * and coordinator will not propose any more requests.
+   */
   private int getNextProposalSlotNumber() {
     synchronized (proposalNumberLock) {
       if (stopCommandProposed) return -1;
@@ -1001,6 +1022,12 @@ public class PaxosReplica extends PaxosReplicaInterface{
     }
   }
 
+  /**
+   * Method updates the value of variable <code>nextProposalSlotNumber</code>.
+   * A new coordinator calls this method immediately after getting elected.
+   * See documentation of <code>handleAdoptedNew</code> for more clarification.
+   * @param slotNumber set value of <code>nextProposalSlotNumber</code> to this value
+   */
   private void updateNextProposalSlotNumber(int slotNumber) {
     synchronized (proposalNumberLock) {
       if (stopCommandProposed) return;
@@ -1009,7 +1036,12 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * Handle proposal for a new packet.
+   * Coordinator handles a request received from one of the replicas.
+   * If the node is currently coordinator, it starts the process of
+   * agreement among replicas by sending accept message.
+   * If node is not currently coordinator, or it has received a stop message,
+   * it drops the request.
+   * @param p request from a replica
    * @throws JSONException
    */
   private void handleProposal(ProposalPacket p) throws JSONException {
@@ -1020,7 +1052,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
               " Coordinator handling proposal: " + p.toJSONObject().toString());
 
     Ballot b = null;
-    synchronized (coordinatorBallotLock) {
+    try{
+      coordinatorBallotLock.lock();
       if (activeCoordinator) {
         GNS.getLogger().fine(paxosID + "C\t" +nodeID +
                 " Active coordinator yes: ");
@@ -1033,6 +1066,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
         GNS.getLogger().fine(paxosID + "C\t" +nodeID +
                 " Active coordinator no: ");
       }
+    } finally {
+       coordinatorBallotLock.unlock();
     }
     if (b != null) {
       GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C " +
@@ -1042,6 +1077,15 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
   }
 
+  /**
+   * This method returns the maximum slot number at any replicas
+   * as per this coordinator node. This is determined from the hashmap
+   * <code>nodeAndSlotNumbers</code> whose key=nodeID, and value = slotNumber At that replica.
+   *
+   * This is called immediately after new coordinator is elected.
+   * See documentation of <code>handleAdoptedNew</code> for more clarification.
+   * @return
+   */
   private int getMaxSlotNumberAcrossNodes() {
     synchronized (nodeAndSlotNumbers) {
       int max = 0;
@@ -1054,19 +1098,62 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * ballot adopted, coordinator elected, get proposed values accepted.
+   * Immediately after a new coordinator is elected this method is called to
+   * re-propose any ongoing requests.
+   *
+   * Coordinator scans the list of pValues received from each replica which are
+   * stored in <code>pValuesScout</code> and prepares two lists. First is the list of
+   * slot for which requests that are possibly in progress ("possibly" because in some of those
+   * slots request may have been been committed by previous coordinator). Second is the list of
+   * slots for which no previous requests have been determined at a majority of replicas.
+   * But these slot numbers are less than the maximum slot number for which a previous request
+   * has been found. To fill these gaps coordinator proposes no-op requests in these slots.
+   *
+   * What happens if coordinator finds that a STOP request may have been proposed previously.
+   * Lets say coordinator finds that a STOP may have been proposed previously in slot = x.
+   * But it also finds some request that is in slot = x + 1.
+   * This case can happen if the coordinator who proposed STOP request in slot = x died before
+   * it was committed, and a different coordinator proposed the request in slot = x + 1, because
+   * it did not learn that a STOP was proposed in slot = x.
+   * Now, what should this coordinator do?
+   * If coordinator proposes a STOP request in slot = x, then it should not propose any
+   * request in slot = x+1. But, it is possible that STOP request may not have been committed in slot = x,
+   * but the request in slot = x+1 is actually committed.
+   *
+   * The coordinator decides whether to propose a no-op in slot x or propose a stop in slot = x
+   * based on the ballot number associated with each request.
+   *
+   * Case 1: If the ballot associated with request in slot = x+1 is higher than the ballot associated with
+   * the request in slot = x, i.e., the coordinator who proposed request in slot = x +1 was elected
+   * after the coordinator who proposed the STOP. This confirms that STOP request wasn't committed in slot = x or else
+   * the coordinator who proposed the request in slot = x + 1 would never have proposed it.
+   * Coordinator proposes a NOOP in slot = x.
+   *
+   * Case 2: If the ballot associated with request in slot = x+1 is less than the ballot associated with
+   * the request in slot = x. In this case, a STOP request is proposed.
+   *
+   * Case 3: If the ballot associated with request in slot = x+1 is equal to the ballot associated with
+   * the request in slot = x. This wont happen, because same coordinator would not propose another request
+   * in a higher slot number after proposing the stop request.
+   *
+   * If this is still unclear, refer to the paper: Stoppable Paxos.
+   *
+   * http://research.microsoft.com/apps/pubs/default.aspx?id=101826
    * @throws JSONException
    */
   private void handleAdoptedNew() throws JSONException {
 
+    // NOTE: this is happening under
     GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C Ballot adopted. Handling proposals. Paxos ID = " + paxosID +
             " Nodes = " + nodeIDs);
 
     // propose pValue received
+    // considered.
     ArrayList<Integer> pValueSlots = new ArrayList<Integer>(pValuesScout.keySet());
     Collections.sort(pValueSlots);
     int stopCommandSlot = -1;
 
+    // this is the list of slots for which new requests will be proposed
     ArrayList<PValuePacket> selectPValues = new ArrayList<PValuePacket>();
     for (int slot: pValueSlots) {
       if (pValuesScout.get(slot).proposal.req.isStopRequest()) {
@@ -1090,11 +1177,13 @@ public class PaxosReplica extends PaxosReplicaInterface{
     }
     GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " + "Total PValue proposals : " + selectPValues.size());
 
-    // propose no-ops in empty slots
-    int maxSlotNumberAtReplica = getMaxSlotNumberAcrossNodes();
+
+    int maxSlotNumberAtReplica = getMaxSlotNumberAcrossNodes(); // we are sure that all slots have been filled
+                                                                 //  maxSlotNumberAtReplica
+
     GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " + "Max slot number at replicas = "  + maxSlotNumberAtReplica);
 
-    int maxPValueSlot = -1;
+    int maxPValueSlot = -1; // this is maximum slot for which some request has been found that is in progess
     for (int x: pValuesScout.keySet()) {
       if (x > maxPValueSlot) {
         maxPValueSlot = x;
@@ -1106,7 +1195,9 @@ public class PaxosReplica extends PaxosReplicaInterface{
     if (stopCommandSlot != -1 && stopCommandSlot < maxPValueSlot)
       maxPValueSlot = stopCommandSlot;
 
-    ArrayList<Integer> noopSlots = new ArrayList<Integer>();
+
+    ArrayList<Integer> noopSlots = new ArrayList<Integer>();// this is the list of slots for which noops will be proposed
+
     // propose no-ops in slots for which no pValue is decided.
     for (int slot = maxSlotNumberAtReplica; slot <= maxPValueSlot; slot++) {
       if (!pValuesScout.containsKey(slot)) {
@@ -1121,20 +1212,23 @@ public class PaxosReplica extends PaxosReplicaInterface{
     if (maxPValueSlot + 1 > temp) temp = maxPValueSlot + 1;
     updateNextProposalSlotNumber(temp);
     GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C Next proposal slot number is: " + temp);
-    synchronized (coordinatorBallotLock) {
+
+    // setting these variables completes the new coordinator election
+    try{
+      coordinatorBallotLock.lock();
       coordinatorBallot = ballotScout;
       activeCoordinator = true;
       pValuesCommander.clear();
+    }finally {
+      coordinatorBallotLock.unlock();
     }
 
-    GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
-            " Now starting commanders for pvalues ...");
+    GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " + " Now starting commanders for pvalues ...");
     for (PValuePacket p: selectPValues) {
       initCommander(p);
     }
 
-    GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " +
-            " Now proposing no-ops for missing slots ...");
+    GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " + " Now proposing no-ops for missing slots ...");
     for (int x: noopSlots) {
       proposeNoopInSlot(x, ballotScout);
     }
@@ -1142,9 +1236,9 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * On a STOP command in pValuesScout, check whether to execute it or not
+   * On a STOP command in pValuesScout, check whether to propose it or not
    * @param stopSlot the slot at which stop command is executed.
-   * @return false if the stop command is not to be executed,
+   * @return false if the stop command is not to be proposed (noop will be proposed instead),
    * true if coordinator should propose the stop command.
    */
   private boolean isStopCommandToBeProposed(int stopSlot) {
@@ -1207,8 +1301,17 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
   }
 
+  /**
+   * SynchronizeReplyPacket is sent by a replica to a coordinator informing its
+   * <code>slotNumber</code> and if it has not received any requests.
+   *
+   * Coordinator keeps tracks of slotNumber at replicas for garbage collection.
+   * If coordinator has any requests which replica did not receive, it resends them.
+   * @param replyPacket packet received by coordinator from a replica
+   */
   private void handleSyncReplyPacket(SynchronizeReplyPacket replyPacket) {
-    updateNodeAndSlotNumbers(replyPacket);
+
+    updateNodeAndSlotNumbers(replyPacket); // update
 
     if (replyPacket.missingSlotNumbers != null) {
 
@@ -1237,7 +1340,13 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * handle response of accept message from an acceptor.
+   * Handle response of accept message from an acceptor.
+   *
+   * If reply contains a ballot number higher than
+   * the coordinator's current ballot number, coordinator is pre-empted.
+   * Otherwise, coordinator adds this node to the set of nodes who have accepted. Once
+   * majority of nodes have accepted this message, coordinator sends commit to all replicas.
+   *
    * @param accept  Accept message sent by a paxos replica.
    * @throws JSONException
    */
@@ -1275,25 +1384,38 @@ public class PaxosReplica extends PaxosReplicaInterface{
         GNS.getLogger().fine(paxosID + "C\t" +nodeID + "C " + "higher ballot recvd. current ballot preempted.");
         try {
           acceptorLock.lock();
-          synchronized (coordinatorBallotLock) {
+          try {
+            coordinatorBallotLock.lock();
+            // update variables to indicate I am no longer coordinator
             if (coordinatorBallot.compareTo(stateAtCoordinator.pValuePacket.ballot) == 0 && activeCoordinator) {
               activeCoordinator = false;
               coordinatorBallot = b;
               pValuesCommander.clear();
             }
+          } finally {
+            coordinatorBallotLock.unlock();
           }
+          // also update acceptorBallot
           if (stateAtCoordinator.pValuePacket.ballot.compareTo(acceptorBallot) > 0) {
             acceptorBallot = new Ballot(b.ballotNumber, b.coordinatorID);
           }
         }   finally {
           acceptorLock.unlock();
         }
+        // if I should be next coordinator based on set of nodes active, I will try to get reelected as coordinator.
         if (getNextCoordinatorReplica() == nodeID) initScout();
       }
     }
 
   }
 
+  /**
+   * This method check if majority of replicas have replied to accept message for a given slot.
+   * if yes, send commit to all replicas.
+   *
+   * @param slot  slot number for which majority is to be checked
+   * @param stateAtCoordinator variable containing list of nodes already responeded.
+   */
   private void sendDecisionForSlot(int slot, ProposalStateAtCoordinator stateAtCoordinator) {
 
     if (!stateAtCoordinator.isMajorityReached()) {
@@ -1339,7 +1461,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
       try{
         acceptorLock.lock();
 //            synchronized (acceptorBallot) {
-        synchronized (coordinatorBallotLock) {
+        try{
+          coordinatorBallotLock.lock();
 
           // scout will now choose a ballot
           if (ballotScout != null && ballotScout.compareTo(acceptorBallot) > 0) {
@@ -1348,6 +1471,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
           else {
             ballotScout = new Ballot(acceptorBallot.ballotNumber + 1, nodeID);
           }
+        }finally {
+          coordinatorBallotLock.unlock();
         }
 
       }finally {
@@ -1371,6 +1496,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
       sendMessage(i, prepare);
     }
 
+    // create a task to retry sending the prepare message until majority of replicas respond.
     int numberRetry = 50;
 
     CheckPrepareMessageTask task = new CheckPrepareMessageTask(this,prepare, ballotScout, numberRetry);
@@ -1395,6 +1521,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
         for (int x: nodeIDs)
           if (paxosManager.isNodeUp(x)) nodesUp++;
         if (nodesUp*2 < nodeIDs.size()) return false; // more than half node down, give up resending prepare
+
         boolean resend = false;
         for (int x: nodeIDs) {
           if (!waitForScout.contains(x) && paxosManager.isNodeUp(x)) {
@@ -1465,12 +1592,19 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * handle reply from a replica for a prepare message
+   * Handle reply from a replica for a prepare message.
+   * The replies also contain a list of pvalues which are the requests currently in progress.
+   *
+   * If a replica replies with a ballot number greater than this coordinator's
+   * <code>ballotScout</code>, it means this coordinator's ballot is rejected and replica
+   * cannot become coordinator.
+   *
    * @throws JSONException
    */
   private void handlePrepareMessageReply(PreparePacket prepare) throws JSONException{
 
-    updateNodeAndSlotNumbers(prepare.receiverID, prepare.slotNumber);
+
+    updateNodeAndSlotNumbers(prepare.receiverID, prepare.slotNumber); // keep track of slot number at each replica.
 
     try{
       scoutLock.lock();
@@ -1520,10 +1654,13 @@ public class PaxosReplica extends PaxosReplicaInterface{
     }finally {
       scoutLock.unlock();
     }
+    // if I should be the next coordinator based of set of active nodes, I will try to get relected.
+    if (getNextCoordinatorReplica() == nodeID) initScout();
   }
 
   /**
-   * check whether coordinator is UP.
+   * Check whether coordinator is UP. If coordinator has failed, test where I am the next node to propose
+   * a new ballot.
    */
   public void checkCoordinatorFailure() {
     int coordinatorID = -1;
@@ -1545,7 +1682,9 @@ public class PaxosReplica extends PaxosReplicaInterface{
   }
 
   /**
-   * message reporting node failure.
+   * Message reporting node failure.
+   * We check if the failed node is current coordinator. if yes, and if I am next node who should
+   * become the coordinator I will try to get elected.
    */
   private void handleNodeStatusUpdate(FailureDetectionPacket packet) {
     if (packet.status) return; // node is up.
@@ -1563,11 +1702,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
     int coordinatorID = -1;
     try{
       acceptorLock.lock();
-
       if (acceptorBallot != null ) {
-        synchronized (coordinatorBallotLock) {
-          coordinatorID = coordinatorBallot.getCoordinatorID();
-        }
+        coordinatorID = acceptorBallot.coordinatorID;
       }
     } finally {
       acceptorLock.unlock();
@@ -1587,6 +1723,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
 
   /**
    * @return Minimum slot number in the list: nodeAndSlotNumbers across all replicas.
+   * We can safely garbage collect state for slots at less than this value.
+   *
    */
   private int getMinSlotNumberAcrossNodes( ) {
     if (nodeAndSlotNumbers.size() < nodeIDs.size()) return -1;
@@ -1606,7 +1744,8 @@ public class PaxosReplica extends PaxosReplicaInterface{
 }
 
 /**
- *
+ *  Variable stores all state for a request proposed by coordinator.
+ *  We track the send time of request, and the set of nodes who have responded.
  */
 class ProposalStateAtCoordinator implements Comparable, Serializable{
 
@@ -1633,7 +1772,8 @@ class ProposalStateAtCoordinator implements Comparable, Serializable{
   private boolean majority = false;
 
   public synchronized boolean isMajorityReached() {
-    if (majority)  return false;
+
+    if (majority)  return false; // we return true only once, to avoid sending duplicate commit messages.
 
     if (nodes.size() * 2 > numReplicas) {
       majority = true;
@@ -1666,6 +1806,9 @@ class ProposalStateAtCoordinator implements Comparable, Serializable{
 
 }
 
+/**
+ * This class periodically resends prepare message if it is not accepted by majority.
+ */
 class CheckPrepareMessageTask extends TimerTask {
 
   int numRetry;
@@ -1691,7 +1834,7 @@ class CheckPrepareMessageTask extends TimerTask {
       if (!sendAgain || count == numRetry) throw  new GnsRuntimeException();
     } catch (Exception e) {
       if (e.getClass().equals(GnsRuntimeException.class)) {
-        throw new RuntimeException();
+        throw new RuntimeException(); // throwing RuntimeException here because
       }
       GNS.getLogger().severe("Exception in CheckPrepareMessageTask: " + e.getMessage());
       e.printStackTrace();
@@ -1700,19 +1843,39 @@ class CheckPrepareMessageTask extends TimerTask {
 }
 
 /**
+ * If a replica finds that current coordinator has failed, this task tries to find the new coordinator by
+ * contacting other replicas.
  *
+ * This task is created after a replica receives a request.
  */
 class UpdateBallotTask extends TimerTask {
 
+  /**
+   * Paxos replica that created this task.
+   */
   PaxosReplicaInterface replica;
 
+  /**
+   * Value of <code>acceptorBallot</code> at the time this task was created.
+   * This task is complete once the paxos replica finds a new <code>acceptorBallot</code>.
+   */
   Ballot ballot;
 
+  /**
+   * number of attempts.
+   */
   int count = 0;
 
+  /**
+   * Nodes which I have contacted so far.
+   */
   ArrayList<Integer> nodes;
 
+  /**
+   * The json message to send to that replica asking for a new coordinator.
+   */
   JSONObject json;
+
 
   PaxosManager paxosManager;
 
