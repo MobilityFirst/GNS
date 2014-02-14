@@ -63,7 +63,6 @@ public class MongoRecords implements NoSQLRecords {
     MongoCollectionSpec.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     MongoCollectionSpec.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
     // add location as another index
-    //MongoCollectionSpec.getCollectionSpec(DBNAMERECORD).addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "location", 1));
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME, "2d"));
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)

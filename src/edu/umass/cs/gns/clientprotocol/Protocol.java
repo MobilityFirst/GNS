@@ -1225,7 +1225,9 @@ public class Protocol {
     commandModule.setHost(host); // not terribly happy with this
     JSONObject json = new JSONObject(queryMap);
     GnsCommand command = commandModule.lookupCommand(json);
-
+    if (command != null) {
+      GNS.getLogger().info("Found command: " + command.toString());
+    }
     try {
       //new command processing
       //if (command != null) { // TURN THIS OFF FOR NOW
@@ -1344,7 +1346,7 @@ public class Protocol {
       //
       // READ OPERATIONS
       //
-      
+
       //
       // CONVERTED
       //
@@ -1409,7 +1411,7 @@ public class Protocol {
       //
       // END CONVERTED
       //
-    
+
     } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
@@ -1417,9 +1419,9 @@ public class Protocol {
       String writer = queryMap.get(WRITER);
       String signature = queryMap.get(SIGNATURE);
       return processCreateList(guid, field, value, writer, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      
-    
-    
+
+
+
     } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);

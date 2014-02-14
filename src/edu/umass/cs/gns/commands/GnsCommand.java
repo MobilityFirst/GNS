@@ -106,6 +106,6 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
 
   @Override
   public String toString() {
-    return "COMMAND: " + getCommandName() + " " + getCommandParametersString();
+    return this.getClass().getName() + " " + getCommandName() + " " + getCommandParametersString();
   }
 }
