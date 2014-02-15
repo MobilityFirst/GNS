@@ -431,16 +431,16 @@ public class Protocol {
     }
   }
 
-  private String processRemoveGuid(String guid, String guid2, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  private String processRemoveGuid(String accountGuid, String guidToRemove, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, guid2Info;
-    if ((guid2Info = accountAccess.lookupGuidInfo(guid2)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid2;
+    if ((guid2Info = accountAccess.lookupGuidInfo(guidToRemove)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
     }
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
+    if ((guidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
+      return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(accountGuid);
       return accountAccess.removeGuid(accountInfo, guid2Info);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -1298,6 +1298,8 @@ public class Protocol {
       String guid = queryMap.get(GUID);
       String signature = queryMap.get(SIGNATURE);
       return processRemoveAccount(userName, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+   
+    
     } else if (ADDGUID.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, PUBLICKEY, SIGNATURE))) {
       // syntax: register userName guid public_key
       String guid = queryMap.get(GUID);
