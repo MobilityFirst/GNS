@@ -11,11 +11,12 @@ import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
-import edu.umass.cs.gns.httpserver.Defs;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,27 +24,26 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AddAlias extends GnsCommand {
+public class RetrieveAliases extends GnsCommand {
 
-  public AddAlias(CommandModule module) {
+  public RetrieveAliases(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, "message"};
+    return new String[]{GUID, SIGNATURE, "message"};
   }
 
   @Override
   public String getCommandName() {
-    return ADDALIAS;
+    return RETRIEVEALIASES;
   }
 
   @Override
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
-    String name = json.getString(NAME);
     String signature = json.getString(SIGNATURE);
     String message = json.getString("message");
     GuidInfo guidInfo;
@@ -52,13 +52,8 @@ public class AddAlias extends GnsCommand {
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
-      if (!accountInfo.isVerified()) {
-        return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
-      } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
-        return BADRESPONSE + " " + TOMANYALIASES;
-      } else {
-        return accountAccess.addAlias(accountInfo, name);
-      }
+      ArrayList<String> aliases = accountInfo.getAliases();
+      return new JSONArray(aliases).toString();
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -66,8 +61,9 @@ public class AddAlias extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Adds a additional human readble name to the account associated with the GUID. "
-            + "Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered.";
+    return "Retrieves all aliases for the account associated with the GUID. Must be signed by the guid. Returns "
+            + BADGUID + " if the GUID has not been registered.";
+
 
 
 

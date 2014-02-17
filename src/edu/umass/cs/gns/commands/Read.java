@@ -47,8 +47,8 @@ public class Read extends GnsCommand {
     // reader might be same as guid
     String reader = json.optString(READER, guid);
     // signature and message can be empty for unsigned cases
-    String signature = json.optString(SIGNATURE);
-    String message = json.optString("message");
+    String signature = json.optString(SIGNATURE, null);
+    String message = json.optString("message", null);
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;

@@ -48,9 +48,8 @@ public class CreateList extends GnsCommand {
     // the opt hair below is for the subclasses... cute, huh?
     // writer might be same as guid
     String writer = json.optString(WRITER, guid);
-    // signature and message can be empty for unsigned cases
-    String signature = json.optString(SIGNATURE);
-    String message = json.optString("message");
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString("message");
     GuidInfo guidInfo, writerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;

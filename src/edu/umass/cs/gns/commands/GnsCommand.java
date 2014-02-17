@@ -25,7 +25,6 @@ import org.json.JSONObject;
 public abstract class GnsCommand implements Comparable<GnsCommand> {
 
   protected CommandModule module;
-  
   protected FieldAccess fieldAccess = FieldAccess.getInstance();
   protected AccountAccess accountAccess = AccountAccess.getInstance();
   protected FieldMetaData fieldMetaData = FieldMetaData.getInstance();
@@ -57,7 +56,8 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
 
   public abstract String getCommandName();
 
-  public abstract String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException, JSONException, NoSuchAlgorithmException, SignatureException;
+  public abstract String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+          JSONException, NoSuchAlgorithmException, SignatureException;
 
   /**
    * Get the description of the command
@@ -72,7 +72,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    * @return <code>String</code> of the command usage ()
    */
   public String getUsage() {
-    String usage = "HTML Form: " + getHTMLForm() + NEWLINE 
+    String usage = "HTML Form: " + getHTMLForm() + NEWLINE
             + getCommandDescription();
     return usage;
   }
@@ -91,7 +91,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     }
     return result.toString();
   }
-  
+
   public String getCommandParametersString() {
     StringBuilder result = new StringBuilder();
     String[] parameters = getCommandParameters();

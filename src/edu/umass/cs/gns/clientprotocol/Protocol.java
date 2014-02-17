@@ -1260,9 +1260,7 @@ public class Protocol {
     if (HELP.equals(action)) {
       //return getHelpString(GnrsHttpServer.hostName + (GnrsHttpServer.address != 80 ? (":" + GnrsHttpServer.address) : ""));
       return getHelpString(host);
-      //
-      // Converted
-      //
+
     } else if (REGISTERACCOUNT.equals(action) && queryMap.keySet().containsAll(Arrays.asList(NAME, GUID, PUBLICKEY, PASSWORD))) {
       // syntax: register userName guid public_key
       String userName = queryMap.get(NAME);
@@ -1345,13 +1343,7 @@ public class Protocol {
     } else if (LOOKUPACCOUNTRECORD.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID))) {
       String guid = queryMap.get(GUID);
       return processLookupAccountInfo(guid);
-      //
-      // READ OPERATIONS
-      //
-
-      //
-      // CONVERTED
-      //
+   
     } else if (READ.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, READER, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
@@ -1383,9 +1375,7 @@ public class Protocol {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
       return processUnsignedReadOne(guid, field);
-      //
-      // CREATE OPERATIONS
-      //
+    
     } else if (CREATE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
@@ -1410,10 +1400,7 @@ public class Protocol {
       String field = queryMap.get(FIELD);
       String signature = queryMap.get(SIGNATURE);
       return processCreate(guid, field, null, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
-      //
-      // END CONVERTED
-      //
-
+     
     } else if (CREATELIST.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
@@ -1430,9 +1417,11 @@ public class Protocol {
       String value = queryMap.get(VALUE);
       String signature = queryMap.get(SIGNATURE);
       return processCreateList(guid, field, value, guid, signature, AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature));
+      
       //
-      // UPDATE OPERATIONS WITH DIFFERENT WRITER
+      // DONE TO HERE
       //
+      
     } else if (REPLACE.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, FIELD, VALUE, WRITER, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String field = queryMap.get(FIELD);
