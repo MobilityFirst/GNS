@@ -5,8 +5,9 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.commands;
+package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 
 /**

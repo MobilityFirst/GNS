@@ -1190,7 +1190,7 @@ public class Protocol {
   private String processGetTagged(String tagName) {
     return new JSONArray(Admintercessor.getInstance().collectTaggedGuids(tagName)).toString();
   }
-  // currently doesn't handle subGuids that are tagged
+  
 
   private String processClearTagged(String tagName) {
     for (String guid : Admintercessor.getInstance().collectTaggedGuids(tagName)) {
@@ -1232,7 +1232,7 @@ public class Protocol {
       //new command processing
       //if (command != null) { // TURN THIS OFF FOR NOW
       if (false) {
-        GNS.getLogger().info("Executing command: " + command.toString());
+        GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
         return command.execute(json);
       } else {
         // this guy stays around until we port all the commands to the new format
@@ -1913,9 +1913,6 @@ public class Protocol {
       return processClearCache(queryString);
     } else if (DUMPCACHE.equals(action)) {
       return processDumpCache();
-    } else if (CHANGELOGLEVEL.equals(action) && queryMap.keySet().containsAll(Arrays.asList(LEVEL))) {
-      String level = queryMap.get(LEVEL);
-      return processChangeLogLevel(level);
     } else if (ADDTAG.equals(action) && queryMap.keySet().containsAll(Arrays.asList(GUID, NAME, SIGNATURE))) {
       String guid = queryMap.get(GUID);
       String tagName = queryMap.get(NAME);

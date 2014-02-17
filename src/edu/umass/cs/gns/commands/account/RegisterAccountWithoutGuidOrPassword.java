@@ -5,23 +5,24 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.commands;
+package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 
 /**
  *
  * @author westy
  */
-public class RegisterAccountWithoutGuid extends RegisterAccount {
+public class RegisterAccountWithoutGuidOrPassword extends RegisterAccount {
 
-  public RegisterAccountWithoutGuid(CommandModule module) {
+  public RegisterAccountWithoutGuidOrPassword(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, PUBLICKEY, PASSWORD};
+    return new String[]{NAME, PUBLICKEY};
   }
 
   @Override

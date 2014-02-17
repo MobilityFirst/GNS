@@ -22,8 +22,9 @@ import org.json.JSONException;
  */
 public class CommandModule {
   
-  TreeSet<GnsCommand> commands;
-  String host;
+  private TreeSet<GnsCommand> commands;
+  private String host;
+  private boolean adminMode = false;
   
   public CommandModule() {
     initCommands();
@@ -71,8 +72,9 @@ public class CommandModule {
       GNS.getLogger().warning("Unable find " + COMMANDNAME + " key in JSON command: " + e);
       return null;
     }
+    // for now a linear search is fine
     for (GnsCommand command : commands) {
-      GNS.getLogger().info("Search: " + command.toString());
+      GNS.getLogger().fine("Search: " + command.toString());
       if (command.getCommandName().equals(action) && JSONContains(json, command.getCommandParameters())) {
         return command;
       }
@@ -95,6 +97,14 @@ public class CommandModule {
 
   public void setHost(String host) {
     this.host = host;
+  }
+
+  public boolean isAdminMode() {
+    return adminMode;
+  }
+
+  public void setAdminMode(boolean adminMode) {
+    this.adminMode = adminMode;
   }
   
 }
