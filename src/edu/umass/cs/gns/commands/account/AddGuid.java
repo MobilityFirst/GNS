@@ -35,7 +35,7 @@ public class AddGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, GUID, PUBLICKEY, SIGNATURE, "message"};
+    return new String[]{NAME, GUID, PUBLICKEY, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -50,7 +50,7 @@ public class AddGuid extends GnsCommand {
     String accountGuid = json.getString(GUID);
     String publicKey = json.getString(PUBLICKEY);
     String signature = json.getString(SIGNATURE);
-    String message = json.getString("message");
+    String message = json.getString(SIGNATUREFULLMESSAGE);
     String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {

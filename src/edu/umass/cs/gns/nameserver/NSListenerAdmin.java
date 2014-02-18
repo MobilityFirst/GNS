@@ -215,7 +215,7 @@ public class NSListenerAdmin extends Thread {
                 Level level = Level.parse(adminRequestPacket.getArgument());
                 GNS.getLogger().info("Changing log level to " + level.getName());
                 GNS.getLogger().setLevel(level);
-
+                break;
 
 //              case DELETEALLGUIDRECORDS:
 //                // delete all the records that have a name (GUID) given by the argument in the packet

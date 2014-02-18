@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.httpserver.SystemParameter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

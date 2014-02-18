@@ -7,10 +7,10 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
-import edu.umass.cs.gns.clientprotocol.PerformanceTests;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.clientprotocol.PerformanceTests;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,9 +18,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RoundTripTimeTest extends GnsCommand {
+public class RTT extends GnsCommand {
 
-  public RoundTripTimeTest(CommandModule module) {
+  public RTT(CommandModule module) {
     super(module);
   }
 
@@ -43,8 +43,6 @@ public class RoundTripTimeTest extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Runs the round trip test.";
   }
 }

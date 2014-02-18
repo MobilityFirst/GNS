@@ -34,7 +34,7 @@ public class RetrieveAliases extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, SIGNATURE, "message"};
+    return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -47,7 +47,7 @@ public class RetrieveAliases extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
-    String message = json.getString("message");
+    String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;

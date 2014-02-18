@@ -32,13 +32,13 @@ public class SubstituteList extends AbstractUpdateList {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, OLDVALUE, WRITER, SIGNATURE, "message"};
+    return new String[]{GUID, FIELD, VALUE, OLDVALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Replaces oldvalue with newvalue in the key value pair for the given GUID. "
+            + "Value is a list of items formated as a JSON list.";
+            
   }
 }

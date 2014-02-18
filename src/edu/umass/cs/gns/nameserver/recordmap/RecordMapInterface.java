@@ -105,7 +105,7 @@ public interface RecordMapInterface {
    * @param valuesMapField - the field in the row that contains the *user* fields
    * @param key
    * @param value - a string that looks like this [LONG, LAT]
-   * @param maxDistance - the distance in radians
+   * @param maxDistance - the distance in meters
    * @return 
    */
   public abstract BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance);

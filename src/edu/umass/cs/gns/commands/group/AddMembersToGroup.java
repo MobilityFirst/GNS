@@ -33,7 +33,7 @@ public class AddMembersToGroup extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBERS, WRITER, SIGNATURE, "message"};
+    return new String[]{GUID, MEMBERS, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -50,7 +50,7 @@ public class AddMembersToGroup extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
-    String message = json.optString("message", null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo, writerInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -79,8 +79,6 @@ public class AddMembersToGroup extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Adds the member guids to the group specified by guid. Writer guid needs to have write access and sign the command.";
   }
 }

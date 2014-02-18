@@ -39,6 +39,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.CreateList",
     "edu.umass.cs.gns.commands.CreateListSelf",
     "edu.umass.cs.gns.commands.CreateSelf",
+    "edu.umass.cs.gns.commands.Help",
     "edu.umass.cs.gns.commands.Read",
     "edu.umass.cs.gns.commands.ReadOne",
     "edu.umass.cs.gns.commands.ReadOneSelf",
@@ -129,7 +130,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.admin.ClearTagged",
     "edu.umass.cs.gns.commands.admin.GetTagged",
     "edu.umass.cs.gns.commands.admin.Dump",
-    "edu.umass.cs.gns.commands.admin.RoundTripTimeTest"};
+    "edu.umass.cs.gns.commands.admin.RTT"};
 
   public static String[] getCommandDefs() {
     return commands;

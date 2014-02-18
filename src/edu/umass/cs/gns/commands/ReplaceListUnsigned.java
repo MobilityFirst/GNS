@@ -37,8 +37,6 @@ public class ReplaceListUnsigned extends AbstractUpdateList {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Replaces the current value key value pair from the GNS for the given guid with the given values.";
   }
 }

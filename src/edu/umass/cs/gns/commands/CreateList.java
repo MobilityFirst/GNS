@@ -31,7 +31,7 @@ public class CreateList extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, "message"};
+    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -49,7 +49,7 @@ public class CreateList extends GnsCommand {
     // writer might be same as guid
     String writer = json.optString(WRITER, guid);
     String signature = json.getString(SIGNATURE);
-    String message = json.getString("message");
+    String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo, writerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;

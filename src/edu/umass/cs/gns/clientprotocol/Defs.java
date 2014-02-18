@@ -147,7 +147,8 @@ public class Defs {
   public final static String CODE = "code";
   public final static String SIGNATURE = "signature";
   public final static String PASSKEY = "passkey";
-  //public final static String TABLE = "table";
+  // Internal use for signature
+  public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
   // Blessed field names
   public static final String LOCATION_FIELD_NAME = "geoLocation";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";

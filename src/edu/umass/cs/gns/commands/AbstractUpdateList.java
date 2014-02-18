@@ -42,7 +42,7 @@ public abstract class AbstractUpdateList extends GnsCommand {
     String oldValue = json.optString(OLDVALUE, null);
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
-    String message = json.optString("message", null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo, writerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -72,10 +72,5 @@ public abstract class AbstractUpdateList extends GnsCommand {
       return BADRESPONSE + " " + BADFIELD + " " + field;
     }
 
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID.";
   }
 }

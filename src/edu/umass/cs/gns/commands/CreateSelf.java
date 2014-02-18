@@ -21,7 +21,7 @@ public class CreateSelf extends Create {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, "message"};
+    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override

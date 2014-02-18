@@ -83,11 +83,14 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     String[] parameters = getCommandParameters();
     String prefix = QUERYPREFIX;
     for (int i = 0; i < parameters.length; i++) {
-      result.append(prefix);
-      result.append(parameters[i]);
-      result.append(VALSEP);
-      result.append("<" + parameters[i] + ">");
-      prefix = KEYSEP;
+      // special case to remove SIGNATUREFULLMESSAGE which isn't for HTML form
+      if (!SIGNATUREFULLMESSAGE.equals(parameters[i])) {
+        result.append(prefix);
+        result.append(parameters[i]);
+        result.append(VALSEP);
+        result.append("<" + parameters[i] + ">");
+        prefix = KEYSEP;
+      }
     }
     return result.toString();
   }

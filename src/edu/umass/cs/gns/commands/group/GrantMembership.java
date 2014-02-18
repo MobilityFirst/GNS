@@ -34,7 +34,7 @@ public class GrantMembership extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBER, SIGNATURE, "message"};
+    return new String[]{GUID, MEMBER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -49,7 +49,7 @@ public class GrantMembership extends GnsCommand {
     String member = json.getString(MEMBER);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
-    String message = json.optString("message", null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -66,8 +66,6 @@ public class GrantMembership extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Approves membership of member in the group. Guid needs to sign the command.";
   }
 }

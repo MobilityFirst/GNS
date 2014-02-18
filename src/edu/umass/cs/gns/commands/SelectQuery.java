@@ -39,8 +39,8 @@ public class SelectQuery extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Returns all records that satisfy the query. "
+            + "For details see http://mobilityfirst.cs.umass.edu/wiki/index.php/Query_Syntax "
+            + "Values are returned as a JSON array of JSON Objects.";
   }
 }

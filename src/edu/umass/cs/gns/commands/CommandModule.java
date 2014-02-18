@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.clientprotocol.Defs;
 import edu.umass.cs.gns.main.GNS;
 import java.lang.reflect.Constructor;
 import java.util.Map.Entry;
@@ -80,6 +81,18 @@ public class CommandModule {
       }
     }    
     return null;
+  }
+  
+  public String allCommandDescriptionsForHTML() {
+    StringBuffer result = new StringBuffer();
+    String prefix = "";
+    for (GnsCommand command : commands) {
+      result.append(prefix);
+      result.append(command.getUsage());
+      prefix = Defs.NEWLINE;
+      result.append(NEWLINE);
+    }
+    return result.toString();
   }
   
   private boolean JSONContains(JSONObject json, String[] parameters) {

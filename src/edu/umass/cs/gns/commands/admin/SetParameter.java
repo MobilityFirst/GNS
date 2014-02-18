@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.httpserver.SystemParameter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -56,8 +56,6 @@ public class SetParameter extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "[ONLY IN ADMIN MODE] Changes a parameter value.";
   }
 }

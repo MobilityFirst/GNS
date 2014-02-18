@@ -22,7 +22,7 @@ public class CreateEmptySelf extends Create {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, SIGNATURE, "message"};
+    return new String[]{GUID, FIELD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override

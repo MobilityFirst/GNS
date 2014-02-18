@@ -32,7 +32,7 @@ public class Remove extends AbstractUpdate {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, "message"};
+    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override

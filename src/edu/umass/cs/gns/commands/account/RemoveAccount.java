@@ -32,7 +32,7 @@ public class RemoveAccount extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, GUID, SIGNATURE, "message"};
+    return new String[]{NAME, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -46,7 +46,7 @@ public class RemoveAccount extends GnsCommand {
     String name = json.getString(NAME);
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
-    String message = json.getString("message");
+    String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;

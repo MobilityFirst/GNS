@@ -32,7 +32,7 @@ public class SetPassword extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, "message"};
+    return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -46,7 +46,7 @@ public class SetPassword extends GnsCommand {
     String guid = json.getString(GUID);
     String password = json.getString(PASSWORD);
     String signature = json.getString(SIGNATURE);
-    String message = json.getString("message");
+    String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;

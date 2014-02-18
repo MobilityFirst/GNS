@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.commands.account;
 
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -47,6 +47,6 @@ public class VerifyAccount extends GnsCommand {
   
   @Override
   public String getCommandDescription() {
-    return "Handles the completion of the verification process for a guid by supplyin the correct code.";
+    return "Handles the completion of the verification process for a guid by supplying the correct code.";
   }
 }

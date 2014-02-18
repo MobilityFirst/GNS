@@ -9,9 +9,9 @@ package edu.umass.cs.gns.commands.admin;
 
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -31,7 +31,7 @@ public class AddTag extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, "message"};
+    return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -46,7 +46,7 @@ public class AddTag extends GnsCommand {
     String tag = json.getString(NAME);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
-    String message = json.optString("message", null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
@@ -60,8 +60,7 @@ public class AddTag extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Adds a tag to the guid. Must be signed by the guid. "
+            + "Returns " + BADGUID + " if the GUID has not been registered.";
   }
 }

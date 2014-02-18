@@ -8,9 +8,9 @@
 package edu.umass.cs.gns.commands.admin;
 
 import edu.umass.cs.gns.client.Admintercessor;
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -48,8 +48,6 @@ public class GetTagged extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Returns all guids that contain the tag.";
   }
 }

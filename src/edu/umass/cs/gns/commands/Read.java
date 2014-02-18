@@ -30,7 +30,7 @@ public class Read extends GnsCommand {
   
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, READER, SIGNATURE, "message"};
+    return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
   
   @Override
@@ -48,7 +48,7 @@ public class Read extends GnsCommand {
     String reader = json.optString(READER, guid);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
-    String message = json.optString("message", null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;

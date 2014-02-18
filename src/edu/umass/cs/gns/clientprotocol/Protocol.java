@@ -1220,7 +1220,7 @@ public class Protocol {
     if (queryMap.keySet().contains(SIGNATURE)) {
       String signature = queryMap.get(SIGNATURE);
       String message = AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
-      queryMap.put("message", message);
+      queryMap.put(SIGNATUREFULLMESSAGE, message);
     }
     commandModule.setHost(host); // not terribly happy with this
     JSONObject json = new JSONObject(queryMap);
@@ -1230,8 +1230,8 @@ public class Protocol {
     }
     try {
       //new command processing
-      //if (command != null) { // TURN THIS OFF FOR NOW
-      if (false) {
+      if (command != null) { // TURN THIS OFF FOR NOW
+      //if (false) {
         GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
         return command.execute(json);
       } else {

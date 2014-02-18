@@ -34,7 +34,7 @@ public class AclRetrieve extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACLTYPE, SIGNATURE, "message"};
+    return new String[]{GUID, FIELD, ACLTYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -50,7 +50,7 @@ public class AclRetrieve extends GnsCommand {
     String accessType = json.getString(ACLTYPE);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
-    String message = json.optString("message", null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
     FieldMetaData.MetaDataTypeName access;
     if ((access = FieldMetaData.MetaDataTypeName.valueOf(accessType)) == null) {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + FieldMetaData.MetaDataTypeName.values().toString();
@@ -69,8 +69,7 @@ public class AclRetrieve extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Returns the access control list for a guids's field. See below for description of ACL type and signature.";
+            
   }
 }

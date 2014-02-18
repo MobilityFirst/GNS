@@ -22,7 +22,7 @@ public class RemoveMembersFromGroupSelf extends RemoveMembersFromGroup {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBERS, SIGNATURE, "message"};
+    return new String[]{GUID, MEMBERS, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -32,8 +32,6 @@ public class RemoveMembersFromGroupSelf extends RemoveMembersFromGroup {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Removes the member guids from the group specified by guid.";
   }
 }
