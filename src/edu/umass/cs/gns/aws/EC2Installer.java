@@ -59,6 +59,10 @@ import org.apache.commons.cli.ParseException;
  * @author westy
  */
 public class EC2Installer {
+  
+  // this is the only hardcoded thing in here you should have to change...
+  // Note: figure out a better way to do this.. probably with resources
+  private static final String DIST_FOLDER_LOCATION = "/Users/westy/Documents/Code/GNS/dist";
 
   private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
@@ -226,8 +230,12 @@ public class EC2Installer {
     StatusListener.sendOutServerInitPackets(idTable.keySet());
   }
   private static final String keyName = "aws";
-  private static final String GNSJar = "/Users/westy/Documents/Code/GNS/build/jars/GNS.jar";
-  private static String GNSFile = new File(GNSJar).getName();
+  private static final String GNSJarFileLocation = DIST_FOLDER_LOCATION + "/GNS.jar";
+  private static final String lnsConfFileLocation = DIST_FOLDER_LOCATION + "/conf/lns.conf";
+  private static final String nsConfFileLocation = DIST_FOLDER_LOCATION + "/conf/ns.conf";
+  private static String GNSFileName = new File(GNSJarFileLocation).getName();
+  private static String lnsConfFileName = new File(lnsConfFileLocation).getName();
+  private static String nsConfFileName = new File(nsConfFileLocation).getName();
   // this one installs mondoDB
   private static final String mongoInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
@@ -323,7 +331,7 @@ public class EC2Installer {
         Point2D location = GEOLocator.lookupIPLocation(ip);
         StatusModel.getInstance().queueUpdate(id, hostname, ip, location);
         // move the JAR files over
-        copyJARFiles(id, hostname);
+        copyJARAndConfFiles(id, hostname);
         // update our table of instance information
         idTable.put(id, new InstanceInfo(id, hostname, ip, location));
         // store the hostname on preferences so we can access it later
@@ -357,10 +365,13 @@ public class EC2Installer {
     startServers(id, hostname);
   }
 
-  private static void copyJARFiles(int id, String hostname) {
+  private static void copyJARAndConfFiles(int id, String hostname) {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
-    StatusModel.getInstance().queueUpdate(id, "Copying jar files");
-    SSHClient.scpTo(ec2UserName, hostname, keyFile, GNSJar, GNSFile);
+    StatusModel.getInstance().queueUpdate(id, "Copying jar and conf files");
+    // this is simple, but figure out a smarter way to do this without hardcoded source folder location
+    SSHClient.scpTo(ec2UserName, hostname, keyFile, GNSJarFileLocation, GNSFileName);
+    SSHClient.scpTo(ec2UserName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
+    SSHClient.scpTo(ec2UserName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
   }
   private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
   private static final String CassandraRecordsClass = "edu.umass.cs.gns.database.CassandraRecords";
@@ -369,11 +380,12 @@ public class EC2Installer {
     File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     AWSEC2.executeBashScript(hostname, keyFile, "deleteDatabase.sh",
             "#!/bin/bash\n"
-            + "java -cp " + GNSFile + " " + MongoRecordsClass + " -clear");
+            + "java -cp " + GNSFileName + " " + MongoRecordsClass + " -clear");
   }
   private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
   private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
-  private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
+  // unused
+  //private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
 
   private static int getLNSId(int id) {
     return id + idTable.size();
@@ -394,19 +406,21 @@ public class EC2Installer {
             + "if [ -f LNSlogfile ]; then\n"
             + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
             + "fi\n"
-            + "nohup java -cp " + GNSFile + " " + StartLNSClass + " "
+            + "nohup java -cp " + GNSFileName + " " + StartLNSClass + " "
             + "-id " + getLNSId(id)
-            // at some point a bunch of these should become defaults
-            + " -cacheSize 10000 "
-            + " -primary 3 -location -vInterval 1000"
-            + " -lookupRate 10000 -updateRateMobile 0 -updateRateRegular 10000 "
-            + " -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100 "
-            //+ " -adaptiveTimeout -delta 0.05 -mu 1.0 -phi 6.0 "
-            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
-            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO "
-            //+ " -debugMode "
-            + " -nsfile name-server-info  "
-            + "  -runHttpServer "
+            + " -configFile lns.conf "
+            // all these are in the lns.conf file now
+//            // at some point a bunch of these should become defaults
+//            + " -cacheSize 10000 "
+//            + " -primary 3 -location -vInterval 1000"
+//            + " -lookupRate 10000 -updateRateMobile 0 -updateRateRegular 10000 "
+//            + " -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100 "
+//            //+ " -adaptiveTimeout -delta 0.05 -mu 1.0 -phi 6.0 "
+//            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
+//            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO "
+//            //+ " -debugMode "
+//            + " -nsfile name-server-info  "
+//            + "  -runHttpServer "
             + "> LNSlogfile 2>&1 &");
 
     StatusModel.getInstance().queueUpdate(id, "Starting name servers");
@@ -416,17 +430,19 @@ public class EC2Installer {
             + "if [ -f NSlogfile ]; then\n"
             + "mv --backup=numbered NSlogfile NSlogfile.save\n"
             + "fi\n"
-            + "nohup java -cp " + GNSFile + " " + StartNSClass + " "
+            + "nohup java -cp " + GNSFileName + " " + StartNSClass + " "
             + " -id " + id
-            // at some point a bunch of these should become defaults
-            + " -primary 3 -aInterval 1000 -rInterval 1000 -nconstant 0.1 -mavg 20 -ttlconstant 0.0 -rttl 0 -mttl 0"
-            + " -rworkload 0 -mworkload 0"
-            + " -location -nsVoteSize 5 "
-            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
-            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO"
-            + " -dataStore " + dataStoreType.name()
-            //+ " -debugMode "
-            + " -nsfile name-server-info "
+            + " -configFile ns.conf "
+            // all these are in the ns.conf file now
+ //         // at some point a bunch of these should become defaults
+//            + " -primary 3 -aInterval 1000 -rInterval 1000 -nconstant 0.1 -mavg 20 -ttlconstant 0.0 -rttl 0 -mttl 0"
+//            + " -rworkload 0 -mworkload 0"
+//            + " -location -nsVoteSize 5 "
+//            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
+//            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO"
+//            + " -dataStore " + dataStoreType.name()
+//            //+ " -debugMode "
+//            + " -nsfile name-server-info "
             + "> NSlogfile 2>&1 &");
     // THIS NEVER WORKED AND WE DON'T NEED IT UNLESS ANYMORE... WAS TRYING TO RUN A SIMPLE HTTP SERVICE ON PORT 80
 //    // run this with sudo because it needs root access to bind port 80
@@ -462,7 +478,8 @@ public class EC2Installer {
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm RSlogfile*\n"
-            + "rm -rf log");
+            + "rm -rf log"
+            + "rm -rf paxoslog");
   }
 
   /**
@@ -846,7 +863,7 @@ public class EC2Installer {
       killAllServers(id, hostname);
       switch (action) {
         case UPDATE:
-          copyJARFiles(id, hostname);
+          copyJARAndConfFiles(id, hostname);
           break;
         case RESTART:
           break;

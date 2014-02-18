@@ -43,7 +43,7 @@
                 <attribute name="Build-Version" value="${version.code}" />
             </manifest>
             <fileset dir="${build}" includes="**/*.class" excludes="**/*Test.class"/>
-            <fileset dir="${conf}" includes="**/*.xml" />
+            <fileset dir="${conf}" includes="**/*.xml, **/*.conf" />
             <zipgroupfileset dir="${lib}" includes="**/*.jar" excludes="${junit}"/>
         </jar>
     </target>
@@ -63,8 +63,12 @@
     <target name="jar" depends="jarbuild">
       <mkdir dir="${dist}"/>
       <copy todir="${dist}">
-       <fileset dir="${jarbuild}" includes="**"/>
-      </copy>    
+        <fileset dir="${jarbuild}" includes="**"/>
+      </copy>  
+      <mkdir dir="${dist}/conf"/>
+      <copy todir="${dist}/conf">
+        <fileset dir="${conf}" includes="**/*.xml, **/*.conf" />  
+      </copy>
     </target>
 
     <target name="all" depends="clean,jar"

@@ -34,7 +34,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Implements the GNS server protocol. Used by the 
+ * MOST OF THE CODE IN HERE IS OBSOLETE. 
+ * It has been superceded by the new command module.
+ * Parts will be retained.
+ * Stay tuned for more changes.
+ * 
+ * Implements the GNS server protocol.  
  *
  * @author westy
  */
