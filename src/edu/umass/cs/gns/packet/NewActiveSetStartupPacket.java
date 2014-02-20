@@ -9,11 +9,13 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * TODO write documentation for this class.
+ */
 public class NewActiveSetStartupPacket extends BasicPacket {
 
   private final static String ID = "nasID"; // new active set ID
   private final static String NAME = "name";
-  //private final static String RECORDKEY = "recordKey";
   private final static String PRIMARY_SENDER = "primarySender";
   private final static String ACTIVE_SENDER = "activeSender";
   private final static String NEW_ACTIVES = "newActives";
@@ -32,10 +34,6 @@ public class NewActiveSetStartupPacket extends BasicPacket {
    * name for which the proposal is being done.
    */
   String name;
-//	/**
-//	 * name record key 
-//	 */
-//	NameRecordKey recordKey;
   /**
    * primary node that sent this message
    */
@@ -63,7 +61,6 @@ public class NewActiveSetStartupPacket extends BasicPacket {
   /**
    * Value at the end of previous epoch.
    */
-  //QueryResultValue previousValue;
   ValuesMap previousValue; // CAN BE NULL
   /**
    * Value at the end of previous epoch.

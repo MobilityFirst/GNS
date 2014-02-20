@@ -6,40 +6,53 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * This packet is sent by a local name server to a name server to remove a name from GNS.
+ *
+ * A client must set the <code>requestID</code> field correctly to received a response.
+ *
+ * Once this packet reaches local name server, local name server sets the
+ * <code>localNameServerID</code> and <code>LNSRequestID</code> field correctly before forwarding packet
+ * to name server.
+ *
+ * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
+ * But it uses fields in this packet in sending the reply.
+ *
+ */
 public class RemoveRecordPacket extends BasicPacket {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
   private final static String LOCALNAMESERVERID = "local";
-  private final static String PRIMARYNAMESERVERS = "primary";
+
   /** 
    * Unique identifier used by the entity making the initial request to confirm
    */
   private int requestID;
+
   /**
    * The ID the LNS uses to for bookeeping
    */
   private int LNSRequestID;
+
   /**
    * Host/domain/device name *
    */
   private String name;
+
   /**
    * Id of local nameserver sending this request *
    */
   private int localNameServerID;
-  
-  /// this will be filled in by the local nameserver
-  private Set<Integer> primaryNameServers;
   
 
   /**
    * ***********************************************************
    * Constructs a new RemoveRecordPacket with the given name and value.
    *
+   * @param requestID  Unique identifier used by the entity making the initial request to confirm
    * @param name Host/domain/device name
-   * @param value
    * @param localNameServerID Id of local nameserver sending this request.
    * **********************************************************
    */
@@ -69,7 +82,6 @@ public class RemoveRecordPacket extends BasicPacket {
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
-    this.primaryNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARYNAMESERVERS));
   }
 
   /**
@@ -85,10 +97,8 @@ public class RemoveRecordPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
-    //json.put(RECORDKEY, getRecordKey().getName());
     json.put(NAME, getName());
     json.put(LOCALNAMESERVERID, getLocalNameServerID());
-    json.put(PRIMARYNAMESERVERS, new JSONArray(getPrimaryNameServers()));
     return json;
   }
 
@@ -110,13 +120,7 @@ public class RemoveRecordPacket extends BasicPacket {
   public String getName() {
     return name;
   }
-  
-  /**
-   * @return the recordKey
-   */
-//  public NameRecordKey getRecordKey() {
-//    return recordKey;
-//  }
+
 
   /**
    * @return the primaryNameserverId
@@ -125,17 +129,4 @@ public class RemoveRecordPacket extends BasicPacket {
     return localNameServerID;
   }
 
-  /**
-   * @return the primaryNameServers
-   */
-  public Set<Integer> getPrimaryNameServers() {
-    return primaryNameServers;
-  }
-
-  /**
-   * @param primaryNameServers the primaryNameServers to set
-   */
-  public void setPrimaryNameServers(Set<Integer> primaryNameServers) {
-    this.primaryNameServers = primaryNameServers;
-  }
 }

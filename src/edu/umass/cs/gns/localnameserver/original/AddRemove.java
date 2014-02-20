@@ -32,8 +32,6 @@ public class AddRemove {
       senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
     }
 
-    addRecordPacket.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(addRecordPacket.getName()));
-
     SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
             senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
@@ -79,9 +77,6 @@ public class AddRemove {
     if (Transport.getReturnAddress(json) != null) {
       senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
     }
-
-    removeRecord.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(removeRecord.getName()));
-
     SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
             senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout,TimeUnit.MILLISECONDS);

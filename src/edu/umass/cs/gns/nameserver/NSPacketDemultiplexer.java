@@ -29,11 +29,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
   public void handleJSONObject(JSONObject json) {
     try {
       Packet.PacketType type = Packet.getPacketType(json);
-//      if (count % 60 == 0) GNS.getLogger().info("Recvd msg " + count + " Type" + type.getInt() + "\t" + json);
       switch (type) {
         case PAXOS_PACKET:
           NameServer.paxosManager.handleIncomingPacket(json);
-//          msg = 2;
           break;
         // client requests: ADD/REMOVE/UPDATE/LOOKUP
         case DNS:
@@ -74,21 +72,10 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           ReplicaController.handleIncomingPacket(json);
           break;
 
-        case KEEP_ALIVE_PRIMARY:
-        case DELETE_PRIMARY:
-//      case KEEP_ALIVE_ACTIVE:
-//          KeepAliveWorker.handleIncomingPacket(json);
-          break;
-        // Paxos: internal Paxos messages
-
         default:
           GNS.getLogger().warning("No handler for packet type: " + type.toString());
           break;
       }
-//      long t1 = System.currentTimeMillis();
-//      if (t1 - t0 > 10) {
-//        GNS.getLogger().severe("DEMUX LONG LATENCY\t" + (t1 - t0) + "\t" + msg );
-//      }
     } catch (JSONException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();

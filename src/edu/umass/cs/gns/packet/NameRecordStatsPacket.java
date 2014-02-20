@@ -1,22 +1,25 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * ***********************************************************
+ * 
  * This class implements a packet used to aggregate read and write frequency of a name from an active nameserver. A
  * primary nameserver makes a request for stats to an active nameserver which responds back with its current read and
  * write frequency.
  *
+ * Abhigyan: we are not using this packet because current implementation is using local name server to sending read
+ * and write stats to name servers. I am not deleting this file because as per system design the task of
+ * sending read and write rates is done by active name servers. However, currently we don't have any way of inferring
+ * locality of demand at active name servers, so local name servers are doing this task.
+ *
  * @author Hardeep Uppal
- ***********************************************************
+ 
  */
 public class NameRecordStatsPacket extends BasicPacket {
 
   private final static String NAME = "name";
-  //private final static String RECORDKEY = "recordkey";
   private final static String READ_FREQUENCY = "read";
   private final static String WRITE_FREQUENCY = "write";
   private final static String ACTIVE_NAMESERVER_ID = "active";
@@ -25,10 +28,6 @@ public class NameRecordStatsPacket extends BasicPacket {
    * Host/domain/device name *
    */
   private String name;
-//  /**
-//   * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord. *
-//   */
-//  private NameRecordKey recordKey;
   /**
    * Read frequency of this name *
    */
@@ -43,7 +42,7 @@ public class NameRecordStatsPacket extends BasicPacket {
   private int activeNameServerId;
 
   /**
-   * ***********************************************************
+   * 
    * Constructs a new NameRecordStatsPacket with the given parameters.
    *
    * @param ptype Packet type
@@ -51,7 +50,7 @@ public class NameRecordStatsPacket extends BasicPacket {
    * @param readFrequency Read frequency of this name
    * @param writeFrequency Write frequency of this name
    * @param activeNameServerId Id of the active nameserver sending the response
-   ***********************************************************
+   
    */
   public NameRecordStatsPacket(//NameRecordKey recordKey, 
           String name, int readFrequency,
@@ -65,12 +64,12 @@ public class NameRecordStatsPacket extends BasicPacket {
   }
 
   /**
-   * ***********************************************************
+   * 
    * Constructs a new NameRecordStatsPacket from a JSONObject.
    *
    * @param json JSONObject representing this packet
    * @throws JSONException
-   ***********************************************************
+   
    */
   public NameRecordStatsPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.NAME_RECORD_STATS_REQUEST
@@ -81,25 +80,23 @@ public class NameRecordStatsPacket extends BasicPacket {
 
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);
-    //this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
     this.readFrequency = json.getInt(READ_FREQUENCY);
     this.writeFrequency = json.getInt(WRITE_FREQUENCY);
     this.activeNameServerId = json.getInt(ACTIVE_NAMESERVER_ID);
   }
 
   /**
-   * ***********************************************************
+   * 
    * Converts NameRecordStatsPacket object to a JSONObject
    *
    * @return JSONObject that represents this packet
    * @throws JSONException
-   ***********************************************************
+   
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    //json.put(RECORDKEY, getRecordKey().getName());
     json.put(NAME, getName());
     json.put(READ_FREQUENCY, getReadFrequency());
     json.put(WRITE_FREQUENCY, getWriteFrequency());
@@ -114,14 +111,6 @@ public class NameRecordStatsPacket extends BasicPacket {
   public String getName() {
     return name;
   }
-
-//  /**
-//   * @return the recordKey
-//   */
-//  public NameRecordKey getRecordKey() {
-//    return recordKey;
-//  }
-
   /**
    * @return the readFrequency
    */

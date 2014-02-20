@@ -11,9 +11,29 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * ***********************************************************
- * 
+ *
  * Implements the packet transmitted from a local name server to update the name to value mapping.
+ *
+ * A name could have several keys and values, but this packet contains only has option to specify a single key.
+ * Therefore, we can only modify one key of the name record using this packet.
+ *
+ * There are two classes of update operations: (1) updates that modify the keys or values of a name record.
+ * (2) Upserts which update an existing record or else create a new name record.
+ *
+ * Regarding TTL field: If we are using upserts, if the upserts leads to creating a new name record,  then TTL value
+ * in this packet is used to set  ttl for this name record. The value given in the TTL field in not
+ * considered in other cases.
+ *
+ * Future work: I think we should allow clients to change TTLs for a name record after a record is created.
+ *
+ * A client must set the <code>requestID</code> field correctly to received a response.
+ *
+ * Once this packet reaches local name server, local name server sets the
+ * <code>localNameServerID</code> and <code>LNSRequestID</code> field correctly before forwarding packet
+ * to name server.
+ *
+ * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
+ * But it uses fields in this packet in sending the reply.
  *
  * @author Hardeeep, Westy
  */
@@ -22,7 +42,6 @@ public class UpdateAddressPacket extends BasicPacket {
 //  private final static String SEQUENCENUMBER = "sequencenumber";
   private final static String REQUESTID = "reqID";
   private final static String LocalNSREQUESTID = "LNSreqID";
-  private final static String NameServerREQUESTID = "NSreqID";
   private final static String NAME = "name";
   private final static String RECORDKEY = "recordkey";
   private final static String NEWVALUE = "newvalue";
@@ -32,10 +51,9 @@ public class UpdateAddressPacket extends BasicPacket {
   private final static String TTL = "ttl";
   private final static String OPERATION = "operation";
   //
-  // NOTE: CHANGED THE IDS A BIT - Westy
-  // We have three. First one is used by the entity making the initial request (often the intercessor).
+  // NOTE: CHANGED THE IDS A BIT - Westy, Abhigyan
+  // We have two. First one is used by the entity making the initial request (often the intercessor).
   // Second is used by the LNS to keep track if it's update records.
-  // Third is used by the NS
   //
   /**
    * Unique identifier used by the entity making the initial request to confirm
@@ -45,19 +63,16 @@ public class UpdateAddressPacket extends BasicPacket {
    * The ID the LNS uses to for bookkeeping
    */
   private int LNSRequestID;
-  /**
-   * The ID the NS uses to for bookkeeping
-   */
-  private int NSRequestID;
-  /**
-   * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord.
-   */
-  //
-  private NameRecordKey recordKey;
+
   /**
    * Name (service/host/domain or device name) *
    */
   private String name;
+
+  /**
+   * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord.
+   */
+  private NameRecordKey recordKey;
   /**
    * Value for updating *
    */
@@ -94,11 +109,11 @@ public class UpdateAddressPacket extends BasicPacket {
    */
   public UpdateAddressPacket(Packet.PacketType type, int requestID, String name, NameRecordKey recordKey,
           ResultValue newValue, ResultValue oldValue, UpdateOperation operation, int localNameServerId, int ttl) {
-    this(type, requestID, -1, -1, name, recordKey, newValue, oldValue, operation, localNameServerId, -1, ttl);
+    this(type, requestID, -1, name, recordKey, newValue, oldValue, operation, localNameServerId, -1, ttl);
   }
 
   public UpdateAddressPacket(Packet.PacketType type,
-          int requestID, int LNSRequestID, int NSRequestID,
+          int requestID, int LNSRequestID,
           String name, NameRecordKey recordKey,
           ResultValue newValue,
           ResultValue oldValue,
@@ -107,7 +122,7 @@ public class UpdateAddressPacket extends BasicPacket {
     this.type = type;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
-    this.NSRequestID = NSRequestID;
+//    this.NSRequestID = NSRequestID;
     this.name = name;
     this.recordKey = recordKey;
     this.operation = operation;
@@ -129,7 +144,7 @@ public class UpdateAddressPacket extends BasicPacket {
     this.type = Packet.getPacketType(json);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
-    this.NSRequestID = json.getInt(NameServerREQUESTID);
+//    this.NSRequestID = json.getInt(NameServerREQUESTID);
     this.name = json.getString(NAME);
     this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
     this.operation = UpdateOperation.valueOf(json.getString(OPERATION));
@@ -153,7 +168,7 @@ public class UpdateAddressPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(REQUESTID, getRequestID());
     json.put(LocalNSREQUESTID, getLNSRequestID());
-    json.put(NameServerREQUESTID, getNSRequestID());
+//    json.put(NameServerREQUESTID, getNSRequestID());
     json.put(NAME, getName());
     json.put(RECORDKEY, getRecordKey().getName());
     json.put(OPERATION, getOperation().name());
@@ -183,14 +198,6 @@ public class UpdateAddressPacket extends BasicPacket {
    */
   public void setLNSRequestID(int id) {
     this.LNSRequestID = id;
-  }
-
-  public int getNSRequestID() {
-    return NSRequestID;
-  }
-
-  public void setNSRequestID(int NSRequestID) {
-    this.NSRequestID = NSRequestID;
   }
 
   /**
@@ -261,7 +268,7 @@ public class UpdateAddressPacket extends BasicPacket {
     ResultValue x = new ResultValue();
     x.add("12345678");
 //  	
-    UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, 2323, "12322323",
+    UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, "12322323",
             NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
             GNS.DEFAULT_TTL_SECONDS);
 

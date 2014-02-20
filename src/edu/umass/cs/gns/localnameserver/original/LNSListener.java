@@ -132,10 +132,6 @@ public class LNSListener extends Thread {
         case SELECT_RESPONSE:
           Select.handlePacketSelectResponse(json);
           break;
-        case TINY_QUERY:
-          LNSRecvTinyQuery.logQueryResponse(json);
-          // LNSRecvTinyQuery.recvdQueryResponse(new TinyQuery(json));
-          break;
 
       }
     } catch (JSONException e) {

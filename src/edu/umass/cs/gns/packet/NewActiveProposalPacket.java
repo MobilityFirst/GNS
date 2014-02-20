@@ -11,15 +11,18 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 
 /**
- * This packet is used to propose a new set of actives among primary name servers.
+ * This packet is exchanged among replica controllers to propose a new set of actives among primary name servers.
+ *
+ * This packet is created by a replica controller that wants to propose a new set of actives. The packet is
+ * then forwarded to the appropriate paxos instance among replica controllers. After being committed by active replicas,
+ * each replica controller updates its database with the new set of proposed actives.
+ *
  * @author abhigyan
  *
  */
 public class NewActiveProposalPacket extends BasicPacket{
 
 	private final static String NAME = "name";
-	
-	//private final static String RECORDKEY = "recordKey";
 
 	private final static String PROPOSING_NODE = "propNode";
 
@@ -28,25 +31,14 @@ public class NewActiveProposalPacket extends BasicPacket{
 	private final static String PAXOS_ID = "paxosID";
 
 	/**
-	 * name for which the proposal is being done.
+	 * name for which the new actives are being proposed
 	 */
 	String name;
 
-//	/**
-//	 * name record key 
-//	 */
-//	NameRecordKey recordKey;
-
-	/**
-	 * a unique ID to represent this proposal.
-	 */
-//	int uniqueId;
-	
 	/**
 	 * node which proposed this message. 
 	 */
 	int proposingNode;
-
 
 	/**
 	 * current set of actives of this node.
@@ -59,14 +51,13 @@ public class NewActiveProposalPacket extends BasicPacket{
 	String paxosID;
 	
 	/**
-	 * 
-	 * @param name
-	 * @param proposingNode
-	 * @param newActives
+	 * Constructor method
+	 * @param name  name for which the new actives are being proposed
+	 * @param proposingNode  node which proposed this message.
+	 * @param newActives  current set of actives of this node.
+   * @param paxosID Paxos ID for this new set of active name servers.
 	 */
-	public NewActiveProposalPacket(String name, int proposingNode, 
-			Set<Integer> newActives, String paxosID) {
-		//this.recordKey = recordKey;
+	public NewActiveProposalPacket(String name, int proposingNode, Set<Integer> newActives, String paxosID) {
 		this.type = PacketType.NEW_ACTIVE_PROPOSE;
 		this.name = name;
 		this.proposingNode = proposingNode;
@@ -79,8 +70,6 @@ public class NewActiveProposalPacket extends BasicPacket{
 		
 		this.type = Packet.getPacketType(json);
 		this.name = json.getString(NAME);
-//		this.uniqueId = json.getInt(UNIQUEID);
-		//this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
 		
 		this.proposingNode = json.getInt(PROPOSING_NODE);
 		
@@ -107,9 +96,6 @@ public class NewActiveProposalPacket extends BasicPacket{
 		JSONObject json = new JSONObject();
 		Packet.putPacketType(json, getType());
 		json.put(NAME, name);
-		//json.put(RECORDKEY, recordKey.getName());
-//		json.put(UNIQUEID, uniqueId);
-		
 		json.put(PROPOSING_NODE, proposingNode);
 		
 		// convert array to string
@@ -131,11 +117,7 @@ public class NewActiveProposalPacket extends BasicPacket{
 	public String getName() {
 		return name;
 	}
-	
-	
-//	public NameRecordKey getRecordKey() {
-//		return recordKey;
-//	}
+
 	
 	public int getProposingNode() {
 		return proposingNode;

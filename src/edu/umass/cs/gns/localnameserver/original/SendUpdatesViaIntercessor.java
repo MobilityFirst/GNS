@@ -119,7 +119,7 @@ class SendUpdateIntercessorTask extends TimerTask {
     newValue.add(SendUpdatesViaIntercessor.getRandomString());
 
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
-            updateCount, updateCount, -1,
+            updateCount, updateCount,
             name, NameRecordKey.EdgeRecord, newValue, null,
             UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS);
     try {

@@ -567,6 +567,7 @@ public class ReplicaController {
    * @throws IOException
    */
   public static void applyStopPrimaryPaxos(String value) throws JSONException, IOException {
+    // TODO update documentation to say that we do not remove paxos among primaries anymore
     if (StartNameServer.debugMode)  GNS.getLogger().info("PAXOS DECISION stop primary paxos decision received.");
     OldActiveSetStopPacket packet = new OldActiveSetStopPacket(new JSONObject(value));
     String paxosID = getPrimaryPaxosID(packet.getName());

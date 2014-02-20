@@ -12,7 +12,7 @@ import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
-import edu.umass.cs.gns.packet.TinyQuery;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -264,29 +264,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     }
     return result.toString();
   }
-  // WHAT IS THIS STUFF? CAN WE DELETE IT?
 
-  public CacheEntry(TinyQuery packet) {
-    this.name = packet.getName();
-    this.timeToLiveInSeconds = 0; // this will depend on TTL sent by NS.
-    this.valuesMap = new ValuesMap();
-    this.valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(getRandomString())));
-    //
-    this.primaryNameServer = (HashSet<Integer>) packet.getPrimaries();
-
-    this.activeNameServer = new HashSet<Integer>(packet.getActives());
-
-    this.timestampAddress.put(NameRecordKey.EdgeRecord.getName(), System.currentTimeMillis());
-  }
-
-  public synchronized void updateCacheEntry(TinyQuery tinyQuery) {
-    //Update the list of active name servers
-    activeNameServer = new HashSet<Integer>(tinyQuery.getActives());
-    //Check for updates to ttl values
-    timeToLiveInSeconds = 0;
-    //Update the timestamp of when data was last fetched and cached
-    timestampAddress.put(NameRecordKey.EdgeRecord.getName(), System.currentTimeMillis());
-  }
 
   /**
    * Returns a 8-character string.

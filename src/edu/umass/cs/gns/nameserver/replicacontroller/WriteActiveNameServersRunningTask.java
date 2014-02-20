@@ -9,7 +9,6 @@ import edu.umass.cs.gns.packet.ChangeActiveStatusPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
-import edu.umass.cs.gns.paxos.PaxosManager;
 
 import java.util.TimerTask;
 

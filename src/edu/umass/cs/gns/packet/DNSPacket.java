@@ -25,10 +25,8 @@ public class DNSPacket extends BasicPacket {
   public final static String QRECORDKEY = "qrecordkey";
   public final static String QNAME = "qname";
   public final static String TIME_TO_LIVE = "ttlAddress";
-  public final static String FIELD_VALUE = "fieldValue";
   public final static String RECORD_VALUE = "recordValue";
 
-//  public final static String PRIMARY_NAME_SERVERS = "Primary";
   public final static String ACTIVE_NAME_SERVERS = "Active";
 
   public final static String LNS_ID = "lnsId";
@@ -54,10 +52,6 @@ public class DNSPacket extends BasicPacket {
    */
   private ValuesMap recordValue;
 
-//  /**
-//   * A list of primary name servers from the name *
-//   */
-//  private HashSet<Integer> primaryNameServers;
   /**
    * A list of active name servers for the name *
    */
@@ -95,9 +89,7 @@ public class DNSPacket extends BasicPacket {
 
     if (header.getQr() == DNSRecordType.RESPONSE && header.getRcode() != DNSRecordType.RCODE_ERROR) {
       this.ttl = json.getInt(TIME_TO_LIVE);
-//      this.primaryNameServers = (HashSet<Integer>) toSetInteger(json.getJSONArray(PRIMARY_NAME_SERVERS));
       this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
-      //this.fieldValue = new ArrayList<String>(JSONUtils.JSONArrayToSetString(json.getJSONArray(FIELD_VALUE)));
       if (json.has(RECORD_VALUE)) {
         this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
       }
@@ -105,9 +97,6 @@ public class DNSPacket extends BasicPacket {
     this.lnsId = json.getInt(LNS_ID);
   }
 
-//<<<<<<< .mine
-//  public DNSPacket(int id, String name, NameRecordKey key, ArrayList<String> fieldValue, int TTL, Set<Integer> activeNameServers) {
-//=======
   /**
    * A shortcut for when you just have a single field you want to return. 
    * 
@@ -126,8 +115,6 @@ public class DNSPacket extends BasicPacket {
     this.recordValue.put(key.getName(), fieldValue);
     this.ttl = TTL;
     this.activeNameServers = activeNameServers;
-//    this.primaryNameServers = entry.getPrimaryNameServer();
-//    this.activeNameServers = entry.getActiveNameServers();
 
     this.lnsId = -1;
   }
@@ -180,13 +167,9 @@ public class DNSPacket extends BasicPacket {
     json.put(QNAME, getQname());
     json.put(TIME_TO_LIVE, getTTL());
     json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
-//    if (fieldValue != null) {
-//      json.put(FIELD_VALUE, new JSONArray(fieldValue));
-//    }
     if (recordValue != null)
 	      json.put(RECORD_VALUE, recordValue.toJSONObject());
-    
-//    json.put(PRIMARY_NAME_SERVERS, new JSONArray(getPrimaryNameServers()));
+
     json.put(LNS_ID, lnsId);
   }
 
@@ -237,9 +220,6 @@ public class DNSPacket extends BasicPacket {
     }
   }
 
-//  public boolean isActiveNameServerListEmpty() {
-//    return getActiveNameServers() == null || getActiveNameServers().isEmpty();
-//  }
   /**
    * @return the header
    */
@@ -319,19 +299,7 @@ public class DNSPacket extends BasicPacket {
   public void setLnsId(int lnsId) {
     this.lnsId = lnsId;
   }
-//<<<<<<< .mine
-//  /**
-//   * @return the primaryNameServers
-//   */
-//  public HashSet<Integer> getPrimaryNameServers() {
-//    return primaryNameServers;
-//  }
-//  /**
-//   * @param primaryNameServers the primaryNameServers to set
-//   */
-//  public void setPrimaryNameServers(HashSet<Integer> primaryNameServers) {
-//    this.primaryNameServers = primaryNameServers;
-//  }
+
   /**
    * @return the activeNameServers
    */
@@ -344,6 +312,7 @@ public class DNSPacket extends BasicPacket {
   public void setActiveNameServers(Set<Integer> activeNameServers) {
     this.activeNameServers = activeNameServers;
   }
+
 //  public static void main(String[] args) throws JSONException {
 //    long t1 = System.currentTimeMillis();
 //    Header header = new Header(100000, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);

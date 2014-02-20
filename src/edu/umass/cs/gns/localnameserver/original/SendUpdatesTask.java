@@ -160,7 +160,7 @@ public class SendUpdatesTask extends TimerTask
       }
       // create the packet that we'll send to the primary
       UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
-              updateAddressPacket.getRequestID(), updateRequestID, -1,
+              updateAddressPacket.getRequestID(), updateRequestID,
               name, updateAddressPacket.getRecordKey(),
               updateAddressPacket.getUpdateValue(),
               updateAddressPacket.getOldValue(),

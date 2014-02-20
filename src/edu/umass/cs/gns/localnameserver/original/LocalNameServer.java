@@ -18,7 +18,6 @@ import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
-import edu.umass.cs.gns.packet.TinyQuery;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.BestServerSelection;
@@ -33,14 +32,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -551,10 +543,6 @@ public class LocalNameServer {
     return entry;
   }
 
-  public static void addCacheEntry(TinyQuery packet) {
-    CacheEntry entry = new CacheEntry(packet);
-    cache.put(entry.getName(), entry);
-  }
 
   public static CacheEntry addCacheEntry(RequestActivesPacket packet) {
     CacheEntry entry = new CacheEntry(packet);
@@ -584,13 +572,6 @@ public class LocalNameServer {
     entry.updateCacheEntry(packet);
   }
 
-  public static void updateCacheEntry(TinyQuery tinyQuery) {
-    CacheEntry entry = cache.getIfPresent(tinyQuery.getName());
-    if (entry == null) {
-      return;
-    }
-    entry.updateCacheEntry(tinyQuery);
-  }
 
   public static void updateCacheEntry(ConfirmUpdateLNSPacket packet, String name, NameRecordKey key) {
     switch (packet.getType()) {
@@ -1107,6 +1088,7 @@ public class LocalNameServer {
 //    }
   }
 
+
   /**
    * Test *
    */
@@ -1214,4 +1196,32 @@ public class LocalNameServer {
     return  x1.get(0);
 //    return  x1.get(count);
   }
+}
+
+
+
+/**
+ * When we emulate ping latencies between LNS and NS, this task will actually send packets to NS.
+ * See option StartLocalNameServer.emulatePingLatencies
+ */
+class SendQueryWithDelay extends TimerTask {
+  /**
+   * Json object to send
+   */
+  JSONObject json;
+  /**
+   * Name server to send this packet to.
+   */
+  int nameServer;
+  public SendQueryWithDelay(JSONObject json, int nameServer) {
+    this.json = json;
+    this.nameServer = nameServer;
+  }
+
+  @Override
+  public void run() {
+    LocalNameServer.sendToNSActual(json, nameServer);
+  }
+
+
 }

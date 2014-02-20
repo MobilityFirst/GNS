@@ -1,34 +1,32 @@
 package edu.umass.cs.gns.packet;
 
-import java.util.HashSet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 
+
+/**
+ * This packet is sent among replica controllers after a group change for a name is complete.
+ * When a replica controller receives this message, it updates the database record for the name
+ * to indicate the completion of group change.
+ * It contains two fields: <code>name</code> and  <code>paxosID</code>. paxosID is the ID of the paxos
+ * group between new set of active replicas.
+ */
 public class ChangeActiveStatusPacket extends BasicPacket
 {
 	
 	private static final String PAXOS_ID = "paxosID";
 	private final static String NAME = "name";
-	
-	//private final static String RECORDKEY = "recordKey";
-
 
 	/**
 	 * name for which the proposal is being done.
 	 */
 	String name;
 
-//	/**
-//	 * name record key 
-//	 */
-//	NameRecordKey recordKey;
-
 	/**
-	 * 
+	 * ID of the paxos group between new set of active replicas.
 	 */
 	String paxosID;
 	
@@ -37,8 +35,7 @@ public class ChangeActiveStatusPacket extends BasicPacket
 	 * if packet type = Either old active is set to not running, or new active is set to running.
 	 * @param paxosID
 	 */
-	public ChangeActiveStatusPacket(String paxosID, String name, //NameRecordKey recordKey, 
-                PacketType packetType) {
+	public ChangeActiveStatusPacket(String paxosID, String name, PacketType packetType) {
 		this.setType(packetType);
 		this.paxosID = paxosID;
 		this.name = name;
@@ -51,7 +48,6 @@ public class ChangeActiveStatusPacket extends BasicPacket
 		
 		this.type = Packet.getPacketType(json);
 		this.name = json.getString(NAME);
-		//this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
 		this.paxosID = json.getString(PAXOS_ID);
 	}
 	
@@ -65,12 +61,9 @@ public class ChangeActiveStatusPacket extends BasicPacket
 		JSONObject json = new JSONObject();
 		Packet.putPacketType(json, getType());
 		json.put(NAME, name);
-		//json.put(RECORDKEY, recordKey.getName());
 		json.put(PAXOS_ID, this.paxosID);
 		return json;
 	}
-	
-	
 
 	/**
 	 * 
@@ -79,15 +72,7 @@ public class ChangeActiveStatusPacket extends BasicPacket
 	public String getName() {
 		return name;
 	}
-	
-//	/**
-//	 * 
-//	 * @return
-//	 */
-//	public NameRecordKey getRecordKey() {
-//		return recordKey;
-//	}
-	
+
 	/**
 	 * 
 	 * @return

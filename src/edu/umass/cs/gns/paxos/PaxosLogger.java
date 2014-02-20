@@ -87,7 +87,7 @@ public class PaxosLogger extends Thread {
    */
   private  int MSG_MAX = 10000;
   /**
-   * name of file which stores
+   * name of file which stores the list of paxos instances at a node.
    */
   private  String paxosIDsFile = "paxosIDs";
   /**
@@ -112,7 +112,9 @@ public class PaxosLogger extends Thread {
    */
   private  boolean gnsRunning = true;
 
-
+  /**
+   * The paxos message associated with
+   */
   private PaxosManager paxosManager;
 
   public PaxosLogger(String logFolder, int nodeID, PaxosManager paxosManager) {
@@ -1421,14 +1423,6 @@ public class PaxosLogger extends Thread {
     if (gnsRunning) return paxosManager.getPaxosKeyFromPaxosID(paxosID);
     return paxosID;
   }
-
-}
-
-/**
- * This thread does the logging for PREPARE, ACCEPT, and DECISON messages for all paxos instances.
- */
-class LoggingThread{
-
 
 }
 

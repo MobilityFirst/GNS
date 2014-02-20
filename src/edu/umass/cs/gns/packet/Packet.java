@@ -58,14 +58,12 @@ public class Packet {
     REMOVE_RECORD_NS(7),
     CONFIRM_REMOVE_LNS(8),
     //
-    REMOVE_REPLICATION_RECORD(10),
-    REPLICATE_RECORD(11),
+    REMOVE_REPLICATION_RECORD(10), // NOT USED
+    REPLICATE_RECORD(11), // NOT USED
     UPDATE_ADDRESS_LNS(12),
     UPDATE_ADDRESS_NS(13),
     CONFIRM_UPDATE_LNS(14),
     CONFIRM_UPDATE_NS(15),
-    TINY_UPDATE(16),
-    TINY_QUERY(17),
     REQUEST_ACTIVES(18),
     //
     UPDATE_NAMESERVER(20),
@@ -103,11 +101,7 @@ public class Packet {
     OLD_ACTIVE_STOP(111),
     ACTIVE_PAXOS_STOP(112),
     OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(113),
-    PRIMARY_PAXOS_STOP(114),
-    KEEP_ALIVE_PRIMARY(121),
-    //
-    KEEP_ALIVE_ACTIVE(122),
-    DELETE_PRIMARY(123);
+    PRIMARY_PAXOS_STOP(114);
     private int number;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
 

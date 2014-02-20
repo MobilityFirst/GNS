@@ -11,6 +11,23 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Set;
 
+/**
+ * This packet is sent by a local name server to a name server to add a name to GNS.
+ *
+ * The packet contains request IDs which are used by local name server, and the client (end-user).
+ *
+ * A client sending this packet sets an initial key/value pair associated with the name, and specifies
+ * the TTL to be used for this name via the TTL field in this record.
+ * A client must set the <code>requestID</code> field correctly to received a response.
+ *
+ * Once this packet reaches local name server, local name server sets the
+ * <code>localNameServerID</code> and <code>LNSRequestID</code> field correctly before forwarding packet
+ * to name server.
+ *
+ * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
+ * But it uses fields in this packet in sending the reply.
+ *
+ */
 public class AddRecordPacket extends BasicPacket {
 
   private final static String REQUESTID = "reqID";
@@ -19,37 +36,38 @@ public class AddRecordPacket extends BasicPacket {
   private final static String RECORDKEY = "recordkey";
   private final static String VALUE = "value";
   private final static String LOCALNAMESERVERID = "localID";
-  private final static String PRIMARYNAMESERVERS = "primaryID";
   private final static String TIME_TO_LIVE = "ttlAddress";
+
   /** 
    * Unique identifier used by the entity making the initial request to confirm
    */
   private int requestID;
+
   /**
    * The ID the LNS uses to for bookkeeping
    */
   private int LNSRequestID;
-  /**
-   * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord. *
-   */
-  private NameRecordKey recordKey;
+
   /**
    * Host/domain/device name *
    */
   private String name;
+
+  /**
+   * The key of the value key pair. For GNS this will be EdgeRecord, CoreRecord or GroupRecord. *
+   */
+  private NameRecordKey recordKey;
+
   /**
    * the value *
    */
   private ResultValue value;
+
   /**
    * Id of local nameserver handling this request *
    */
   private int localNameServerID;
 
-  /**
-   * this will be filled in by the local nameserver
-   */
-  private Set<Integer> primaryNameServers;
   /**
    * Time interval (in seconds) that the record may be cached before it should be discarded
    */
@@ -57,13 +75,19 @@ public class AddRecordPacket extends BasicPacket {
   
 
   /**
-   * ***********************************************************
-   * Constructs a new AddRecordPacket with the given name and value.
+   * Constructs a new AddRecordPacket with the given name, value, and TTL.
+   * This constructor does not specify one fields in this packet: <code>LNSRequestID</code>.
+   * <code>LNSRequestID</code> can be set by calling <code>setLNSRequestID</code>.
    *
-   * @param name Host/domain/device name
-   * @param value
+   * We can also change the <code>localNameServerID</code> field in this packet by calling
+   * <code>setLocalNameServerID</code>.
+   *
+   * @param requestID Unique identifier used by the entity making the initial request to confirm
+   * @param name   Host/domain/device name
+   * @param recordKey The initial key that will be stored in the name record.
+   * @param value The inital value of the key that is specified.
    * @param localNameServerID Id of local nameserver sending this request.
-   * **********************************************************
+   * @param ttl TTL of name record.
    */
   public AddRecordPacket(int requestID, String name, NameRecordKey recordKey, ResultValue value, int localNameServerID, int ttl) {
     this.type = Packet.PacketType.ADD_RECORD_LNS;
@@ -76,11 +100,10 @@ public class AddRecordPacket extends BasicPacket {
   }
 
   /**
-   * ***********************************************************
    * Constructs a new AddRecordPacket from a JSONObject
    *
    * @param json JSONObject that represents this packet
-   * @throws JSONException **********************************************************
+   * @throws JSONException
    */
   public AddRecordPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD_LNS
@@ -97,7 +120,6 @@ public class AddRecordPacket extends BasicPacket {
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
     //this.value = json.getString(VALUE);
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
-    this.primaryNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(PRIMARYNAMESERVERS));
     this.ttl = json.getInt(TIME_TO_LIVE);
   }
 
@@ -118,7 +140,6 @@ public class AddRecordPacket extends BasicPacket {
     json.put(NAME, getName());
     json.put(VALUE, new JSONArray(getValue()));
     json.put(LOCALNAMESERVERID, getLocalNameServerID());
-    json.put(PRIMARYNAMESERVERS, new JSONArray(primaryNameServers));
     json.put(TIME_TO_LIVE, getTTL());
     return json;
   }
@@ -131,6 +152,10 @@ public class AddRecordPacket extends BasicPacket {
     return LNSRequestID;
   }
 
+  /**
+   * LNS uses this method to set the ID it will use for bookkeeping about this request.
+   * @param LNSRequestID
+   */
   public void setLNSRequestID(int LNSRequestID) {
     this.LNSRequestID = LNSRequestID;
   }
@@ -167,13 +192,6 @@ public class AddRecordPacket extends BasicPacket {
     localNameServerID = localNameServerID1;
   }
 
-  /**
-   * @param primaryNameServers the primaryNameServers to set
-   */
-  public void setPrimaryNameServers(Set<Integer> primaryNameServers) {
-    this.primaryNameServers = primaryNameServers;
-  }
-  
   /**
    * @return the ttl
    */

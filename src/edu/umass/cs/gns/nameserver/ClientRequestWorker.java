@@ -343,7 +343,7 @@ public class ClientRequestWorker extends TimerTask {
 
       AddRecordPacket addRecordPacket = new AddRecordPacket(updatePacket.getRequestID(), updatePacket.getName(),
               updatePacket.getRecordKey(), updatePacket.getUpdateValue(), updatePacket.getLocalNameServerId(),
-              updatePacket.getTTL()); // is getTTL() only used with upsert?
+              updatePacket.getTTL()); //  getTTL() is used only with upsert.
       addRecordPacket.setLNSRequestID(updatePacket.getLNSRequestID());
       incomingJSON = addRecordPacket.toJSONObject();
       handleAddRecordLNSPacket();

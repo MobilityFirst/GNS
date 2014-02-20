@@ -11,7 +11,6 @@ import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONArray;
