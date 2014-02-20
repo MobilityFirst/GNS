@@ -79,27 +79,27 @@ public class NIOTransport implements Runnable {
 
 	// A list of pending connect calls on which finishConnect needs to be called.
 	private LinkedList<ChangeRequest> pendingConnects = null;
-	
+
 	/* The key is a socket address and the value is
 	 * a list of messages to be sent to that socket address.
 	 */
-    private HashMap<InetSocketAddress,ArrayList<ByteBuffer>> pendingWrites=null;
-    
-    /* Maps a socket address to a socket channel. The latter may change in case
-     * a connection breaks and a new one needs to be initiated.
-     */
-    private HashMap<InetSocketAddress,SocketChannel> SockAddrToSockChannel=null;
-  
-    // Maps id to socket address
-    private NodeConfig nodeConfig=null;
-    
-    /* An id corresponds to a socket address as specified in NodeConfig */
-    int myID=-1;
+	private HashMap<InetSocketAddress,ArrayList<ByteBuffer>> pendingWrites=null;
 
-    /* A simple class used to instrument send/receive stats */
-    private static NIOInstrumenter nioI=new NIOInstrumenter();
-    
-    private Logger log = Logger.getLogger(NIOTransport.class.getName()); //GNS.getLogger();
+	/* Maps a socket address to a socket channel. The latter may change in case
+	 * a connection breaks and a new one needs to be initiated.
+	 */
+	private HashMap<InetSocketAddress,SocketChannel> SockAddrToSockChannel=null;
+
+	// Maps id to socket address
+	private NodeConfig nodeConfig=null;
+
+	/* An id corresponds to a socket address as specified in NodeConfig */
+	int myID=-1;
+
+	/* A simple class used to instrument send/receive stats */
+	private static NIOInstrumenter nioI=new NIOInstrumenter();
+
+	private Logger log = Logger.getLogger(NIOTransport.class.getName()); //GNS.getLogger();
 
 	public NIOTransport(int id, NodeConfig nc, DataProcessingWorker worker) throws IOException {
 		//this.hostAddress = hostAddress;
@@ -108,10 +108,10 @@ public class NIOTransport implements Runnable {
 		this.nodeConfig = nc;
 		this.selector = this.initSelector();
 		this.worker = worker;
-		
+
 		this.pendingConnects = new LinkedList<ChangeRequest>();
-	    this.pendingWrites = new HashMap<InetSocketAddress,ArrayList<ByteBuffer>>();
-	    this.SockAddrToSockChannel = new HashMap<InetSocketAddress,SocketChannel>();
+		this.pendingWrites = new HashMap<InetSocketAddress,ArrayList<ByteBuffer>>();
+		this.SockAddrToSockChannel = new HashMap<InetSocketAddress,SocketChannel>();
 	}
 
 	/* send() methods are called by external application threads. They may
@@ -133,7 +133,7 @@ public class NIOTransport implements Runnable {
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
 	}
-	
+
 	public void run() {
 		while (true) {
 			try {
@@ -150,12 +150,12 @@ public class NIOTransport implements Runnable {
 			}
 		}
 	}
-	
+
 	public static String getStats() {return nioI.toString();}
-	
-	
+
+
 	/************ Start of private methods ****************************/
-	
+
 	// Invoked only by the selector thread. Typical nio event handling code. 
 	private void processSelectedKeys() throws IOException {
 		// Iterate over the set of keys for which events are available
@@ -249,11 +249,11 @@ public class NIOTransport implements Runnable {
 			}
 		}
 	}
-	
+
 	/* **************************************************************
 	 * Start of methods synchronizing on pendingWrites.
 	 ******************************************************************/
-	
+
 	/* Invoked only by the selector thread.
 	 * Writes to socket channel and de-queues writes. If an exception occurs,
 	 * it lets the bytes remain in the queue. However, we don't know if or how 
@@ -264,7 +264,8 @@ public class NIOTransport implements Runnable {
 		synchronized (this.pendingWrites) {	
 			ArrayList<ByteBuffer> queue = (ArrayList<ByteBuffer>) this.pendingWrites.get(isa);
 			// Write until there's not more data ...
-			while (queue!=null && !queue.isEmpty()) {
+			if(queue==null) return true;
+			while (!queue.isEmpty()) {
 				ByteBuffer buf = (ByteBuffer) queue.get(0);
 				socketChannel.write(buf);
 				// If the socket's buffer fills up, let the rest be in queue 
@@ -291,7 +292,7 @@ public class NIOTransport implements Runnable {
 			queue.add(ByteBuffer.wrap(data));
 		}
 	}
-	
+
 	/* Invoked only by the selector thread.
 	 * Register a write interest on all sockets that have at least one 
 	 * pending write. Note that it is not enough to register a write 
@@ -330,7 +331,7 @@ public class NIOTransport implements Runnable {
 					if(this.SockAddrToSockChannel.get(isa).equals(sc)  || this.SockAddrToSockChannel.get(isa)==sc) retval = isa;
 				}
 			}
-				return retval;
+			return retval;
 		}
 	}
 	private SocketChannel getSockAddrToSockChannel(InetSocketAddress isa) {
@@ -393,7 +394,7 @@ public class NIOTransport implements Runnable {
 	 * End of methods synchronizing on pendingConnects.
 	 ******************************************************************/
 
-	
+
 	private Selector initSelector() throws IOException {
 		// Create a new selector
 		Selector socketSelector = SelectorProvider.provider().openSelector();
@@ -415,12 +416,12 @@ public class NIOTransport implements Runnable {
 
 		return socketSelector;
 	}
-	
+
 	private boolean isConnected(int id) {
 		return isConnected(new InetSocketAddress(this.nodeConfig.getNodeAddress(id), 
 				this.nodeConfig.getNodePort(id)));
 	}
-	
+
 	/* This method will definitely initiate a new connection and replace existing 
 	 * entries in SockAddrToSockChannel. It is the responsibility of the caller 
 	 * to check if a connection to isa already exists.
@@ -440,10 +441,10 @@ public class NIOTransport implements Runnable {
 		// an interest in connection events. These are raised when a channel
 		// is ready to complete connection establishment.
 		addPendingConnect(socketChannel); // synchronized
-		
+
 		return socketChannel;
 	}
-	
+
 	/* Initiate a connection if the existing socket channel is not connected.
 	 */
 	private SocketChannel testAndIntiateConnection(InetSocketAddress isa) throws IOException {
@@ -451,12 +452,12 @@ public class NIOTransport implements Runnable {
 		if(!this.isConnected(isa)) {
 			SocketChannel oldSock = this.getSockAddrToSockChannel(isa);
 			if(oldSock!=null) {log.severe("SocketChannel " + oldSock + " found dead. " + 
-			"Could be because the remote end closed the connection");}
+					"Could be because the remote end closed the connection");}
 			sock = this.initiateConnection(isa);
 		}
 		return sock;
 	}
-	
+
 	/* Invoked only by the selector thread.
 	 * Sets selection ops to write as the connection is presumably being 
 	 * set up to write something.
@@ -464,7 +465,7 @@ public class NIOTransport implements Runnable {
 	private boolean finishConnection(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		boolean connected = false;
-	
+
 		// Finish the connection. If the connection operation failed
 		// this will raise an IOException.
 		try {
@@ -474,7 +475,7 @@ public class NIOTransport implements Runnable {
 			e.printStackTrace();
 			key.cancel();
 		}
-	
+
 		/* Register an interest in writing on this channel. No 
 		 * point registering a write interest until the socket
 		 * is connected as the write will block anyway.
@@ -485,11 +486,11 @@ public class NIOTransport implements Runnable {
 	}
 
 	public static void main(String[] args) {
-	    ConsoleHandler handler = new ConsoleHandler();
-        handler.setLevel(Level.FINEST);
-        Logger log = Logger.getLogger(NIOTransport.class.getName()); 
-        log.addHandler(handler);
-	    log.setLevel(Level.FINEST);
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setLevel(Level.FINEST);
+		Logger log = Logger.getLogger(NIOTransport.class.getName()); 
+		log.addHandler(handler);
+		log.setLevel(Level.FINEST);
 
 		int port = 2000;
 		int nNodes=100;
@@ -498,14 +499,14 @@ public class NIOTransport implements Runnable {
 		//System.out.println(snc);
 		DefaultDataProcessingWorker worker = new DefaultDataProcessingWorker();
 		NIOTransport[] niots = new NIOTransport[nNodes];
-		
+
 		try {
 			int smallNNodes = 2;
 			for(int i=0; i<smallNNodes; i++) {
 				niots[i] = new NIOTransport(i, snc, worker);
 				new Thread(niots[i]).start();
 			}			
-			
+
 			/*************************************************************************/
 			/* Test a few simple hellos. The sleep is there to test 
 			 * that the successive writes do not "accidentally" benefit
@@ -519,18 +520,18 @@ public class NIOTransport implements Runnable {
 			niots[0].send(1, "Third hello back from 0 to 1".getBytes());
 			niots[1].send(0, "Thank you for all the hellos back from 1 to 0".getBytes());
 			/*************************************************************************/
-			
+
 			Thread.sleep(2000);
 			System.out.println("\n\n\nBeginning test of random, sequential communication pattern");
 			Thread.sleep(1000);
-			
+
 			/*************************************************************************/
 			//Create the remaining nodes up to nNodes
 			for(int i=smallNNodes; i<nNodes; i++) {
 				niots[i] = new NIOTransport(i, snc, worker);
 				new Thread(niots[i]).start();
 			}			
-			
+
 			// Test a random, sequential communication pattern
 			for(int i=0; i<nNodes; i++) {
 				int k = (int)(Math.random()*nNodes);
@@ -577,13 +578,13 @@ public class NIOTransport implements Runnable {
 			System.out.println("\n\n\nPrinting overall stats");
 			Thread.sleep(1000);
 			System.out.println(NIOTransport.getStats());
-			
+
 			System.out.println("\nTesting notes: If no exceptions were encountered above and\n" +
-			" the number of MISSING messages is small, then it is a successful test. If this\n" + 
+					" the number of MISSING messages is small, then it is a successful test. If this\n" + 
 					" note is being printed, then no exceptions were encountered. The number of\n" + 
-			" MISSING messages may still be nonzero as two back-to-back messages may get\n" +
+					" MISSING messages may still be nonzero as two back-to-back messages may get\n" +
 					" counted as 1, as in the first test above. The other tests are\n" +
-			" extremely unlikely to cause such bunching, so MISSING should be at most 1\n" +
+					" extremely unlikely to cause such bunching, so MISSING should be at most 1\n" +
 					" with the above tests");
 		} catch (IOException e) {
 			e.printStackTrace();
