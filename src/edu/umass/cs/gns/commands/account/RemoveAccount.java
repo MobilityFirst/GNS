@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
@@ -48,13 +49,13 @@ public class RemoveAccount extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromName(name);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name);
       if (accountInfo != null) {
-        return accountAccess.removeAccount(accountInfo);
+        return AccountAccess.removeAccount(accountInfo);
       } else {
         return BADRESPONSE + " " + BADACCOUNT;
       }

@@ -7,15 +7,13 @@
  */
 package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
-import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
-import edu.umass.cs.gns.clientprotocol.ClientUtils;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
-import edu.umass.cs.gns.httpserver.Defs;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -51,15 +49,15 @@ public class RemoveGuid extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo, guid2Info;
-    if ((guid2Info = accountAccess.lookupGuidInfo(guidToRemove)) == null) {
+    if ((guid2Info = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
     }
-    if ((guidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(accountGuid);
-      return accountAccess.removeGuid(accountInfo, guid2Info);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+      return AccountAccess.removeGuid(accountInfo, guid2Info);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }

@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.clientprotocol.Defs;
-import edu.umass.cs.gns.clientprotocol.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.Email;
@@ -34,18 +33,6 @@ import org.json.JSONException;
  */
 public class AccountAccess {
 
-  public AccountAccess() {
-  }
-
-  // make it a singleton class
-  public static AccountAccess getInstance() {
-    return AccountAccessHolder.INSTANCE;
-  }
-
-  private static class AccountAccessHolder {
-
-    private static final AccountAccess INSTANCE = new AccountAccess();
-  }
   public static final String ACCOUNT_INFO = GNS.makeInternalField("account_info");
   public static final String GUID = GNS.makeInternalField("guid");
   public static final String PRIMARY_GUID = GNS.makeInternalField("primary_guid");
@@ -67,13 +54,13 @@ public class AccountAccess {
    * @param guid
    * @return an {@link AccountInfo} instance
    */
-  public AccountInfo lookupAccountInfoFromGuid(String guid) {
+  public static AccountInfo lookupAccountInfoFromGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue accountResult = client.sendQuery(guid, ACCOUNT_INFO);
+    ResultValue accountResult = client.sendQuery(guid, ACCOUNT_INFO, null, null, null);
     if (accountResult == null) {
       guid = lookupPrimaryGuid(guid);
       if (guid != null) {
-        accountResult = client.sendQuery(guid, ACCOUNT_INFO);
+        accountResult = client.sendQuery(guid, ACCOUNT_INFO, null, null, null);
       }
     }
     if (accountResult != null) {
@@ -97,9 +84,9 @@ public class AccountAccess {
    * @param guid
    * @return a GUID
    */
-  public String lookupPrimaryGuid(String guid) {
+  public static String lookupPrimaryGuid(String guid) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue guidResult = client.sendQuery(guid, PRIMARY_GUID);
+    ResultValue guidResult = client.sendQuery(guid, PRIMARY_GUID, null, null, null);
     if (guidResult != null) {
       return (String) guidResult.get(0);
     } else {
@@ -116,9 +103,9 @@ public class AccountAccess {
    * @param name
    * @return a GUID
    */
-  public String lookupGuid(String name) {
+  public static String lookupGuid(String name) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue guidResult = client.sendQuery(name, GUID);
+    ResultValue guidResult = client.sendQuery(name, GUID, null, null, null);
     if (guidResult != null) {
       return (String) guidResult.get(0);
     } else {
@@ -134,9 +121,9 @@ public class AccountAccess {
    * @param guid
    * @return an {@link GuidInfo} instance
    */
-  public GuidInfo lookupGuidInfo(String guid) {
+  public static GuidInfo lookupGuidInfo(String guid) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue guidResult = client.sendQuery(guid, GUID_INFO);
+    ResultValue guidResult = client.sendQuery(guid, GUID_INFO, null, null, null);
     if (guidResult != null) {
       try {
         return new GuidInfo(guidResult.toResultValueString());
@@ -157,7 +144,7 @@ public class AccountAccess {
    * @param name
    * @return an {@link AccountInfo} instance
    */
-  public AccountInfo lookupAccountInfoFromName(String name) {
+  public static AccountInfo lookupAccountInfoFromName(String name) {
     String guid = lookupGuid(name);
     if (guid != null) {
       return lookupAccountInfoFromGuid(guid);
@@ -179,7 +166,7 @@ public class AccountAccess {
   private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server at %s.\n"
           + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
 
-  public String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
+  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
     String response;
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(Defs.OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
@@ -210,7 +197,7 @@ public class AccountAccess {
     return response;
   }
 
-  public String verifyAccount(String guid, String code) {
+  public static String verifyAccount(String guid, String code) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid)) != null) {
       if (!accountInfo.isVerified()) {
@@ -255,7 +242,7 @@ public class AccountAccess {
    * @param password
    * @return status result
    */
-  public String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
+  public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
     try {
       Intercessor client = Intercessor.getInstance();
       // do this first add to make sure this name isn't already registered
@@ -291,7 +278,7 @@ public class AccountAccess {
    * @param accountInfo
    * @return status result 
    */
-  public String removeAccount(AccountInfo accountInfo) {
+  public static String removeAccount(AccountInfo accountInfo) {
     Intercessor client = Intercessor.getInstance();
     // do this first add to make sure this account exists
     if (client.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryName())) {
@@ -323,7 +310,7 @@ public class AccountAccess {
    * @param publicKey - the public key to use with the new account
    * @return status result 
    */
-  public String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
+  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid) != null) {
@@ -362,7 +349,7 @@ public class AccountAccess {
    * @param guid
    * @return status result
    */
-  public String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
+  public static String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
     Intercessor client = Intercessor.getInstance();
     if (client.sendRemoveRecordWithConfirmation(guid.getGuid())) {
       // remove reverse record
@@ -389,7 +376,7 @@ public class AccountAccess {
    * @param alias
    * @return status result 
    */
-  public String addAlias(AccountInfo accountInfo, String alias) {
+  public static String addAlias(AccountInfo accountInfo, String alias) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
     Intercessor client = Intercessor.getInstance();
@@ -415,7 +402,7 @@ public class AccountAccess {
    * @param alias
    * @return status result 
    */
-  public String removeAlias(AccountInfo accountInfo, String alias) {
+  public static String removeAlias(AccountInfo accountInfo, String alias) {
     Intercessor client = Intercessor.getInstance();
     if (accountInfo.containsAlias(alias)) {
       // remove the NAME -> GUID record
@@ -436,7 +423,7 @@ public class AccountAccess {
    * @param password
    * @return status result 
    */
-  public String setPassword(AccountInfo accountInfo, String password) {
+  public static String setPassword(AccountInfo accountInfo, String password) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo)) {
@@ -452,7 +439,7 @@ public class AccountAccess {
    * @param tag
    * @return status result 
    */
-  public String addTag(GuidInfo guidInfo, String tag) {
+  public static String addTag(GuidInfo guidInfo, String tag) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
@@ -469,7 +456,7 @@ public class AccountAccess {
    * @param tag
    * @return status result 
    */
-  public String removeTag(GuidInfo guidInfo, String tag) {
+  public static String removeTag(GuidInfo guidInfo, String tag) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
@@ -478,7 +465,7 @@ public class AccountAccess {
     return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
   }
 
-  private boolean updateAccountInfo(AccountInfo accountInfo) {
+  private static boolean updateAccountInfo(AccountInfo accountInfo) {
     Intercessor client = Intercessor.getInstance();
     try {
       ResultValue newvalue;
@@ -492,7 +479,7 @@ public class AccountAccess {
     return false;
   }
 
-  private boolean updateGuidInfo(GuidInfo guidInfo) {
+  private static boolean updateGuidInfo(GuidInfo guidInfo) {
     Intercessor client = Intercessor.getInstance();
     try {
       ResultValue newvalue;

@@ -7,13 +7,10 @@
  */
 package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +38,7 @@ public class LookupGuid extends GnsCommand {
   public String execute(JSONObject json) throws JSONException {
     String name = json.getString(NAME);
     // look for an account guid
-    String result = accountAccess.lookupGuid(name);
+    String result = AccountAccess.lookupGuid(name);
     if (result != null) {
       return result;
     } else {

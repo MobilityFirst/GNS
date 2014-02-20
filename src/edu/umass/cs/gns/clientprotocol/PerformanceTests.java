@@ -33,8 +33,6 @@ public class PerformanceTests {
   private static final String NEWLINE = System.getProperty("line.separator");
   
   private static Intercessor client = Intercessor.getInstance();
-  private static FieldAccess fieldAccess = FieldAccess.getInstance();
-  private static AccountAccess accountAccess = AccountAccess.getInstance();
 
   /**
    * This method implements the Round Trip time test. 
@@ -58,18 +56,18 @@ public class PerformanceTests {
     try {
       String guid;
       // see if we already registered our GUID
-      if ((guid = accountAccess.lookupGuid(ACCOUNTNAME)) == null) {
+      if ((guid = AccountAccess.lookupGuid(ACCOUNTNAME)) == null) {
         // if not we use the method  below which bypasses the normal email verification requirement
         // but first we create a GUID from our public key
         guid = ClientUtils.createGuidFromPublicKey(PUBLICKEY);
-        accountAccess.addAccount(ACCOUNTNAME, guid, PUBLICKEY, "", false);
+        AccountAccess.addAccount(ACCOUNTNAME, guid, PUBLICKEY, "", false);
       }
 
       // Create n random fields with random values first. Do all of them before we do the reads
       // so the GNS has time to "settle".
       for (int i = 0; i < numFields; i++) {
         String field = "RTT-" + Util.randomString(7);
-        if (fieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))))) {
+        if (FieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))))) {
           fields.add(field);
         } else {
           result.append("Unable to create " + field);
@@ -80,7 +78,7 @@ public class PerformanceTests {
       // acessing the RoundTripTime fields of the ValuesMap class which records the
       // time between the LNS sending the request to the NS and the return message.
       for (String field : fields) {
-        ValuesMap value = client.sendMultipleReturnValueQuery(guid, field, true);
+        ValuesMap value = client.sendMultipleReturnValueQuery(guid, field, true, null, null, null);
         if (value != null) {
           //result.append(value.getRoundTripTime());
           times.add(new Double(value.getRoundTripTime()));

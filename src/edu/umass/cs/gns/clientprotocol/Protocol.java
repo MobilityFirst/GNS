@@ -5,9 +5,9 @@ import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.FieldMetaData;
-import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.client.UpdateOperation;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -47,11 +47,6 @@ public class Protocol {
   //
 
   private boolean adminMode = false;
-  private FieldAccess fieldAccess = FieldAccess.getInstance();
-  private AccountAccess accountAccess = AccountAccess.getInstance();
-  private FieldMetaData fieldMetaData = FieldMetaData.getInstance();
-  //private GroupAccessV1 groupAccessV1 = GroupAccessV1.getInstance();
-  private GroupAccess groupAccess = GroupAccess.getInstance();
   //
   // help string for HTTP query
 
@@ -329,10 +324,10 @@ public class Protocol {
   }
 
   private String processRegisterAccountWithGuid(String host, String name, String guid, String publicKey, String password) {
-    String result = accountAccess.addAccountWithVerification(host, name, guid, publicKey, password);
+    String result = AccountAccess.addAccountWithVerification(host, name, guid, publicKey, password);
     if (OKRESPONSE.equals(result)) {
       // set up the default read access
-      fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
+      FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
       return guid;
     } else {
       return result;
@@ -340,18 +335,18 @@ public class Protocol {
   }
 
   private String processVerifyAccount(String guid, String code) {
-    return accountAccess.verifyAccount(guid, code);
+    return AccountAccess.verifyAccount(guid, code);
   }
 
   private String processRemoveAccount(String name, String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromName(name);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name);
       if (accountInfo != null) {
-        return accountAccess.removeAccount(accountInfo);
+        return AccountAccess.removeAccount(accountInfo);
       } else {
         return BADRESPONSE + " " + BADACCOUNT;
       }
@@ -362,17 +357,17 @@ public class Protocol {
 
   private String processAddAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
       } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
         return BADRESPONSE + " " + TOMANYALIASES;
       } else {
-        return accountAccess.addAlias(accountInfo, alias);
+        return AccountAccess.addAlias(accountInfo, alias);
       }
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -381,12 +376,12 @@ public class Protocol {
 
   private String processRemoveAlias(String guid, String alias, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
-      return accountAccess.removeAlias(accountInfo, alias);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      return AccountAccess.removeAlias(accountInfo, alias);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -394,11 +389,11 @@ public class Protocol {
 
   private String processRetrieveAliases(String guid, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
       ArrayList<String> aliases = accountInfo.getAliases();
       return new JSONArray(aliases).toString();
     } else {
@@ -409,23 +404,23 @@ public class Protocol {
   private String processAddGuid(String accountGuid, String name, String publicKey, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
     if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(accountGuid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
       } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
         return BADRESPONSE + " " + TOMANYGUIDS;
       } else {
-        String result = accountAccess.addGuid(accountInfo, name, newGuid, publicKey);
+        String result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey);
         if (OKRESPONSE.equals(result)) {
           // set up the default read access
-          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
+          FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
           // give account guid read and write access to all fields in the new guid
-          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
-          fieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
           return newGuid;
         } else {
           return result;
@@ -438,15 +433,15 @@ public class Protocol {
 
   private String processRemoveGuid(String accountGuid, String guidToRemove, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, guid2Info;
-    if ((guid2Info = accountAccess.lookupGuidInfo(guidToRemove)) == null) {
+    if ((guid2Info = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
     }
-    if ((guidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(accountGuid);
-      return accountAccess.removeGuid(accountInfo, guid2Info);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+      return AccountAccess.removeGuid(accountInfo, guid2Info);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -454,12 +449,12 @@ public class Protocol {
 
   private String processSetPassword(String guid, String password, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
-      return accountAccess.setPassword(accountInfo, password);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      return AccountAccess.setPassword(accountInfo, password);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -467,7 +462,7 @@ public class Protocol {
 
   private String processLookupGuid(String name) {
     // look for a primary guid
-    String result = accountAccess.lookupGuid(name);
+    String result = AccountAccess.lookupGuid(name);
     if (result != null) {
       return result;
     } else {
@@ -477,7 +472,7 @@ public class Protocol {
 
   private String processLookupGuidInfo(String guid) {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (guidInfo != null) {
@@ -493,7 +488,7 @@ public class Protocol {
 
   private String processLookupAccountInfo(String guid) {
     AccountInfo acccountInfo;
-    if ((acccountInfo = accountAccess.lookupAccountInfoFromGuid(guid)) == null) {
+    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (acccountInfo != null) {
@@ -510,12 +505,12 @@ public class Protocol {
   private String processCreate(String guid, String field, String value, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
@@ -523,7 +518,7 @@ public class Protocol {
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
-      if (fieldAccess.create(guidInfo.getGuid(), field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))))) {
+      if (FieldAccess.create(guidInfo.getGuid(), field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))))) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -534,12 +529,12 @@ public class Protocol {
   private String processCreateList(String guid, String field, String value, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     try {
@@ -548,7 +543,7 @@ public class Protocol {
       } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
         return BADRESPONSE + " " + ACCESSDENIED;
       } else {
-        if (fieldAccess.create(guidInfo.getGuid(), field, new ResultValue(value))) {
+        if (FieldAccess.create(guidInfo.getGuid(), field, new ResultValue(value))) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + DUPLICATEFIELD;
@@ -562,12 +557,12 @@ public class Protocol {
   private String processUpdateOperation(String guid, String field, String value, String oldValue, String writer, String signature, String message,
           UpdateOperation operation) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
@@ -575,7 +570,7 @@ public class Protocol {
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
-      if (fieldAccess.update(guidInfo.getGuid(), field,
+      if (FieldAccess.update(guidInfo.getGuid(), field,
               new ResultValue(Arrays.asList(value)),
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
               operation)) {
@@ -590,12 +585,12 @@ public class Protocol {
           String writer, String signature, String message, UpdateOperation operation)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
@@ -604,7 +599,7 @@ public class Protocol {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
-        if (fieldAccess.update(guidInfo.getGuid(), field,
+        if (FieldAccess.update(guidInfo.getGuid(), field,
                 JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
                 oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
                 operation)) {
@@ -620,13 +615,13 @@ public class Protocol {
 
   private String processUnsignedUpdateOperation(String guid, String field, String value, String oldValue, UpdateOperation operation) {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
-      if (fieldAccess.update(guidInfo.getGuid(), field,
+      if (FieldAccess.update(guidInfo.getGuid(), field,
               new ResultValue(Arrays.asList(value)),
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
               operation)) {
@@ -639,14 +634,14 @@ public class Protocol {
 
   private String processUnsignedUpdateListOperation(String guid, String field, String value, String oldValue, UpdateOperation operation) {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
-        if (fieldAccess.update(guidInfo.getGuid(), field,
+        if (FieldAccess.update(guidInfo.getGuid(), field,
                 JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
                 oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
                 operation)) {
@@ -663,12 +658,12 @@ public class Protocol {
   private String processRead(String guid, String field, String reader, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
-    } else if ((readerGuidInfo = accountAccess.lookupGuidInfo(reader)) == null) {
+    } else if ((readerGuidInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
     if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
@@ -676,21 +671,21 @@ public class Protocol {
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
-      return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
+      return FieldAccess.lookupMultipleValues(guid, ALLFIELDS, reader, signature, message);
     } else {
-      return fieldAccess.lookup(guidInfo.getGuid(), field);
+      return FieldAccess.lookup(guidInfo.getGuid(), field, reader, signature, message);
     }
   }
 
   private String processReadOne(String guid, String field, String reader, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
-    } else if ((readerGuidInfo = accountAccess.lookupGuidInfo(reader)) == null) {
+    } else if ((readerGuidInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
     if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
@@ -698,54 +693,54 @@ public class Protocol {
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
-      return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
+      return FieldAccess.lookupOneMultipleValues(guid, ALLFIELDS, reader, signature, message);
     } else {
-      return fieldAccess.lookupOne(guidInfo.getGuid(), field);
+      return FieldAccess.lookupOne(guidInfo.getGuid(), field, reader, signature, message);
     }
   }
 
   private String processUnsignedRead(String guid, String field) {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
-      return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
+      return FieldAccess.lookupMultipleValues(guid, ALLFIELDS, null, null, null);
     } else {
-      return fieldAccess.lookup(guidInfo.getGuid(), field);
+      return FieldAccess.lookup(guidInfo.getGuid(), field, null, null, null);
     }
   }
 
   private String processUnsignedReadOne(String guid, String field) {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (ALLFIELDS.equals(field)) {
-      return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
+      return FieldAccess.lookupOneMultipleValues(guid, ALLFIELDS, null, null, null);
     } else {
-      return fieldAccess.lookupOne(guidInfo.getGuid(), field);
+      return FieldAccess.lookupOne(guidInfo.getGuid(), field, null, null, null);
     }
   }
 
   private String processSelect(String field, Object value) {
-    return fieldAccess.select(field, value);
+    return FieldAccess.select(field, value);
   }
 
   private String processSelectWithin(String field, String value) {
-    return fieldAccess.selectWithin(field, value);
+    return FieldAccess.selectWithin(field, value);
   }
 
   private String processSelectNear(String field, String value, String maxDistance) {
-    return fieldAccess.selectNear(field, value, maxDistance);
+    return FieldAccess.selectNear(field, value, maxDistance);
   }
 
   private String processSelectQuery(String query) {
-    return fieldAccess.selectQuery(query);
+    return FieldAccess.selectQuery(query);
   }
 
   private String processAclAdd(String accessType, String guid, String field, String accesser, String signature, String message)
@@ -755,11 +750,11 @@ public class Protocol {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      fieldMetaData.add(access, guidInfo, field, accesser);
+      FieldMetaData.add(access, guidInfo, field, accesser);
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -773,11 +768,11 @@ public class Protocol {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      fieldMetaData.remove(access, guidInfo, field, accesser);
+      FieldMetaData.remove(access, guidInfo, field, accesser);
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -791,11 +786,11 @@ public class Protocol {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      Set<String> values = fieldMetaData.lookup(access, guidInfo, field);
+      Set<String> values = FieldMetaData.lookup(access, guidInfo, field);
       return new JSONArray(values).toString();
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -805,19 +800,19 @@ public class Protocol {
   private String processAddToGroup(String guid, String member, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerInfo = guidInfo;
-    } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
-    } else if (groupAccess.addToGroup(guid, member)) {
+    } else if (GroupAccess.addToGroup(guid, member)) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;
@@ -827,12 +822,12 @@ public class Protocol {
   private String processAddMembersToGroup(String guid, String members, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerInfo = guidInfo;
-    } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
@@ -841,7 +836,7 @@ public class Protocol {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
-        if (groupAccess.addToGroup(guid, new ResultValue(members))) {
+        if (GroupAccess.addToGroup(guid, new ResultValue(members))) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + GENERICEERROR;
@@ -855,19 +850,19 @@ public class Protocol {
   private String processRemoveFromGroup(String guid, String member, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerInfo = guidInfo;
-    } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
-    } else if (groupAccess.removeFromGroup(guid, member)) {
+    } else if (GroupAccess.removeFromGroup(guid, member)) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;
@@ -877,12 +872,12 @@ public class Protocol {
   private String processRemoveMembersFromGroup(String guid, String members, String writer, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, writerInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerInfo = guidInfo;
-    } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
@@ -891,7 +886,7 @@ public class Protocol {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
-        if (groupAccess.removeFromGroup(guid, new ResultValue(members))) {
+        if (GroupAccess.removeFromGroup(guid, new ResultValue(members))) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + GENERICEERROR;
@@ -905,12 +900,12 @@ public class Protocol {
   private String processGetGroupMembers(String guid, String reader, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, readInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (reader.equals(guid)) {
       readInfo = guidInfo;
-    } else if ((readInfo = accountAccess.lookupGuidInfo(reader)) == null) {
+    } else if ((readInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
     if (!AccessSupport.verifySignature(readInfo, signature, message)) {
@@ -918,7 +913,7 @@ public class Protocol {
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
-      ResultValue values = groupAccess.lookup(guid);
+      ResultValue values = GroupAccess.lookup(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
     }
@@ -927,18 +922,18 @@ public class Protocol {
   private String processRequestJoinGroup(String guid, String member, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, memberInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (member.equals(guid)) {
       memberInfo = guidInfo;
-    } else if ((memberInfo = accountAccess.lookupGuidInfo(member)) == null) {
+    } else if ((memberInfo = AccountAccess.lookupGuidInfo(member)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + member;
     }
     if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else {
-      if (groupAccess.requestJoinGroup(guid, member)) {
+      if (GroupAccess.requestJoinGroup(guid, member)) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + GENERICEERROR;
@@ -949,14 +944,14 @@ public class Protocol {
   private String processRetrieveJoinGroupRequests(String guid, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else {
-      ResultValue values = groupAccess.retrieveGroupJoinRequests(guid);
+      ResultValue values = GroupAccess.retrieveGroupJoinRequests(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
     }
@@ -979,13 +974,13 @@ public class Protocol {
   private String processGrantMemberships(String guid, ResultValue members, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
-    } else if (groupAccess.grantMembership(guid, members)) {
+    } else if (GroupAccess.grantMembership(guid, members)) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;
@@ -995,18 +990,18 @@ public class Protocol {
   private String processRequestLeaveGroup(String guid, String member, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo, memberInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (member.equals(guid)) {
       memberInfo = guidInfo;
-    } else if ((memberInfo = accountAccess.lookupGuidInfo(member)) == null) {
+    } else if ((memberInfo = AccountAccess.lookupGuidInfo(member)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + member;
     }
     if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else {
-      if (groupAccess.requestLeaveGroup(guid, member)) {
+      if (GroupAccess.requestLeaveGroup(guid, member)) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + GENERICEERROR;
@@ -1017,14 +1012,14 @@ public class Protocol {
   private String processRetrieveLeaveGroupRequests(String guid, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else {
-      ResultValue values = groupAccess.retrieveGroupLeaveRequests(guid);
+      ResultValue values = GroupAccess.retrieveGroupLeaveRequests(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
     }
@@ -1047,13 +1042,13 @@ public class Protocol {
   private String processRevokeMemberships(String guid, ResultValue members, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
-    } else if (groupAccess.revokeMembership(guid, members)) {
+    } else if (GroupAccess.revokeMembership(guid, members)) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;
@@ -1169,11 +1164,11 @@ public class Protocol {
   private String processAddTag(String guid, String tag, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      return accountAccess.addTag(guidInfo, tag);
+      return AccountAccess.addTag(guidInfo, tag);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -1182,11 +1177,11 @@ public class Protocol {
   private String processRemoveTag(String guid, String tag, String signature, String message)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      return accountAccess.removeTag(guidInfo, tag);
+      return AccountAccess.removeTag(guidInfo, tag);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -1199,9 +1194,9 @@ public class Protocol {
 
   private String processClearTagged(String tagName) {
     for (String guid : Admintercessor.getInstance().collectTaggedGuids(tagName)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
       if (accountInfo != null) {
-        accountAccess.removeAccount(accountInfo);
+        AccountAccess.removeAccount(accountInfo);
       }
     }
     return OKRESPONSE;

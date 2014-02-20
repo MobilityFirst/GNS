@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
@@ -51,12 +53,12 @@ public class CreateList extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     try {
@@ -65,7 +67,7 @@ public class CreateList extends GnsCommand {
       } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
         return BADRESPONSE + " " + ACCESSDENIED;
       } else {
-        if (fieldAccess.create(guidInfo.getGuid(), field, new ResultValue(value))) {
+        if (FieldAccess.create(guidInfo.getGuid(), field, new ResultValue(value))) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + DUPLICATEFIELD;

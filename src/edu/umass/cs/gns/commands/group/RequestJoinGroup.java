@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -48,18 +50,18 @@ public class RequestJoinGroup extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo, memberInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (member.equals(guid)) {
       memberInfo = guidInfo;
-    } else if ((memberInfo = accountAccess.lookupGuidInfo(member)) == null) {
+    } else if ((memberInfo = AccountAccess.lookupGuidInfo(member)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + member;
     }
     if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else {
-      if (groupAccess.requestJoinGroup(guid, member)) {
+      if (GroupAccess.requestJoinGroup(guid, member)) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + GENERICEERROR;

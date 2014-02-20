@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.client.UpdateOperation;
@@ -45,12 +47,12 @@ public abstract class AbstractUpdate extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (signature == null) {
@@ -65,7 +67,7 @@ public abstract class AbstractUpdate extends GnsCommand {
       }
     }
     // all checks passed, update the value
-    if (fieldAccess.update(guidInfo.getGuid(), field,
+    if (FieldAccess.update(guidInfo.getGuid(), field,
             new ResultValue(Arrays.asList(value)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             getUpdateOperation())) {

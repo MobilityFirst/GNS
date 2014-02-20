@@ -25,11 +25,6 @@ import org.json.JSONObject;
 public abstract class GnsCommand implements Comparable<GnsCommand> {
 
   protected CommandModule module;
-  protected FieldAccess fieldAccess = FieldAccess.getInstance();
-  protected AccountAccess accountAccess = AccountAccess.getInstance();
-  protected FieldMetaData fieldMetaData = FieldMetaData.getInstance();
-  //private GroupAccessV1 groupAccessV1 = GroupAccessV1.getInstance();
-  protected GroupAccess groupAccess = GroupAccess.getInstance();
 
   /**
    * Creates a new <code>ConsoleCommand</code> object

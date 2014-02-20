@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -49,14 +51,14 @@ public class RetrieveGroupJoinRequests extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
     } else {
-      ResultValue values = groupAccess.retrieveGroupJoinRequests(guid);
+      ResultValue values = GroupAccess.retrieveGroupJoinRequests(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
     }

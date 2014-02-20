@@ -8,14 +8,13 @@
 package edu.umass.cs.gns.commands;
 
 import edu.umass.cs.gns.clientprotocol.Defs;
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import java.lang.reflect.Constructor;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import org.json.JSONObject;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *

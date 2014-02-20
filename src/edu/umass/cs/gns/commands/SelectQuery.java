@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.client.FieldAccess;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +35,7 @@ public class SelectQuery extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws JSONException {
     String query = json.getString(QUERY);
-    return fieldAccess.selectQuery(query);
+    return FieldAccess.selectQuery(query);
   }
 
   @Override

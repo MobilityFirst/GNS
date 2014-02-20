@@ -156,8 +156,8 @@ public class Intercessor {
   }
 
   // QUERYING
-  public ResultValue sendQuery(String name, String key) {
-    ValuesMap result = sendMultipleReturnValueQuery(name, key);
+  public ResultValue sendQuery(String name, String key, String reader, String signature, String message) {
+    ValuesMap result = sendMultipleReturnValueQuery(name, key, reader, signature, message);
     if (result != null) {
       return result.get(key);
     } else {
@@ -165,16 +165,16 @@ public class Intercessor {
     }
   }
 
-  public ValuesMap sendMultipleReturnValueQuery(String name, String key) {
-    return sendMultipleReturnValueQuery(name, key, false);
+  public ValuesMap sendMultipleReturnValueQuery(String name, String key, String reader, String signature, String message) {
+    return sendMultipleReturnValueQuery(name, key, false, reader, signature, message);
   }
 
-  public ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalFields) {
+  public ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalFields, String reader, String signature, String message) {
     GNS.getLogger().finer("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
     
     
-    DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.nodeID);
+    DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.nodeID, reader, signature, message);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();

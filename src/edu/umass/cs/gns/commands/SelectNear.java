@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.client.FieldAccess;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +37,7 @@ public class SelectNear extends GnsCommand {
     String field = json.getString(FIELD);
     String value = json.getString(VALUE);
     String maxDistance = json.getString(MAXDISTANCE);
-    return fieldAccess.selectNear(field, value, maxDistance);
+    return FieldAccess.selectNear(field, value, maxDistance);
   }
 
   @Override

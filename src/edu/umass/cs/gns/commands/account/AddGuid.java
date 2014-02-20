@@ -7,15 +7,16 @@
  */
 package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import edu.umass.cs.gns.clientprotocol.ClientUtils;
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.httpserver.Defs;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -54,23 +55,23 @@ public class AddGuid extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = accountAccess.lookupGuidInfo(accountGuid)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
     if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(accountGuid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
       } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
         return BADRESPONSE + " " + TOMANYGUIDS;
       } else {
-        String result = accountAccess.addGuid(accountInfo, name, newGuid, publicKey);
+        String result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey);
         if (OKRESPONSE.equals(result)) {
           // set up the default read access
-          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
+          FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
           // give account guid read and write access to all fields in the new guid
-          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
-          fieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
           return newGuid;
         } else {
           return result;

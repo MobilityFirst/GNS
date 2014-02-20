@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -38,7 +39,7 @@ public class LookupGuidRecord extends GnsCommand {
   public String execute(JSONObject json) throws JSONException {
     String guid = json.getString(GUID);
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (guidInfo != null) {

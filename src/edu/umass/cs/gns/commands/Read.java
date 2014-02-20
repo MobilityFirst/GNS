@@ -7,10 +7,7 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.client.FieldMetaData;
-import edu.umass.cs.gns.client.GuidInfo;
-import edu.umass.cs.gns.client.MetaDataTypeName;
-import edu.umass.cs.gns.clientprotocol.AccessSupport;
+import edu.umass.cs.gns.client.FieldAccess;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -50,43 +47,43 @@ public class Read extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    GuidInfo guidInfo, readerGuidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    
-    if (reader.equals(guid)) {
-      readerGuidInfo = guidInfo;
-    } else if ((readerGuidInfo = accountAccess.lookupGuidInfo(reader)) == null) {
-      return BADRESPONSE + " " + BADREADERGUID + " " + reader;
-    }
-
-    // unsigned case, must be world readable
-    if (signature == null) {
-      if (!AccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
-        return BADRESPONSE + " " + ACCESSDENIED;
-      }
-      // signed case, check signature and access
-    } else if (signature != null) {
-      if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
-        return BADRESPONSE + " " + BADSIGNATURE;
-      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
-        return BADRESPONSE + " " + ACCESSDENIED;
-      }
-    }
+//    GuidInfo guidInfo, readerGuidInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    
+//    if (reader.equals(guid)) {
+//      readerGuidInfo = guidInfo;
+//    } else if ((readerGuidInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
+//      return BADRESPONSE + " " + BADREADERGUID + " " + reader;
+//    }
+//
+//    // unsigned case, must be world readable
+//    if (signature == null) {
+//      if (!AccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
+//        return BADRESPONSE + " " + ACCESSDENIED;
+//      }
+//      // signed case, check signature and access
+//    } else if (signature != null) {
+//      if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
+//        return BADRESPONSE + " " + BADSIGNATURE;
+//      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
+//        return BADRESPONSE + " " + ACCESSDENIED;
+//      }
+//    }
 
     // all checks passed, get the value to return
     if (getCommandName().equals(READONE)) {
       if (ALLFIELDS.equals(field)) {
-        return fieldAccess.lookupOneMultipleValues(guid, ALLFIELDS);
+        return FieldAccess.lookupOneMultipleValues(guid, ALLFIELDS, reader, signature, message);
       } else {
-        return fieldAccess.lookupOne(guidInfo.getGuid(), field);
+        return FieldAccess.lookupOne(guid, field, reader, signature, message);
       }
     } else {
       if (ALLFIELDS.equals(field)) {
-        return fieldAccess.lookupMultipleValues(guid, ALLFIELDS);
+        return FieldAccess.lookupMultipleValues(guid, ALLFIELDS, reader, signature, message);
       } else {
-        return fieldAccess.lookup(guidInfo.getGuid(), field);
+        return FieldAccess.lookup(guid, field, reader, signature, message);
       }
     }
   }

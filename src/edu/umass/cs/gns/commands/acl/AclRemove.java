@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.MetaDataTypeName;
@@ -57,11 +58,11 @@ public class AclRemove extends GnsCommand {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      fieldMetaData.remove(access, guidInfo, field, accesser);
+      FieldMetaData.remove(access, guidInfo, field, accesser);
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;

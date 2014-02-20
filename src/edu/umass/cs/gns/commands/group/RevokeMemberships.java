@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -49,13 +51,13 @@ public class RevokeMemberships extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
       // no need to verify ACL because only the GUID can access this
-    } else if (groupAccess.revokeMembership(guid, new ResultValue(members))) {
+    } else if (GroupAccess.revokeMembership(guid, new ResultValue(members))) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;

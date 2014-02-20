@@ -7,7 +7,8 @@
  */
 package edu.umass.cs.gns.commands.group;
 
-import edu.umass.cs.gns.client.FieldMetaData;
+import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
@@ -53,12 +54,12 @@ public class GetGroupMembers extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo, readInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (reader.equals(guid)) {
       readInfo = guidInfo;
-    } else if ((readInfo = accountAccess.lookupGuidInfo(reader)) == null) {
+    } else if ((readInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
       return BADRESPONSE + " " + BADREADERGUID + " " + reader;
     }
     if (!AccessSupport.verifySignature(readInfo, signature, message)) {
@@ -66,7 +67,7 @@ public class GetGroupMembers extends GnsCommand {
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
-      ResultValue values = groupAccess.lookup(guid);
+      ResultValue values = GroupAccess.lookup(guid);
       JSONArray list = new JSONArray(values);
       return list.toString();
     }

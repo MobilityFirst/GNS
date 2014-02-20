@@ -8,8 +8,6 @@
 package edu.umass.cs.gns.clientprotocol;
 
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
-import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
@@ -33,9 +31,6 @@ import java.util.Set;
  * @author westy
  */
 public class AccessSupport {
-
-  private static FieldMetaData fieldMetaData = FieldMetaData.getInstance();
-  private static GroupAccess groupAccess = GroupAccess.getInstance();
   
   public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     if (!GNS.enableSignatureVerification) {
@@ -84,14 +79,14 @@ public class AccessSupport {
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
     } else {
-      Set<String> allowedusers = fieldMetaData.lookup(access, guidInfo, field);
+      Set<String> allowedusers = FieldMetaData.lookup(access, guidInfo, field);
       GNS.getLogger().fine(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
         GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access user " + guidInfo.getName() + "'s " + field + " field");
         return true;
       }
       // otherwise find any users that can access all of the fields
-      allowedusers = fieldMetaData.lookup(access, guidInfo, ALLFIELDS);
+      allowedusers = FieldMetaData.lookup(access, guidInfo, ALLFIELDS);
       if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
         GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access all of user " + guidInfo.getName() + "'s fields");
         return true;
@@ -109,7 +104,7 @@ public class AccessSupport {
     } else {
       // map over the allowedusers and see if any of them are groups that the user belongs to
       for (String potentialGroupGuid : allowedusers) {
-        if (groupAccess.lookup(potentialGroupGuid).contains(accesserGuid)) {
+        if (GroupAccess.lookup(potentialGroupGuid).contains(accesserGuid)) {
           return true;
         }
       }
@@ -125,13 +120,13 @@ public class AccessSupport {
   }
   
    public static boolean fieldReadableByEveryone(String guid, String field) {
-    return fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, field).contains(EVERYONE)
-            || fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
+    return FieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, field).contains(EVERYONE)
+            || FieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
   }
 
   public static boolean fieldWriteableByEveryone(String guid, String field) {
-    return fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, field).contains(EVERYONE)
-            || fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
+    return FieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, field).contains(EVERYONE)
+            || FieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
   }
   
 }

@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
@@ -48,11 +49,11 @@ public class AddTag extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      return accountAccess.addTag(guidInfo, tag);
+      return AccountAccess.addTag(guidInfo, tag);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }

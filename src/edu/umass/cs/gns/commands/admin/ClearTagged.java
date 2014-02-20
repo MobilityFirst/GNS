@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.Admintercessor;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
@@ -46,9 +47,9 @@ public class ClearTagged extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
     for (String guid : Admintercessor.getInstance().collectTaggedGuids(tagName)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
       if (accountInfo != null) {
-        accountAccess.removeAccount(accountInfo);
+        AccountAccess.removeAccount(accountInfo);
       }
     }
     return OKRESPONSE;

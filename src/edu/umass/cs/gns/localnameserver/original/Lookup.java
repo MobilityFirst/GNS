@@ -241,7 +241,7 @@ public class Lookup {
 
     try {
       DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getHeader().getId(), query.getIncomingPacket().getQname(),
-              query.getIncomingPacket().getQrecordKey(), returnValue, TTL, new HashSet<Integer>());
+              query.getIncomingPacket().getQrecordKey(), returnValue, TTL, new HashSet<Integer>(), null, null, null);
       if (query.getSenderAddress() != null && query.getSenderPort() > 0) {
         LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), query.getSenderAddress(), query.getSenderPort());
       } else if (StartLocalNameServer.runHttpServer) {

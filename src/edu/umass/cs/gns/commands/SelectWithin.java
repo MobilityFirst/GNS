@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.client.FieldAccess;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +36,7 @@ public class SelectWithin extends GnsCommand {
   public String execute(JSONObject json) throws JSONException {
     String field = json.getString(FIELD);
     String within = json.getString(WITHIN);
-    return fieldAccess.selectWithin(field, within);
+    return FieldAccess.selectWithin(field, within);
   }
 
   @Override

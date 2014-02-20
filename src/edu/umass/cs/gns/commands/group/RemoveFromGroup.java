@@ -7,7 +7,8 @@
  */
 package edu.umass.cs.gns.commands.group;
 
-import edu.umass.cs.gns.client.FieldMetaData;
+import edu.umass.cs.gns.client.AccountAccess;
+import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
@@ -52,19 +53,19 @@ public class RemoveFromGroup extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo, writerInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (writer.equals(guid)) {
       writerInfo = guidInfo;
-    } else if ((writerInfo = accountAccess.lookupGuidInfo(writer)) == null) {
+    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
       return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
     }
     if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
-    } else if (groupAccess.removeFromGroup(guid, member)) {
+    } else if (GroupAccess.removeFromGroup(guid, member)) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;

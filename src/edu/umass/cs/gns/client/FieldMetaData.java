@@ -18,19 +18,6 @@ import java.util.Set;
  */
 public class FieldMetaData {
 
-  public FieldMetaData() {
-  }
-
-  // make it a singleton class
-  public static FieldMetaData getInstance() {
-    return FieldMetaDataHolder.INSTANCE;
-  }
-
-  private static class FieldMetaDataHolder {
-
-    private static final FieldMetaData INSTANCE = new FieldMetaData();
-  }
-
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
     return GNS.makeInternalField(metaDataType.name() + "_" + key);
   }
@@ -43,7 +30,7 @@ public class FieldMetaData {
    * @param key
    * @return 
    */
-  public Set<String> lookup(MetaDataTypeName type, GuidInfo guidInfo, String key) {
+  public static Set<String> lookup(MetaDataTypeName type, GuidInfo guidInfo, String key) {
     return lookup(type, guidInfo.getGuid(), key);
   }
   
@@ -55,9 +42,9 @@ public class FieldMetaData {
    * @param key
    * @return 
    */
-  public Set<String> lookup(MetaDataTypeName type, String guid, String key) {
+  public static Set<String> lookup(MetaDataTypeName type, String guid, String key) {
     Intercessor client = Intercessor.getInstance();
-    ResultValue result = client.sendQuery(guid, makeFieldMetaDataKey(type, key));
+    ResultValue result = client.sendQuery(guid, makeFieldMetaDataKey(type, key), null, null, null);
     if (result != null) {
       return new HashSet<String>(result.toStringSet());
     } else {
@@ -73,7 +60,7 @@ public class FieldMetaData {
    * @param key
    * @param value 
    */
-  public void add(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
+  public static void add(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     add(type, userInfo.getGuid(), key, value);
   }
   
@@ -85,7 +72,7 @@ public class FieldMetaData {
    * @param key
    * @param value 
    */
-   public void add(MetaDataTypeName type, String guid, String key, String value) {
+   public static void add(MetaDataTypeName type, String guid, String key, String value) {
     Intercessor client = Intercessor.getInstance();
     String metaDataKey = makeFieldMetaDataKey(type, key);
     client.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
@@ -99,11 +86,11 @@ public class FieldMetaData {
    * @param key
    * @param value 
    */
-  public void remove(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
+  public static void remove(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     remove(type, userInfo.getGuid(), key, value);
   }
   
-  public void remove(MetaDataTypeName type, String guid, String key, String value) {
+  public static void remove(MetaDataTypeName type, String guid, String key, String value) {
     Intercessor client = Intercessor.getInstance();
     String metaDataKey = makeFieldMetaDataKey(type, key);
     client.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.REMOVE);

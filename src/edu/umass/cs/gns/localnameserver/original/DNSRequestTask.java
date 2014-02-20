@@ -318,7 +318,7 @@ public class DNSRequestTask extends TimerTask {
   private void sendCachedReplyToUser(ResultValue value, int TTL) {
 //    CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + incomingPacket.getQname());
-    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getQname(),incomingPacket.getQrecordKey(),value, TTL, new HashSet<Integer>());
+    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getQname(),incomingPacket.getQrecordKey(),value, TTL, new HashSet<Integer>(), null, null, null);
     try {
       if (senderAddress != null && senderPort > 0) {
         LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), senderAddress, senderPort);

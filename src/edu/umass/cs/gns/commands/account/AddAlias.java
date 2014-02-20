@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.account;
 
+import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
@@ -49,17 +50,17 @@ public class AddAlias extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = accountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
       } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
         return BADRESPONSE + " " + TOMANYALIASES;
       } else {
-        return accountAccess.addAlias(accountInfo, name);
+        return AccountAccess.addAlias(accountInfo, name);
       }
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
