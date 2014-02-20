@@ -6,11 +6,15 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.net.InetAddress;
 
 /**
- * Created with IntelliJ IDEA.
+ * To use the nio package, GNS implements <code>NodeConfig</code>. interface
+ * in this class.
+ *
+ * It calls methods in <code>ConfigFileInfo</code> to implements all the methods.
+ * This hardly contains any additional code.
+ *
  * User: abhigyan
  * Date: 8/16/13
  * Time: 12:10 PM
- * To change this template use File | Settings | File Templates.
  */
 public class GNSNodeConfig implements NodeConfig {
 
@@ -26,7 +30,6 @@ public class GNSNodeConfig implements NodeConfig {
 
   @Override
   public InetAddress getNodeAddress(int ID) {
-    int x = 1111111000;
     return ConfigFileInfo.getIPAddress(ID);
   }
 

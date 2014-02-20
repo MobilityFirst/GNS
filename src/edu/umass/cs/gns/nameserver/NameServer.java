@@ -13,8 +13,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -86,19 +85,21 @@ public class NameServer {
     // Executor service created.
     executorService = new ScheduledThreadPoolExecutor(StartNameServer.workerThreadCount);
 
-    // Non-blocking IO created
+    // Create the demultiplexer object. This is used by both TCP and UDP.
     nsDemultiplexer = new NSPacketDemultiplexer();
 
-    // start listening on UDP socket
+    // Start listening on UDP socket.
     new NSListenerUDP().start();
 
     // create a TCP transport object because we need to pass it to paxos manager.
-    // Don't start the listening socket because paxos manager is not initialized yet. Also,
+    // Don't start the listening socket because paxos manager is not initialized yet. Another reason is that
     // we are still doing log recovery and don't want to process new messages.
     ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
     tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
+//    JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
+//    tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
 
-    // create paxos manager and do log recovery (if logs exist). paxos manager wont send any messages yet.
+    // Create paxos manager and do log recovery (if logs exist). paxos manager wont send any messages yet.
     paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
             new NSPaxosInterface(), executorService, StartNameServer.paxosLogFolder);
 

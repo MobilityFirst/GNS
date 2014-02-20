@@ -2,9 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
@@ -30,14 +28,14 @@ public class  PaxosManager {
   static final String PAXOS_ID = "PXS";
 
   /**
-   *  total number of nodes. node IDs = 0, 1, ..., N -1
+   * Total number of nodes. node IDs = 0, 1, ..., N -1
    */
   private  int N;
 
   /**
-   * nodeID of this node. among node IDs = 0, 1, ..., (N - 1)
+   * nodeID of this node. Among node IDs = 0, 1, ..., (N - 1).
    */
-   int nodeID;
+  int nodeID;
 
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
@@ -57,13 +55,16 @@ public class  PaxosManager {
    * request would have needed an additional database lookup to find what the current X is for this name.
    *
    */
-   ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
+  ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
 
-   PaxosInterface clientRequestHandler;
+  PaxosInterface clientRequestHandler;
 
-   ScheduledThreadPoolExecutor executorService;
+  ScheduledThreadPoolExecutor executorService;
 
-   final TreeSet<ProposalStateAtCoordinator> proposalStates = new TreeSet<ProposalStateAtCoordinator>();
+  /**
+   *
+   */
+  final TreeSet<ProposalStateAtCoordinator> proposalStates = new TreeSet<ProposalStateAtCoordinator>();
 
   /**
    * Paxos logs are garbage collected at this interval
@@ -136,11 +137,11 @@ public class  PaxosManager {
     startPaxosMaintenanceActions();
   }
   /**
-   * Constructor used during testing.
-   * @param testConfigFile
-   * @param nodeID
+   * Constructor used during testing only.
+   * @param testConfigFile config file used for tests
+   * @param nodeID ID of this node
    */
-  public  PaxosManager(String testConfigFile, int nodeID) {
+  public PaxosManager(String testConfigFile, int nodeID) {
 
 //    debug = true;
     TestConfig testConfig1= new TestConfig(testConfigFile);
@@ -228,14 +229,14 @@ public class  PaxosManager {
   /**
    *
    */
-   void startResendPendingMessages() {
+  void startResendPendingMessages() {
     ResendPendingMessagesTask task = new ResendPendingMessagesTask(this);
     // single time execution
     executorService.schedule(task, RESEND_PENDING_MSG_INTERVAL_MILLIS,TimeUnit.MILLISECONDS);
   }
 
-   PaxosReplicaInterface createPaxosReplicaObject(String paxosID, int nodeID, Set<Integer> nodeIDs1) {
-      return new PaxosReplica(paxosID, nodeID, nodeIDs1, this);
+  PaxosReplicaInterface createPaxosReplicaObject(String paxosID, int nodeID, Set<Integer> nodeIDs1) {
+    return new PaxosReplica(paxosID, nodeID, nodeIDs1, this);
   }
 
   /**
@@ -322,19 +323,19 @@ public class  PaxosManager {
    * @param paxosID paxosID of the paxos group
    * @param req request that is to be executed
    */
-   void handleDecision(String paxosID, RequestPacket req, boolean recovery) {
+  void handleDecision(String paxosID, RequestPacket req, boolean recovery) {
     clientRequestHandler.handlePaxosDecision(paxosID, req, recovery);
   }
 
-   String getPaxosKeyFromPaxosID(String paxosID) {
-     return clientRequestHandler.getPaxosKeyForPaxosID(paxosID);
+  String getPaxosKeyFromPaxosID(String paxosID) {
+    return clientRequestHandler.getPaxosKeyForPaxosID(paxosID);
   }
 
   /**
    * If a node fails, or comes up again, the respective Paxos instances are informed.
    * Some of them may elect a new co-ordinator.
    */
-   void informNodeStatus(FailureDetectionPacket fdPacket) {
+  void informNodeStatus(FailureDetectionPacket fdPacket) {
     GNS.getLogger().info("Handling node failure = " + fdPacket.responderNodeID);
     for (String x: paxosInstances.keySet()) {
       PaxosReplicaInterface r = paxosInstances.get(x);
@@ -354,7 +355,7 @@ public class  PaxosManager {
     clientRequestHandler.handleFailureMessage(fdPacket);
   }
 
-   void sendMessage(int destID, JSONObject json, String paxosID) {
+  void sendMessage(int destID, JSONObject json, String paxosID) {
     try {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destID, json);
@@ -364,7 +365,7 @@ public class  PaxosManager {
 
   }
 
-   void sendMessage(Set<Integer> destIDs, JSONObject json, String paxosID) {
+  void sendMessage(Set<Integer> destIDs, JSONObject json, String paxosID) {
     try {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destIDs, json);
@@ -374,7 +375,7 @@ public class  PaxosManager {
 
   }
 
-   void sendMessage(short[] destIDs, JSONObject json, String paxosID, int excludeID) {
+  void sendMessage(short[] destIDs, JSONObject json, String paxosID, int excludeID) {
     try {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destIDs, json, excludeID);
@@ -385,13 +386,13 @@ public class  PaxosManager {
   }
 
 
-   void addToActiveProposals(ProposalStateAtCoordinator propState) {
+  void addToActiveProposals(ProposalStateAtCoordinator propState) {
     synchronized (proposalStates) {
       proposalStates.add(propState);
     }
   }
 
-   void removeFromActiveProposals(ProposalStateAtCoordinator propState) {
+  void removeFromActiveProposals(ProposalStateAtCoordinator propState) {
     synchronized (proposalStates){
       proposalStates.remove(propState);
     }
@@ -473,18 +474,21 @@ public class  PaxosManager {
    */
   private  NioServer initTransport(int numNodes, int startingPort) {
 
-    // create the worker object
+    // demux object for paxos
     PaxosPacketDemultiplexer paxosDemux = new PaxosPacketDemultiplexer(this);
-    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(paxosDemux);
 
+    // node config object for test
     PaxosNodeConfig config = new PaxosNodeConfig(numNodes, startingPort);
 
-    // start TCP transport thread
+
     NioServer tcpTransportLocal = null;
     try {
       GNS.getLogger().fine(" Node ID is " + nodeID);
-      tcpTransportLocal = new NioServer(nodeID, worker, config);
+      ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
+      tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
       if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID);
+
+      // start TCP transport thread
       new Thread(tcpTransportLocal).start();
     } catch (IOException e) {
       GNS.getLogger().severe(" Could not initialize TCP socket at client");
@@ -572,6 +576,9 @@ public class  PaxosManager {
 
 }
 
+/**
+ * Packet demultiplexer object
+ */
 class PaxosPacketDemultiplexer extends PacketDemultiplexer {
   PaxosManager paxosManager;
   public PaxosPacketDemultiplexer(PaxosManager paxosManager) {
@@ -598,6 +605,7 @@ class HandlePaxosMessageTask extends TimerTask {
   int packetType;
 
   PaxosManager paxosManager;
+
   HandlePaxosMessageTask(JSONObject json, int packetType, PaxosManager paxosManager){
     this.json = json;
     this.packetType = packetType;
@@ -641,9 +649,11 @@ class HandlePaxosMessageTask extends TimerTask {
 class ResendPendingMessagesTask extends TimerTask{
 
   PaxosManager paxosManager;
+
   public ResendPendingMessagesTask(PaxosManager paxosManager) {
     this.paxosManager = paxosManager;
   }
+
   @Override
   public void run() {
 
@@ -681,9 +691,21 @@ class ResendPendingMessagesTask extends TimerTask{
 
 
 /**
- * periodically logs state of all paxos instances
+ * Periodically logs state of all paxos instances. Logging complete state allows garbage
+ * collection of previous state.
+ *
+ * This method scans the list of paxos instances at each node, given in the
+ * field <code>paxosInstances</code> in paxos manager, reads the state for that instance
+ * by calling method <code>getState</code> in paxos replica object, and calls the logger
+ * module to log state to disk.
+ *
+ * WARNING: We have never tested this code for even 10K or 100K paxos instances. So, we don't
+ * know how system performance will be affected during logging for a large number of paxos  instances,
+ * or how long it takes to log state.
+ *
  */
 class LogPaxosStateTask extends TimerTask {
+
 
   PaxosManager paxosManager;
 
@@ -701,6 +723,7 @@ class LogPaxosStateTask extends TimerTask {
       if (StartNameServer.experimentMode) {return;} // we do not log paxos state during experiments ..
 
       GNS.getLogger().info("Logging paxos state task.");
+
       for (String paxosKey: paxosManager.paxosInstances.keySet()) {
 
         PaxosReplicaInterface replica = paxosManager.paxosInstances.get(paxosKey);
@@ -713,6 +736,7 @@ class LogPaxosStateTask extends TimerTask {
       }
       GNS.getLogger().info("Completed logging.");
     }catch(Exception e) {
+      // this exception is there because executor service does not print stack trace during exceptions.
       GNS.getLogger().severe("Exception IN paxos state logging " + e.getMessage());
       e.printStackTrace();
     }

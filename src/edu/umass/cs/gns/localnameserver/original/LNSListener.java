@@ -3,9 +3,7 @@ package edu.umass.cs.gns.localnameserver.original;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.packet.Packet;
@@ -51,6 +49,18 @@ public class LNSListener extends Thread {
 
     tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
     new Thread(tcpTransport).start();
+
+//    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
+//    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
+//    new Thread(tcpTransport).start();
+
+    GNSNodeConfig nodeConfig = new GNSNodeConfig();
+    GNS.getLogger().info("Debug mode: node 0 address: " + nodeConfig.getNodeAddress(0));
+    GNS.getLogger().info("Debug mode: node 1 address: " + nodeConfig.getNodeAddress(1));
+
+//    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+
+
   }
 
   @Override
@@ -69,7 +79,6 @@ public class LNSListener extends Thread {
    */
   public static void demultiplexLNSPackets(JSONObject json) {
     try {
-      GNS.getLogger().finer("LOCAL NAME SERVER RECVD PACKET: " + json);
       switch (Packet.getPacketType(json)) {
         case DNS:
           DNSPacket dnsPacket = new DNSPacket(json);
@@ -167,31 +176,28 @@ class LNSPacketDemultiplexer extends PacketDemultiplexer {
   @Override
   public void handleJSONObjects(ArrayList jsonObjects) {
     for (Object o : jsonObjects) {
-      LocalNameServer.executorService.submit(new MyTask((JSONObject) o));
+      LocalNameServer.executorService.submit(new LNSTask((JSONObject) o));
     }
   }
 }
 
-class MyTask extends TimerTask {
+class LNSTask extends TimerTask {
 
   JSONObject json;
 
-  public MyTask(JSONObject jsonObject) {
+  public LNSTask(JSONObject jsonObject) {
     this.json = jsonObject;
   }
 
   @Override
   public void run() {
-//    long t0 = System.currentTimeMillis();
+
     try {
       LNSListener.demultiplexLNSPackets(json);
     } catch (Exception e) {
       GNS.getLogger().severe("Exception handling packets: " + e.getMessage());
       e.printStackTrace();
     }
-//    long t1 = System.currentTimeMillis();
-//    if (t1 - t0 > 10) {
-//      GNS.getLogger().severe("LNS-long-response\t" + (t1-t0)+"\t"+ System.currentTimeMillis());
-//    }
+
   }
 }
