@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 /**
  * All packets received at name server (TCP/UDP) pass through this demultiplexer.
- * This thread implements PacketDemultiplex interface for 
+ * This thread implements PacketDemultiplex interface for GNS.
  * @author abhigyan
  *
  */

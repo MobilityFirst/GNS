@@ -112,7 +112,7 @@ public class  PaxosManager {
     // recover previous state if exists using logger
     paxosLogger = new PaxosLogger(paxosLogFolder, nodeID, this);
     long t0 = System.currentTimeMillis();
-    ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.initLogger();
+    ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.recoverPaxosLogs();
 
     long t1 = System.currentTimeMillis();
     GNS.getLogger().info("Time to recover paxos logs ... " + (t1 - t0)/1000 + " seconds");
@@ -157,7 +157,7 @@ public class  PaxosManager {
 
     String paxosLogFolder = testConfig1.testPaxosLogFolder + "/node" + nodeID;
     paxosLogger = new PaxosLogger(paxosLogFolder, nodeID, this);
-//    ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.initLogger();
+//    ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.recoverPaxosLogs();
     paxosLogger.clearLogs();
 //    if (myPaxosInstances != null) paxosInstances = myPaxosInstances;
     paxosLogger.start();
@@ -486,6 +486,8 @@ public class  PaxosManager {
       GNS.getLogger().fine(" Node ID is " + nodeID);
       ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
       tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
+//      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
+//      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
       if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID);
 
       // start TCP transport thread
@@ -580,7 +582,9 @@ public class  PaxosManager {
  * Packet demultiplexer object
  */
 class PaxosPacketDemultiplexer extends PacketDemultiplexer {
+
   PaxosManager paxosManager;
+
   public PaxosPacketDemultiplexer(PaxosManager paxosManager) {
     this.paxosManager = paxosManager;
   }
@@ -687,59 +691,4 @@ class ResendPendingMessagesTask extends TimerTask{
     }
 
   }
-}
-
-
-/**
- * Periodically logs state of all paxos instances. Logging complete state allows garbage
- * collection of previous state.
- *
- * This method scans the list of paxos instances at each node, given in the
- * field <code>paxosInstances</code> in paxos manager, reads the state for that instance
- * by calling method <code>getState</code> in paxos replica object, and calls the logger
- * module to log state to disk.
- *
- * WARNING: We have never tested this code for even 10K or 100K paxos instances. So, we don't
- * know how system performance will be affected during logging for a large number of paxos  instances,
- * or how long it takes to log state.
- *
- */
-class LogPaxosStateTask extends TimerTask {
-
-
-  PaxosManager paxosManager;
-
-  PaxosLogger paxosLogger;
-
-  public LogPaxosStateTask(PaxosManager paxosManager, PaxosLogger paxosLogger) {
-    this.paxosManager = paxosManager;
-    this.paxosLogger = paxosLogger;
-  }
-
-  @Override
-  public void run() {
-    try {
-
-      if (StartNameServer.experimentMode) {return;} // we do not log paxos state during experiments ..
-
-      GNS.getLogger().info("Logging paxos state task.");
-
-      for (String paxosKey: paxosManager.paxosInstances.keySet()) {
-
-        PaxosReplicaInterface replica = paxosManager.paxosInstances.get(paxosKey);
-        if (paxosKey != null) {
-          StatePacket packet = replica.getState();
-          if (packet != null) {
-            paxosLogger.logPaxosState(replica.getPaxosID(), packet);
-          }
-        }
-      }
-      GNS.getLogger().info("Completed logging.");
-    }catch(Exception e) {
-      // this exception is there because executor service does not print stack trace during exceptions.
-      GNS.getLogger().severe("Exception IN paxos state logging " + e.getMessage());
-      e.printStackTrace();
-    }
-  }
-
 }

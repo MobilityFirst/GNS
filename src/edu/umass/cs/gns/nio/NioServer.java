@@ -29,10 +29,6 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-//import edu.umass.cs.gnrs.main.GNS.PortType;
-//import edu.umass.cs.gnrs.packet.Packet;
-//import edu.umass.cs.gnrs.util.ConfigFileInfo;
-
 public class NioServer implements Runnable {
 
   public static String Version = "$Revision$";

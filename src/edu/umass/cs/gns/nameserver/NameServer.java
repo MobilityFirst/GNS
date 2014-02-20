@@ -42,6 +42,7 @@ public class NameServer {
   public static ReplicationFrameworkInterface replicationFramework;
   public static MovingAverage loadMonitor;
   public static NioServer tcpTransport;
+//  public static GNSNIOTransport tcpTransport;
   public static NSPacketDemultiplexer nsDemultiplexer;
   public static Timer timer = new Timer();
   public static ScheduledThreadPoolExecutor executorService;
@@ -93,8 +94,10 @@ public class NameServer {
     // create a TCP transport object because we need to pass it to paxos manager.
     // Don't start the listening socket because paxos manager is not initialized yet. Another reason is that
     // we are still doing log recovery and don't want to process new messages.
+
     ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
     tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
+
 //    JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
 //    tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
 
