@@ -4,7 +4,7 @@ import sys
 # *** MUST set values of 'gnrs_jar' and 'working_dir' ***
 
 # gns jar
-gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS-latest/dist/GNS.jar'
+gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS-latest2/dist/GNS.jar'
 
 # top level folder
 working_dir = '/Users/abhigyan/Documents/gns_output/'  # location of top-level folder checked out from SVN.
@@ -23,14 +23,14 @@ trace_folder = working_dir + '/local/trace/'
 
 
 # parameters used only by scripts for running experiments
-experiment_run_time = 100    # duration of experiment (seconds)
+experiment_run_time = 1    # duration of experiment (seconds)
 
-delete_paxos_log = False   # if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
+delete_paxos_log = True   # if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
 
 start_db = False   #
 
-ns_sleep = 10      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
-extra_wait = 15   # extra wait time after LNS sends all requests
+ns_sleep = 5      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
+extra_wait = 5   # extra wait time after LNS sends all requests
 
 failed_nodes = None   # NOT used
 
@@ -40,18 +40,18 @@ num_lns = 1  # must be set to 1
 #
 #
 # parameters for workload generator
-regular_workload = 100     # number of names in the workload (GNS also read this parameter to load names into database)
+regular_workload = 1     # number of names in the workload (GNS also read this parameter to load names into database)
 mobile_workload = 0         # NOT used
 
 gen_workload = True   # if True, generate new workload,
 
-lookup_count = 3000   # number of lookups at local name server,
-update_count = 3000   # number of updates at local name server
+lookup_count = 10   # number of lookups at local name server,
+update_count = 10   # number of updates at local name server
 
 #
 #
 # GNS parameters common to name server / local name servers
-is_experiment_mode = False  # set to True to run experiments, false otherwise.
+is_experiment_mode = True  # set to True to run experiments, false otherwise.
 primary_name_server = 3  # number of primary name servers
 
 #lookupTrace = 'lookupTrace10'
@@ -70,8 +70,8 @@ name_actives = '' ## NOT used
 #
 #
 # local name server parameters
-queryTimeout = 2000   # ms    # timeout value for a query (lookup/update)
-maxQueryWaitTime = 10000  # ms  #  maximum wait time after which a query is declared failed
+queryTimeout = 300   # ms    # timeout value for a query (lookup/update)
+maxQueryWaitTime = 2000  # ms  #  maximum wait time after which a query is declared failed
 
 load_balancing = False  # Redirect to closest name server based on (RTT + server-load)
 
