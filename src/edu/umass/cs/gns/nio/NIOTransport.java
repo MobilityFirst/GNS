@@ -188,6 +188,7 @@ public class NIOTransport implements Runnable {
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
+		log.finer("Accepted");
 		socketChannel.configureBlocking(false);
 		socketChannel.socket().setKeepAlive(true);
 		//this.testAndPutSockAddrToSockChannel((InetSocketAddress)socketChannel.getRemoteAddress(), socketChannel); // synchronized
@@ -263,8 +264,7 @@ public class NIOTransport implements Runnable {
 		synchronized (this.pendingWrites) {	
 			ArrayList<ByteBuffer> queue = (ArrayList<ByteBuffer>) this.pendingWrites.get(isa);
 			// Write until there's not more data ...
-			assert (queue != null) : "Queue is null, why??";
-			while (!queue.isEmpty()) {
+			while (queue!=null && !queue.isEmpty()) {
 				ByteBuffer buf = (ByteBuffer) queue.get(0);
 				socketChannel.write(buf);
 				// If the socket's buffer fills up, let the rest be in queue 
