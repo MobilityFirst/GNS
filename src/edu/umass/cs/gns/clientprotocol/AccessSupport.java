@@ -13,6 +13,7 @@ import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
@@ -64,7 +65,7 @@ public class AccessSupport {
    * @param readerInfo
    * @return
    */
-  public static boolean verifyAccess(FieldMetaData.MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo) {
+  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo) {
     return verifyAccess(access, contectInfo, ALLFIELDS, readerInfo);
   }
 
@@ -78,7 +79,7 @@ public class AccessSupport {
    * @param accessorInfo
    * @return
    */
-  public static boolean verifyAccess(FieldMetaData.MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
+  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
     GNS.getLogger().finer("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
@@ -124,13 +125,13 @@ public class AccessSupport {
   }
   
    public static boolean fieldReadableByEveryone(String guid, String field) {
-    return fieldMetaData.lookup(FieldMetaData.MetaDataTypeName.READ_WHITELIST, guid, field).contains(EVERYONE)
-            || fieldMetaData.lookup(FieldMetaData.MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
+    return fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, field).contains(EVERYONE)
+            || fieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
   }
 
   public static boolean fieldWriteableByEveryone(String guid, String field) {
-    return fieldMetaData.lookup(FieldMetaData.MetaDataTypeName.WRITE_WHITELIST, guid, field).contains(EVERYONE)
-            || fieldMetaData.lookup(FieldMetaData.MetaDataTypeName.WRITE_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
+    return fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, field).contains(EVERYONE)
+            || fieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
   }
   
 }

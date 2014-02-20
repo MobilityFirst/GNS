@@ -46,7 +46,6 @@ public class NameServer {
   public static Timer timer = new Timer();
   public static ScheduledThreadPoolExecutor executorService;
   public static PaxosManager paxosManager;
-
   /**
    * Only used during experiments.
    */
@@ -64,8 +63,8 @@ public class NameServer {
     NameServer.nodeID = nodeID;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion() + "\n");
 
-    GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data" +
-            " store");
+    GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data"
+            + " store");
 
 
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
@@ -111,8 +110,9 @@ public class NameServer {
 
 
     // START ADMIN THREAD - DO NOT REMOVE THIS
-    if(StartLocalNameServer.experimentMode == false) new NSListenerAdmin().start(); // westy
-
+    if (StartLocalNameServer.experimentMode == false) {
+      new NSListenerAdmin().start(); // westy
+    }
     if (StartNameServer.experimentMode) {
       try {
         Thread.sleep(initialExpDelayMillis); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
@@ -150,8 +150,8 @@ public class NameServer {
     }
 
     // schedule periodic computation of new active name servers.
-    if (!(StartNameServer.replicationFramework == ReplicationFrameworkType.STATIC ||
-            StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL)) {
+    if (!(StartNameServer.replicationFramework == ReplicationFrameworkType.STATIC
+            || StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL)) {
 
       // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
       // TODO  longer term solution is to integrate IP geo-location database at name servers.
@@ -162,7 +162,7 @@ public class NameServer {
       long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval + // wait for one interval for estimating demand
               (new Random()).nextInt((int) StartNameServer.analysisInterval); // randomize to avoid synchronization among replicas.
       if (StartNameServer.experimentMode && StartNameServer.quitAfterTimeSec > 0) {
-        initialDelayMillis = initialExpDelayMillis + (long)(StartNameServer.analysisInterval*1.5);
+        initialDelayMillis = initialExpDelayMillis + (long) (StartNameServer.analysisInterval * 1.5);
       }
       GNS.getLogger().severe("ComputeNewActives Initial delay " + initialDelayMillis);
 
@@ -178,11 +178,10 @@ public class NameServer {
     }
   }
 
-
   public static void createPrimaryPaxosInstances() {
 
     ArrayList<Integer> nodesSorted = new ArrayList<Integer>();
-    for (String s1: HashFunction.nsTreeMap.keySet()) {
+    for (String s1 : HashFunction.nsTreeMap.keySet()) {
       nodesSorted.add(HashFunction.nsTreeMap.get(s1));
     }
 
@@ -191,11 +190,15 @@ public class NameServer {
       String paxosID = HashFunction.getMD5Hash(Integer.toString(nodesSorted.get(paxosMemberIndex))) + "-P";
       HashSet<Integer> nodes = new HashSet<Integer>();
       boolean containsNode = false;
-      while(nodes.size() < GNS.numPrimaryReplicas) {
-        if (nodesSorted.get(paxosMemberIndex) == nodeID) containsNode = true;
+      while (nodes.size() < GNS.numPrimaryReplicas) {
+        if (nodesSorted.get(paxosMemberIndex) == nodeID) {
+          containsNode = true;
+        }
         nodes.add(nodesSorted.get(paxosMemberIndex));
         paxosMemberIndex += 1;
-        if (paxosMemberIndex == HashFunction.nsTreeMap.size()) paxosMemberIndex = 0;
+        if (paxosMemberIndex == HashFunction.nsTreeMap.size()) {
+          paxosMemberIndex = 0;
+        }
       }
 
       if (containsNode) {
@@ -230,41 +233,41 @@ public class NameServer {
    * Load a name record from the backing database and retrieve certain fields as well.
    * 
    * @param name
-   * @param fields - a list of Field structures representing "system" fields to retrieve
+   * @param systemFields - a list of Field structures representing "system" fields to retrieve
    * @return
    * @throws RecordNotFoundException
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> fields)
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields)
           throws RecordNotFoundException {
-    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, null));
+    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
   }
-
+  
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
    * 
    * @param name
-   * @param fields - a list of Field structures representing "system" fields to retrieve
+   * @param systemFields - a list of Field structures representing "system" fields to retrieve
    * @param userFields - a list of Field structures representing user fields to retrieve
    * @return
    * @throws RecordNotFoundException
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> fields, ArrayList<ColumnField> userFields)
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
           throws RecordNotFoundException {
-    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFields));
+    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
   }
 
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
    * 
    * @param name
-   * @param fields
+   * @param systemFields
    * @param userFieldNames - strings which name the user fields to return
    * @return
    * @throws RecordNotFoundException 
    */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> fields, String... userFieldNames)
+  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
           throws RecordNotFoundException {
-    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, fields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
+    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
   }
 
   private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
@@ -343,7 +346,7 @@ public class NameServer {
   public static BasicRecordCursor selectRecordsNear(String key, String value, Double maxDistance) {
     return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
   }
-  
+
   /**
    * Returns all fields that match the query.
    * 
@@ -418,39 +421,30 @@ public class NameServer {
     replicaController.reset();
   }
 
-
   /**
-   * Wrapper method to send to LNS, uses either UDP/TCP depending on size of packet. uses udp for packet < 1000 bytes,
-   * tcp otherwise.
+   * Wrapper method to send to LNS
    * @param json  json object to send
-   * @param lns   local name server ID
+   * @param recipientId   node we're sending this to
    */
-  public static void sendToLNS(JSONObject json, int lns) {
-//    if (json.toString().length() < 1000) {
-//      try {
-//        NSListenerUDP.udpTransport.sendPacket(json, lns, GNS.PortType.LNS_UDP_PORT);
-//      } catch (JSONException e) {
-//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//      }
-//    } else { // for large packets,  use TCP
-      try {
-        NameServer.tcpTransport.sendToIDActual(lns, json);
-      } catch (IOException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
-//    }
+  public static void returnToSender(JSONObject json, int recipientId) {
+    try {
+      NameServer.tcpTransport.sendToIDActual(recipientId, json);
+    } catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
   }
 }
 
-
 class WriteMemUsage extends TimerTask {
+
   int count = 0;
+
   @Override
   public void run() {
-    count ++;
+    count++;
     GenerateSyntheticRecordTable.outputMemoryUse(Integer.toString(count) + "sec ");
-    GNS.getLogger().severe("\tTasksSubmitted\t" + NameServer.executorService.getTaskCount() + "\tTasksCompleted\t" +
-            NameServer.executorService.getCompletedTaskCount());
+    GNS.getLogger().severe("\tTasksSubmitted\t" + NameServer.executorService.getTaskCount() + "\tTasksCompleted\t"
+            + NameServer.executorService.getCompletedTaskCount());
 //    Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
 //    for (Thread t: threadSet) {
 //      StackTraceElement[] traceElements = t.getStackTrace();

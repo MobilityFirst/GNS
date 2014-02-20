@@ -10,6 +10,7 @@ package edu.umass.cs.gns.commands.account;
 import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import edu.umass.cs.gns.clientprotocol.ClientUtils;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -66,10 +67,10 @@ public class AddGuid extends GnsCommand {
         String result = accountAccess.addGuid(accountInfo, name, newGuid, publicKey);
         if (OKRESPONSE.equals(result)) {
           // set up the default read access
-          fieldMetaData.add(FieldMetaData.MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
+          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
           // give account guid read and write access to all fields in the new guid
-          fieldMetaData.add(FieldMetaData.MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
-          fieldMetaData.add(FieldMetaData.MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          fieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
           return newGuid;
         } else {
           return result;

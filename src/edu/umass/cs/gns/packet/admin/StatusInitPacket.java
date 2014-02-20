@@ -1,18 +1,17 @@
 package edu.umass.cs.gns.packet.admin;
 
-
-import edu.umass.cs.gns.packet.BasicPacket;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/*************************************************************
- * This class implements a packet that contains status information
+/**
+ * This class implements a packet that tells the name server
+ * to initial the status system.
  * 
  * @author Westy
- ************************************************************/
-public class StatusInitPacket extends BasicPacket {
-  
+ */
+public class StatusInitPacket extends AdminPacket {
+
   /**
    * Constructs a new status init packet
    * @param id
@@ -22,14 +21,14 @@ public class StatusInitPacket extends BasicPacket {
     this.type = Packet.PacketType.STATUS_INIT;
   }
 
-  /*************************************************************
-   * Constructs new StatusPacket from a JSONObject
+  /**
+   * Constructs new StatusInitPacket from a JSONObject
    * @param json JSONObject representing this packet
    * @throws JSONException
-   ************************************************************/
+   */
   public StatusInitPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.STATUS_INIT) {
-      Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));
+      Exception e = new Exception("StatusInitPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
       return;
     }
@@ -37,11 +36,11 @@ public class StatusInitPacket extends BasicPacket {
     this.type = Packet.getPacketType(json);
   }
 
-  /*************************************************************
-   * Converts a ActiveNSUpdatePacket to a JSONObject.
+  /**
+   * Converts a StatusInitPacket to a JSONObject.
    * @return JSONObject representing this packet.
    * @throws JSONException
-   ************************************************************/
+   */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -49,5 +48,4 @@ public class StatusInitPacket extends BasicPacket {
 
     return json;
   }
-
 }

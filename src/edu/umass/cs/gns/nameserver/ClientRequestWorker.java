@@ -13,6 +13,7 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.client.NSAccountAccess;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.*;
@@ -136,7 +137,7 @@ public class ClientRequestWorker extends TimerTask {
   private void handleNameServerLoadPacket() throws JSONException {
     NameServerLoadPacket nsLoad = new NameServerLoadPacket(incomingJSON);
     nsLoad.setLoadValue(NameServer.loadMonitor.getAverage());
-    NameServer.sendToLNS(nsLoad.toJSONObject(), nsLoad.getLnsID());
+    NameServer.returnToSender(nsLoad.toJSONObject(), nsLoad.getLnsID());
   }
   //
   private static ArrayList<ColumnField> addRecordLNSFields = new ArrayList<ColumnField>();
@@ -226,7 +227,7 @@ public class ClientRequestWorker extends TimerTask {
         GNS.getLogger().info(" Active-paxos and name record created. Name = " + rcRecord.getName());
         UpdateStatus status = addInProgress.remove(addRecordPacket.getLNSRequestID());
         if (status != null) {
-          NameServer.sendToLNS(status.getConfirmUpdateLNSPacket().toJSONObject(), status.getLocalNameServerID());
+          NameServer.returnToSender(status.getConfirmUpdateLNSPacket().toJSONObject(), status.getLocalNameServerID());
         } else {
           GNS.getLogger().info(" Status record missing for Name = " + rcRecord.getName() + " request id: " + addRecordPacket.getLNSRequestID());
         }
@@ -242,7 +243,7 @@ public class ClientRequestWorker extends TimerTask {
         // send failure
         ConfirmUpdateLNSPacket confirmPkt = status.getConfirmUpdateLNSPacket();
         confirmPkt.convertToFailPacket();
-        NameServer.sendToLNS(confirmPkt.toJSONObject(), status.getLocalNameServerID());
+        NameServer.returnToSender(confirmPkt.toJSONObject(), status.getLocalNameServerID());
         GNS.getLogger().info("Record already exists ... sent error to client" + e.getMessage());
       } else {
         GNS.getLogger().info(" Status record missing for request id: " + addRecordPacket.getLNSRequestID());
@@ -482,7 +483,7 @@ public class ClientRequestWorker extends TimerTask {
       if (sendFailure) {
         ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket);
         // inform LNS of failed request
-        NameServer.sendToLNS(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
+        NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
 
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine(" UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
@@ -512,7 +513,7 @@ public class ClientRequestWorker extends TimerTask {
     if (paxosID == null) {
       ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket);
       // inform LNS of failed request
-      NameServer.sendToLNS(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
+      NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
 
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine(" UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
@@ -651,7 +652,7 @@ public class ClientRequestWorker extends TimerTask {
 ////          ConfirmUpdateLNSPacket confirmUpdateLNSPacket = proposedUpdates.remove(updatePacket.getNSRequestID());
 //          confirmUpdateLNSPacket.convertToFailPacket();
           // for small packets use UDP
-          NameServer.sendToLNS(failPacket.toJSONObject(), updatePacket.getLocalNameServerId());
+          NameServer.returnToSender(failPacket.toJSONObject(), updatePacket.getLocalNameServerId());
 
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine("Error msg sent to client for failed update " + incomingJSON);
@@ -689,7 +690,7 @@ public class ClientRequestWorker extends TimerTask {
 //                    + updatePacket + " NameRecord = " + nameRecord);
 //          }
 //        }
-        NameServer.sendToLNS(confirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
+        NameServer.returnToSender(confirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
         }
@@ -748,33 +749,22 @@ public class ClientRequestWorker extends TimerTask {
   }
 
   private void handleDNSPacket() throws IOException, JSONException {
-//    long t0 = System.currentTimeMillis();
-//    long tA = 0;
-//    long tB = 0;
-//    long tC = 0;
-//    long tD = 0;
-//    long tE = 0;
-//    long tF = 0;
-//    long tG = 0;
     if (StartNameServer.debugMode) {
-      GNS.getLogger().finer("NS recvd DNS lookup request: " + incomingJSON);
+      GNS.getLogger().info("NS recvd DNS lookup request: " + incomingJSON);
     }
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
-//    tA  = System.currentTimeMillis();
     if (dnsPacket.isQuery()) {
       int lnsId = dnsPacket.getLnsId();
-
+ 
       NameRecord nameRecord = null;
       try {
         if (Defs.ALLFIELDS.equals(dnsPacket.getQrecordKey().getName())) {
           // need everything so just grab all the fields
           nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
         } else {
-//          tB = System.currentTimeMillis();
           nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(),
                   getDNSPacketFields(),
                   dnsPacket.getQrecordKey().getName());
-//          tC = System.currentTimeMillis();
         }
 
         if (StartNameServer.debugMode) {
@@ -783,25 +773,14 @@ public class ClientRequestWorker extends TimerTask {
 
       } catch (RecordNotFoundException e) {
         GNS.getLogger().warning("Record not found for name: " + dnsPacket.getQname() + " Key = " + dnsPacket.getQrecordKey());
-//        e.printStackTrace();
         // name record will be null
       }
-//      tD  = System.currentTimeMillis();
       dnsPacket = makeResponsePacket(dnsPacket, nameRecord);
-//      tE  = System.currentTimeMillis();
-      NameServer.sendToLNS(dnsPacket.toJSONObject(), lnsId);
+      NameServer.returnToSender(dnsPacket.toJSONObject(), lnsId);
 
-//      tF  = System.currentTimeMillis();
-//      tG  = System.currentTimeMillis();
-//      int responseTime = (int) (System.currentTimeMillis() - t0);
-//      NameServer.loadMonitor.add(responseTime);
     } else {
       GNS.getLogger().severe("DNS Packet isn't a query!");
     }
-//    long t1 = System.currentTimeMillis();
-//    if (t1 - t0 > 20) {
-//      GNS.getLogger().severe(" DNSPacket longlatency " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)) ;
-//    }
   }
 
   private DNSPacket makeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord) {
@@ -888,7 +867,7 @@ public class ClientRequestWorker extends TimerTask {
       } else { // send reply to client
         packet.setActiveNameServers(rcRecord.getActiveNameservers());
 //        tE = System.currentTimeMillis();
-        NameServer.sendToLNS(packet.toJSONObject(), packet.getLNSID());
+        NameServer.returnToSender(packet.toJSONObject(), packet.getLNSID());
 //        tF = System.currentTimeMillis();
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("Sent actives for " + packet.getName() //+ " " + packet.getRecordKey()
@@ -906,7 +885,7 @@ public class ClientRequestWorker extends TimerTask {
 
     if (sendError) {
       packet.setActiveNameServers(null);
-      NameServer.sendToLNS(packet.toJSONObject(), packet.getLNSID());
+      NameServer.returnToSender(packet.toJSONObject(), packet.getLNSID());
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Error: Record does not exist for " + packet.getName());
       }

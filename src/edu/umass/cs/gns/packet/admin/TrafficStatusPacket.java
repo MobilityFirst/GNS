@@ -2,7 +2,6 @@ package edu.umass.cs.gns.packet.admin;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
-import edu.umass.cs.gns.packet.BasicPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.Format;
@@ -12,13 +11,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * ***********************************************************
- * This class implements a packet that contains status information
+ *
+ * This class implements a packet that contains sends traffic status information
  *
  * @author Westy 
- **********************************************************
+ * 
  */
-public class TrafficStatusPacket extends BasicPacket {
+public class TrafficStatusPacket extends AdminPacket {
 
   public final static String FROMID = "fromID";
   public final static String TOID = "toID";
@@ -26,16 +25,13 @@ public class TrafficStatusPacket extends BasicPacket {
   public final static String PACKETTYPE = "packettype";
   public final static String TIME = "time";
   public final static String NAME = "name";
-  //public final static String KEY = "key";
   public final static String OTHER = "other";
-
   private Date time;
   private int fromID;
   private int toID;
   private GNS.PortType portType;
   private Packet.PacketType packetType;
   private String name;
-  //private String key;
   private String other;
 
   /**
@@ -48,8 +44,16 @@ public class TrafficStatusPacket extends BasicPacket {
 //  public TrafficStatusPacket(int fromID, int toID, PortType portType, Packet.PacketType packetType) {
 //    this(fromID, toID, portType, packetType, null, null, null);
 //  }
-
-  public TrafficStatusPacket(int fromID, int toID, PortType portType, PacketType packetType, String name, 
+  /**
+   * Constructs a new TrafficStatusPacket packet
+   * @param fromID
+   * @param toID
+   * @param portType
+   * @param packetType
+   * @param name
+   * @param other 
+   */
+  public TrafficStatusPacket(int fromID, int toID, PortType portType, PacketType packetType, String name,
           // String key,
           String other) {
     this.type = Packet.PacketType.TRAFFIC_STATUS;
@@ -59,20 +63,20 @@ public class TrafficStatusPacket extends BasicPacket {
     this.portType = portType;
     this.packetType = packetType;
     this.name = name;
-    //this.key = key;
     this.other = other;
   }
 
   /**
-   * ***********************************************************
-   * Constructs new StatusPacket from a JSONObject
+   *
+   * Constructs new TrafficStatusPacket from a JSONObject
    *
    * @param json JSONObject representing this packet
-   * @throws JSONException **********************************************************
+   * @throws JSONException
+   * 
    */
   public TrafficStatusPacket(JSONObject json) throws JSONException, ParseException {
     if (Packet.getPacketType(json) != Packet.PacketType.TRAFFIC_STATUS) {
-      Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));
+      Exception e = new Exception("TrafficStatusPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
       return;
     }
@@ -84,7 +88,6 @@ public class TrafficStatusPacket extends BasicPacket {
     this.portType = GNS.PortType.valueOf(json.getString(PORTTYPE));
     this.packetType = Packet.PacketType.valueOf(json.getString(PACKETTYPE));
     this.name = json.optString(NAME, null);
-    //this.key = json.optString(KEY, null);
     this.other = json.optString(OTHER, null);
   }
 
@@ -112,20 +115,16 @@ public class TrafficStatusPacket extends BasicPacket {
     return name;
   }
 
-//  public String getKey() {
-//    return key;
-//  }
-
   public String getOther() {
     return other;
   }
 
   /**
-   * ***********************************************************
-   * Converts a ActiveNSUpdatePacket to a JSONObject.
+   *
+   * Converts a TrafficStatusPacket to a JSONObject.
    *
    * @return JSONObject representing this packet.
-   * @throws JSONException **********************************************************
+   * @throws JSONException
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
@@ -139,9 +138,6 @@ public class TrafficStatusPacket extends BasicPacket {
     if (name != null) {
       json.put(NAME, name);
     }
-//    if (key != null) {
-//      json.put(KEY, key);
-//    }
     if (other != null) {
       json.put(OTHER, other);
     }

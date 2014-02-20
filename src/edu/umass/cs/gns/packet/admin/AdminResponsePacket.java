@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.packet.admin;
 
-import edu.umass.cs.gns.packet.BasicPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.util.Format;
 import java.text.ParseException;
@@ -13,18 +12,17 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/*************************************************************
+/**
  * This class implements a packet that contains general 
  * response information for admin purposes.
  * 
  * @author Westy
- ************************************************************/
-public class AdminResponsePacket extends BasicPacket {
+ */
+public class AdminResponsePacket extends AdminPacket {
 
   public final static String ID = "id";
   public final static String JSON = "json";
   public final static String TIME = "time";
-
   private int id;
   private Date time;
   /** JOSNObject where the results are kept **/
@@ -51,14 +49,14 @@ public class AdminResponsePacket extends BasicPacket {
     this(id, new JSONObject());
   }
 
-  /*************************************************************
-   * Constructs new StatusPacket from a JSONObject
+  /**
+   * Constructs new AdminResponsePacket from a JSONObject
    * @param json JSONObject representing this packet
    * @throws JSONException
-   ************************************************************/
+   */
   public AdminResponsePacket(JSONObject json) throws JSONException, ParseException {
     if (Packet.getPacketType(json) != Packet.PacketType.ADMIN_RESPONSE) {
-      Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));
+      Exception e = new Exception("AdminResponsePacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
       return;
     }
@@ -81,11 +79,11 @@ public class AdminResponsePacket extends BasicPacket {
     return jsonObject;
   }
 
-  /*************************************************************
-   * Converts a ActiveNSUpdatePacket to a JSONObject.
+  /**
+   * Converts a AdminResponsePacket to a JSONObject.
    * @return JSONObject representing this packet.
    * @throws JSONException
-   ************************************************************/
+   */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();

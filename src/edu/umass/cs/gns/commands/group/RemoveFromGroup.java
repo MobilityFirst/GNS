@@ -9,6 +9,7 @@ package edu.umass.cs.gns.commands.group;
 
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -61,7 +62,7 @@ public class RemoveFromGroup extends GnsCommand {
     }
     if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!AccessSupport.verifyAccess(FieldMetaData.MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else if (groupAccess.removeFromGroup(guid, member)) {
       return OKRESPONSE;

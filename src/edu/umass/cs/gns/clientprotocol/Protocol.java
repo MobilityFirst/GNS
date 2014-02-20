@@ -5,7 +5,7 @@ import edu.umass.cs.gns.client.AccountInfo;
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.FieldMetaData;
-import edu.umass.cs.gns.client.FieldMetaData.MetaDataTypeName;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.client.GroupAccess;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.UpdateOperation;

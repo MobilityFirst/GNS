@@ -9,6 +9,7 @@ package edu.umass.cs.gns.commands;
 
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import java.security.InvalidKeyException;
@@ -69,7 +70,7 @@ public class Read extends GnsCommand {
     } else if (signature != null) {
       if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
         return BADRESPONSE + " " + BADSIGNATURE;
-      } else if (!AccessSupport.verifyAccess(FieldMetaData.MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
+      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
         return BADRESPONSE + " " + ACCESSDENIED;
       }
     }

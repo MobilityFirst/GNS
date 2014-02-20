@@ -236,28 +236,6 @@ public class Intercessor {
     return valuesMap;
   }
 
-  /**
-   * Sends dns query to local name server and returns. Does not wait for response
-   *
-   * @param name
-   * @param key
-   * @return true if query sent out successfully, false otherwise
-   */
-  public boolean sendQueryNoWait(String name, String key) {
-    int id = nextQueryRequestID();
-    DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.nodeID);
-    JSONObject json;
-    try {
-      json = queryrecord.toJSONObjectQuestion();
-      sendPacket(json);
-
-    } catch (JSONException e) {
-      e.printStackTrace();
-      return false;
-    }
-    return true;
-  }
-
   public boolean sendAddRecordWithConfirmation(String name, String key, String value) {
     return sendAddRecordWithConfirmation(name, key, new ResultValue(Arrays.asList(value)));
   }

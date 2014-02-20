@@ -5,12 +5,10 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.paxos.PaxosManager;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * All packets received at name server (TCP/UDP) pass through this demultiplexer.
@@ -29,8 +27,6 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
   }
 
   public void handleJSONObject(JSONObject json) {
-
-
     try {
       Packet.PacketType type = Packet.getPacketType(json);
 //      if (count % 60 == 0) GNS.getLogger().info("Recvd msg " + count + " Type" + type.getInt() + "\t" + json);

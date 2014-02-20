@@ -8,6 +8,7 @@
 package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.client.FieldMetaData;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.ClientUtils;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -52,7 +53,7 @@ public class RegisterAccount extends GnsCommand {
     String result = accountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password);
     if (OKRESPONSE.equals(result)) {
       // set up the default read access
-      fieldMetaData.add(FieldMetaData.MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
+      fieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
       return guid;
     } else {
       return result;

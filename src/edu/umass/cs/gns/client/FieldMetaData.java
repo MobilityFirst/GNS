@@ -21,22 +21,6 @@ public class FieldMetaData {
   public FieldMetaData() {
   }
 
-  public enum MetaDataTypeName {
-
-    READ_WHITELIST, WRITE_WHITELIST, READ_BLACKLIST, WRITE_BLACKLIST, TIMESTAMP;
-
-    public static String typesToString() {
-      StringBuilder result = new StringBuilder();
-      String prefix = "";
-      for (MetaDataTypeName type : MetaDataTypeName.values()) {
-        result.append(prefix);
-        result.append(type.name());
-        prefix = ", ";
-      }
-      return result.toString();
-    }
-  };
-
   // make it a singleton class
   public static FieldMetaData getInstance() {
     return FieldMetaDataHolder.INSTANCE;
@@ -47,7 +31,7 @@ public class FieldMetaData {
     private static final FieldMetaData INSTANCE = new FieldMetaData();
   }
 
-  private static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
+  public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
     return GNS.makeInternalField(metaDataType.name() + "_" + key);
   }
 

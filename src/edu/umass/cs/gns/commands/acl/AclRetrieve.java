@@ -9,6 +9,7 @@ package edu.umass.cs.gns.commands.acl;
 
 import edu.umass.cs.gns.client.FieldMetaData;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -51,9 +52,9 @@ public class AclRetrieve extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    FieldMetaData.MetaDataTypeName access;
-    if ((access = FieldMetaData.MetaDataTypeName.valueOf(accessType)) == null) {
-      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + FieldMetaData.MetaDataTypeName.values().toString();
+    MetaDataTypeName access;
+    if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
+      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
     GuidInfo guidInfo;
     if ((guidInfo = accountAccess.lookupGuidInfo(guid)) == null) {

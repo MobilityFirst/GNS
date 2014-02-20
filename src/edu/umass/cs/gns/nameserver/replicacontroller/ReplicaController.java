@@ -578,7 +578,7 @@ public class ReplicaController {
 
     if (removeRecordPacket != null) {
       ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(true, removeRecordPacket);
-      NameServer.sendToLNS(confirmPacket.toJSONObject(), removeRecordPacket.getLocalNameServerID());
+      NameServer.returnToSender(confirmPacket.toJSONObject(), removeRecordPacket.getLocalNameServerID());
 //      NSListenerUDP.udpTransport.sendPacket(confirmPacket.toJSONObject(),
 //              confirmPacket.getLocalNameServerId(), GNS.PortType.LNS_UDP_PORT);
       if (StartNameServer.debugMode) GNS.getLogger().info("REMOVE RECORD SENT RESPONSE TO LNS");

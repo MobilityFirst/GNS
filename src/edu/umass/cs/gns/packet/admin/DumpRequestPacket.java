@@ -1,20 +1,18 @@
 package edu.umass.cs.gns.packet.admin;
 
-import edu.umass.cs.gns.packet.BasicPacket;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * ***********************************************************
+ *
  * This class implements the packet transmitted between local nameserver and a primary nameserver to get information about the
  * contents of the nameserver;
  *
  * @author Westy
- ***********************************************************
  */
-public class DumpRequestPacket extends BasicPacket {
+public class DumpRequestPacket extends AdminPacket {
 
   public final static String ID = "id";
   public final static String PRIMARY_NAMESERVER = "primary";
@@ -59,7 +57,7 @@ public class DumpRequestPacket extends BasicPacket {
   public DumpRequestPacket(int id, int localNameServer) {
     this(id, localNameServer, -1, new JSONArray(), null);
   }
-  
+
   /**
    * Constructs a new DumpRequestPacket packet
    * @param localNameServer
@@ -70,12 +68,11 @@ public class DumpRequestPacket extends BasicPacket {
   }
 
   /**
-   * ***********************************************************
+   *
    * Constructs new DumpRequestPacket from a JSONObject
    *
    * @param json JSONObject representing this packet
    * @throws JSONException
-   ***********************************************************
    */
   public DumpRequestPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.DUMP_REQUEST) {
@@ -91,14 +88,13 @@ public class DumpRequestPacket extends BasicPacket {
     this.jsonArray = json.getJSONArray(JSON);
     this.argument = json.optString(ARGUMENT, null);
   }
-  
+
   /**
-   * ***********************************************************
+   * 
    * Converts a DumpRequestPacket to a JSONObject.
    *
    * @return JSONObject representing this packet.
    * @throws JSONException
-   ***********************************************************
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
@@ -113,8 +109,7 @@ public class DumpRequestPacket extends BasicPacket {
     }
     return json;
   }
-  
-  
+
   public int getId() {
     return id;
   }
@@ -150,5 +145,4 @@ public class DumpRequestPacket extends BasicPacket {
   public String getArgument() {
     return argument;
   }
-
 }
