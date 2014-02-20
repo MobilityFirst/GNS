@@ -235,6 +235,19 @@ public class NIOTransport implements Runnable {
 	private void write(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		InetSocketAddress isa = getSockAddrFromSockChannel(socketChannel);
+		/* The assertion below is expected to hold because there should be an isa
+		 * for each about-to-be-written socket channel. The selector thread
+		 * tries to write to a socket channel only if a write op interest
+		 * was previously registered. A write op interest is registered
+		 * upon either a finishConnect or upon finding an entry in 
+		 * pendingWrites. A null isa here can only mean that a write op
+		 * interest was registered on some socket channel 
+		 * but there is no write in pendingWrites because the corresponding
+		 * write was written to a different socket channel. This means that
+		 * two connections (or socket channels) were established for the same
+		 * isa. That can not happen because testAndInitiateConnection is 
+		 * synchronized.
+		 */
 		assert (isa!=null) : "Node " + myID + " SocketChannel " + socketChannel + " is orphaned with no InetSocketAddress.";
 		try {
 			// If all data gets written successfully, switch back to read mode.
@@ -245,7 +258,7 @@ public class NIOTransport implements Runnable {
 				socketChannel.close(); // Will be automatically replaced later if present in SockAddrToSockChannel
 			} finally {
 				// Note that the cancel or close could again throw an IOException
-				this.initiateConnection(isa);
+				this.testAndIntiateConnection(isa);
 			}
 		}
 	}
@@ -305,7 +318,7 @@ public class NIOTransport implements Runnable {
 				ArrayList<ByteBuffer> queue = (ArrayList<ByteBuffer>) this.pendingWrites.get(isa);
 				if(queue!=null && !queue.isEmpty()) {
 					// Nested locking: pendingWrites -> SockAddrToSockChannel
-					SocketChannel sc = getSockAddrToSockChannel(isa);
+					SocketChannel sc = getSockAddrToSockChannel(isa);  // synchronized
 					SelectionKey key = (sc!=null ? sc.keyFor(this.selector) : null);
 					if(key!=null) key.interestOps(SelectionKey.OP_WRITE);
 				}
@@ -350,9 +363,28 @@ public class NIOTransport implements Runnable {
 			SocketChannel sock = (SocketChannel)this.SockAddrToSockChannel.get(isa);
 			if(sock!=null && (sock.isConnected() || sock.isConnectionPending())) return true;
 			log.finest("Node " + myID + " socket channel [" + sock + "] not connected");
+			return false;
 		}
-		return false;
 	}
+
+	/* Initiate a connection if the existing socket channel is not connected.
+	 * Synchronization ensures that the test and connect happen atomically.
+	 * If not, we can have additional unused sockets accumulated that can
+	 * cause memory leaks over time.
+	 */
+	private SocketChannel testAndIntiateConnection(InetSocketAddress isa) throws IOException {
+		synchronized(this.SockAddrToSockChannel) {
+			SocketChannel sock=null;
+			if(!this.isConnected(isa)) {
+				SocketChannel oldSock = this.getSockAddrToSockChannel(isa); // synchronized
+				if(oldSock!=null) {log.severe("SocketChannel " + oldSock + " found dead. " + 
+						"Could be because the remote end closed the connection");}
+				sock = this.initiateConnection(isa);
+			}
+			return sock;
+		}
+	}
+
 
 	/* **************************************************************
 	 * End of methods synchronizing on SockAddrToSockChannel.
@@ -445,18 +477,6 @@ public class NIOTransport implements Runnable {
 		return socketChannel;
 	}
 
-	/* Initiate a connection if the existing socket channel is not connected.
-	 */
-	private SocketChannel testAndIntiateConnection(InetSocketAddress isa) throws IOException {
-		SocketChannel sock=null;
-		if(!this.isConnected(isa)) {
-			SocketChannel oldSock = this.getSockAddrToSockChannel(isa);
-			if(oldSock!=null) {log.severe("SocketChannel " + oldSock + " found dead. " + 
-					"Could be because the remote end closed the connection");}
-			sock = this.initiateConnection(isa);
-		}
-		return sock;
-	}
 
 	/* Invoked only by the selector thread.
 	 * Sets selection ops to write as the connection is presumably being 
@@ -510,7 +530,7 @@ public class NIOTransport implements Runnable {
 			/*************************************************************************/
 			/* Test a few simple hellos. The sleep is there to test 
 			 * that the successive writes do not "accidentally" benefit
-			 * from concurrency, i.e., to check that OP_WRITE flags will
+			 * from concurrency, i.e., to check that write ops flags will
 			 * be set correctly.
 			 */
 			niots[1].send(0, "Hello from 1 to 0".getBytes());
