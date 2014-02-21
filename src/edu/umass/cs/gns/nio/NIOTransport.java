@@ -13,12 +13,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gns.main.GNS;
 
 /**
 @author V. Arun
@@ -99,8 +96,6 @@ public class NIOTransport implements Runnable {
 	/* An id corresponds to a socket address as specified in NodeConfig */
 	int myID=-1;
 
-	protected static NIOInstrumenter nioI=new NIOInstrumenter();
-
 	private Logger log = Logger.getLogger(NIOTransport.class.getName()); //GNS.getLogger();
 
 	public NIOTransport(int id, NodeConfig nc, DataProcessingWorker worker) throws IOException {
@@ -130,7 +125,7 @@ public class NIOTransport implements Runnable {
 
 	public void send(InetSocketAddress isa, byte[] data) throws IOException {
 		testAndIntiateConnection(isa);
-		nioI.incrSent();
+		NIOInstrumenter.incrSent();
 		this.queuePendingWrite(isa, data);
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
@@ -144,7 +139,7 @@ public class NIOTransport implements Runnable {
 				// Set ops to CONNECT for pending connect requests.
 				processPendingConnects(); // synchronized
 				// Wait for an event one of the registered channels.
-				int selected = this.selector.select();
+				this.selector.select();
 				// Accept, connect, read, or write as needed.
 				processSelectedKeys();
 			} catch (Exception e) {
@@ -152,8 +147,6 @@ public class NIOTransport implements Runnable {
 			}
 		}
 	}
-
-	public static String getStats() {return nioI.toString();}
 	
 
 
@@ -194,7 +187,7 @@ public class NIOTransport implements Runnable {
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
 		log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
-		nioI.incrAccepted();
+		NIOInstrumenter.incrAccepted();
 		socketChannel.configureBlocking(false);
 		socketChannel.socket().setKeepAlive(true);
 
@@ -226,7 +219,7 @@ public class NIOTransport implements Runnable {
 				key.cancel();
 				socketChannel.close();  // Will be automatically replaced later if present in SockAddrToSockChannel
 				return;
-			} else nioI.incrRcvd();
+			} else NIOInstrumenter.incrRcvd();
 		}
 
 		// Hand the data off to our worker thread
@@ -483,7 +476,7 @@ public class NIOTransport implements Runnable {
 		// Kick off connection establishment
 		log.finest("Node " + myID + " connecting to socket address " + isa);		
 		socketChannel.connect(isa);
-		nioI.incrInitiated();
+		NIOInstrumenter.incrInitiated();
 		putSockAddrToSockChannel(isa, socketChannel); // synchronized
 
 		// Queue a channel registration since the caller is not the 
@@ -644,7 +637,7 @@ public class NIOTransport implements Runnable {
 			Thread.sleep(1000);
 			System.out.println("\n\n\nPrinting overall stats");
 			Thread.sleep(1000);
-			System.out.println("NIO " + NIOTransport.getStats());
+			System.out.println("NIO " + (new NIOInstrumenter()));
 
 			System.out.println("\nTesting notes: If no exceptions were encountered above and\n" +
 					" the number of missing-or-batched messages is small, then it is a successful test. If this\n" + 

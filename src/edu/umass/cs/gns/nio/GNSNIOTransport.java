@@ -1,12 +1,14 @@
 package edu.umass.cs.gns.nio;
 
-import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +89,7 @@ public class GNSNIOTransport extends NIOTransport {
 
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 			jsonArray.add(jsonData);
-			NIOTransport.nioI.incrSent(); // instrumentation
+			NIOInstrumenter.incrSent(); // instrumentation
 			System.out.println("Sending local: " + jsonData.toString());
 			((JSONMessageWorker)worker).processJSONMessages(jsonArray);
 		}
@@ -230,7 +232,7 @@ public class GNSNIOTransport extends NIOTransport {
 
 			Thread.sleep(2000);
 			System.out.println("\n\n\nPrinting overall stats:");
-			System.out.println(GNSNIOTransport.getStats());	
+			System.out.println((new NIOInstrumenter()));	
 			boolean pending=false;
 			for(int i=0; i<nNodes; i++) {
 				if(niots[i].getPendingSize() > 0) {
