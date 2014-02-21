@@ -43,8 +43,8 @@ public class FieldMetaData {
    * @return 
    */
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key) {
-    Intercessor client = Intercessor.getInstance();
-    ResultValue result = client.sendQuery(guid, makeFieldMetaDataKey(type, key), null, null, null);
+    
+    ResultValue result = Intercessor.sendQuery(guid, makeFieldMetaDataKey(type, key), null, null, null);
     if (result != null) {
       return new HashSet<String>(result.toStringSet());
     } else {
@@ -73,9 +73,9 @@ public class FieldMetaData {
    * @param value 
    */
    public static void add(MetaDataTypeName type, String guid, String key, String value) {
-    Intercessor client = Intercessor.getInstance();
+    
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    client.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
+    Intercessor.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
   /**
@@ -91,9 +91,9 @@ public class FieldMetaData {
   }
   
   public static void remove(MetaDataTypeName type, String guid, String key, String value) {
-    Intercessor client = Intercessor.getInstance();
+    
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    client.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.REMOVE);
+    Intercessor.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.REMOVE);
   }
   //
   public static String Version = "$Revision$";

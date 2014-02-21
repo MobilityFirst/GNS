@@ -21,18 +21,19 @@ import org.json.JSONObject;
  * @author westy
  */
 public class CommandModule {
-  
+
   private TreeSet<GnsCommand> commands;
   private String host;
   private boolean adminMode = false;
-  
+
   public CommandModule() {
     initCommands();
   }
-  
+
   private void initCommands() {
     this.commands = new TreeSet<GnsCommand>();
     addCommands(CommandDefs.getCommandDefs(), commands);
+    GNS.getLogger().info(commands.size() + " commands added.");
   }
 
   /**
@@ -56,14 +57,14 @@ public class CommandModule {
           constructor = clazz.getConstructor(new Class[]{CommandModule.class});
         }
         GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
-        GNS.getLogger().info("Adding command " + commandClassName);
+        GNS.getLogger().info("Adding command " + (i + 1) + ": " + commandClassName + " with " + command.getCommandName() + ": " + command.getCommandParametersString());
         commands.add(command);
       } catch (Exception e) {
         GNS.getLogger().warning("Unable to add command for class " + commandClassName + ": " + e);
       }
     }
   }
-  
+
   public GnsCommand lookupCommand(JSONObject json) {
     String action;
     try {
@@ -72,28 +73,37 @@ public class CommandModule {
       GNS.getLogger().warning("Unable find " + COMMANDNAME + " key in JSON command: " + e);
       return null;
     }
+     GNS.getLogger().info("Searching " + commands.size() + " commands:");
+    //GNS.getLogger().info("Looking for: " + json);
     // for now a linear search is fine
     for (GnsCommand command : commands) {
-      GNS.getLogger().fine("Search: " + command.toString());
-      if (command.getCommandName().equals(action) && JSONContains(json, command.getCommandParameters())) {
-        return command;
+      //GNS.getLogger().info("Search: " + command.toString());
+      if (command.getCommandName().equals(action)) {
+        //GNS.getLogger().info("Found action: " + action);
+        if (JSONContains(json, command.getCommandParameters())) {
+          //GNS.getLogger().info("Matched parameters: " + json);
+          return command;
+        }
       }
-    }    
+    }
+    GNS.getLogger().warning("***COMMAND SEARCH***: Unable to find " + json);
     return null;
   }
-  
+
   public String allCommandDescriptionsForHTML() {
     StringBuffer result = new StringBuffer();
     String prefix = "";
+    int cnt = 1;
     for (GnsCommand command : commands) {
       result.append(prefix);
+      result.append(cnt++ + ": ");
       result.append(command.getUsage());
       prefix = Defs.NEWLINE;
       result.append(NEWLINE);
     }
     return result.toString();
   }
-  
+
   private boolean JSONContains(JSONObject json, String[] parameters) {
     for (int i = 0; i < parameters.length; i++) {
       if (json.optString(parameters[i], null) == null) {
@@ -118,5 +128,4 @@ public class CommandModule {
   public void setAdminMode(boolean adminMode) {
     this.adminMode = adminMode;
   }
-  
 }

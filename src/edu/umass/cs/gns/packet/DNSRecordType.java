@@ -8,14 +8,6 @@ package edu.umass.cs.gns.packet;
  ************************************************************/
 public class DNSRecordType {
 	
-	/** No error condition in response **/
-	public final static int RCODE_NO_ERROR = 0;
-
-	/** Response Error **/
-	public final static int RCODE_ERROR = 1;
-	
-	public final static int RCODE_ERROR_INVALID_ACTIVE_NAMESERVER = 2;
-	
 	/** Query **/
 	public final static int QUERY = 0;
 	

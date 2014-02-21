@@ -28,8 +28,8 @@ public class FieldAccess {
   private static final String emptyJSONArrayString = new JSONArray().toString();
 
   public static String lookup(String guid, String key, String reader, String signature, String message) {
-    Intercessor client = Intercessor.getInstance();
-    ResultValue result = client.sendQuery(guid, key, reader, signature, message);
+    
+    ResultValue result = Intercessor.sendQuery(guid, key, reader, signature, message);
     if (result != null) {
       return new JSONArray(result).toString();
     } else {
@@ -38,8 +38,8 @@ public class FieldAccess {
   }
 
   public static String lookupMultipleValues(String guid, String key, String reader, String signature, String message) {
-    Intercessor client = Intercessor.getInstance();
-    ValuesMap result = client.sendMultipleReturnValueQuery(guid, key, true, reader, signature, message);
+    
+    ValuesMap result = Intercessor.sendMultipleReturnValueQuery(guid, key, true, reader, signature, message);
     try {
       if (result != null) {
         return result.toJSONObject().toString();
@@ -51,8 +51,8 @@ public class FieldAccess {
   }
 
   public static String lookupOne(String guid, String key, String reader, String signature, String message) {
-    Intercessor client = Intercessor.getInstance();
-    ResultValue result = client.sendQuery(guid, key, reader, signature, message);
+    
+    ResultValue result = Intercessor.sendQuery(guid, key, reader, signature, message);
     if (result != null && !result.isEmpty()) {
       return (String) result.get(0);
     } else {
@@ -61,8 +61,8 @@ public class FieldAccess {
   }
 
   public static String lookupOneMultipleValues(String guid, String key, String reader, String signature, String message) {
-    Intercessor client = Intercessor.getInstance();
-    ValuesMap result = client.sendMultipleReturnValueQuery(guid, key, true, reader, signature, message);
+    
+    ValuesMap result = Intercessor.sendMultipleReturnValueQuery(guid, key, true, reader, signature, message);
     try {
       if (result != null) {
         // Pull the first value out of each array
@@ -75,13 +75,13 @@ public class FieldAccess {
   }
 
   public static boolean update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation) {
-    Intercessor client = Intercessor.getInstance();
-    return client.sendUpdateRecordWithConfirmation(guid, key, value, oldValue, operation);
+    
+    return Intercessor.sendUpdateRecordWithConfirmation(guid, key, value, oldValue, operation);
   }
 
   public static boolean create(String guid, String key, ResultValue value) {
-    Intercessor client = Intercessor.getInstance();
-    return client.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
+    
+    return Intercessor.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
   }
 
   public static String select(String key, Object value) {

@@ -55,12 +55,12 @@ public class AccountAccess {
    * @return an {@link AccountInfo} instance
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid) {
-    Intercessor client = Intercessor.getInstance();
-    ResultValue accountResult = client.sendQuery(guid, ACCOUNT_INFO, null, null, null);
+    
+    ResultValue accountResult = Intercessor.sendQuery(guid, ACCOUNT_INFO, null, null, null);
     if (accountResult == null) {
       guid = lookupPrimaryGuid(guid);
       if (guid != null) {
-        accountResult = client.sendQuery(guid, ACCOUNT_INFO, null, null, null);
+        accountResult = Intercessor.sendQuery(guid, ACCOUNT_INFO, null, null, null);
       }
     }
     if (accountResult != null) {
@@ -85,8 +85,8 @@ public class AccountAccess {
    * @return a GUID
    */
   public static String lookupPrimaryGuid(String guid) {
-    Intercessor client = Intercessor.getInstance();
-    ResultValue guidResult = client.sendQuery(guid, PRIMARY_GUID, null, null, null);
+    
+    ResultValue guidResult = Intercessor.sendQuery(guid, PRIMARY_GUID, null, null, null);
     if (guidResult != null) {
       return (String) guidResult.get(0);
     } else {
@@ -104,8 +104,8 @@ public class AccountAccess {
    * @return a GUID
    */
   public static String lookupGuid(String name) {
-    Intercessor client = Intercessor.getInstance();
-    ResultValue guidResult = client.sendQuery(name, GUID, null, null, null);
+    
+    ResultValue guidResult = Intercessor.sendQuery(name, GUID, null, null, null);
     if (guidResult != null) {
       return (String) guidResult.get(0);
     } else {
@@ -122,8 +122,8 @@ public class AccountAccess {
    * @return an {@link GuidInfo} instance
    */
   public static GuidInfo lookupGuidInfo(String guid) {
-    Intercessor client = Intercessor.getInstance();
-    ResultValue guidResult = client.sendQuery(guid, GUID_INFO, null, null, null);
+    
+    ResultValue guidResult = Intercessor.sendQuery(guid, GUID_INFO, null, null, null);
     if (guidResult != null) {
       try {
         return new GuidInfo(guidResult.toResultValueString());
@@ -244,9 +244,9 @@ public class AccountAccess {
    */
   public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
     try {
-      Intercessor client = Intercessor.getInstance();
+      
       // do this first add to make sure this name isn't already registered
-      if (client.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
+      if (Intercessor.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -254,14 +254,14 @@ public class AccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (client.sendAddRecordWithConfirmation(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
+        if (Intercessor.sendAddRecordWithConfirmation(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          client.sendUpdateRecordWithConfirmation(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
+          Intercessor.sendUpdateRecordWithConfirmation(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
           return Defs.OKRESPONSE;
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
-          client.sendRemoveRecordWithConfirmation(name);
+          Intercessor.sendRemoveRecordWithConfirmation(name);
           return Defs.BADRESPONSE + " " + Defs.DUPLICATEGUID;
         }
       } else {
@@ -279,16 +279,16 @@ public class AccountAccess {
    * @return status result 
    */
   public static String removeAccount(AccountInfo accountInfo) {
-    Intercessor client = Intercessor.getInstance();
+    
     // do this first add to make sure this account exists
-    if (client.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryName())) {
-      client.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryGuid());
+    if (Intercessor.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryName())) {
+      Intercessor.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
-        client.sendRemoveRecordWithConfirmation(alias);
+        Intercessor.sendRemoveRecordWithConfirmation(alias);
       }
       for (String guid : accountInfo.getGuids()) {
-        client.sendRemoveRecordWithConfirmation(guid);
+        Intercessor.sendRemoveRecordWithConfirmation(guid);
       }
       return Defs.OKRESPONSE;
     } else {
@@ -321,15 +321,15 @@ public class AccountAccess {
 
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
-      Intercessor client = Intercessor.getInstance();
+      
       // insure that that name does not already exist
-      if (client.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
+      if (Intercessor.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // update the account info
         if (updateAccountInfo(accountInfo)) {
           // add the GUID_INFO link
-          client.sendAddRecordWithConfirmation(guid, GUID_INFO, guidInfoFormatted);
+          Intercessor.sendAddRecordWithConfirmation(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
-          client.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
+          Intercessor.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.CREATE);
           return Defs.OKRESPONSE;
         }
@@ -350,10 +350,10 @@ public class AccountAccess {
    * @return status result
    */
   public static String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
-    Intercessor client = Intercessor.getInstance();
-    if (client.sendRemoveRecordWithConfirmation(guid.getGuid())) {
+    
+    if (Intercessor.sendRemoveRecordWithConfirmation(guid.getGuid())) {
       // remove reverse record
-      client.sendRemoveRecordWithConfirmation(guid.getName());
+      Intercessor.sendRemoveRecordWithConfirmation(guid.getName());
       accountInfo.removeGuid(guid.getGuid());
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {
@@ -379,13 +379,13 @@ public class AccountAccess {
   public static String addAlias(AccountInfo accountInfo, String alias) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
-    Intercessor client = Intercessor.getInstance();
+    
     // insure that that name does not already exist
-    if (client.sendAddRecordWithConfirmation(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
+    if (Intercessor.sendAddRecordWithConfirmation(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
       if (updateAccountInfo(accountInfo)) {
         return Defs.OKRESPONSE;
       } else {
-        client.sendRemoveRecordWithConfirmation(alias);
+        Intercessor.sendRemoveRecordWithConfirmation(alias);
         accountInfo.removeAlias(alias);
         return Defs.BADRESPONSE + " " + Defs.BADALIAS;
       }
@@ -403,10 +403,10 @@ public class AccountAccess {
    * @return status result 
    */
   public static String removeAlias(AccountInfo accountInfo, String alias) {
-    Intercessor client = Intercessor.getInstance();
+    
     if (accountInfo.containsAlias(alias)) {
       // remove the NAME -> GUID record
-      client.sendRemoveRecordWithConfirmation(alias);
+      Intercessor.sendRemoveRecordWithConfirmation(alias);
       accountInfo.removeAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {
@@ -466,11 +466,11 @@ public class AccountAccess {
   }
 
   private static boolean updateAccountInfo(AccountInfo accountInfo) {
-    Intercessor client = Intercessor.getInstance();
+    
     try {
       ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
-      if (client.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+      if (Intercessor.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
               newvalue, null, UpdateOperation.REPLACE_ALL)) {
         return true;
       }
@@ -480,11 +480,11 @@ public class AccountAccess {
   }
 
   private static boolean updateGuidInfo(GuidInfo guidInfo) {
-    Intercessor client = Intercessor.getInstance();
+    
     try {
       ResultValue newvalue;
       newvalue = guidInfo.toDBFormat();
-      if (client.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
+      if (Intercessor.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
               newvalue, null, UpdateOperation.REPLACE_ALL)) {
         return true;
       }

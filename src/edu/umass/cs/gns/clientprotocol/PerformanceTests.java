@@ -31,8 +31,6 @@ public class PerformanceTests {
   private static final String ACCOUNTNAME = "RoundTripPerformanceTest";
   private static final String PUBLICKEY = "RTT";
   private static final String NEWLINE = System.getProperty("line.separator");
-  
-  private static Intercessor client = Intercessor.getInstance();
 
   /**
    * This method implements the Round Trip time test. 
@@ -78,7 +76,7 @@ public class PerformanceTests {
       // acessing the RoundTripTime fields of the ValuesMap class which records the
       // time between the LNS sending the request to the NS and the return message.
       for (String field : fields) {
-        ValuesMap value = client.sendMultipleReturnValueQuery(guid, field, true, null, null, null);
+        ValuesMap value = Intercessor.sendMultipleReturnValueQuery(guid, field, true, null, null, null);
         if (value != null) {
           //result.append(value.getRoundTripTime());
           times.add(new Double(value.getRoundTripTime()));

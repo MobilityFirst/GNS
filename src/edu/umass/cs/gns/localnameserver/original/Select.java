@@ -69,7 +69,7 @@ public class Select {
     if (info.getSenderAddress() != null && info.getSenderPort() > 0) {
       LNSListener.udpTransport.sendPacket(packet.toJSONObject(), info.getSenderAddress(), info.getSenderPort());
     } else if (StartLocalNameServer.runHttpServer) {
-      Intercessor.getInstance().checkForResult(packet.toJSONObject());
+      Intercessor.checkForResult(packet.toJSONObject());
     }
     LocalNameServer.removeQueryInfo(packet.getLnsQueryId());
   }

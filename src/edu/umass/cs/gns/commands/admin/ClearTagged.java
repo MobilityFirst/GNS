@@ -46,7 +46,7 @@ public class ClearTagged extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
-    for (String guid : Admintercessor.getInstance().collectTaggedGuids(tagName)) {
+    for (String guid : Admintercessor.collectTaggedGuids(tagName)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
       if (accountInfo != null) {
         AccountAccess.removeAccount(accountInfo);

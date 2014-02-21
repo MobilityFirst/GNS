@@ -269,7 +269,7 @@ public class LocalNameServer {
       //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Testing in experiment mode.");
 //    	if (StartLocalNameServer.tinyQuery == false) {
 //    		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("");
-//	      myInter = Intercessor.getInstance();
+//	      myInter = Intercessor.;
 //	      myInter.setLocalServerID(LocalNameServer.nodeID);
 ////	      myInter.createTransportObject();
 //    	}
@@ -556,7 +556,7 @@ public class LocalNameServer {
    * @param packet DNS packet containing record
    */
   public static CacheEntry updateCacheEntry(DNSPacket packet) {
-    CacheEntry entry = cache.getIfPresent(packet.getQname());
+    CacheEntry entry = cache.getIfPresent(packet.getGuid());
     if (entry == null) {
       return null;
     }

@@ -35,13 +35,20 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     this.module = module;
   }
 
+  // We need to sort the commands to put the longer ones with the same command name first.
   @Override
   public int compareTo(GnsCommand c) {
     int alphaResult = getCommandName().compareTo(c.getCommandName());
     // sort by number of arguments putting the longer ones first because we need to do longest match first.
     if (alphaResult == 0) {
-      // longest should be "less than"
-      return -(Integer.signum(getCommandParameters().length - c.getCommandParameters().length));
+      int lengthDifference = getCommandParameters().length - c.getCommandParameters().length;
+      if (lengthDifference != 0) {
+        // longest should be "less than"
+        return -(Integer.signum(lengthDifference));
+      } else {
+        // same length parameter strings just sort them alphabetically... they can't be equal
+        return getCommandParametersString().compareTo(c.getCommandParametersString());
+      }
     } else {
       return alphaResult;
     }

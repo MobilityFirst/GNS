@@ -37,7 +37,7 @@ public class Dump extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws JSONException {
     if (module.isAdminMode()) {
-      return Admintercessor.getInstance().sendDump();
+      return Admintercessor.sendDump();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
   }

@@ -46,7 +46,7 @@ public class ChangeLogLevel extends GnsCommand {
     if (module.isAdminMode()) {
       try {
         Level level = Level.parse(levelString);
-        if (Admintercessor.getInstance().sendChangeLogLevel(level)) {
+        if (Admintercessor.sendChangeLogLevel(level)) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE;

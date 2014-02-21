@@ -123,7 +123,7 @@ public class LNSListenerAdmin extends Thread {
             DumpRequestPacket incomingPacket = new DumpRequestPacket(incomingJSON);
             int incomingId = incomingPacket.getId();
             if (StartLocalNameServer.runHttpServer) {
-              Admintercessor.getInstance().processDumpResponsePackets(incomingJSON);
+              Admintercessor.processDumpResponsePackets(incomingJSON);
             } else {
               InetAddress host = hostMap.get(incomingId);
               Socket socketOut = new Socket(host, ConfigFileInfo.getLNSAdminDumpReponsePort(LocalNameServer.nodeID));
@@ -139,7 +139,7 @@ public class LNSListenerAdmin extends Thread {
               replicationMap.remove(incomingId);
               SentinalPacket sentinelPacket = new SentinalPacket(incomingId);
               if (StartLocalNameServer.runHttpServer) {
-                Admintercessor.getInstance().processDumpResponsePackets(sentinelPacket.toJSONObject());
+                Admintercessor.processDumpResponsePackets(sentinelPacket.toJSONObject());
               } else {
                 InetAddress host = hostMap.get(incomingId);
                 hostMap.remove(incomingId);
@@ -171,7 +171,7 @@ public class LNSListenerAdmin extends Thread {
               jsonResponse.put("CACHE", LocalNameServer.cacheLogString("CACHE:\n"));
               AdminResponsePacket responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
               if (StartLocalNameServer.runHttpServer) {
-                Admintercessor.getInstance().processAdminResponsePackets(responsePacket.toJSONObject());
+                Admintercessor.processAdminResponsePackets(responsePacket.toJSONObject());
               } else {
                 Socket socketOut = new Socket(incomingSocket.getInetAddress(), 
                         ConfigFileInfo.getLNSAdminResponsePort(LocalNameServer.nodeID));

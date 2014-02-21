@@ -43,7 +43,7 @@ public class SelectHandler {
   
   public static String sendSelectHelper(int id, SelectRequestPacket sendPacket) {
     try {
-      Intercessor.getInstance().sendPacket(sendPacket.toJSONObject());
+      Intercessor.sendPacket(sendPacket.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring JSON error while sending Select request: " + e);
       e.printStackTrace();

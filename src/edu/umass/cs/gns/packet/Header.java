@@ -15,7 +15,7 @@ public class Header {
 
   private static final String ID = "id";
   private static final String QR = "qr";
-  private static final String RCODE = "rcode";
+  private static final String RESPONSECODE = "rcode";
   
   /**
    * Unique ID for each query. Used by the requester to match up replies to outstanding queries *
@@ -28,7 +28,7 @@ public class Header {
   /**
    * Response code *
    */
-  private int rcode;
+  private DNSResponseCode rcode;
 
   /**
    * ***********************************************************
@@ -39,7 +39,7 @@ public class Header {
    * @param rcode Response code
 	 ***********************************************************
    */
-  public Header(int id, int qr, int rcode) {
+  public Header(int id, int qr, DNSResponseCode rcode) {
     this.id = id;
     this.qr = qr;
     this.rcode = rcode;
@@ -56,7 +56,8 @@ public class Header {
   public Header(JSONObject json) throws JSONException {
     this.id = json.getInt(ID);
     this.qr = json.getInt(QR);
-    this.rcode = json.getInt(RCODE);
+    // store it as an int in the JSON to keep the byte counting folks happy
+    this.rcode = DNSResponseCode.getResponseCode(json.getInt(RESPONSECODE));
   }
 
   /**
@@ -71,7 +72,8 @@ public class Header {
     JSONObject json = new JSONObject();
     json.put(ID, getId());
     json.put(QR, getQr());
-    json.put(RCODE, getRcode());
+    // store it as an int in the JSON to keep the byte counting folks happy
+    json.put(RESPONSECODE, getResponseCode().getCodeValue());
     return json;
   }
 
@@ -121,14 +123,14 @@ public class Header {
   /**
    * @return the rcode
    */
-  public int getRcode() {
+  public DNSResponseCode getResponseCode() {
     return rcode;
   }
 
   /**
    * @param rcode the rcode to set
    */
-  public void setRcode(int rcode) {
+  public void setResponseCode(DNSResponseCode rcode) {
     this.rcode = rcode;
   }
 }

@@ -60,7 +60,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @param packet DNS packet
    */
   public CacheEntry(DNSPacket packet) {
-    this.name = packet.getQname();
+    this.name = packet.getGuid();
     // this will depend on TTL sent by NS. 
     // UPDATE: NEVER LET IT BE -1 which means infinite
     this.timeToLiveInSeconds = packet.getTTL() == -1 ? GNS.DEFAULT_TTL_SECONDS : packet.getTTL();

@@ -108,7 +108,7 @@ public class AddRemove {
       if (addInfo.senderAddress != null && addInfo.senderPort > 0) {
         LNSListener.udpTransport.sendPacket(json, InetAddress.getByName(addInfo.senderAddress), addInfo.senderPort);
       } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.getInstance().checkForResult(json);
+        Intercessor.checkForResult(json);
       }
 
     }
@@ -135,7 +135,7 @@ public class AddRemove {
       if (removeInfo.senderAddress != null && removeInfo.senderPort > 0) {
         LNSListener.udpTransport.sendPacket(json, InetAddress.getByName(removeInfo.senderAddress), removeInfo.senderPort);
       } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.getInstance().checkForResult(json);
+        Intercessor.checkForResult(json);
       }
       // update our cache
 

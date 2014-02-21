@@ -3,8 +3,6 @@ package edu.umass.cs.gns.client;
 import edu.umass.cs.gns.localnameserver.original.LNSListener;
 import edu.umass.cs.gns.localnameserver.original.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.GNS.PortType;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
@@ -22,7 +20,6 @@ import org.json.JSONObject;
 
 /**
  * One of a number of class that implement client support in the GNS server. 
- * Implemented as a singleton class.
  * 
  * The intercessor is the primary liason class between the HTTP server and the Protocol
  * class and the Local Name Server. It provides support for the AccountAccess, Field Access,
@@ -36,23 +33,12 @@ import org.json.JSONObject;
  * @author westy
  */
 public class Intercessor {
-  public static final int PORT = 17768;
 
-  // make it a singleton
-  public static Intercessor getInstance() {
-    return IntercessorHolder.INSTANCE;
-  }
-
-  private static class IntercessorHolder {
-
-    private static final Intercessor INSTANCE = new Intercessor();
-  }
-  //
-  private int localServerID = 0;
+  private static int localServerID = 0; // this is probably obsolete... check to remove
   /* Used by the wait/notify calls */
-  private final Object monitor = new Object();
+  private static final Object monitor = new Object();
   /* Used by update confirmation */
-  private final Object monitorUpdate = new Object();
+  private static final Object monitorUpdate = new Object();
   /**
    * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
    * multiple value returns.
@@ -63,54 +49,29 @@ public class Intercessor {
   /* Used for sending updates and getting confirmations */
   public static Transport transport;
   private static ConcurrentMap<Integer, Boolean> updateSuccessResult;
-  
   // Instrumentation
   private static ConcurrentMap<Integer, Date> queryTimeStamp;
 
-  public int getLocalServerID() {
+  public static int getLocalServerID() {
     return localServerID;
   }
 
-  public void setLocalServerID(int localServerID) {
-    this.localServerID = localServerID;
-
+  public static void setLocalServerID(int localServerID) {
+    Intercessor.localServerID = localServerID;
+ 
     GNS.getLogger().info("Local server id: " + localServerID
             + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
             + " LNS TCP Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
   }
-
-  private Intercessor() {
-
+  
+  static {
     randomID = new Random();
     queryResult = new ConcurrentHashMap<Integer, ValuesMap>(10, 0.75f, 3);
     queryTimeStamp = new ConcurrentHashMap<Integer, Date>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
-
-    if (StartLocalNameServer.runHttpServer == false) {
-      GNS.getLogger().info("LNS Node " + LocalNameServer.nodeID + " starting Intercessor Transport on port " + PORT);
-      transport = new Transport(-1, PORT); // -1 means use address instead of Host ID
-      startCheckForResultThread();
-      //startCheckForDumpThread();
-    }
   }
 
-  /**
-   * Query (lookup), update, add, remove commands are sent and received on UPDATE port.
-   */
-  private void startCheckForResultThread() {
-    new Thread("Intercessor-checkForResult") {
-      @Override
-      public void run() {
-        GNS.getLogger().info("Intercessor update result thread started.");
-        while (true) {
-          JSONObject json = transport.readPacket();
-          checkForResult(json);
-        }
-      }
-    }.start();
-  }
-
-  public void checkForResult(JSONObject json) {
+  public static void checkForResult(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case CONFIRM_UPDATE_LNS:
@@ -131,7 +92,7 @@ public class Intercessor {
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
             GNS.getLogger().finer("Query (" + id + "): "
-                    + dnsResponsePacket.getQname() + "/" + dnsResponsePacket.getQrecordKey()
+                    + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
               queryResult.put(id, dnsResponsePacket.getRecordValue());
@@ -139,7 +100,7 @@ public class Intercessor {
             }
           } else {
             GNS.getLogger().finer("Intercessor: Query (" + id + "): "
-                    + dnsResponsePacket.getQname() + "/" + dnsResponsePacket.getQrecordKey()
+                    + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Error Received. ");// + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
               queryResult.put(id, ERRORQUERYRESULT);
@@ -156,7 +117,7 @@ public class Intercessor {
   }
 
   // QUERYING
-  public ResultValue sendQuery(String name, String key, String reader, String signature, String message) {
+  public static ResultValue sendQuery(String name, String key, String reader, String signature, String message) {
     ValuesMap result = sendMultipleReturnValueQuery(name, key, reader, signature, message);
     if (result != null) {
       return result.get(key);
@@ -165,15 +126,15 @@ public class Intercessor {
     }
   }
 
-  public ValuesMap sendMultipleReturnValueQuery(String name, String key, String reader, String signature, String message) {
+  public static ValuesMap sendMultipleReturnValueQuery(String name, String key, String reader, String signature, String message) {
     return sendMultipleReturnValueQuery(name, key, false, reader, signature, message);
   }
 
-  public ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalFields, String reader, String signature, String message) {
+  public static ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalFields, String reader, String signature, String message) {
     GNS.getLogger().finer("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
-    
-    
+
+
     DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.nodeID, reader, signature, message);
     JSONObject json;
     try {
@@ -208,7 +169,7 @@ public class Intercessor {
     GNS.getLogger().info("Query (" + id + ") RTT = " + rtt + "ms");
     GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
     result.setRoundTripTime(rtt); // instrumentation
-    
+
     if (removeInternalFields) {
       result = removeInternalFields(result);
     }
@@ -219,28 +180,28 @@ public class Intercessor {
       return result;
     }
   }
-  
+
   /**
    * Remove any keys / value pairs used internally by the GNS.
    * 
    * @param valuesMap
    * @return 
    */
-  private ValuesMap removeInternalFields(ValuesMap valuesMap) {
+  private static ValuesMap removeInternalFields(ValuesMap valuesMap) {
     for (String key : valuesMap.keySet()) {
       if (GNS.isInternalField(key)) {
         valuesMap.remove(key);
       }
     }
-    
+
     return valuesMap;
   }
 
-  public boolean sendAddRecordWithConfirmation(String name, String key, String value) {
+  public static boolean sendAddRecordWithConfirmation(String name, String key, String value) {
     return sendAddRecordWithConfirmation(name, key, new ResultValue(Arrays.asList(value)));
   }
 
-  public boolean sendAddRecordWithConfirmation(String name, String key, ResultValue value) {
+  public static boolean sendAddRecordWithConfirmation(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending add: " + name + "->" + value);
     AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
@@ -258,7 +219,7 @@ public class Intercessor {
     return result;
   }
 
-  public boolean sendRemoveRecordWithConfirmation(String name) {
+  public static boolean sendRemoveRecordWithConfirmation(String name) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending remove: " + name);
     RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
@@ -275,14 +236,14 @@ public class Intercessor {
     return result;
   }
 
-  public boolean sendUpdateRecordWithConfirmation(String name, String key, String newValue, String oldValue, UpdateOperation operation) {
+  public static boolean sendUpdateRecordWithConfirmation(String name, String key, String newValue, String oldValue, UpdateOperation operation) {
     return sendUpdateRecordWithConfirmation(name, key,
             new ResultValue(Arrays.asList(newValue)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             operation);
   }
 
-  public boolean sendUpdateRecordWithConfirmation(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation) {
+  public static boolean sendUpdateRecordWithConfirmation(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation) {
     int id = nextUpdateRequestID();
     sendUpdateWithSequenceNumber(name, key, newValue, oldValue, id, 0, operation);
     // now we wait until the correct packet comes back
@@ -306,7 +267,7 @@ public class Intercessor {
    * @param sequenceNumber
    * @param operation
    */
-  public void sendUpdateWithSequenceNumber(String name, String key, ResultValue newValue,
+  public static void sendUpdateWithSequenceNumber(String name, String key, ResultValue newValue,
           ResultValue oldValue, int id, int sequenceNumber, UpdateOperation operation) {
 
     GNS.getLogger().finer("sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
@@ -325,7 +286,7 @@ public class Intercessor {
     }
   }
 
-  private int nextUpdateRequestID() {
+  private static int nextUpdateRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -333,7 +294,7 @@ public class Intercessor {
     return id;
   }
 
-  private int nextQueryRequestID() {
+  private static int nextQueryRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -341,7 +302,7 @@ public class Intercessor {
     return id;
   }
 
-  private void waitForUpdateConfirmationPacket(int sequenceNumber) {
+  private static void waitForUpdateConfirmationPacket(int sequenceNumber) {
     try {
       synchronized (monitorUpdate) {
         while (!updateSuccessResult.containsKey(sequenceNumber)) {
@@ -355,22 +316,12 @@ public class Intercessor {
 
   /**
    * Helper function for sending JSON packets to the Local Name Server. 
-   * This usually does not require a socket based send (just a dispatch)
+   * This does not require a socket based send (just a dispatch)
    * as the LNS runs in the same process as the HTTP server.
    * 
    * @param jsonObject 
    */
-  public void sendPacket(JSONObject jsonObject) {
-    if (StartLocalNameServer.runHttpServer) {
-      LNSListener.demultiplexLNSPackets(jsonObject);
-    } else {
-      try {
-        transport.sendPacket(jsonObject, localServerID, PortType.LNS_UDP_PORT);
-      } catch (JSONException e) {
-        GNS.getLogger().warning("JSON error during send packet: " + e);
-      }
-    }
+  public static void sendPacket(JSONObject jsonObject) {
+    LNSListener.demultiplexLNSPackets(jsonObject);
   }
-  
-  
 }

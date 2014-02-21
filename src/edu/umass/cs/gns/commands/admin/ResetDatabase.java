@@ -42,7 +42,7 @@ public class ResetDatabase extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
-      if (Admintercessor.getInstance().sendResetDB()) {
+      if (Admintercessor.sendResetDB()) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE;

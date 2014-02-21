@@ -89,7 +89,7 @@ public class Update {
           LNSListener.udpTransport.sendPacket(json,
                   InetAddress.getByName(updateInfo.senderAddress), updateInfo.senderPort);
         } else if (StartLocalNameServer.runHttpServer) {
-          Intercessor.getInstance().checkForResult(json);
+          Intercessor.checkForResult(json);
         }
 
         if (LocalNameServer.r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
@@ -128,7 +128,7 @@ public class Update {
 //            LNSListener.udpTransport.sendPacket(confirmPkt1.toJSONObject(),
 //                    InetAddress.getByName(updateInfo.senderAddress), updateInfo.senderPort);
 //          } else if (StartLocalNameServer.runHttpServer) {
-//            Intercessor.getInstance().checkForResult(confirmPkt1.toJSONObject());
+//            Intercessor.checkForResult(confirmPkt1.toJSONObject());
 //          }
 //        } catch (JSONException e) {
 //          e.printStackTrace();

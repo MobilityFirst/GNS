@@ -148,7 +148,7 @@ public class PendingTasks
           if (task.address != null && task.port > 0) {
             LNSListener.udpTransport.sendPacket(task.errorMsg,task.address, task.port);
           } else if (StartLocalNameServer.runHttpServer) {
-            Intercessor.getInstance().checkForResult(task.errorMsg);
+            Intercessor.checkForResult(task.errorMsg);
           }
         }
       }

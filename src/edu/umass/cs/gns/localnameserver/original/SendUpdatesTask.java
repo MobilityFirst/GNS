@@ -274,7 +274,7 @@ public class SendUpdatesTask extends TimerTask
       if (senderAddress != null && senderPort > 0) {
         LNSListener.udpTransport.sendPacket(confirmPkt.toJSONObject(), senderAddress, senderPort);
       } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.getInstance().checkForResult(confirmPkt.toJSONObject());
+        Intercessor.checkForResult(confirmPkt.toJSONObject());
       }
     } catch (JSONException e) {
       e.printStackTrace();

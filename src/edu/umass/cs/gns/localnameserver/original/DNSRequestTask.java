@@ -16,18 +16,18 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
+import edu.umass.cs.gns.packet.DNSResponseCode;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.logging.Level;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
@@ -91,7 +91,7 @@ public class DNSRequestTask extends TimerTask {
 
       if (System.currentTimeMillis() - receivedTime > StartLocalNameServer.maxQueryWaitTime) {
         // send error response to user and log error
-        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query timeout exceeded. " + incomingPacket.getQrecordKey() + " " + incomingPacket.getQname());
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query timeout exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid());
 
 
 
@@ -104,7 +104,7 @@ public class DNSRequestTask extends TimerTask {
         if (query == null && queryId != 0) {
           // means query response received
         } else {
-          errorResponse(incomingPacket, DNSRecordType.RCODE_ERROR, senderAddress, senderPort);
+          errorResponse(incomingPacket, DNSResponseCode.ERROR, senderAddress, senderPort);
           logFailureMessage();
         }
 
@@ -127,12 +127,12 @@ public class DNSRequestTask extends TimerTask {
         ns = BestServerSelection.getSmallestLatencyNS(ConfigFileInfo.getAllNameServerIDs(), nameserversQueried);
       } else {
 //      tB = System.currentTimeMillis();
-        CacheEntry cacheEntry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
+        CacheEntry cacheEntry = LocalNameServer.getCacheEntry(incomingPacket.getGuid());
 
 //      tC = System.currentTimeMillis();
         if (cacheEntry != null) {
 
-          ResultValue value = cacheEntry.getValue(incomingPacket.getQrecordKey());
+          ResultValue value = cacheEntry.getValue(incomingPacket.getKey());
 
           if (value != null) {
             if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
@@ -145,13 +145,13 @@ public class DNSRequestTask extends TimerTask {
         }
 //      tD = System.currentTimeMillis();
         if (cacheEntry == null) {
-          RequestActivesPacket pkt = new RequestActivesPacket(incomingPacket.getQname(), LocalNameServer.nodeID);
-          pkt.setActiveNameServers(HashFunction.getPrimaryReplicas(incomingPacket.getQname()));
+          RequestActivesPacket pkt = new RequestActivesPacket(incomingPacket.getGuid(), LocalNameServer.nodeID);
+          pkt.setActiveNameServers(HashFunction.getPrimaryReplicas(incomingPacket.getGuid()));
           cacheEntry = LocalNameServer.addCacheEntry(pkt);
         }
 
         if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
-          GNS.getLogger().severe("here invalid name server .... "  + incomingPacket.getQname());
+          GNS.getLogger().severe("here invalid name server .... "  + incomingPacket.getGuid());
           if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
 
 
@@ -170,21 +170,21 @@ public class DNSRequestTask extends TimerTask {
                   0,
                   new HashSet<Integer>(), numRestarts + 1);
 
-          PendingTasks.addToPendingRequests(incomingPacket.getQname(),
+          PendingTasks.addToPendingRequests(incomingPacket.getGuid(),
                   queryTaskObject, StartLocalNameServer.queryTimeout,
-                  senderAddress, senderPort, getErrorPacket(incomingPacket),getFailureLogMessage(lookupNumber, incomingPacket.getQrecordKey(), incomingPacket.getQname(),transmissionCount,receivedTime, numRestarts + 1, -1, nameserversQueried),0);
+                  senderAddress, senderPort, getErrorPacket(incomingPacket),getFailureLogMessage(lookupNumber, incomingPacket.getKey(), incomingPacket.getGuid(),transmissionCount,receivedTime, numRestarts + 1, -1, nameserversQueried),0);
 //        RequestActivesTask.requestActives(incomingPacket.getQname());
           throw new MyException();
         }
 
         if (StartLocalNameServer.loadDependentRedirection) {
-          ns = LocalNameServer.getBestActiveNameServerFromCache(incomingPacket.getQname(), nameserversQueried);
+          ns = LocalNameServer.getBestActiveNameServerFromCache(incomingPacket.getGuid(), nameserversQueried);
         }
         else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
           ns = LocalNameServer.getBeehiveNameServer(nameserversQueried, cacheEntry);
         }
         else {
-          coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getQname(),
+          coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getGuid(),
                   cacheEntry.getActiveNameServers());
           ns = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserversQueried);
         }
@@ -200,7 +200,7 @@ public class DNSRequestTask extends TimerTask {
 //        queryStatus = (queryStatus == null) ? QueryInfo.SINGLE_TRANSMISSION : queryStatus + "-" + QueryInfo.SINGLE_TRANSMISSION;
           //Get a unique id for this query
           // TODO: change back to time query received
-          queryId = LocalNameServer.addDNSRequestInfo(incomingPacket.getQname(), incomingPacket.getQrecordKey(), ns,
+          queryId = LocalNameServer.addDNSRequestInfo(incomingPacket.getGuid(), incomingPacket.getKey(), ns,
                   receivedTime, "x", lookupNumber, incomingPacket, senderAddress, senderPort, numRestarts);
         } else {
           DNSRequestInfo info = LocalNameServer.getDNSRequestInfo(queryId);
@@ -231,18 +231,9 @@ public class DNSRequestTask extends TimerTask {
 //        tG = System.currentTimeMillis();
 
         LocalNameServer.sendToNS(json, ns);
-//      throw new MyException();
-
-//        long t1 = System.currentTimeMillis();
-//        if (t1 - t0 > 20) {
-//          GNS.getLogger().severe(" LNSQuerytask longlatency " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)) ;
-//        }
-//          break;
-//        if (StartLocalNameServer.experimentMode) throw new MyException();
       }
     }catch (Exception e) {
       if (e.getClass().equals(MyException.class)) {
-//        GNS.getLogger().severe("Catch here ...");
         throw new RuntimeException();
       }
       GNS.getLogger().severe("Exception Exception Exception .... ");
@@ -259,9 +250,9 @@ public class DNSRequestTask extends TimerTask {
    * @param port
    * @throws org.json.JSONException
    */
-  private void errorResponse(DNSPacket dnsPacket, int errorCode, InetAddress address, int port) {
+  private void errorResponse(DNSPacket dnsPacket, DNSResponseCode errorCode, InetAddress address, int port) {
 
-    dnsPacket.getHeader().setRcode(errorCode);
+    dnsPacket.getHeader().setResponseCode(errorCode);
     dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
 
     try {
@@ -270,7 +261,7 @@ public class DNSRequestTask extends TimerTask {
       if (address!= null && port > 0){
         LNSListener.udpTransport.sendPacket(dnsPacket.toJSONObject(), address, port);
       } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.getInstance().checkForResult(dnsPacket.toJSONObject());
+        Intercessor.checkForResult(dnsPacket.toJSONObject());
       }
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("error sent --> " + dnsPacket.toJSONObjectQuestion().toString());
     }  catch (JSONException e) {
@@ -281,7 +272,7 @@ public class DNSRequestTask extends TimerTask {
   public static JSONObject getErrorPacket(DNSPacket dnsPacket1) {
     try {
       DNSPacket dnsPacket = new DNSPacket(dnsPacket1.toJSONObjectQuestion());
-      dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
+      dnsPacket.getHeader().setResponseCode(DNSResponseCode.ERROR);
       dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
       return  dnsPacket.toJSONObject();
     } catch (JSONException e) {
@@ -296,12 +287,12 @@ public class DNSRequestTask extends TimerTask {
    * Log data for entries already in cache.
    */
   private void loggingForAddressInCache() {
-    NameRecordKey nameRecordKey = incomingPacket.getQrecordKey();
-    String name = incomingPacket.getQname();
+    NameRecordKey nameRecordKey = incomingPacket.getKey();
+    String name = incomingPacket.getGuid();
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Valid Address in cache... "
             + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
     LocalNameServer.incrementLookupResponse(name);
-    DNSRequestInfo tempQueryInfo = new DNSRequestInfo(-1, incomingPacket.getQname(), incomingPacket.getQrecordKey(), receivedTime, -1, "NA", lookupNumber,
+    DNSRequestInfo tempQueryInfo = new DNSRequestInfo(-1, incomingPacket.getGuid(), incomingPacket.getKey(), receivedTime, -1, "NA", lookupNumber,
             incomingPacket, senderAddress, senderPort, numRestarts);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();
@@ -317,13 +308,13 @@ public class DNSRequestTask extends TimerTask {
    */
   private void sendCachedReplyToUser(ResultValue value, int TTL) {
 //    CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + incomingPacket.getQname());
-    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getQname(),incomingPacket.getQrecordKey(),value, TTL, new HashSet<Integer>(), null, null, null);
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + incomingPacket.getGuid());
+    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getGuid(),incomingPacket.getKey(),value, TTL, new HashSet<Integer>(), null, null, null);
     try {
       if (senderAddress != null && senderPort > 0) {
         LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), senderAddress, senderPort);
       } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.getInstance().checkForResult(outgoingPacket.toJSONObject());
+        Intercessor.checkForResult(outgoingPacket.toJSONObject());
       }
 //      Packet.sendUDPPacket(LocalNameServer.socket, outgoingPacket.responseToJSONObject(), senderAddress, senderPort);
     } catch (Exception e) {
@@ -332,8 +323,8 @@ public class DNSRequestTask extends TimerTask {
   }
 
   private void logFailureMessage() {
-    GNS.getStatLogger().fine(getFailureLogMessage(lookupNumber, incomingPacket.getQrecordKey(),
-            incomingPacket.getQname(),transmissionCount,receivedTime, numRestarts, coordinatorID, nameserversQueried));
+    GNS.getStatLogger().fine(getFailureLogMessage(lookupNumber, incomingPacket.getKey(),
+            incomingPacket.getGuid(),transmissionCount,receivedTime, numRestarts, coordinatorID, nameserversQueried));
   }
 
 

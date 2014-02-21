@@ -74,7 +74,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
             LNSListener.udpTransport.sendPacket(confirmPkt.toJSONObject(),
                     InetAddress.getByName(updateInfo.senderAddress), updateInfo.senderPort);
           } else if (StartLocalNameServer.runHttpServer) {
-            Intercessor.getInstance().checkForResult(confirmPkt.toJSONObject());
+            Intercessor.checkForResult(confirmPkt.toJSONObject());
           }
         } else {
           GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");

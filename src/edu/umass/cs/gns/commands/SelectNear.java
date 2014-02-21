@@ -24,7 +24,7 @@ public class SelectNear extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{FIELD, VALUE, MAXDISTANCE};
+    return new String[]{FIELD, NEAR, MAXDISTANCE};
   }
 
   @Override
@@ -35,7 +35,7 @@ public class SelectNear extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws JSONException {
     String field = json.getString(FIELD);
-    String value = json.getString(VALUE);
+    String value = json.getString(NEAR);
     String maxDistance = json.getString(MAXDISTANCE);
     return FieldAccess.selectNear(field, value, maxDistance);
   }

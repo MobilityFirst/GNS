@@ -5,11 +5,10 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.util.JSONUtils;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Set;
 
 
 /**
@@ -22,8 +21,8 @@ import java.util.Set;
 public class DNSPacket extends BasicPacketWithSignatureInfo {
 
   public final static String HEADER = "header1";
-  public final static String QRECORDKEY = "qrecordkey";
-  public final static String QNAME = "qname";
+  public final static String GUID = "dns_guid";
+  public final static String KEY = "dns_key";
   public final static String TIME_TO_LIVE = "ttlAddress";
   public final static String RECORD_VALUE = "recordValue";
 
@@ -37,11 +36,11 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    * Name in the query *
    */
-  private String qname;
+  private String guid;
   /**
    * The key of the value key pair.
    */
-  private final NameRecordKey qrecordKey;
+  private final NameRecordKey key;
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
    */
@@ -70,9 +69,9 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   public DNSPacket(int id, String qname, NameRecordKey key, int sender, String accessor, String signature, String message) {
     super(accessor, signature, message);
-    this.header = new Header(id, DNSRecordType.QUERY, DNSRecordType.RCODE_NO_ERROR);
-    this.qname = qname;
-    this.qrecordKey = key;
+    this.header = new Header(id, DNSRecordType.QUERY, DNSResponseCode.NO_ERROR);
+    this.guid = qname;
+    this.key = key;
     this.lnsId = sender;
   }
 
@@ -86,10 +85,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public DNSPacket(JSONObject json) throws JSONException {
     super(json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.header = new Header(json.getJSONObject(HEADER));
-    this.qname = json.getString(QNAME);
-    this.qrecordKey = NameRecordKey.valueOf(json.getString(QRECORDKEY));
+    this.guid = json.getString(GUID);
+    this.key = NameRecordKey.valueOf(json.getString(KEY));
 
-    if (header.getQr() == DNSRecordType.RESPONSE && header.getRcode() != DNSRecordType.RCODE_ERROR) {
+    if (header.getQr() == DNSRecordType.RESPONSE && header.getResponseCode() != DNSResponseCode.ERROR) {
       this.ttl = json.getInt(TIME_TO_LIVE);
       this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
       if (json.has(RECORD_VALUE)) {
@@ -111,9 +110,9 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public DNSPacket(int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers,
           String accessor, String signature, String message) {
     super(accessor, signature, message);
-    this.header = new Header(id, DNSRecordType.RESPONSE, DNSRecordType.RCODE_NO_ERROR);
-    this.qname = name;
-    this.qrecordKey = key;
+    this.header = new Header(id, DNSRecordType.RESPONSE, DNSResponseCode.NO_ERROR);
+    this.guid = name;
+    this.key = key;
     this.recordValue = new ValuesMap();
     this.recordValue.put(key.getName(), fieldValue);
     this.ttl = TTL;
@@ -125,9 +124,9 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public DNSPacket(int id, String name, NameRecordKey key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers,
           String accessor, String signature, String message) {
     super(accessor, signature, message);
-    this.header = new Header(id, DNSRecordType.RESPONSE, DNSRecordType.RCODE_NO_ERROR);
-    this.qname = name;
-    this.qrecordKey = key;
+    this.header = new Header(id, DNSRecordType.RESPONSE,  DNSResponseCode.NO_ERROR);
+    this.guid = name;
+    this.key = key;
     this.recordValue = entireRecord;
     this.ttl = TTL;
     this.activeNameServers = activeNameServers;
@@ -145,8 +144,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     JSONObject json = new JSONObject();
     super.addToJSONObject(json);
     json.put(HEADER, getHeader().toJSONObject());
-    json.put(QRECORDKEY, getQrecordKey().getName());
-    json.put(QNAME, getQname());
+    json.put(KEY, getKey().getName());
+    json.put(GUID, getGuid());
     json.put(LNS_ID, lnsId);
 
     return json;
@@ -170,8 +169,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public void addToJSONObject(JSONObject json) throws JSONException {
     super.addToJSONObject(json);
     json.put(HEADER, getHeader().toJSONObject());
-    json.put(QRECORDKEY, getQrecordKey().getName());
-    json.put(QNAME, getQname());
+    json.put(KEY, getKey().getName());
+    json.put(GUID, getGuid());
     json.put(TIME_TO_LIVE, getTTL());
     json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
     if (recordValue != null)
@@ -201,12 +200,11 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    *
    */
   public boolean containsAnyError() {
-    return getHeader().getRcode() == DNSRecordType.RCODE_ERROR
-            || getHeader().getRcode() == DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER;
+    return getHeader().getResponseCode().isAnError();
   }
 
   public boolean containsInvalidActiveNSError() {
-    return getHeader().getRcode() == DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER;
+    return getHeader().getResponseCode() == DNSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER;
   }
 
   /**
@@ -223,7 +221,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     try {
       return isQuery() ? toJSONObjectQuestion().toString() : toJSONObject().toString();
     } catch (JSONException e) {
-      return "DNSPacket{" + "header=" + getHeader() + ", qname=" + getQname() + ", qrecordKey=" + getQrecordKey() + '}';
+      return "DNSPacket{" + "header=" + getHeader() + ", guid=" + getGuid() + ", key=" + getKey() + '}';
     }
   }
 
@@ -242,21 +240,17 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   }
 
   /**
-   * @return the qname
+   * @return the guid
    */
-  public String getQname() {
-    return qname;
-  }
-
-  public void setQname(String name) {
-    this.qname = name;
+  public String getGuid() {
+    return guid;
   }
 
   /**
    * @return the qrecordKey
    */
-  public NameRecordKey getQrecordKey() {
-    return qrecordKey;
+  public NameRecordKey getKey() {
+    return key;
   }
 
   /**
@@ -296,7 +290,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     if (this.recordValue == null) {
       this.recordValue = new ValuesMap();
     }
-    this.recordValue.put(qrecordKey.getName(), data);
+    this.recordValue.put(key.getName(), data);
   }
 
   public int getLnsId() {

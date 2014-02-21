@@ -6,20 +6,18 @@
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.clientprotocol.Defs;
+import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.localnameserver.original.LNSListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
-import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
-import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
 import static edu.umass.cs.gns.packet.Packet.*;
+import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.packet.admin.SentinalPacket;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,11 +41,11 @@ public class Admintercessor {
 
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   private static Random randomID;
-  private int localServerID = 0;
+  private static int localServerID = 0;
   /**
    * Used for the general admin wait / notify handling
    */
-  private final Object adminResponseMonitor = new Object();
+  private static final Object adminResponseMonitor = new Object();
   /**
    * This is where the admin response results are put.
    */
@@ -55,7 +53,7 @@ public class Admintercessor {
   /**
    * Used for the dump wait / notify handling
    */
-  private final Object dumpMonitor = new Object();
+  private static final Object dumpMonitor = new Object();
   /**
    * This is where dump response records are collected while we're waiting for all them to come in.
    */
@@ -65,34 +63,19 @@ public class Admintercessor {
    */
   private static ConcurrentMap<Integer, Map<Integer, TreeSet<NameRecord>>> dumpResult;
 
-  public static Admintercessor getInstance() {
-    return AdmintercessorHolder.INSTANCE;
-  }
-
-  private static class AdmintercessorHolder {
-
-    private static final Admintercessor INSTANCE = new Admintercessor();
-  }
-
-  private Admintercessor() {
-
+  static {
     randomID = new Random();
     dumpStorage = new ConcurrentHashMap<Integer, Map<Integer, TreeSet<NameRecord>>>(10, 0.75f, 3);
     dumpResult = new ConcurrentHashMap<Integer, Map<Integer, TreeSet<NameRecord>>>(10, 0.75f, 3);
     adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
-
-    if (StartLocalNameServer.runHttpServer == false) {
-      startCheckForDumpThread();
-      startCheckForAdminResponseThread();
-    }
   }
 
-  public int getLocalServerID() {
+  public static int getLocalServerID() {
     return localServerID;
   }
 
-  public void setLocalServerID(int localServerID) {
-    this.localServerID = localServerID;
+  public static void setLocalServerID(int localServerID) {
+    Admintercessor.localServerID = localServerID;
 
     GNS.getLogger().info("Local server id: " + localServerID
             + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
@@ -100,7 +83,7 @@ public class Admintercessor {
   }
 
   // the nuclear option
-  public boolean sendResetDB() {
+  public static boolean sendResetDB() {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject());
       return true;
@@ -110,7 +93,7 @@ public class Admintercessor {
     return false;
   }
 
-  public boolean sendDeleteAllRecords() {
+  public static boolean sendDeleteAllRecords() {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject());
       return true;
@@ -120,7 +103,7 @@ public class Admintercessor {
     return false;
   }
 
-  public boolean sendClearCache() {
+  public static boolean sendClearCache() {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject());
       return true;
@@ -130,7 +113,7 @@ public class Admintercessor {
     return false;
   }
 
-  public String sendDumpCache() {
+  public static String sendDumpCache() {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject());
@@ -147,7 +130,7 @@ public class Admintercessor {
     }
   }
   
-  public boolean sendChangeLogLevel(Level level) {
+  public static boolean sendChangeLogLevel(Level level) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
       sendAdminPacket(packet.toJSONObject());
@@ -158,7 +141,7 @@ public class Admintercessor {
     return false;
   }
 
-  private void waitForAdminResponse(int id) {
+  private static void waitForAdminResponse(int id) {
     try {
       GNS.getLogger().finer("Waiting for admin response id: " + id);
       synchronized (adminResponseMonitor) {
@@ -172,32 +155,7 @@ public class Admintercessor {
     }
   }
 
-  private void startCheckForAdminResponseThread() {
-    new Thread("Admintercessor-CheckForAdminResponse") {
-      @Override
-      public void run() {
-        GNS.getLogger().info("Admintercessor check admin response thread started.");
-        ServerSocket adminSocket;
-        if ((adminSocket = getAdminResponseSocket()) != null) {
-          while (true) {
-            try {
-              Socket asock = adminSocket.accept();
-              //Read the packet from the input stream
-              JSONObject json = getJSONObjectFrame(asock);
-              GNS.getLogger().finer("Read " + json.toString());
-              processAdminResponsePackets(json);
-            } catch (IOException e) {
-              GNS.getLogger().warning("Error while reading admin response: " + e);
-            } catch (JSONException e) {
-              GNS.getLogger().warning("JSON Error while reading admin response: " + e);
-            }
-          }
-        }
-      }
-    }.start();
-  }
-
-  public void processAdminResponsePackets(JSONObject json) {
+  public static void processAdminResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case ADMIN_RESPONSE:
@@ -222,7 +180,7 @@ public class Admintercessor {
     }
   }
 
-  private ServerSocket getAdminResponseSocket() {
+  private static ServerSocket getAdminResponseSocket() {
     GNS.getLogger().finer("Waiting for responses dump");
     ServerSocket adminSocket;
     try {
@@ -235,7 +193,7 @@ public class Admintercessor {
   }
 
   // DUMP
-  public String sendDump() {
+  public static String sendDump() {
     int id;
     if ((id = sendDumpOutputHelper(null)) == -1) {
       return Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS";
@@ -250,7 +208,7 @@ public class Admintercessor {
     }
   }
 
-  private void waitForDumpResponse(int id) {
+  private static void waitForDumpResponse(int id) {
     try {
       GNS.getLogger().finer("Waiting for dump response id: " + id);
       synchronized (dumpMonitor) {
@@ -272,7 +230,7 @@ public class Admintercessor {
     }
   }
 
-  private String formatDumpRecords(Map<Integer, TreeSet<NameRecord>> recordsMap) {
+  private static String formatDumpRecords(Map<Integer, TreeSet<NameRecord>> recordsMap) {
     // now process all the records we received
     
     StringBuilder result = new StringBuilder();
@@ -311,32 +269,7 @@ public class Admintercessor {
     return result.toString();
   }
 
-  private void startCheckForDumpThread() {
-    new Thread("Admintercessor-checkForDump") {
-      @Override
-      public void run() {
-        GNS.getLogger().info("Admintercessor dump check thread started.");
-        ServerSocket adminSocket;
-        if ((adminSocket = sendDumpGetInputSocket()) != null) {
-          while (true) {
-            try {
-              Socket asock = adminSocket.accept();
-              //Read the packet from the input stream
-              JSONObject json = getJSONObjectFrame(asock);
-              GNS.getLogger().finer("Read " + json.toString());
-              processDumpResponsePackets(json);
-            } catch (IOException e) {
-              GNS.getLogger().warning("Error while reading dump response: " + e);
-            } catch (JSONException e) {
-              GNS.getLogger().warning("JSON Error while reading dump response: " + e);
-            }
-          }
-        }
-      }
-    }.start();
-  }
-
-  public void processDumpResponsePackets(JSONObject json) {
+  public static void processDumpResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case DUMP_REQUEST:
@@ -382,7 +315,7 @@ public class Admintercessor {
     }
   }
 
-  public HashSet<String> collectTaggedGuids(String tagName) {
+  public static HashSet<String> collectTaggedGuids(String tagName) {
     int id;
     if ((id = sendDumpOutputHelper(tagName)) == -1) {
       return null;
@@ -407,7 +340,7 @@ public class Admintercessor {
     }
   }
 
-  private ServerSocket sendDumpGetInputSocket() {
+  private static ServerSocket sendDumpGetInputSocket() {
     GNS.getLogger().finer("Waiting for responses dump");
     ServerSocket adminSocket;
     try {
@@ -419,7 +352,7 @@ public class Admintercessor {
     return adminSocket;
   }
 
-  private int sendDumpOutputHelper(String tagName) {
+  private static int sendDumpOutputHelper(String tagName) {
     // send the request out to the local name server
     int id = nextDumpRequestID();
     GNS.getLogger().finer("Sending dump request id = " + id);
@@ -434,15 +367,11 @@ public class Admintercessor {
     return id;
   }
 
-  private void sendAdminPacket(JSONObject json) throws IOException {
-    if (StartLocalNameServer.runHttpServer) {
+  private static void sendAdminPacket(JSONObject json) throws IOException {
       LNSListenerAdmin.handlePacket(json, null);
-    } else {
-      sendTCPPacket(json, localServerID, GNS.PortType.LNS_ADMIN_PORT);
-    }
   }
 
-  private int nextDumpRequestID() {
+  private static int nextDumpRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -450,7 +379,7 @@ public class Admintercessor {
     return id;
   }
 
-  private int nextAdminRequestID() {
+  private static int nextAdminRequestID() {
     int id;
     do {
       id = randomID.nextInt();

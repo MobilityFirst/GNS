@@ -42,7 +42,7 @@ public class DeleteAllRecords extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
-      if (Admintercessor.getInstance().sendDeleteAllRecords()) {
+      if (Admintercessor.sendDeleteAllRecords()) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE;

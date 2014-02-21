@@ -42,7 +42,7 @@ public class DumpCache extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
-      return Admintercessor.getInstance().sendDumpCache();
+      return Admintercessor.sendDumpCache();
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
   }

@@ -43,7 +43,7 @@ public class GetTagged extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
-    return new JSONArray(Admintercessor.getInstance().collectTaggedGuids(tagName)).toString();
+    return new JSONArray(Admintercessor.collectTaggedGuids(tagName)).toString();
   }
 
   @Override

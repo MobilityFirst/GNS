@@ -31,13 +31,6 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 /**
  *
@@ -54,8 +47,8 @@ public class GnsHttpServer {
 
   public static void runHttp(int localNameServerID) {
     GnsHttpServer.localNameServerID = localNameServerID;
-    Intercessor.getInstance().setLocalServerID(localNameServerID);
-    Admintercessor.getInstance().setLocalServerID(localNameServerID);
+    Intercessor.setLocalServerID(localNameServerID);
+    Admintercessor.setLocalServerID(localNameServerID);
     runServer();
   }
 
@@ -97,8 +90,8 @@ public class GnsHttpServer {
         if (localNameServerID == -1) {
           int randomHostID = new ArrayList<Integer>(ConfigFileInfo.getAllHostIDs()).get(new Random().nextInt(ConfigFileInfo.getAllHostIDs().size()));
           // pick a random local name server - ASSUMES THERE IS AN LNS RUNNING AT EVERY HOST
-          Intercessor.getInstance().setLocalServerID(randomHostID);
-          Admintercessor.getInstance().setLocalServerID(randomHostID);
+          Intercessor.setLocalServerID(randomHostID);
+          Admintercessor.setLocalServerID(randomHostID);
         }
 
         String requestMethod = exchange.getRequestMethod();
@@ -243,40 +236,6 @@ public class GnsHttpServer {
       }
     }
   }
-  private static Options commandLineOptions;
 
-  private static CommandLine initializeOptions(String[] args) throws ParseException {
-    Option nsFile = OptionBuilder.withArgName("file").hasArg().withDescription("Name server file").create("nsfile");
-    Option lnsid = OptionBuilder.withArgName("lnsid").hasArg().withDescription("Local name server id").create("lnsid");
-    //Option local = new Option("local", "all servers are on this machine");
-    commandLineOptions = new Options();
-    commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(lnsid);
-    //commandLineOptions.addOption(local);
-    CommandLineParser parser = new GnuParser();
-    return parser.parse(commandLineOptions, args);
-  }
-
-  // Typical use: java -cp GNS.jar edu.umass.cs.gns.httpserver.GnsHttpServer -nsfile ../scripts/test/name-server-info -lnsid 2
-  public static void main(String[] args) throws IOException {
-    String nsFile = "";
-    localNameServerID = 0;
-    try {
-      CommandLine parser = initializeOptions(args);
-      nsFile = parser.getOptionValue("nsfile");
-      localNameServerID = Integer.parseInt(parser.getOptionValue("lnsid"));
-      ConfigFileInfo.readHostInfo(nsFile, 0);
-    } catch (Exception e1) {
-      e1.printStackTrace();
-      System.exit(1);
-    }
-
-    if (localNameServerID != -1) {
-      // tell the Intercessor what local name server to contact to
-      Intercessor.getInstance().setLocalServerID(localNameServerID);
-      Admintercessor.getInstance().setLocalServerID(localNameServerID);
-    }
-    runServer();
-  }
   public static String Version = "$Revision$";
 }

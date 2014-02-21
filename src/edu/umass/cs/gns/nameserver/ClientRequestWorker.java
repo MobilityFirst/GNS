@@ -753,78 +753,85 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().info("NS recvd DNS lookup request: " + incomingJSON);
     }
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
-    if (dnsPacket.isQuery()) {
-      int lnsId = dnsPacket.getLnsId();
- 
-      NameRecord nameRecord = null;
-      try {
-        if (Defs.ALLFIELDS.equals(dnsPacket.getQrecordKey().getName())) {
-          // need everything so just grab all the fields
-          nameRecord = NameServer.getNameRecord(dnsPacket.getQname());
-        } else {
-          nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getQname(),
-                  getDNSPacketFields(),
-                  dnsPacket.getQrecordKey().getName());
-        }
-
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().fine("Name record read is " + nameRecord.toJSONObject());
-        }
-
-      } catch (RecordNotFoundException e) {
-        GNS.getLogger().warning("Record not found for name: " + dnsPacket.getQname() + " Key = " + dnsPacket.getQrecordKey());
-        // name record will be null
-      }
-      dnsPacket = makeResponsePacket(dnsPacket, nameRecord);
-      NameServer.returnToSender(dnsPacket.toJSONObject(), lnsId);
-
+    if (!dnsPacket.isQuery()) {
+      GNS.getLogger().severe("DNS Packet isn't a query... ignoring!");
     } else {
-      GNS.getLogger().severe("DNS Packet isn't a query!");
+      // Check the signature and access
+      
+      NameRecord nameRecord = null;
+      // Try to look up the value in the database
+      try {
+        if (Defs.ALLFIELDS.equals(dnsPacket.getKey().getName())) {
+          // need everything so just grab all the fields
+          nameRecord = NameServer.getNameRecord(dnsPacket.getGuid());
+        } else {
+          // otherwise grab a few system fields we need plus the field the user wanted
+          nameRecord = NameServer.getNameRecordMultiField(dnsPacket.getGuid(),
+                  getDNSPacketFields(),
+                  dnsPacket.getKey().getName());
+        }
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().info("Record not found for name: " + dnsPacket.getGuid() + " Key = " + dnsPacket.getKey());
+      }
+      // Now we either have a name record with stuff it in or a null one
+      // Time to send something back to the client
+      dnsPacket = makeResponsePacket(dnsPacket, nameRecord);
+      NameServer.returnToSender(dnsPacket.toJSONObject(), dnsPacket.getLnsId());
     }
   }
 
+  /**
+   * Handles a few different cases of record not found, 
+   * @param dnsPacket
+   * @param nameRecord
+   * @return 
+   */
   private DNSPacket makeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord) {
     dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
     // change it to a response packet
-    String qName = dnsPacket.getQname();
-    String qKey = dnsPacket.getQrecordKey().getName();
+    String guid = dnsPacket.getGuid();
+    String key = dnsPacket.getKey().getName();
     try {
-      // check if this is current set of ACTIVES (not primary!).
+      // Normative case... NameRecord was found and this server is one
+      // of the active servers of the record
       if (nameRecord != null && nameRecord.containsActiveNameServer(NameServer.nodeID)) {
-        if (qName != null) {
+        if (guid != null) {
           dnsPacket.setActiveNameServers(nameRecord.getActiveNameServers());
           //Generate the response packet
           // assume no error... change it below if there is an error
-          dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_NO_ERROR);
+          dnsPacket.getHeader().setResponseCode(DNSResponseCode.NO_ERROR);
           dnsPacket.setTTL(nameRecord.getTimeToLive());
-          if (nameRecord.containsKey(qKey)) {
-            dnsPacket.setSingleReturnValue(nameRecord.getKey(qKey));
-            GNS.getLogger().fine("NS sending DNS lookup response: Name = " + qName);
-
-          } else if (Defs.ALLFIELDS.equals(qKey)) {
+          // Either returing one value or a bunch
+          if (nameRecord.containsKey(key)) {
+            dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
+            GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid);
+          } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
-            GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + qName);
+            GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + guid);
+            // or we don't actually have the field
           } else { // send error msg.
-            GNS.getLogger().severe("Record doesn't contain field: " + qKey + " name  = " + qName);
-            dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
+            GNS.getLogger().severe("Record doesn't contain field: " + key + " name  = " + guid);
+            dnsPacket.getHeader().setResponseCode(DNSResponseCode.ERROR);
           }
+          // For some reason the Guid of the packet is null
         } else { // send error msg.
-          GNS.getLogger().finer("QNAME of query is NULL!");
-          dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
+          GNS.getLogger().finer("GUID of query is NULL!");
+          dnsPacket.getHeader().setResponseCode(DNSResponseCode.ERROR);
         }
+        // we're not the correct active name server so tell the client that
       } else { // send invalid error msg.
-        dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR_INVALID_ACTIVE_NAMESERVER);
+        dnsPacket.getHeader().setResponseCode(DNSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
-          GNS.getLogger().info("Invalid actives. Name = " + qName);
+          GNS.getLogger().info("Invalid actives. Name = " + guid);
         } else {
-          GNS.getLogger().info("Invalid actives. Name = " + qName + " Actives = " + nameRecord.getActiveNameServers());
+          GNS.getLogger().info("Invalid actives. Name = " + guid + " Actives = " + nameRecord.getActiveNameServers());
         }
       }
     } catch (FieldNotFoundException e) {
       if (StartNameServer.debugMode) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       }
-      dnsPacket.getHeader().setRcode(DNSRecordType.RCODE_ERROR);
+      dnsPacket.getHeader().setResponseCode(DNSResponseCode.ERROR);
     }
     return dnsPacket;
 
