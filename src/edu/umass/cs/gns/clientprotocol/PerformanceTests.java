@@ -8,8 +8,8 @@ package edu.umass.cs.gns.clientprotocol;
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.FieldAccess;
 import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.client.QueryResult;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.util.Stats;
 import edu.umass.cs.gns.util.Util;
 import java.io.PrintWriter;
@@ -76,8 +76,8 @@ public class PerformanceTests {
       // acessing the RoundTripTime fields of the ValuesMap class which records the
       // time between the LNS sending the request to the NS and the return message.
       for (String field : fields) {
-        ValuesMap value = Intercessor.sendMultipleReturnValueQuery(guid, field, true, null, null, null);
-        if (value != null) {
+       QueryResult value = Intercessor.sendQuery(guid, field, null, null, null);
+        if (!value.isError()) {
           //result.append(value.getRoundTripTime());
           times.add(new Double(value.getRoundTripTime()));
         } else {

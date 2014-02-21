@@ -32,7 +32,7 @@ import org.json.JSONException;
  * @author westy
  */
 public class AccountAccess {
-
+  
   public static final String ACCOUNT_INFO = GNS.makeInternalField("account_info");
   public static final String GUID = GNS.makeInternalField("guid");
   public static final String PRIMARY_GUID = GNS.makeInternalField("primary_guid");
@@ -56,16 +56,16 @@ public class AccountAccess {
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid) {
     
-    ResultValue accountResult = Intercessor.sendQuery(guid, ACCOUNT_INFO, null, null, null);
-    if (accountResult == null) {
+    QueryResult accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+    if (accountResult.isError()) {
       guid = lookupPrimaryGuid(guid);
       if (guid != null) {
-        accountResult = Intercessor.sendQuery(guid, ACCOUNT_INFO, null, null, null);
+        accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
       }
     }
-    if (accountResult != null) {
+    if (!accountResult.isError()) {
       try {
-        return new AccountInfo(accountResult.toResultValueString());
+        return new AccountInfo(accountResult.get(ACCOUNT_INFO).toResultValueString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing accountinfo:" + e);
       } catch (ParseException e) {
@@ -86,9 +86,9 @@ public class AccountAccess {
    */
   public static String lookupPrimaryGuid(String guid) {
     
-    ResultValue guidResult = Intercessor.sendQuery(guid, PRIMARY_GUID, null, null, null);
-    if (guidResult != null) {
-      return (String) guidResult.get(0);
+    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(guid, PRIMARY_GUID);
+    if (!guidResult.isError()) {
+      return (String) guidResult.get(PRIMARY_GUID).get(0);
     } else {
       return null;
     }
@@ -105,9 +105,9 @@ public class AccountAccess {
    */
   public static String lookupGuid(String name) {
     
-    ResultValue guidResult = Intercessor.sendQuery(name, GUID, null, null, null);
-    if (guidResult != null) {
-      return (String) guidResult.get(0);
+    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(name, GUID);
+    if (!guidResult.isError()) {
+      return (String) guidResult.get(GUID).get(0);
     } else {
       return null;
     }
@@ -123,10 +123,10 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfo(String guid) {
     
-    ResultValue guidResult = Intercessor.sendQuery(guid, GUID_INFO, null, null, null);
-    if (guidResult != null) {
+    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(guid, GUID_INFO);
+    if (!guidResult.isError()) {
       try {
-        return new GuidInfo(guidResult.toResultValueString());
+        return new GuidInfo(guidResult.get(GUID_INFO).toResultValueString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing guidinfo:" + e);
       } catch (ParseException e) {
@@ -165,7 +165,7 @@ public class AccountAccess {
   //
   private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server at %s.\n"
           + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
-
+  
   public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
     String response;
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(Defs.OKRESPONSE)) {
@@ -196,7 +196,7 @@ public class AccountAccess {
     }
     return response;
   }
-
+  
   public static String verifyAccount(String guid, String code) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid)) != null) {
@@ -244,7 +244,7 @@ public class AccountAccess {
    */
   public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
     try {
-      
+
       // do this first add to make sure this name isn't already registered
       if (Intercessor.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // if that's cool then add the entry that links the GUID to the username and public key
@@ -279,7 +279,7 @@ public class AccountAccess {
    * @return status result 
    */
   public static String removeAccount(AccountInfo accountInfo) {
-    
+
     // do this first add to make sure this account exists
     if (Intercessor.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryName())) {
       Intercessor.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryGuid());
@@ -318,10 +318,10 @@ public class AccountAccess {
       }
       // do this first so if there is an execption we don't have to back out of anything
       ResultValue guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
-
+      
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
-      
+
       // insure that that name does not already exist
       if (Intercessor.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // update the account info
@@ -379,7 +379,7 @@ public class AccountAccess {
   public static String addAlias(AccountInfo accountInfo, String alias) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
-    
+
     // insure that that name does not already exist
     if (Intercessor.sendAddRecordWithConfirmation(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
       if (updateAccountInfo(accountInfo)) {
@@ -464,7 +464,7 @@ public class AccountAccess {
     }
     return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
   }
-
+  
   private static boolean updateAccountInfo(AccountInfo accountInfo) {
     
     try {
@@ -478,7 +478,7 @@ public class AccountAccess {
     }
     return false;
   }
-
+  
   private static boolean updateGuidInfo(GuidInfo guidInfo) {
     
     try {

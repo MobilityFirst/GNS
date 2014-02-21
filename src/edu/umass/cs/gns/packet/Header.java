@@ -1,20 +1,22 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
 package edu.umass.cs.gns.packet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * ************************************************************
  * This class represents the DNS packet header.
- *
- * @author Hardeep Uppal
- *
- ************************************************************
  */
 public class Header {
 
   private static final String ID = "id";
-  private static final String QR = "qr";
+  private static final String QRCODE = "qr";
   private static final String RESPONSECODE = "rcode";
   
   /**
@@ -22,13 +24,13 @@ public class Header {
    */
   private int id;
   /**
-   * Specifies whether this message is a query (0), or a response (1) *
+   * Specifies whether this message is a query or a response
    */
-  private int qr;
+  private DNSRecordType qrCode;
   /**
    * Response code *
    */
-  private DNSResponseCode rcode;
+  private NSResponseCode responseCode;
 
   /**
    * ***********************************************************
@@ -39,10 +41,10 @@ public class Header {
    * @param rcode Response code
 	 ***********************************************************
    */
-  public Header(int id, int qr, DNSResponseCode rcode) {
+  public Header(int id, DNSRecordType qr, NSResponseCode rcode) {
     this.id = id;
-    this.qr = qr;
-    this.rcode = rcode;
+    this.qrCode = qr;
+    this.responseCode = rcode;
   }
 
   /**
@@ -55,9 +57,10 @@ public class Header {
    */
   public Header(JSONObject json) throws JSONException {
     this.id = json.getInt(ID);
-    this.qr = json.getInt(QR);
-    // store it as an int in the JSON to keep the byte counting folks happy
-    this.rcode = DNSResponseCode.getResponseCode(json.getInt(RESPONSECODE));
+    // stored as an int in the JSON to keep the byte counting folks happy
+    this.qrCode = DNSRecordType.getRecordType(json.getInt(QRCODE));
+    // stored as an int in the JSON to keep the byte counting folks happy
+    this.responseCode = NSResponseCode.getResponseCode(json.getInt(RESPONSECODE));
   }
 
   /**
@@ -71,7 +74,8 @@ public class Header {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(ID, getId());
-    json.put(QR, getQr());
+    // store it as an int in the JSON to keep the byte counting folks happy
+    json.put(QRCODE, getQRCode().getCodeValue());
     // store it as an int in the JSON to keep the byte counting folks happy
     json.put(RESPONSECODE, getResponseCode().getCodeValue());
     return json;
@@ -109,28 +113,28 @@ public class Header {
   /**
    * @return the qr
    */
-  public int getQr() {
-    return qr;
+  public DNSRecordType getQRCode() {
+    return qrCode;
   }
 
   /**
    * @param qr the qr to set
    */
-  public void setQr(int qr) {
-    this.qr = qr;
+  public void setQRCode(DNSRecordType qr) {
+    this.qrCode = qr;
   }
 
   /**
    * @return the rcode
    */
-  public DNSResponseCode getResponseCode() {
-    return rcode;
+  public NSResponseCode getResponseCode() {
+    return responseCode;
   }
 
   /**
    * @param rcode the rcode to set
    */
-  public void setResponseCode(DNSResponseCode rcode) {
-    this.rcode = rcode;
+  public void setResponseCode(NSResponseCode rcode) {
+    this.responseCode = rcode;
   }
 }

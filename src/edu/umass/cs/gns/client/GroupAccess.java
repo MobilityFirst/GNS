@@ -48,9 +48,9 @@ public class GroupAccess {
 
   public static ResultValue lookup(String guid) {
     
-    ResultValue result = Intercessor.sendQuery(guid, GROUP, null, null, null);
-    if (result != null) {
-      return new ResultValue(result);
+    QueryResult result = Intercessor.sendQueryBypassingAuthentication(guid, GROUP);
+    if (!result.isError()) {
+      return new ResultValue(result.get(GROUP));
     } else {
       return new ResultValue();
     }
@@ -67,20 +67,18 @@ public class GroupAccess {
   }
 
   public static ResultValue retrieveGroupJoinRequests(String guid) {
-    
-    ResultValue result = Intercessor.sendQuery(guid, JOINREQUESTS, null, null, null);
-    if (result != null) {
-      return new ResultValue(result);
+    QueryResult result = Intercessor.sendQueryBypassingAuthentication(guid, JOINREQUESTS);
+    if (!result.isError()) {
+      return new ResultValue(result.get(JOINREQUESTS));
     } else {
       return new ResultValue();
     }
   }
   
   public static ResultValue retrieveGroupLeaveRequests(String guid) {
-    
-    ResultValue result = Intercessor.sendQuery(guid, LEAVEREQUESTS, null, null, null);
-    if (result != null) {
-      return new ResultValue(result);
+    QueryResult result = Intercessor.sendQueryBypassingAuthentication(guid, LEAVEREQUESTS);
+    if (!result.isError()) {
+      return new ResultValue(result.get(LEAVEREQUESTS));
     } else {
       return new ResultValue();
     }

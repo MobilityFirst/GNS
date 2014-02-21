@@ -33,7 +33,7 @@ public class FieldMetaData {
   public static Set<String> lookup(MetaDataTypeName type, GuidInfo guidInfo, String key) {
     return lookup(type, guidInfo.getGuid(), key);
   }
-  
+
   /**
    * Grabs the metadata indexed by type from the field from the guid.
    * 
@@ -43,10 +43,10 @@ public class FieldMetaData {
    * @return 
    */
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key) {
-    
-    ResultValue result = Intercessor.sendQuery(guid, makeFieldMetaDataKey(type, key), null, null, null);
-    if (result != null) {
-      return new HashSet<String>(result.toStringSet());
+    String metaDataKey = makeFieldMetaDataKey(type, key);
+    QueryResult result = Intercessor.sendQueryBypassingAuthentication(guid, metaDataKey);
+    if (!result.isError()) {
+      return new HashSet<String>(result.get(metaDataKey).toStringSet());
     } else {
       return new HashSet<String>();
     }
@@ -63,7 +63,7 @@ public class FieldMetaData {
   public static void add(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     add(type, userInfo.getGuid(), key, value);
   }
-  
+
   /**
    * Adds a value to the metadata of the field in the guid.
    * 
@@ -72,8 +72,8 @@ public class FieldMetaData {
    * @param key
    * @param value 
    */
-   public static void add(MetaDataTypeName type, String guid, String key, String value) {
-    
+  public static void add(MetaDataTypeName type, String guid, String key, String value) {
+
     String metaDataKey = makeFieldMetaDataKey(type, key);
     Intercessor.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
   }
@@ -89,9 +89,9 @@ public class FieldMetaData {
   public static void remove(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     remove(type, userInfo.getGuid(), key, value);
   }
-  
+
   public static void remove(MetaDataTypeName type, String guid, String key, String value) {
-    
+
     String metaDataKey = makeFieldMetaDataKey(type, key);
     Intercessor.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.REMOVE);
   }

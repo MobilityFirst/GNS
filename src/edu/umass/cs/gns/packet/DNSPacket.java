@@ -69,7 +69,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   public DNSPacket(int id, String qname, NameRecordKey key, int sender, String accessor, String signature, String message) {
     super(accessor, signature, message);
-    this.header = new Header(id, DNSRecordType.QUERY, DNSResponseCode.NO_ERROR);
+    this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
     this.guid = qname;
     this.key = key;
     this.lnsId = sender;
@@ -88,7 +88,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.guid = json.getString(GUID);
     this.key = NameRecordKey.valueOf(json.getString(KEY));
 
-    if (header.getQr() == DNSRecordType.RESPONSE && header.getResponseCode() != DNSResponseCode.ERROR) {
+    if (header.getQRCode() == DNSRecordType.RESPONSE && header.getResponseCode() != NSResponseCode.ERROR) {
       this.ttl = json.getInt(TIME_TO_LIVE);
       this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
       if (json.has(RECORD_VALUE)) {
@@ -110,7 +110,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public DNSPacket(int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers,
           String accessor, String signature, String message) {
     super(accessor, signature, message);
-    this.header = new Header(id, DNSRecordType.RESPONSE, DNSResponseCode.NO_ERROR);
+    this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
     this.recordValue = new ValuesMap();
@@ -124,7 +124,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public DNSPacket(int id, String name, NameRecordKey key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers,
           String accessor, String signature, String message) {
     super(accessor, signature, message);
-    this.header = new Header(id, DNSRecordType.RESPONSE,  DNSResponseCode.NO_ERROR);
+    this.header = new Header(id, DNSRecordType.RESPONSE,  NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
     this.recordValue = entireRecord;
@@ -184,14 +184,14 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * Returns true if the packet is a query, false otherwise
    */
   public boolean isQuery() {
-    return getHeader().getQr() == DNSRecordType.QUERY;
+    return getHeader().getQRCode() == DNSRecordType.QUERY;
   }
 
   /**
    * Returns true if the packet is a response, false otherwise
    */
   public boolean isResponse() {
-    return getHeader().getQr() == DNSRecordType.RESPONSE;
+    return getHeader().getQRCode() == DNSRecordType.RESPONSE;
   }
 
   /**
@@ -204,7 +204,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   }
 
   public boolean containsInvalidActiveNSError() {
-    return getHeader().getResponseCode() == DNSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER;
+    return getHeader().getResponseCode() == NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER;
   }
 
   /**

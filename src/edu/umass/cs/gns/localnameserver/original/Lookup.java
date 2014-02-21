@@ -212,6 +212,9 @@ public class Lookup {
         if (query.getSenderAddress() != null && query.getSenderPort() > 0) {
           LNSListener.udpTransport.sendPacket(DNSRequestTask.getErrorPacket(query.getIncomingPacket()), query.getSenderAddress(), query.getSenderPort());
         } else if (StartLocalNameServer.runHttpServer) {
+          // a little weird here... the packet already has the error in it and we blow it away using getErrorPacket
+          // prevents us from sending different errors back to the client
+          // CHECK THIS AND FIX IT
           Intercessor.checkForResult(DNSRequestTask.getErrorPacket(query.getIncomingPacket()));
         }
         GNS.getLogger().warning("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());

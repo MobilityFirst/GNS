@@ -16,7 +16,7 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.DNSResponseCode;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -104,7 +104,7 @@ public class DNSRequestTask extends TimerTask {
         if (query == null && queryId != 0) {
           // means query response received
         } else {
-          errorResponse(incomingPacket, DNSResponseCode.ERROR, senderAddress, senderPort);
+          errorResponse(incomingPacket, NSResponseCode.ERROR, senderAddress, senderPort);
           logFailureMessage();
         }
 
@@ -250,10 +250,10 @@ public class DNSRequestTask extends TimerTask {
    * @param port
    * @throws org.json.JSONException
    */
-  private void errorResponse(DNSPacket dnsPacket, DNSResponseCode errorCode, InetAddress address, int port) {
+  private void errorResponse(DNSPacket dnsPacket, NSResponseCode errorCode, InetAddress address, int port) {
 
     dnsPacket.getHeader().setResponseCode(errorCode);
-    dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
+    dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
 
     try {
 //      Packet.sendUDPPacket(LocalNameServer.socket, dnsPacket.questionToJSONObject(),
@@ -272,8 +272,8 @@ public class DNSRequestTask extends TimerTask {
   public static JSONObject getErrorPacket(DNSPacket dnsPacket1) {
     try {
       DNSPacket dnsPacket = new DNSPacket(dnsPacket1.toJSONObjectQuestion());
-      dnsPacket.getHeader().setResponseCode(DNSResponseCode.ERROR);
-      dnsPacket.getHeader().setQr(DNSRecordType.RESPONSE);
+      dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
+      dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       return  dnsPacket.toJSONObject();
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

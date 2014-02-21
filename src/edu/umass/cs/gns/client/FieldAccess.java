@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.client;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.clientprotocol.Defs;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
@@ -23,64 +24,80 @@ import org.json.JSONObject;
  * @author westy
  */
 public class FieldAccess {
-  
+
   private static final String emptyJSONObjectString = new JSONObject().toString();
   private static final String emptyJSONArrayString = new JSONArray().toString();
+  private static final String emptyString = new String();
 
   public static String lookup(String guid, String key, String reader, String signature, String message) {
-    
-    ResultValue result = Intercessor.sendQuery(guid, key, reader, signature, message);
-    if (result != null) {
-      return new JSONArray(result).toString();
+
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    if (result.isError()) {
+      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      return emptyJSONArrayString;
+      ResultValue value = result.get(key);
+      if (value != null) {
+        return new JSONArray(value).toString();
+      } else {
+        return emptyJSONArrayString;
+      }
     }
   }
 
   public static String lookupMultipleValues(String guid, String key, String reader, String signature, String message) {
-    
-    ValuesMap result = Intercessor.sendMultipleReturnValueQuery(guid, key, true, reader, signature, message);
-    try {
-      if (result != null) {
-        return result.toJSONObject().toString();
+
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    if (result.isError()) {
+      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+    } else {
+      try {
+         // pull out all the key pairs ignoring "system" (ie., non-user) fields
+        return result.getValuesMapSansInternalFields().toJSONObject().toString();
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Problem parsing multiple value return:" + e);
       }
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing multiple value return:" + e);
+      return emptyJSONObjectString;
     }
-    return emptyJSONObjectString;
   }
 
   public static String lookupOne(String guid, String key, String reader, String signature, String message) {
-    
-    ResultValue result = Intercessor.sendQuery(guid, key, reader, signature, message);
-    if (result != null && !result.isEmpty()) {
-      return (String) result.get(0);
+
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    if (result.isError()) {
+      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      return new String();
+      ResultValue value = result.get(key);
+      if (value != null && !value.isEmpty()) {
+        return (String) value.get(0);
+      } else {
+        return emptyString;
+      }
     }
   }
 
   public static String lookupOneMultipleValues(String guid, String key, String reader, String signature, String message) {
-    
-    ValuesMap result = Intercessor.sendMultipleReturnValueQuery(guid, key, true, reader, signature, message);
-    try {
-      if (result != null) {
-        // Pull the first value out of each array
-        return result.toJSONObjectFirstOnes().toString();
+
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    if (result.isError()) {
+      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+    } else {
+      try {
+        // pull out the first value of each key pair ignoring "system" (ie., non-user) fields
+        return result.getValuesMapSansInternalFields().toJSONObjectFirstOnes().toString();
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Problem parsing multiple value return:" + e);
       }
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing multiple value return:" + e);
+      return emptyJSONObjectString;
     }
-    return emptyJSONObjectString;
   }
 
   public static boolean update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation) {
-    
+
     return Intercessor.sendUpdateRecordWithConfirmation(guid, key, value, oldValue, operation);
   }
 
   public static boolean create(String guid, String key, ResultValue value) {
-    
+
     return Intercessor.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
   }
 
@@ -110,7 +127,7 @@ public class FieldAccess {
       return emptyJSONArrayString;
     }
   }
-  
+
   public static String selectQuery(String query) {
     String result = SelectHandler.sendSelectQuery(query);
     if (result != null) {

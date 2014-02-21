@@ -17,12 +17,12 @@ import java.util.concurrent.ConcurrentMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 /**
  * One of a number of class that implement client support in the GNS server. 
  * 
- * The intercessor is the primary liason class between the HTTP server and the Protocol
- * class and the Local Name Server. It provides support for the AccountAccess, Field Access,
+ * The intercessor is the primary liason class between the servers (HTTP and new
+ * TCP) and the Command Module and the the Local Name Server.
+ * It provides support for the AccountAccess, Field Access,
  * FieldMetaData, GroupAccess, and SelectHandler classes.
  * 
  * Provides basic methods for reading and writing fields in the GNS. Used 
@@ -43,7 +43,7 @@ public class Intercessor {
    * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
    * multiple value returns.
    */
-  private static ConcurrentMap<Integer, ValuesMap> queryResult;
+  private static ConcurrentMap<Integer, QueryResult> queryResult;
   private static final ValuesMap ERRORQUERYRESULT = new ValuesMap();
   private static Random randomID;
   /* Used for sending updates and getting confirmations */
@@ -58,19 +58,26 @@ public class Intercessor {
 
   public static void setLocalServerID(int localServerID) {
     Intercessor.localServerID = localServerID;
- 
+
     GNS.getLogger().info("Local server id: " + localServerID
             + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
             + " LNS TCP Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
   }
-  
+
   static {
     randomID = new Random();
-    queryResult = new ConcurrentHashMap<Integer, ValuesMap>(10, 0.75f, 3);
+    queryResult = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
     queryTimeStamp = new ConcurrentHashMap<Integer, Date>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
   }
 
+  /**
+   * This is invoked to receive packets. It updates the appropriate map
+   * for the id and notifies the  appropriate monitor to wake the 
+   * original caller. 
+   * 
+   * @param json 
+   */
   public static void checkForResult(JSONObject json) {
     try {
       switch (getPacketType(json)) {
@@ -80,7 +87,7 @@ public class Intercessor {
           ConfirmUpdateLNSPacket packet = new ConfirmUpdateLNSPacket(json);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
-          GNS.getLogger().finer((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");// + packet.getName() + "/" + packet.getRecordKey().getName());
+          GNS.getLogger().info((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");// + packet.getName() + "/" + packet.getRecordKey().getName());
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.isSuccess());
             monitorUpdate.notifyAll();
@@ -91,19 +98,19 @@ public class Intercessor {
           id = dnsResponsePacket.getQueryId();
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
-            GNS.getLogger().finer("Query (" + id + "): "
+            GNS.getLogger().info("Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
-              queryResult.put(id, dnsResponsePacket.getRecordValue());
+              queryResult.put(id, new QueryResult(dnsResponsePacket.getRecordValue()));
               monitor.notifyAll();
             }
           } else {
-            GNS.getLogger().finer("Intercessor: Query (" + id + "): "
+            GNS.getLogger().info("Intercessor: Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
-                    + " Error Received. ");// + nameRecordPacket.toJSONObject().toString());
+                    + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
-              queryResult.put(id, ERRORQUERYRESULT);
+              queryResult.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode()));
               monitor.notifyAll();
             }
           }
@@ -116,21 +123,17 @@ public class Intercessor {
     }
   }
 
-  // QUERYING
-  public static ResultValue sendQuery(String name, String key, String reader, String signature, String message) {
-    ValuesMap result = sendMultipleReturnValueQuery(name, key, reader, signature, message);
-    if (result != null) {
-      return result.get(key);
-    } else {
-      return null;
-    }
+  /**
+   * This version bypasses any signature checks and is meant for "system" use.
+   */
+  public static QueryResult sendQueryBypassingAuthentication(String name, String key) {
+    return sendQuery(name, key, null, null, null);
   }
 
-  public static ValuesMap sendMultipleReturnValueQuery(String name, String key, String reader, String signature, String message) {
-    return sendMultipleReturnValueQuery(name, key, false, reader, signature, message);
-  }
-
-  public static ValuesMap sendMultipleReturnValueQuery(String name, String key, boolean removeInternalFields, String reader, String signature, String message) {
+  /**
+   * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
+   */
+  public static QueryResult sendQuery(String name, String key, String reader, String signature, String message) {
     GNS.getLogger().finer("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
 
@@ -161,42 +164,17 @@ public class Intercessor {
 
     }
     Date receiptTime = new Date(); // instrumentation
-    ValuesMap result = queryResult.get(id);
+    QueryResult result = queryResult.get(id);
     queryResult.remove(id);
     Date sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime.getTime() - sentTime.getTime();
     GNS.getLogger().info("Query (" + id + ") RTT = " + rtt + "ms");
     GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
-    result.setRoundTripTime(rtt); // instrumentation
-
-    if (removeInternalFields) {
-      result = removeInternalFields(result);
-    }
-
-    if (result == ERRORQUERYRESULT) {
-      return null;
-    } else {
-      return result;
-    }
+    result.setRoundTripTime(rtt);
+    return result;
   }
-
-  /**
-   * Remove any keys / value pairs used internally by the GNS.
-   * 
-   * @param valuesMap
-   * @return 
-   */
-  private static ValuesMap removeInternalFields(ValuesMap valuesMap) {
-    for (String key : valuesMap.keySet()) {
-      if (GNS.isInternalField(key)) {
-        valuesMap.remove(key);
-      }
-    }
-
-    return valuesMap;
-  }
-
+  
   public static boolean sendAddRecordWithConfirmation(String name, String key, String value) {
     return sendAddRecordWithConfirmation(name, key, new ResultValue(Arrays.asList(value)));
   }

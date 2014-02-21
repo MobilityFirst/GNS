@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.nameserver.client;
 
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.client.GuidInfo;
 import edu.umass.cs.gns.client.MetaDataTypeName;
+import static edu.umass.cs.gns.clientprotocol.Defs.*;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -48,7 +48,7 @@ public class NSAccessSupport {
     sig.initVerify(publicKey);
     sig.update(message.getBytes());
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    GNS.getLogger().info("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    GNS.getLogger().info("@@@@@@User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;
   }
 
@@ -76,27 +76,27 @@ public class NSAccessSupport {
    */
   public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
     try {
-      GNS.getLogger().finer("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
+      GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
       if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
         return true; // can always read your own stuff
       } else {
         Set<String> allowedusers = NSFieldMetaData.lookup(access, guidInfo, field);
-        GNS.getLogger().fine(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+        GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
         if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
-          GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access user " + guidInfo.getName() + "'s " + field + " field");
+          GNS.getLogger().info("$$$$$$User " + accessorInfo.getName() + " allowed to access user " + guidInfo.getName() + "'s " + field + " field");
           return true;
         }
         // otherwise find any users that can access all of the fields
         allowedusers = NSFieldMetaData.lookup(access, guidInfo, ALLFIELDS);
         if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
-          GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access all of user " + guidInfo.getName() + "'s fields");
+          GNS.getLogger().info("$$$$$$$User " + accessorInfo.getName() + " allowed to access all of user " + guidInfo.getName() + "'s fields");
           return true;
         }
       }
-      GNS.getLogger().fine("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
+      GNS.getLogger().info("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
       return false;
     } catch (FieldNotFoundException e) {
-      GNS.getLogger().warning("User " + accessorInfo.getName() + " access problem for" + guidInfo.getName() + "'s " + field + " field: " + e);
+      GNS.getLogger().warning("User " + accessorInfo.getName() + " access problem for " + guidInfo.getName() + "'s " + field + " field: " + e);
       return false;
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("User " + accessorInfo.getName() + " access problem for " + guidInfo.getName() + "'s " + field + " field: " + e);
