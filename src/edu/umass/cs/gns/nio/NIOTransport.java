@@ -9,6 +9,9 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -96,8 +99,7 @@ public class NIOTransport implements Runnable {
 	/* An id corresponds to a socket address as specified in NodeConfig */
 	int myID=-1;
 
-	/* A simple class used to instrument send/receive stats */
-	private static NIOInstrumenter nioI=new NIOInstrumenter();
+	protected static NIOInstrumenter nioI=new NIOInstrumenter();
 
 	private Logger log = Logger.getLogger(NIOTransport.class.getName()); //GNS.getLogger();
 
@@ -121,7 +123,7 @@ public class NIOTransport implements Runnable {
 	 */
 	public void send(int id, byte[] data) throws IOException {
 		log.finest("Node " + myID + " invoked send (" + id + ", " + 
-				new String(data) + "), connection status: " + this.isConnected(id));
+				new String(data) + "), checking connection status..");
 		send(new InetSocketAddress(this.nodeConfig.getNodeAddress(id), 
 				this.nodeConfig.getNodePort(id)), data);
 	}
@@ -142,7 +144,7 @@ public class NIOTransport implements Runnable {
 				// Set ops to CONNECT for pending connect requests.
 				processPendingConnects(); // synchronized
 				// Wait for an event one of the registered channels.
-				this.selector.select();
+				int selected = this.selector.select();
 				// Accept, connect, read, or write as needed.
 				processSelectedKeys();
 			} catch (Exception e) {
@@ -152,6 +154,7 @@ public class NIOTransport implements Runnable {
 	}
 
 	public static String getStats() {return nioI.toString();}
+	
 
 
 	/************ Start of private methods ****************************/
@@ -160,6 +163,7 @@ public class NIOTransport implements Runnable {
 	private void processSelectedKeys() throws IOException {
 		// Iterate over the set of keys for which events are available
 		Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
+
 		while (selectedKeys.hasNext()) {
 			SelectionKey key = (SelectionKey) selectedKeys.next();
 			selectedKeys.remove();
@@ -183,15 +187,16 @@ public class NIOTransport implements Runnable {
 	 * 
 	 */
 	private void accept(SelectionKey key) throws IOException {
+
 		// For an accept to be pending the channel must be a server socket channel.
 		ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
-		log.finer("Accepted");
+		log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
+		nioI.incrAccepted();
 		socketChannel.configureBlocking(false);
 		socketChannel.socket().setKeepAlive(true);
-		//this.testAndPutSockAddrToSockChannel((InetSocketAddress)socketChannel.getRemoteAddress(), socketChannel); // synchronized
 
 		// Register the new SocketChannel with our Selector, indicating
 		// we'd like to be notified when there's data waiting to be read
@@ -249,6 +254,7 @@ public class NIOTransport implements Runnable {
 		 * synchronized.
 		 */
 		assert (isa!=null) : "Node " + myID + " SocketChannel " + socketChannel + " is orphaned with no InetSocketAddress.";
+		if(isa==null) log.severe("Null socket address for a write-ready socket!");
 		try {
 			// If all data gets written successfully, switch back to read mode.
 			if(this.writeAllPendingWrites(isa, socketChannel)) key.interestOps(SelectionKey.OP_READ); // synchronized
@@ -277,12 +283,17 @@ public class NIOTransport implements Runnable {
 		synchronized (this.pendingWrites) {	
 			ArrayList<ByteBuffer> queue = (ArrayList<ByteBuffer>) this.pendingWrites.get(isa);
 			// Write until there's not more data ...
-			if(queue==null) return true;
+			/* queue below can not be null because the only way we can get here
+			 * is if something was ever written to pendingWrites, so the queue must
+			 * have been initialized.
+			 */
+			if(queue==null) {return true;}
 			while (!queue.isEmpty()) {
 				ByteBuffer buf = (ByteBuffer) queue.get(0);
 				socketChannel.write(buf);
 				// If the socket's buffer fills up, let the rest be in queue 
-				if (buf.remaining() > 0) break;
+				log.finest("Node " + this.myID + " wrote: " + new String (queue.get(0).array()));
+				if (buf.remaining() > 0) {log.warning("Socket buffer congested because of high load.."); break;}
 				queue.remove(0);
 			}
 			// We wrote away all data, so we're no longer interested in
@@ -303,6 +314,7 @@ public class NIOTransport implements Runnable {
 				this.pendingWrites.put(isa, queue);
 			}
 			queue.add(ByteBuffer.wrap(data));
+			log.finest("Node " + this.myID + " queued: " + new String(data));
 		}
 	}
 
@@ -319,8 +331,13 @@ public class NIOTransport implements Runnable {
 				if(queue!=null && !queue.isEmpty()) {
 					// Nested locking: pendingWrites -> SockAddrToSockChannel
 					SocketChannel sc = getSockAddrToSockChannel(isa);  // synchronized
+					/* We can be here only if an entry was made in queuePending, 
+					 * which can happen only after initiateConnection, which maps 
+					 * the isa to a socket channel. Hence, the assert.
+					 */
+					assert(sc!=null); 
 					SelectionKey key = (sc!=null ? sc.keyFor(this.selector) : null);
-					if(key!=null) key.interestOps(SelectionKey.OP_WRITE);
+					if(key!=null) key.interestOps(SelectionKey.OP_WRITE|SelectionKey.OP_CONNECT);
 				}
 			}
 		}
@@ -466,6 +483,7 @@ public class NIOTransport implements Runnable {
 		// Kick off connection establishment
 		log.finest("Node " + myID + " connecting to socket address " + isa);		
 		socketChannel.connect(isa);
+		nioI.incrInitiated();
 		putSockAddrToSockChannel(isa, socketChannel); // synchronized
 
 		// Queue a channel registration since the caller is not the 
@@ -500,9 +518,24 @@ public class NIOTransport implements Runnable {
 		 * point registering a write interest until the socket
 		 * is connected as the write will block anyway.
 		 */
-		if(connected) log.finest("Node " + myID + " finished connecting " + socketChannel);
-		if(connected) key.interestOps(SelectionKey.OP_WRITE);
+		if(connected) log.finer("Node " + myID + " finished connecting " + socketChannel);
+		if(connected) key.interestOps(SelectionKey.OP_WRITE|SelectionKey.OP_CONNECT);
 		return connected;
+	}
+	
+	/*************************** Testing methods below **********************************/
+	
+	/* Used only for testing to print pending messages if any
+	 * at the end of tests.
+	 */
+	public int getPendingSize() {
+		synchronized (this.pendingWrites) {
+			int numPending=0;
+			for(ArrayList<ByteBuffer> arr: this.pendingWrites.values()) {
+				numPending += arr.size();
+			}
+			return numPending;
+		}
 	}
 
 	public static void main(String[] args) {
@@ -510,13 +543,12 @@ public class NIOTransport implements Runnable {
 		handler.setLevel(Level.FINEST);
 		Logger log = Logger.getLogger(NIOTransport.class.getName()); 
 		log.addHandler(handler);
-		log.setLevel(Level.FINEST);
+		log.setLevel(Level.SEVERE);
 
 		int port = 2000;
 		int nNodes=100;
 		SampleNodeConfig snc = new SampleNodeConfig(port);
 		snc.localSetup(nNodes);
-		//System.out.println(snc);
 		DefaultDataProcessingWorker worker = new DefaultDataProcessingWorker();
 		NIOTransport[] niots = new NIOTransport[nNodes];
 
@@ -556,40 +588,55 @@ public class NIOTransport implements Runnable {
 			for(int i=0; i<nNodes; i++) {
 				int k = (int)(Math.random()*nNodes);
 				int j = (int)(Math.random()*nNodes);
-				System.out.println("Message " + i);
+				System.out.println("Sending message " + i + " from " + k + " to " + j);
 				niots[k].send(j, ("Hello from " + k + " to " + j).getBytes());
 			}
 			/*************************************************************************/
 			Thread.sleep(1000);
-			System.out.println("\n\n\nBeginning test of random, concurrent communication pattern");
+			System.out.println("\n\n\nBeginning test of random, concurrent 1-to-1 communication pattern");
 			Thread.sleep(1000);
 			/*************************************************************************/
 			// Test a random, concurrent communication pattern
-			Timer T = new Timer();
+			ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
+
 			class TX extends TimerTask {
-				private int sndr=-1;
+				NIOTransport sndr=null;
 				private int rcvr=-1;
-				private NIOTransport[] niots=null;
-				TX(int i, int j, NIOTransport[] n) {
-					sndr = i;
-					rcvr = j;
-					niots = n;
+				TX(int i, int id, NIOTransport[] n) {
+					sndr = n[i];
+					rcvr = id;
+				}
+				TX(NIOTransport niot, int id) {
+					sndr = niot;
+					rcvr = id;
 				}
 				public void run() {
 					try {
-						niots[sndr].send(rcvr, ("Hello from " + sndr + " to " + rcvr).getBytes());
+						sndr.send(rcvr, ("Hello from " + sndr.myID + " to " + rcvr).getBytes());
 					} catch(IOException e) {
 						e.printStackTrace();
 					}
 				}
 			}
+			NIOTransport concurrentSender = new NIOTransport(nNodes, snc, worker);
+			new Thread(concurrentSender).start();
 			for(int i=0; i<nNodes; i++) {
+				TX task = new TX(concurrentSender, 0);
+				System.out.println("Scheduling random message " + i + " from concurrentSender to " + 0);
+				execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
+			}
+			/*************************************************************************/
+			Thread.sleep(1000);
+			System.out.println("\n\n\nBeginning test of random, concurrent, any-to-any communication pattern");
+			Thread.sleep(1000);
+			/*************************************************************************/			
+			for(int i=0; i<nNodes*60; i++) {
 				int k = (int)(Math.random()*nNodes);
 				int j = (int)(Math.random()*nNodes);
 				long millis = (long)(Math.random()*1000);
 				TX task = new TX(k, j, niots);
-				System.out.println("Scheduling message " + i);
-				T.schedule(task, millis);
+				System.out.println("Scheduling random message " + i + " from " + k + " to " + j);
+				execpool.schedule(task, millis, TimeUnit.MILLISECONDS);
 			}
 
 			/*************************************************************************/
@@ -597,15 +644,15 @@ public class NIOTransport implements Runnable {
 			Thread.sleep(1000);
 			System.out.println("\n\n\nPrinting overall stats");
 			Thread.sleep(1000);
-			System.out.println(NIOTransport.getStats());
+			System.out.println("NIO " + NIOTransport.getStats());
 
 			System.out.println("\nTesting notes: If no exceptions were encountered above and\n" +
-					" the number of MISSING messages is small, then it is a successful test. If this\n" + 
+					" the number of missing-or-batched messages is small, then it is a successful test. If this\n" + 
 					" note is being printed, then no exceptions were encountered. The number of\n" + 
-					" MISSING messages may still be nonzero as two back-to-back messages may get\n" +
-					" counted as 1, as in the first test above. The other tests are\n" +
-					" extremely unlikely to cause such bunching, so MISSING should be at most 1\n" +
-					" with the above tests");
+					" missing-or-batched messages may still be nonzero as two back-to-back messages may get\n" +
+					" counted as one, as in the very first test above. With concurrent send tests,\n" +
+					" it missing-or-batched may be a nontrivial fraction of totalSent. \nTBD: an exact" +
+					" success/failure outputting test. For now, try testing GNSNIOTransport instead.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch(Exception e) {

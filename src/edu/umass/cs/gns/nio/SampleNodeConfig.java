@@ -12,7 +12,7 @@ public class SampleNodeConfig implements NodeConfig {
 	HashMap<Integer,InetAddress> nmap=null;
 	int defaultPort=0;
 	
-	SampleNodeConfig(int dp) {
+	public SampleNodeConfig(int dp) {
 		nmap = new HashMap<Integer,InetAddress>();
 		defaultPort = dp;
 	}
@@ -20,7 +20,7 @@ public class SampleNodeConfig implements NodeConfig {
 	public void localSetup(int nNodes) {
 		for(int i=0; i<nNodes; i++) {
       try {
-        this.add(i, InetAddress.getLocalHost());
+        this.add(i, InetAddress.getByName("localhost"));
       } catch (UnknownHostException e) {
         e.printStackTrace();
       }

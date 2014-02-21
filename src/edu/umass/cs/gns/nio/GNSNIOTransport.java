@@ -5,7 +5,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -79,11 +83,12 @@ public class GNSNIOTransport extends NIOTransport {
 	 * a remote node, otherwise it hands over the message directly to the worker.
 	 */
 	public boolean sendToIDActual(int destID, JSONObject jsonData) throws IOException {
-    GNS.getLogger().info("Reached here: " + jsonData);
 		if(destID==this.myID) {
 
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 			jsonArray.add(jsonData);
+			NIOTransport.nioI.incrSent(); // instrumentation
+			System.out.println("Sending local: " + jsonData.toString());
 			((JSONMessageWorker)worker).processJSONMessages(jsonArray);
 		}
 		else {
@@ -101,26 +106,29 @@ public class GNSNIOTransport extends NIOTransport {
 	private void sendUnderlying(int id, byte[] data) throws IOException {
 		this.send(id, data);
 	}
-	private static JSONObject JSONify(String s) throws JSONException{
-		return new JSONObject("{\"msg\" : \"" + s + "\"}");
+	private static JSONObject JSONify(int msgNum, String s) throws JSONException{
+		return new JSONObject("{\"msg\" : \"" + s + "\" , \"msgNum\" : " + msgNum + "}");
 	}
 	
+
 	/* The test code here is mostly identical to that of NIOTransport but tests
 	 * JSON messages, headers, and delay emulation features. Need to test it with 
 	 * the rest of GNS.
 	 */
 	public static void main(String[] args) {
+		int msgNum=0;
 		int port = 2000;
 		int nNodes=100;
 		SampleNodeConfig snc = new SampleNodeConfig(port);
 		snc.localSetup(nNodes);
-		JSONMessageWorker worker = new JSONMessageWorker(new DefaultPacketDemultiplexer());
+		JSONMessageWorker[] workers = new JSONMessageWorker[nNodes+1];
+		for(int i=0; i<nNodes+1; i++) workers[i] = new JSONMessageWorker(new DefaultPacketDemultiplexer());
 		GNSNIOTransport[] niots = new GNSNIOTransport[nNodes];
 		
 		try {
 			int smallNNodes = 2;
 			for(int i=0; i<smallNNodes; i++) {
-				niots[i] = new GNSNIOTransport(i, snc, worker);
+				niots[i] = new GNSNIOTransport(i, snc, workers[i]);
 				new Thread(niots[i]).start();
 			}			
 			
@@ -130,73 +138,109 @@ public class GNSNIOTransport extends NIOTransport {
 			 * from concurrency, i.e., to check that OP_WRITE flags will
 			 * be set correctly.
 			 */
-			niots[1].sendToIDActual(0, JSONify("Hello from 1 to 0"));
-			niots[0].sendToIDActual(1, JSONify("Hello back from 0 to 1"));
-			niots[0].sendToIDActual(1, JSONify("Second hello back from 0 to 1"));
+			niots[1].sendToIDActual(0, JSONify(msgNum++, "Hello from 1 to 0"));
+			niots[0].sendToIDActual(1, JSONify(msgNum++, "Hello back from 0 to 1"));
+			niots[0].sendToIDActual(1, JSONify(msgNum++, "Second hello back from 0 to 1"));
 			try {Thread.sleep(1000);} catch(Exception e){e.printStackTrace();}
-			niots[0].sendToIDActual(1, JSONify("Third hello back from 0 to 1"));
-			niots[1].sendToIDActual(0, JSONify("Thank you for all the hellos back from 1 to 0"));
+			niots[0].sendToIDActual(1, JSONify(msgNum++, "Third hello back from 0 to 1"));
+			niots[1].sendToIDActual(0, JSONify(msgNum++, "Thank you for all the hellos back from 1 to 0"));
 			/*************************************************************************/
 			
+			int seqTestNum=1;
 			Thread.sleep(2000);
-			System.out.println("\n\n\nBeginning test of random, sequential communication pattern");
+			System.out.println("\n\n\nBeginning test of " + seqTestNum + " random, sequential messages");
 			Thread.sleep(1000);
 			
 			/*************************************************************************/
 			//Create the remaining nodes up to nNodes
 			for(int i=smallNNodes; i<nNodes; i++) {
-				niots[i] = new GNSNIOTransport(i, snc, worker);
+				niots[i] = new GNSNIOTransport(i, snc, workers[i]);
 				new Thread(niots[i]).start();
 			}			
 			
 			// Test a random, sequential communication pattern
-			for(int i=0; i<nNodes; i++) {
+			for(int i=0; i<nNodes*seqTestNum;i++) {
 				int k = (int)(Math.random()*nNodes);
 				int j = (int)(Math.random()*nNodes);
-				System.out.println("Message " + i);
-				niots[k].sendToIDActual(j, JSONify("Hello from " + k + " to " + j));
+				System.out.println("Message " + i + " with msgNum " + msgNum);
+				niots[k].sendToIDActual(j, JSONify(msgNum++, "Hello from " + k + " to " + j));
 			}
+
+			int oneToOneTestNum=1;
+			int concTestNum=25;
 			/*************************************************************************/
 			Thread.sleep(1000);
-			System.out.println("\n\n\nBeginning test of random, concurrent communication pattern ***with emulated delays***");
+			System.out.println("\n\n\nBeginning test of " + oneToOneTestNum*nNodes + 
+					" random, concurrent, 1-to-1 messages with emulated delays");
 			Thread.sleep(1000);
 			/*************************************************************************/
 			// Test a random, concurrent communication pattern with emulated delays
-			Timer T = new Timer();
+			ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 			class TX extends TimerTask {
-				private int sndr=-1;
+				GNSNIOTransport sndr=null;
 				private int rcvr=-1;
-				private GNSNIOTransport[] niots=null;
-				TX(int i, int j, GNSNIOTransport[] n) {
-					sndr = i;
-					rcvr = j;
-					niots = n;
+				int msgNum=-1;
+				TX(int i, int id, GNSNIOTransport[] n, int m) {
+					sndr = n[i];
+					rcvr = id;
+					msgNum = m;
+				}
+				TX(GNSNIOTransport niot, int id, int m) {
+					sndr = niot;
+					rcvr = id;
+					msgNum = m;
 				}
 				public void run() {
 					try {
-						niots[sndr].sendToID(rcvr, JSONify("Hello from " + sndr + " to " + rcvr));
+						sndr.sendToIDActual(rcvr, JSONify(msgNum, "Hello from " + sndr.myID + " to " + rcvr));
 					} catch(IOException e) {
 						e.printStackTrace();
-					} catch(JSONException e) {
+					} catch (JSONException e) {
 						e.printStackTrace();
 					}
 				}
 			}
 			GNSDelayEmulator.emulateDelays();
-			for(int i=0; i<nNodes; i++) {
+
+			GNSNIOTransport concurrentSender = new GNSNIOTransport(nNodes, snc, workers[nNodes]);
+			new Thread(concurrentSender).start();
+			for(int i=0; i<nNodes*oneToOneTestNum; i++) {
+				TX task = new TX(concurrentSender, 0, msgNum++);
+				System.out.println("Scheduling random message " + i + " with msgNum " + msgNum);
+				execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
+			}
+			
+			/*************************************************************************/
+			Thread.sleep(1000);
+			System.out.println("\n\n\nBeginning test of " + concTestNum*nNodes + " random, concurrent, " +
+			" any-to-any messages with emulated delays");
+			Thread.sleep(1000);
+			/*************************************************************************/			
+			
+			for(int i=0; i<nNodes*concTestNum; i++) {
 				int k = (int)(Math.random()*nNodes);
 				int j = (int)(Math.random()*nNodes);
-				long millis = (long)(Math.random()*1000);
-				TX task = new TX(k, j, niots);
-				System.out.println("Scheduling message " + i);
-				T.schedule(task, millis);
+				//long millis = (long)(Math.random()*1000);
+				TX task = new TX(k, j, niots, msgNum++);
+				System.out.println("Scheduling random message " + i + " with msgNum " + msgNum);
+				execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
 			}
 
 			/*************************************************************************/
 
 			Thread.sleep(2000);
-			System.out.println("\n\n\nPrinting overall stats");
+			System.out.println("\n\n\nPrinting overall stats:");
 			System.out.println(GNSNIOTransport.getStats());	
+			boolean pending=false;
+			for(int i=0; i<nNodes; i++) {
+				if(niots[i].getPendingSize() > 0) {
+					System.out.println("Pending messages at node " + i + " : " + niots[i].getPendingSize());
+					pending=true;
+				}
+			}
+			assert(pending==false && NIOInstrumenter.getMissing()==0) : "Unsent pending messages in NIO";
+			if(!pending && NIOInstrumenter.getMissing()==0) System.out.println("SUCCESS: no pending messages!");
+
 	} catch (IOException e) {
 		e.printStackTrace();
 	} catch(Exception e) {

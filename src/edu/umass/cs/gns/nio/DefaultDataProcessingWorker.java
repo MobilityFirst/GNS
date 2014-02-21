@@ -8,6 +8,6 @@ import java.nio.channels.SocketChannel;
  */
 public class DefaultDataProcessingWorker implements DataProcessingWorker {	
 	public void processData(SocketChannel socket, byte[] data, int count) {
-		System.out.println(new String(data, 0, count));
+		System.out.println("Received: " + new String(data, 0, count));
 	}	
 }

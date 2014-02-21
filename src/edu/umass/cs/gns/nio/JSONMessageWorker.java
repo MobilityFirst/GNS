@@ -57,6 +57,14 @@ public class JSONMessageWorker implements DataProcessingWorker {
 		packetDemux = pd;
 		sockStreams = new HashMap<SocketChannel,String>();
 	}
+	
+	/* Note: Use with care. This will change demultiplexing behavior
+	 * midway, which is usually not what you want to do. This is 
+	 * useful to set in the beginning 
+	 */
+	public void setMessageWorker(PacketDemultiplexer pd) {
+		packetDemux = pd; 
+	}
 
 	/* Header is of the form pattern<size>pattern. The pattern is 
 	 * changeable above. But there is no escape character support
@@ -91,11 +99,11 @@ public class JSONMessageWorker implements DataProcessingWorker {
 	 */
 	public void processJSONMessages(ArrayList<JSONObject> jsonArray) {
 		if(this.packetDemux!=null && jsonArray!=null) {
+			for(int i=0; i<jsonArray.size(); i++) NIOInstrumenter.incrJSONRcvd();
 			this.packetDemux.handleJSONObjects(jsonArray);
 		}
 	}
-	
-	
+			
 	/***************** Start of private methods ******************************/
 		
 	// String to JSON conversion
@@ -145,7 +153,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
 					String leftover = str.substring(endMsg);
 					String extractedMsg = str.substring(beginMsg, endMsg);
 					JSONObject jsonData = this.parseJSON(extractedMsg);
-					if(jsonData!=null) jsonArray.add(jsonData);
+					if(jsonData!=null) {jsonArray.add(jsonData);}
 					retval = leftover;
 				}
 			}
@@ -179,7 +187,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
 		
 		newStr = this.extractMultipleMessages(newStr, jsonArray);
 		this.sockStreams.put(sock, newStr);
-		log.info("Parsed : [" + JSONArrayToString(jsonArray) + "], leftover = [" + newStr + "]");
+		log.finest("Parsed : [" + JSONArrayToString(jsonArray) + "], leftover = [" + newStr + "]");
 		return jsonArray;
 	}
 	
@@ -241,7 +249,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
 				}
 				else {
 					foundCount += jmw.processData(sock, "fsdfdsf sdf dsf");
-					// Occassionally throw in some craft bad messages too.
+					// Occassionally throw in some crafty bad messages too.
 					if(Math.random() > prob) jmw.processData(sock, bad);
 				}
 			}

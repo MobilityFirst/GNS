@@ -5,20 +5,33 @@ package edu.umass.cs.gns.nio;
 /* Helps instrument read/write stats in NIOTransport. Used for testing only. */
 
 public class NIOInstrumenter {
-	private int totalSent=0;
-	private int totalRcvd=0;
-	private boolean enabled=true;
+	private static int totalSent=0; // Sent by NIOTransport or GNSNIOTransport
+	private static int totalRcvd=0;  // Received by NIOTransport or GNSNIOTransport
+	private static int totalConnAccepted=0; // NIOTransport
+	private static int totalConnInitiated=0; // NIOTransport
+	private static int totalJSONRcvd=0; // JSONMessageWorker
+	private static int totalPktsRcvd=0; // PacketDemultiplexer
+	private static boolean enabled=true;
 	
 	NIOInstrumenter() {}
-	public void incrSent() {if(enabled) _incrSent();} 
-	public void incrRcvd() {if(enabled) _incrRcvd();} 
+	public static synchronized void incrSent() {totalSent++;}
+	public static synchronized void incrRcvd() {totalRcvd++;}
+	public static synchronized void incrAccepted() {totalConnAccepted++;}
+	public static synchronized void incrInitiated() {totalConnInitiated++;}
+	public static synchronized void incrJSONRcvd() {totalJSONRcvd++;} 
+	public static synchronized void incrPktsRcvd() {totalPktsRcvd++;} 
+	
+	public static synchronized int getMissing() {return totalJSONRcvd - totalSent;}
+
 	public void disable() {enabled=false;}
 	public void enable() {enabled=true;}
 	public String toString() {
 		String s="";
-		return s + "Stats: [totalSent = " + totalSent + ", totalRcvd = " + totalRcvd + 
-				(totalSent!=totalRcvd ? ", MISSING = " + (totalSent-totalRcvd) : "") + "]";
+		return s + "NIO stats: [totalSent = " + totalSent + ", totalRcvd = " + totalRcvd + 
+				(totalSent!=totalRcvd ? ", missing-or-batched = " + (totalSent-totalRcvd) : "") +"]" + 
+				"\n\t [totalConnInitiated = " + totalConnInitiated + 
+				", totalConnAccepted = " + totalConnAccepted + "]" + 
+				"\nJSONMessageWorker: [totalJSONRcvd = " + totalJSONRcvd + "]" + 
+				"\nDefaultPacketDemultiplexer:  [totalPktsRcvd = " + totalPktsRcvd + "]"; 
 	}
-	private synchronized void _incrSent() {totalSent++;}
-	private synchronized void _incrRcvd() {totalRcvd++;}
 }

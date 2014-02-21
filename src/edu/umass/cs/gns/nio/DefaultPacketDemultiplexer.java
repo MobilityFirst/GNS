@@ -24,9 +24,11 @@ public class DefaultPacketDemultiplexer extends PacketDemultiplexer {
 	@Override
 	public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
 		for(JSONObject jo : jsonObjects) {
-			System.out.println(jo);
+			incrPktsRcvd();
+			System.out.println("Received pkt: " + jo);
 		}
 	}
+	
 
 	/**
 	 * @param args
