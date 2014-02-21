@@ -313,6 +313,7 @@ public class  PaxosManager {
         processMessage(new HandleFailureDetectionPacketTask(json, failureDetection));
         break;
       default:
+        GNS.getLogger().fine("Received packet: " + json);
         processMessage(new HandlePaxosMessageTask(json,incomingPacketType, this));
         break;
     }
@@ -635,7 +636,7 @@ class HandlePaxosMessageTask extends TimerTask {
       }
       else {
         // this case can arise just after a paxos instance is created or stopped.
-        GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID);
+        GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID + " key set: " + paxosManager.paxosInstances.keySet());
       }
     } catch (Exception e) {
       GNS.getLogger().severe(" PAXOS Exception EXCEPTION!!. Msg = " + json);

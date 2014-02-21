@@ -12,7 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Logging class used to log paxos messages and state for all paxos instances.
+ * NOTE: This class is extremely important for GNS. After restarting a name server, we depend on this class to recover
+ * the data stored at the node.
+ *
+ * Logging class used to log paxos messages and state for all paxos instances. It also recovers the database
+ * state on restarting the system.
  *
  * All logs are stored in folder {@code paxosLogFolder}. Log folder contains 3 types of files:
  *
@@ -21,7 +25,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * On startup, this {@code paxosIDsFile} tells which paxos instances were active before the system stopped.
  *
  * (2) Paxos state: These files are stored in folder {@code logFolder}/{@code stateFolderSubdir}. It contains periodic
- * snapshots of complete state of all active paxos instance. The name of each file is formatted as follows:
+ * snapshots of complete state of all active paxos instance. This complete snapshot includes values of variables
+ * internal to paxos protocol as well as the state in database corresponding to this paxos system.
+ * The name of the state file contains values of variables internal to paxos and the contents of the file
+ * are the database state corresponding to this paxos instance. The name of each file is formatted as follows:
  * 'paxosID_ballot_slotNumber'. the ballot is formatted as 'ballotNumber:coordinatorID'. The content of each file is
  * as follows. The first line contains an integer represented in string format. The integer tells the
  * the length of the paxos state contained in the file. Lines after the first line contain the state of the paxos instance.
@@ -29,20 +36,49 @@ import java.util.concurrent.locks.ReentrantLock;
  * (3) Log message files: This files are stored '{@code logFolder}/{@code logFilePrefix}_X' where 'X' is a non-negative
  * integer. These files the paxos messages as as they are processed. Each file contains at most {@code MSG_MAX} messages.
  * After {@code MSG_MAX} are logged to file {@code logFilePrefix}_X, further message are logged to
- * {@code logFilePrefix}_(X+1).
+ * {@code logFilePrefix}_(X+1). A single log message file contains messages belonging to several paxos instances.
  *
- * Messages to be logged in are queued. A logging thread checks the queue periodically,
+ *
+ * This class does three sets of actions: logging, log recovery, and log deletion.
+ *
+ * (1) Logging: Messages to be logged in are queued. A logging thread checks the queue periodically,
  * logs messages, and then performs the action associated with every logging message.
  * Currently, we log three types of messages: PREPARE, ACCEPT, and DECISION.  For example, once the DECISION message
  * is logged, it is forwarded to the paxos instance for processing.
  *
- * TODO describe format of logs
+ * The reason why we queue messages is that it allows (1) a single logging thread to log multiple messages in a single
+ * disk seek operation (2) for the paxos replica object, logging is an operation that does not block for IO activity.
+ * The queuing adds some complexity to the design because the logging thread need to take some action with each
+ * message after completing the logging. Refer to documentation on <code>LoggingCommand</code> on what these actions
+ * are.
  *
- * TODO describe recovery process
+ * Some logging tasks are not done via the queue, these include messages logged when paxos instances is added/removed.
+ * and the periodic logging of complete snapshot of paxos replicas. These are infrequent operations, therefore, even if
+ * we were to log these messages via queue, the performance benefits will be small.
  *
- * TODO describe redundant log deletion process
  *
- * logs messages, and then sends off messages for processing.
+ * (2) Log recovery: The log recovery recreates the set of paxos instances that were active at this node, and for
+ * each instance it recovers the internal state of the paxos object, as well as the contents of the database state.
+ * The recovery process consists of three steps: (a) we read the set of paxos instances at this node from the paxos IDs
+ * file (b) read the most recent complete snapshot of each paxos instances (c) parse the log message files, and update
+ * paxos instances based on messags that were logged after the complete snapshot of paxos instances.
+ *
+ *
+ * (3) Log deletion: Log deletion involves two tasks (a) if there are multiple files storing snapshots for the same
+ * paxos instance, we keep the most recent snapshot and delete other files (b) delete redundant log message files.
+ * Some other log message files could be safe to delete because they might contain state for paxos instances that
+ * no longer exist, or because we have taken a snapshot of all paxos instances after the messages in this file
+ * were logged.
+ *
+ *
+ * Limitations of design:
+ * (1) {@code logFolder}/{@code stateFolderSubdir} contains state for all paxos instances in separate files in the
+ * same directory. This may cause problems if the file system performs poorly while handling a large number of files
+ * in the same directory.
+ * Future work: Use nesting of directories to store snapshot of paxos state of different instances. This will
+ * require changes to log recovery, and log deletion as well.
+ *
+ *
  * User: abhigyan
  * Date: 7/24/13
  * Time: 8:16 AM
@@ -581,23 +617,39 @@ public class PaxosLogger extends Thread {
 
 
   /**
-   * returns the file name of the paxos instance
-   * @param paxosID
-   * @param packet
-   * @return
+   * The name of the file in which we will log the paxos state. The name is generated based on fields in the
+   * <code>StatePacket</code>.
+   *
+   * @param paxosID <code>paxosID</code> of the paxos instance.
+   * @param packet <<code>StatePacket</code> containing information about paxos state.
+   * @return complete path name of the file where paxos state will be logged.
    */
   private  String getStateLogFileName(String paxosID, StatePacket packet) {
     return getLogFolderPath() + "/" + stateFolderSubdir + "/" + paxosID + "_" + packet.b + "_" + packet.slotNumber;
   }
 
 
-
+  /**
+   * Returns a string in the format it can be logged to file.
+   * The format of the message is: PaxosID<TAB>MsgType<TAB>Msg
+   * @param paxosID The log msg belong to this paxosID
+   * @param msgType Type of message
+   * @param msg Log message
+   * @return
+   */
   private  String getLogString(String paxosID, int msgType, String msg) {
     return paxosID + "\t" + msgType + "\t" + msg + "\n";
   }
 
 
-
+  /**
+   * This method performs the same role as <code>getLogString</code> above, except,
+   * the log message is given as a json object. The method extract msg type from logs.
+   * @param paxosID
+   * @param jsonObject
+   * @return
+   * @throws JSONException
+   */
   private  String getLogString(String paxosID, JSONObject jsonObject) throws JSONException {
     StringBuilder sb = new StringBuilder();
     sb.append(paxosID);
@@ -611,6 +663,7 @@ public class PaxosLogger extends Thread {
   }
 
   /************************End of private methods for doing logging********************************/
+
 
   /************************Start of private methods for log recovery********************************/
 
@@ -633,9 +686,8 @@ public class PaxosLogger extends Thread {
 
     // step 3: read paxos logs for messages received after the paxos state was logged
     GNS.getLogger().fine("key set: " + paxosInstances.keySet());
-//    System.exit(2);
-    recoverLogMessagesAfterLoggedState(paxosInstances);
 
+    recoverLogMessagesAfterLoggedState(paxosInstances);
 
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine("Paxos Recovery: Complete.");
@@ -645,13 +697,14 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * Recover list of paxos instances currently active.
-   * @return
+   * Parses the file  <code>paxosIDsFile</code> and obtains a list of paxos instances currently
+   * active at this node, and the list of nodes that are member  of paxos instance.
+   * @return A <code>ConcurrentHashMap</code> whose key is the paxosKey obtained from <code>paxosID</code>,
+   * and value is a <code>PaxosReplicaInterface</code> object.
    */
   private  ConcurrentHashMap<String, PaxosReplicaInterface> recoverListOfPaxosInstances() {
 
     ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
-    // step 1: read paxosIDs active currently
 
     File f = new File(getPaxosIDsFile());
 
@@ -690,8 +743,10 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * Update the paxos instances with most recently logged state found in logs for each instance
-   * @param paxosInstances
+   * This is the second phase of log recovery after the list of paxos instances has been read.
+   * For each paxos instance in the list of instances, we find the file with the most recent snapshot of state for
+   * this paxos instance. We update the paxos instance based on the state found in this file.
+   * @param paxosInstances <code>ConcurrentHashMap</code> with list of paxos instances.
    */
   private  void recoverMostRecentStateOfPaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
     GNS.getLogger().fine("Keys in paxos instance: " + paxosInstances.keySet());
@@ -750,9 +805,11 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * Update the paxos instances with messages received after the paxos state was logged most recently for
-   * each instance
-   * @param paxosInstances
+   * This is last phase of log recovery which recovers state stored in the log message files.
+   * For each paxos instance, we discard any message that were written before the most recent snapshot for
+   * that instance was taken, as the second phase has already completed recovery until the most recent snapshot.
+   * We update paxos instances with messages that were written after the most recent snapshot.
+   * @param paxosInstances <<code>ConcurrentHashMap</code> with list of paxos instances.
    */
   private  void recoverLogMessagesAfterLoggedState(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
 
@@ -801,9 +858,11 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * Parse a single line from paxos logs and update {@code paxosInstances} accordingly.
+   * Parse a single line from paxos logs and update the set {@code paxosInstances} accordingly.
+   * This method parses lines found in both <code>paxosIDsFile</code> and the log message files.
+   *
    * @param paxosInstances set of paxos instances
-   * @param line paxos log line
+   * @param line paxos log line from either <code>paxosIDsFile</code> or the log message files.
    */
   private  void parseLine(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String line) {
     if (line.length() <= 1) {
@@ -830,6 +889,13 @@ public class PaxosLogger extends Thread {
 
   }
 
+  /**
+   * This method updates the <code>ConcurrentHashMap</code> containing list of paxos instances,
+   * based on a single log message.
+   * @param paxosInstances <<code>ConcurrentHashMap</code> with list of paxos instances.
+   * @param logMessage log message to be processed
+   * @throws JSONException
+   */
   private  void updatePaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
                                            PaxosLogMessage logMessage) throws JSONException {
     if (paxosInstances == null || logMessage == null) {
@@ -850,9 +916,6 @@ public class PaxosLogger extends Thread {
         parseDecision(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
                 logMessage.getMessage());
         break;
-//      case PaxosPacketType.PREPARE:
-//        parsePValue(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
-//        break;
       case PaxosPacketType.ACCEPT:
         parseAccept(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
                 logMessage.getMessage());
@@ -871,13 +934,16 @@ public class PaxosLogger extends Thread {
 //      case GARBAGESLOT:
 //        parseGarbageCollectionSlot(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
 //        break;
+//      case PaxosPacketType.PREPARE:
+//        parsePValue(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+//        break;
     }
-
   }
+
   /**
-   *
-   * @param f
-   * @return
+   * Read the file containing a snapshot of the paxos state of a paxos replica object .
+   * The file contains the state stored in database for this paxos instance.
+   * This method returns the database state in a string form.
    */
   private  String getPaxosStateFromFile(File f) {
 
@@ -920,7 +986,7 @@ public class PaxosLogger extends Thread {
         try {
           Runtime.getRuntime().exec("cat " + f.getAbsolutePath());
         } catch (IOException e1) {
-          e1.printStackTrace();  
+          e1.printStackTrace();
         }
       }
       e.printStackTrace();
@@ -936,7 +1002,7 @@ public class PaxosLogger extends Thread {
    * File names are of form <logFilePrefix><integer>, file name with higher integer values are
    * more recent logs.
    *
-   * @return
+   * @return  String array where i-th element is the name of the i-th log file.
    */
   private  String[] getSortedLogFileList() {
 
@@ -969,10 +1035,12 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * TODO add doc here
+   * Parse the line in <code>paxosIDsFile</code> logged upon the creation of a new paxos instance.
+   * This method create a <code>PaxosReplicaInterface</code> object after parsing the line, and
+   * adds it to the given <code>ConcurrentHashMap</code>.
    *
-   * @param paxosInstances
-   * @param paxosID
+   * @param paxosInstances <code>ConcurrentHashMap</code> with current list of paxos instances.
+   * @param paxosID <<code>paxosID</code> of this paxos instance.
    * @param msg
    */
   private   void parsePaxosStart(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
@@ -996,9 +1064,11 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * TODO add doc here
-   * @param paxosInstances
-   * @param paxosID
+   * Parse the line in <code>paxosIDsFile</code> logged after a paxos instance is removed by <code>PaxosManager</code>.
+   * If a <code>PaxosReplicaInterface</code> objects with the same paxosID exists in the <code>ConcurrentHashMap</code>,
+   * this method removes it
+   * @param paxosInstances <code>ConcurrentHashMap</code> with current list of paxos instances.
+   * @param paxosID <<code>paxosID</code> of the paxos instance.
    */
   private  void parsePaxosStop(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String paxosID,
                                      String msg) {
@@ -1019,11 +1089,8 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * Add to the set of decisions in new replica
-
-   *
-   * @param paxosReplica
-   * @param message
+   * Parse a message logged after a paxos replica commits a given request. (We also use term decision for committed
+   * requests). We pass the committed request to the <code>PaxosReplicaInterface</code> object.
    */
   private  void parseDecision(PaxosReplicaInterface paxosReplica, String message) throws JSONException {
     if (paxosReplica != null && message != null) {
@@ -1033,10 +1100,8 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * TODO add doc here
-   *
-   * @param replica
-   * @param msg
+   *  Parse a prepare message logged by the paxos replica. We pass the prepare message to the
+   *  <code>PaxosReplicaInterface</code> object.
    */
   private  void parsePrepare(PaxosReplicaInterface replica, String msg) throws JSONException {
     if (replica != null && msg != null) {
@@ -1046,10 +1111,8 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * TODO add doc here
-   *
-   * @param replica
-   * @param msg
+   * Parse a accept message logged by the paxos replica. We pass the accept message to the
+   *  <code>PaxosReplicaInterface</code> object.
    */
   private  void parseAccept(PaxosReplicaInterface replica, String msg) throws JSONException {
     if (replica != null && msg != null) {
@@ -1059,7 +1122,7 @@ public class PaxosLogger extends Thread {
   }
 
   /**
-   * extract log file number by parsing the the file name of log
+   * extract log file number by parsing the the file name of log.
    *
    * @param logFileName
    * @return log file number

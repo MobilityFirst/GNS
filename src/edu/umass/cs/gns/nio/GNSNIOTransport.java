@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,9 +60,9 @@ public class GNSNIOTransport extends NIOTransport {
 		sendToIDs(IDs, jsonData, excludeID);
 	}
 
-	public void sendToIDs(Set<Integer> destIDs, JSONObject jsonData, int excludeID) throws IOException {
+    public void sendToIDs(Set<Integer> destIDs, JSONObject jsonData, int excludeID) throws IOException {
 		for (int destID:destIDs) {
-			if (destID == this.myID || destID == excludeID) continue;
+			if (destID == excludeID) continue;
 			sendToID(destID, jsonData);
 		}
 	}
@@ -78,7 +79,9 @@ public class GNSNIOTransport extends NIOTransport {
 	 * a remote node, otherwise it hands over the message directly to the worker.
 	 */
 	public boolean sendToIDActual(int destID, JSONObject jsonData) throws IOException {
+    GNS.getLogger().info("Reached here: " + jsonData);
 		if(destID==this.myID) {
+
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 			jsonArray.add(jsonData);
 			((JSONMessageWorker)worker).processJSONMessages(jsonArray);
