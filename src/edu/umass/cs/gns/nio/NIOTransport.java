@@ -186,7 +186,8 @@ public class NIOTransport implements Runnable {
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
-		log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
+                // This causes a "cannot find symbol" error
+		//log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
 		NIOInstrumenter.incrAccepted();
 		socketChannel.configureBlocking(false);
 		socketChannel.socket().setKeepAlive(true);
