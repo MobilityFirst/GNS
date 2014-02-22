@@ -90,7 +90,6 @@ public class GNSNIOTransport extends NIOTransport {
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 			jsonArray.add(jsonData);
 			NIOInstrumenter.incrSent(); // instrumentation
-			System.out.println("Sending local: " + jsonData.toString());
 			((JSONMessageWorker)worker).processJSONMessages(jsonArray);
 		}
 		else {
