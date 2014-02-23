@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nameserver;
 
 /**
  *
+ *
  * @author westy
  */
 public class NameRecordKey {

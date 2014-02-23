@@ -20,9 +20,6 @@ public class StatsInfo extends HashMap<String,Integer>
   public static final String WRITE = "w";
   //private static final long serialVersionUID = 2326392043474125897L;
 
-//  public StatsInfo() {
-//  }
-// 
   public StatsInfo(int read, int write) {
     put(READ, read);
     put(WRITE, write);

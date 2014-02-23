@@ -25,11 +25,6 @@ import java.io.IOException;
  */
 public class NSPaxosInterface implements PaxosInterface {
 
-  //    @Override
-  public void proposeRequestToPaxos(String paxosID, RequestPacket requestPacket) {
-//    NameServer.paxosManager.propose(paxosID, requestPacket);
-  }
-
   @Override
   public void handlePaxosDecision(String paxosID, RequestPacket req, boolean recovery) {
     long t0 = System.currentTimeMillis();
@@ -147,15 +142,6 @@ public class NSPaxosInterface implements PaxosInterface {
               NameServer.updateNameRecordPrimary(rcr);
             }
 
-//            try {
-//              ReplicaControllerRecord rc2 = NameServer.getNameRecordPrimary(new ReplicaControllerRecord(json).getName());
-//              GNS.getLogger().info("Read fresh copy RC from DB ....: " + rc2 + "\t");
-//            } catch (RecordNotFoundException e) {
-//              e.printStackTrace();
-//            } catch (FieldNotFoundException e) {
-//              e.printStackTrace();
-//            }
-
             startIndex = endIndex;
           } else {
             startIndex += 1;
@@ -170,14 +156,7 @@ public class NSPaxosInterface implements PaxosInterface {
         } catch (RecordExistsException e) {
           NameServer.updateNameRecord(new NameRecord(json));
         }
-//        try {
-//          NameRecord nr2 = NameServer.getNameRecord(new NameRecord(json).getName());
-//          GNS.getLogger().info("Read fresh copy from DB ....: " + nr2 + "\t");
-//        } catch (RecordNotFoundException e) {
-//          e.printStackTrace();
-//        } catch (FieldNotFoundException e) {
-//          e.printStackTrace();
-//        }
+
       }
     } catch (JSONException e) {
 

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.main;
 
-//import edu.umass.cs.gnrs.nameserver.NSListenerUpdate;
+
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -155,6 +155,8 @@ public class StartNameServer {
   // use this flag to make changes to code which will only run during experiments.
   public static boolean experimentMode = false;
   public static boolean noLoadDB = false;
+
+  // this option should always be false. we use only for running some experiments.
   public static boolean eventualConsistency = false;
 
   public static boolean emulatePingLatencies = false;
@@ -427,235 +429,7 @@ public class StartNameServer {
     String nsFile = "";			//Nameserver file
     startNew(id, nsFile, args);
   }
-//
-//  public static void start(int id, String nsFile, String ... args) {
-//    try {
-//      CommandLine parser = null;
-//      try {
-//        parser = initializeOptions(args);
-//
-//      } catch (ParseException e) {
-//        printUsage();
-//        System.exit(1);
-//        e.printStackTrace();
-//      }
-//      if (parser.hasOption(HELP)) {
-//        printUsage();
-//        System.exit(1);
-//      }
-//
-//      id = Integer.parseInt(parser.getOptionValue("id", Integer.toString(id)));
-//      nsFile = parser.getOptionValue("nsfile", nsFile);
-//
-//      GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULT_NUM_PRIMARY_REPLICAS)));
-//      aggregateInterval = Integer.parseInt(parser.getOptionValue("aInterval", DEFAULTAGGREGATEINTERVAL)) * 1000;
-//      analysisInterval = Integer.parseInt(parser.getOptionValue("rInterval", DEFAULTANALYSISINTERVAL)) * 1000;
-//      normalizingConstant = Double.parseDouble(parser.getOptionValue("nconstant", DEFAULTNORMALIZINGCONSTANT));
-//      movingAverageWindowSize = Integer.parseInt(parser.getOptionValue("mavg", DEFAULTMOVINGAVERAGEWINDOWSIZE));
-//
-//      ttlConstant = Double.parseDouble(parser.getOptionValue("ttlconstant", DEFAULTTTLCONSTANT));
-//      TTLRegularName = Integer.parseInt(parser.getOptionValue("rttl", DEFAULTTTLREGULARNAME));
-//      TTLMobileName = Integer.parseInt(parser.getOptionValue("mttl", DEFAULTTTLMOBILENAME));
-//
-//      regularWorkloadSize = Integer.parseInt(parser.getOptionValue("rworkload", DEFAULTREGULARWORKLOADSIZE));
-//      mobileWorkloadSize = Integer.parseInt(parser.getOptionValue("mworkload", DEFAULTMOBILEMOBILEWORKLOADSIZE));
-//
-////      GenerateSyntheticRecordTable.sleepBetweenNames = Integer.parseInt(parser.getOptionValue("syntheticWorkloadSleepTimeBetweenAddingNames", "0"));
-//
-//      if (parser.hasOption("static")) {
-//        replicationFramework = ReplicationFrameworkType.STATIC;
-//      } else if (parser.hasOption("random")) {
-//        replicationFramework = ReplicationFrameworkType.RANDOM;
-//      } else if (parser.hasOption("location")) {
-//        replicationFramework = ReplicationFrameworkType.LOCATION;
-//        nameServerVoteSize = Integer.parseInt(parser.getOptionValue("nsVoteSize"));
-//      } else if (parser.hasOption("beehive")) {
-//        replicationFramework = ReplicationFrameworkType.BEEHIVE;
-//        C = Double.parseDouble(parser.getOptionValue("C"));
-//        base = Double.parseDouble(parser.getOptionValue("base"));
-//        alpha = Double.parseDouble(parser.getOptionValue("alpha"));
-//      } else if (parser.hasOption("kmediods")) {
-//        replicationFramework = ReplicationFrameworkType.KMEDIODS;
-//        numberLNS = Integer.parseInt(parser.getOptionValue("numLNS"));
-//        lnsnsPingFile = parser.getOptionValue("lnsnsping");
-//        nsnsPingFile = parser.getOptionValue("nsnsping");
-//      } else if (parser.hasOption("optimal")) {
-//        replicationFramework = ReplicationFrameworkType.OPTIMAL;
-//      } else {
-//        replicationFramework = GNS.DEFAULT_REPLICATION_FRAMEWORK;
-//        nameServerVoteSize = DEFAULT_NAMESERVER_VOTE_SIZE;
-//      }
-//
-//      if (parser.hasOption("minReplica")) {
-//        minReplica = Integer.parseInt(parser.getOptionValue("minReplica"));
-//      }
-//      if (parser.hasOption("maxReplica")) {
-//        maxReplica = Integer.parseInt(parser.getOptionValue("maxReplica"));
-//      }
-//
-//      debugMode = parser.hasOption("debugMode");
-//      experimentMode = parser.hasOption("experimentMode");
-//      if (experimentMode) {
-//        eventualConsistency = parser.hasOption("eventualConsistency");
-//        noLoadDB = parser.hasOption("noLoadDB");
-//      }
-//
-//      String dataStoreString = parser.getOptionValue("dataStore");
-//      if (dataStoreString == null) {
-//        dataStore = DEFAULTDATASTORETYPE;
-//      } else {
-//        try {
-//          dataStore = DataStoreType.valueOf(dataStoreString);
-//        } catch (IllegalArgumentException e) {
-//          dataStore = DEFAULTDATASTORETYPE;
-//        }
-//      }
-//      simpleDiskStore = parser.hasOption("simpleDiskStore");
-//
-//
-//      if (simpleDiskStore && parser.hasOption("dataFolder")) {
-//        dataFolder = parser.getOptionValue("dataFolder");
-//      }
-//      if (parser.hasOption("mongoPort")) {
-//        mongoPort = Integer.parseInt(parser.getOptionValue("mongoPort"));
-//      }
-//
-//      if (parser.hasOption("paxosLogFolder") == false) {
-//        PaxosManager.setPaxosLogFolder(DEFAULTPAXOSLOGPATHNAME);
-//      } else {
-//        PaxosManager.setPaxosLogFolder(parser.getOptionValue("paxosLogFolder"));
-//      }
-//
-//      if (parser.hasOption("failureDetectionMsgInterval")) {
-//        PaxosManager.setFailureDetectionPingInterval(Integer.parseInt(parser.getOptionValue("failureDetectionMsgInterval")) * 1000);
-//      }
-//      if (parser.hasOption("failureDetectionTimeoutInterval")) {
-//        PaxosManager.setFailureDetectionTimeoutInterval(Integer.parseInt(parser.getOptionValue("failureDetectionTimeoutInterval")) * 1000);
-//      }
-//
-//      if (experimentMode) {
-//        paxosStartMinDelaySec = Integer.parseInt(parser.getOptionValue("paxosStartMinDelaySec", "0"));
-//        paxosStartMaxDelaySec = Integer.parseInt(parser.getOptionValue("paxosStartMaxDelaySec", "0"));
-//      }
-//
-//
-//      if (parser.hasOption("emulatePingLatencies")) {
-//        emulatePingLatencies = parser.hasOption("emulatePingLatencies");
-//        if (emulatePingLatencies && parser.hasOption("variation")) {
-//          variation = Double.parseDouble(parser.getOptionValue("variation"));
-//        }
-//      }
-//
-//      if (parser.hasOption("workerThreadCount")) {
-//        workerThreadCount = Integer.parseInt(parser.getOptionValue("workerThreadCount"));
-//      }
-//
-//      tinyUpdate = parser.hasOption("tinyUpdate");
-//
-//      if (parser.hasOption("fileLoggingLevel")) {
-//        GNS.fileLoggingLevel = parser.getOptionValue("fileLoggingLevel");
-//      }
-//      if (parser.hasOption("consoleOutputLevel")) {
-//        GNS.consoleOutputLevel = parser.getOptionValue("consoleOutputLevel");
-//      }
-//      if (parser.hasOption("statFileLoggingLevel")) {
-//        GNS.statFileLoggingLevel = parser.getOptionValue("statFileLoggingLevel");
-//      }
-//      if (parser.hasOption("statConsoleOutputLevel")) {
-//        GNS.statConsoleOutputLevel = parser.getOptionValue("statConsoleOutputLevel");
-//      }
-//
-//      // only for testing
-//      if (experimentMode) {
-//        if (parser.hasOption("quitAfterTime")) {
-//          quitAfterTimeSec = Integer.parseInt(parser.getOptionValue("quitAfterTime"));
-////          if (quitAfterTimeSec >= 0) {
-////            Thread t = new Thread() {
-////              @Override
-////              public void run() {
-////                GNS.getLogger().info("Sleeping for " + quitAfterTimeSec + " sec before quitting ...");
-////                try {
-////                  Thread.sleep(quitAfterTimeSec * 1000);
-////                } catch (InterruptedException e) {
-////                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-////                }
-////                GNS.getLogger().info("SYSTEM EXIT.");
-////                System.exit(2);
-////
-////              }
-////            };
-////            t.start();
-////          }
-//
-//        }
-//      }
-//
-//      // only for testing
-//      if (experimentMode) {
-//        nameActives = parser.getOptionValue("nameActives", null);
-//      }
-//
-////      NSListenerUpdate.doSignatureCheck = parser.hasOption("signatureCheck");
-//    } catch (Exception e1) {
-//      printUsage();
-//      e1.printStackTrace();
-//      System.exit(1);
-//    }
-//    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-//    Date date = new Date();
-//
-//    println(
-//            "Date: " + dateFormat.format(date), debugMode);
-//    println(
-//            "Id: " + id, debugMode);
-//    println(
-//            "NS File: " + nsFile, debugMode);
-//    println(
-//            "Data Store: " + dataStore, debugMode);
-//    println(
-//            "Regular Workload Size: " + regularWorkloadSize, debugMode);
-//    println(
-//            "Mobile Workload Size: " + mobileWorkloadSize, debugMode);
-//    println(
-//            "Primary: " + GNS.numPrimaryReplicas, debugMode);
-//    println(
-//            "Replication: " + replicationFramework.toString(), debugMode);
-//    println(
-//            "C: " + C, debugMode);
-//    println(
-//            "DHT Base: " + base, debugMode);
-//    println(
-//            "Alpha: " + alpha, debugMode);
-//    println(
-//            "Aggregate Interval: " + aggregateInterval + "ms", debugMode);
-//    println(
-//            "Replication Interval: " + analysisInterval + "ms", debugMode);
-//    println(
-//            "Normalizing Constant: " + normalizingConstant, debugMode);
-//    println(
-//            "Moving Average Window: " + movingAverageWindowSize, debugMode);
-//    println(
-//            "TTL Constant: " + ttlConstant, debugMode);
-//    println(
-//            "Default TTL Regular Names: " + TTLRegularName, debugMode);
-//    println(
-//            "Default TTL Mobile Names: " + TTLMobileName, debugMode);
-//    println(
-//            "Debug Mode: " + debugMode, debugMode);
-//    println(
-//            "Experiment Mode: " + experimentMode, debugMode);
-//
-//    try {
-//      //Generate name server lookup table
-//      ConfigFileInfo.readHostInfo(nsFile, id);
-//      HashFunction.initializeHashFunction();
-//
-//      //Start nameserver
-//      new NameServer(id).run();
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
-//  }
+
 
   public static void startNew(int id, String nsFile, String ... args) {
     try {
@@ -928,12 +702,14 @@ public class StartNameServer {
             "Experiment Mode: " + experimentMode, debugMode);
 
     try {
-      //Generate name server lookup table
+      //Generate name server lookup table. do this first as hash function depends on ConfigFileInfo
       ConfigFileInfo.readHostInfo(nsFile, id);
+      // do this before starting name server. We must initializing hash function to calculate the
+      // set of replica controllers (primaries) for a name.
       HashFunction.initializeHashFunction();
 
-      //Start nameserver 
-      new NameServer(id).run();
+      //Start nameserver
+      new NameServer(id);
     } catch (Exception e) {
       e.printStackTrace();
     }

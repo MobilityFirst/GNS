@@ -10,6 +10,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.OutputMemoryUse;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,7 +22,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-//import edu.umass.cs.gns.packet.QueryResultValue;
 
 /**
  * **********************************************************
@@ -30,7 +30,7 @@ import java.util.*;
  * consists of integers. The integer value represents the name
  * and its popularity/rank.
  *
- * @author Hardeep Uppal
+ * @author Hardeep Uppal, Abhigyan
  * **********************************************************
  */
 public class GenerateSyntheticRecordTable {
@@ -430,19 +430,11 @@ public class GenerateSyntheticRecordTable {
     }
     GNS.getLogger().severe("Bulk insert of records. All complete. Total Records: " + totalRecords + "\tTime: "
             + (t1 - t0)/1000 + " sec");
-    outputMemoryUse("BeforeGC " + NameServer.nodeID + ":");
+    OutputMemoryUse.outputMemoryUse("BeforeGC " + NameServer.nodeID + ":");
     System.gc();
-    outputMemoryUse("AfterGC " + NameServer.nodeID + ":");
+    OutputMemoryUse.outputMemoryUse("AfterGC " + NameServer.nodeID + ":");
   }
 
-  public static void outputMemoryUse(String desc) {
-    long maxHeapSize = Runtime.getRuntime().maxMemory()/1024/1024;
-    long heapSize = Runtime.getRuntime().totalMemory()/1024/1024;
-    long freeMem = Runtime.getRuntime().freeMemory()/1024/1024;
-    long usedHeap = heapSize - freeMem;
-    GNS.getLogger().severe(desc + "\tHeap = " + heapSize + " MB\tMaxHeap = " + maxHeapSize + " MB\tFree = " + freeMem +
-            " MB\tUsed = " + usedHeap +" MB");
-  }
 
 
   /**

@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nameserver;
 
 /**
- *
+ * Abhigyan: I think we can delete this class now.
  * @author westy
  */
 public class NameAndRecordKey {

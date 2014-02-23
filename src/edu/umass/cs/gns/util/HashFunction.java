@@ -14,7 +14,7 @@ import java.util.*;
  * This class contains the hash function used to find primary
  * replicas (name servers) of a host/domain name.
  *
- * @author Hardeep Uppal
+ * @author Hardeep Uppal, Abhigyan
  ************************************************************/
 public class HashFunction {
 

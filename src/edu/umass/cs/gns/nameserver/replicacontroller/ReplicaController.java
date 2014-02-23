@@ -375,7 +375,7 @@ public class ReplicaController {
                 + "it to inactive. Already received msg before. Paxos ID = " + packet.getPaxosID());
       }
       if (rcRecord.isMarkedForRemoval() && removeRecordRequests.containsKey(packet.getName())) {
-        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.GROUP_CHANGE_START);
         StopActiveSetTask stopTask = new StopActiveSetTask(packet.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -514,7 +514,7 @@ public class ReplicaController {
       }
 
       if (rcRecord.isActiveRunning()) { // if active is running, stop current actives
-        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.GROUP_CHANGE_START);
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -635,7 +635,7 @@ public class ReplicaController {
     }
     else if (rcRecord.isActiveRunning() == false && rcRecord.isMarkedForRemoval() == false) { // group change ongoing
       if (GroupChangeProgress.groupChangeProgress.containsKey(rcRecord.getName()) == false) { // I am not doing it
-        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT); // start to do
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.GROUP_CHANGE_START); // start to do
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getOldActiveNameservers(),
                 rcRecord.getOldActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -646,7 +646,7 @@ public class ReplicaController {
         removeRecordRequests.put(rcRecord.getName(), new RemoveRecordPacket(new Random().nextInt(), rcRecord.getName(),
                 -1));
         // complete removing record
-        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.GROUP_CHANGE_START);
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -661,7 +661,7 @@ public class ReplicaController {
       }
       if (GroupChangeProgress.groupChangeProgress.containsKey(rcRecord.getName()) == false) {
         // start to do group change?
-        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.GROUP_CHANGE_START);
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getOldActiveNameservers(),
                 rcRecord.getOldActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);

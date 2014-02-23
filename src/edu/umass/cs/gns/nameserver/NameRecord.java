@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-//import edu.umass.cs.gns.packet.QueryResultValue;
 /**
  * 
  * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
@@ -22,17 +21,6 @@ import java.util.Set;
 public class NameRecord implements Comparable<NameRecord> {
 
   public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
-
-//  public final static Field ACTIVE_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("nr_active", FieldType.SET_INTEGER) : new Field("nr2", FieldType.SET_INTEGER);
-//  public final static Field PRIMARY_NAMESERVERS = (StartNameServer.experimentMode == false) ? new Field("nr_primary", FieldType.SET_INTEGER) : new Field("nr3", FieldType.SET_INTEGER);
-//  public final static Field ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new Field("nr_activePaxosID", FieldType.STRING) : new Field("nr4", FieldType.STRING);
-//  public final static Field OLD_ACTIVE_PAXOS_ID = (StartNameServer.experimentMode == false) ? new Field("nr_oldActivePaxosID", FieldType.STRING) : new Field("nr5", FieldType.STRING);
-//  public final static Field TIME_TO_LIVE = (StartNameServer.experimentMode == false) ? new Field("nr_ttl", FieldType.INTEGER) : new Field("nr6", FieldType.INTEGER);
-//  public final static Field VALUES_MAP = (StartNameServer.experimentMode == false) ? new Field("nr_valuesMap", FieldType.VALUES_MAP) : new Field("nr7", FieldType.VALUES_MAP);
-//  public final static Field OLD_VALUES_MAP = (StartNameServer.experimentMode == false) ? new Field("nr_oldValuesMap", FieldType.VALUES_MAP) : new Field("nr8", FieldType.VALUES_MAP);
-//  public final static Field TOTAL_UPDATE_REQUEST = (StartNameServer.experimentMode == false) ? new Field("nr_totalUpdateRequest", FieldType.INTEGER) : new Field("nr9", FieldType.INTEGER);
-//  public final static Field TOTAL_LOOKUP_REQUEST = (StartNameServer.experimentMode == false) ? new Field("nr_totalLookupRequest", FieldType.INTEGER) : new Field("nr10", FieldType.INTEGER);
-
 
   public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("nr_active", ColumnFieldType.SET_INTEGER);
   public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_INTEGER);
@@ -122,10 +110,6 @@ public class NameRecord implements Comparable<NameRecord> {
     if (jsonObject.has(TOTAL_UPDATE_REQUEST.getName())) {
       hashMap.put(TOTAL_UPDATE_REQUEST, JSONUtils.getObject(TOTAL_UPDATE_REQUEST, jsonObject));
     }
-
-
-//    NameRecord record = new NameRecord(new HashMap<Field, Object>());
-//    return record;
   }
 
   /**
@@ -150,7 +134,7 @@ public class NameRecord implements Comparable<NameRecord> {
     try {
       return toJSONObject().toString();
     } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();  
     }
     return null;
   }
