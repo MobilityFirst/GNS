@@ -13,11 +13,17 @@ import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import java.util.TimerTask;
 
 /**
- * Created with IntelliJ IDEA.
+ * This class checks if replica controllers have updated the database indicating that the group change for the name
+ * is complete. If yes, the task is immediately cancelled, otherwise it again proposes a request to replica controllers
+ * to mark that group change is complete.
+ * <p>
+ * IMPORTANT: We may need to request replica controllers again because a proposed paxos request may not get committed.
+ * Therefore, it is necessary to retry a request. How many times to retry?  Usually, requests need to be tried
+ * on a coordinator failure, therefore we should retry longer than the failure detection interval.
+ * <p>
  * User: abhigyan
  * Date: 11/14/13
  * Time: 9:24 AM
- * To change this template use File | Settings | File Templates.
  */
 public class WriteActiveNameServersRunningTask extends TimerTask {
 
@@ -33,11 +39,13 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
 
   int count = 0;
 
-  int MAX_RETRY = 5;
+  int MAX_RETRY = 10;
 
   public WriteActiveNameServersRunningTask(String name, String paxosID) {
     this.name = name;
     this.paxosID = paxosID;
+    int timeout = NameServer.paxosManager.getFailureDetectionTimeout();
+    if (timeout != -1) MAX_RETRY = (int)(timeout * 1.5 / ReplicaController.RC_TIMEOUT_MILLIS );
   }
 
   @Override

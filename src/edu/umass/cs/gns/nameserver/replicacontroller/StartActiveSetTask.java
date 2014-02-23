@@ -19,9 +19,15 @@ import java.util.Set;
 import java.util.TimerTask;
 
 /**
- * Informs new active replicas for a name until this node gets a confirmation from an active replicas that a majority of
- * the new active replicas have successfully obtained a copy of the most up to date name record.
+ * On a change in the set of active replicas for a name, this class informs the new set of active replicas.
+ * It informs one of the new replicas and checks after a timeout value if it received a confirmation that
+ * at least a majority of new replicas have been informed. Otherwise, it resends to another new replica.
  *
+ * Note: this class is executed using a timer object and not an executor service.
+ *
+ * @see edu.umass.cs.gns.nameserver.replicacontroller.StopActiveSetTask
+ * @see edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController
+ * @see edu.umass.cs.gns.nameserver.ListenerReplicationPaxos
  * @author abhigyan
  *
  */
@@ -81,16 +87,12 @@ public class StartActiveSetTask extends TimerTask {
           this.cancel();
           return;
         }
-        Integer progress = ReplicaController.groupChangeProgress.get(name);
-        if (progress == null || progress >= ReplicaController.NEW_ACTIVE_START) {
-//      if (ReplicaController.groupChangeProgress.get(newActivePaxosID) .isActiveRunning()) {
+        Integer progress = GroupChangeProgress.groupChangeProgress.get(name);
+        if (progress == null || progress >= GroupChangeProgress.NEW_ACTIVE_START) {
           String msg = "New active name servers running. Name = " + name + " All Actives: "
                   + newActiveNameServers + " Actives Queried: " + newActivesQueried;
           if (StartNameServer.experimentMode) GNS.getLogger().severe(msg);
           else  GNS.getLogger().info(msg);
-//        if (StartNameServer.debugMode) {
-//
-//        }
           this.cancel();
           return;
         }
@@ -104,12 +106,10 @@ public class StartActiveSetTask extends TimerTask {
       int selectedActive = BestServerSelection.getSmallestLatencyNSNotFailed(newActiveNameServers, newActivesQueried);
 
       if (selectedActive == -1) {
-        ReplicaController.groupChangeProgress.remove(name);
+        GroupChangeProgress.groupChangeProgress.remove(name);
         ReplicaController.groupChangeStartTimes.remove(name);
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().severe("ERROR: No more active left to query. "
-                  + "Active name servers queried: " + newActivesQueried + " Actives not started.");
-        }
+        GNS.getLogger().severe("ERROR: No more active left to query. "
+                + "Active name servers queried: " + newActivesQueried + " Actives not started.");
         this.cancel();
         return;
       }
@@ -127,26 +127,24 @@ public class StartActiveSetTask extends TimerTask {
       try {
         NameServer.tcpTransport.sendToID(selectedActive, packet.toJSONObject());
       } catch (IOException e) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().info("IO Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
-        }
+        GNS.getLogger().severe("IO Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
         e.printStackTrace();
       } catch (JSONException e) {
-        if (StartNameServer.debugMode) {
-          GNS.getLogger().info("JSON Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
-        }
+        GNS.getLogger().severe("JSON Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
         e.printStackTrace();
       }
       if (StartNameServer.debugMode) {
-        GNS.getLogger().info(" NEW ACTIVE STARTUP PACKET SENT: " + packet.toString());
+        GNS.getLogger().fine(" NEW ACTIVE STARTUP PACKET SENT: " + packet.toString());
       }
 
     } catch (Exception e) {
+
+      // this exception handling here in case the timer task was executed using an executor service,
+      // in which case we would not see an exception printed at all.
       GNS.getLogger().severe("Exception in Start Active Set Task. " + e.getMessage());
       e.printStackTrace();
     }
   }
-
 
   private static ArrayList<ColumnField> getStartupActiveSetFields = new ArrayList<ColumnField>();
 

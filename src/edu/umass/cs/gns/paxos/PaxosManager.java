@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  *
  */
-public class  PaxosManager {
+public class PaxosManager {
 
   static final String PAXOS_ID = "PXS";
 
@@ -283,6 +283,15 @@ public class  PaxosManager {
   public  boolean isNodeUp(int nodeID) {
     if (failureDetection == null) return true;
     return failureDetection.isNodeUp(nodeID);
+  }
+
+  /**
+   * Returns -1 if failure detection not initialized, otherwise returns timeout for failure detection.
+   * @return
+   */
+  public int getFailureDetectionTimeout() {
+    if (failureDetection == null) return -1;
+    return failureDetection.timeoutIntervalMillis;
   }
 
   /**

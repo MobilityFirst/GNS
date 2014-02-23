@@ -25,6 +25,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class implements three operations of a replica controller that are interlinked to one another:
+ * changing the set of active replicas for a name, removing a name from GNS, and handling failure of a name server.
+ *
+ * TODO class needs lot more documentation.
+ */
 public class ReplicaController {
 
   public static ConcurrentHashMap<String,Long> groupChangeStartTimes = new ConcurrentHashMap<String, Long>();
@@ -40,45 +46,10 @@ public class ReplicaController {
    */
   private static ConcurrentHashMap<String, RemoveRecordPacket> removeRecordRequests = new ConcurrentHashMap<String, RemoveRecordPacket>();
 
-  /***************START: Methods and object to track all group changes in progress**********************************/
-  public static ConcurrentHashMap<String, Integer> groupChangeProgress = new ConcurrentHashMap<String, Integer>();
-
-  public static final int STOP_SENT = 1;
-
-  public static final int OLD_ACTIVE_STOP = 2;
-
-  public static final int NEW_ACTIVE_START = 3;
-
-
-  public static boolean updateGroupChangeProgress(String name, int status) {
-    synchronized (groupChangeProgress) {
-      if (groupChangeProgress.containsKey(name) == false && status > STOP_SENT) {
-        return false;
-      }
-      if (groupChangeProgress.containsKey(name) == false) {
-        groupChangeProgress.put(name, status);
-        return true;
-      }
-      if (groupChangeProgress.get(name) >= status) {
-        return false;
-      }
-      groupChangeProgress.put(name, status);
-      return true;
-    }
-  }
-
-
-  public static void groupChangeComplete(String name) {
-    synchronized (groupChangeProgress) {
-      groupChangeProgress.remove(name);
-    }
-  }
-
-  /***************END: Methods and object to track all group changes in progress**********************************/
 
 
 
-  /********START: Methods that return paxosID among actives and among primaries for a name******************/
+  /******** START: Methods that return paxosID among actives and among primaries for a name ******************/
 
 
   /**
@@ -98,16 +69,24 @@ public class ReplicaController {
   }
 
   /**
-   * Return ID of the paxos instance among primary name servers for the record.
+   * Return ID of the paxos instance among primary name servers for this record.
+   * This method selects using consistent hashing the set of primary replicas for a name, and returns the paxos
+   * instance corresponding to that set of primary replicas.
    *
-   * @param nameRecord
+   * @param rcRecord
    */
-  public static String getPrimaryPaxosID(ReplicaControllerRecord nameRecord) throws FieldNotFoundException
+  public static String getPrimaryPaxosID(ReplicaControllerRecord rcRecord) throws FieldNotFoundException
   {
-    return getPrimaryPaxosID(nameRecord.getName());
+    return getPrimaryPaxosID(rcRecord.getName());
   }
 
-
+  /**
+   * Return ID of the paxos instance among primary name servers for this name.
+   * This method selects using consistent hashing the set of primary replicas for a name, and returns the paxos
+   * instance corresponding to that set of primary replicas.
+   *
+   * @param name
+   */
   public static String getPrimaryPaxosID(String name) {
     String nameHash = HashFunction.getMD5Hash(name);
     String key = HashFunction.nsTreeMap.higherKey(nameHash);
@@ -118,7 +97,8 @@ public class ReplicaController {
 
 
   /**
-   * Return ID of the paxos instance among active name servers of this record.
+   * Return a new randomly generated ID of the paxos instance among active name servers of this record.
+   * PaxosID is of format: name-randomint
    *
    * @param nameRecord
    */
@@ -127,6 +107,12 @@ public class ReplicaController {
     return getActivePaxosID(nameRecord.getName());
   }
 
+  /**
+   * Return a new randomly generated ID of the paxos instance among active name servers of this name.
+   * PaxosID is of format: name-randomint
+   * @param name
+   * @return
+   */
   public static String getActivePaxosID(String name)
   {
     Random r = new Random();
@@ -232,7 +218,7 @@ public class ReplicaController {
       GNS.getLogger().info("Record read is " + rcRecord);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Exception: name record should exist in DB. Error. " + e.getMessage());
-      e.printStackTrace();  
+      e.printStackTrace();
       return;
     }
 
@@ -241,7 +227,7 @@ public class ReplicaController {
       GNS.getLogger().info("Active running: " + rcRecord.isActiveRunning());
 
       if (rcRecord.isMarkedForRemoval() && rcRecord.isActiveRunning()) {
-        groupChangeComplete(rcRecord.getName()); // IMPORTANT : this ensures that
+        GroupChangeProgress.groupChangeComplete(rcRecord.getName()); // IMPORTANT : this ensures that
 //        // StopPaxosID task will see the paxos instance as completed.
 
 //        rcRecord.setOldActiveStopped(packet.getPaxosIDToBeStopped()); // IMPORTANT : this ensures that
@@ -296,7 +282,7 @@ public class ReplicaController {
         GNS.getLogger().info("Primary send: old active stopped. write to nameRecord: "+ packet.getName());
 
       if (rcRecord.isActiveRunning() == false) {
-        boolean result = updateGroupChangeProgress(rcRecord.getName(), OLD_ACTIVE_STOP);
+        boolean result = GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.OLD_ACTIVE_STOP);
         if (result) {
           //      if (rcRecord.setOldActiveStopped(packet.getPaxosIDToBeStopped())) {
           if (StartNameServer.debugMode) GNS.getLogger().info("OLD Active paxos stopped. Name: "+ rcRecord.getName()
@@ -344,7 +330,7 @@ public class ReplicaController {
     }
 //    ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(packet.getName());
     String paxosID = getPrimaryPaxosID(packet.getName());
-    boolean result = updateGroupChangeProgress(packet.getName(), NEW_ACTIVE_START);
+    boolean result = GroupChangeProgress.updateGroupChangeProgress(packet.getName(), GroupChangeProgress.NEW_ACTIVE_START);
     if (result) {
       ChangeActiveStatusPacket proposePacket = new ChangeActiveStatusPacket(packet.getNewActivePaxosID(),
               packet.getName(), PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY);
@@ -379,7 +365,7 @@ public class ReplicaController {
     try {
       ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(),
               getNewActiveStartedFields());
-      groupChangeComplete(packet.getName());
+      GroupChangeProgress.groupChangeComplete(packet.getName());
       GNS.getLogger().info("Group change complete. name = " + rcRecord.getName() + " PaxosID " + rcRecord.getActivePaxosID());
       if (rcRecord.setNewActiveRunning(packet.getPaxosID())) {
         if (StartNameServer.debugMode)  GNS.getLogger().info("New Active paxos running for name : " + packet.getName()
@@ -389,7 +375,7 @@ public class ReplicaController {
                 + "it to inactive. Already received msg before. Paxos ID = " + packet.getPaxosID());
       }
       if (rcRecord.isMarkedForRemoval() && removeRecordRequests.containsKey(packet.getName())) {
-        updateGroupChangeProgress(rcRecord.getName(), STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
         StopActiveSetTask stopTask = new StopActiveSetTask(packet.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -397,14 +383,13 @@ public class ReplicaController {
 
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record does not exist !! Should not happen. " + packet.getName());
-      e.printStackTrace();  
+      e.printStackTrace();
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. " + e.getMessage() + "\tName\t" + packet.getName());
-      e.printStackTrace();  
+      e.printStackTrace();
     }
 
   }
-
 
 
   /************END: Public/private methods related to changes in set of active replicas*******************/
@@ -510,7 +495,7 @@ public class ReplicaController {
 
     } catch (RecordNotFoundException e) {
 
-      e.printStackTrace();  
+      e.printStackTrace();
     }
 
     try {
@@ -529,7 +514,7 @@ public class ReplicaController {
       }
 
       if (rcRecord.isActiveRunning()) { // if active is running, stop current actives
-        updateGroupChangeProgress(rcRecord.getName(), STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -540,7 +525,7 @@ public class ReplicaController {
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field Not Found Exception. " + e.getMessage());
 
-      e.printStackTrace();  
+      e.printStackTrace();
 
     }
 
@@ -626,7 +611,7 @@ public class ReplicaController {
       } catch (FieldNotFoundException e) {
         GNS.getLogger().severe("Field not found exception. This should not happen because we read complete record. " +
                 e.getMessage());
-        e.printStackTrace();  
+        e.printStackTrace();
       }
     }
   }
@@ -649,8 +634,8 @@ public class ReplicaController {
       return;
     }
     else if (rcRecord.isActiveRunning() == false && rcRecord.isMarkedForRemoval() == false) { // group change ongoing
-      if (groupChangeProgress.containsKey(rcRecord.getName()) == false) { // I am not doing it
-        updateGroupChangeProgress(rcRecord.getName(), STOP_SENT); // start to do
+      if (GroupChangeProgress.groupChangeProgress.containsKey(rcRecord.getName()) == false) { // I am not doing it
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT); // start to do
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getOldActiveNameservers(),
                 rcRecord.getOldActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -661,7 +646,7 @@ public class ReplicaController {
         removeRecordRequests.put(rcRecord.getName(), new RemoveRecordPacket(new Random().nextInt(), rcRecord.getName(),
                 -1));
         // complete removing record
-        updateGroupChangeProgress(rcRecord.getName(), STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);
@@ -674,9 +659,9 @@ public class ReplicaController {
         removeRecordRequests.put(rcRecord.getName(), new RemoveRecordPacket(new Random().nextInt(),rcRecord.getName(),
                 -1));
       }
-      if (groupChangeProgress.containsKey(rcRecord.getName()) == false) {
+      if (GroupChangeProgress.groupChangeProgress.containsKey(rcRecord.getName()) == false) {
         // start to do group change?
-        updateGroupChangeProgress(rcRecord.getName(), STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(rcRecord.getName(), GroupChangeProgress.STOP_SENT);
         StopActiveSetTask stopTask = new StopActiveSetTask(rcRecord.getName(), rcRecord.getOldActiveNameservers(),
                 rcRecord.getOldActivePaxosID());
         NameServer.timer.schedule(stopTask, 0, RC_TIMEOUT_MILLIS);

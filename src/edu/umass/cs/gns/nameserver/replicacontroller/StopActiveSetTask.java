@@ -15,10 +15,20 @@ import java.util.TimerTask;
 
 
 /**
- * This class sends a message to current active replicas to stop an active replica
+ * On a change in the set of active replicas for a name, this class informs the old set of active replicas to
+ * stop functioning. After a timeout, it checks if the old replicas have confirmed that they have stopped functioning.
+ * If so, this task is cancelled, or else, this task sends another replica a message.
+ * <p>
+ * In paxos terms, it asks one of the old active replicas to propose a STOP request to the paxos
+ * group between old set of active replicas. Once the STOP request is committed by paxos, all replicas would delete
+ * paxos state, and update database to indicate they are no longer active replicas.
+ * <p>
+ * Note: this class is executed using a timer object and not an executor service.
  *
+ * @see edu.umass.cs.gns.nameserver.replicacontroller.StartActiveSetTask
+ * @see edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController
+ * @see edu.umass.cs.gns.nameserver.ListenerReplicationPaxos
  * @author abhigyan
- *
  */
 public class StopActiveSetTask extends TimerTask {
 
@@ -49,8 +59,8 @@ public class StopActiveSetTask extends TimerTask {
     try {
       numAttempts ++;
 
-      Integer progress = ReplicaController.groupChangeProgress.get(name);
-      if (progress == null || progress >= ReplicaController.OLD_ACTIVE_STOP) {
+      Integer progress = GroupChangeProgress.groupChangeProgress.get(name);
+      if (progress == null || progress >= GroupChangeProgress.OLD_ACTIVE_STOP) {
         if (StartNameServer.debugMode) {
           GNS.getLogger().info("Old active name servers stopped. Paxos ID: " + oldPaxosID +
                   " Old Actives : " + oldActiveNameServers);
@@ -64,7 +74,7 @@ public class StopActiveSetTask extends TimerTask {
       //selectNextActiveToQuery();
 
       if (selectedOldActive == -1) {
-        ReplicaController.groupChangeProgress.remove(name);
+        GroupChangeProgress.groupChangeProgress.remove(name);
         ReplicaController.groupChangeStartTimes.remove(name);
 //      if (StartNameServer.debugMode) {
         GNS.getLogger().severe("ERROR: No more old active left to query. "

@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
   /**
    * Interval after which a node is declared as failed is no response is received
    */
-	 int timeoutIntervalMillis = 31000;
+	 int timeoutIntervalMillis = 30000;
 
 	/**
 	 * number of nodes.

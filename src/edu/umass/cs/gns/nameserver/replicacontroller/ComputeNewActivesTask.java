@@ -238,7 +238,7 @@ public class ComputeNewActivesTask extends TimerTask {
       // Step 2: stop old paxos and write to primaries.
       if (activeProposalPacket.getProposingNode() == NameServer.nodeID || // if I have proposed this change, I will start actives group change process
               NameServer.paxosManager.isNodeUp(activeProposalPacket.getProposingNode()) == false) { // else if proposing node has failed, then also I will start group change
-        ReplicaController.updateGroupChangeProgress(activeProposalPacket.getName(), ReplicaController.STOP_SENT);
+        GroupChangeProgress.updateGroupChangeProgress(activeProposalPacket.getName(), GroupChangeProgress.STOP_SENT);
         ReplicaController.groupChangeStartTimes.put(rcRecordPrimary.getName(), System.currentTimeMillis());
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("PAXOS : Stop oldActiveSet now: Name = "
