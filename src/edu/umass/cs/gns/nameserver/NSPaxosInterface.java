@@ -5,7 +5,6 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
-import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.Packet;
@@ -49,12 +48,6 @@ public class NSPaxosInterface implements PaxosInterface {
       // messages decided for paxos between primaries
       else if (req.clientID == Packet.PacketType.NEW_ACTIVE_PROPOSE.getInt()) {
         ComputeNewActivesTask.applyNewActivesProposed(req.value);
-      }
-      else if (req.clientID == Packet.PacketType.NAME_RECORD_STATS_RESPONSE.getInt()) {
-        ListenerNameRecordStats.applyNameRecordStatsPacket(req.value);
-      }
-      else if (req.clientID == Packet.PacketType.NAMESERVER_SELECTION.getInt()) {
-        ListenerNameRecordStats.applyNameServerSelectionPacket(req.value);
       }
       else if (req.clientID == Packet.PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY.getInt()) {
         ReplicaController.applyActiveNameServersRunning(req.value);

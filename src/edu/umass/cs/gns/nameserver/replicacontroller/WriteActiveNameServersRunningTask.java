@@ -39,6 +39,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
     this.name = name;
     this.paxosID = paxosID;
   }
+
   @Override
   public void run() {
 
@@ -67,7 +68,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
         return;
       }
     } catch (FieldNotFoundException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();
       GNS.getLogger().severe("Field Not Found Exception " + e.getMessage() + "\tPaxosID\t" + paxosID + "\tcount" +
               count);
       this.cancel();

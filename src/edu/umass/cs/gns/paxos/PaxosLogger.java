@@ -29,9 +29,13 @@ import java.util.concurrent.locks.ReentrantLock;
  * internal to paxos protocol as well as the state in database corresponding to this paxos system.
  * The name of the state file contains values of variables internal to paxos and the contents of the file
  * are the database state corresponding to this paxos instance. The name of each file is formatted as follows:
- * 'paxosID_ballot_slotNumber'. the ballot is formatted as 'ballotNumber:coordinatorID'. The content of each file is
+ * 'paxosID_ballot_slotNumber'. The ballot is formatted as 'ballotNumber:coordinatorID'. The content of each file is
  * as follows. The first line contains an integer represented in string format. The integer tells the
  * the length of the paxos state contained in the file. Lines after the first line contain the state of the paxos instance.
+ *
+ * There could be multiple state files for same paxos instance. In this case, the our naming convention
+ * helps know which is the most recent state file for a paxos instance: a file with higher ballot number of slot number
+ * is more recent.
  *
  * (3) Log message files: This files are stored '{@code logFolder}/{@code logFilePrefix}_X' where 'X' is a non-negative
  * integer. These files the paxos messages as as they are processed. Each file contains at most {@code MSG_MAX} messages.
@@ -46,13 +50,13 @@ import java.util.concurrent.locks.ReentrantLock;
  * Currently, we log three types of messages: PREPARE, ACCEPT, and DECISION.  For example, once the DECISION message
  * is logged, it is forwarded to the paxos instance for processing.
  *
- * The reason why we queue messages is that it allows (1) a single logging thread to log multiple messages in a single
- * disk seek operation (2) for the paxos replica object, logging is an operation that does not block for IO activity.
+ * We use queuing of messages for two reasons:(1) It  the logging thread to log multiple messages with a single
+ * disk seek operation (2) For the paxos replica object, logging is an operation that does not block for IO activity.
  * The queuing adds some complexity to the design because the logging thread need to take some action with each
  * message after completing the logging. Refer to documentation on <code>LoggingCommand</code> on what these actions
  * are.
  *
- * Some logging tasks are not done via the queue, these include messages logged when paxos instances is added/removed.
+ * Some logging tasks are not done via the queue. These include messages logged when paxos instances is added/removed.
  * and the periodic logging of complete snapshot of paxos replicas. These are infrequent operations, therefore, even if
  * we were to log these messages via queue, the performance benefits will be small.
  *

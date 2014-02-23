@@ -8,15 +8,33 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.NameRecordStatsPacket;
 import edu.umass.cs.gns.packet.NameServerSelectionPacket;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
-import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 
+/**
+ * This class updates the <code>ReplicaControllerRecord</code> for a name with statistics
+ * such as read rate, write rate, and votes for name servers that are best suited to be the active replicas
+ * for a name. These statistics are used by replica controllers in choosing the set of active replicas for a name.
+ * This information is received from packets sent by other nodes in the system including
+ * active replicas of a name and local name servers.
+ * <p>
+ * This class handles two types of messages: <code>NameServerSelectionPacket</code> and
+ * <code>NameRecordStatsPacket</code>. <code>NameServerSelectionPacket</code> packets are sent by local name servers
+ * and <code>NameRecordStatsPacket</code> packets are sent by active replicas. Currently,
+ * we have disabled sending of <code>NameRecordStatsPacket</code> type messages by active replicas,  because
+ * all information could be supplied by local name servers only.
+ * <p>
+ * Future work: we should not depend on local name servers to send these statistics, and use active replicas to send
+ * them. For this reason, I have not removed code related to <code>NameRecordStatsPacket</code>.
+ * <p>
+ * @see edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask
+ * @see edu.umass.cs.gns.packet.NameServerSelectionPacket
+ * @see edu.umass.cs.gns.localnameserver.original.NameServerVoteThread
+ * @see edu.umass.cs.gns.packet.NameRecordStatsPacket
+ * @see edu.umass.cs.gns.nameserver.SendNameRecordStats
+ */
 public class ListenerNameRecordStats extends Thread {
 
 
@@ -41,26 +59,17 @@ public class ListenerNameRecordStats extends Thread {
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleNameServerSelectionPacket(JSONObject incomingJSON) throws JSONException, IOException {
-
-//    GNS.getLogger().severe("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
+  private static void handleNameServerSelectionPacket(JSONObject incomingJSON) throws JSONException, IOException {
 
     if (StartNameServer.debugMode) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
     NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(incomingJSON);
-//    ArrayList<Field> readFields = new ArrayList<Field>();
-//    readFields.add(ReplicaControllerRecord.VOTES_MAP);
     try {
 
 
       ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(selectionPacket.getName());
       try {
-//      rcRecord = NameServer.getNameRecordPrimaryMultiField(selectionPacket.getName(), readFields);
         rcRecord.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote(),selectionPacket.getUpdate());
-//        try {
-//          if (StartNameServer.debugMode) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION (after) " + NameServer.getNameRecordPrimary(selectionPacket.getName()));
-//        } catch (RecordNotFoundException e) {
-//          // no exception possible here
-//        }
+
       } catch (FieldNotFoundException e) {
         GNS.getLogger().severe("Field not found exception. " + e.getMessage());
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -70,25 +79,10 @@ public class ListenerNameRecordStats extends Thread {
       GNS.getLogger().severe("Exception here " + e.getMessage());
       e.printStackTrace();
     }
-//    GNS.getLogger().severe("Record read = " + rcRecord.toString());
-
-//    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name Sever Vote: " + selectionPacket.toString());
+    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name Sever Vote: " + selectionPacket.toString());
 
   }
 
-//  public static void handleNameServerSelectionPacket(JSONObject incomingJSON) throws JSONException, IOException {
-//
-//    if (StartNameServer.debugMode) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
-//    NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(incomingJSON);
-//    // Send ACK to local name server immediately, that vote is received.
-//    NameServer.tcpTransport.sendToID(selectionPacket.getLocalnameserverID(),incomingJSON);
-//    RequestPacket request = new RequestPacket(PacketType.NAMESERVER_SELECTION.getInt(),
-//            selectionPacket.toString(), PaxosPacketType.REQUEST, false);
-//    PaxosManager.propose(ReplicaController.getPrimaryPaxosID(selectionPacket.getName()), request);
-//    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: NameSever Vote: " + incomingJSON.toString());
-//
-//
-//  }
 
 
   private static void handleNameRecordStatsPacket(JSONObject json) {
@@ -100,51 +94,13 @@ public class ListenerNameRecordStats extends Thread {
       e.printStackTrace();
       return;
     }
-    String paxosID = ReplicaController.getPrimaryPaxosID(statsPacket.getName());
-    RequestPacket requestPacket = new RequestPacket(PacketType.NAME_RECORD_STATS_RESPONSE.getInt(),
-            statsPacket.toString(), PaxosPacketType.REQUEST, false);
-    NameServer.paxosManager.propose(paxosID, requestPacket);
-    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Stats Packet proposed. ");
 
-  }
-
-//  private static void handleNameRecordStatsPacket(JSONObject json) {
-//    if (StartNameServer.debugMode) GNS.getLogger().fine("ListenerNameRecordStats: received " + json.toString());
-//    NameRecordStatsPacket statsPacket;
-//    try {
-//      statsPacket = new NameRecordStatsPacket(json);
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//      return;
-//    }
-//    String paxosID = ReplicaController.getPrimaryPaxosID(statsPacket.getName());
-//    RequestPacket requestPacket = new RequestPacket(PacketType.NAME_RECORD_STATS_RESPONSE.getInt(),
-//            statsPacket.toString(), PaxosPacketType.REQUEST, false);
-//    PaxosManager.propose(paxosID, requestPacket);
-//    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS PROPOSAL: Stats Packet proposed. ");
-//
-//  }
-
-  /**
-   * Apply the decision from Paxos: Packet = NameRecordStatsPacket.
-   */
-  public static void applyNameRecordStatsPacket(String decision) {
-
-    NameRecordStatsPacket statsPacket;
-    try {
-      statsPacket = new NameRecordStatsPacket(new JSONObject(decision));
-    } catch (JSONException e) {
-      e.printStackTrace();
-      return;
-    }
-    if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: StatsPacket for name " + statsPacket.getName()
-            + " Decision: " + decision);
     ReplicaControllerRecord rcRecord;
     try {
       rcRecord = NameServer.getNameRecordPrimaryMultiField(statsPacket.getName(), ReplicaControllerRecord.STATS_MAP);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found exception. " + statsPacket.getName());
-      e.printStackTrace();  
+      e.printStackTrace();
       return;
     }
     // TODO: convert read and write to directly write
@@ -153,33 +109,10 @@ public class ListenerNameRecordStats extends Thread {
               statsPacket.getReadFrequency(), statsPacket.getWriteFrequency());
     } catch (FieldNotFoundException e) {
       GNS.getLogger().fine("Field not found exception. " + e.getMessage());
-      e.printStackTrace();  
-    }
-  }
-
-  public static void applyNameServerSelectionPacket(String decision) {
-    NameServerSelectionPacket selectionPacket;
-    try {
-      selectionPacket = new NameServerSelectionPacket(new JSONObject(decision));
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(selectionPacket.getName(), ReplicaControllerRecord.VOTES_MAP);
-      GNS.getLogger().fine("Record read = " + rcRecord.toString());
-      // TODO: convert read and write to directly write
-      if (StartNameServer.debugMode) GNS.getLogger().fine("PAXOS DECISION: Name Sever Vote: " + selectionPacket.toString());
-      rcRecord.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote(), selectionPacket.getUpdate());
-
-    } catch (JSONException e) {
       e.printStackTrace();
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe("Record not found exception. Packet = " + decision);
-      e.printStackTrace();  
-      return;
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception. " + e.getMessage());
-
-      e.printStackTrace();  
     }
-
   }
+
 }
 
 

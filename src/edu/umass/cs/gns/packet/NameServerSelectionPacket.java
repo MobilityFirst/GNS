@@ -13,8 +13,8 @@ import org.json.JSONObject;
  * to make its replication decisions. It sends the number of lookups and updates received by
  * the local name server for a name, in addition to the closest name server to that local name server.
  *
- * The number of lookups are counted as 'votes' for the closest name server in deciding the replication
- * for that name.
+ * The number of lookups are counted as 'votes' for the closest name server; name servers that receive most
+ * votes are chosen to be active replicas for a name.
  *
  * IMPORTANT: This information should be sent by an active replica to replica controllers,
  * and it is not the role of local name servers to send this information. However, currently we don't have a

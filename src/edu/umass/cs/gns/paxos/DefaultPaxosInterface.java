@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
 //import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
@@ -20,9 +19,9 @@ import java.io.IOException;
  * User: abhigyan
  * Date: 6/29/13
  * Time: 8:57 PM
- * To change this template use File | Settings | File Templates.
  */
 public class DefaultPaxosInterface implements PaxosInterface {
+
   /**
    *
    */

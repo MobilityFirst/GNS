@@ -85,6 +85,8 @@ public class NameServer {
     // Executor service created.
     executorService = new ScheduledThreadPoolExecutor(StartNameServer.workerThreadCount);
 
+
+
     // Create the demultiplexer object. This is used by both TCP and UDP.
     nsDemultiplexer = new NSPacketDemultiplexer();
 
@@ -108,6 +110,14 @@ public class NameServer {
     // start listening socket
     new Thread(tcpTransport).start();
 
+    if (StartNameServer.experimentMode) {
+      try {
+        Thread.sleep(initialExpDelayMillis); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
+      } catch (InterruptedException e) {
+        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+    }
+
     // now listening socket is running, start failure detector and other process in paxos which require sending messages.
     paxosManager.startPaxos(StartNameServer.failureDetectionPingInterval, StartNameServer.failureDetectionTimeoutInterval);
 
@@ -116,13 +126,7 @@ public class NameServer {
     if (StartLocalNameServer.experimentMode == false) {
       new NSListenerAdmin().start(); // westy
     }
-    if (StartNameServer.experimentMode) {
-      try {
-        Thread.sleep(initialExpDelayMillis); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
-      } catch (InterruptedException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
-    }
+
 
     // Load monitoring calculation initalized.
     loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
