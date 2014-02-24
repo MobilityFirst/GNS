@@ -117,7 +117,7 @@ public class ClientRequestWorker extends TimerTask {
     }
     long t1 = System.currentTimeMillis();
     if (t1 - t0 > 100) {
-      GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + incomingJSON);
+      GNS.getLogger().warning("Long delay " + (t1 - t0) + "ms. Packet: " + incomingJSON);
     }
   }
 
@@ -210,7 +210,7 @@ public class ClientRequestWorker extends TimerTask {
 
     long t1 = System.currentTimeMillis();
     if (t1 - t0 > 20) {
-      GNS.getLogger().severe("Long latency HandleUpdateAddressNS " + (t1 - t0));
+      GNS.getLogger().warning("Long latency HandleUpdateAddressNS " + (t1 - t0));
     }
 
 
@@ -639,7 +639,7 @@ public class ClientRequestWorker extends TimerTask {
             GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + guid);
             // or we don't actually have the field
           } else { // send error msg.
-            GNS.getLogger().severe("Record doesn't contain field: " + key + " name  = " + guid);
+            GNS.getLogger().info("Record doesn't contain field: " + key + " name  = " + guid);
             dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
           }
           // For some reason the Guid of the packet is null

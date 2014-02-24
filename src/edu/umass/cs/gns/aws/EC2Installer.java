@@ -478,7 +478,7 @@ public class EC2Installer {
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm RSlogfile*\n"
-            + "rm -rf log"
+            + "rm -rf log\n"
             + "rm -rf paxoslog");
   }
 

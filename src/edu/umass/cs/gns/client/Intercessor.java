@@ -21,7 +21,8 @@ import org.json.JSONObject;
  * One of a number of class that implement client support in the GNS server. 
  * 
  * The intercessor is the primary liason class between the servers (HTTP and new
- * TCP) and the Command Module and the the Local Name Server.
+ * TCP) and the Command Module which handles incoming requests from the servers
+ * and the the Local Name Server.
  * It provides support for the AccountAccess, Field Access,
  * FieldMetaData, GroupAccess, and SelectHandler classes.
  * 
@@ -34,7 +35,7 @@ import org.json.JSONObject;
  */
 public class Intercessor {
 
-  private static int localServerID = 0; // this is probably obsolete... check to remove
+  private static int localServerID = 0;
   /* Used by the wait/notify calls */
   private static final Object monitor = new Object();
   /* Used by update confirmation */

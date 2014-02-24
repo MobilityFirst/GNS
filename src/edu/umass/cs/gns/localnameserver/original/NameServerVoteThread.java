@@ -148,7 +148,7 @@ public class NameServerVoteThread extends Thread {
         //				LocalNameServer.printNameRecordStatsMap( debugMode );
 			}
       long t1 = System.currentTimeMillis();
-      GNS.getLogger().severe("Round " + count +  ". Votes sent for " + nameCount + " names / " + allNames + " names. " +
+      GNS.getLogger().info("Round " + count +  ". Votes sent for " + nameCount + " names / " + allNames + " names. " +
               "Time = " + (t1 - t0) + " ms");
 		}
 	}

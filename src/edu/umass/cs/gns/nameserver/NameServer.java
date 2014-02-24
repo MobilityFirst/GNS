@@ -196,7 +196,7 @@ public class NameServer {
       initialDelayMillis = initialExpDelayMillis + (long) (StartNameServer.analysisInterval * 1.5);
 
     }
-    GNS.getLogger().severe("ComputeNewActives Initial delay " + initialDelayMillis);
+    GNS.getLogger().info("ComputeNewActives Initial delay " + initialDelayMillis);
     return initialDelayMillis;
   }
 

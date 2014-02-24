@@ -571,7 +571,7 @@ public class MongoRecords implements NoSQLRecords {
         tG = System.currentTimeMillis();
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 20) {
-          GNS.getLogger().severe(" mongoLookup Long delay " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)); ;
+          GNS.getLogger().warning(" mongoLookup Long delay " + (t1 - t0) + "\tbreakdown\t" + (tA - t0)  + "\t"+ (tB - tA)  + "\t"  + (tC - tB)+ "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG)); ;
         }
         return hashMap;
     } finally {
@@ -617,7 +617,7 @@ public class MongoRecords implements NoSQLRecords {
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 10) {
           //System.out.println(" Long latency mongoUpdate " + (t1 - t0) + "\ttime\t" + t0);
-          GNS.getLogger().severe("mongoDB  Long delay " + (t1 - t0) + "ms");
+          GNS.getLogger().warning("mongoDB  Long delay " + (t1 - t0) + "ms");
 
         }
 //        System.out.println("\nTHIS SHOULD NOT PRINT !!!--> "  );

@@ -71,7 +71,7 @@ public class NSPaxosInterface implements PaxosInterface {
     }
     long t1 = System.currentTimeMillis();
     if (t1 - t0 > 100)
-      GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + req.value);
+      GNS.getLogger().warning("Long delay " + (t1 - t0) + "ms. Packet: " + req.value);
   }
 
   @Override

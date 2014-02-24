@@ -151,7 +151,7 @@ public class DNSRequestTask extends TimerTask {
         }
 
         if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
-          GNS.getLogger().severe("here invalid name server .... "  + incomingPacket.getGuid());
+          GNS.getLogger().severe("Invalid name server for "  + incomingPacket.getGuid());
           if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
 
 

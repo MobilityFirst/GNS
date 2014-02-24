@@ -111,7 +111,7 @@ public class GenerateSyntheticRecordTable {
           rcRecords.add(nameRecordPrimary.toJSONObject());
           if (rcRecords.size() == batchSize) {
             NameServer.replicaController.bulkInsertRecords(rcRecords);
-            GNS.getLogger().severe("Bulk insert RC records. count:" + numPrimariesAdded + "\tname: " + name);
+            GNS.getLogger().info("Bulk insert RC records. count:" + numPrimariesAdded + "\tname: " + name);
             rcRecords = new ArrayList<JSONObject>();
           }
 //          try {
@@ -144,7 +144,7 @@ public class GenerateSyntheticRecordTable {
           nameRecords.add(nameRecord.toJSONObject());
           if (nameRecords.size() == batchSize) {
             NameServer.recordMap.bulkInsertRecords(nameRecords);
-            GNS.getLogger().severe("Bulk insert name records. count:" + numActivesAdded + "\tname: " + name);
+            GNS.getLogger().info("Bulk insert name records. count:" + numActivesAdded + "\tname: " + name);
             nameRecords = new ArrayList<JSONObject>();
           }
           //Create paxos instance
@@ -404,7 +404,7 @@ public class GenerateSyntheticRecordTable {
               NameServer.replicaController.bulkInsertRecords(rcRecords);
               NameServer.recordMap.bulkInsertRecords(nameRecords);
             }
-            GNS.getLogger().severe("Bulk insert of records. count:" + rcRecords.size() + "\tname: " + name);
+            GNS.getLogger().info("Bulk insert of records. count:" + rcRecords.size() + "\tname: " + name);
             totalRecords += rcRecords.size();
             rcRecords = new ArrayList<JSONObject>();
             nameRecords = new ArrayList<JSONObject>();
@@ -423,12 +423,12 @@ public class GenerateSyntheticRecordTable {
           NameServer.recordMap.bulkInsertRecords(nameRecords);
         }
         totalRecords += rcRecords.size();
-        GNS.getLogger().severe("Last bulk insert of records. count:" + rcRecords.size());
+        GNS.getLogger().info("Last bulk insert of records. count:" + rcRecords.size());
       } catch (RecordExistsException e) {
         e.printStackTrace();
       }
     }
-    GNS.getLogger().severe("Bulk insert of records. All complete. Total Records: " + totalRecords + "\tTime: "
+    GNS.getLogger().info("Bulk insert of records. All complete. Total Records: " + totalRecords + "\tTime: "
             + (t1 - t0)/1000 + " sec");
     OutputMemoryUse.outputMemoryUse("BeforeGC " + NameServer.nodeID + ":");
     System.gc();
@@ -472,7 +472,7 @@ public class GenerateSyntheticRecordTable {
 
 
     for (int name = 0; name < (regularWorkloadSize + mobileWorkloadSize); name++) {
-      if (name%1000 == 0) GNS.getLogger().severe("Name complete: " + name);
+      if (name%1000 == 0) GNS.getLogger().info("Name complete: " + name);
       try {
         String strName = Integer.toString(name);
         Set<Integer> primaryNameServer = HashFunction.getPrimaryReplicas(strName);

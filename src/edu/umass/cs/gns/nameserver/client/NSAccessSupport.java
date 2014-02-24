@@ -75,33 +75,37 @@ public class NSAccessSupport {
    * @return
    */
   public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
-    try {
-      GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
-      if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
-        return true; // can always read your own stuff
-      } else {
-        Set<String> allowedusers = NSFieldMetaData.lookup(access, guidInfo, field);
-        GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
-        if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
-          GNS.getLogger().info("$$$$$$User " + accessorInfo.getName() + " allowed to access user " + guidInfo.getName() + "'s " + field + " field");
-          return true;
-        }
-        // otherwise find any users that can access all of the fields
-        allowedusers = NSFieldMetaData.lookup(access, guidInfo, ALLFIELDS);
-        if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
-          GNS.getLogger().info("$$$$$$$User " + accessorInfo.getName() + " allowed to access all of user " + guidInfo.getName() + "'s fields");
-          return true;
-        }
-      }
+    GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
+    if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
+      return true; // can always read your own stuff
+    } else if (checkForAccess(access, guidInfo, field, accessorInfo)) {
+      return true; // accessor can see this field
+    } else if (checkForAccess(access, guidInfo, ALLFIELDS, accessorInfo)) {
+      return true; // accessor can see all fields
+    } else {
       GNS.getLogger().info("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
       return false;
+    }
+  }
+
+  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
+    try {
+      Set<String> allowedusers = NSFieldMetaData.lookup(access, guidInfo, field);
+      GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+      if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
+        GNS.getLogger().info("$$$$$$User " + accessorInfo.getName() + " allowed to access "
+                + (field != ALLFIELDS ? ("user " + guidInfo.getName() + "'s " + field + " field") : ("all of user " + guidInfo.getName() + "'s fields")));
+        return true;
+      }
+      return false;
     } catch (FieldNotFoundException e) {
-      GNS.getLogger().warning("User " + accessorInfo.getName() + " access problem for " + guidInfo.getName() + "'s " + field + " field: " + e);
+      // This is actuallty a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("User " + accessorInfo.getName() + " access problem for " + guidInfo.getName() + "'s " + field + " field: " + e);
       return false;
     }
+
   }
 
   private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers) {

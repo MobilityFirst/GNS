@@ -68,7 +68,7 @@ public class SendQueriesViaIntercessor {
     if (LocalNameServer.updateTrace != null) requests += LocalNameServer.updateTrace.size();
     double delay = (requests)/100000 * 1000;
 
-    GNS.getLogger().severe(" Initial lookup delay: " + delay);
+    GNS.getLogger().info(" Initial lookup delay: " + delay);
     List<Double> delays = new ArrayList<Double>();
     List<TimerTask> tasks = new ArrayList<TimerTask>();
     int count = 0;
@@ -84,7 +84,7 @@ public class SendQueriesViaIntercessor {
       LocalNameServer.executorService.schedule(tasks.get(i), (long) delays.get(i).intValue(), TimeUnit.MILLISECONDS);
     }
     long t1 = System.currentTimeMillis();
-    GNS.getLogger().severe(" Time to submit all updates: " + (t1 - t0));
+    GNS.getLogger().info(" Time to submit all updates: " + (t1 - t0));
 //    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay/1000 + " Expected-duration " + expectedDurationSec);
   }
 

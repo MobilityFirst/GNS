@@ -82,7 +82,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
     } catch (IOException e) {
       e.printStackTrace();
     } catch (Exception e) {
-      GNS.getLogger().severe("Exception here:");
+      GNS.getLogger().severe("Unexpected exception in while handling JSON packets:");
       e.printStackTrace();
     }
   }
