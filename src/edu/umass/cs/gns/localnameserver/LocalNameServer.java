@@ -279,8 +279,8 @@ public class LocalNameServer {
     if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
-
-    if (StartLocalNameServer.experimentMode == false && StartLocalNameServer.runHttpServer) {
+    
+    if (StartLocalNameServer.experimentMode == false) {
       GnsHttpServer.runHttp(LocalNameServer.nodeID);
     }
   }

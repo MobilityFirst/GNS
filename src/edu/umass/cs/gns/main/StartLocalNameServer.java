@@ -118,9 +118,6 @@ public class StartLocalNameServer {
 
   public static final String VARIATION = "variation";
 
-  public static final String RUN_HTTP_SERVER = "runHttpServer";
-
-
   public static ReplicationFrameworkType replicationFramework;
   public static int regularWorkloadSize;
   public static int mobileWorkloadSize;
@@ -210,7 +207,6 @@ public class StartLocalNameServer {
    */
   public static boolean emulatePingLatencies = false;
   public static double variation = 0.1; // 10 % addition
-  public static boolean runHttpServer = true;
 
   @SuppressWarnings("static-access")
   /**
@@ -338,8 +334,6 @@ public class StartLocalNameServer {
             .withDescription("Optimal trace file")
             .create(OPTIMAL_TRACE);
 
-    Option runHttpServer = new Option("runHttpServer", "run the http server in the same process as local name server.");
-
     commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(nodeId);
@@ -385,7 +379,6 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(tinyQuery);
     commandLineOptions.addOption(delayScheduling);
     commandLineOptions.addOption(variation);
-    commandLineOptions.addOption(runHttpServer);
 
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
@@ -406,7 +399,7 @@ public class StartLocalNameServer {
    -cacheSize 10000 -primary 3 -location -vInterval 1000 -chooseFromClosestK 1 -lookupRate 10000 
    -updateRateMobile 0 -updateRateRegular 10000 -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100
    -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO
-   -runHttpServer -debugMode
+   -debugMode
    */
   /**
    * ************************************************************
@@ -574,8 +567,6 @@ public class StartLocalNameServer {
       if (emulatePingLatencies && allValues.containsKey(VARIATION)) {
         variation = Double.parseDouble(allValues.get(VARIATION));
       }
-
-      runHttpServer = allValues.containsKey(RUN_HTTP_SERVER) ? Boolean.parseBoolean(allValues.get(RUN_HTTP_SERVER)) : true;
 
     } catch (Exception e1) {
       e1.printStackTrace();

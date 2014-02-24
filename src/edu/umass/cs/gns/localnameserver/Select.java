@@ -27,7 +27,7 @@ import org.json.JSONObject;
  * @author westy
  */
 public class Select {
-  
+
   public static void handlePacketSelectRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
 
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
@@ -43,7 +43,7 @@ public class Select {
     packet.setLnsQueryId(queryId);
     JSONObject outgoingJSON = packet.toJSONObject();
     // Pick one NS to send it to
-    
+
     GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " potential servers are " + serverIds.toString());
     int serverID = BestServerSelection.simpleLatencyLoadHeuristic(serverIds);
     // above might return -1 if the configuration info is not set.. so pick one randomly
@@ -66,11 +66,7 @@ public class Select {
     GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " recvd from NS" + packet.getNameServer());
     SelectInfo info = LocalNameServer.getQueryInfo(packet.getLnsQueryId());
     // send a response back to the client
-    if (info.getSenderAddress() != null && info.getSenderPort() > 0) {
-      LNSListener.udpTransport.sendPacket(packet.toJSONObject(), info.getSenderAddress(), info.getSenderPort());
-    } else if (StartLocalNameServer.runHttpServer) {
-      Intercessor.checkForResult(packet.toJSONObject());
-    }
+    Intercessor.handleIncomingPackets(packet.toJSONObject());
     LocalNameServer.removeQueryInfo(packet.getLnsQueryId());
   }
 }

@@ -52,19 +52,10 @@ public class LNSListenerAdmin extends Thread {
   public LNSListenerAdmin() throws IOException {
     super("ListenerAdmin");
     this.serverSocket = new ServerSocket(ConfigFileInfo.getLNSAdminRequestPort(LocalNameServer.nodeID));
-    randomID = new Random(System.currentTimeMillis());
-    hostMap = new HashMap<Integer, InetAddress>();
+    randomID = new Random(System.currentTimeMillis());;
     replicationMap = new HashMap<Integer, Integer>();
   }
-
-  private int nextID() {
-    int id;
-    do {
-      id = randomID.nextInt();
-    } while (hostMap.containsKey(id));
-    return id;
-  }
-
+  
   /**
    *
    * Start executing the thread.
@@ -104,12 +95,7 @@ public class LNSListenerAdmin extends Thread {
           if (dumpRequestPacket.getPrimaryNameServer() == -1) {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
-            if (!StartLocalNameServer.runHttpServer) {
-              GNS.getLogger().fine("ListenerAdmin: Request from " + incomingSocket.getInetAddress().getHostName() + " port: " + incomingSocket.getLocalPort());
-              hostMap.put(id, incomingSocket.getInetAddress());
-            } else {
-              GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
-            }
+            GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
             //dumpRequestPacket.setId(id);
             dumpRequestPacket.setLocalNameServer(LocalNameServer.nodeID);
             JSONObject json = dumpRequestPacket.toJSONObject();
@@ -119,16 +105,9 @@ public class LNSListenerAdmin extends Thread {
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
           } else {
             // INCOMING - send it out to original requester
-
             DumpRequestPacket incomingPacket = new DumpRequestPacket(incomingJSON);
             int incomingId = incomingPacket.getId();
-            if (StartLocalNameServer.runHttpServer) {
-              Admintercessor.processDumpResponsePackets(incomingJSON);
-            } else {
-              InetAddress host = hostMap.get(incomingId);
-              Socket socketOut = new Socket(host, ConfigFileInfo.getLNSAdminDumpReponsePort(LocalNameServer.nodeID));
-              Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), socketOut);
-            }
+            Admintercessor.handleIncomingDumpResponsePackets(incomingJSON);
             GNS.getLogger().fine("ListenerAdmin: Relayed response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());
             int remaining = replicationMap.get(incomingId);
             remaining = remaining - 1;
@@ -138,15 +117,7 @@ public class LNSListenerAdmin extends Thread {
               GNS.getLogger().fine("ListenerAdmin: Saw last response for " + incomingId);
               replicationMap.remove(incomingId);
               SentinalPacket sentinelPacket = new SentinalPacket(incomingId);
-              if (StartLocalNameServer.runHttpServer) {
-                Admintercessor.processDumpResponsePackets(sentinelPacket.toJSONObject());
-              } else {
-                InetAddress host = hostMap.get(incomingId);
-                hostMap.remove(incomingId);
-                // send a sentinal
-                Socket socketOutAgain = new Socket(host, ConfigFileInfo.getLNSAdminDumpReponsePort(LocalNameServer.nodeID));
-                Packet.sendTCPPacket(sentinelPacket.toJSONObject(), socketOutAgain);
-              }
+              Admintercessor.handleIncomingDumpResponsePackets(sentinelPacket.toJSONObject());
             }
           }
           break;
@@ -170,13 +141,7 @@ public class LNSListenerAdmin extends Thread {
               JSONObject jsonResponse = new JSONObject();
               jsonResponse.put("CACHE", LocalNameServer.cacheLogString("CACHE:\n"));
               AdminResponsePacket responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-              if (StartLocalNameServer.runHttpServer) {
-                Admintercessor.processAdminResponsePackets(responsePacket.toJSONObject());
-              } else {
-                Socket socketOut = new Socket(incomingSocket.getInetAddress(), 
-                        ConfigFileInfo.getLNSAdminResponsePort(LocalNameServer.nodeID));
-                Packet.sendTCPPacket(responsePacket.toJSONObject(), socketOut);
-              }
+              Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
               break;
             case CHANGELOGLEVEL:
               Level level = Level.parse(incomingPacket.getArgument());
@@ -188,7 +153,7 @@ public class LNSListenerAdmin extends Thread {
               serverIds = ConfigFileInfo.getAllNameServerIDs();
               Packet.multicastTCP(serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               break;
-            }
+          }
           break;
         case STATUS_INIT:
           StatusClient.handleStatusInit(incomingSocket.getInetAddress());

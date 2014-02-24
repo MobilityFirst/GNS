@@ -13,13 +13,10 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class PendingTasks
-{
+public class PendingTasks {
 
   static ConcurrentHashMap<String, ArrayList<PendingTask>> allTasks = new ConcurrentHashMap<String, ArrayList<PendingTask>>();
-
   static HashSet<String> requestActivesOngoing = new HashSet<String>();
-
 
   /**
    * Request current set of actives for name, and queue this request to be executed once we receives the curent actives.
@@ -33,10 +30,9 @@ public class PendingTasks
    * @param initialDelay Delay for sending request to name servers to get actives.
    */
   public static void addToPendingRequests(String name, TimerTask task, int period, InetAddress address, int port,
-                                          JSONObject errorMsg, String errorLog, long initialDelay) {
+          JSONObject errorMsg, String errorLog, long initialDelay) {
 
-		synchronized (allTasks)
-		{
+    synchronized (allTasks) {
 //      RequestActivesPacket packet = new RequestActivesPacket(name,LocalNameServer.nodeID);
 //      packet.setActiveNameServers(HashFunction.getPrimaryReplicasNoCache(name));
 //      LocalNameServer.addCacheEntry(packet);
@@ -47,7 +43,7 @@ public class PendingTasks
       if (!allTasks.containsKey(name)) {
         allTasks.put(name, new ArrayList<PendingTask>());
       }
-      allTasks.get(name).add(new PendingTask(name, task, period, address, port,errorMsg, errorLog));
+      allTasks.get(name).add(new PendingTask(name, task, period, address, port, errorMsg, errorLog));
 
       if (requestActivesOngoing.contains(name) == false) {
         RequestActivesTask requestActivesTask = new RequestActivesTask(name);
@@ -56,10 +52,10 @@ public class PendingTasks
         requestActivesOngoing.add(name);
       }
 
-		}
+    }
 
 
-	}
+  }
 
   public static void addToPendingRequests(String name) {
     LocalNameServer.executorService.scheduleAtFixedRate(new RequestActivesTask(name), 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
@@ -75,7 +71,9 @@ public class PendingTasks
 
     synchronized (allTasks) {
       runTasks = allTasks.remove(name);
-      if (runTasks == null) return;
+      if (runTasks == null) {
+        return;
+      }
 
 //            if (allTasks.containsKey(name)) {
 //                ArrayList<PendingTask> y = allTasks.get(name);
@@ -91,40 +89,44 @@ public class PendingTasks
 //
 //            }
     }
-		
-		if (runTasks.size() > 0) {
 
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount " +
-              runTasks.size());
-			for (PendingTask task: runTasks) {
-				//
-				if (task.period > 0) {
+    if (runTasks.size() > 0) {
+
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount "
+                + runTasks.size());
+      }
+      for (PendingTask task : runTasks) {
+        //
+        if (task.period > 0) {
 //					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. REPEAT!!" );
-          LocalNameServer.executorService.scheduleAtFixedRate(task.timerTask,0,task.period, TimeUnit.MILLISECONDS);
+          LocalNameServer.executorService.scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
 //					LocalNameServer.timer.schedule(task.timerTask, 0, task.period);
-				}
-				else {
+        } else {
 //					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. No repeat." );
-          LocalNameServer.executorService.schedule(task.timerTask,0, TimeUnit.MILLISECONDS);
+          LocalNameServer.executorService.schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);
 //					LocalNameServer.timer.schedule(task.timerTask, 0);
-				}
-			}
-		}
-		
-	}
+        }
+      }
+    }
 
-  public static boolean containsRequest(String name) throws  JSONException  {
+  }
+
+  public static boolean containsRequest(String name) throws JSONException {
     synchronized (allTasks) {
       return allTasks.containsKey(name);
     }
   }
-    public  static  void sendErrorMsgForName(String name) throws JSONException {
 
-      ArrayList<PendingTask> runTasks;
+  public static void sendErrorMsgForName(String name) throws JSONException {
 
-      synchronized (allTasks) {
-        runTasks = allTasks.remove(name);
-        if (runTasks == null) return;
+    ArrayList<PendingTask> runTasks;
+
+    synchronized (allTasks) {
+      runTasks = allTasks.remove(name);
+      if (runTasks == null) {
+        return;
+      }
 
 //            if (allTasks.containsKey(name)) {
 //                ArrayList<PendingTask> y = allTasks.get(name);
@@ -139,45 +141,40 @@ public class PendingTasks
 //                if (y.size() == 0) allTasks.remove(name);
 //
 //            }
-      }
+    }
 
-      if (runTasks.size() > 0) {
-        GNS.getLogger().info("Running pending tasks. Sending error messages: Count " + runTasks.size());
-        for (PendingTask task: runTasks) {
-          GNS.getStatLogger().fine(task.errorLog);
-          if (task.address != null && task.port > 0) {
-            LNSListener.udpTransport.sendPacket(task.errorMsg,task.address, task.port);
-          } else if (StartLocalNameServer.runHttpServer) {
-            Intercessor.checkForResult(task.errorMsg);
-          }
-        }
+    if (runTasks.size() > 0) {
+      GNS.getLogger().info("Running pending tasks. Sending error messages: Count " + runTasks.size());
+      for (PendingTask task : runTasks) {
+        GNS.getStatLogger().fine(task.errorLog);
+        Intercessor.handleIncomingPackets(task.errorMsg);
       }
     }
+  }
 }
 
 class PendingTask {
-	public String name;
-	//public NameRecordKey recordKey;
+
+  public String name;
+  //public NameRecordKey recordKey;
   public InetAddress address;
   public int port;
   public JSONObject errorMsg;
   public String errorLog;
-	/**
-	 * Period > 0 for recurring tasks, = 0 for one time tasks.
-	 */
-	public int period; 
-	public TimerTask timerTask;
-	
-	public PendingTask(String name, TimerTask timerTask, int period, InetAddress address, int port, JSONObject errorMsg, String errorLog) {
-		this.name = name;
-		//this.recordKey = recordKey;
-		this.timerTask = timerTask;
-		this.period = period;
+  /**
+   * Period > 0 for recurring tasks, = 0 for one time tasks.
+   */
+  public int period;
+  public TimerTask timerTask;
+
+  public PendingTask(String name, TimerTask timerTask, int period, InetAddress address, int port, JSONObject errorMsg, String errorLog) {
+    this.name = name;
+    //this.recordKey = recordKey;
+    this.timerTask = timerTask;
+    this.period = period;
     this.address = address;
     this.port = port;
     this.errorMsg = errorMsg;
     this.errorLog = errorLog;
-	}
-	
-	
+  }
 }

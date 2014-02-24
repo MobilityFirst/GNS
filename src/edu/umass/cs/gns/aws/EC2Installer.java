@@ -139,16 +139,6 @@ public class EC2Installer {
     ec2UserName = parser.getEc2username();
     dataStoreType = parser.getDataStoreType();
     amiRecordType = parser.getAmiRecordType();
-
-
-//    XMLParser ec2parse = new XMLParser(configName);
-//    for (int i = 0; i < ec2parse.size(); i++) {
-//      String region = ec2parse.getAttribute(i, "name", true);
-//      int cnt = Integer.parseInt(ec2parse.getAttribute(i, "cnt", true));
-//      String elasticIP = ec2parse.getAttribute(i, "ip");
-//      System.out.println(region + " " + cnt + " " + elasticIP);
-//      regionsList.add(new RegionSpec(RegionRecord.valueOf(region), cnt, elasticIP));
-//    }
   }
 
   /**
@@ -409,18 +399,6 @@ public class EC2Installer {
             + "nohup java -cp " + GNSFileName + " " + StartLNSClass + " "
             + "-id " + getLNSId(id)
             + " -configFile lns.conf "
-            // all these are in the lns.conf file now
-//            // at some point a bunch of these should become defaults
-//            + " -cacheSize 10000 "
-//            + " -primary 3 -location -vInterval 1000"
-//            + " -lookupRate 10000 -updateRateMobile 0 -updateRateRegular 10000 "
-//            + " -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100 "
-//            //+ " -adaptiveTimeout -delta 0.05 -mu 1.0 -phi 6.0 "
-//            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
-//            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO "
-//            //+ " -debugMode "
-//            + " -nsfile name-server-info  "
-//            + "  -runHttpServer "
             + "> LNSlogfile 2>&1 &");
 
     StatusModel.getInstance().queueUpdate(id, "Starting name servers");
@@ -433,35 +411,7 @@ public class EC2Installer {
             + "nohup java -cp " + GNSFileName + " " + StartNSClass + " "
             + " -id " + id
             + " -configFile ns.conf "
-            // all these are in the ns.conf file now
- //         // at some point a bunch of these should become defaults
-//            + " -primary 3 -aInterval 1000 -rInterval 1000 -nconstant 0.1 -mavg 20 -ttlconstant 0.0 -rttl 0 -mttl 0"
-//            + " -rworkload 0 -mworkload 0"
-//            + " -location -nsVoteSize 5 "
-//            + " -fileLoggingLevel " + DEFAULT_LOG_LEVEL + " -consoleOutputLevel " + DEFAULT_LOG_LEVEL
-//            + " -statFileLoggingLevel INFO -statConsoleOutputLevel INFO"
-//            + " -dataStore " + dataStoreType.name()
-//            //+ " -debugMode "
-//            + " -nsfile name-server-info "
             + "> NSlogfile 2>&1 &");
-    // THIS NEVER WORKED AND WE DON'T NEED IT UNLESS ANYMORE... WAS TRYING TO RUN A SIMPLE HTTP SERVICE ON PORT 80
-//    // run this with sudo because it needs root access to bind port 80
-//    AWSEC2.executeBashScript(hostname, keyFile, true, "runRS.sh",
-//            "#!/bin/bash\n"
-//            + "cd /home/ec2-user\n"
-//            + "if [ -f RSlogfile ]; then\n"
-//            + "mv --backup=numbered RSlogfile RSlogfile.save\n"
-//            + "fi\n"
-//            + "nohup java -cp " + GNSFile + " edu.umass.cs.gns.httpserver.RedirectServer "
-//            + "> RSlogfile 2>&1 &");
-    // now run as part of LNS
-//    StatusModel.getInstance().queueUpdate(id, "Starting HTTP servers");
-//    AWSEC2.executeBashScript(hostname, keyFile, "runHTTP.sh",
-//            "#!/bin/bash\n"
-//            + "mv --backup=numbered HTTPlogfile HTTPlogfile.save\n"
-//            + "nohup java -cp " + GNSFile + " " + StartHTTPServerClass + " "
-//            + "-lnsid " + id + " -nsfile name-server-info  > HTTPlogfile 2>&1 &",
-//            id);
     StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING, "All servers started");
   }
 
@@ -885,14 +835,6 @@ public class EC2Installer {
   //
   private static final String RUNSETNAME = "RUNSETNAME";
 
-//  private static String nextRunSetName() {
-//    String runSetNumber = preferences.get(RUNSETNAME, "1");
-//    Integer next = Integer.parseInt(runSetNumber);
-//    next++;
-//    String nextString = next.toString();
-//    preferences.put(RUNSETNAME, nextString);
-//    return nextString;
-//  }
   public static String currentRunSetName() {
     return preferences.get(RUNSETNAME, "1");
   }

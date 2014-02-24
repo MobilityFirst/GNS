@@ -54,8 +54,6 @@ DELTA = '-delta'
 MU = '-mu'
 PHI = '-phi'
 
-RUN_HTTP_SERVER = '-runHttpServer'
-
 FILE_LOGGING_LEVEL =  '-fileLoggingLevel'
 CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
 STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'

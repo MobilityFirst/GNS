@@ -35,7 +35,7 @@ public class AddRemove {
     SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
             senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-                        addRecordPacket.getLocalNameServerID();
+    addRecordPacket.getLocalNameServerID();
     GNS.getLogger().fine(" Add  Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
   }
 
@@ -55,8 +55,10 @@ public class AddRemove {
             address, port, System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Upsert Task Scheduled. " +
-            "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine(" Upsert Task Scheduled. "
+              + "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
+    }
 
   }
 
@@ -79,10 +81,12 @@ public class AddRemove {
     }
     SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
             senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
-    LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout,TimeUnit.MILLISECONDS);
+    LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Remove  Task Scheduled. " +
-            "Name: " + removeRecord.getName() + " Request: " + removeRecord.getRequestID());
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine(" Remove  Task Scheduled. "
+              + "Name: " + removeRecord.getName() + " Request: " + removeRecord.getRequestID());
+    }
   }
 
   /**
@@ -105,12 +109,7 @@ public class AddRemove {
       JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
       GNS.getLogger().fine("LNSListenerUpdate CONFIRM ADD (lns " + LocalNameServer.nodeID + ") to "
               + addInfo.senderAddress + ":" + addInfo.senderPort + " : " + jsonConfirm.toString());
-      if (addInfo.senderAddress != null && addInfo.senderPort > 0) {
-        LNSListener.udpTransport.sendPacket(json, InetAddress.getByName(addInfo.senderAddress), addInfo.senderPort);
-      } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.checkForResult(json);
-      }
-
+      Intercessor.handleIncomingPackets(json);
     }
   }
 
@@ -132,11 +131,7 @@ public class AddRemove {
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       GNS.getLogger().fine("LNSListenerUpdate CONFIRM REMOVE (lns " + LocalNameServer.nodeID + ") to "
               + removeInfo.senderAddress + ":" + removeInfo.senderPort + " : " + jsonConfirm.toString());
-      if (removeInfo.senderAddress != null && removeInfo.senderPort > 0) {
-        LNSListener.udpTransport.sendPacket(json, InetAddress.getByName(removeInfo.senderAddress), removeInfo.senderPort);
-      } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.checkForResult(json);
-      }
+      Intercessor.handleIncomingPackets(json);
       // update our cache
 
     }

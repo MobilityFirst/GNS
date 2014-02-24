@@ -79,7 +79,7 @@ public class Intercessor {
    * 
    * @param json 
    */
-  public static void checkForResult(JSONObject json) {
+  public static void handleIncomingPackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case CONFIRM_UPDATE_LNS:

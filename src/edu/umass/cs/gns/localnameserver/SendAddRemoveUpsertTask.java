@@ -70,19 +70,12 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(packet);
       try {
         if (confirmPkt != null) {
-          if (updateInfo.senderAddress != null && updateInfo.senderAddress.length() > 0 && updateInfo.senderPort > 0) {
-            LNSListener.udpTransport.sendPacket(confirmPkt.toJSONObject(),
-                    InetAddress.getByName(updateInfo.senderAddress), updateInfo.senderPort);
-          } else if (StartLocalNameServer.runHttpServer) {
-            Intercessor.checkForResult(confirmPkt.toJSONObject());
-          }
+          Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
         } else {
           GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
         }
       } catch (JSONException e) {
-        e.printStackTrace();
-      } catch (UnknownHostException e) {
-        e.printStackTrace();
+        GNS.getLogger().severe("Problem converting packet to JSON: " + e);
       }
       String updateStats = updateInfo.getUpdateFailedStats(primariesQueried, LocalNameServer.nodeID, updateRequestID, -1);
 //      if (StartLocalNameServer.debugMode) GNS.getLogger().info(updateStats);

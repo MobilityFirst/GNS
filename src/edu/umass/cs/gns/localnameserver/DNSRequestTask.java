@@ -7,7 +7,6 @@ package edu.umass.cs.gns.localnameserver;
  * Time: 3:33 PM
  * To change this template use File | Settings | File Templates.
  */
-
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
@@ -30,16 +29,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-
-
-
 public class DNSRequestTask extends TimerTask {
 
   DNSPacket incomingPacket;
   InetAddress senderAddress;
   int senderPort;
   long receivedTime; // overall latency
-  private int transmissionCount  = 0;
+  private int transmissionCount = 0;
   private int lookupNumber;
   private int queryId = 0;
   private int numRestarts;
@@ -48,9 +44,9 @@ public class DNSRequestTask extends TimerTask {
   private static final boolean DISABLECACHE = false; // for testing - Westy
 
   public DNSRequestTask(DNSPacket incomingPacket,
-                       InetAddress senderAddress, int senderPort, long receivedTime,
-                       int lookupNumber, int queryId,
-                       HashSet<Integer> nameserversQueried, int numRestarts) {
+          InetAddress senderAddress, int senderPort, long receivedTime,
+          int lookupNumber, int queryId,
+          HashSet<Integer> nameserversQueried, int numRestarts) {
     this.incomingPacket = incomingPacket;
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
@@ -65,7 +61,7 @@ public class DNSRequestTask extends TimerTask {
 
   @Override
   public void run() {
-    try{
+    try {
       transmissionCount++;
 //      long t0 = System.currentTimeMillis();
 ////      GNS.getLogger().severe("entering lns query task .... " + System.currentTimeMillis() + " count = " + transmissionCount);
@@ -91,15 +87,21 @@ public class DNSRequestTask extends TimerTask {
 
       if (System.currentTimeMillis() - receivedTime > StartLocalNameServer.maxQueryWaitTime) {
         // send error response to user and log error
-        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query timeout exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid());
+        if (StartLocalNameServer.debugMode) {
+          GNS.getLogger().fine("Query timeout exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid());
+        }
 
 
 
         DNSRequestInfo query = LocalNameServer.removeDNSRequestInfo(queryId);
         if (query != null) {
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("3.2.1 Query Info Removed." + query.getId());
+          if (StartLocalNameServer.debugMode) {
+            GNS.getLogger().fine("3.2.1 Query Info Removed." + query.getId());
+          }
         } else {
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("3.2.2 Query Info Does not exist.");
+          if (StartLocalNameServer.debugMode) {
+            GNS.getLogger().fine("3.2.2 Query Info Does not exist.");
+          }
         }
         if (query == null && queryId != 0) {
           // means query response received
@@ -113,10 +115,12 @@ public class DNSRequestTask extends TimerTask {
         throw new MyException();
       }
 //      tA = System.currentTimeMillis();
-      if (transmissionCount > 1)   {
+      if (transmissionCount > 1) {
         if (queryId != 0 && LocalNameServer.containsDNSRequestInfo(queryId) == false) {
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query ID not found. Response recvd or invalid " +
-                  "active error. Query ID\t" + queryId + "\t" + transmissionCount + "\t" + nameserversQueried + "\t");
+          if (StartLocalNameServer.debugMode) {
+            GNS.getLogger().fine("Query ID not found. Response recvd or invalid "
+                    + "active error. Query ID\t" + queryId + "\t" + transmissionCount + "\t" + nameserversQueried + "\t");
+          }
           throw new MyException();
           //    	return;
         }
@@ -135,7 +139,9 @@ public class DNSRequestTask extends TimerTask {
           ResultValue value = cacheEntry.getValue(incomingPacket.getKey());
 
           if (value != null) {
-            if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
+            if (transmissionCount > 1) {
+              LocalNameServer.removeQueryInfo(queryId);
+            }
             loggingForAddressInCache();
             sendCachedReplyToUser(value, cacheEntry.getTTL());
 
@@ -151,8 +157,10 @@ public class DNSRequestTask extends TimerTask {
         }
 
         if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
-          GNS.getLogger().severe("Invalid name server for "  + incomingPacket.getGuid());
-          if (transmissionCount > 1) LocalNameServer.removeQueryInfo(queryId);
+          GNS.getLogger().severe("Invalid name server for " + incomingPacket.getGuid());
+          if (transmissionCount > 1) {
+            LocalNameServer.removeQueryInfo(queryId);
+          }
 
 
 //          if (numRestarts == StartLocalNameServer.MAX_RESTARTS) {
@@ -172,18 +180,16 @@ public class DNSRequestTask extends TimerTask {
 
           PendingTasks.addToPendingRequests(incomingPacket.getGuid(),
                   queryTaskObject, StartLocalNameServer.queryTimeout,
-                  senderAddress, senderPort, getErrorPacket(incomingPacket),getFailureLogMessage(lookupNumber, incomingPacket.getKey(), incomingPacket.getGuid(),transmissionCount,receivedTime, numRestarts + 1, -1, nameserversQueried),0);
+                  senderAddress, senderPort, getErrorPacket(incomingPacket), getFailureLogMessage(lookupNumber, incomingPacket.getKey(), incomingPacket.getGuid(), transmissionCount, receivedTime, numRestarts + 1, -1, nameserversQueried), 0);
 //        RequestActivesTask.requestActives(incomingPacket.getQname());
           throw new MyException();
         }
 
         if (StartLocalNameServer.loadDependentRedirection) {
           ns = LocalNameServer.getBestActiveNameServerFromCache(incomingPacket.getGuid(), nameserversQueried);
-        }
-        else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
+        } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
           ns = LocalNameServer.getBeehiveNameServer(nameserversQueried, cacheEntry);
-        }
-        else {
+        } else {
           coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getGuid(),
                   cacheEntry.getActiveNameServers());
           ns = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserversQueried);
@@ -204,7 +210,7 @@ public class DNSRequestTask extends TimerTask {
                   receivedTime, "x", lookupNumber, incomingPacket, senderAddress, senderPort, numRestarts);
         } else {
           DNSRequestInfo info = LocalNameServer.getDNSRequestInfo(queryId);
-          if (info!= null) {
+          if (info != null) {
             info.setNameserverID(ns);
 //            info.setLastNameServer();
 //            info.setLastSendTime();
@@ -223,7 +229,9 @@ public class DNSRequestTask extends TimerTask {
           GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns + "  DNS Request = " + json);
         } catch (JSONException e) {
           e.printStackTrace();
-          if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Error Converting Query to JSON Object.");
+          if (StartLocalNameServer.debugMode) {
+            GNS.getLogger().fine("Error Converting Query to JSON Object.");
+          }
           return;
         }
 
@@ -232,7 +240,7 @@ public class DNSRequestTask extends TimerTask {
 
         LocalNameServer.sendToNS(json, ns);
       }
-    }catch (Exception e) {
+    } catch (Exception e) {
       if (e.getClass().equals(MyException.class)) {
         throw new RuntimeException();
       }
@@ -256,16 +264,12 @@ public class DNSRequestTask extends TimerTask {
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
 
     try {
-//      Packet.sendUDPPacket(LocalNameServer.socket, dnsPacket.questionToJSONObject(),
-//              address, port);
-      if (address!= null && port > 0){
-        LNSListener.udpTransport.sendPacket(dnsPacket.toJSONObject(), address, port);
-      } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.checkForResult(dnsPacket.toJSONObject());
+      Intercessor.handleIncomingPackets(dnsPacket.toJSONObject());
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().fine("Error sent --> " + dnsPacket.toJSONObjectQuestion().toString());
       }
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("error sent --> " + dnsPacket.toJSONObjectQuestion().toString());
-    }  catch (JSONException e) {
-      e.printStackTrace();
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }
   }
 
@@ -274,7 +278,7 @@ public class DNSRequestTask extends TimerTask {
       DNSPacket dnsPacket = new DNSPacket(dnsPacket1.toJSONObjectQuestion());
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
-      return  dnsPacket.toJSONObject();
+      return dnsPacket.toJSONObject();
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
@@ -289,8 +293,10 @@ public class DNSRequestTask extends TimerTask {
   private void loggingForAddressInCache() {
     NameRecordKey nameRecordKey = incomingPacket.getKey();
     String name = incomingPacket.getGuid();
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Valid Address in cache... "
-            + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("Valid Address in cache... "
+              + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
+    }
     LocalNameServer.incrementLookupResponse(name);
     DNSRequestInfo tempQueryInfo = new DNSRequestInfo(-1, incomingPacket.getGuid(), incomingPacket.getKey(), receivedTime, -1, "NA", lookupNumber,
             incomingPacket, senderAddress, senderPort, numRestarts);
@@ -298,8 +304,12 @@ public class DNSRequestTask extends TimerTask {
     String stats = tempQueryInfo.getLookupStats();
     GNS.getStatLogger().info("Success-LookupRequest\t" + stats);
     if (GNS.getLogger().isLoggable(Level.FINER)) {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().finer(LocalNameServer.cacheLogString("LNS CACHE: "));
-      if (StartLocalNameServer.debugMode) GNS.getLogger().finer(LocalNameServer.nameRecordStatsMapLogString());
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().finer(LocalNameServer.cacheLogString("LNS CACHE: "));
+      }
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().finer(LocalNameServer.nameRecordStatsMapLogString());
+      }
     }
   }
 
@@ -307,30 +317,25 @@ public class DNSRequestTask extends TimerTask {
    * Send DNS Query reply to User
    */
   private void sendCachedReplyToUser(ResultValue value, int TTL) {
-//    CacheEntry entry = LocalNameServer.getCacheEntry(incomingPacket.getQname());
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send response from cache: " + incomingPacket.getGuid());
-    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(),incomingPacket.getGuid(),incomingPacket.getKey(),value, TTL, new HashSet<Integer>(), null, null, null);
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("Send response from cache: " + incomingPacket.getGuid());
+    }
+    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getHeader().getId(), incomingPacket.getGuid(), incomingPacket.getKey(), value, TTL, new HashSet<Integer>(), null, null, null);
     try {
-      if (senderAddress != null && senderPort > 0) {
-        LNSListener.udpTransport.sendPacket(outgoingPacket.toJSONObject(), senderAddress, senderPort);
-      } else if (StartLocalNameServer.runHttpServer) {
-        Intercessor.checkForResult(outgoingPacket.toJSONObject());
-      }
-//      Packet.sendUDPPacket(LocalNameServer.socket, outgoingPacket.responseToJSONObject(), senderAddress, senderPort);
-    } catch (Exception e) {
-      e.printStackTrace();
+      Intercessor.handleIncomingPackets(outgoingPacket.toJSONObject());
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }
   }
 
   private void logFailureMessage() {
     GNS.getStatLogger().fine(getFailureLogMessage(lookupNumber, incomingPacket.getKey(),
-            incomingPacket.getGuid(),transmissionCount,receivedTime, numRestarts, coordinatorID, nameserversQueried));
+            incomingPacket.getGuid(), transmissionCount, receivedTime, numRestarts, coordinatorID, nameserversQueried));
   }
 
-
   public static String getFailureLogMessage(int lookupNumber, NameRecordKey recordKey, String name,
-                                            int transmissionCount, long receivedTime, int numRestarts,
-                                            int coordinatorID, Set<Integer> nameserversQueried) {
+          int transmissionCount, long receivedTime, int numRestarts,
+          int coordinatorID, Set<Integer> nameserversQueried) {
     String failureCode = "Failed-LookupNoActiveResponse";
     if (nameserversQueried == null || nameserversQueried.isEmpty()) {
       failureCode = "Failed-LookupNoPrimaryResponse";
@@ -352,8 +357,10 @@ public class DNSRequestTask extends TimerTask {
 }
 
 class SendQueryWithDelayLNS extends TimerTask {
+
   JSONObject json;
   int destID;
+
   public SendQueryWithDelayLNS(JSONObject json, int destID) {
     this.json = json;
     this.destID = destID;
@@ -362,7 +369,7 @@ class SendQueryWithDelayLNS extends TimerTask {
   @Override
   public void run() {
     try {
-      LNSListener.udpTransport.sendPacket(json,destID, GNS.PortType.LNS_UDP_PORT);
+      LNSListener.udpTransport.sendPacket(json, destID, GNS.PortType.LNS_UDP_PORT);
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -372,10 +379,7 @@ class SendQueryWithDelayLNS extends TimerTask {
 //      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //    }
   }
-
-
 }
 
-class MyException extends  Exception  {
-
+class MyException extends Exception {
 }

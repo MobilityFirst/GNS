@@ -62,8 +62,6 @@ TINY_QUERY = '-tinyQuery'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
 
-RUN_HTTP_SERVER = '-runHttpServer'
-
 FILE_LOGGING_LEVEL =  '-fileLoggingLevel'
 CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
 STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
@@ -140,8 +138,6 @@ tinyQuery = False
 
 emulate_ping_latencies = exp_config.emulate_ping_latencies
 variation = exp_config.variation
-
-run_http_server = exp_config.run_http_server
 
 name_actives = exp_config.name_actives_remote
 # logging related parameters:
@@ -300,9 +296,6 @@ def run_local_name_server():
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level
     command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
-    
-    if run_http_server:
-        command += ' ' + RUN_HTTP_SERVER
     
     if is_experiment_mode:
         command += ' ' + EXPERIMENT_MODE

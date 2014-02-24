@@ -155,7 +155,7 @@ public class Admintercessor {
     }
   }
 
-  public static void processAdminResponsePackets(JSONObject json) {
+  public static void handleIncomingAdminResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case ADMIN_RESPONSE:
@@ -269,7 +269,7 @@ public class Admintercessor {
     return result.toString();
   }
 
-  public static void processDumpResponsePackets(JSONObject json) {
+  public static void handleIncomingDumpResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case DUMP_REQUEST:
