@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.localnameserver.original;
+package edu.umass.cs.gns.localnameserver;
 
 /**
  * Created with IntelliJ IDEA.

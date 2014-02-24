@@ -7,7 +7,7 @@ package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.clientprotocol.Defs;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.localnameserver.original.LNSListenerAdmin;
+import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import static edu.umass.cs.gns.packet.Packet.*;

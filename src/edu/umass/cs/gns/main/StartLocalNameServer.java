@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.main;
 
-import edu.umass.cs.gns.localnameserver.original.LocalNameServer;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.ConfigFileInfo;

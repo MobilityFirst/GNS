@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.localnameserver.original;
+package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;

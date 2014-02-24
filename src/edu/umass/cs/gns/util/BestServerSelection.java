@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.util;
 
-import edu.umass.cs.gns.localnameserver.original.LocalNameServer;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 

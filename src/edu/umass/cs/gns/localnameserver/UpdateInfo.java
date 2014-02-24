@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.localnameserver.original;
+package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
