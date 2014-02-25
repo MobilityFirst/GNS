@@ -1,18 +1,23 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.*;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -108,7 +113,7 @@ public class AddRemove {
       addInfo.getID();
       JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
       GNS.getLogger().fine("LNSListenerUpdate CONFIRM ADD (lns " + LocalNameServer.nodeID + ") to "
-              + addInfo.senderAddress + ":" + addInfo.senderPort + " : " + jsonConfirm.toString());
+              + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);
     }
   }
@@ -130,7 +135,7 @@ public class AddRemove {
       // send it back to the orginator of the request
       JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
       GNS.getLogger().fine("LNSListenerUpdate CONFIRM REMOVE (lns " + LocalNameServer.nodeID + ") to "
-              + removeInfo.senderAddress + ":" + removeInfo.senderPort + " : " + jsonConfirm.toString());
+              + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);
       // update our cache
 

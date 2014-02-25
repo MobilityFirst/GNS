@@ -90,14 +90,15 @@ public class FieldAccess {
     }
   }
 
-  public static boolean update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation) {
+  public static boolean update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation,
+          String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, key, value, oldValue, operation);
+    return Intercessor.sendUpdateRecord(guid, key, value, oldValue, operation, writer, signature, message);
   }
 
-  public static boolean create(String guid, String key, ResultValue value) {
+  public static boolean create(String guid, String key, ResultValue value, String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, key, value, null, UpdateOperation.CREATE);
+    return Intercessor.sendUpdateRecord(guid, key, value, null, UpdateOperation.CREATE, writer, signature, message);
   }
 
   public static String select(String key, Object value) {

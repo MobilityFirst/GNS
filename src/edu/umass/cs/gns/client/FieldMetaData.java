@@ -75,7 +75,7 @@ public class FieldMetaData {
   public static void add(MetaDataTypeName type, String guid, String key, String value) {
 
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    Intercessor.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
+    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
   /**
@@ -93,7 +93,7 @@ public class FieldMetaData {
   public static void remove(MetaDataTypeName type, String guid, String key, String value) {
 
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    Intercessor.sendUpdateRecordWithConfirmation(guid, metaDataKey, value, null, UpdateOperation.REMOVE);
+    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.REMOVE);
   }
   //
   public static String Version = "$Revision$";

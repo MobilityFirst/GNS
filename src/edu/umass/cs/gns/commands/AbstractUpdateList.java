@@ -45,30 +45,31 @@ public abstract class AbstractUpdateList extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    if (writer.equals(guid)) {
-      writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
-    }
-    if (signature == null) {
-      if (!AccessSupport.fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
-        return BADRESPONSE + " " + ACCESSDENIED;
-      }
-    } else if (signature != null) {
-      if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
-        return BADRESPONSE + " " + BADSIGNATURE;
-      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
-        return BADRESPONSE + " " + ACCESSDENIED;
-      }
-    }
-    if (FieldAccess.update(guidInfo.getGuid(), field,
+//    GuidInfo guidInfo, writerGuidInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    if (writer.equals(guid)) {
+//      writerGuidInfo = guidInfo;
+//    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
+//      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
+//    }
+//    if (signature == null) {
+//      if (!AccessSupport.fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
+//        return BADRESPONSE + " " + ACCESSDENIED;
+//      }
+//    } else if (signature != null) {
+//      if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
+//        return BADRESPONSE + " " + BADSIGNATURE;
+//      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
+//        return BADRESPONSE + " " + ACCESSDENIED;
+//      }
+//    }
+    if (FieldAccess.update(guid, field,
             JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
-            getUpdateOperation())) {
+            getUpdateOperation(),
+            writer, signature, message)) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + BADFIELD + " " + field;

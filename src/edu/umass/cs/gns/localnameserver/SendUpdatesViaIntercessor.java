@@ -21,23 +21,28 @@ import java.util.concurrent.TimeUnit;
 
 public class SendUpdatesViaIntercessor {
 
-
   public static void schdeduleAllUpdates() {
     if (LocalNameServer.updateTrace == null) {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UpdateTrace trace is null. SendQueriesViaIntercessor thread quitting.");
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().fine("UpdateTrace trace is null. SendQueriesViaIntercessor thread quitting.");
+      }
       return;
     }
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send update intercessor started. Number of queries. "
-            + LocalNameServer.updateTrace.size());
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("Send update intercessor started. Number of queries. "
+              + LocalNameServer.updateTrace.size());
+    }
     ExponentialDistribution exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.updateRateRegular);
 
     double expectedDurationSec = (LocalNameServer.updateTrace.size()
             * StartLocalNameServer.updateRateRegular) / 1000;
 
-    String msg = "SendUpdateStart Expected-Duration " + expectedDurationSec +
-            " Number-Queries " + LocalNameServer.updateTrace.size();
+    String msg = "SendUpdateStart Expected-Duration " + expectedDurationSec
+            + " Number-Queries " + LocalNameServer.updateTrace.size();
     GNS.getStatLogger().fine(msg);
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine(msg);
+    }
 
     double delay = 0;
 
@@ -49,8 +54,7 @@ public class SendUpdatesViaIntercessor {
       count++;
       if (u.type == UpdateTrace.UPDATE) {
         tasks.add(new SendUpdateIntercessorTask(u.name, count));
-      }
-      else if (u.type == UpdateTrace.ADD) {
+      } else if (u.type == UpdateTrace.ADD) {
         tasks.add(new SendAddIntercessorTask(u.name, count));
       } else if (u.type == UpdateTrace.REMOVE) {
         tasks.add(new SendRemoveIntercessorTask(u.name, count));
@@ -65,7 +69,9 @@ public class SendUpdatesViaIntercessor {
     long t1 = System.currentTimeMillis();
     GNS.getLogger().info(" Time to submit all updates: " + (t1 - t0));
     System.out.println("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
+    }
   }
 
   /**
@@ -81,14 +87,15 @@ public class SendUpdatesViaIntercessor {
   }
 
   public static void main(String[] args) {
-     StartLocalNameServer.updateRateRegular = 1.0;
+    StartLocalNameServer.updateRateRegular = 1.0;
     LocalNameServer.updateTrace = new ArrayList<UpdateTrace>();
     int requests = 300000;
-    for (int i = 0; i < requests; i++) LocalNameServer.updateTrace.add(new UpdateTrace("0", UpdateTrace.UPDATE));
+    for (int i = 0; i < requests; i++) {
+      LocalNameServer.updateTrace.add(new UpdateTrace("0", UpdateTrace.UPDATE));
+    }
     schdeduleAllUpdates();
   }
 }
-
 
 class SendUpdateIntercessorTask extends TimerTask {
 
@@ -110,7 +117,9 @@ class SendUpdateIntercessorTask extends TimerTask {
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
             updateCount, updateCount,
             name, NameRecordKey.EdgeRecord, newValue, null,
-            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS);
+            UpdateOperation.REPLACE_ALL, LocalNameServer.nodeID, -1, GNS.DEFAULT_TTL_SECONDS,
+            //ignore signature info
+            null, null, null);
     try {
       LNSPacketDemultiplexer.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
     } catch (JSONException e) {
@@ -136,7 +145,7 @@ class SendAddIntercessorTask extends TimerTask {
 
     ResultValue newValue = new ResultValue();
     newValue.add(SendUpdatesViaIntercessor.getRandomString());
-    AddRecordPacket packet = new AddRecordPacket(requestCount,name,NameRecordKey.EdgeRecord, newValue, 
+    AddRecordPacket packet = new AddRecordPacket(requestCount, name, NameRecordKey.EdgeRecord, newValue,
             LocalNameServer.nodeID, GNS.DEFAULT_TTL_SECONDS);
 
     try {
@@ -146,7 +155,6 @@ class SendAddIntercessorTask extends TimerTask {
     }
   }
 }
-
 
 class SendRemoveIntercessorTask extends TimerTask {
 
@@ -162,7 +170,7 @@ class SendRemoveIntercessorTask extends TimerTask {
   @Override
   public void run() {
 
-    RemoveRecordPacket packet = new RemoveRecordPacket(requestCount,name,LocalNameServer.nodeID);
+    RemoveRecordPacket packet = new RemoveRecordPacket(requestCount, name, LocalNameServer.nodeID);
 
     try {
       LNSPacketDemultiplexer.demultiplexLNSPackets(packet.toJSONObject());
@@ -171,4 +179,3 @@ class SendRemoveIntercessorTask extends TimerTask {
     }
   }
 }
-

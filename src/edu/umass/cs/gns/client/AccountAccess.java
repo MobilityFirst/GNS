@@ -256,7 +256,7 @@ public class AccountAccess {
         }
         if (Intercessor.sendAddRecordWithConfirmation(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          Intercessor.sendUpdateRecordWithConfirmation(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
+          Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
           return Defs.OKRESPONSE;
         } else {
           // delete the record we added above
@@ -329,7 +329,7 @@ public class AccountAccess {
           // add the GUID_INFO link
           Intercessor.sendAddRecordWithConfirmation(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
-          Intercessor.sendUpdateRecordWithConfirmation(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
+          Intercessor.sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.CREATE);
           return Defs.OKRESPONSE;
         }
@@ -470,7 +470,7 @@ public class AccountAccess {
     try {
       ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
-      if (Intercessor.sendUpdateRecordWithConfirmation(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+      if (Intercessor.sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
               newvalue, null, UpdateOperation.REPLACE_ALL)) {
         return true;
       }
@@ -484,7 +484,7 @@ public class AccountAccess {
     try {
       ResultValue newvalue;
       newvalue = guidInfo.toDBFormat();
-      if (Intercessor.sendUpdateRecordWithConfirmation(guidInfo.getGuid(), GUID_INFO,
+      if (Intercessor.sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
               newvalue, null, UpdateOperation.REPLACE_ALL)) {
         return true;
       }

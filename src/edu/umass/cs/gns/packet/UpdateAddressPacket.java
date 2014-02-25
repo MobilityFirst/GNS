@@ -1,9 +1,9 @@
 package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.JSONUtils;
 import net.sourceforge.sizeof.SizeOf;
 import org.json.JSONArray;
@@ -20,7 +20,7 @@ import org.json.JSONObject;
  * There are two classes of update operations: (1) updates that modify the keys or values of a name record.
  * (2) Upserts which update an existing record or else create a new name record.
  *
- * Regarding TTL field: If we are using upserts, if the upserts leads to creating a new name record,  then TTL value
+ * Regarding TTL field: If we are using upserts, if the upserts leads to creating a new name record, then TTL value
  * in this packet is used to set  ttl for this name record. The value given in the TTL field in not
  * considered in other cases.
  *
@@ -35,11 +35,10 @@ import org.json.JSONObject;
  * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
  * But it uses fields in this packet in sending the reply.
  *
- * @author Hardeeep, Westy
+ * @author Westy
  */
-public class UpdateAddressPacket extends BasicPacket {
+public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
 
-//  private final static String SEQUENCENUMBER = "sequencenumber";
   private final static String REQUESTID = "reqID";
   private final static String LocalNSREQUESTID = "LNSreqID";
   private final static String NAME = "name";
@@ -51,9 +50,8 @@ public class UpdateAddressPacket extends BasicPacket {
   private final static String TTL = "ttl";
   private final static String OPERATION = "operation";
   //
-  // NOTE: CHANGED THE IDS A BIT - Westy, Abhigyan
-  // We have two. First one is used by the entity making the initial request (often the intercessor).
-  // Second is used by the LNS to keep track if it's update records.
+  // We have two ids in here. First one (requestID) is used by the entity making the initial request (often the intercessor).
+  // Second (LNSRequestID) is used by the LNS to keep track of it's update records.
   //
   /**
    * Unique identifier used by the entity making the initial request to confirm
@@ -63,14 +61,12 @@ public class UpdateAddressPacket extends BasicPacket {
    * The ID the LNS uses to for bookkeeping
    */
   private int LNSRequestID;
-
   /**
-   * Name (service/host/domain or device name) *
+   * Name (the GUID) *
    */
   private String name;
-
   /**
-   * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord.
+   * The key of the value key pair.
    */
   private NameRecordKey recordKey;
   /**
@@ -107,18 +103,58 @@ public class UpdateAddressPacket extends BasicPacket {
    * @param newValue Updated address
    * @param oldValue Old address to be replaced (if applicable, can be null)
    */
+  
+  /**
+   * Constructs a new UpdateAddressPacket with the given parameters.
+   * Used by client support to send a packet to the LNS.
+   * 
+   * @param type
+   * @param requestID
+   * @param name
+   * @param recordKey
+   * @param newValue
+   * @param oldValue
+   * @param operation
+   * @param localNameServerId
+   * @param ttl
+   * @param writer
+   * @param signature
+   * @param message 
+   */
   public UpdateAddressPacket(Packet.PacketType type, int requestID, String name, NameRecordKey recordKey,
-          ResultValue newValue, ResultValue oldValue, UpdateOperation operation, int localNameServerId, int ttl) {
-    this(type, requestID, -1, name, recordKey, newValue, oldValue, operation, localNameServerId, -1, ttl);
+          ResultValue newValue, ResultValue oldValue, UpdateOperation operation, int localNameServerId, int ttl,
+          String writer, String signature, String message) {
+    this(type, requestID, -1, name, recordKey, newValue, oldValue, operation, localNameServerId, -1, ttl,
+            writer, signature, message);
   }
 
+  /**
+   * 
+   * @param type
+   * @param requestID
+   * @param LNSRequestID
+   * @param name
+   * @param recordKey
+   * @param newValue
+   * @param oldValue
+   * @param operation
+   * @param localNameServerId
+   * @param nameServerId
+   * @param ttl
+   * @param writer
+   * @param signature
+   * @param message 
+   */
   public UpdateAddressPacket(Packet.PacketType type,
           int requestID, int LNSRequestID,
           String name, NameRecordKey recordKey,
           ResultValue newValue,
           ResultValue oldValue,
           UpdateOperation operation,
-          int localNameServerId, int nameServerId, int ttl) {
+          int localNameServerId, int nameServerId, int ttl,
+          String writer, String signature, String message) {
+    // include the signature info
+    super(writer, signature, message);
     this.type = type;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
@@ -141,6 +177,8 @@ public class UpdateAddressPacket extends BasicPacket {
    * @throws JSONException **********************************************************
    */
   public UpdateAddressPacket(JSONObject json) throws JSONException {
+    // include the signature info
+    super(json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
@@ -156,15 +194,22 @@ public class UpdateAddressPacket extends BasicPacket {
   }
 
   /**
-   * ***********************************************************
+   * 
    * Converts a UpdatedAddressPacket to a JSONObject
    *
    * @return JSONObject that represents UpdatedAddressPacket
-   * @throws JSONException **********************************************************
+   * @throws JSONException 
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
+    addToJSONObject(json);
+    return json;
+  }
+
+  @Override
+  public void addToJSONObject(JSONObject json) throws JSONException {
+    super.addToJSONObject(json); // include the signature info
     Packet.putPacketType(json, getType());
     json.put(REQUESTID, getRequestID());
     json.put(LocalNSREQUESTID, getLNSRequestID());
@@ -179,7 +224,6 @@ public class UpdateAddressPacket extends BasicPacket {
     json.put(LOCAL_NAMESERVER_ID, getLocalNameServerId());
     json.put(NAMESERVER_ID, getNameServerId());
     json.put(TTL, getTTL());
-    return json;
   }
 
   public int getRequestID() {
@@ -270,7 +314,7 @@ public class UpdateAddressPacket extends BasicPacket {
 //  	
     UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, "12322323",
             NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
-            GNS.DEFAULT_TTL_SECONDS);
+            GNS.DEFAULT_TTL_SECONDS, null, null, null);
 
     SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
     SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
@@ -287,7 +331,7 @@ public class UpdateAddressPacket extends BasicPacket {
 
   }
 
-  static void printSize(Object paxosReplicaNew){
+  static void printSize(Object paxosReplicaNew) {
     System.out.println("Size: " + SizeOf.deepSizeOf(paxosReplicaNew)); //this will print the object size in bytes
   }
 }

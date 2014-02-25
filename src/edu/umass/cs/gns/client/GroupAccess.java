@@ -28,22 +28,22 @@ public class GroupAccess {
 
   public static boolean addToGroup(String guid, String memberGuid) {
     
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, GROUP, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+    return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
   
   public static boolean addToGroup(String guid, ResultValue members) {
     
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, GROUP, members, null, UpdateOperation.APPEND_OR_CREATE);
+    return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, members, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
   public static boolean removeFromGroup(String guid, String memberGuid) {
     
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, GROUP, memberGuid, null, UpdateOperation.REMOVE);
+    return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, memberGuid, null, UpdateOperation.REMOVE);
   }
   
   public static boolean removeFromGroup(String guid, ResultValue members) {
     
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, GROUP, members, null, UpdateOperation.REMOVE);
+    return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, members, null, UpdateOperation.REMOVE);
   }
 
   public static ResultValue lookup(String guid) {
@@ -58,12 +58,12 @@ public class GroupAccess {
 
   public static boolean requestJoinGroup(String guid, String memberGuid) {
     
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, JOINREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+    return Intercessor.sendUpdateRecordBypassingAuthentication(guid, JOINREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
   
   public static boolean requestLeaveGroup(String guid, String memberGuid) {
     
-    return Intercessor.sendUpdateRecordWithConfirmation(guid, LEAVEREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
+    return Intercessor.sendUpdateRecordBypassingAuthentication(guid, LEAVEREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
   public static ResultValue retrieveGroupJoinRequests(String guid) {
@@ -87,8 +87,8 @@ public class GroupAccess {
   public static boolean grantMembership(String guid, ResultValue requests) {
     
 
-    if (Intercessor.sendUpdateRecordWithConfirmation(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE)) {
-      if (Intercessor.sendUpdateRecordWithConfirmation(guid, JOINREQUESTS, requests, null, UpdateOperation.REMOVE)) {
+    if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE)) {
+      if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, JOINREQUESTS, requests, null, UpdateOperation.REMOVE)) {
         return true;
       }
     }
@@ -98,8 +98,8 @@ public class GroupAccess {
   public static boolean revokeMembership(String guid, ResultValue requests) {
     
 
-    if (Intercessor.sendUpdateRecordWithConfirmation(guid, GROUP, requests, null, UpdateOperation.REMOVE)) {
-      if (Intercessor.sendUpdateRecordWithConfirmation(guid, LEAVEREQUESTS, requests, null, UpdateOperation.REMOVE)) {
+    if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, requests, null, UpdateOperation.REMOVE)) {
+      if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, LEAVEREQUESTS, requests, null, UpdateOperation.REMOVE)) {
         return true;
       }
     }

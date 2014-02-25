@@ -16,22 +16,38 @@ import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.NameServerLoadPacket;
+import edu.umass.cs.gns.packet.RequestActivesPacket;
+import edu.umass.cs.gns.packet.SelectRequestPacket;
+import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.UpdateTrace;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  **
@@ -199,7 +215,7 @@ public class LocalNameServer {
     return id;
   }
 
-  public static int addUpdateInfo(String name, int nameserverID, long time, String senderAddress, int senderPort,
+  public static int addUpdateInfo(String name, int nameserverID, long time,
           int numRestarts, UpdateAddressPacket updateAddressPacket) {
     int id;
     //Generate unique id for the query
@@ -208,7 +224,7 @@ public class LocalNameServer {
     } while (updateTransmittedMap.containsKey(id));
 
     //Add update info
-    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID, senderAddress, senderPort, updateAddressPacket, numRestarts);
+    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID, updateAddressPacket, numRestarts);
     updateTransmittedMap.put(id, update);
     return id;
   }

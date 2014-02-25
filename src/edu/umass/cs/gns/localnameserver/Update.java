@@ -45,7 +45,7 @@ public class Update {
       if (Transport.getReturnAddress(json) != null) {
         senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
       }
-      SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket, senderAddress, senderPort,
+      SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
               System.currentTimeMillis(), new HashSet<Integer>(), 0);
       LocalNameServer.executorService.scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     }
@@ -70,7 +70,7 @@ public class Update {
         // send the confirmation back to the originator of the update
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().info("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
-                  + updateInfo.senderAddress + ":" + updateInfo.senderPort + " : " + json.toString());
+                  +  " : " + json.toString());
         }
         Intercessor.handleIncomingPackets(json);
         // instrumentation?
@@ -90,17 +90,11 @@ public class Update {
 
       LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
 
-      UpdateAddressPacket updateAddressPacket = updateInfo.updateAddressPacket;
+      UpdateAddressPacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
 
       GNS.getLogger().info("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
 
-      InetAddress address = null;
-
-      if (updateInfo.getSenderAddress() != null) {
-        address = InetAddress.getByName(updateInfo.getSenderAddress());
-      }
-
-      SendUpdatesTask task = new SendUpdatesTask(updateAddressPacket, address, updateInfo.senderPort,
+      SendUpdatesTask task = new SendUpdatesTask(updateAddressPacket,
               updateInfo.getSendTime(), new HashSet<Integer>(), updateInfo.getNumRestarts() + 1);
 
       String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(),

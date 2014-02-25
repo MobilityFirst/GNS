@@ -52,30 +52,30 @@ public class CreateList extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    GuidInfo guidInfo, writerGuidInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    if (writer.equals(guid)) {
+//      writerGuidInfo = guidInfo;
+//    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
+//      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
+//    }
+//    try {
+//      if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
+//        return BADRESPONSE + " " + BADSIGNATURE;
+//      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
+//        return BADRESPONSE + " " + ACCESSDENIED;
+//      } else {
+    if (FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message)) {
+      return OKRESPONSE;
+    } else {
+      return BADRESPONSE + " " + DUPLICATEFIELD;
     }
-    if (writer.equals(guid)) {
-      writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
-    }
-    try {
-      if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
-        return BADRESPONSE + " " + BADSIGNATURE;
-      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
-        return BADRESPONSE + " " + ACCESSDENIED;
-      } else {
-        if (FieldAccess.create(guidInfo.getGuid(), field, new ResultValue(value))) {
-          return OKRESPONSE;
-        } else {
-          return BADRESPONSE + " " + DUPLICATEFIELD;
-        }
-      }
-    } catch (JSONException e) {
-      return BADRESPONSE + " " + JSONPARSEERROR;
-    }
+
+//    } catch (JSONException e) {
+//      return BADRESPONSE + " " + JSONPARSEERROR;
+//    }
   }
 
   @Override

@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Abhigyan.
+ */
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
@@ -5,12 +12,11 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.*;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.TimerTask;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Sends three types of messages (with retries): AddRecordPacket, RemoveRecordPacket, and
@@ -22,14 +28,14 @@ import java.util.TimerTask;
  */
 public class SendAddRemoveUpsertTask extends TimerTask {
 
-  String name;
-  BasicPacket packet;
-  InetAddress senderAddress;
-  int senderPort;
-  int updateRequestID;
-  HashSet<Integer> primariesQueried;
-  int timeoutCount = -1;
-  long requestRecvdTime;
+  private String name;
+  private BasicPacket packet;
+  private InetAddress senderAddress;
+  private int senderPort;
+  private int updateRequestID;
+  private HashSet<Integer> primariesQueried;
+  private int timeoutCount = -1;
+  private long requestRecvdTime;
 
   public SendAddRemoveUpsertTask(BasicPacket packet, String name,
                                  InetAddress senderAddress, int senderPort, long requestRecvdTime,
@@ -45,27 +51,27 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   @Override
   public void run() {
     try{
-      timeoutCount++;
+      timeoutCount = timeoutCount + 1;
       if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
+        GNS.getLogger().fine("ENTER name = " + getName() + " timeout = " + getTimeoutCount());
       }
 
-      if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
+      if (getTimeoutCount() > 0 && LocalNameServer.getUpdateInfo(getUpdateRequestID()) == null) {
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
         }
         throw new CancelExecutorTaskException();
       }
 
-      if (timeoutCount > 0 && System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
-        UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
+      if (getTimeoutCount() > 0 && System.currentTimeMillis() - getRequestRecvdTime() > StartLocalNameServer.maxQueryWaitTime) {
+        UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(getUpdateRequestID());
 
         if (updateInfo == null) {
-          GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
+          GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
           throw new CancelExecutorTaskException();
         }
-        GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
-        ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(packet);
+        GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + getUpdateRequestID() + " name = " + getName());
+        ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(getPacket());
         try {
           if (confirmPkt != null) {
             Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
@@ -75,31 +81,30 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         } catch (JSONException e) {
           GNS.getLogger().severe("Problem converting packet to JSON: " + e);
         }
-        String updateStats = updateInfo.getUpdateFailedStats(primariesQueried, LocalNameServer.nodeID, updateRequestID, -1);
+        String updateStats = updateInfo.getUpdateFailedStats(getPrimariesQueried(), LocalNameServer.nodeID, getUpdateRequestID(), -1);
         GNS.getStatLogger().fine(updateStats);
 
         throw new CancelExecutorTaskException();
       }
-      if (primariesQueried.size() == GNS.numPrimaryReplicas) {
-        primariesQueried.clear();
+      if (getPrimariesQueried().size() == GNS.numPrimaryReplicas) {
+        getPrimariesQueried().clear();
       }
-      int nameServerID = LocalNameServer.getClosestPrimaryNameServer(name, primariesQueried);
+      int nameServerID = LocalNameServer.getClosestPrimaryNameServer(getName(), getPrimariesQueried());
 
       if (nameServerID == -1) {
-        GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried " + primariesQueried);
+        GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried " + getPrimariesQueried());
         return;
       } else {
-        primariesQueried.add(nameServerID);
+        getPrimariesQueried().add(nameServerID);
       }
-      if (timeoutCount == 0) {
+      if (getTimeoutCount() == 0) {
         String hostAddress = null;
-        if (senderAddress != null) {
-          hostAddress = senderAddress.getHostAddress();
+        if (getSenderAddress() != null) {
+          hostAddress = getSenderAddress().getHostAddress();
         }
-        updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-                requestRecvdTime, hostAddress, senderPort, 0, null);
-        GNS.getLogger().info("Update Info Added: Id = " + updateRequestID);
-        updatePacketWithRequestID(packet, updateRequestID);
+        updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, null);
+        GNS.getLogger().info("Update Info Added: Id = " + getUpdateRequestID());
+        updatePacketWithRequestID(getPacket(), getUpdateRequestID());
       }
       // create the packet that we'll send to the primary
 
@@ -107,10 +112,10 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
       // and send it off
       try {
-        JSONObject jsonToSend = packet.toJSONObject();
+        JSONObject jsonToSend = getPacket().toJSONObject();
         LocalNameServer.sendToNS(jsonToSend, nameServerID);
 
-        GNS.getLogger().info("SendAddRequest: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID +
+        GNS.getLogger().info("SendAddRequest: Send to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
                 " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       } catch (JSONException e) {
         e.printStackTrace();
@@ -164,4 +169,61 @@ public class SendAddRemoveUpsertTask extends TimerTask {
     }
 
   }
+
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * @return the packet
+   */
+  public BasicPacket getPacket() {
+    return packet;
+  }
+
+  /**
+   * @return the senderAddress
+   */
+  public InetAddress getSenderAddress() {
+    return senderAddress;
+  }
+
+  /**
+   * @return the senderPort
+   */
+  public int getSenderPort() {
+    return senderPort;
+  }
+
+  /**
+   * @return the updateRequestID
+   */
+  public int getUpdateRequestID() {
+    return updateRequestID;
+  }
+
+  /**
+   * @return the primariesQueried
+   */
+  public HashSet<Integer> getPrimariesQueried() {
+    return primariesQueried;
+  }
+
+  /**
+   * @return the timeoutCount
+   */
+  public int getTimeoutCount() {
+    return timeoutCount;
+  }
+
+  /**
+   * @return the requestRecvdTime
+   */
+  public long getRequestRecvdTime() {
+    return requestRecvdTime;
+  }
+
 }

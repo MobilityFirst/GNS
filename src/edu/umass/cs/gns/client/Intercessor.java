@@ -232,11 +232,13 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecordWithConfirmation(String name, String key, String newValue, String oldValue, UpdateOperation operation) {
-    return sendUpdateRecordWithConfirmation(name, key,
+  public static boolean sendUpdateRecord(String name, String key, String newValue, String oldValue, UpdateOperation operation,
+          String writer, String signature, String message) {
+    return sendUpdateRecord(name, key,
             new ResultValue(Arrays.asList(newValue)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
-            operation);
+            operation,
+            writer, signature, message);
   }
 
   /**
@@ -249,9 +251,10 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecordWithConfirmation(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation) {
+  public static boolean sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation,
+          String writer, String signature, String message) {
     int id = nextUpdateRequestID();
-    sendUpdateWithSequenceNumber(name, key, newValue, oldValue, id, operation);
+    sendUpdateRecordNoConfirmation(name, key, newValue, oldValue, id, operation, writer, signature, message);
     // now we wait until the correct packet comes back
     waitForUpdateConfirmationPacket(id);
     boolean result = updateSuccessResult.get(id);
@@ -260,6 +263,36 @@ public class Intercessor {
     return result;
   }
 
+  /**
+   * Used internally to send updated requests for lists. Ignores signatures and access.
+   * 
+   * @param name
+   * @param key
+   * @param newValue
+   * @param oldValue
+   * @param operation
+   * @return 
+   */
+  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue, 
+          ResultValue oldValue, UpdateOperation operation) {
+    return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
+  }
+  
+  /**
+   * Used internally to send updated requests. Ignores signatures and access.
+   * 
+   * @param name
+   * @param key
+   * @param newValue
+   * @param oldValue
+   * @param operation
+   * @return 
+   */
+  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, String newValue, 
+          String oldValue, UpdateOperation operation) {
+    return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
+  }
+  
   /**
    *
    * Sends an update packet to the GNS with with values.
@@ -271,16 +304,18 @@ public class Intercessor {
    * @param sequenceNumber
    * @param operation
    */
-  private static void sendUpdateWithSequenceNumber(String name, String key, ResultValue newValue,
-          ResultValue oldValue, int id, UpdateOperation operation) {
+  private static void sendUpdateRecordNoConfirmation(String name, String key, ResultValue newValue,
+          ResultValue oldValue, int id, UpdateOperation operation,
+          String writer, String signature, String message) {
 
-    GNS.getLogger().finer("sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
+    GNS.getLogger().finer("Sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
     UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
             id,
             name, new NameRecordKey(key),
             newValue,
             oldValue,
-            operation, localServerID, GNS.DEFAULT_TTL_SECONDS);
+            operation, localServerID, GNS.DEFAULT_TTL_SECONDS,
+            writer, signature, message);
     try {
       JSONObject json = pkt.toJSONObject();
       sendPacket(json);

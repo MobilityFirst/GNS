@@ -54,25 +54,25 @@ public class Create extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    GuidInfo guidInfo, writerGuidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    if (writer.equals(guid)) {
-      writerGuidInfo = guidInfo;
-    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
-    }
-    if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
-      return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
-      return BADRESPONSE + " " + ACCESSDENIED;
+//    GuidInfo guidInfo, writerGuidInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    if (writer.equals(guid)) {
+//      writerGuidInfo = guidInfo;
+//    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
+//      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
+//    }
+//    if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
+//      return BADRESPONSE + " " + BADSIGNATURE;
+//    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
+//      return BADRESPONSE + " " + ACCESSDENIED;
+//    } else {
+    if (FieldAccess.create(guid, field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
+            writer, signature, message)) {
+      return OKRESPONSE;
     } else {
-      if (FieldAccess.create(guidInfo.getGuid(), field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))))) {
-        return OKRESPONSE;
-      } else {
-        return BADRESPONSE + " " + DUPLICATEFIELD;
-      }
+      return BADRESPONSE + " " + DUPLICATEFIELD;
     }
   }
 

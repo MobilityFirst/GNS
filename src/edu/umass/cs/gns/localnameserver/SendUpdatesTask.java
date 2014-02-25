@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Abhigyan.
+ */
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
@@ -12,32 +19,26 @@ import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
+import java.util.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.InetAddress;
-import java.util.*;
-
 public class SendUpdatesTask extends TimerTask {
 
-  String name;
-  UpdateAddressPacket updateAddressPacket;
-  InetAddress senderAddress;
-  int senderPort;
-  int updateRequestID;
-  HashSet<Integer> activesQueried;
-  int timeoutCount = -1;
-  long requestRecvdTime;
-  int numRestarts;
-  int coordinatorID = -1;
+  private String name;
+  private UpdateAddressPacket updateAddressPacket;
+  private int updateRequestID;
+  private HashSet<Integer> activesQueried;
+  private int timeoutCount = -1;
+  private long requestRecvdTime;
+  private int numRestarts;
+  private int coordinatorID = -1;
 
-  public SendUpdatesTask(UpdateAddressPacket updateAddressPacket, InetAddress senderAddress, int senderPort,
+  public SendUpdatesTask(UpdateAddressPacket updateAddressPacket,
           long requestRecvdTime, HashSet<Integer> activesQueried, int numRestarts) {
     this.name = updateAddressPacket.getName();
     //this.nameRecordKey = updateAddressPacket.getRecordKey();
     this.updateAddressPacket = updateAddressPacket;
-    this.senderAddress = senderAddress;
-    this.senderPort = senderPort;
     this.activesQueried = activesQueried;
     this.requestRecvdTime = requestRecvdTime;
     this.numRestarts = numRestarts;
@@ -92,7 +93,7 @@ public class SendUpdatesTask extends TimerTask {
           // add to pending requests task
           try {
             PendingTasks.addToPendingRequests(name,
-                    new SendUpdatesTask(updateAddressPacket, senderAddress, senderPort, requestRecvdTime,
+                    new SendUpdatesTask(updateAddressPacket, requestRecvdTime,
                     new HashSet<Integer>(), numRestarts + 1),
                     StartLocalNameServer.queryTimeout,
                     ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(),
@@ -133,12 +134,9 @@ public class SendUpdatesTask extends TimerTask {
       activesQueried.add(nameServerID);
 
       if (timeoutCount == 0) {
-        String hostAddress = null;
-        if (senderAddress != null) {
-          hostAddress = senderAddress.getHostAddress();
-        }
+      
         updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-                requestRecvdTime, hostAddress, senderPort, numRestarts, updateAddressPacket);
+                requestRecvdTime, numRestarts, updateAddressPacket);
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
         }
@@ -150,7 +148,9 @@ public class SendUpdatesTask extends TimerTask {
               updateAddressPacket.getUpdateValue(),
               updateAddressPacket.getOldValue(),
               updateAddressPacket.getOperation(),
-              LocalNameServer.nodeID, nameServerID, updateAddressPacket.getTTL());
+              LocalNameServer.nodeID, nameServerID, updateAddressPacket.getTTL(),
+              //ignore signature info
+              null, null, null);
 
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
@@ -202,5 +202,61 @@ public class SendUpdatesTask extends TimerTask {
       GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.nodeID, updateAddressPacket.getRequestID(), coordinatorID));
 
     }
+  }
+
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * @return the updateAddressPacket
+   */
+  public UpdateAddressPacket getUpdateAddressPacket() {
+    return updateAddressPacket;
+  }
+
+  /**
+   * @return the updateRequestID
+   */
+  public int getUpdateRequestID() {
+    return updateRequestID;
+  }
+
+  /**
+   * @return the activesQueried
+   */
+  public HashSet<Integer> getActivesQueried() {
+    return activesQueried;
+  }
+
+  /**
+   * @return the timeoutCount
+   */
+  public int getTimeoutCount() {
+    return timeoutCount;
+  }
+
+  /**
+   * @return the requestRecvdTime
+   */
+  public long getRequestRecvdTime() {
+    return requestRecvdTime;
+  }
+
+  /**
+   * @return the numRestarts
+   */
+  public int getNumRestarts() {
+    return numRestarts;
+  }
+
+  /**
+   * @return the coordinatorID
+   */
+  public int getCoordinatorID() {
+    return coordinatorID;
   }
 }

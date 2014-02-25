@@ -2,7 +2,6 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
-
 import java.util.Set;
 
 public class UpdateInfo {
@@ -23,20 +22,15 @@ public class UpdateInfo {
    * ID of the name server where update was sent *
    */
   private int nameserverID;
-  /* so we can send a response back */
-  public String senderAddress;
-  public int senderPort;
 
-  public UpdateAddressPacket updateAddressPacket;
+  private UpdateAddressPacket updateAddressPacket;
   private int numRestarts;
-  public UpdateInfo(int id, String name, long sendTime, int nameserverId, String senderAddress, int senderPort,
+  public UpdateInfo(int id, String name, long sendTime, int nameserverId,
                     UpdateAddressPacket updateAddressPacket1, int numRestarts) {
     this.id = id;
     this.name = name;
     this.sendTime = sendTime;
     this.nameserverID = nameserverId;
-    this.senderAddress = senderAddress;
-    this.senderPort = senderPort;
     this.numRestarts = numRestarts;
     this.updateAddressPacket = updateAddressPacket1;
   }
@@ -60,14 +54,6 @@ public class UpdateInfo {
 
   public synchronized  String getName() {
     return name;
-  }
-
-  public synchronized String getSenderAddress() {
-    return senderAddress;
-  }
-
-  public synchronized int getSenderPort() {
-    return senderPort;
   }
 
   public synchronized String getUpdateStats(ConfirmUpdateLNSPacket confirmPkt, String name) {
@@ -119,6 +105,13 @@ public class UpdateInfo {
             + "\t" + activesQueried.size() + "\t" + activesQueried
             + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + coordinatorID + "\t" + System.currentTimeMillis();
     return msg;
+  }
+
+  /**
+   * @return the updateAddressPacket
+   */
+  public UpdateAddressPacket getUpdateAddressPacket() {
+    return updateAddressPacket;
   }
 
 
