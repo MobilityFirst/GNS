@@ -24,8 +24,6 @@ public class DNSRequestInfo {
   private long recvTime = -1;
   // ABHIGYAN: Parameters for user sending the DNS query.
   private DNSPacket incomingPacket;
-  private InetAddress senderAddress;
-  private int senderPort;
   public int numRestarts;
 
   private int nameserverID;
@@ -40,14 +38,12 @@ public class DNSRequestInfo {
    **************************************************************/
   public DNSRequestInfo(int id, String name, NameRecordKey recordKey, long time,
           int nameserverID, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort, int numRestarts) {
+          DNSPacket incomingPacket, int numRestarts) {
     this.id = id;
     this.qName = name;
     this.lookupRecvdTime = time;
 
     this.incomingPacket = incomingPacket;
-    this.senderAddress = senderAddress;
-    this.senderPort = senderPort;
     this.numRestarts = numRestarts;
     this.nameserverID = nameserverID;
   }
@@ -156,19 +152,5 @@ public class DNSRequestInfo {
    */
   public DNSPacket getIncomingPacket() {
     return incomingPacket;
-  }
-
-  /**
-   * @return the senderAddress
-   */
-  public InetAddress getSenderAddress() {
-    return senderAddress;
-  }
-
-  /**
-   * @return the senderPort
-   */
-  public int getSenderPort() {
-    return senderPort;
   }
 }

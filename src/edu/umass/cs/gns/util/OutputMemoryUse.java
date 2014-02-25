@@ -28,7 +28,7 @@ public class OutputMemoryUse extends TimerTask {
     long heapSize = Runtime.getRuntime().totalMemory()/1024/1024;
     long freeMem = Runtime.getRuntime().freeMemory()/1024/1024;
     long usedHeap = heapSize - freeMem;
-    GNS.getLogger().severe(desc + "\tHeap = " + heapSize + " MB\tMaxHeap = " + maxHeapSize + " MB\tFree = " + freeMem +
+    GNS.getLogger().info(desc + "\tHeap = " + heapSize + " MB\tMaxHeap = " + maxHeapSize + " MB\tFree = " + freeMem +
             " MB\tUsed = " + usedHeap +" MB");
   }
 

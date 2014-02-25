@@ -27,12 +27,10 @@ public class QueryResult {
    * Set if the response is an error.
    */
   private NSResponseCode errorCode;
-  
   /** 
    * Instrumentation - records the time between the LNS sending the request to the NS and the return message.
    */
   private long roundTripTime; // how long this query took
-
 
   /**
    * Creates a "normal" (non-error) QueryResult.
@@ -51,6 +49,7 @@ public class QueryResult {
   public QueryResult(NSResponseCode errorCode) {
     this.errorCode = errorCode;
   }
+
   /**
    * Gets the ValuesMap of this QueryResult.
    * 
@@ -59,7 +58,7 @@ public class QueryResult {
   public ValuesMap getValuesMap() {
     return valuesMap;
   }
-  
+
   /**
    * Gets the ValuesMap, but scrubs any internal fields first.
    * @return 
@@ -69,7 +68,7 @@ public class QueryResult {
     removeInternalFields(copy);
     return copy;
   }
-  
+
   /**
    * Gets one ResultValue from the ValuesMap.
    * 
@@ -77,10 +76,14 @@ public class QueryResult {
    * @return 
    */
   public ResultValue get(String key) {
-    return valuesMap.get(key);
+    if (valuesMap != null) {
+      return valuesMap.get(key);
+    } else {
+      return null;
+    }
   }
-  
-   /**
+
+  /**
    * Remove any keys / value pairs used internally by the GNS.
    * 
    * @param valuesMap
@@ -108,7 +111,8 @@ public class QueryResult {
   public boolean isError() {
     return this.errorCode != null;
   }
-   /** 
+
+  /** 
    * Instrumentation - holds the time between the LNS sending the request to the NS and the return message
    * being received.
    */
@@ -123,4 +127,10 @@ public class QueryResult {
   public void setRoundTripTime(long roundTripTime) {
     this.roundTripTime = roundTripTime;
   }
+
+  @Override
+  public String toString() {
+    return "QueryResult{" + "valuesMap=" + valuesMap + ", errorCode=" + errorCode + ", roundTripTime=" + roundTripTime + '}';
+  }
+  
 }

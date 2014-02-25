@@ -27,7 +27,7 @@ public class FieldAccess {
 
   private static final String emptyJSONObjectString = new JSONObject().toString();
   private static final String emptyJSONArrayString = new JSONArray().toString();
-  private static final String emptyString = new String();
+  private static final String emptyString = "";
 
   public static String lookup(String guid, String key, String reader, String signature, String message) {
 
@@ -63,6 +63,7 @@ public class FieldAccess {
   public static String lookupOne(String guid, String key, String reader, String signature, String message) {
 
     QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    GNS.getLogger().info("&&&&&&QUERY RESULT:" + result.toString());
     if (result.isError()) {
       return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {

@@ -137,4 +137,31 @@ public class Header {
   public void setResponseCode(NSResponseCode rcode) {
     this.responseCode = rcode;
   }
+  
+   public boolean isQuery() {
+    return qrCode == DNSRecordType.QUERY;
+  }
+
+  /**
+   * Returns true if the packet is a response, false otherwise
+   */
+  public boolean isResponse() {
+    return qrCode == DNSRecordType.RESPONSE;
+  }
+
+  /**
+   * Returns true if the packet contains any kind of response error, false otherwise
+   *
+   */
+  public boolean isAnyKindOfError() {
+    return responseCode.isAnError();
+  }
+
+  /**
+   * 
+   * @return 
+   */
+  public boolean isInvalidActiveNSError() {
+    return responseCode == NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER;
+  }
 }

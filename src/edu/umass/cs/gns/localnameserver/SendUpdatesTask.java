@@ -110,7 +110,7 @@ public class SendUpdatesTask extends TimerTask {
             PendingTasks.addToPendingRequests(name,
                     new SendUpdatesTask(updateAddressPacket, senderAddress, senderPort, requestRecvdTime,
                     new HashSet<Integer>(), numRestarts + 1),
-                    StartLocalNameServer.queryTimeout, senderAddress, senderPort,
+                    StartLocalNameServer.queryTimeout,
                     ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(),
                     UpdateInfo.getUpdateFailedStats(name, new HashSet<Integer>(), LocalNameServer.nodeID,
                     updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts + 1, -1), 0);

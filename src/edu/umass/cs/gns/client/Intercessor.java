@@ -135,7 +135,7 @@ public class Intercessor {
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    */
   public static QueryResult sendQuery(String name, String key, String reader, String signature, String message) {
-    GNS.getLogger().finer("Sending query: " + name + " " + key);
+    GNS.getLogger().info("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
 
 
@@ -159,7 +159,7 @@ public class Intercessor {
           monitor.wait();
         }
       }
-      GNS.getLogger().finer("Query id response received: " + id);
+      GNS.getLogger().info("Query id response received: " + id);
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
 

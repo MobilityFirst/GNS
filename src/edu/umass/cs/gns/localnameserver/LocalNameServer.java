@@ -296,7 +296,7 @@ public class LocalNameServer {
    */
   public static int addDNSRequestInfo(String name, NameRecordKey recordKey,
           int nameserverID, long time, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort, int numRestarts) {
+          DNSPacket incomingPacket, int numRestarts) {
     int id;
     //Generate unique id for the query
     do {
@@ -306,7 +306,7 @@ public class LocalNameServer {
     //Add query info
     DNSRequestInfo query = new DNSRequestInfo(id, name, recordKey, time,
             nameserverID, queryStatus, lookupNumber,
-            incomingPacket, senderAddress, senderPort, numRestarts);
+            incomingPacket, numRestarts);
     requestTransmittedMap.put(id, query);
     return id;
   }

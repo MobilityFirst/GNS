@@ -43,11 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientRequestWorker extends TimerTask {
 
   private JSONObject incomingJSON;
-
   private Packet.PacketType packetType;
-
   private static ConcurrentHashMap<Integer, UpdateStatus> addInProgress = new ConcurrentHashMap<Integer, UpdateStatus>();
-
 
   public ClientRequestWorker(JSONObject json, Packet.PacketType packetType) {
     this.packetType = packetType;
@@ -55,7 +52,6 @@ public class ClientRequestWorker extends TimerTask {
   }
 
   /**************Start of public methods in ClientRequestWorker**********************************/
-
   public static void handleIncomingPacket(JSONObject json, Packet.PacketType packetType) {
     NameServer.executorService.submit(new ClientRequestWorker(json, packetType));
   }
@@ -120,7 +116,6 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().warning("Long delay " + (t1 - t0) + "ms. Packet: " + incomingJSON);
     }
   }
-
 
   /**
    * After the update request has been committed by Paxos, this method does the update in database at each r
@@ -217,7 +212,6 @@ public class ClientRequestWorker extends TimerTask {
 
   }
 
-
   /**
    * After the add request for a name has been committed by Paxos, this method executes the add at each replica
    * controller for that name. It inserts ReplicaControllerRecord  and NameRecord in database, and
@@ -291,12 +285,8 @@ public class ClientRequestWorker extends TimerTask {
 
   }
 
-
   /**************End of public methods in ClientRequestWorker**********************************/
-
-
   /**************Start  of private methods in ClientRequestWorker**********************************/
-
   private void handleAddRecordLNSPacket() throws JSONException, IOException {
 
     AddRecordPacket addRecordPacket;
@@ -346,7 +336,7 @@ public class ClientRequestWorker extends TimerTask {
       handleUpdate(updatePacket);
     }
     long t1 = System.currentTimeMillis();
-    NameServer.loadMonitor.add((int)(t1 - t0));
+    NameServer.loadMonitor.add((int) (t1 - t0));
   }
 
   /**
@@ -384,7 +374,7 @@ public class ClientRequestWorker extends TimerTask {
         activeNS = nameRecordPrimary.getActiveNameservers();
       } catch (FieldNotFoundException e1) {
         GNS.getLogger().fine("Field not found exception. " + e1.getMessage());
-        e1.printStackTrace();  
+        e1.printStackTrace();
         return;
       }
       if (activeNS != null) {
@@ -428,7 +418,6 @@ public class ClientRequestWorker extends TimerTask {
       }
     }
   }
-
 
   /**
    * Handles the update case of UpdateAddressPacket
@@ -513,7 +502,6 @@ public class ClientRequestWorker extends TimerTask {
     }
 
   }
-
   private static ArrayList<ColumnField> dnsField = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getDNSPacketFields() {
@@ -549,7 +537,8 @@ public class ClientRequestWorker extends TimerTask {
       if (errorCode.isAnError()) {
         dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
         dnsPacket.getHeader().setResponseCode(errorCode);
-        NameServer.returnToSender(dnsPacket.toJSONObject(), dnsPacket.getLnsId());
+        GNS.getLogger().info("Sending to " + dnsPacket.getLnsId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+        NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getLnsId());
       } else {
         // All signature and ACL checks passed see if we can find the field to return;
         NameRecord nameRecord = null;
@@ -697,7 +686,7 @@ public class ClientRequestWorker extends TimerTask {
       sendError = true;
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. " + e.getMessage());
-      e.printStackTrace();  
+      e.printStackTrace();
       return;
     }
 
@@ -711,12 +700,10 @@ public class ClientRequestWorker extends TimerTask {
 
   }
 
-
   private void handleNameServerLoadPacket() throws JSONException {
     NameServerLoadPacket nsLoad = new NameServerLoadPacket(incomingJSON);
     nsLoad.setLoadValue(NameServer.loadMonitor.getAverage());
     NameServer.returnToSender(nsLoad.toJSONObject(), nsLoad.getLnsID());
   }
-
   /**************End of private methods in ClientRequestWorker**********************************/
 }

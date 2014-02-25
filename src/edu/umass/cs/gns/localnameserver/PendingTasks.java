@@ -29,7 +29,7 @@ public class PendingTasks {
    * @param errorLog In case no actives received, error log entry to be written for this request.
    * @param initialDelay Delay for sending request to name servers to get actives.
    */
-  public static void addToPendingRequests(String name, TimerTask task, int period, InetAddress address, int port,
+  public static void addToPendingRequests(String name, TimerTask task, int period,
           JSONObject errorMsg, String errorLog, long initialDelay) {
 
     synchronized (allTasks) {
@@ -43,7 +43,7 @@ public class PendingTasks {
       if (!allTasks.containsKey(name)) {
         allTasks.put(name, new ArrayList<PendingTask>());
       }
-      allTasks.get(name).add(new PendingTask(name, task, period, address, port, errorMsg, errorLog));
+      allTasks.get(name).add(new PendingTask(name, task, period, errorMsg, errorLog));
 
       if (requestActivesOngoing.contains(name) == false) {
         RequestActivesTask requestActivesTask = new RequestActivesTask(name);
@@ -156,9 +156,6 @@ public class PendingTasks {
 class PendingTask {
 
   public String name;
-  //public NameRecordKey recordKey;
-  public InetAddress address;
-  public int port;
   public JSONObject errorMsg;
   public String errorLog;
   /**
@@ -167,13 +164,11 @@ class PendingTask {
   public int period;
   public TimerTask timerTask;
 
-  public PendingTask(String name, TimerTask timerTask, int period, InetAddress address, int port, JSONObject errorMsg, String errorLog) {
+  public PendingTask(String name, TimerTask timerTask, int period, JSONObject errorMsg, String errorLog) {
     this.name = name;
     //this.recordKey = recordKey;
     this.timerTask = timerTask;
     this.period = period;
-    this.address = address;
-    this.port = port;
     this.errorMsg = errorMsg;
     this.errorLog = errorLog;
   }

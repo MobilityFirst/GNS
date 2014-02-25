@@ -6,14 +6,13 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Update {
 
@@ -112,7 +111,6 @@ public class Update {
         delay = 0;
       }
       PendingTasks.addToPendingRequests(updateInfo.getName(), task, StartLocalNameServer.queryTimeout,
-              address, updateInfo.senderPort,
               ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(), failedStats, delay);
 
 

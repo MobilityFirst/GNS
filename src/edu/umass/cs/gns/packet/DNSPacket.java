@@ -10,7 +10,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 /**
  **
  * Packet transmitted between the local name server and a name server. All communications inside of the domain protocol are carried
@@ -20,15 +19,17 @@ import org.json.JSONObject;
  */
 public class DNSPacket extends BasicPacketWithSignatureInfo {
 
-  public final static String HEADER = "header1";
+  public final static String HEADER = "dns_header";
   public final static String GUID = "dns_guid";
   public final static String KEY = "dns_key";
   public final static String TIME_TO_LIVE = "ttlAddress";
   public final static String RECORD_VALUE = "recordValue";
-
   public final static String ACTIVE_NAME_SERVERS = "Active";
-
   public final static String LNS_ID = "lnsId";
+  /*
+   * The header, guid, key and lnsId are called the Question section because
+   * they are all that is necessary for a query.
+   */
   /**
    * Packet header *
    */
@@ -42,7 +43,15 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   private final NameRecordKey key;
   /**
+   * This is used by the Nameservers so they know where to send the packet back to. *
+   */
+  private int lnsId = -1;
+  /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
+   */
+  /*
+   * The ttl, recordValue, and activeNameServers are called the Response section because
+   * they are the values that one gets in response to a query.
    */
   private int ttl = GNS.DEFAULT_TTL_SECONDS;
   /**
@@ -50,22 +59,22 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * return the entire record. When it's a single key/value the key will be the same as the qrecordKey.
    */
   private ValuesMap recordValue;
-
   /**
    * A list of active name servers for the name *
    */
   private Set<Integer> activeNameServers;
-  /**
-   * Used by traffic status *
-   */
-  private int lnsId = -1;
+
 
   /**
-   **
    * Constructs a packet for querying a name server for name information.
-   *
-//   * @param header Packet header
-   * @param qname Host name in the query
+   * 
+   * @param id
+   * @param qname
+   * @param key
+   * @param sender
+   * @param accessor
+   * @param signature
+   * @param message 
    */
   public DNSPacket(int id, String qname, NameRecordKey key, int sender, String accessor, String signature, String message) {
     super(accessor, signature, message);
@@ -77,7 +86,9 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
 
   /**
    **
-   * Constructs a packet from a JSONObject that represents a DNS packet
+   * Constructs a packet from a JSONObject that represents a DNS packet.
+   * This packet has both a query and response section.
+   * The response section will be empty if this is an error response.
    *
    * @param json JSONObject that represents a DNS packet
    * @throws JSONException
@@ -87,19 +98,22 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(json.getJSONObject(HEADER));
     this.guid = json.getString(GUID);
     this.key = NameRecordKey.valueOf(json.getString(KEY));
-
-    if (header.getQRCode() == DNSRecordType.RESPONSE && header.getResponseCode() != NSResponseCode.ERROR) {
+    this.lnsId = json.getInt(LNS_ID);
+    
+    // These will only be present in non-error response packets
+    if (header.isResponse() && !header.isAnyKindOfError()) {
       this.ttl = json.getInt(TIME_TO_LIVE);
       this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
       if (json.has(RECORD_VALUE)) {
         this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
       }
     }
-    this.lnsId = json.getInt(LNS_ID);
+
   }
 
   /**
-   * A shortcut for when you just have a single field you want to return. 
+   * Creates a DNS packet for when you just have a single field you want to return. 
+   * This packet has both a query and response section.
    * 
    * @param id
    * @param name
@@ -107,35 +121,43 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param fieldValue
    * @param TTL 
    */
-  public DNSPacket(int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers,
-          String accessor, String signature, String message) {
-    super(accessor, signature, message);
+  public DNSPacket(int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
+    this(id, name, key, new ValuesMap(), TTL, activeNameServers);
+    // slide that baby in...
+    this.recordValue.put(key.getName(), fieldValue);
+  }
+
+  /**
+   * Creates a DNS packet for when you want to return all of a NameRecord.
+   * This packet has both a query and response section.
+   * 
+   * @param id
+   * @param name
+   * @param key
+   * @param entireRecord
+   * @param TTL
+   * @param activeNameServers
+   * @param accessor
+   * @param signature
+   * @param message 
+   */
+  public DNSPacket(int id, String name, NameRecordKey key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
+    super(); // no sigs for this baby
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
-    this.recordValue = new ValuesMap();
-    this.recordValue.put(key.getName(), fieldValue);
-    this.ttl = TTL;
-    this.activeNameServers = activeNameServers;
-
     this.lnsId = -1;
-  }
-
-  public DNSPacket(int id, String name, NameRecordKey key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers,
-          String accessor, String signature, String message) {
-    super(accessor, signature, message);
-    this.header = new Header(id, DNSRecordType.RESPONSE,  NSResponseCode.NO_ERROR);
-    this.guid = name;
-    this.key = key;
     this.recordValue = entireRecord;
     this.ttl = TTL;
     this.activeNameServers = activeNameServers;
-    this.lnsId = -1;
   }
 
   /**
    **
-   * Converts this packet's query section to a JSONObject
+   * Converts this packet's query section to a JSONObject.
+   * In other words, this packet has just query section and
+   * doesn't contain the ttl, activeNameServers or recordValue.
+   * But it can have an error value because that value is in the header.
    *
    * @return JSONObject that represents a DNS packet's query section
    * @throws JSONException
@@ -147,7 +169,23 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     json.put(KEY, getKey().getName());
     json.put(GUID, getGuid());
     json.put(LNS_ID, lnsId);
-
+    return json;
+  }
+  
+  /**
+   * Converts this packet's query section to a JSONObject and removes all the
+   * signature information as well.
+   * 
+   * @return
+   * @throws JSONException 
+   */
+  public JSONObject toJSONObjectForErrorResponse() throws JSONException {
+    JSONObject json = new JSONObject();
+    // don't add any of the signature stuff
+    json.put(HEADER, getHeader().toJSONObject());
+    json.put(KEY, getKey().getName());
+    json.put(GUID, getGuid());
+    json.put(LNS_ID, lnsId);
     return json;
   }
 
@@ -171,12 +209,12 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     json.put(HEADER, getHeader().toJSONObject());
     json.put(KEY, getKey().getName());
     json.put(GUID, getGuid());
+    json.put(LNS_ID, lnsId);
     json.put(TIME_TO_LIVE, getTTL());
     json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
-    if (recordValue != null)
-	      json.put(RECORD_VALUE, recordValue.toJSONObject());
-
-    json.put(LNS_ID, lnsId);
+    if (recordValue != null) {
+      json.put(RECORD_VALUE, recordValue.toJSONObject());
+    }
   }
 
   /**
@@ -184,14 +222,14 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * Returns true if the packet is a query, false otherwise
    */
   public boolean isQuery() {
-    return getHeader().getQRCode() == DNSRecordType.QUERY;
+    return getHeader().isQuery();
   }
 
   /**
    * Returns true if the packet is a response, false otherwise
    */
   public boolean isResponse() {
-    return getHeader().getQRCode() == DNSRecordType.RESPONSE;
+    return getHeader().isResponse();
   }
 
   /**
@@ -200,11 +238,11 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    *
    */
   public boolean containsAnyError() {
-    return getHeader().getResponseCode().isAnError();
+    return getHeader().isAnyKindOfError();
   }
 
   public boolean containsInvalidActiveNSError() {
-    return getHeader().getResponseCode() == NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER;
+    return getHeader().isInvalidActiveNSError();
   }
 
   /**
@@ -307,11 +345,11 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public Set<Integer> getActiveNameServers() {
     return activeNameServers;
   }
+
   /**
    * @param activeNameServers the activeNameServers to set
    */
   public void setActiveNameServers(Set<Integer> activeNameServers) {
     this.activeNameServers = activeNameServers;
   }
-
 }

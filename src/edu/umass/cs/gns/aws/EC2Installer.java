@@ -70,7 +70,6 @@ public class EC2Installer {
   //private static final String PUBLICKEYFILEEXTENSION = ".pub";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
-  private static final String DEFAULT_LOG_LEVEL = "INFO";
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final AMIRecordType DEFAULT_AMI_RECORD_TYPE = AMIRecordType.Amazon_Linux_AMI_2013_03_1;
   private static final String DEFAULT_EC2_USERNAME = "ec2-user";

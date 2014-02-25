@@ -24,6 +24,21 @@ public abstract class BasicPacketWithSignatureInfo extends BasicPacket implement
   private String signature;
   private String message;
 
+  /**
+   * Construct this guy with no signature info.
+   */
+  public BasicPacketWithSignatureInfo() {
+    this(null, null, null);
+  }
+  
+  
+  /**
+   * Construct this with all the signature info.
+   * 
+   * @param accessor
+   * @param signature
+   * @param message 
+   */
   public BasicPacketWithSignatureInfo(String accessor, String signature, String message) {
     this.accessor = accessor;
     this.signature = signature;

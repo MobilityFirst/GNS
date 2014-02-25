@@ -5,6 +5,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import java.net.InetAddress;
@@ -12,7 +13,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,8 +35,6 @@ public class Lookup {
     LocalNameServer.incrementLookupRequest(dnsPacket.getGuid()); // important: used to count votes for names.
     DNSRequestTask queryTaskObject = new DNSRequestTask(
             dnsPacket,
-            address,
-            port,
             System.currentTimeMillis(),
             0,
             0,
@@ -51,8 +49,6 @@ public class Lookup {
   }
 
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket) throws JSONException {
-//      long t0 = System.currentTimeMillis();
-//      numQueryResponse++;
     GNS.getLogger().fine("LNS-RecvdPkt\t" + json);
     GNS.getLogger().fine("Query-" + dnsPacket.getQueryId() + "\t"
             + System.currentTimeMillis() + "\t" + dnsPacket.getGuid() + "\tListener-response-enter");
@@ -79,7 +75,6 @@ public class Lookup {
           AdaptiveRetransmission.addResponseTimeSample(responseTimeSample);
         }
       }
-//        long t2 = System.currentTimeMillis();
       // Abhigyan: need to update cache even for TTL == 0, because active name servers are updated.
       CacheEntry cacheEntry = LocalNameServer.updateCacheEntry(dnsPacket);
       if (cacheEntry == null) {
@@ -106,7 +101,7 @@ public class Lookup {
       GNS.getLogger().info(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
       LocalNameServer.invalidateActiveNameServer(dnsPacket.getGuid());
       DNSRequestTask queryTaskObject = new DNSRequestTask(
-              query.getIncomingPacket(), query.getSenderAddress(), query.getSenderPort(),
+              query.getIncomingPacket(),
               query.getLookupRecvdTime(), query.getId(),
               0,
               new HashSet<Integer>(), query.numRestarts + 1);
@@ -121,30 +116,21 @@ public class Lookup {
               0, query.getLookupRecvdTime(), query.numRestarts + 1, -1, new HashSet<Integer>());
 
       PendingTasks.addToPendingRequests(query.getqName(), queryTaskObject, StartLocalNameServer.queryTimeout,
-              query.getSenderAddress(), query.getSenderPort(), DNSRequestTask.getErrorPacket(query.getIncomingPacket()),
+              DNSRequestTask.getErrorPacket(query.getIncomingPacket()),
               failureMsg, delay);
 
       GNS.getLogger().fine(" Scheduled lookup task.");
 
-    } else {      // other types of errors, send error response to client
-      // a little weird here... the packet already has the error in it and we blow it away using getErrorPacket
-      // prevents us from sending different errors back to the client
-      // CHECK THIS AND FIX IT
-      Intercessor.handleIncomingPackets(DNSRequestTask.getErrorPacket(query.getIncomingPacket()));
-
-      GNS.getLogger().warning("other error sent to client --> " + jsonObject + " query ID = " + query.getIncomingPacket().getQueryId());
+    } else { // other types of errors, forward error response to client
+      GNS.getLogger().info("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId() + ": " + dnsPacket.toJSONObject());
+      // set the correct id for the client
+      dnsPacket.getHeader().setId(query.getIncomingPacket().getQueryId());
+      Intercessor.handleIncomingPackets(dnsPacket.toJSONObject());
+      // this might need updating... not sure how it's used though so we'll punt
       GNS.getStatLogger().fine(DNSRequestTask.getFailureLogMessage(0, dnsPacket.getKey(), dnsPacket.getGuid(),
               0, query.getLookupRecvdTime(), query.numRestarts, -1, new HashSet<Integer>()));
 
-
     }
-
-    if (GNS.getLogger().isLoggable(Level.FINEST)) {
-      GNS.getLogger().finest(LocalNameServer.dnsRequestInfoLogString("LNSListenerResponse QUERYTABLE:"));
-      GNS.getLogger().finest(LocalNameServer.cacheLogString("LNSListenerResponse CACHE: "));
-      GNS.getLogger().finest(LocalNameServer.nameRecordStatsMapLogString());
-    }
-
   }
 
   /**
@@ -156,7 +142,7 @@ public class Lookup {
 
     try {
       DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getHeader().getId(), query.getIncomingPacket().getGuid(),
-              query.getIncomingPacket().getKey(), returnValue, TTL, new HashSet<Integer>(), null, null, null);
+              query.getIncomingPacket().getKey(), returnValue, TTL, new HashSet<Integer>());
       Intercessor.handleIncomingPackets(outgoingPacket.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);

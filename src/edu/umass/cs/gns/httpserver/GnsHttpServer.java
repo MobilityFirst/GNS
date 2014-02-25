@@ -83,17 +83,6 @@ public class GnsHttpServer {
     @Override
     public void handle(HttpExchange exchange) {
       try {
-
-        // this little bit of hair was for when we were debugging this as a standalone HTTP server a wanted to randomize the
-        // local name server that it was connecting to. Mostly obsolete now that we're running the HTTP server in the same 
-        // heap as the LNS
-        if (localNameServerID == -1) {
-          int randomHostID = new ArrayList<Integer>(ConfigFileInfo.getAllHostIDs()).get(new Random().nextInt(ConfigFileInfo.getAllHostIDs().size()));
-          // pick a random local name server - ASSUMES THERE IS AN LNS RUNNING AT EVERY HOST
-          Intercessor.setLocalServerID(randomHostID);
-          Admintercessor.setLocalServerID(randomHostID);
-        }
-
         String requestMethod = exchange.getRequestMethod();
         if (requestMethod.equalsIgnoreCase("GET")) {
           Headers requestHeaders = exchange.getRequestHeaders();

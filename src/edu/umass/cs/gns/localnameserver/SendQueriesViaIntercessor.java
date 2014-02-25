@@ -104,7 +104,6 @@ class SendQueryIntercessorTask extends TimerTask {
 
   @Override
   public void run() {
-//    if (name.equals("5242") == false) return;
     DNSPacket queryRecord = new DNSPacket(lookupCount, name, NameRecordKey.EdgeRecord, LocalNameServer.nodeID, null, null, null);
     queryRecord.getHeader().setId(lookupCount);
 
