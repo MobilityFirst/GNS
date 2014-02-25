@@ -9,8 +9,8 @@ package edu.umass.cs.gns.commands;
 
 import edu.umass.cs.gns.client.AccountAccess;
 import edu.umass.cs.gns.client.FieldAccess;
-import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.client.MetaDataTypeName;
 import edu.umass.cs.gns.client.UpdateOperation;
 import edu.umass.cs.gns.clientprotocol.AccessSupport;
 import static edu.umass.cs.gns.clientprotocol.Defs.*;

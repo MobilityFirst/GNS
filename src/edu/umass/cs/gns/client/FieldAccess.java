@@ -10,7 +10,6 @@ import edu.umass.cs.gns.clientprotocol.Defs;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,7 +62,6 @@ public class FieldAccess {
   public static String lookupOne(String guid, String key, String reader, String signature, String message) {
 
     QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
-    GNS.getLogger().info("&&&&&&QUERY RESULT:" + result.toString());
     if (result.isError()) {
       return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {

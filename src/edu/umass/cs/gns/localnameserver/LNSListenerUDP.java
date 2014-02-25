@@ -1,12 +1,16 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
+import org.json.JSONObject;
 
 /**
  * Listens on a UDP port for requests from end-users, and responses from name servers.

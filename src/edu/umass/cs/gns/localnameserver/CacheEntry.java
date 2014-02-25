@@ -12,7 +12,6 @@ import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
-
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -174,13 +173,6 @@ public class CacheEntry implements Comparable<CacheEntry> {
    */
   private int getKeyTTL(String key) {
     return timeToLiveInSeconds;
-    // maybe later... makes me nervous
-//    if (GNS.isInternalField(key)) {
-//      // Fields used by the GNS are cached forever (or at least until they get updated).
-//      return -1;
-//    } else {
-//      return timeToLiveInSeconds;
-//    }
   }
 
   /**

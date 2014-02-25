@@ -1,8 +1,12 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.packet.Packet;

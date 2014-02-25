@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.client;
 
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
@@ -177,7 +182,7 @@ public class Intercessor {
     result.setRoundTripTime(rtt);
     return result;
   }
-  
+
   public static boolean sendAddRecordWithConfirmation(String name, String key, String value) {
     return sendAddRecordWithConfirmation(name, key, new ResultValue(Arrays.asList(value)));
   }
@@ -217,6 +222,16 @@ public class Intercessor {
     return result;
   }
 
+  /**
+   * Sends an update request for a single value.
+   * 
+   * @param name
+   * @param key
+   * @param newValue
+   * @param oldValue
+   * @param operation
+   * @return 
+   */
   public static boolean sendUpdateRecordWithConfirmation(String name, String key, String newValue, String oldValue, UpdateOperation operation) {
     return sendUpdateRecordWithConfirmation(name, key,
             new ResultValue(Arrays.asList(newValue)),
@@ -224,9 +239,19 @@ public class Intercessor {
             operation);
   }
 
+  /**
+   * Sends an update request for a list.
+   * 
+   * @param name
+   * @param key
+   * @param newValue
+   * @param oldValue
+   * @param operation
+   * @return 
+   */
   public static boolean sendUpdateRecordWithConfirmation(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation) {
     int id = nextUpdateRequestID();
-    sendUpdateWithSequenceNumber(name, key, newValue, oldValue, id, 0, operation);
+    sendUpdateWithSequenceNumber(name, key, newValue, oldValue, id, operation);
     // now we wait until the correct packet comes back
     waitForUpdateConfirmationPacket(id);
     boolean result = updateSuccessResult.get(id);
@@ -237,9 +262,7 @@ public class Intercessor {
 
   /**
    *
-   * Sends an update packet to the GNRS with a host of values.
-   *
-   * Abighyan should explain the sequence numbers and how they are used here.
+   * Sends an update packet to the GNS with with values.
    *
    * @param name
    * @param key
@@ -248,8 +271,8 @@ public class Intercessor {
    * @param sequenceNumber
    * @param operation
    */
-  public static void sendUpdateWithSequenceNumber(String name, String key, ResultValue newValue,
-          ResultValue oldValue, int id, int sequenceNumber, UpdateOperation operation) {
+  private static void sendUpdateWithSequenceNumber(String name, String key, ResultValue newValue,
+          ResultValue oldValue, int id, UpdateOperation operation) {
 
     GNS.getLogger().finer("sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
     UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,

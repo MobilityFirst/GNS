@@ -21,21 +21,21 @@ import org.json.JSONObject;
  * @author westy
  */
 public class Read extends GnsCommand {
-  
+
   public Read(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-  
+
   @Override
   public String getCommandName() {
     return READ;
   }
-  
+
   @Override
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
@@ -47,30 +47,6 @@ public class Read extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-//    GuidInfo guidInfo, readerGuidInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return BADRESPONSE + " " + BADGUID + " " + guid;
-//    }
-//    
-//    if (reader.equals(guid)) {
-//      readerGuidInfo = guidInfo;
-//    } else if ((readerGuidInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
-//      return BADRESPONSE + " " + BADREADERGUID + " " + reader;
-//    }
-//
-//    // unsigned case, must be world readable
-//    if (signature == null) {
-//      if (!AccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
-//        return BADRESPONSE + " " + ACCESSDENIED;
-//      }
-//      // signed case, check signature and access
-//    } else if (signature != null) {
-//      if (!AccessSupport.verifySignature(readerGuidInfo, signature, message)) {
-//        return BADRESPONSE + " " + BADSIGNATURE;
-//      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
-//        return BADRESPONSE + " " + ACCESSDENIED;
-//      }
-//    }
 
     // all checks passed, get the value to return
     if (getCommandName().equals(READONE)) {
@@ -87,7 +63,7 @@ public class Read extends GnsCommand {
       }
     }
   }
-  
+
   @Override
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
