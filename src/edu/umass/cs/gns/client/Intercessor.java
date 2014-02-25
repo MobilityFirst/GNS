@@ -1,21 +1,23 @@
 package edu.umass.cs.gns.client;
 
-import edu.umass.cs.gns.localnameserver.LNSListener;
+import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.*;
-import static edu.umass.cs.gns.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static edu.umass.cs.gns.packet.Packet.getPacketType;
 
 /**
  * One of a number of class that implement client support in the GNS server. 
@@ -301,6 +303,6 @@ public class Intercessor {
    * @param jsonObject 
    */
   public static void sendPacket(JSONObject jsonObject) {
-    LNSListener.demultiplexLNSPackets(jsonObject);
+    LNSPacketDemultiplexer.demultiplexLNSPackets(jsonObject);
   }
 }

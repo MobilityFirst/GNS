@@ -1,15 +1,14 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.TimerTask;
 
@@ -20,7 +19,6 @@ import java.util.TimerTask;
  * User: abhigyan
  * Date: 8/9/13
  * Time: 4:59 PM
- * To change this template use File | Settings | File Templates.
  */
 public class SendAddRemoveUpsertTask extends TimerTask {
 
@@ -34,8 +32,8 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   long requestRecvdTime;
 
   public SendAddRemoveUpsertTask(BasicPacket packet, String name,
-          InetAddress senderAddress, int senderPort, long requestRecvdTime,
-          HashSet<Integer> primariesQueried) {
+                                 InetAddress senderAddress, int senderPort, long requestRecvdTime,
+                                 HashSet<Integer> primariesQueried) {
     this.name = name;
     this.packet = packet;
     this.senderAddress = senderAddress;
@@ -46,82 +44,87 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
   @Override
   public void run() {
-    timeoutCount++;
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
-    }
-
-    if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
+    try{
+      timeoutCount++;
       if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+        GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
       }
-      throw new RuntimeException();
-//      return;
-    }
 
-    if (timeoutCount > 0 && System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
-      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
+      if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
+        if (StartLocalNameServer.debugMode) {
+          GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+        }
+        throw new CancelExecutorTaskException();
+      }
 
-      if (updateInfo == null) {
-        GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
+      if (timeoutCount > 0 && System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
+        UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
+
+        if (updateInfo == null) {
+          GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
+          throw new CancelExecutorTaskException();
+        }
+        GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
+        ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(packet);
+        try {
+          if (confirmPkt != null) {
+            Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
+          } else {
+            GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
+          }
+        } catch (JSONException e) {
+          GNS.getLogger().severe("Problem converting packet to JSON: " + e);
+        }
+        String updateStats = updateInfo.getUpdateFailedStats(primariesQueried, LocalNameServer.nodeID, updateRequestID, -1);
+        GNS.getStatLogger().fine(updateStats);
+
+        throw new CancelExecutorTaskException();
+      }
+      if (primariesQueried.size() == GNS.numPrimaryReplicas) {
+        primariesQueried.clear();
+      }
+      int nameServerID = LocalNameServer.getClosestPrimaryNameServer(name, primariesQueried);
+
+      if (nameServerID == -1) {
+        GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried " + primariesQueried);
+        return;
+      } else {
+        primariesQueried.add(nameServerID);
+      }
+      if (timeoutCount == 0) {
+        String hostAddress = null;
+        if (senderAddress != null) {
+          hostAddress = senderAddress.getHostAddress();
+        }
+        updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
+                requestRecvdTime, hostAddress, senderPort, 0, null);
+        GNS.getLogger().info("Update Info Added: Id = " + updateRequestID);
+        updatePacketWithRequestID(packet, updateRequestID);
+      }
+      // create the packet that we'll send to the primary
+
+      GNS.getLogger().info("Sending Update to Node: " + nameServerID);
+
+      // and send it off
+      try {
+        JSONObject jsonToSend = packet.toJSONObject();
+        LocalNameServer.sendToNS(jsonToSend, nameServerID);
+
+        GNS.getLogger().info("SendAddRequest: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID +
+                " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    }catch (Exception e) {
+      // we catch all exceptions to print stack trace because executor service will not print any error in case
+      // of exception
+      if (e.getClass().equals(CancelExecutorTaskException.class)) {
+      // this exception is only to terminate this task from repeat execution; this is the only way we can terminate this task
+
         throw new RuntimeException();
       }
-      GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + updateRequestID + " name = " + name);
-      ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(packet);
-      try {
-        if (confirmPkt != null) {
-          Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
-        } else {
-          GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
-        }
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem converting packet to JSON: " + e);
-      }
-      String updateStats = updateInfo.getUpdateFailedStats(primariesQueried, LocalNameServer.nodeID, updateRequestID, -1);
-//      if (StartLocalNameServer.debugMode) GNS.getLogger().info(updateStats);
-      GNS.getStatLogger().fine(updateStats);
-
-      throw new RuntimeException();
-    }
-    if (primariesQueried.size() == GNS.numPrimaryReplicas) {
-      primariesQueried.clear();
-    }
-    int nameServerID = LocalNameServer.getClosestPrimaryNameServer(name, primariesQueried);
-
-    if (nameServerID == -1) {
-      GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried " + primariesQueried);
-      return;
-    } else {
-      primariesQueried.add(nameServerID);
-    }
-    if (timeoutCount == 0) {
-      String hostAddress = null;
-      if (senderAddress != null) {
-        hostAddress = senderAddress.getHostAddress();
-      }
-      updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-              requestRecvdTime, hostAddress, senderPort, 0, null);
-      GNS.getLogger().info("Update Info Added: Id = " + updateRequestID);
-      updatePacketWithRequestID(packet, updateRequestID);
-    }
-    // create the packet that we'll send to the primary
-
-    GNS.getLogger().info("Sending Update to Node: " + nameServerID);
-
-    // and send it off
-    try {
-      JSONObject jsonToSend = packet.toJSONObject();
-      LNSListener.tcpTransport.sendToID(nameServerID, jsonToSend);
-      // remote status
-//        StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.UPDATE_PORT, pkt.getType(), name,
-//                //nameRecordKey.getName(),
-//                updateAddressPacket.getUpdateValue().toString());
-      GNS.getLogger().info("SendAddRequest: Send to: " + nameServerID
-              + " Name:" + name + " Id:" + updateRequestID + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
-    } catch (JSONException e) {
+      GNS.getLogger().severe("Exception Exception Exception ... ");
       e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
   }
 

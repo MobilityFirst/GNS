@@ -7,19 +7,17 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
 import edu.umass.cs.gns.packet.SelectResponsePacket;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Random;
-import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Set;
 
 /**
  * Handles sending and receiving of queries.
@@ -51,13 +49,8 @@ public class Select {
       serverID = BestServerSelection.randomServer(serverIds);
     }
     GNS.getLogger().info("LNS" + LocalNameServer.nodeID + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
-    try {
-      if (!LNSListener.tcpTransport.sendToID(serverID, outgoingJSON)) {
-        GNS.getLogger().severe("Failed to transmit QueryRequest to NS" + serverID);
-      }
-    } catch (IOException e) {
-      GNS.getLogger().severe("Error during attempt to transmit QueryRequest to NS" + serverID + ":" + e);
-    }
+    LocalNameServer.sendToNS(outgoingJSON, serverID);
+
   }
 
   public static void handlePacketSelectResponse(JSONObject json) throws JSONException {

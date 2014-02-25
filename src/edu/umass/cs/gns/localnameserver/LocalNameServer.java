@@ -12,17 +12,19 @@ import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.*;
-import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
 import edu.umass.cs.gns.util.UpdateTrace;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -63,24 +65,25 @@ public class LocalNameServer {
    * Unique and random query ID *
    */
   private static Random randomID;
+
   /**
-   * UDP Socket for transmitting queries and listening for response *
+   * Only used during experiments.
    */
-  public static DatagramSocket socket;
+  private static int initialExpDelayMillis = 30000;
+
+  private static NioServer tcpTransport;
+
+
+  public static ConcurrentHashMap<Integer, Double> nameServerLoads;
+
+
   /**
    * ImmutableSet containing names that can be queried by the local name server *
    */
   public static ImmutableSet<String> workloadSet;
   public static List<String> lookupTrace;
   public static List<UpdateTrace> updateTrace;
-  public static BeehiveDHTRouting beehiveDHTRouting;
-  public static ConcurrentHashMap<Integer, Double> nameServerLoads;
-  public static long startTime;
 
-  /**
-   * Only used during experiments.
-   */
-  public static int initialExpDelayMillis = 30;
 
   /**
    **
@@ -103,25 +106,6 @@ public class LocalNameServer {
     nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
     //read the workload from a file and create a immutable Set
 
-    if (StartLocalNameServer.workloadFile != null) {
-      workloadSet = ImmutableSet.copyOf(readWorkloadFile(StartLocalNameServer.workloadFile));
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().info("Workload: " + workloadSet.toString());
-      }
-    }
-
-    if (StartLocalNameServer.lookupTraceFile != null) {
-      lookupTrace = readLookupTrace(StartLocalNameServer.lookupTraceFile);
-    }
-
-    if (StartLocalNameServer.updateTraceFile != null) {
-      updateTrace = readUpdateTrace(StartLocalNameServer.updateTraceFile);
-    }
-
-    // name server loads initialized.
-    if (StartLocalNameServer.loadDependentRedirection) {
-      initializeNameServerLoadMonitoring();
-    }
 
 
     // redirection according to beehive replication
@@ -131,97 +115,6 @@ public class LocalNameServer {
 
   }
 
-  public void initializeNameServerLoadMonitoring() {
-    nameServerLoads = new ConcurrentHashMap<Integer, Double>();
-    Set<Integer> nameServerIDs = ConfigFileInfo.getAllNameServerIDs();
-    for (int x : nameServerIDs) {
-      nameServerLoads.put(x, 0.0);
-    }
-    Random r = new Random();
-    for (int x : nameServerIDs) {
-      SendLoadMonitorPacketTask loadMonitorTask = new SendLoadMonitorPacketTask(x);
-      long interval = StartLocalNameServer.nameServerLoadMonitorIntervalSeconds * 1000;
-      // Query NS at different times to avoid synchronization among local name servers.
-      // synchronization may cause oscillations in name server loads.
-      long offset = (long) (r.nextDouble() * interval);
-      LocalNameServer.executorService.scheduleAtFixedRate(loadMonitorTask, offset, interval, TimeUnit.MILLISECONDS);
-    }
-  }
-
-  /**
-   **
-   * Reads a file containing the workload for this local name server. The method returns a Set containing names that can
-   * be queried by this local name server.
-   *
-   * @param filename Workload file
-   * @return Set containing names that can be queried by this local name server.
-   * @throws IOException
-   */
-  private static Set<String> readWorkloadFile(String filename) throws IOException {
-    Set<String> workloadSet = new HashSet<String>();
-
-    BufferedReader br = new BufferedReader(new FileReader(filename));
-    while (br.ready()) {
-      final String name = br.readLine().trim();
-      if (name != null) {
-        workloadSet.add(name);
-      }
-    }
-    return workloadSet;
-  }
-
-  private static List<String> readLookupTrace(String filename) throws IOException {
-    File file = new File(filename);
-    if (!file.exists()) {
-      return null;
-    }
-    List<String> trace = new ArrayList<String>();
-    BufferedReader br = new BufferedReader(new FileReader(filename));
-    while (br.ready()) {
-      final String name = br.readLine().trim();
-      if (name != null && !name.equals("") && !name.equals("\n")) {
-        trace.add(name);
-      }
-    }
-    return trace;
-  }
-
-  private static List<UpdateTrace> readUpdateTrace(String filename) throws IOException {
-    List<UpdateTrace> trace = new ArrayList<UpdateTrace>();
-    BufferedReader br = new BufferedReader(new FileReader(filename));
-    while (br.ready()) {
-      String line = br.readLine(); //.trim();
-      if (line == null) {
-        continue;
-      }
-      line = line.trim();
-      if (line.length() == 0) continue;
-      // name type (add/remove/update)
-      String[] tokens = line.split("\\s+");
-      if (tokens.length == 2) {
-        trace.add(new UpdateTrace(tokens[0], new Integer(tokens[1])));
-        continue;
-      } else {
-        trace.add(new UpdateTrace(tokens[0], UpdateTrace.UPDATE));
-      }
-
-    }
-    br.close();
-    return trace;
-  }
-
-  /**
-   **
-   * Checks whether <i>name</i> is in the workload set for this local name server.
-   *
-   * @param name Host/device/domain name
-   * @return <i>true</i> if the workload contains <i>name</i>, <i>false</i> otherwise
-   *
-   */
-  public static boolean workloadContainsName(String name) {
-    return workloadSet.contains(name);
-  }
-
   /**
    **
    * Starts the Local Name Server.
@@ -229,18 +122,29 @@ public class LocalNameServer {
    * @throws Exception
    */
   public void run() throws Exception {
-    startTime = System.currentTimeMillis();
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
 
-    new LNSListener().start();
+
+    // name server loads initialized.
+    if (StartLocalNameServer.loadDependentRedirection) {
+      initializeNameServerLoadMonitoring();
+    }
+
+
+    new LNSListenerUDP().start();
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("LNS listener started.");
     }
 
+    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+    new Thread(tcpTransport).start();
+    // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
+//    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
+//    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
+//    new Thread(tcpTransport).start();
 
-    if (StartLocalNameServer.experimentMode == false) {
+
       new LNSListenerAdmin().start();
-    }
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("LNS listener admin started.");
@@ -254,36 +158,20 @@ public class LocalNameServer {
 //          }
 
     if (StartLocalNameServer.experimentMode) {
-
-      Thread.sleep(initialExpDelayMillis); // so that all local name servers can start at the same time.
-
-//        experimentSendRequestTimer = new Timer();
-      //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Testing in experiment mode.");
-//    	if (StartLocalNameServer.tinyQuery == false) {
-//    		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("");
-//	      myInter = Intercessor.;
-//	      myInter.setLocalServerID(LocalNameServer.nodeID);
-////	      myInter.createTransportObject();
-//    	}
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Scheduling all queries via intercessor.");
-      }
-      SendQueriesViaIntercessor.schdeduleAllQueries();
-
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Scheduling all updates via intercessor.");
-      }
-      SendUpdatesViaIntercessor.schdeduleAllUpdates();
+      startExperiment();
     }
+
 
     if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
-    
+
     if (StartLocalNameServer.experimentMode == false) {
       GnsHttpServer.runHttp(LocalNameServer.nodeID);
     }
   }
+
+  /********************** BEGIN: methods for read/write to info about reads (queries) and updates ****************/
 
   /**
    **
@@ -311,53 +199,6 @@ public class LocalNameServer {
     return id;
   }
 
-//  /**
-//   * Same as the other addQueryInfo object. QueryID is already specified instead of being randomly chosen.
-//   *
-//   * @param name
-//   * @param recordKey
-//   * @param nameserverID
-//   * @param time
-//   * @param queryStatus
-//   * @param lookupNumber
-//   * @param incomingPacket
-//   * @param senderAddress
-//   * @param senderPort
-//   * @param queryID
-//   * @return
-//   */
-//  public static int addQueryInfo(String name, NameRecordKey recordKey,
-//          int nameserverID, long time, String queryStatus, int lookupNumber,
-//          DNSPacket incomingPacket, InetAddress senderAddress, int senderPort, int queryID) {
-//
-//
-//    //Add query info
-//    QueryInfo query = new QueryInfo(queryID, name, recordKey, time,
-//            nameserverID, queryStatus, lookupNumber,
-//            incomingPacket, senderAddress, senderPort);
-//    queryTransmittedMap.put(queryID, query);
-//    return queryID;
-//  }
-  public static int addQueryInfo(String name, NameRecordKey recordKey,
-          int nameserverID, long time, String queryStatus, int lookupNumber) {
-    // ABHIGYAN
-    return 0;
-
-    // DUMMY FUNCTION
-  }
-
-//  public static int addUpdateInfo(String name, int nameserverID, long time) {
-//    int id = randomID.nextInt();
-//    //Generate unique id for the query
-//    while (updateTransmittedMap.containsKey(id)) {
-//      id = randomID.nextInt();
-//    }
-//
-//    //Add update info
-//    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID);
-//    updateTransmittedMap.put(id, update);
-//    return id;
-//  }
   public static int addUpdateInfo(String name, int nameserverID, long time, String senderAddress, int senderPort,
           int numRestarts, UpdateAddressPacket updateAddressPacket) {
     int id;
@@ -425,21 +266,37 @@ public class LocalNameServer {
     return requestTransmittedMap.get(id);
   }
 
-  public static void invalidateCache() {
-    cache.invalidateAll();
-  }
 
   /**
    **
-   * Returns true if the local name server cache contains DNS record for the specified name, false otherwise
+   * Prints information about transmitted queries that have not received a response.
    *
-   * @param name Host/Domain name
    */
-  public static boolean containsCacheEntry(String name) {
-    //return cache.getIfPresent(new NameAndRecordKey(name, recordKey)) != null;
-    return cache.getIfPresent(name) != null;
+  public static String dnsRequestInfoLogString(String preamble) {
+    StringBuilder queryTable = new StringBuilder();
+    for (DNSRequestInfo info : LocalNameServer.requestTransmittedMap.values()) {
+      queryTable.append("\n");
+      queryTable.append(info.toString());
+    }
+    return preamble + queryTable.toString();
   }
 
+  /********************** END: methods for read/write to info about queries (read) and updates ****************/
+
+
+  /********************** BEGIN: methods for read/write to the stats map *******************/
+
+  public static NameRecordStats getStats(String name) {
+
+    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
+    return nameRecordStats;
+//    int vote = (nameRecordStats != null) ? nameRecordStats.getVotes() : 0;
+//    return vote;
+  }
+
+  public static Set<String> getNameRecordStatsKeySet() {
+    return nameRecordStatsMap.keySet();
+  }
 
   public static void incrementLookupRequest(String name) {
 
@@ -462,8 +319,7 @@ public class LocalNameServer {
     }
   }
 
-  public static void incrementLookupResponse(String name//, NameRecordKey recordKey
-          ) {
+  public static void incrementLookupResponse(String name) {
 //    NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
 //    NameRecordStats nameRecordStats = nameRecordStatsMap.get(nameAndType);
 //    if (nameRecordStats != null) {
@@ -475,8 +331,7 @@ public class LocalNameServer {
     }
   }
 
-  public static void incrementUpdateResponse(String name //, NameRecordKey recordKey
-          ) {
+  public static void incrementUpdateResponse(String name) {
 //    NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
 //    NameRecordStats nameRecordStats = nameRecordStatsMap.get(nameAndType);
 //    if (nameRecordStats != null) {
@@ -490,27 +345,38 @@ public class LocalNameServer {
 
   /**
    **
-   * Returns the lookup vote for <i>name</i>.
+   * Prints name record statistic
    *
-   * @param name Host/domain/device name
    */
-  public static int getVotes(String name) {
-
-    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
-    int vote = (nameRecordStats != null) ? nameRecordStats.getVotes() : 0;
-    return vote;
+  public static String nameRecordStatsMapLogString() {
+    StringBuilder str = new StringBuilder();
+    for (Map.Entry<String, NameRecordStats> entry : nameRecordStatsMap.entrySet()) {
+      str.append("\n");
+      str.append("Name " + entry.getKey());
+      str.append("->");
+      str.append(" " + entry.getValue().toString());
+    }
+    return "***NameRecordStatsMap***" + str.toString();
   }
 
-  public static NameRecordStats getStats(String name) {
+  /********************** END: methods for read/write to the stats map *******************/
 
-    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
-    return nameRecordStats;
-//    int vote = (nameRecordStats != null) ? nameRecordStats.getVotes() : 0;
-//    return vote;
+  /********************** BEGIN: methods that read/write to the cache at the local name server ****************/
+
+
+  public static void invalidateCache() {
+    cache.invalidateAll();
   }
 
-  public static Set<String> getNameRecordStatsKeySet() {
-    return nameRecordStatsMap.keySet();
+  /**
+   **
+   * Returns true if the local name server cache contains DNS record for the specified name, false otherwise
+   *
+   * @param name Host/Domain name
+   */
+  public static boolean containsCacheEntry(String name) {
+    //return cache.getIfPresent(new NameAndRecordKey(name, recordKey)) != null;
+    return cache.getIfPresent(name) != null;
   }
 
   /**
@@ -555,7 +421,6 @@ public class LocalNameServer {
     entry.updateCacheEntry(packet);
   }
 
-
   public static void updateCacheEntry(ConfirmUpdateLNSPacket packet, String name, NameRecordKey key) {
     switch (packet.getType()) {
       case CONFIRM_ADD_LNS:
@@ -595,8 +460,7 @@ public class LocalNameServer {
    * @param name Host/device/domain name whose name record is cached.
    * @return Returns true if the entry is valid, false otherwise
    */
-  public static boolean isValidNameserverInCache(String name//, NameRecordKey recordKey
-          ) {
+  public static boolean isValidNameserverInCache(String name) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.isValidNameserver() : false;
   }
@@ -1008,35 +872,10 @@ public class LocalNameServer {
     }
   }
 
-  /**
-   **
-   * Prints information about transmitted queries that have not received a response.
-   *
-   */
-  public static String dnsRequestInfoLogString(String preamble) {
-    StringBuilder queryTable = new StringBuilder();
-    for (DNSRequestInfo info : LocalNameServer.requestTransmittedMap.values()) {
-      queryTable.append("\n");
-      queryTable.append(info.toString());
-    }
-    return preamble + queryTable.toString();
-  }
+  /********************** END: methods that read/write to the cache at the local name server ****************/
 
-  /**
-   **
-   * Prints name record statistic
-   *
-   */
-  public static String nameRecordStatsMapLogString() {
-    StringBuilder str = new StringBuilder();
-    for (Map.Entry<String, NameRecordStats> entry : nameRecordStatsMap.entrySet()) {
-      str.append("\n");
-      str.append("Name " + entry.getKey());
-      str.append("->");
-      str.append(" " + entry.getValue().toString());
-    }
-    return "***NameRecordStatsMap***" + str.toString();
-  }
+
+  /*********************BEGIN: methods for sending packets to name servers. ********************************/
 
   /**
    * Send packet to NS after all packet
@@ -1055,22 +894,181 @@ public class LocalNameServer {
     }
   }
 
+
   public static void sendToNSActual(JSONObject json, int ns) {
 //    if (json.toString().length() < 1000) {
 //      try {
-//        LNSListener.udpTransport.sendPacket(json, ns, GNS.PortType.NS_UDP_PORT);
+//        LNSListenerUDP.udpTransport.sendPacket(json, ns, GNS.PortType.NS_UDP_PORT);
 //      } catch (JSONException e) {
 //        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //      }
 //    } else { // for large packets,  use TCP
       try {
-        LNSListener.tcpTransport.sendToIDActual(ns, json);
+        tcpTransport.sendToIDActual(ns, json);
       } catch (IOException e) {
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       }
 //    }
   }
 
+  /*********************END: methods for sending packets to name servers. ********************************/
+
+
+  /*********************BEGIN: methods for monitoring load at name servers. ********************************/
+
+  private void initializeNameServerLoadMonitoring() {
+    nameServerLoads = new ConcurrentHashMap<Integer, Double>();
+    Set<Integer> nameServerIDs = ConfigFileInfo.getAllNameServerIDs();
+    for (int x : nameServerIDs) {
+      nameServerLoads.put(x, 0.0);
+    }
+    Random r = new Random();
+    for (int x : nameServerIDs) {
+      SendLoadMonitorPacketTask loadMonitorTask = new SendLoadMonitorPacketTask(x);
+      long interval = StartLocalNameServer.nameServerLoadMonitorIntervalSeconds * 1000;
+      // Query NS at different times to avoid synchronization among local name servers.
+      // synchronization may cause oscillations in name server loads.
+      long offset = (long) (r.nextDouble() * interval);
+      LocalNameServer.executorService.scheduleAtFixedRate(loadMonitorTask, offset, interval, TimeUnit.MILLISECONDS);
+    }
+  }
+
+  public static void handleNameServerLoadPacket(JSONObject json) throws JSONException {
+    NameServerLoadPacket nsLoad = new NameServerLoadPacket(json);
+    LocalNameServer.nameServerLoads.put(nsLoad.getNsID(), nsLoad.getLoadValue());
+  }
+
+  /*********************END: methods for monitoring load at name servers. ********************************/
+
+
+
+  /*******BEGIN: during experiments, these methods read workload trace files. Not used outside experiments. ********/
+
+
+  private static void startExperiment() throws IOException, InterruptedException{
+
+    if (StartLocalNameServer.workloadFile != null) {
+      workloadSet = ImmutableSet.copyOf(readWorkloadFile(StartLocalNameServer.workloadFile));
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().info("Workload: " + workloadSet.toString());
+      }
+    }
+
+    if (StartLocalNameServer.lookupTraceFile != null) {
+      lookupTrace = readLookupTrace(StartLocalNameServer.lookupTraceFile);
+    }
+
+    if (StartLocalNameServer.updateTraceFile != null) {
+      updateTrace = readUpdateTrace(StartLocalNameServer.updateTraceFile);
+    }
+
+    Thread.sleep(initialExpDelayMillis); // so that all local name servers can start at the same time.
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("Scheduling all queries via intercessor.");
+    }
+    SendQueriesViaIntercessor.schdeduleAllQueries();
+
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("Scheduling all updates via intercessor.");
+    }
+    SendUpdatesViaIntercessor.schdeduleAllUpdates();
+  }
+
+
+  /**
+   **
+   * Reads a file containing the workload for this local name server. The method returns a Set containing names that can
+   * be queried by this local name server.
+   *
+   * @param filename Workload file
+   * @return Set containing names that can be queried by this local name server.
+   * @throws IOException
+   */
+  private static Set<String> readWorkloadFile(String filename) throws IOException {
+    Set<String> workloadSet = new HashSet<String>();
+
+    BufferedReader br = new BufferedReader(new FileReader(filename));
+    while (br.ready()) {
+      final String name = br.readLine().trim();
+      if (name != null) {
+        workloadSet.add(name);
+      }
+    }
+    return workloadSet;
+  }
+
+  private static List<String> readLookupTrace(String filename) throws IOException {
+    File file = new File(filename);
+    if (!file.exists()) {
+      return null;
+    }
+    List<String> trace = new ArrayList<String>();
+    BufferedReader br = new BufferedReader(new FileReader(filename));
+    while (br.ready()) {
+      final String name = br.readLine().trim();
+      if (name != null && !name.equals("") && !name.equals("\n")) {
+        trace.add(name);
+      }
+    }
+    return trace;
+  }
+
+  private static List<UpdateTrace> readUpdateTrace(String filename) throws IOException {
+    List<UpdateTrace> trace = new ArrayList<UpdateTrace>();
+    BufferedReader br = new BufferedReader(new FileReader(filename));
+    while (br.ready()) {
+      String line = br.readLine(); //.trim();
+      if (line == null) {
+        continue;
+      }
+      line = line.trim();
+      if (line.length() == 0) continue;
+      // name type (add/remove/update)
+      String[] tokens = line.split("\\s+");
+      if (tokens.length == 2) {
+        trace.add(new UpdateTrace(tokens[0], new Integer(tokens[1])));
+        continue;
+      } else {
+        trace.add(new UpdateTrace(tokens[0], UpdateTrace.UPDATE));
+      }
+
+    }
+    br.close();
+    return trace;
+  }
+
+  /**
+   **
+   * Checks whether <i>name</i> is in the workload set for this local name server.
+   *
+   * @param name Host/device/domain name
+   * @return <i>true</i> if the workload contains <i>name</i>, <i>false</i> otherwise
+   *
+   */
+  public static boolean workloadContainsName(String name) {
+    return workloadSet.contains(name);
+  }
+
+  /*******END: during experiments, these methods read workload trace files. Not used outside experiments. ********/
+
+
+  public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
+
+//    int nodeProduct = 1;
+//    for (int x: nodeIDs) {
+//      nodeProduct =  nodeProduct*x;
+//    }
+    if (nodeIDs == null || nodeIDs.size() == 0) return  -1;
+    Random r = new Random(name.hashCode());
+    ArrayList<Integer> x1  = new ArrayList<Integer>(nodeIDs);
+    Collections.sort(x1);
+    Collections.shuffle(x1, r);
+    for (int x: x1) {
+      return x;
+    }
+    return  x1.get(0);
+//    return  x1.get(count);
+  }
 
   /**
    * Test *
@@ -1162,23 +1160,6 @@ public class LocalNameServer {
   //}
 
 
-  public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
-
-//    int nodeProduct = 1;
-//    for (int x: nodeIDs) {
-//      nodeProduct =  nodeProduct*x;
-//    }
-    if (nodeIDs == null || nodeIDs.size() == 0) return  -1;
-    Random r = new Random(name.hashCode());
-    ArrayList<Integer> x1  = new ArrayList<Integer>(nodeIDs);
-    Collections.sort(x1);
-    Collections.shuffle(x1, r);
-    for (int x: x1) {
-      return x;
-    }
-    return  x1.get(0);
-//    return  x1.get(count);
-  }
 }
 
 

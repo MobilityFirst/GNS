@@ -127,20 +127,6 @@ public class PendingTasks {
       if (runTasks == null) {
         return;
       }
-
-//            if (allTasks.containsKey(name)) {
-//                ArrayList<PendingTask> y = allTasks.get(name);
-//                for (int i = y.size() - 1; i >= 0; i-- ) {
-//                    PendingTask task = y.get(i);
-//                    if (task.name.equals(name) //&& task.recordKey.equals(key)
-//                            ) {
-//                        y.remove(i);
-//                        runTasks.add(task);
-//                    }
-//                }
-//                if (y.size() == 0) allTasks.remove(name);
-//
-//            }
     }
 
     if (runTasks.size() > 0) {

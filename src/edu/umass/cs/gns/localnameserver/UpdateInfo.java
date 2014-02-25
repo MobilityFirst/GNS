@@ -27,13 +27,6 @@ public class UpdateInfo {
   public String senderAddress;
   public int senderPort;
 
-
-//  public UpdateInfo(int id, String name, long sendTime, int nameserverId) {
-//    this.id = id;
-//    this.name = name;
-//    this.sendTime = sendTime;
-//    this.nameserverID = nameserverId;
-//  }
   public UpdateAddressPacket updateAddressPacket;
   private int numRestarts;
   public UpdateInfo(int id, String name, long sendTime, int nameserverId, String senderAddress, int senderPort,

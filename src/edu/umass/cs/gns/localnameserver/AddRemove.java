@@ -14,6 +14,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
+/**
+ *
+ */
 public class AddRemove {
 
   /**
@@ -22,7 +25,7 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  public static void handlePacketAddRecordLNS(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketAddRecordLNS(JSONObject json) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
     InetAddress senderAddress = null;
@@ -47,9 +50,6 @@ public class AddRemove {
    * @throws JSONException
    */
   static void handleUpsert(UpdateAddressPacket updateAddressPacket, InetAddress address, int port) throws JSONException {
-//    updateAddressPacket.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(updateAddressPacket.getName()));
-
-//    updateAddressPacket.setLocalNameServerId(LocalNameServer.nodeID);
 
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
             address, port, System.currentTimeMillis(), new HashSet<Integer>());
@@ -69,7 +69,7 @@ public class AddRemove {
    * @throws NoSuchAlgorithmException
    * @throws UnsupportedEncodingException
    */
-  public static void handlePacketRemoveRecordLNS(JSONObject json)
+  static void handlePacketRemoveRecordLNS(JSONObject json)
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
@@ -95,7 +95,7 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  public static void handlePacketConfirmAddLNS(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketConfirmAddLNS(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdateLNSPacket confirmAddPacket = new ConfirmUpdateLNSPacket(json);
     UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
 
@@ -119,16 +119,16 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  public static void handlePacketConfirmRemoveLNS(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketConfirmRemoveLNS(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdateLNSPacket confirmRemovePacket = new ConfirmUpdateLNSPacket(json);
     UpdateInfo removeInfo = LocalNameServer.removeUpdateInfo(confirmRemovePacket.getLNSRequestID());
     if (removeInfo == null) {
       GNS.getLogger().warning("Remove confirmation return info not found.");
     } else {
-      // send it back to the orginator of the request
-      JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
+      // send it back to the orginator of the request
+      JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
       GNS.getLogger().fine("LNSListenerUpdate CONFIRM REMOVE (lns " + LocalNameServer.nodeID + ") to "
               + removeInfo.senderAddress + ":" + removeInfo.senderPort + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);

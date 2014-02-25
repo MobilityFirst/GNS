@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class SendQueriesViaIntercessor {
 
 
-	private static ExponentialDistribution exponentialDistribution;
 
   public static void schdeduleAllQueries() {
 
@@ -30,8 +29,7 @@ public class SendQueriesViaIntercessor {
     }
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send query intercessor started. Number of queries. "
             + LocalNameServer.lookupTrace.size());
-		exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.lookupRate );
-//    double delay = LocalNameServer.lookupTrace.size();
+    ExponentialDistribution exponentialDistribution = new ExponentialDistribution(StartLocalNameServer.lookupRate );
 
     long expectedDurationSec = (long) ((LocalNameServer.lookupTrace.size() *
             StartLocalNameServer.lookupRate)/1000);
@@ -40,33 +38,8 @@ public class SendQueriesViaIntercessor {
 
     GNS.getStatLogger().fine(msg);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine(msg);
-//    long delay = (long) (StartLocalNameServer.lookupRate * 1000);
-//    LocalNameServer.executorService.scheduleAtFixedRate(new SendQueryIntercessorTask(), 0, (long) delay, TimeUnit.MICROSECONDS);
-//    int num = 1;
-//    if (StartLocalNameServer.lookupRate <1) {
-//      num = (int) (1.0/StartLocalNameServer.lookupRate);
-//    }
 
-    // cache all name records
-//    try {
-//    HashSet<String> names = new HashSet<String>();
-//    for( String name : LocalNameServer.lookupTrace) {
-//      names.add(name);
-//    }
-//    for (String name: names) {
-//      PendingTasks.addToPendingRequests(name);
-//      Thread.sleep(1);
-//    }
-//
-//
-//      Thread.sleep(60000);
-//    } catch (InterruptedException e) {
-//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//    }
-    int requests = 0;
-    if (LocalNameServer.lookupTrace != null) requests += LocalNameServer.lookupTrace.size();
-    if (LocalNameServer.updateTrace != null) requests += LocalNameServer.updateTrace.size();
-    double delay = (requests)/100000 * 1000;
+    double delay = 0;
 
     GNS.getLogger().info(" Initial lookup delay: " + delay);
     List<Double> delays = new ArrayList<Double>();
@@ -76,8 +49,7 @@ public class SendQueriesViaIntercessor {
 			count++;
       tasks.add(new SendQueryIntercessorTask(name, count));
       delays.add(delay);
-			delay += StartLocalNameServer.lookupRate; //exponentialDistribution.exponential();
-//			if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send query scheduled: count " + count + " delay = " + delay);
+			delay += exponentialDistribution.exponential();
 		}
     long t0 = System.currentTimeMillis();
     for (int i = 0; i < LocalNameServer.lookupTrace.size(); i++) {
@@ -85,7 +57,6 @@ public class SendQueriesViaIntercessor {
     }
     long t1 = System.currentTimeMillis();
     GNS.getLogger().info(" Time to submit all updates: " + (t1 - t0));
-//    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Final delay = " + delay/1000 + " Expected-duration " + expectedDurationSec);
   }
 
 }
@@ -110,7 +81,7 @@ class SendQueryIntercessorTask extends TimerTask {
     JSONObject json;
     try {
       json = queryRecord.toJSONObjectQuestion();
-      LNSListener.demultiplexLNSPackets(json);
+      LNSPacketDemultiplexer.demultiplexLNSPackets(json);
     } catch (JSONException e) {
       e.printStackTrace();
 

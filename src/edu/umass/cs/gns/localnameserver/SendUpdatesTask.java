@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -19,9 +20,7 @@ import java.util.*;
 
 public class SendUpdatesTask extends TimerTask {
 
-//	int MAX_TIMEOUTS = 3;
   String name;
-  //NameRecordKey nameRecordKey;
   UpdateAddressPacket updateAddressPacket;
   InetAddress senderAddress;
   int senderPort;
@@ -50,16 +49,6 @@ public class SendUpdatesTask extends TimerTask {
 
       timeoutCount++;
 
-//      if (numRestarts > StartLocalNameServer.MAX_RESTARTS) { // just some defensive code.
-//        handleFailure();
-//        throw  new MyException();
-//      }
-
-//    long t0 = System.currentTimeMillis();
-//    if (timeoutCount == 0 && t0 - requestRecvdTime > 10) {
-//      GNS.getLogger().severe(" Long delay in Startup " + (t0 - requestRecvdTime));
-//    }
-
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
       }
@@ -69,7 +58,7 @@ public class SendUpdatesTask extends TimerTask {
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("UpdateInfo not found. Update complete or actives invalidated. Cancel task.");
         }
-        throw new MyException();
+        throw new CancelExecutorTaskException();
       }
 
       if (System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
@@ -78,7 +67,7 @@ public class SendUpdatesTask extends TimerTask {
           GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + updateRequestID + " name = " + name);
         }
         handleFailure();
-        throw new MyException();
+        throw new CancelExecutorTaskException();
       }
 
       int nameServerID;
@@ -100,11 +89,6 @@ public class SendUpdatesTask extends TimerTask {
             LocalNameServer.removeUpdateInfo(updateRequestID);
           }
 
-//          if (numRestarts == StartLocalNameServer.MAX_RESTARTS) {
-//            if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Max restarts reached. sending error " + numRestarts + " name " + name);
-//            handleFailure();
-//            throw  new MyException();
-//          }
           // add to pending requests task
           try {
             PendingTasks.addToPendingRequests(name,
@@ -118,18 +102,14 @@ public class SendUpdatesTask extends TimerTask {
           } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
           }
-          // request new actives
-          //      RequestActivesTask.requestActives(name);
+
           if (StartLocalNameServer.debugMode) {
             GNS.getLogger().fine("Created a request actives task. " + numRestarts);
           }
           // cancel this task
-          throw new MyException();
+          throw new CancelExecutorTaskException();
         }
 
-//        if (activesQueried.size() == 0) {
-//          nameServerID = getDefaultCoordinatorReplica(name, LocalNameServer.getCacheEntry(name).getActiveNameServers());
-//        }
 //        else
         if (StartLocalNameServer.loadDependentRedirection) {
           nameServerID = LocalNameServer.getBestActiveNameServerFromCache(name, activesQueried);
@@ -148,9 +128,6 @@ public class SendUpdatesTask extends TimerTask {
           GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + activesQueried);
         }
         return;
-//        activesQueried.clear();
-//        nameServerID = LocalNameServer.getClosestActiveNameServerFromCache(name, activesQueried);
-//        if (nameServerID == -1) return;
       }
 
       activesQueried.add(nameServerID);
@@ -165,9 +142,6 @@ public class SendUpdatesTask extends TimerTask {
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
         }
-      } else {
-//        UpdateInfo updateInfo = LocalNameServer.getUpdateInfo(updateRequestID);
-//        if (updateInfo!=null) updateInfo.setSendTime(System.currentTimeMillis());
       }
       // create the packet that we'll send to the primary
       UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
@@ -177,12 +151,11 @@ public class SendUpdatesTask extends TimerTask {
               updateAddressPacket.getOldValue(),
               updateAddressPacket.getOperation(),
               LocalNameServer.nodeID, nameServerID, updateAddressPacket.getTTL());
-//      pkt.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(name));
 
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
       }
-//      GNS.getLogger().severe("\tLatencyMeasureSend\t" + updateRequestID + "\t" + nameServerID + "\t" + ConfigFileInfo.getPingLatency(nameServerID) + "\t" + System.currentTimeMillis()+ "\t");
+
       // and send it off
       try {
         JSONObject jsonToSend = pkt.toJSONObject();
@@ -191,16 +164,7 @@ public class SendUpdatesTask extends TimerTask {
         if (updateInfo != null) {
           updateInfo.setNameserverID(nameServerID);
         }
-//        if (StartLocalNameServer.emulatePingLatencies) {
-//          LNSListener.sendPacketWithDelay(jsonToSend,nameServerID);
-//        } else {
-        // for small packets use UDP
 
-
-//        }
-        // remote status
-//        StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, pkt.getType(),
-//                name, updateAddressPacket.getUpdateValue().toString());
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("LNSListenerUpdate: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID
                   + " Time:" + System.currentTimeMillis()
@@ -209,82 +173,16 @@ public class SendUpdatesTask extends TimerTask {
       } catch (JSONException e) {
         e.printStackTrace();
       }
-//      catch (IOException e) {
-//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//      }
-//      if (StartLocalNameServer.experimentMode) throw new MyException();
+
     } catch (Exception e) {
-      if (e.getClass().equals(MyException.class)) {
+      if (e.getClass().equals(CancelExecutorTaskException.class)) {
         throw new RuntimeException();
       }
       GNS.getLogger().severe("Exception Exception Exception ... ");
       e.printStackTrace();
     }
   }
-//    if (activesQueried.size() == 3) return;
-//
-//    int nameServerID = activesQueried.size();
-////    if (activesQueried.size() == 0) (nameServerID);
-//    activesQueried.add(nameServerID);
-//
-//    if (timeoutCount == 0) {
-//      String hostAddress = null;
-//      if (senderAddress != null) hostAddress = senderAddress.getHostAddress();
-//      updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-//              requestRecvdTime, hostAddress, senderPort);
-//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
-//    }
-//    // create the packet that we'll send to the primary
-//    UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
-//            updateAddressPacket.getRequestID(), updateRequestID, -1,
-//            name, updateAddressPacket.getRecordKey(),
-//            updateAddressPacket.getUpdateValue(),
-//            updateAddressPacket.getOldValue(),
-//            updateAddressPacket.getOperation(),
-//            LocalNameServer.nodeID, nameServerID);
-////      pkt.setPrimaryNameServers(LocalNameServer.getPrimaryNameServers(name));
-//
-//    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
-//
-//    // and send it off
-//    try {
-//      JSONObject jsonToSend = pkt.toJSONObject();
-//      LNSListener.tcpTransport.sendToID(nameServerID, jsonToSend);
-//      // remote status
-////      StatusClient.sendTrafficStatus(LocalNameServer.nodeID, nameServerID, GNS.PortType.LNS_TCP_PORT, pkt.getType(),
-////              name,updateAddressPacket.getUpdateValue().toString());
-//      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("LNSListenerUpdate: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID
-//              + " Time:" + System.currentTimeMillis()
-//              + " --> " + jsonToSend.toString());
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//    } catch (IOException e) {
-//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//    }
 
-//    long t1 = System.currentTimeMillis();
-//    if (t1 - t0 > 10) {
-//      GNS.getLogger().severe(" long delay in SendUpdatesTask " + (t1 - t0));
-//    }
-  private int getDefaultCoordinatorReplica(String name, Set<Integer> activeReplicas) {
-
-
-//    int nodeProduct = 1;
-//    for (int x: nodeIDs) {
-//      nodeProduct =  nodeProduct*x;
-//    }
-
-    Random r = new Random(name.hashCode());
-    ArrayList<Integer> x1 = new ArrayList<Integer>(activeReplicas);
-    Collections.sort(x1);
-    Collections.shuffle(x1, r);
-    return x1.get(0);
-//    for (int x: x1) {
-//      if (PaxosManager.isNodeUp(x)) return x;
-//    }
-//    return  x1.get(0);
-//    return  x1.get(count);
-  }
 
   private void handleFailure() {
     ConfirmUpdateLNSPacket confirmPkt = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket);
@@ -300,7 +198,6 @@ public class SendUpdatesTask extends TimerTask {
         GNS.getStatLogger().fine(UpdateInfo.getUpdateFailedStats(name, activesQueried,
                 LocalNameServer.nodeID, updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts, coordinatorID));
       }
-//        if (StartLocalNameServer.debugMode) GNS.getLogger().fine("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + updateAddressPacket);
     } else {
       GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.nodeID, updateAddressPacket.getRequestID(), coordinatorID));
 

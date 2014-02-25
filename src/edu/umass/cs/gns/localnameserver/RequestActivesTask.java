@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
@@ -41,13 +42,13 @@ public class RequestActivesTask extends TimerTask
       synchronized (PendingTasks.allTasks) {
         if (PendingTasks.allTasks.containsKey(name) == false) {
           PendingTasks.requestActivesOngoing.remove(name);
-          throw  new MyException();
+          throw  new CancelExecutorTaskException();
         }
 
         if (LocalNameServer.isValidNameserverInCache(name)) {
           PendingTasks.requestActivesOngoing.remove(name);
           PendingTasks.runPendingRequestsForName(name);
-          throw  new MyException();
+          throw  new CancelExecutorTaskException();
         }
       }
 
@@ -67,7 +68,7 @@ public class RequestActivesTask extends TimerTask
           synchronized (PendingTasks.allTasks) {
             PendingTasks.requestActivesOngoing.remove(name);
           }
-          throw  new MyException();
+          throw  new CancelExecutorTaskException();
         }
       }
       // next primary to be queried
@@ -77,7 +78,7 @@ public class RequestActivesTask extends TimerTask
         primaryID = LocalNameServer.getClosestPrimaryNameServer(name, nameServersQueried);
         if (primaryID == -1) {
           GNS.getLogger().severe("No primary NS available. name = " + name);
-          throw  new MyException();
+          throw  new CancelExecutorTaskException();
         }
 
       }
@@ -85,7 +86,7 @@ public class RequestActivesTask extends TimerTask
       // send packet to primary
       sendActivesRequestPacketToPrimary(name, primaryID);
     } catch (Exception e) {
-      if (e.getClass().equals(MyException.class)) {
+      if (e.getClass().equals(CancelExecutorTaskException.class)) {
         throw new RuntimeException();
       }
       GNS.getLogger().severe("Unexpected exception in main active request loop: " + e);
@@ -94,16 +95,6 @@ public class RequestActivesTask extends TimerTask
   }
 
 
-//  /**
-//   * Create task to request actives from primaries.
-//   * @param name
-//   */
-//  public static void requestActives(String name) {
-//
-//    RequestActivesTask task = new RequestActivesTask(name);
-//    LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout,
-// TimeUnit.MILLISECONDS);
-//  }
 
   /**
    * send request to primary to send actives
@@ -117,12 +108,8 @@ public class RequestActivesTask extends TimerTask
     try
     {
       JSONObject sendJson = packet.toJSONObject();
-//      if (sendJson) {
       LocalNameServer.sendToNS(sendJson,primaryID);
 
-//      }
-//      LNSListener.tcpTransport.sendToID(primaryID,sendJson);
-//			LNSListener.udpTransport.sendPacket(packet.toJSONObject(), primaryID, GNS.PortType.UPDATE_PORT);
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID
               + "\tname\t" + name);
     } catch (JSONException e)
@@ -130,9 +117,6 @@ public class RequestActivesTask extends TimerTask
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("JSON Exception in sending packet. name\t" + name);
       e.printStackTrace();
     }
-//    catch (IOException e) {
-//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//    }
 
   }
 

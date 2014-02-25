@@ -13,10 +13,8 @@ import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,7 +50,6 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * A list of Active Nameservers for the name.
    */
   private Set<Integer> activeNameServer;
-  private Set<Integer> activeNameServers;
 
   /**
    * Constructs a cache entry using data from a DNS packet
@@ -83,26 +80,64 @@ public class CacheEntry implements Comparable<CacheEntry> {
     this.activeNameServer = packet.getActiveNameServers();
   }
 
+
+  public synchronized void updateCacheEntry(DNSPacket packet) {
+
+    activeNameServer = packet.getActiveNameServers();
+    if (valuesMap == null) {
+      valuesMap = new ValuesMap();
+    }
+    for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
+      String fieldKey = entry.getKey();
+      ResultValue fieldValue = entry.getValue();
+      valuesMap.put(fieldKey, fieldValue);
+      // set the timestamp for that field
+      this.timestampAddress.put(fieldKey, System.currentTimeMillis());
+    }
+    timeToLiveInSeconds = packet.getTTL();
+  }
+
+  public synchronized void updateCacheEntry(RequestActivesPacket packet) {
+    activeNameServer = packet.getActiveNameServers();
+  }
+
+  public synchronized void updateCacheEntry(ConfirmUpdateLNSPacket packet) {
+    // invalidate the valuesMap part of the cache... best we can do since the packet has no info
+    // it will be refreshed on next read
+    valuesMap = null;
+  }
+
+
+  /**
+   * @return the name
+   */
+  public synchronized String getName() {
+    return name;
+  }
+
+  /**
+   * @return the primaryNameServer
+   */
+  public synchronized HashSet<Integer> getPrimaryNameServer() {
+    return primaryNameServer;
+  }
+
+  /**
+   * @return the time to live of the cache entry
+   */
+  public synchronized int getTTL() {
+    return timeToLiveInSeconds;
+  }
+
+  public synchronized Set<Integer> getActiveNameServers() {
+    return activeNameServer;
+  }
+
   public synchronized ResultValue getValue(NameRecordKey key) {
     if (isValidValue(key.getName())) {
       return valuesMap.get(key.getName());
     }
     return null;
-  }
-
-  /**
-   * Allow special case handling of TTLs for certain keys
-   * @param key 
-   */
-  private int getKeyTTL(String key) {
-    return timeToLiveInSeconds;
-    // maybe later... makes me nervous
-//    if (GNS.isInternalField(key)) {
-//      // Fields used by the GNS are cached forever (or at least until they get updated).
-//      return -1;
-//    } else {
-//      return timeToLiveInSeconds;
-//    }
   }
 
   /**
@@ -133,30 +168,19 @@ public class CacheEntry implements Comparable<CacheEntry> {
     }
   }
 
-  public synchronized void updateCacheEntry(DNSPacket packet) {
-
-    activeNameServer = packet.getActiveNameServers();
-    if (valuesMap == null) {
-      valuesMap = new ValuesMap();
-    }
-    for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
-      String fieldKey = entry.getKey();
-      ResultValue fieldValue = entry.getValue();
-      valuesMap.put(fieldKey, fieldValue);
-      // set the timestamp for that field
-      this.timestampAddress.put(fieldKey, System.currentTimeMillis());
-    }
-    timeToLiveInSeconds = packet.getTTL();
-  }
-
-  public synchronized void updateCacheEntry(RequestActivesPacket packet) {
-    activeNameServer = packet.getActiveNameServers();
-  }
-
-  public synchronized void updateCacheEntry(ConfirmUpdateLNSPacket packet) {
-    // invalidate the valuesMap part of the cache... best we can do since the packet has no info
-    // it will be refreshed on next read
-    valuesMap = null;
+  /**
+   * Allow special case handling of TTLs for certain keys
+   * @param key
+   */
+  private int getKeyTTL(String key) {
+    return timeToLiveInSeconds;
+    // maybe later... makes me nervous
+//    if (GNS.isInternalField(key)) {
+//      // Fields used by the GNS are cached forever (or at least until they get updated).
+//      return -1;
+//    } else {
+//      return timeToLiveInSeconds;
+//    }
   }
 
   /**
@@ -180,30 +204,6 @@ public class CacheEntry implements Comparable<CacheEntry> {
     activeNameServer = null;
   }
 
-  /**
-   * @return the name
-   */
-  public synchronized String getName() {
-    return name;
-  }
-
-  /**
-   * @return the primaryNameServer
-   */
-  public synchronized HashSet<Integer> getPrimaryNameServer() {
-    return primaryNameServer;
-  }
-
-  /**
-   * @return the time to live of the cache entry
-   */
-  public synchronized int getTTL() {
-    return timeToLiveInSeconds;
-  }
-
-  public synchronized Set<Integer> getActiveNameServers() {
-    return activeNameServer;
-  }
 
   /**
    * Attempts to come up with a pretty string representation of the cache entry.
@@ -265,23 +265,10 @@ public class CacheEntry implements Comparable<CacheEntry> {
     return result.toString();
   }
 
-
-  /**
-   * Returns a 8-character string.
-   *
-   * @return
-   */
-  public static String getRandomString() {
-    Random rand = new Random();
-    int intRange = 1000000;
-    Integer x = intRange + rand.nextInt(1000000);
-    return x.toString();
-  }
-
   /**
    * So we can sort them when we display them.
    * 
-   * @param t
+   * @param d CacheEntry
    * @return 
    */
   @Override
@@ -289,7 +276,4 @@ public class CacheEntry implements Comparable<CacheEntry> {
     return (this.getName()).compareTo(d.getName());
   }
 
-//  public void setActiveNameServers(Set<Integer> activeNameServers) {
-//    this.activeNameServers = activeNameServers;
-//  }
 }

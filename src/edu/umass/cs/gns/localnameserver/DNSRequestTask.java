@@ -1,13 +1,14 @@
 package edu.umass.cs.gns.localnameserver;
 
 /**
- * Created with IntelliJ IDEA.
  * User: abhigyan
  * Date: 8/30/13
  * Time: 3:33 PM
  * To change this template use File | Settings | File Templates.
  */
+
 import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -20,13 +21,13 @@ import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.HashFunction;
-import java.net.InetAddress;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.logging.Level;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class DNSRequestTask extends TimerTask {
 
@@ -76,7 +77,7 @@ public class DNSRequestTask extends TimerTask {
           returnErrorResponseToSender(incomingPacket, NSResponseCode.ERROR);
           logFailureMessage();
         }
-        throw new MyException();
+        throw new CancelExecutorTaskException();
       }
       if (transmissionCount > 1) {
         if (queryId != 0 && LocalNameServer.containsDNSRequestInfo(queryId) == false) {
@@ -84,7 +85,7 @@ public class DNSRequestTask extends TimerTask {
             GNS.getLogger().fine("Query ID not found. Response recvd or invalid "
                     + "active error. Query ID\t" + queryId + "\t" + transmissionCount + "\t" + nameserversQueried + "\t");
           }
-          throw new MyException();
+          throw new CancelExecutorTaskException();
           //    	return;
         }
       }
@@ -106,7 +107,7 @@ public class DNSRequestTask extends TimerTask {
             loggingForAddressInCache();
             sendCachedReplyToUser(value, cacheEntry.getTTL());
 
-            throw new MyException();
+            throw new CancelExecutorTaskException();
 //                  return;
           }
         }
@@ -132,7 +133,7 @@ public class DNSRequestTask extends TimerTask {
           PendingTasks.addToPendingRequests(incomingPacket.getGuid(),
                   queryTaskObject, StartLocalNameServer.queryTimeout,
                   getErrorPacket(incomingPacket), getFailureLogMessage(lookupNumber, incomingPacket.getKey(), incomingPacket.getGuid(), transmissionCount, receivedTime, numRestarts + 1, -1, nameserversQueried), 0);
-          throw new MyException();
+          throw new CancelExecutorTaskException();
         }
 
         if (StartLocalNameServer.loadDependentRedirection) {
@@ -151,7 +152,6 @@ public class DNSRequestTask extends TimerTask {
         //Save query information at the local name server to match response
         if (transmissionCount == 1) {
           //Get a unique id for this query
-          // TODO: change back to time query received
           queryId = LocalNameServer.addDNSRequestInfo(incomingPacket.getGuid(), incomingPacket.getKey(), ns,
                   receivedTime, "x", lookupNumber, incomingPacket, numRestarts);
         } else {
@@ -184,7 +184,7 @@ public class DNSRequestTask extends TimerTask {
         LocalNameServer.sendToNS(json, ns);
       }
     } catch (Exception e) {
-      if (e.getClass().equals(MyException.class)) {
+      if (e.getClass().equals(CancelExecutorTaskException.class)) {
         throw new RuntimeException();
       }
       GNS.getLogger().severe("Exception Exception Exception .... ");
@@ -239,9 +239,9 @@ public class DNSRequestTask extends TimerTask {
       GNS.getLogger().fine("Valid Address in cache... "
               + "Time:" + LocalNameServer.timeSinceAddressCached(name, nameRecordKey) + "ms");
     }
-    LocalNameServer.incrementLookupResponse(name);
-    DNSRequestInfo tempQueryInfo = new DNSRequestInfo(-1, incomingPacket.getGuid(), incomingPacket.getKey(), receivedTime, -1, "NA", lookupNumber,
-            incomingPacket, numRestarts);
+
+    DNSRequestInfo tempQueryInfo = new DNSRequestInfo(-1, incomingPacket.getGuid(), incomingPacket.getKey(),
+            receivedTime, -1, "NA", lookupNumber, incomingPacket, numRestarts);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();
     GNS.getStatLogger().info("Success-LookupRequest\t" + stats);
@@ -282,10 +282,7 @@ public class DNSRequestTask extends TimerTask {
     if (nameserversQueried == null || nameserversQueried.isEmpty()) {
       failureCode = "Failed-LookupNoPrimaryResponse";
     }
-//    String queryStatus = "NA";
-//    if (query != null && query.getQueryStatus() != null) {
-//      queryStatus = query.getQueryStatus();
-//    }
+
     return (failureCode + "\t"
             + lookupNumber + "\t"
             + recordKey + "\t"
@@ -296,32 +293,4 @@ public class DNSRequestTask extends TimerTask {
             + coordinatorID + "\t"
             + nameserversQueried);
   }
-}
-
-class SendQueryWithDelayLNS extends TimerTask {
-
-  JSONObject json;
-  int destID;
-
-  public SendQueryWithDelayLNS(JSONObject json, int destID) {
-    this.json = json;
-    this.destID = destID;
-  }
-
-  @Override
-  public void run() {
-    try {
-      LNSListener.udpTransport.sendPacket(json, destID, GNS.PortType.LNS_UDP_PORT);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-//    try {
-//      LNSListener.tcpTransport.sendToID(destID,json);
-//    } catch (IOException e) {
-//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//    }
-  }
-}
-
-class MyException extends Exception {
 }

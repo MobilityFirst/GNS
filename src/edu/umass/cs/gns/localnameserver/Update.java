@@ -23,7 +23,6 @@ public class Update {
           throws JSONException, UnknownHostException {
     synchronized (lock) {
       updateCount++;
-//      GNS.getLogger().severe("\tUpdateCount\t" + updateCount);
     }
 
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(json);
@@ -35,7 +34,6 @@ public class Update {
     } else {
 
       LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
-//      if (StartLocalNameServer.experimentMode) return;
       InetAddress senderAddress = null;
       int senderPort = -1;
       senderPort = Transport.getReturnPort(json);
@@ -48,10 +46,8 @@ public class Update {
     }
   }
 
-//  static int numUpdateResponse = 0;
   public static void handlePacketConfirmUpdateLNS(JSONObject json) throws UnknownHostException, JSONException {
     ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(json);
-//    numUpdateResponse++;
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("ConfirmUpdateLNS recvd: ResponseNum: " + " --> " + confirmPkt.toString());

@@ -5,18 +5,18 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-//import edu.umass.cs.gns.packet.QueryResultValue;
+
 public class Lookup {
 
   static int lookupCount = 0;
@@ -118,11 +118,11 @@ public class Lookup {
       PendingTasks.addToPendingRequests(query.getqName(), queryTaskObject, StartLocalNameServer.queryTimeout,
               DNSRequestTask.getErrorPacket(query.getIncomingPacket()),
               failureMsg, delay);
-
       GNS.getLogger().fine(" Scheduled lookup task.");
 
     } else { // other types of errors, forward error response to client
-      GNS.getLogger().info("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId() + ": " + dnsPacket.toJSONObject());
+      GNS.getLogger().info("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId() +
+              ": " + dnsPacket.toJSONObject());
       // set the correct id for the client
       dnsPacket.getHeader().setId(query.getIncomingPacket().getQueryId());
       Intercessor.handleIncomingPackets(dnsPacket.toJSONObject());

@@ -2,7 +2,6 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.DNSPacket;
-import java.net.InetAddress;
 
 /**************************************************************
  * This class represents a data structure to store information
@@ -12,8 +11,7 @@ import java.net.InetAddress;
  *************************************************************/
 public class DNSRequestInfo {
 
-  public final static String CONTACT_PRIMARY = "contact-primary";
-  public final static String INVALID_ACTIVE_NS = "invalid-active-ns";
+
   /** Unique ID for each query **/
   private int id;
   /** Host/domain name in the query **/
@@ -22,7 +20,7 @@ public class DNSRequestInfo {
   private long lookupRecvdTime;
   /** System time when a response for this query was received at a local name server.**/
   private long recvTime = -1;
-  // ABHIGYAN: Parameters for user sending the DNS query.
+
   private DNSPacket incomingPacket;
   public int numRestarts;
 
@@ -79,32 +77,23 @@ public class DNSRequestInfo {
   public synchronized String getLookupStats() {
     //Response Information: Time(ms) ActiveNS Ping(ms) Name NumTransmission LNS Timestamp(systime)
     StringBuilder str = new StringBuilder();
-//		str.append(lookupNumber + "\t");
     str.append("0\t");
-//		str.append(qRecordKey + "\t");
-    str.append("x\t");
+    str.append(incomingPacket.getKey().getName() + "\t");
     str.append(getqName());
     str.append("\t" + (getRecvTime() - lookupRecvdTime));
     str.append("\t0");
-//		str.append("\t" + ConfigFileInfo.getPingLatency(ConfigFileInfo.getClosestNameServer()));
     str.append("\t0");
-//		str.append("\t" + ConfigFileInfo.getClosestNameServer());
     str.append("\t0");
-//		str.append("\t" + numTransmission);
     str.append("\t0");
-    str.append("\t0");// + nameserverID);
+    str.append("\t" + nameserverID);
     str.append("\t" + LocalNameServer.nodeID);
     str.append("\t" + lookupRecvdTime);
-//		str.append("\t" + queryStatus);
     str.append("\t" + numRestarts);
-//		str.append("\t" + nameServerQueried);
     str.append("\t[]");
-//		str.append("\t" + nameServerQueriedPingLatency);
     str.append("\t[]");
 
     //save response time
     String stats = str.toString();
-    //		responseTime.add( stats );
     return stats;
   }
 
@@ -121,7 +110,7 @@ public class DNSRequestInfo {
 
   public synchronized long getResponseTime() {
     if (this.getRecvTime() == -1) {
-      return -1L;    //numTransmission > 1 ||
+      return -1L;
     }
     return (this.getRecvTime() - this.lookupRecvdTime);
   }
