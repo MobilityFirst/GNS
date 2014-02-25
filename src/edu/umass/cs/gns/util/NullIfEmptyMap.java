@@ -3,6 +3,7 @@ package edu.umass.cs.gns.util;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
 @author V. Arun
@@ -46,11 +47,11 @@ public class NullIfEmptyMap<KeyType,ValueType> {
 		return map.containsValue(value);
 	}
 	public synchronized Set<KeyType> keySet() {
-		if(map==null) return null;
+		if(map==null) return new TreeSet<KeyType>();
 		return map.keySet();
 	}
 	public synchronized Collection<ValueType> values() {
-		if(map==null) return null;
+		if(map==null) return new TreeSet<ValueType>();
 		return map.values();
 	}
 	public synchronized HashMap<KeyType,ValueType> getMap() {

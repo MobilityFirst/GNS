@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nio;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
 @author V. Arun
@@ -17,14 +18,28 @@ public class SampleNodeConfig implements NodeConfig {
 		defaultPort = dp;
 	}
 
+	/* The caller can either specify the number of nodes, nNodes,
+	 * or specify a set of integer node IDs explicitly. In the former
+	 * case, nNodes from 0 to nNodes-1 will the node IDs. In the 
+	 * latter case, the explicit set of node IDs will be used.
+	 */
 	public void localSetup(int nNodes) {
 		for(int i=0; i<nNodes; i++) {
-      try {
-        this.add(i, InetAddress.getByName("localhost"));
-      } catch (UnknownHostException e) {
-        e.printStackTrace();
-      }
-    }
+			try {
+				this.add(i, InetAddress.getByName("localhost"));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	public void localSetup(Set<Integer> members) {
+		for(int i : members) {
+			try {
+				this.add(i, InetAddress.getByName("localhost"));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	@Override
