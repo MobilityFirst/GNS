@@ -2,6 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import org.json.JSONException;
@@ -14,7 +15,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-  public class FailureDetection extends Thread{
+public class FailureDetection{
 	
 	/**
 	 * Frequency of pinging a node.
@@ -108,9 +109,9 @@ import java.util.concurrent.locks.ReentrantLock;
       {
         FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject(), this);
         long initialDelay = timeoutIntervalMillis + r.nextInt(pingIntervalMillis);
-//        if (StartNameServer.experimentMode) {
-//          initialDelay += 2 * NameServer.initialExpDelayMillis; // wait for all name servers to start up.
-//        }
+        if (StartNameServer.experimentMode) {
+          initialDelay += 2 * NameServer.initialExpDelayMillis; // wait for all name servers to start up.
+        }
         nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
         nodeStatus.put(monitoredNodeID, true);
         executorService.scheduleAtFixedRate(failureDetectionTask, initialDelay,

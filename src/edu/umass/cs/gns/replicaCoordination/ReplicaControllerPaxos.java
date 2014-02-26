@@ -1,8 +1,11 @@
 package edu.umass.cs.gns.replicaCoordination;
 
-import org.json.JSONObject;
-
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.packet.BasicPacket;
+import edu.umass.cs.gns.paxos.PaxosManager;
+import org.json.JSONObject;
 
 /**
 @author V. Arun
@@ -14,6 +17,18 @@ import edu.umass.cs.gns.packet.BasicPacket;
  * version of PaxosManager anyway that is customized for replica controllers.
  */
 public class ReplicaControllerPaxos implements ReplicaControllerCoordinator {
+
+
+  PaxosManager paxosManager=null;
+  NodeConfig nodeConfig=null;
+  GNSNIOTransport nioTransport=null;
+  ReplicaController replicaController=null;
+
+  public ReplicaControllerPaxos(GNSNIOTransport niot, NodeConfig nc, ReplicaController replicaController) {
+    this.nioTransport = niot;
+    this.nodeConfig = nc;
+    this.replicaController = replicaController;
+  }
 
 	@Override
 	public int handleRequest(JSONObject request) {
