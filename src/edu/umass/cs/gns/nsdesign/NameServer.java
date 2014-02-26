@@ -12,7 +12,7 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 2/26/14.
  */
-public class NameServerInterface {
+public class NameServer {
 
   ActiveReplica activeReplica;
 
@@ -22,7 +22,7 @@ public class NameServerInterface {
 
   // executor service
 
-  public NameServerInterface() {
+  public NameServer() {
 
     // create nio server
 

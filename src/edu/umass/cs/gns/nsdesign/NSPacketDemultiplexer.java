@@ -14,9 +14,9 @@ import java.util.ArrayList;
  */
 public class NSPacketDemultiplexer extends PacketDemultiplexer{
 
-  NameServerInterface nameServerInterface;
+  NameServer nameServerInterface;
 
-  public NSPacketDemultiplexer(NameServerInterface nameServerInterface) {
+  public NSPacketDemultiplexer(NameServer nameServerInterface) {
     this.nameServerInterface = nameServerInterface;
   }
 
