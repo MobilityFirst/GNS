@@ -388,7 +388,8 @@ class HandleFailureDetectionPacketTask extends TimerTask{
     @Override
     public void run() {
       try {
-
+         if (failureDetection ==  null) return; // this case can happen if a packet arrives before we have
+        // initialized failure detection
         if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT) {
 
             FailureDetectionPacket fdResponse = fdPacket.getFailureDetectionResponse();

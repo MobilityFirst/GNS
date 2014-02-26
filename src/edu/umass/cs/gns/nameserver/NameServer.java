@@ -165,7 +165,7 @@ public class NameServer {
       try {
         Thread.sleep(initialExpDelayMillis); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
       } catch (InterruptedException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        e.printStackTrace();  
       }
     }
 
@@ -460,7 +460,7 @@ public class NameServer {
     try {
       NameServer.tcpTransport.sendToIDActual(recipientId, json);
     } catch (IOException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();  
     }
   }
 }
