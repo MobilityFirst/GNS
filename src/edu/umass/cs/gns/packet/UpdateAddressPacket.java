@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;

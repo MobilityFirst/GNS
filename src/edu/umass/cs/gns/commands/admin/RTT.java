@@ -9,8 +9,8 @@ package edu.umass.cs.gns.commands.admin;
 
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
-import edu.umass.cs.gns.clientprotocol.PerformanceTests;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.PerformanceTests;
 import org.json.JSONException;
 import org.json.JSONObject;
 

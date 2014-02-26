@@ -7,8 +7,8 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.client.FieldAccess;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.clientsupport.FieldAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;

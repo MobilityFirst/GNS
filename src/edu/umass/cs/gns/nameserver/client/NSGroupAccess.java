@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nameserver.client;
 
-import edu.umass.cs.gns.client.*;
+import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.NameRecord;

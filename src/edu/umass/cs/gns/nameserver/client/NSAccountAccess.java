@@ -5,9 +5,9 @@
  */
 package edu.umass.cs.gns.nameserver.client;
 
-import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.AccountInfo;
-import edu.umass.cs.gns.client.GuidInfo;
+import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.AccountInfo;
+import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;

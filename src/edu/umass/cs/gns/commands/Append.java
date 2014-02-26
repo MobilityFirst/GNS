@@ -7,8 +7,8 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.client.UpdateOperation;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.UpdateOperation;
 
 /**
  *

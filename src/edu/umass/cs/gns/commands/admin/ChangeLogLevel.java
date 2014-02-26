@@ -7,8 +7,8 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
-import edu.umass.cs.gns.client.Admintercessor;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.clientsupport.Admintercessor;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;

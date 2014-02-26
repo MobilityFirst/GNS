@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.nameserver.client;
 
-import edu.umass.cs.gns.client.GuidInfo;
-import edu.umass.cs.gns.client.MetaDataTypeName;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;

@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.commands.account;
 
-import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.GuidInfo;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.GuidInfo;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import org.json.JSONException;

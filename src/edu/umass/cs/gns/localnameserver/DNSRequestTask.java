@@ -12,7 +12,7 @@ package edu.umass.cs.gns.localnameserver;
  * To change this template use File | Settings | File Templates.
  */
 
-import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;

@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.commands;
 
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 
 /**
  * Command that adds an empty field to the GNS for the given GUID.

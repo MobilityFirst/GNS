@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;

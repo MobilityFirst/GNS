@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.client.Intercessor;
+import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;

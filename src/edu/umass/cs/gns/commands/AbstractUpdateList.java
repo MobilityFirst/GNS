@@ -7,13 +7,9 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.FieldAccess;
-import edu.umass.cs.gns.client.GuidInfo;
-import edu.umass.cs.gns.client.MetaDataTypeName;
-import edu.umass.cs.gns.client.UpdateOperation;
-import edu.umass.cs.gns.clientprotocol.AccessSupport;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.FieldAccess;
+import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

@@ -5,11 +5,11 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.FieldAccess;
-import edu.umass.cs.gns.client.FieldMetaData;
-import edu.umass.cs.gns.client.GroupAccess;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.FieldAccess;
+import edu.umass.cs.gns.clientsupport.FieldMetaData;
+import edu.umass.cs.gns.clientsupport.GroupAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

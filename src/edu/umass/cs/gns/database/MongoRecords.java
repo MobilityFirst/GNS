@@ -7,10 +7,10 @@ package edu.umass.cs.gns.database;
 
 import com.mongodb.*;
 import com.mongodb.util.JSON;
-import edu.umass.cs.gns.clientprotocol.Defs;
+import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.clientprotocol.Protocol;
+import edu.umass.cs.gns.clientsupport.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;

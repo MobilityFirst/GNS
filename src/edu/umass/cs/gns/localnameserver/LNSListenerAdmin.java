@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.client.Admintercessor;
+import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.packet.admin.DumpRequestPacket;

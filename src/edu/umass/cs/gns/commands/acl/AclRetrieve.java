@@ -7,14 +7,14 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
-import edu.umass.cs.gns.client.AccountAccess;
-import edu.umass.cs.gns.client.FieldMetaData;
-import edu.umass.cs.gns.client.GuidInfo;
-import edu.umass.cs.gns.client.MetaDataTypeName;
-import edu.umass.cs.gns.clientprotocol.AccessSupport;
+import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.FieldMetaData;
+import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientprotocol.Defs.*;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;

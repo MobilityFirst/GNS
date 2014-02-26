@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.clientprotocol.Defs;
+import edu.umass.cs.gns.clientsupport.Defs;
 
 /**
  * This class describes the error codes for Name Server packets that

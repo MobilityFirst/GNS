@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.client.UpdateOperation;
+import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
