@@ -10,16 +10,13 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class Lookup {
@@ -31,11 +28,6 @@ public class Lookup {
           throws JSONException, UnknownHostException {
     synchronized (lock) {
       lookupCount++;
-    }
-    InetAddress address = null;
-    int port = Transport.getReturnPort(json);
-    if (port > 0 && Transport.getReturnAddress(json) != null) {
-      address = InetAddress.getByName(Transport.getReturnAddress(json));
     }
     LocalNameServer.incrementLookupRequest(dnsPacket.getGuid()); // important: used to count votes for names.
     DNSRequestTask queryTaskObject = new DNSRequestTask(

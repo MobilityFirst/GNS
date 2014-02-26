@@ -30,20 +30,16 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
   private String name;
   private BasicPacket packet;
-  private InetAddress senderAddress;
-  private int senderPort;
   private int updateRequestID;
   private HashSet<Integer> primariesQueried;
   private int timeoutCount = -1;
   private long requestRecvdTime;
 
   public SendAddRemoveUpsertTask(BasicPacket packet, String name,
-                                 InetAddress senderAddress, int senderPort, long requestRecvdTime,
+                                 long requestRecvdTime,
                                  HashSet<Integer> primariesQueried) {
     this.name = name;
     this.packet = packet;
-    this.senderAddress = senderAddress;
-    this.senderPort = senderPort;
     this.primariesQueried = primariesQueried;
     this.requestRecvdTime = requestRecvdTime;
   }
@@ -98,10 +94,6 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         getPrimariesQueried().add(nameServerID);
       }
       if (getTimeoutCount() == 0) {
-        String hostAddress = null;
-        if (getSenderAddress() != null) {
-          hostAddress = getSenderAddress().getHostAddress();
-        }
         updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, null);
         GNS.getLogger().info("Update Info Added: Id = " + getUpdateRequestID());
         updatePacketWithRequestID(getPacket(), getUpdateRequestID());
@@ -138,13 +130,13 @@ public class SendAddRemoveUpsertTask extends TimerTask {
     ConfirmUpdateLNSPacket confirm;
     switch (packet.getType()) {
       case ADD_RECORD_LNS:
-        confirm = new ConfirmUpdateLNSPacket(false, (AddRecordPacket) packet);
+        confirm = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, (AddRecordPacket) packet);
         return confirm;
       case REMOVE_RECORD_LNS:
-        confirm = new ConfirmUpdateLNSPacket(false, (RemoveRecordPacket) packet);
+        confirm = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, (RemoveRecordPacket) packet);
         return confirm;
       case UPDATE_ADDRESS_LNS:
-        confirm = ConfirmUpdateLNSPacket.createFailPacket((UpdateAddressPacket) packet);
+        confirm = ConfirmUpdateLNSPacket.createFailPacket((UpdateAddressPacket) packet, NSResponseCode.ERROR);
         return confirm;
     }
     return null;
@@ -182,20 +174,6 @@ public class SendAddRemoveUpsertTask extends TimerTask {
    */
   public BasicPacket getPacket() {
     return packet;
-  }
-
-  /**
-   * @return the senderAddress
-   */
-  public InetAddress getSenderAddress() {
-    return senderAddress;
-  }
-
-  /**
-   * @return the senderPort
-   */
-  public int getSenderPort() {
-    return senderPort;
   }
 
   /**

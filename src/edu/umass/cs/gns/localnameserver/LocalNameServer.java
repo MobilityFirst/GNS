@@ -120,15 +120,6 @@ public class LocalNameServer {
 
     cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(StartLocalNameServer.cacheSize).build();
     nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
-    //read the workload from a file and create a immutable Set
-
-
-
-    // redirection according to beehive replication
-//    if (StartLocalNameServer.beehiveReplication) {
-//      beehiveDHTRouting = new BeehiveDHTRouting();
-//    }
-
   }
 
   /**

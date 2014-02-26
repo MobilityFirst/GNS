@@ -24,9 +24,6 @@ import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.HashFunction;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -34,6 +31,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Handle client requests - ADD/REMOVE/LOOKUP/UPDATE + REQUESTACTIVES
@@ -51,7 +50,6 @@ public class ClientRequestWorker extends TimerTask {
     this.incomingJSON = json;
   }
 
-  /**************Start of public methods in ClientRequestWorker**********************************/
   public static void handleIncomingPacket(JSONObject json, Packet.PacketType packetType) {
     NameServer.executorService.submit(new ClientRequestWorker(json, packetType));
   }
@@ -166,7 +164,7 @@ public class ClientRequestWorker extends TimerTask {
         if (updatePacket.getNameServerId() == NameServer.nodeID) { //if this node proposed this update
           // send error message to client
           ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
-                  updatePacket.getRequestID(), updatePacket.getLNSRequestID(), false);
+                  updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
           NameServer.returnToSender(failPacket.toJSONObject(), updatePacket.getLocalNameServerId());
 
           if (StartNameServer.debugMode) {
@@ -190,7 +188,7 @@ public class ClientRequestWorker extends TimerTask {
 //        nameRecord.incrementUpdateRequest();
       if (msgLNS) {
         ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
-                updatePacket.getRequestID(), updatePacket.getLNSRequestID(), true);
+                updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
 
         NameServer.returnToSender(confirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
         if (StartNameServer.debugMode) {
@@ -274,7 +272,7 @@ public class ClientRequestWorker extends TimerTask {
       if (status != null) {
         // send failure
         ConfirmUpdateLNSPacket confirmPkt = status.getConfirmUpdateLNSPacket();
-        confirmPkt.convertToFailPacket();
+        confirmPkt.convertToFailPacket(NSResponseCode.ERROR);
         NameServer.returnToSender(confirmPkt.toJSONObject(), status.getLocalNameServerID());
         GNS.getLogger().info("Record already exists ... sent error to client" + e.getMessage());
       } else {
@@ -285,8 +283,6 @@ public class ClientRequestWorker extends TimerTask {
 
   }
 
-  /**************End of public methods in ClientRequestWorker**********************************/
-  /**************Start  of private methods in ClientRequestWorker**********************************/
   private void handleAddRecordLNSPacket() throws JSONException, IOException {
 
     AddRecordPacket addRecordPacket;
@@ -300,7 +296,7 @@ public class ClientRequestWorker extends TimerTask {
 
     GNS.getLogger().info(" ADD FROM LNS (ns " + NameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
 
-    ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(true, addRecordPacket);
+    ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
 
     Set<Integer> primaryNameServers = HashFunction.getPrimaryReplicas(addRecordPacket.getName());
     UpdateStatus status = new UpdateStatus(addRecordPacket.getName(), addRecordPacket.getLocalNameServerID(), primaryNameServers, confirmPacket);
@@ -323,20 +319,35 @@ public class ClientRequestWorker extends TimerTask {
 
   }
 
-  private void handleUpdateAddressLNS() throws JSONException, IOException {
-    long t0 = System.currentTimeMillis();
-
+  private void handleUpdateAddressLNS() throws JSONException, IOException,
+          InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
+    long startTime = System.currentTimeMillis();
     UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
 
+    // First we do signature and ACL checks
+    String guid = updatePacket.getName();
+    String field = updatePacket.getRecordKey().getName();
+    String writer = updatePacket.getAccessor();
+    String signature = updatePacket.getSignature();
+    String message = updatePacket.getMessage();
+    NSResponseCode errorCode = NSResponseCode.NO_ERROR;
+    if (writer != null) { // writer will be null for internal system reads
+      errorCode = signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST);
+    }
+    // return an error packet if one of the checks doesn't pass
+    if (errorCode.isAnError()) {
+      ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, errorCode);
+      NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
+      return;
+    }
 
+    // all checks pass, do the update
     if (updatePacket.getOperation().isUpsert()) {
       handleUpsert(updatePacket);
-
     } else {
       handleUpdate(updatePacket);
     }
-    long t1 = System.currentTimeMillis();
-    NameServer.loadMonitor.add((int) (t1 - t0));
+    NameServer.loadMonitor.add((int) (System.currentTimeMillis() - startTime));
   }
 
   /**
@@ -355,7 +366,7 @@ public class ClientRequestWorker extends TimerTask {
       try {
         if (nameRecordPrimary.isMarkedForRemoval()) {
           ConfirmUpdateLNSPacket failConfirmPacket =
-                  ConfirmUpdateLNSPacket.createFailPacket(updatePacket);
+                  ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
           NameServer.tcpTransport.sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine(" UPSERT-FAILED because name record deleted already\t" + updatePacket.getName()
@@ -395,7 +406,7 @@ public class ClientRequestWorker extends TimerTask {
       } else {
         // send error to LNS
         ConfirmUpdateLNSPacket failConfirmPacket =
-                ConfirmUpdateLNSPacket.createFailPacket(updatePacket);
+                ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
 
         String msg = " UPSERT-FAILED\t" + updatePacket.getName()
@@ -427,7 +438,7 @@ public class ClientRequestWorker extends TimerTask {
    * @throws IOException
    */
   private void handleUpdate(UpdateAddressPacket updatePacket) throws JSONException, IOException {
-    long t0 = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
     // HANDLE NON-UPSERT CASE
 
     if (StartNameServer.debugMode) {
@@ -458,7 +469,7 @@ public class ClientRequestWorker extends TimerTask {
 
       }
       if (sendFailure) {
-        ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket);
+        ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         // inform LNS of failed request
         NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
 
@@ -486,7 +497,7 @@ public class ClientRequestWorker extends TimerTask {
     }
 
     if (paxosID == null) {
-      ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket);
+      ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
       // inform LNS of failed request
       NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
 
@@ -495,10 +506,11 @@ public class ClientRequestWorker extends TimerTask {
                 + "\t" + NameServer.nodeID + "\t" + updatePacket.getLocalNameServerId());// + "\t" + updatePacket.getSequenceNumber());
       }
     }
-    long t1 = System.currentTimeMillis();
 
-    if (t1 - t0 > 10) {
-      GNS.getLogger().warning("Long latency HandleUpdate " + (t1 - t0));
+    long endTime = System.currentTimeMillis();
+
+    if (endTime - startTime > 10) {
+      GNS.getLogger().warning("Long latency HandleUpdate " + (endTime - startTime));
     }
 
   }
@@ -520,50 +532,52 @@ public class ClientRequestWorker extends TimerTask {
       GNS.getLogger().info("NS recvd DNS lookup request: " + incomingJSON);
     }
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
+    // Does this ever really happen?
     if (!dnsPacket.isQuery()) {
       GNS.getLogger().severe("DNS Packet isn't a query... ignoring!");
+      return;
+    }
+    // First we do signature and ACL checks
+    String guid = dnsPacket.getGuid();
+    String field = dnsPacket.getKey().getName();
+    String reader = dnsPacket.getAccessor();
+    String signature = dnsPacket.getSignature();
+    String message = dnsPacket.getMessage();
+    // Check the signature and access
+    NSResponseCode errorCode = NSResponseCode.NO_ERROR;
+    if (reader != null) { // reader will be null for internal system reads
+      errorCode = signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST);
+    }
+    // return an error packet if one of the checks doesn't pass
+    if (errorCode.isAnError()) {
+      dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+      dnsPacket.getHeader().setResponseCode(errorCode);
+      GNS.getLogger().info("Sending to " + dnsPacket.getLnsId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+      NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getLnsId());
     } else {
-      String guid = dnsPacket.getGuid();
-      String field = dnsPacket.getKey().getName();
-      String reader = dnsPacket.getAccessor();
-      String signature = dnsPacket.getSignature();
-      String message = dnsPacket.getMessage();
-      // Check the signature and access
-      NSResponseCode errorCode = NSResponseCode.NO_ERROR;
-      if (reader != null) { // reader will be null for internal system reads
-        errorCode = signatureAndACLCheck(guid, field, reader, signature, message);
-      }
-      // return an error packet if one of the checks doesn't pass
-      if (errorCode.isAnError()) {
-        dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
-        dnsPacket.getHeader().setResponseCode(errorCode);
-        GNS.getLogger().info("Sending to " + dnsPacket.getLnsId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
-        NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getLnsId());
-      } else {
-        // All signature and ACL checks passed see if we can find the field to return;
-        NameRecord nameRecord = null;
-        // Try to look up the value in the database
-        try {
-          if (Defs.ALLFIELDS.equals(dnsPacket.getKey().getName())) {
-            // need everything so just grab all the fields
-            nameRecord = NameServer.getNameRecord(guid);
-          } else {
-            // otherwise grab a few system fields we need plus the field the user wanted
-            nameRecord = NameServer.getNameRecordMultiField(guid, getDNSPacketFields(), field);
-          }
-        } catch (RecordNotFoundException e) {
-          GNS.getLogger().info("Record not found for name: " + guid + " Key = " + field);
+      // All signature and ACL checks passed see if we can find the field to return;
+      NameRecord nameRecord = null;
+      // Try to look up the value in the database
+      try {
+        if (Defs.ALLFIELDS.equals(dnsPacket.getKey().getName())) {
+          // need everything so just grab all the fields
+          nameRecord = NameServer.getNameRecord(guid);
+        } else {
+          // otherwise grab a few system fields we need plus the field the user wanted
+          nameRecord = NameServer.getNameRecordMultiField(guid, getDNSPacketFields(), field);
         }
-        // Now we either have a name record with stuff it in or a null one
-        // Time to send something back to the client
-        dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord);
-        NameServer.returnToSender(dnsPacket.toJSONObject(), dnsPacket.getLnsId());
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().info("Record not found for name: " + guid + " Key = " + field);
       }
+      // Now we either have a name record with stuff it in or a null one
+      // Time to send something back to the client
+      dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord);
+      NameServer.returnToSender(dnsPacket.toJSONObject(), dnsPacket.getLnsId());
     }
   }
 
   // returns null if everything is ok
-  private NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message)
+  private NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid)) == null) {
@@ -578,7 +592,7 @@ public class ClientRequestWorker extends TimerTask {
     }
     // unsigned case, must be world readable
     if (signature == null) {
-      if (!NSAccessSupport.fieldReadableByEveryone(guidInfo.getGuid(), field)) {
+      if (!NSAccessSupport.fieldAccessibleByEveryone(access, guidInfo.getGuid(), field)) {
         GNS.getLogger().info("######Name " + guid + " key = " + field + ": ACCESS_ERROR");
         return NSResponseCode.ACCESS_ERROR;
       }
@@ -587,7 +601,7 @@ public class ClientRequestWorker extends TimerTask {
       if (!NSAccessSupport.verifySignature(readerGuidInfo, signature, message)) {
         GNS.getLogger().info("######Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         return NSResponseCode.SIGNATURE_ERROR;
-      } else if (!NSAccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, field, readerGuidInfo)) {
+      } else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, readerGuidInfo)) {
         GNS.getLogger().info("######Name " + guid + " key = " + field + ": ACCESS_ERROR");
         return NSResponseCode.ACCESS_ERROR;
       }

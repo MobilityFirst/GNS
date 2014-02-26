@@ -60,8 +60,8 @@ public class Packet {
     //
     REMOVE_REPLICATION_RECORD(10), // NOT USED
     REPLICATE_RECORD(11), // NOT USED
-    UPDATE_ADDRESS_LNS(12),
-    UPDATE_ADDRESS_NS(13),
+    UPDATE_ADDRESS_LNS(12), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
+    UPDATE_ADDRESS_NS(13), // this is for packets that are sent between NSs
     CONFIRM_UPDATE_LNS(14),
     CONFIRM_UPDATE_NS(15),
     REQUEST_ACTIVES(18),

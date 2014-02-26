@@ -113,6 +113,7 @@ public class Defs {
   public final static String UPDATEERROR = "+UPDATEERROR+";
   public final static String SELECTERROR = "+SELECTERROR+";
   public final static String GENERICEERROR = "+GENERICEERROR+";
+  //
   public final static String ALLFIELDS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
   public final static String EMPTY = "+EMPTY+";

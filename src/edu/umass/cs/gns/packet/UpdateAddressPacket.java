@@ -103,10 +103,9 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    * @param newValue Updated address
    * @param oldValue Old address to be replaced (if applicable, can be null)
    */
-  
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.
-   * Used by client support to send a packet to the LNS.
+   * Used by client support to create a packet to send to the LNS.
    * 
    * @param type
    * @param requestID
@@ -129,6 +128,8 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
   }
 
   /**
+   *  Constructs a new UpdateAddressPacket with the given parameters.
+   *  Used by the LNS to create a packet to send to the NS.
    * 
    * @param type
    * @param requestID
@@ -152,6 +153,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
           ResultValue oldValue,
           UpdateOperation operation,
           int localNameServerId, int nameServerId, int ttl,
+          // signature info
           String writer, String signature, String message) {
     // include the signature info
     super(writer, signature, message);
@@ -170,11 +172,10 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
   }
 
   /**
-   * ***********************************************************
    * Constructs a new UpdateAddressPacket from a JSONObject.
    *
    * @param json JSONObject that represents UpdatedAddressPacket.
-   * @throws JSONException **********************************************************
+   * @throws JSONException
    */
   public UpdateAddressPacket(JSONObject json) throws JSONException {
     // include the signature info
@@ -207,6 +208,12 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     return json;
   }
 
+  /**
+   * Add the fields of this UpdatedAddressPacket to an existing JSONObject.
+   * 
+   * @param json
+   * @throws JSONException 
+   */
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
     super.addToJSONObject(json); // include the signature info
@@ -226,6 +233,10 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     json.put(TTL, getTTL());
   }
 
+  /**
+   * Return the id used the client support for bookkeeping.
+   * @return 
+   */
   public int getRequestID() {
     return requestID;
   }
@@ -308,10 +319,13 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     this.operation = operation;
   }
 
+  //
+  // TEST CODE
+  //
   public static void main(String[] args) {
     ResultValue x = new ResultValue();
     x.add("12345678");
-//  	
+    //
     UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_NS, 32234234, 123, "12322323",
             NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
             GNS.DEFAULT_TTL_SECONDS, null, null, null);

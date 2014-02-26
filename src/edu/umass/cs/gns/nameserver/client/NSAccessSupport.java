@@ -124,7 +124,7 @@ public class NSAccessSupport {
         return false;
       }
     } catch (FieldNotFoundException e) {
-      GNS.getLogger().warning("Guid " + accesserGuid + " problem retrieving group: " + e);
+       // This is actuallty a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("Guid " + accesserGuid + " problem retrieving group: " + e);
@@ -139,28 +139,15 @@ public class NSAccessSupport {
     return result;
   }
 
-  public static boolean fieldReadableByEveryone(String guid, String field) {
+  public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field) {
     try {
-      return NSFieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, field).contains(EVERYONE)
-              || NSFieldMetaData.lookup(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
+      return NSFieldMetaData.lookup(access, guid, field).contains(EVERYONE)
+              || NSFieldMetaData.lookup(access, guid, ALLFIELDS).contains(EVERYONE);
     } catch (FieldNotFoundException e) {
-      GNS.getLogger().warning("User " + guid + " access problem for" + field + "'s " + "READ_WHITELIST" + " field: " + e);
+      // This is actuallty a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().warning("User " + guid + " access problem for " + field + "'s " + "READ_WHITELIST" + " field: " + e);
-      return false;
-    }
-  }
-
-  public static boolean fieldWriteableByEveryone(String guid, String field) {
-    try {
-      return NSFieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, field).contains(EVERYONE)
-              || NSFieldMetaData.lookup(MetaDataTypeName.WRITE_WHITELIST, guid, ALLFIELDS).contains(EVERYONE);
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().warning("User " + guid + " access problem for" + field + "'s " + "WRITE_WHITELIST" + " field: " + e);
-      return false;
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().warning("User " + guid + " access problem for " + field + "'s " + "WRITE_WHITELIST" + " field: " + e);
+      GNS.getLogger().warning("User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
       return false;
     }
   }

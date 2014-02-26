@@ -13,6 +13,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
@@ -55,15 +56,14 @@ public class SendUpdatesTask extends TimerTask {
       }
 
       if (timeoutCount > 0 && LocalNameServer.getUpdateInfo(updateRequestID) == null) {
-
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("UpdateInfo not found. Update complete or actives invalidated. Cancel task.");
         }
         throw new CancelExecutorTaskException();
       }
 
+      // Too much time elaspsed, send failed msg to user and log error
       if (System.currentTimeMillis() - requestRecvdTime > StartLocalNameServer.maxQueryWaitTime) {
-        // send failed msg to user and log error
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + updateRequestID + " name = " + name);
         }
@@ -96,12 +96,12 @@ public class SendUpdatesTask extends TimerTask {
                     new SendUpdatesTask(updateAddressPacket, requestRecvdTime,
                     new HashSet<Integer>(), numRestarts + 1),
                     StartLocalNameServer.queryTimeout,
-                    ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(),
+                    ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR).toJSONObject(),
                     UpdateInfo.getUpdateFailedStats(name, new HashSet<Integer>(), LocalNameServer.nodeID,
                     updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts + 1, -1), 0);
 
           } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            GNS.getLogger().severe("Problem creating a JSON object: " + e);
           }
 
           if (StartLocalNameServer.debugMode) {
@@ -143,14 +143,17 @@ public class SendUpdatesTask extends TimerTask {
       }
       // create the packet that we'll send to the primary
       UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
-              updateAddressPacket.getRequestID(), updateRequestID,
+              updateAddressPacket.getRequestID(), 
+              updateRequestID, // the id use by the LNS (that would be us here)
               name, updateAddressPacket.getRecordKey(),
               updateAddressPacket.getUpdateValue(),
               updateAddressPacket.getOldValue(),
               updateAddressPacket.getOperation(),
               LocalNameServer.nodeID, nameServerID, updateAddressPacket.getTTL(),
-              //ignore signature info
-              null, null, null);
+              //signature info
+              updateAddressPacket.getAccessor(),
+              updateAddressPacket.getSignature(), 
+              updateAddressPacket.getMessage());
 
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
@@ -160,11 +163,11 @@ public class SendUpdatesTask extends TimerTask {
       try {
         JSONObject jsonToSend = pkt.toJSONObject();
         LocalNameServer.sendToNS(jsonToSend, nameServerID);
+        // keep track of which NS we sent it to
         UpdateInfo updateInfo = LocalNameServer.getUpdateInfo(nameServerID);
         if (updateInfo != null) {
           updateInfo.setNameserverID(nameServerID);
         }
-
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("LNSListenerUpdate: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID
                   + " Time:" + System.currentTimeMillis()
@@ -185,7 +188,8 @@ public class SendUpdatesTask extends TimerTask {
 
 
   private void handleFailure() {
-    ConfirmUpdateLNSPacket confirmPkt = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket);
+    // create a failure packet and send it back to client support
+    ConfirmUpdateLNSPacket confirmPkt = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
     try {
       Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
     } catch (JSONException e) {

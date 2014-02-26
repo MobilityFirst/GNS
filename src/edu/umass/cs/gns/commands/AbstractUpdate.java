@@ -46,27 +46,6 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-//    GuidInfo guidInfo, writerGuidInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return BADRESPONSE + " " + BADGUID + " " + guid;
-//    }
-//    if (writer.equals(guid)) {
-//      writerGuidInfo = guidInfo;
-//    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
-//      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
-//    }
-//    if (signature == null) {
-//      if (!AccessSupport.fieldWriteableByEveryone(guidInfo.getGuid(), field)) {
-//        return BADRESPONSE + " " + ACCESSDENIED;
-//      }
-//    } else if (signature != null) {
-//      if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
-//        return BADRESPONSE + " " + BADSIGNATURE;
-//      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
-//        return BADRESPONSE + " " + ACCESSDENIED;
-//      }
-//    }
-    // all checks passed, update the value
     if (FieldAccess.update(guid, field,
             new ResultValue(Arrays.asList(value)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,

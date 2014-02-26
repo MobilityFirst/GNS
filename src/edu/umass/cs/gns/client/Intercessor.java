@@ -264,7 +264,7 @@ public class Intercessor {
   }
 
   /**
-   * Used internally to send updated requests for lists. Ignores signatures and access.
+   * Used internally by the system to send update requests for lists. Ignores signatures and access.
    * 
    * @param name
    * @param key
@@ -279,7 +279,7 @@ public class Intercessor {
   }
   
   /**
-   * Used internally to send updated requests. Ignores signatures and access.
+   * Used internally by the system to send update requests. Ignores signatures and access.
    * 
    * @param name
    * @param key

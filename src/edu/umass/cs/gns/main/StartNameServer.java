@@ -157,6 +157,8 @@ public class StartNameServer {
   public static boolean noLoadDB = false;
 
   // this option should always be false. we use only for running some experiments.
+  // Note: based on the above comment I'm going to ignore any code that uses this variable when I make changes.
+  // Don't be surprised if things break when this is set to true. - Westy
   public static boolean eventualConsistency = false;
 
   public static boolean emulatePingLatencies = false;

@@ -3,15 +3,13 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class PendingTasks {
 

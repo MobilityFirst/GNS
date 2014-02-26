@@ -8,7 +8,7 @@ import org.json.JSONObject;
 /**
  * This class implements the packet that confirms update, add and remove transactions. The packet is transmitted from an
  * active name server to a local name server that had originally sent the address update. Also used to send
- * confirmation back to theoriginal client ({@link Intercessor} is one example).
+ * confirmation back to the original client ({@link Intercessor} is one example).
  *
  * Name server sets the <code>requestID</code> and <code>LNSRequestID</code> field based on the original request,
  * which could be update, add and remove. If this fields are not set correctly, request will not be routed back to
@@ -19,8 +19,7 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
 
   private final static String REQUESTID = "reqid";
   private final static String LNSREQUESTID = "lnreqsid";
-  private final static String SUCCESS = "success";
-
+  private final static String RESPONSECODE = "code";
   /**
    * Unique identifier used by the entity making the initial request to confirm
    */
@@ -29,12 +28,10 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
    * The ID the LNS uses to for bookkeeping
    */
   private int LNSRequestID;
-
   /**
    * indicates success or failure of operation
    */
-  private boolean success;
-
+  private NSResponseCode responseCode;
 
   /**
    * Constructs a new ConfirmUpdatePacket with the given parameters.
@@ -42,11 +39,11 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
    * @param type Type of this packet
    * @param requestID Id of local or name server
    */
-  public ConfirmUpdateLNSPacket(PacketType type, int requestID, int LNSRequestID, boolean success) {
+  public ConfirmUpdateLNSPacket(PacketType type, int requestID, int LNSRequestID, NSResponseCode responseCode) {
     this.type = type;
-    this.success = success;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
+    this.responseCode = responseCode;
   }
 
   /**
@@ -56,9 +53,10 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
    * @param updatePacket
    * @return
    */
-  public static ConfirmUpdateLNSPacket createFailPacket(UpdateAddressPacket updatePacket) {
+  public static ConfirmUpdateLNSPacket createFailPacket(UpdateAddressPacket updatePacket, NSResponseCode code) {
+    assert code != NSResponseCode.NO_ERROR; // that would be stupid
     return new ConfirmUpdateLNSPacket(PacketType.CONFIRM_UPDATE_LNS,
-            updatePacket.getRequestID(), updatePacket.getLNSRequestID(), false);
+            updatePacket.getRequestID(), updatePacket.getLNSRequestID(), code);
   }
 
   /**
@@ -71,20 +69,21 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
   public static ConfirmUpdateLNSPacket createSuccessPacket(UpdateAddressPacket updatePacket) {
     return new ConfirmUpdateLNSPacket(PacketType.CONFIRM_UPDATE_LNS,
             updatePacket.getRequestID(), updatePacket.getLNSRequestID(), //updatePacket.getName(), updatePacket.getRecordKey(),
-            true);
+            NSResponseCode.NO_ERROR);
   }
 
-  public void convertToFailPacket() {
-    this.success = false;
+  public void convertToFailPacket(NSResponseCode code) {
+    assert code != NSResponseCode.NO_ERROR; // that would be stupid
+    this.responseCode = code;
   }
 
-  public ConfirmUpdateLNSPacket(boolean success, AddRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_ADD_LNS, packet.getRequestID(),packet.getLNSRequestID(), success);
+  public ConfirmUpdateLNSPacket(NSResponseCode code, AddRecordPacket packet) {
+    this(Packet.PacketType.CONFIRM_ADD_LNS, packet.getRequestID(), packet.getLNSRequestID(), code);
 
   }
 
-  public ConfirmUpdateLNSPacket(boolean success, RemoveRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_REMOVE_LNS,  packet.getRequestID(), packet.getLNSRequestID(),success);
+  public ConfirmUpdateLNSPacket(NSResponseCode code, RemoveRecordPacket packet) {
+    this(Packet.PacketType.CONFIRM_REMOVE_LNS, packet.getRequestID(), packet.getLNSRequestID(), code);
   }
 
   /**
@@ -97,7 +96,8 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
     this.type = Packet.getPacketType(json);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
-    this.success = json.getBoolean(SUCCESS);
+    // stored as an int in the JSON to keep the byte counting folks happy
+    this.responseCode = NSResponseCode.getResponseCode(json.getInt(RESPONSECODE));;
   }
 
   /**
@@ -110,13 +110,13 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(REQUESTID, getRequestID());
-    json.put(LNSREQUESTID, getLNSRequestID());
-    json.put(SUCCESS, isSuccess());
+    json.put(REQUESTID, requestID);
+    json.put(LNSREQUESTID, LNSRequestID);
+    // store it as an int in the JSON to keep the byte counting folks happy
+    json.put(RESPONSECODE, responseCode.getCodeValue());
 
     return json;
   }
-
 
   public int getRequestID() {
     return requestID;
@@ -126,8 +126,11 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
     return LNSRequestID;
   }
 
-  public boolean isSuccess() {
-    return success;
+  public NSResponseCode getResponseCode() {
+    return responseCode;
   }
-
+  
+  public boolean isSuccess() {
+    return responseCode == NSResponseCode.NO_ERROR;
+  }
 }

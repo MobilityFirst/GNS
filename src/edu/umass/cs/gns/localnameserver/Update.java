@@ -9,9 +9,8 @@ import edu.umass.cs.gns.client.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.Transport;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -35,16 +34,9 @@ public class Update {
     GNS.getLogger().fine(" UPDATE PACKET RECVD. Operation: " + updateAddressPacket.getOperation());
 
     if (updateAddressPacket.getOperation().isUpsert()) {
-      AddRemove.handleUpsert(updateAddressPacket, InetAddress.getByName(Transport.getReturnAddress(json)), Transport.getReturnPort(json));
+      AddRemove.handleUpsert(updateAddressPacket);
     } else {
-
       LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
-      InetAddress senderAddress = null;
-      int senderPort = -1;
-      senderPort = Transport.getReturnPort(json);
-      if (Transport.getReturnAddress(json) != null) {
-        senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
-      }
       SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
               System.currentTimeMillis(), new HashSet<Integer>(), 0);
       LocalNameServer.executorService.scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
@@ -61,23 +53,29 @@ public class Update {
     if (confirmPkt.isSuccess()) {
       UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(confirmPkt.getLNSRequestID());
       if (updateInfo == null) {
-        if (StartLocalNameServer.debugMode) {
-          GNS.getLogger().fine("Update confirm return info not found.");
-        }
+        GNS.getLogger().warning("Update confirm return info not found.");
       } else {
         // update the cache BEFORE we send back the confirmation
         LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
         // send the confirmation back to the originator of the update
-        if (StartLocalNameServer.debugMode) {
-          GNS.getLogger().info("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
-                  +  " : " + json.toString());
-        }
+        GNS.getLogger().info("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
+                + " : " + json.toString());
         Intercessor.handleIncomingPackets(json);
         // instrumentation?
         if (LocalNameServer.r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
           GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt, updateInfo.getName()));
         }
       }
+    } else if (confirmPkt.getResponseCode().isAccessOrSignatureError()) {
+      // if it's an access or signature failure just return it to the client support
+      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(confirmPkt.getLNSRequestID());
+      if (updateInfo == null) {
+        GNS.getLogger().warning("Update confirm return info not found, punting.");
+      } else {
+        Intercessor.handleIncomingPackets(json);
+      }
+      // If any of the code under here was documented better I suppose I might 
+      // try to figure out if there was more to do above.
     } else {
       // if update failed, invalidate active name servers
 
@@ -106,7 +104,7 @@ public class Update {
         delay = 0;
       }
       PendingTasks.addToPendingRequests(updateInfo.getName(), task, StartLocalNameServer.queryTimeout,
-              ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket).toJSONObject(), failedStats, delay);
+              ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR).toJSONObject(), failedStats, delay);
 
 
 

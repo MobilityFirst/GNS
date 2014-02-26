@@ -33,15 +33,9 @@ public class AddRemove {
   static void handlePacketAddRecordLNS(JSONObject json) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
-    InetAddress senderAddress = null;
-    int senderPort = -1;
-    senderPort = Transport.getReturnPort(json);
-    if (Transport.getReturnAddress(json) != null) {
-      senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
-    }
 
     SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
-            senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
+            System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     addRecordPacket.getLocalNameServerID();
     GNS.getLogger().fine(" Add  Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
@@ -54,10 +48,10 @@ public class AddRemove {
    * @param port
    * @throws JSONException
    */
-  static void handleUpsert(UpdateAddressPacket updateAddressPacket, InetAddress address, int port) throws JSONException {
+  static void handleUpsert(UpdateAddressPacket updateAddressPacket) throws JSONException {
 
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
-            address, port, System.currentTimeMillis(), new HashSet<Integer>());
+            System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (StartLocalNameServer.debugMode) {
@@ -85,7 +79,7 @@ public class AddRemove {
       senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
     }
     SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
-            senderAddress, senderPort, System.currentTimeMillis(), new HashSet<Integer>());
+            System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (StartLocalNameServer.debugMode) {
