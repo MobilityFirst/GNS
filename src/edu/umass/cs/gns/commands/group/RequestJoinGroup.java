@@ -7,13 +7,13 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -61,7 +61,7 @@ public class RequestJoinGroup extends GnsCommand {
     if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else {
-      if (GroupAccess.requestJoinGroup(guid, member)) {
+      if (!GroupAccess.requestJoinGroup(guid, member).isAnError()) {
         return OKRESPONSE;
       } else {
         return BADRESPONSE + " " + GENERICEERROR;

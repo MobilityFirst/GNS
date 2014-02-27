@@ -7,12 +7,12 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;
@@ -65,7 +65,7 @@ public class AddToGroup extends GnsCommand {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
-    } else if (GroupAccess.addToGroup(guid, member)) {
+    } else if (!GroupAccess.addToGroup(guid, member).isAnError()) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;

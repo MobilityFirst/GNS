@@ -245,7 +245,7 @@ public class AccountAccess {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
-      if (Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid)))) {
+      if (!Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -253,7 +253,7 @@ public class AccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (Intercessor.sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
+        if (!Intercessor.sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
           return Defs.OKRESPONSE;
@@ -280,7 +280,7 @@ public class AccountAccess {
   public static String removeAccount(AccountInfo accountInfo) {
 
     // do this first add to make sure this account exists
-    if (Intercessor.sendRemoveRecord(accountInfo.getPrimaryName())) {
+    if (!Intercessor.sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
       Intercessor.sendRemoveRecord(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
@@ -322,7 +322,7 @@ public class AccountAccess {
       accountInfo.noteUpdate();
 
       // First try to create the HRN to insure that that name does not already exist
-      if (Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid)))) {
+      if (!Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // update the account info
         if (updateAccountInfo(accountInfo)) {
           // add the GUID_INFO link
@@ -350,7 +350,7 @@ public class AccountAccess {
    */
   public static String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
     
-    if (Intercessor.sendRemoveRecord(guid.getGuid())) {
+    if (!Intercessor.sendRemoveRecord(guid.getGuid()).isAnError()) {
       // remove reverse record
       Intercessor.sendRemoveRecord(guid.getName());
       accountInfo.removeGuid(guid.getGuid());
@@ -380,7 +380,7 @@ public class AccountAccess {
     accountInfo.noteUpdate();
 
     // insure that that name does not already exist
-    if (Intercessor.sendAddRecord(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
+    if (!Intercessor.sendAddRecord(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       if (updateAccountInfo(accountInfo)) {
         return Defs.OKRESPONSE;
       } else {
@@ -469,8 +469,8 @@ public class AccountAccess {
     try {
       ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
-      if (Intercessor.sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-              newvalue, null, UpdateOperation.REPLACE_ALL)) {
+      if (!Intercessor.sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+              newvalue, null, UpdateOperation.REPLACE_ALL).isAnError()) {
         return true;
       }
     } catch (JSONException e) {
@@ -483,8 +483,8 @@ public class AccountAccess {
     try {
       ResultValue newvalue;
       newvalue = guidInfo.toDBFormat();
-      if (Intercessor.sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
-              newvalue, null, UpdateOperation.REPLACE_ALL)) {
+      if (!Intercessor.sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
+              newvalue, null, UpdateOperation.REPLACE_ALL).isAnError()) {
         return true;
       }
     } catch (JSONException e) {

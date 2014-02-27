@@ -65,9 +65,9 @@ public class PerformanceTests {
       // so the GNS has time to "settle".
       for (int i = 0; i < numFields; i++) {
         String field = "RTT-" + Util.randomString(7);
-        if (FieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))), 
+        if (!FieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))), 
                 // ignore signature for now
-                null, null, null)) {
+                null, null, null).isAnError()) {
           fields.add(field);
         } else {
           result.append("Unable to create " + field);

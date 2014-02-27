@@ -65,7 +65,7 @@ public class RemoveFromGroup extends GnsCommand {
       return BADRESPONSE + " " + BADSIGNATURE;
     } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
       return BADRESPONSE + " " + ACCESSDENIED;
-    } else if (GroupAccess.removeFromGroup(guid, member)) {
+    } else if (!GroupAccess.removeFromGroup(guid, member).isAnError()) {
       return OKRESPONSE;
     } else {
       return BADRESPONSE + " " + GENERICEERROR;

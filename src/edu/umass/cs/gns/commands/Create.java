@@ -7,13 +7,10 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.clientsupport.AccountAccess;
-import edu.umass.cs.gns.clientsupport.FieldAccess;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -54,11 +51,12 @@ public class Create extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    if (FieldAccess.create(guid, field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
-            writer, signature, message)) {
+    NSResponseCode responseCode;
+    if (!(responseCode = FieldAccess.create(guid, field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
+            writer, signature, message)).isAnError()) {
       return OKRESPONSE;
     } else {
-      return BADRESPONSE + " " + DUPLICATEFIELD;
+      return BADRESPONSE + " " + responseCode.getProtocolCode();
     }
   }
 

@@ -7,14 +7,14 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -68,7 +68,7 @@ public class RemoveMembersFromGroup extends GnsCommand {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
-        if (GroupAccess.removeFromGroup(guid, new ResultValue(members))) {
+        if (!GroupAccess.removeFromGroup(guid, new ResultValue(members)).isAnError()) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + GENERICEERROR;

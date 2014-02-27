@@ -68,7 +68,7 @@ public class AddMembersToGroup extends GnsCommand {
       return BADRESPONSE + " " + ACCESSDENIED;
     } else {
       try {
-        if (GroupAccess.addToGroup(guid, new ResultValue(members))) {
+        if (!GroupAccess.addToGroup(guid, new ResultValue(members)).isAnError()) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + GENERICEERROR;

@@ -9,6 +9,7 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -89,13 +90,13 @@ public class FieldAccess {
     }
   }
 
-  public static boolean update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation,
+  public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation,
           String writer, String signature, String message) {
 
     return Intercessor.sendUpdateRecord(guid, key, value, oldValue, operation, writer, signature, message);
   }
 
-  public static boolean create(String guid, String key, ResultValue value, String writer, String signature, String message) {
+  public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message) {
 
     return Intercessor.sendUpdateRecord(guid, key, value, null, UpdateOperation.CREATE, writer, signature, message);
   }

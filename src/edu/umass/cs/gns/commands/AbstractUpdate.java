@@ -11,6 +11,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -42,14 +43,15 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    if (FieldAccess.update(guid, field,
+     NSResponseCode responseCode;
+    if (!(responseCode = FieldAccess.update(guid, field,
             new ResultValue(Arrays.asList(value)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             getUpdateOperation(), 
-            writer, signature, message)) {
+            writer, signature, message)).isAnError()) {
       return OKRESPONSE;
     } else {
-      return BADRESPONSE + " " + BADFIELD + " " + field;
+      return BADRESPONSE + " " + responseCode.getProtocolCode();
     }
   }
 }

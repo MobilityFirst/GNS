@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.AddRecordPacket;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.Packet;
 import static edu.umass.cs.gns.packet.Packet.getPacketType;
 import edu.umass.cs.gns.packet.RemoveRecordPacket;
@@ -60,7 +61,7 @@ public class Intercessor {
   private static Random randomID;
   /* Used for sending updates and getting confirmations */
   public static Transport transport;
-  private static ConcurrentMap<Integer, Boolean> updateSuccessResult;
+  private static ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
   // Instrumentation
   private static ConcurrentMap<Integer, Date> queryTimeStamp;
 
@@ -80,7 +81,7 @@ public class Intercessor {
     randomID = new Random();
     queryResult = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
     queryTimeStamp = new ConcurrentHashMap<Integer, Date>(10, 0.75f, 3);
-    updateSuccessResult = new ConcurrentHashMap<Integer, Boolean>(10, 0.75f, 3);
+    updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
 
   /**
@@ -101,7 +102,7 @@ public class Intercessor {
           //Packet is a response and does not have a response error
           GNS.getLogger().info((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");// + packet.getName() + "/" + packet.getRecordKey().getName());
           synchronized (monitorUpdate) {
-            updateSuccessResult.put(id, packet.isSuccess());
+            updateSuccessResult.put(id, packet.getResponseCode());
             monitorUpdate.notifyAll();
           }
           break;
@@ -195,7 +196,7 @@ public class Intercessor {
    * @param value
    * @return 
    */
-  public static boolean sendAddRecord(String name, String key, ResultValue value) {
+  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending add: " + name + "->" + value);
     AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
@@ -207,13 +208,13 @@ public class Intercessor {
       e.printStackTrace();
     }
     waitForUpdateConfirmationPacket(id);
-    boolean result = updateSuccessResult.get(id);
+    NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     GNS.getLogger().finer("Add (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
     return result;
   }
 
-  public static boolean sendRemoveRecord(String name) {
+  public static NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending remove: " + name);
     RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
@@ -224,7 +225,7 @@ public class Intercessor {
       e.printStackTrace();
     }
     waitForUpdateConfirmationPacket(id);
-    boolean result = updateSuccessResult.get(id);
+    NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     GNS.getLogger().finer("Remove (" + id + "): " + name + "\n  Returning: " + result);
     return result;
@@ -240,7 +241,7 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecord(String name, String key, String newValue, String oldValue, UpdateOperation operation,
+  public static NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue, UpdateOperation operation,
           String writer, String signature, String message) {
     return sendUpdateRecord(name, key,
             new ResultValue(Arrays.asList(newValue)),
@@ -259,13 +260,13 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation,
+  public static NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
     sendUpdateRecordHelper(name, key, newValue, oldValue, id, operation, writer, signature, message);
     // now we wait until the correct packet comes back
     waitForUpdateConfirmationPacket(id);
-    boolean result = updateSuccessResult.get(id);
+    NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     GNS.getLogger().finer("Update (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
     return result;
@@ -281,7 +282,7 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
+  public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
     return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
   }
@@ -296,7 +297,7 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
+  public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
     return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
   }

@@ -7,13 +7,10 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.clientsupport.AccountAccess;
-import edu.umass.cs.gns.clientsupport.FieldAccess;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -52,30 +49,12 @@ public class CreateList extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-//    GuidInfo guidInfo, writerGuidInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return BADRESPONSE + " " + BADGUID + " " + guid;
-//    }
-//    if (writer.equals(guid)) {
-//      writerGuidInfo = guidInfo;
-//    } else if ((writerGuidInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
-//      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
-//    }
-//    try {
-//      if (!AccessSupport.verifySignature(writerGuidInfo, signature, message)) {
-//        return BADRESPONSE + " " + BADSIGNATURE;
-//      } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, field, writerGuidInfo)) {
-//        return BADRESPONSE + " " + ACCESSDENIED;
-//      } else {
-    if (FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message)) {
+    NSResponseCode responseCode;
+    if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message)).isAnError()) {
       return OKRESPONSE;
     } else {
-      return BADRESPONSE + " " + DUPLICATEFIELD;
+      return BADRESPONSE + " " + responseCode.getProtocolCode();
     }
-
-//    } catch (JSONException e) {
-//      return BADRESPONSE + " " + JSONPARSEERROR;
-//    }
   }
 
   @Override

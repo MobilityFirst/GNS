@@ -2,6 +2,7 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.packet.NSResponseCode;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 /**
@@ -26,22 +27,22 @@ public class GroupAccess {
    */
   public static final String LEAVEREQUESTS = GNS.makeInternalField("leaveRequests");
 
-  public static boolean addToGroup(String guid, String memberGuid) {
+  public static NSResponseCode addToGroup(String guid, String memberGuid) {
     
     return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
   
-  public static boolean addToGroup(String guid, ResultValue members) {
+  public static NSResponseCode addToGroup(String guid, ResultValue members) {
     
     return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, members, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
-  public static boolean removeFromGroup(String guid, String memberGuid) {
+  public static NSResponseCode removeFromGroup(String guid, String memberGuid) {
     
     return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, memberGuid, null, UpdateOperation.REMOVE);
   }
   
-  public static boolean removeFromGroup(String guid, ResultValue members) {
+  public static NSResponseCode removeFromGroup(String guid, ResultValue members) {
     
     return Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, members, null, UpdateOperation.REMOVE);
   }
@@ -56,12 +57,12 @@ public class GroupAccess {
     }
   }
 
-  public static boolean requestJoinGroup(String guid, String memberGuid) {
+  public static NSResponseCode requestJoinGroup(String guid, String memberGuid) {
     
     return Intercessor.sendUpdateRecordBypassingAuthentication(guid, JOINREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
   
-  public static boolean requestLeaveGroup(String guid, String memberGuid) {
+  public static NSResponseCode requestLeaveGroup(String guid, String memberGuid) {
     
     return Intercessor.sendUpdateRecordBypassingAuthentication(guid, LEAVEREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE);
   }
@@ -87,8 +88,8 @@ public class GroupAccess {
   public static boolean grantMembership(String guid, ResultValue requests) {
     
 
-    if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE)) {
-      if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, JOINREQUESTS, requests, null, UpdateOperation.REMOVE)) {
+    if (!Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE).isAnError()) {
+      if (!Intercessor.sendUpdateRecordBypassingAuthentication(guid, JOINREQUESTS, requests, null, UpdateOperation.REMOVE).isAnError()) {
         return true;
       }
     }
@@ -98,8 +99,8 @@ public class GroupAccess {
   public static boolean revokeMembership(String guid, ResultValue requests) {
     
 
-    if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, requests, null, UpdateOperation.REMOVE)) {
-      if (Intercessor.sendUpdateRecordBypassingAuthentication(guid, LEAVEREQUESTS, requests, null, UpdateOperation.REMOVE)) {
+    if (!Intercessor.sendUpdateRecordBypassingAuthentication(guid, GROUP, requests, null, UpdateOperation.REMOVE).isAnError()) {
+      if (!Intercessor.sendUpdateRecordBypassingAuthentication(guid, LEAVEREQUESTS, requests, null, UpdateOperation.REMOVE).isAnError()) {
         return true;
       }
     }
