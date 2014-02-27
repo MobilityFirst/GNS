@@ -8,9 +8,9 @@
 package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 

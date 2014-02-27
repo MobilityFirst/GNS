@@ -11,18 +11,22 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.packet.AddRecordPacket;
+import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.Packet;
+import static edu.umass.cs.gns.packet.Packet.getPacketType;
+import edu.umass.cs.gns.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.packet.Transport;
+import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static edu.umass.cs.gns.packet.Packet.getPacketType;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * One of a number of class that implement client support in the GNS server. 
@@ -132,13 +136,6 @@ public class Intercessor {
   }
 
   /**
-   * This version bypasses any signature checks and is meant for "system" use.
-   */
-  public static QueryResult sendQueryBypassingAuthentication(String name, String key) {
-    return sendQuery(name, key, null, null, null);
-  }
-
-  /**
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    */
   public static QueryResult sendQuery(String name, String key, String reader, String signature, String message) {
@@ -151,7 +148,7 @@ public class Intercessor {
     try {
       json = queryrecord.toJSONObjectQuestion();
       queryTimeStamp.put(id, new Date()); // rtt instrumentation
-      sendPacket(json);
+      injectPacketIntoLNSQueue(json);
 
     } catch (JSONException e) {
       e.printStackTrace();
@@ -183,17 +180,28 @@ public class Intercessor {
     return result;
   }
 
-  public static boolean sendAddRecordWithConfirmation(String name, String key, String value) {
-    return sendAddRecordWithConfirmation(name, key, new ResultValue(Arrays.asList(value)));
+  /**
+   * This version bypasses any signature checks and is meant for "system" use.
+   */
+  public static QueryResult sendQueryBypassingAuthentication(String name, String key) {
+    return sendQuery(name, key, null, null, null);
   }
 
-  public static boolean sendAddRecordWithConfirmation(String name, String key, ResultValue value) {
+  /**
+   * Sends an AddRecord packet to the Local Name Server with an initial value.
+   * 
+   * @param name
+   * @param key
+   * @param value
+   * @return 
+   */
+  public static boolean sendAddRecord(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending add: " + name + "->" + value);
     AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
     try {
       JSONObject json = pkt.toJSONObject();
-      sendPacket(json);
+      injectPacketIntoLNSQueue(json);
 
     } catch (JSONException e) {
       e.printStackTrace();
@@ -205,13 +213,13 @@ public class Intercessor {
     return result;
   }
 
-  public static boolean sendRemoveRecordWithConfirmation(String name) {
+  public static boolean sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending remove: " + name);
     RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
-      sendPacket(json);
+      injectPacketIntoLNSQueue(json);
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -254,7 +262,7 @@ public class Intercessor {
   public static boolean sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
-    sendUpdateRecordNoConfirmation(name, key, newValue, oldValue, id, operation, writer, signature, message);
+    sendUpdateRecordHelper(name, key, newValue, oldValue, id, operation, writer, signature, message);
     // now we wait until the correct packet comes back
     waitForUpdateConfirmationPacket(id);
     boolean result = updateSuccessResult.get(id);
@@ -273,11 +281,11 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue, 
+  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
     return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
   }
-  
+
   /**
    * Used internally by the system to send update requests. Ignores signatures and access.
    * 
@@ -288,23 +296,12 @@ public class Intercessor {
    * @param operation
    * @return 
    */
-  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, String newValue, 
+  public static boolean sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
     return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
   }
-  
-  /**
-   *
-   * Sends an update packet to the GNS with with values.
-   *
-   * @param name
-   * @param key
-   * @param newValue
-   * @param id
-   * @param sequenceNumber
-   * @param operation
-   */
-  private static void sendUpdateRecordNoConfirmation(String name, String key, ResultValue newValue,
+
+  private static void sendUpdateRecordHelper(String name, String key, ResultValue newValue,
           ResultValue oldValue, int id, UpdateOperation operation,
           String writer, String signature, String message) {
 
@@ -318,7 +315,7 @@ public class Intercessor {
             writer, signature, message);
     try {
       JSONObject json = pkt.toJSONObject();
-      sendPacket(json);
+      injectPacketIntoLNSQueue(json);
 
     } catch (JSONException e) {
       e.printStackTrace();
@@ -360,7 +357,7 @@ public class Intercessor {
    * 
    * @param jsonObject 
    */
-  public static void sendPacket(JSONObject jsonObject) {
+  public static void injectPacketIntoLNSQueue(JSONObject jsonObject) {
     LNSPacketDemultiplexer.demultiplexLNSPackets(jsonObject);
   }
 }

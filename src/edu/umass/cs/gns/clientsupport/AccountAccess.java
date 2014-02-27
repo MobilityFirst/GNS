@@ -244,8 +244,8 @@ public class AccountAccess {
   public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
     try {
 
-      // do this first add to make sure this name isn't already registered
-      if (Intercessor.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
+      // First try to create the HRN record to make sure this name isn't already registered
+      if (Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -253,14 +253,14 @@ public class AccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (Intercessor.sendAddRecordWithConfirmation(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
+        if (Intercessor.sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat())) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
           return Defs.OKRESPONSE;
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
-          Intercessor.sendRemoveRecordWithConfirmation(name);
+          Intercessor.sendRemoveRecord(name);
           return Defs.BADRESPONSE + " " + Defs.DUPLICATEGUID;
         }
       } else {
@@ -280,14 +280,14 @@ public class AccountAccess {
   public static String removeAccount(AccountInfo accountInfo) {
 
     // do this first add to make sure this account exists
-    if (Intercessor.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryName())) {
-      Intercessor.sendRemoveRecordWithConfirmation(accountInfo.getPrimaryGuid());
+    if (Intercessor.sendRemoveRecord(accountInfo.getPrimaryName())) {
+      Intercessor.sendRemoveRecord(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
-        Intercessor.sendRemoveRecordWithConfirmation(alias);
+        Intercessor.sendRemoveRecord(alias);
       }
       for (String guid : accountInfo.getGuids()) {
-        Intercessor.sendRemoveRecordWithConfirmation(guid);
+        Intercessor.sendRemoveRecord(guid);
       }
       return Defs.OKRESPONSE;
     } else {
@@ -321,12 +321,12 @@ public class AccountAccess {
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
 
-      // insure that that name does not already exist
-      if (Intercessor.sendAddRecordWithConfirmation(name, GUID, new ResultValue(Arrays.asList(guid)))) {
+      // First try to create the HRN to insure that that name does not already exist
+      if (Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid)))) {
         // update the account info
         if (updateAccountInfo(accountInfo)) {
           // add the GUID_INFO link
-          Intercessor.sendAddRecordWithConfirmation(guid, GUID_INFO, guidInfoFormatted);
+          Intercessor.sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.CREATE);
@@ -350,9 +350,9 @@ public class AccountAccess {
    */
   public static String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
     
-    if (Intercessor.sendRemoveRecordWithConfirmation(guid.getGuid())) {
+    if (Intercessor.sendRemoveRecord(guid.getGuid())) {
       // remove reverse record
-      Intercessor.sendRemoveRecordWithConfirmation(guid.getName());
+      Intercessor.sendRemoveRecord(guid.getName());
       accountInfo.removeGuid(guid.getGuid());
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {
@@ -380,11 +380,11 @@ public class AccountAccess {
     accountInfo.noteUpdate();
 
     // insure that that name does not already exist
-    if (Intercessor.sendAddRecordWithConfirmation(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
+    if (Intercessor.sendAddRecord(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))) {
       if (updateAccountInfo(accountInfo)) {
         return Defs.OKRESPONSE;
       } else {
-        Intercessor.sendRemoveRecordWithConfirmation(alias);
+        Intercessor.sendRemoveRecord(alias);
         accountInfo.removeAlias(alias);
         return Defs.BADRESPONSE + " " + Defs.BADALIAS;
       }
@@ -405,7 +405,7 @@ public class AccountAccess {
     
     if (accountInfo.containsAlias(alias)) {
       // remove the NAME -> GUID record
-      Intercessor.sendRemoveRecordWithConfirmation(alias);
+      Intercessor.sendRemoveRecord(alias);
       accountInfo.removeAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {

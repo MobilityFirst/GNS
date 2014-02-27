@@ -126,6 +126,11 @@ public class GNS {
     return STAT_LOGGER;
   }
 
+  /**
+   * Attempts to look for a MANIFEST file in that contains the Build-Version attribute.
+   * 
+   * @return 
+   */
   public static String readBuildVersion() {
     String result = null;
     try {
