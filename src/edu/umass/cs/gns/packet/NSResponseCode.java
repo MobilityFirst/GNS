@@ -31,7 +31,7 @@ public enum NSResponseCode {
   SIGNATURE_ERROR(3, Defs.BADSIGNATURE, true, true),
   ACCESS_ERROR(4, Defs.ACCESSDENIED, true, true),
   BAD_GUID_ERROR(5, Defs.BADGUID, true, true),
-  BAD_ACCESOR_ERROR(6, Defs.BADREADERGUID, true, true);
+  BAD_ACCESOR_ERROR(6, Defs.BADACCESSORGUID, true, true);
   //
   // stash the codes in a lookup table
   private static NSResponseCode[] responseCodes;

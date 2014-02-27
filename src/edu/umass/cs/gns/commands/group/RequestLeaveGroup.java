@@ -7,11 +7,8 @@
  */
 package edu.umass.cs.gns.commands.group;
 
-import edu.umass.cs.gns.clientsupport.AccessSupport;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;
@@ -49,24 +46,29 @@ public class RequestLeaveGroup extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    GuidInfo guidInfo, memberInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    if (member.equals(guid)) {
-      memberInfo = guidInfo;
-    } else if ((memberInfo = AccountAccess.lookupGuidInfo(member)) == null) {
-      return BADRESPONSE + " " + BADREADERGUID + " " + member;
-    }
-    if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
-      return BADRESPONSE + " " + BADSIGNATURE;
+    if (!GroupAccess.requestLeaveGroup(guid, member, member, signature, message).isAnError()) {
+      return OKRESPONSE;
     } else {
-      if (!GroupAccess.requestLeaveGroup(guid, member).isAnError()) {
-        return OKRESPONSE;
-      } else {
-        return BADRESPONSE + " " + GENERICEERROR;
-      }
+      return BADRESPONSE + " " + GENERICEERROR;
     }
+//    GuidInfo guidInfo, memberInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    if (member.equals(guid)) {
+//      memberInfo = guidInfo;
+//    } else if ((memberInfo = AccountAccess.lookupGuidInfo(member)) == null) {
+//      return BADRESPONSE + " " + BADREADERGUID + " " + member;
+//    }
+//    if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
+//      return BADRESPONSE + " " + BADSIGNATURE;
+//    } else {
+//      if (!GroupAccess.requestLeaveGroup(guid, member).isAnError()) {
+//        return OKRESPONSE;
+//      } else {
+//        return BADRESPONSE + " " + GENERICEERROR;
+//      }
+//    }
   }
 
   @Override

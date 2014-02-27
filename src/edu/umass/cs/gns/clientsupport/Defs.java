@@ -94,8 +94,7 @@ public class Defs {
   public final static String OPERATIONNOTSUPPORTED = "+OPERATIONNOTSUPPORTED+";
   public final static String QUERYPROCESSINGERROR = "+QUERYPROCESSINGERROR+";
   public final static String NOACTIONFOUND = "+NOACTIONFOUND+";
-  public final static String BADREADERGUID = "+BADREADERGUID+";
-  public final static String BADWRITERGUID = "+BADWRITERGUID+";
+  public final static String BADACCESSORGUID = "+BADACCESSORGUID+";
   public final static String BADGUID = "+BADGUID+";
   public final static String BADALIAS = "+BADALIAS+";
   public final static String BADACCOUNT = "+BADACCOUNT+";

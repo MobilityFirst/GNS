@@ -61,7 +61,7 @@ public class AddGuid extends GnsCommand {
     if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
       if (!accountInfo.isVerified()) {
-        return BADRESPONSE + " " + VERIFICATIONERROR + "Account not verified";
+        return BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified";
       } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
         return BADRESPONSE + " " + TOMANYGUIDS;
       } else {

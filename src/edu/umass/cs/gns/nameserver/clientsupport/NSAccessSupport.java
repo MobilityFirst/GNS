@@ -7,9 +7,10 @@
  */
 package edu.umass.cs.gns.nameserver.clientsupport;
 
+import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -23,6 +24,8 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -31,6 +34,9 @@ import java.util.Set;
  * @author westy
  */
 public class NSAccessSupport {
+  
+  // try this for now
+  private static final Set<String> WORLDREADABLEFIELDS = new HashSet<String>(Arrays.asList(GroupAccess.JOINREQUESTS, GroupAccess.LEAVEREQUESTS));
 
   public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     if (!GNS.enableSignatureVerification) {
@@ -87,8 +93,12 @@ public class NSAccessSupport {
       return false;
     }
   }
-
+  
   private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
+    // first check the always world readable ones
+    if (WORLDREADABLEFIELDS.contains(field)) {
+      return true;
+    }
     try {
       Set<String> allowedusers = NSFieldMetaData.lookup(access, guidInfo, field);
       GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
@@ -124,7 +134,7 @@ public class NSAccessSupport {
         return false;
       }
     } catch (FieldNotFoundException e) {
-       // This is actuallty a normal result.. so no warning here.
+      // This is actuallty a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("Guid " + accesserGuid + " problem retrieving group: " + e);

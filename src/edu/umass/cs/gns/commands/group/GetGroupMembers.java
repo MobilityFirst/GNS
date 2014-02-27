@@ -7,15 +7,10 @@
  */
 package edu.umass.cs.gns.commands.group;
 
-import edu.umass.cs.gns.clientsupport.AccountAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.nameserver.ResultValue;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -53,24 +48,26 @@ public class GetGroupMembers extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    GuidInfo guidInfo, readInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    if (reader.equals(guid)) {
-      readInfo = guidInfo;
-    } else if ((readInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
-      return BADRESPONSE + " " + BADREADERGUID + " " + reader;
-    }
-    if (!AccessSupport.verifySignature(readInfo, signature, message)) {
-      return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
-      return BADRESPONSE + " " + ACCESSDENIED;
-    } else {
-      ResultValue values = GroupAccess.lookup(guid);
-      JSONArray list = new JSONArray(values);
-      return list.toString();
-    }
+    return new JSONArray(GroupAccess.lookup(guid, reader, signature, message)).toString();
+    
+//    GuidInfo guidInfo, readInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    if (reader.equals(guid)) {
+//      readInfo = guidInfo;
+//    } else if ((readInfo = AccountAccess.lookupGuidInfo(reader)) == null) {
+//      return BADRESPONSE + " " + BADREADERGUID + " " + reader;
+//    }
+//    if (!AccessSupport.verifySignature(readInfo, signature, message)) {
+//      return BADRESPONSE + " " + BADSIGNATURE;
+//    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.READ_WHITELIST, guidInfo, GROUP_ACL, readInfo)) {
+//      return BADRESPONSE + " " + ACCESSDENIED;
+//    } else {
+//      ResultValue values = GroupAccess.lookup(guid);
+//      JSONArray list = new JSONArray(values);
+//      return list.toString();
+//    }
   }
 
   @Override

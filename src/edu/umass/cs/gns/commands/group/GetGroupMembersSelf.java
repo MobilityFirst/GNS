@@ -7,8 +7,8 @@
  */
 package edu.umass.cs.gns.commands.group;
 
-import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.commands.CommandModule;
 
 /**
  *

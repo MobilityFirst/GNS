@@ -7,14 +7,11 @@
  */
 package edu.umass.cs.gns.commands.group;
 
-import edu.umass.cs.gns.clientsupport.AccountAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -52,24 +49,30 @@ public class RemoveFromGroup extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    GuidInfo guidInfo, writerInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    if (writer.equals(guid)) {
-      writerInfo = guidInfo;
-    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
-      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
-    }
-    if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
-      return BADRESPONSE + " " + BADSIGNATURE;
-    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
-      return BADRESPONSE + " " + ACCESSDENIED;
-    } else if (!GroupAccess.removeFromGroup(guid, member).isAnError()) {
+    NSResponseCode responseCode;
+    if (!(responseCode = GroupAccess.removeFromGroup(guid, member, writer, signature, message)).isAnError()) {
       return OKRESPONSE;
     } else {
-      return BADRESPONSE + " " + GENERICEERROR;
+      return BADRESPONSE + " " + responseCode.getProtocolCode();
     }
+//    GuidInfo guidInfo, writerInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    if (writer.equals(guid)) {
+//      writerInfo = guidInfo;
+//    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
+//      return BADRESPONSE + " " + BADWRITERGUID + " " + writer;
+//    }
+//    if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
+//      return BADRESPONSE + " " + BADSIGNATURE;
+//    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
+//      return BADRESPONSE + " " + ACCESSDENIED;
+//    } else if (!GroupAccess.removeFromGroup(guid, member).isAnError()) {
+//      return OKRESPONSE;
+//    } else {
+//      return BADRESPONSE + " " + GENERICEERROR;
+//    }
   }
 
   @Override

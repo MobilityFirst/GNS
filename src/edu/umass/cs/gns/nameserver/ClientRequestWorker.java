@@ -587,7 +587,6 @@ public class ClientRequestWorker extends TimerTask {
     }
   }
 
-  // returns null if everything is ok
   private NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException {
     GuidInfo guidInfo, readerGuidInfo;
