@@ -100,7 +100,7 @@ public class SelectHandler {
           try {
             SelectResponsePacket response = new SelectResponsePacket(json);
             int id = response.getId();
-            GNS.getLogger().info("Processing SelectResponse for " + id);
+            GNS.getLogger().fine("Processing SelectResponse for " + id);
             synchronized (monitor) {
               resultsMap.put(id, response);
               monitor.notifyAll();

@@ -3,10 +3,12 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.nameserver;
+package edu.umass.cs.gns.nameserver.clientsupport;
 
 import edu.umass.cs.gns.clientsupport.*;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.util.HashFunction;
 import java.io.IOException;
@@ -31,7 +33,7 @@ public class SiteToSiteQueryHandler {
   private static Random randomID = new Random();
 
   public static QueryResult sendQuery(String name, String key) {
-    GNS.getLogger().info("Sending query: " + name + " " + key);
+    GNS.getLogger().fine("Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
@@ -47,7 +49,7 @@ public class SiteToSiteQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, int recipientId, String name, String key) {
-    GNS.getLogger().info("Sending query " + queryId + " to " + recipientId + " for " + name + " / " + key);
+    GNS.getLogger().fine("Sending query " + queryId + " to " + recipientId + " for " + name + " / " + key);
     DNSPacket queryrecord = new DNSPacket(queryId, name, new NameRecordKey(key), NameServer.nodeID, null, null, null);
     JSONObject json;
     try {
@@ -66,26 +68,26 @@ public class SiteToSiteQueryHandler {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("!!!!!!!!First STS Response (" + id + "): "
+          GNS.getLogger().finer("First STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().info("000000000Later STS Response (" + id + "): "
+          GNS.getLogger().finer("Later STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
         }
       }
     } else {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("!!!!!!!!First STS Response (" + id + "): "
+          GNS.getLogger().finer("First STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().info("000000000Later STS Response (" + id + "): "
+          GNS.getLogger().finer("Later STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
         }
@@ -99,7 +101,7 @@ public class SiteToSiteQueryHandler {
         while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
-        GNS.getLogger().info("Query id response received: " + id);
+        GNS.getLogger().fine("Query id response received: " + id);
       }
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);

@@ -106,7 +106,7 @@ public class GnsHttpServer {
           } else {
             response = Defs.BADRESPONSE + " " + Defs.NOACTIONFOUND;
           }
-          GNS.getLogger().info("Response: " + response);
+          GNS.getLogger().finer("Response: " + response);
           responseBody.write(response.getBytes());
           responseBody.close();
         }

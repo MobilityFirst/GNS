@@ -107,7 +107,7 @@ public class DNSRequestTask extends TimerTask {
 
           if (value != null) {
             if (transmissionCount > 1) {
-              LocalNameServer.removeQueryInfo(queryId);
+              LocalNameServer.removeSelectInfo(queryId);
             }
             loggingForAddressInCache();
             sendCachedReplyToUser(value, cacheEntry.getTTL());
@@ -125,7 +125,7 @@ public class DNSRequestTask extends TimerTask {
         if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
           GNS.getLogger().severe("Invalid name server for " + incomingPacket.getGuid());
           if (transmissionCount > 1) {
-            LocalNameServer.removeQueryInfo(queryId);
+            LocalNameServer.removeSelectInfo(queryId);
           }
 
           DNSRequestTask queryTaskObject = new DNSRequestTask(

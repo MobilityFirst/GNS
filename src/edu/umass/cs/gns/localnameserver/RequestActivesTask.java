@@ -131,7 +131,7 @@ public class RequestActivesTask extends TimerTask
             " name\t" + requestActivesPacket.getName());
     if (requestActivesPacket.getActiveNameServers() == null ||
             requestActivesPacket.getActiveNameServers().size() == 0) {
-      GNS.getLogger().info("Null set of actives received for name " + requestActivesPacket.getName()  +
+      GNS.getLogger().fine("Null set of actives received for name " + requestActivesPacket.getName()  +
               " sending error");
       PendingTasks.sendErrorMsgForName(requestActivesPacket.getName());
       return;

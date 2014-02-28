@@ -128,7 +128,7 @@ public class PendingTasks {
     }
 
     if (runTasks.size() > 0) {
-      GNS.getLogger().info("Running pending tasks. Sending error messages: Count " + runTasks.size());
+      GNS.getLogger().fine("Running pending tasks. Sending error messages: Count " + runTasks.size());
       for (PendingTask task : runTasks) {
         GNS.getStatLogger().fine(task.errorLog);
         Intercessor.handleIncomingPackets(task.errorMsg);

@@ -88,26 +88,26 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       int nameServerID = LocalNameServer.getClosestPrimaryNameServer(getName(), getPrimariesQueried());
 
       if (nameServerID == -1) {
-        GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried " + getPrimariesQueried());
+        GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + getPrimariesQueried());
         return;
       } else {
         getPrimariesQueried().add(nameServerID);
       }
       if (getTimeoutCount() == 0) {
         updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, null);
-        GNS.getLogger().info("Update Info Added: Id = " + getUpdateRequestID());
+        GNS.getLogger().fine("Update Info Added: Id = " + getUpdateRequestID());
         updatePacketWithRequestID(getPacket(), getUpdateRequestID());
       }
       // create the packet that we'll send to the primary
 
-      GNS.getLogger().info("Sending Update to Node: " + nameServerID);
+      GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
 
       // and send it off
       try {
         JSONObject jsonToSend = getPacket().toJSONObject();
         LocalNameServer.sendToNS(jsonToSend, nameServerID);
 
-        GNS.getLogger().info("SendAddRequest: Send to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
+        GNS.getLogger().fine("SendAddRequest: Send to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
                 " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       } catch (JSONException e) {
         e.printStackTrace();

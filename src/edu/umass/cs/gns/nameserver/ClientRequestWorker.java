@@ -17,6 +17,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nameserver.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nameserver.clientsupport.SiteToSiteQueryHandler;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.AddRecordPacket;
@@ -239,7 +240,7 @@ public class ClientRequestWorker extends TimerTask {
     name = addRecordPacket.getName();
     nameRecordKey = addRecordPacket.getRecordKey();
     value = addRecordPacket.getValue();
-    GNS.getLogger().info(" ADD FROM NS (ns " + NameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
+    GNS.getLogger().fine(" ADD FROM NS (ns " + NameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
     
     ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(name, true);//NameServer.getNameRecord(name);
 
@@ -265,15 +266,15 @@ public class ClientRequestWorker extends TimerTask {
         }
         ListenerReplicationPaxos.createPaxosInstanceForName(rcRecord.getName(), rcRecord.getActiveNameservers(),
                 rcRecord.getActivePaxosID(), valuesMap, 0, addRecordPacket.getTTL());
-        GNS.getLogger().info(" Active-paxos and name record created. Name = " + rcRecord.getName());
+        GNS.getLogger().fine(" Active-paxos and name record created. Name = " + rcRecord.getName());
         UpdateStatus status = addInProgress.remove(addRecordPacket.getLNSRequestID());
         if (status != null) {
           NameServer.returnToSender(status.getConfirmUpdateLNSPacket().toJSONObject(), status.getLocalNameServerID());
         } else {
-          GNS.getLogger().info(" Status record missing for Name = " + rcRecord.getName() + " request id: " + addRecordPacket.getLNSRequestID());
+          GNS.getLogger().fine(" Status record missing for Name = " + rcRecord.getName() + " request id: " + addRecordPacket.getLNSRequestID());
         }
       } catch (FieldNotFoundException e) {
-        GNS.getLogger().info("Field not found exception. Should not happen because we initialized all fields in record. " + e.getMessage());
+        GNS.getLogger().severe("Field not found exception. Should not happen because we initialized all fields in record. " + e.getMessage());
         e.printStackTrace();
       }
       
@@ -285,11 +286,11 @@ public class ClientRequestWorker extends TimerTask {
         ConfirmUpdateLNSPacket confirmPkt = status.getConfirmUpdateLNSPacket();
         confirmPkt.convertToFailPacket(NSResponseCode.ERROR);
         NameServer.returnToSender(confirmPkt.toJSONObject(), status.getLocalNameServerID());
-        GNS.getLogger().info("Record already exists ... sent error to client" + e.getMessage());
+        GNS.getLogger().fine("Record already exists ... sent error to client" + e.getMessage());
       } else {
-        GNS.getLogger().info(" Status record missing for request id: " + addRecordPacket.getLNSRequestID());
+        GNS.getLogger().fine(" Status record missing for request id: " + addRecordPacket.getLNSRequestID());
       }
-      GNS.getLogger().info("Record already exists ... continue " + e.getMessage());
+      GNS.getLogger().fine("Record already exists ... continue " + e.getMessage());
     }
     
   }
@@ -305,7 +306,7 @@ public class ClientRequestWorker extends TimerTask {
     nameRecordKey = addRecordPacket.getRecordKey();
     value = addRecordPacket.getValue();
     
-    GNS.getLogger().info(" ADD FROM LNS (ns " + NameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
+    GNS.getLogger().fine(" ADD FROM LNS (ns " + NameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
     
     ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
     
@@ -318,7 +319,7 @@ public class ClientRequestWorker extends TimerTask {
     addInProgress.put(nsReqID, status);
 
     // prepare add record packet to be sent to other replica controllers
-    GNS.getLogger().info(" NS Put request ID as " + nsReqID + " LNS request ID is " + confirmPacket.getLNSRequestID());
+    GNS.getLogger().fine(" NS Put request ID as " + nsReqID + " LNS request ID is " + confirmPacket.getLNSRequestID());
     addRecordPacket.setLNSRequestID(nsReqID);
     addRecordPacket.setLocalNameServerID(NameServer.nodeID);
     addRecordPacket.setType(Packet.PacketType.ADD_RECORD_NS);
@@ -540,7 +541,7 @@ public class ClientRequestWorker extends TimerTask {
   private void handleDNSPacket() throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
     if (StartNameServer.debugMode) {
-      GNS.getLogger().info("NS recvd DNS lookup request: " + incomingJSON);
+      GNS.getLogger().fine("NS received DNS lookup request: " + incomingJSON);
     }
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
     
@@ -565,7 +566,7 @@ public class ClientRequestWorker extends TimerTask {
     if (errorCode.isAnError()) {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.getHeader().setResponseCode(errorCode);
-      GNS.getLogger().info("Sending to " + dnsPacket.getSenderId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+      GNS.getLogger().fine("Sending to " + dnsPacket.getSenderId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
       NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getSenderId());
     } else {
       // All signature and ACL checks passed see if we can find the field to return;
@@ -580,7 +581,7 @@ public class ClientRequestWorker extends TimerTask {
           nameRecord = NameServer.getNameRecordMultiField(guid, getDNSPacketFields(), field);
         }
       } catch (RecordNotFoundException e) {
-        GNS.getLogger().info("Record not found for name: " + guid + " Key = " + field);
+        GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
       }
       // Now we either have a name record with stuff it in or a null one
       // Time to send something back to the client
@@ -593,28 +594,28 @@ public class ClientRequestWorker extends TimerTask {
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid)) == null) {
-      GNS.getLogger().info("######Name " + guid + " key = " + field + ": BAD_GUID_ERROR");
+      GNS.getLogger().fine("Name " + guid + " key = " + field + ": BAD_GUID_ERROR");
       return NSResponseCode.BAD_GUID_ERROR;
     }
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
     } else if ((readerGuidInfo = NSAccountAccess.lookupGuidInfo(reader, true)) == null) {
-      GNS.getLogger().info("######Name " + guid + " key = " + field + ": BAD_ACCESOR_ERROR");
+      GNS.getLogger().fine("Name " + guid + " key = " + field + ": BAD_ACCESOR_ERROR");
       return NSResponseCode.BAD_ACCESOR_ERROR;
     }
     // unsigned case, must be world readable
     if (signature == null) {
       if (!NSAccessSupport.fieldAccessibleByEveryone(access, guidInfo.getGuid(), field)) {
-        GNS.getLogger().info("######Name " + guid + " key = " + field + ": ACCESS_ERROR");
+        GNS.getLogger().fine("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         return NSResponseCode.ACCESS_ERROR;
       }
       // signed case, check signature and access
     } else if (signature != null) {
       if (!NSAccessSupport.verifySignature(readerGuidInfo, signature, message)) {
-        GNS.getLogger().info("######Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
+        GNS.getLogger().fine("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         return NSResponseCode.SIGNATURE_ERROR;
       } else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, readerGuidInfo)) {
-        GNS.getLogger().info("######Name " + guid + " key = " + field + ": ACCESS_ERROR");
+        GNS.getLogger().fine("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         return NSResponseCode.ACCESS_ERROR;
       }
     }
@@ -654,21 +655,21 @@ public class ClientRequestWorker extends TimerTask {
             GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + guid);
             // or we don't actually have the field
           } else { // send error msg.
-            GNS.getLogger().info("Record doesn't contain field: " + key + " name  = " + guid);
+            GNS.getLogger().fine("Record doesn't contain field: " + key + " name  = " + guid);
             dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
           }
           // For some reason the Guid of the packet is null
         } else { // send error msg.
-          GNS.getLogger().finer("GUID of query is NULL!");
+          GNS.getLogger().fine("GUID of query is NULL!");
           dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
         }
         // we're not the correct active name server so tell the client that
       } else { // send invalid error msg.
         dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
-          GNS.getLogger().info("Invalid actives. Name = " + guid);
+          GNS.getLogger().fine("Invalid actives. Name = " + guid);
         } else {
-          GNS.getLogger().info("Invalid actives. Name = " + guid + " Actives = " + nameRecord.getActiveNameServers());
+          GNS.getLogger().fine("Invalid actives. Name = " + guid + " Actives = " + nameRecord.getActiveNameServers());
         }
       }
     } catch (FieldNotFoundException e) {

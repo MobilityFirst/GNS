@@ -47,7 +47,7 @@ public class NSFieldMetaData {
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key) throws RecordNotFoundException, FieldNotFoundException {
     String metaDateFieldName = FieldMetaData.makeFieldMetaDataKey(type, key);
     NameRecord nameRecord = NameServer.getNameRecordMultiField(guid, null, metaDateFieldName);
-    GNS.getLogger().info("*******LOOKUP:" + nameRecord.toString());
+    GNS.getLogger().fine("LOOKUP:" + nameRecord.toString());
     ResultValue result = nameRecord.getKey(metaDateFieldName);
     return new HashSet(result);
 

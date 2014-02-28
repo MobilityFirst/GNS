@@ -67,7 +67,7 @@ public class LocalNameServer {
    */
   private static ConcurrentMap<Integer, DNSRequestInfo> requestTransmittedMap;
   private static ConcurrentMap<Integer, UpdateInfo> updateTransmittedMap;
-  private static ConcurrentMap<Integer, SelectInfo> queryTransmittedMap;
+  private static ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS record)
    *
@@ -114,7 +114,7 @@ public class LocalNameServer {
 
     requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
     updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
-    queryTransmittedMap = new ConcurrentHashMap<Integer, SelectInfo>(10, 0.75f, 3);
+    selectTransmittedMap = new ConcurrentHashMap<Integer, SelectInfo>(10, 0.75f, 3);
 
     randomID = new Random(System.currentTimeMillis());
 
@@ -220,16 +220,15 @@ public class LocalNameServer {
     return id;
   }
 
-  public static int addQueryInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket,
-          InetAddress senderAddress, int senderPort) {
+  public static int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket) {
     int id;
     do {
       id = randomID.nextInt();
     } while (requestTransmittedMap.containsKey(id));
 
     //Add query info
-    SelectInfo query = new SelectInfo(id, senderAddress, senderPort);
-    queryTransmittedMap.put(id, query);
+    SelectInfo query = new SelectInfo(id);
+    selectTransmittedMap.put(id, query);
     return id;
   }
 
@@ -247,16 +246,16 @@ public class LocalNameServer {
     return updateTransmittedMap.remove(id);
   }
 
-  public static SelectInfo removeQueryInfo(int id) {
-    return queryTransmittedMap.remove(id);
+  public static SelectInfo removeSelectInfo(int id) {
+    return selectTransmittedMap.remove(id);
   }
 
   public static UpdateInfo getUpdateInfo(int id) {
     return updateTransmittedMap.get(id);
   }
 
-  public static SelectInfo getQueryInfo(int id) {
-    return queryTransmittedMap.get(id);
+  public static SelectInfo getSelectInfo(int id) {
+    return selectTransmittedMap.get(id);
   }
 
   /**

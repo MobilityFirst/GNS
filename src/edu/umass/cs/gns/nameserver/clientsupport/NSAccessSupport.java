@@ -54,7 +54,7 @@ public class NSAccessSupport {
     sig.initVerify(publicKey);
     sig.update(message.getBytes());
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    GNS.getLogger().info("@@@@@@User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;
   }
 
@@ -81,7 +81,7 @@ public class NSAccessSupport {
    * @return
    */
   public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo) {
-    GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
+    GNS.getLogger().fine("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
     } else if (checkForAccess(access, guidInfo, field, accessorInfo)) {
@@ -89,7 +89,7 @@ public class NSAccessSupport {
     } else if (checkForAccess(access, guidInfo, ALLFIELDS, accessorInfo)) {
       return true; // accessor can see all fields
     } else {
-      GNS.getLogger().info("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
+      GNS.getLogger().fine("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
       return false;
     }
   }
@@ -101,9 +101,9 @@ public class NSAccessSupport {
     }
     try {
       Set<String> allowedusers = NSFieldMetaData.lookup(access, guidInfo, field);
-      GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+      GNS.getLogger().fine(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers)) {
-        GNS.getLogger().info("$$$$$$User " + accessorInfo.getName() + " allowed to access "
+        GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access "
                 + (field != ALLFIELDS ? ("user " + guidInfo.getName() + "'s " + field + " field") : ("all of user " + guidInfo.getName() + "'s fields")));
         return true;
       }

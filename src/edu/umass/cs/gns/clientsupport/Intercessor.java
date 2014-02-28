@@ -99,7 +99,7 @@ public class Intercessor {
           ConfirmUpdateLNSPacket packet = new ConfirmUpdateLNSPacket(json);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
-          GNS.getLogger().info((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");// + packet.getName() + "/" + packet.getRecordKey().getName());
+          GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");// + packet.getName() + "/" + packet.getRecordKey().getName());
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.getResponseCode());
             monitorUpdate.notifyAll();
@@ -110,7 +110,7 @@ public class Intercessor {
           id = dnsResponsePacket.getQueryId();
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
-            GNS.getLogger().info("Query (" + id + "): "
+            GNS.getLogger().fine("Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
@@ -118,7 +118,7 @@ public class Intercessor {
               monitor.notifyAll();
             }
           } else {
-            GNS.getLogger().info("Intercessor: Query (" + id + "): "
+            GNS.getLogger().fine("Intercessor: Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
@@ -139,7 +139,7 @@ public class Intercessor {
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    */
   public static QueryResult sendQuery(String name, String key, String reader, String signature, String message) {
-    GNS.getLogger().info("Sending query: " + name + " " + key);
+    GNS.getLogger().fine("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
 
 
@@ -163,7 +163,7 @@ public class Intercessor {
           monitor.wait();
         }
       }
-      GNS.getLogger().info("Query id response received: " + id);
+      GNS.getLogger().fine("Query id response received: " + id);
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
 
@@ -174,7 +174,7 @@ public class Intercessor {
     Date sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime.getTime() - sentTime.getTime();
-    GNS.getLogger().info("Query (" + id + ") RTT = " + rtt + "ms");
+    GNS.getLogger().fine("Query (" + id + ") RTT = " + rtt + "ms");
     GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
     result.setRoundTripTime(rtt);
     return result;

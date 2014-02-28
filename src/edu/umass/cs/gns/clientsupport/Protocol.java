@@ -49,7 +49,8 @@ public class Protocol {
     GnsCommand command = commandModule.lookupCommand(json);
     try {
       if (command != null) {
-        GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
+        GNS.getLogger().info("Executing command: " + command.toString());
+        //GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
         return command.execute(json);
       } else {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;

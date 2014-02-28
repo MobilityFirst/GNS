@@ -14,7 +14,6 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.SiteToSiteQueryHandler;
 import java.text.ParseException;
 import org.json.JSONException;
 

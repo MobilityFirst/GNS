@@ -58,7 +58,7 @@ public class Update {
         // update the cache BEFORE we send back the confirmation
         LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
         // send the confirmation back to the originator of the update
-        GNS.getLogger().info("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
+        GNS.getLogger().fine("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
                 + " : " + json.toString());
         Intercessor.handleIncomingPackets(json);
         // instrumentation?
@@ -90,7 +90,7 @@ public class Update {
 
       UpdateAddressPacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
 
-      GNS.getLogger().info("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
+      GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
 
       SendUpdatesTask task = new SendUpdatesTask(updateAddressPacket,
               updateInfo.getSendTime(), new HashSet<Integer>(), updateInfo.getNumRestarts() + 1);

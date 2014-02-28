@@ -57,10 +57,10 @@ public class CommandModule {
           constructor = clazz.getConstructor(new Class[]{CommandModule.class});
         }
         GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
-        GNS.getLogger().info("Adding command " + (i + 1) + ": " + commandClassName + " with " + command.getCommandName() + ": " + command.getCommandParametersString());
+        GNS.getLogger().fine("Adding command " + (i + 1) + ": " + commandClassName + " with " + command.getCommandName() + ": " + command.getCommandParametersString());
         commands.add(command);
       } catch (Exception e) {
-        GNS.getLogger().warning("Unable to add command for class " + commandClassName + ": " + e);
+        GNS.getLogger().severe("Unable to add command for class " + commandClassName + ": " + e);
       }
     }
   }
@@ -73,8 +73,7 @@ public class CommandModule {
       GNS.getLogger().warning("Unable find " + COMMANDNAME + " key in JSON command: " + e);
       return null;
     }
-     GNS.getLogger().info("Searching " + commands.size() + " commands:");
-    //GNS.getLogger().info("Looking for: " + json);
+     GNS.getLogger().fine("Searching " + commands.size() + " commands:");
     // for now a linear search is fine
     for (GnsCommand command : commands) {
       //GNS.getLogger().info("Search: " + command.toString());

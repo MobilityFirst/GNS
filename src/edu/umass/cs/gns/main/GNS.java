@@ -80,7 +80,7 @@ public class GNS {
   /**
    * Console output level for stat logger
    */
-  public static String statConsoleOutputLevel = "INFO";
+  public static String statConsoleOutputLevel = "WARNING";  // don't send these to the console normally
   private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
   public static boolean initRun = false;
 
@@ -88,6 +88,7 @@ public class GNS {
 
   public static Logger getLogger() {
     if (!initRun) {
+      System.out.println("Setting Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
       Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
       initRun = true;
     }
@@ -100,6 +101,7 @@ public class GNS {
 
     if (!initStatRun) {
       // don't send these to the console normally
+      System.out.println("Setting STAT Logger console level to " + statConsoleOutputLevel + " and file level to " + statFileLoggingLevel);
       Logging.setupLogger(STAT_LOGGER, statConsoleOutputLevel, statFileLoggingLevel, "log" + "/gns_stat.xml");
       initStatRun = true;
     }

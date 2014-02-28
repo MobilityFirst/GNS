@@ -95,7 +95,7 @@ public class Lookup {
     }
     // if invalid active name server error, get correct active name servers
     if (dnsPacket.containsInvalidActiveNSError()) {
-      GNS.getLogger().info(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
+      GNS.getLogger().fine(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
       LocalNameServer.invalidateActiveNameServer(dnsPacket.getGuid());
       DNSRequestTask queryTaskObject = new DNSRequestTask(
               query.getIncomingPacket(),
@@ -118,7 +118,7 @@ public class Lookup {
       GNS.getLogger().fine(" Scheduled lookup task.");
 
     } else { // other types of errors, forward error response to client
-      GNS.getLogger().info("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId() +
+      GNS.getLogger().fine("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId() +
               ": " + dnsPacket.toJSONObject());
       // set the correct id for the client
       dnsPacket.getHeader().setId(query.getIncomingPacket().getQueryId());
