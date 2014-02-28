@@ -168,7 +168,7 @@ public class DNSRequestTask extends TimerTask {
 
         int clientQueryID = incomingPacket.getQueryId();
         // set this information in anticipation of creating the json object below
-        incomingPacket.setLnsId(LocalNameServer.nodeID);
+        incomingPacket.setSenderId(LocalNameServer.nodeID);
         incomingPacket.getHeader().setId(queryId);
         JSONObject json;
         try {

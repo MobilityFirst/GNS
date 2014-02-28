@@ -7,14 +7,12 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
-import edu.umass.cs.gns.clientsupport.AccountAccess;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -34,7 +32,7 @@ public class AclRemove extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACCESSER, ACLTYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, ACCESSER, WRITER, ACLTYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -47,32 +45,38 @@ public class AclRemove extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
-    // accesser might be same as guid
-    String accesser = json.optString(ACCESSER, guid);
+    String accesser = json.getString(ACCESSER); // who is losing access
+    // allows someone other than guid to change the acl, defaults to guid
+    String writer = json.optString(WRITER, guid);
     String accessType = json.getString(ACLTYPE);
-    // signature and message can be empty for unsigned cases
-    String signature = json.optString(SIGNATURE, null);
-    String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
     }
-    GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      FieldMetaData.remove(access, guidInfo, field, accesser);
+    NSResponseCode responseCode;
+    if (!(responseCode = FieldMetaData.remove(access, guid, field, accesser, writer, signature, message)).isAnError()) {
       return OKRESPONSE;
     } else {
-      return BADRESPONSE + " " + BADSIGNATURE;
+      return responseCode.getProtocolCode();
     }
+//    GuidInfo guidInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//    }
+//    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+//      FieldMetaData.remove(access, guidInfo, field, accesser);
+//      return OKRESPONSE;
+//    } else {
+//      return BADRESPONSE + " " + BADSIGNATURE;
+//    }
   }
 
   @Override
   public String getCommandDescription() {
     return " Updates the access control list of the given GUID's field to remove the accesser guid."
             + "See below for description of ACL type and signature.";
-            
+
   }
 }

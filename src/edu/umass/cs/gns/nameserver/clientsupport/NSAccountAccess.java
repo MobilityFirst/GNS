@@ -8,11 +8,13 @@ package edu.umass.cs.gns.nameserver.clientsupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.nameserver.SiteToSiteQueryHandler;
 import java.text.ParseException;
 import org.json.JSONException;
 
@@ -102,11 +104,28 @@ public class NSAccountAccess {
    * @return an {@link GuidInfo} instance
    */
   public static GuidInfo lookupGuidInfo(String guid) {
+    return lookupGuidInfo(guid, false);
+  }
+
+  /**
+   * Obtains the guid info record from the database for GUID given.
+   * If allowSiteToSiteQuery is true and the record is not available locally 
+   * a query will be sent another name server to find the record.
+   * 
+   * @param guid
+   * @param allowSiteToSiteQuery
+   * @return 
+   */
+  public static GuidInfo lookupGuidInfo(String guid, boolean allowSiteToSiteQuery) {
     ResultValue guidResult = null;
     try {
       guidResult = NameServer.getNameRecordMultiField(guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
+    }
+    // If we're allowed we go looking at other NameServers for the record in question.
+    if (guidResult == null && allowSiteToSiteQuery) {
+      guidResult = lookupGuidInfoSiteToSite(guid, AccountAccess.GUID_INFO);
     }
     if (guidResult != null) {
       try {
@@ -118,6 +137,16 @@ public class NSAccountAccess {
       }
     }
     return null;
+  }
+
+  public static ResultValue lookupGuidInfoSiteToSite(String guid, String key) {
+    QueryResult queryResult = SiteToSiteQueryHandler.sendQuery(guid, key);
+    if (!queryResult.isError()) {
+      return queryResult.get(AccountAccess.GUID_INFO);
+    } else {
+      return null;
+    }
+
   }
 
   /**

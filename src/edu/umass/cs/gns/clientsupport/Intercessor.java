@@ -56,8 +56,7 @@ public class Intercessor {
    * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
    * multiple value returns.
    */
-  private static ConcurrentMap<Integer, QueryResult> queryResult;
-  private static final ValuesMap ERRORQUERYRESULT = new ValuesMap();
+  private static ConcurrentMap<Integer, QueryResult> queryResultMap;
   private static Random randomID;
   /* Used for sending updates and getting confirmations */
   public static Transport transport;
@@ -79,7 +78,7 @@ public class Intercessor {
 
   static {
     randomID = new Random();
-    queryResult = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
+    queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
     queryTimeStamp = new ConcurrentHashMap<Integer, Date>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
@@ -115,7 +114,7 @@ public class Intercessor {
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
-              queryResult.put(id, new QueryResult(dnsResponsePacket.getRecordValue()));
+              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue()));
               monitor.notifyAll();
             }
           } else {
@@ -123,7 +122,7 @@ public class Intercessor {
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
-              queryResult.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode()));
+              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode()));
               monitor.notifyAll();
             }
           }
@@ -160,7 +159,7 @@ public class Intercessor {
     try {
       GNS.getLogger().finer("Waiting for query id: " + id);
       synchronized (monitor) {
-        while (!queryResult.containsKey(id)) {
+        while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
       }
@@ -170,8 +169,8 @@ public class Intercessor {
 
     }
     Date receiptTime = new Date(); // instrumentation
-    QueryResult result = queryResult.get(id);
-    queryResult.remove(id);
+    QueryResult result = queryResultMap.get(id);
+    queryResultMap.remove(id);
     Date sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime.getTime() - sentTime.getTime();
@@ -335,7 +334,7 @@ public class Intercessor {
     int id;
     do {
       id = randomID.nextInt();
-    } while (queryResult.containsKey(id));
+    } while (queryResultMap.containsKey(id));
     return id;
   }
 

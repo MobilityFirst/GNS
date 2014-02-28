@@ -49,7 +49,7 @@ public class Lookup {
     GNS.getLogger().fine("LNS-RecvdPkt\t" + json);
     GNS.getLogger().fine("Query-" + dnsPacket.getQueryId() + "\t"
             + System.currentTimeMillis() + "\t" + dnsPacket.getGuid() + "\tListener-response-enter");
-    if (dnsPacket.isResponse() && dnsPacket.containsAnyError() == false) {
+    if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
       GNS.getLogger().finer("LNSListenerResponse: Received ResponseNum: "
               + (0) + " --> " + dnsPacket.toJSONObject().toString());

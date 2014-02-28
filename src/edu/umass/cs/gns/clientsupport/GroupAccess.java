@@ -17,15 +17,15 @@ public class GroupAccess {
   /**
    * Hidden field that stores group members
    */
-  public static final String GROUP = GNS.makeInternalField("group");
+  public static final String GROUP = InternalField.makeInternalField("group");
   /**
    * Hidden field that stores group member join requests
    */
-  public static final String JOINREQUESTS = GNS.makeInternalField("groupJoinRequests");
+  public static final String JOINREQUESTS = InternalField.makeInternalField("groupJoinRequests");
   /**
    * Hidden field that stores group member quit requests
    */
-  public static final String LEAVEREQUESTS = GNS.makeInternalField("groupLeaveRequests");
+  public static final String LEAVEREQUESTS = InternalField.makeInternalField("groupLeaveRequests");
 
   /**
    * Sends a request to the NS to add a single GUID to a group.

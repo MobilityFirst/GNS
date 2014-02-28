@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,18 +17,22 @@ import java.util.Set;
  */
 public class FieldMetaData {
 
+  private static final String MetaDataPrefix = "_MD_";
+
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
-    return GNS.makeInternalField(metaDataType.name() + "_" + key);
+    return InternalField.makeInternalField(MetaDataPrefix + metaDataType.name() + "_" + key);
   }
 
-  /**
-   * Grabs the metadata indexed by type from the field from the guid.
-   * 
-   * @param type
-   * @param guidInfo
-   * @param key
-   * @return 
-   */
+  public static boolean isMetaDataField(String string) {
+    if (InternalField.isInternalField(string)) {
+      return string.substring(InternalField.getPrefixLength()).startsWith(MetaDataPrefix);
+    } else {
+      return false;
+    }
+
+  }
+
+  @Deprecated
   public static Set<String> lookup(MetaDataTypeName type, GuidInfo guidInfo, String key) {
     return lookup(type, guidInfo.getGuid(), key);
   }
@@ -41,6 +45,17 @@ public class FieldMetaData {
    * @param key
    * @return 
    */
+  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature, String message) {
+    String metaDataKey = makeFieldMetaDataKey(type, key);
+    QueryResult result = Intercessor.sendQuery(guid, metaDataKey, reader, signature, message);
+    if (!result.isError()) {
+      return new HashSet<String>(result.get(metaDataKey).toStringSet());
+    } else {
+      return new HashSet<String>();
+    }
+  }
+
+  @Deprecated
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key) {
     String metaDataKey = makeFieldMetaDataKey(type, key);
     QueryResult result = Intercessor.sendQueryBypassingAuthentication(guid, metaDataKey);
@@ -51,14 +66,7 @@ public class FieldMetaData {
     }
   }
 
-  /**
-   * Adds a value to the metadata of the field in the guid.
-   * 
-   * @param type
-   * @param userInfo
-   * @param key
-   * @param value 
-   */
+  @Deprecated
   public static void add(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     add(type, userInfo.getGuid(), key, value);
   }
@@ -71,24 +79,28 @@ public class FieldMetaData {
    * @param key
    * @param value 
    */
+  public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
+    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.APPEND_OR_CREATE,
+            writer, signature, message);
+  }
+
+  @Deprecated
   public static void add(MetaDataTypeName type, String guid, String key, String value) {
 
     String metaDataKey = makeFieldMetaDataKey(type, key);
     Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
   }
 
-  /**
-   * Removes a value from the metadata of the field in the guid.
-   * 
-   * @param type
-   * @param userInfo
-   * @param key
-   * @param value 
-   */
+  @Deprecated
   public static void remove(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
     remove(type, userInfo.getGuid(), key, value);
   }
 
+  public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
+    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.REMOVE, writer, signature, message);
+  }
+
+  @Deprecated
   public static void remove(MetaDataTypeName type, String guid, String key, String value) {
 
     String metaDataKey = makeFieldMetaDataKey(type, key);

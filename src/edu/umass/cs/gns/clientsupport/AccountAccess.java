@@ -32,10 +32,10 @@ import org.json.JSONException;
  */
 public class AccountAccess {
   
-  public static final String ACCOUNT_INFO = GNS.makeInternalField("account_info");
-  public static final String GUID = GNS.makeInternalField("guid");
-  public static final String PRIMARY_GUID = GNS.makeInternalField("primary_guid");
-  public static final String GUID_INFO = GNS.makeInternalField("guid_info");
+  public static final String ACCOUNT_INFO = InternalField.makeInternalField("account_info");
+  public static final String GUID = InternalField.makeInternalField("guid");
+  public static final String PRIMARY_GUID = InternalField.makeInternalField("primary_guid");
+  public static final String GUID_INFO = InternalField.makeInternalField("guid_info");
 
   /**
    * Obtains the account info record for the given GUID if that GUID

@@ -82,7 +82,7 @@ public class SelectHandler {
     Iterator<String> iter = record.keys();
     while (iter.hasNext()) {
       String key = iter.next();
-      if (!GNS.isInternalField(key)) {
+      if (!InternalField.isInternalField(key)) {
         try {
           JSONresult.put(key, record.getJSONArray(key));
         } catch (JSONException e) {

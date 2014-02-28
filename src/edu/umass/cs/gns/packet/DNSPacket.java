@@ -25,7 +25,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public final static String TIME_TO_LIVE = "ttlAddress";
   public final static String RECORD_VALUE = "recordValue";
   public final static String ACTIVE_NAME_SERVERS = "Active";
-  public final static String LNS_ID = "lnsId";
+  public final static String SENDER_ID = "senderId";
   /*
    * The header, guid, key and lnsId are called the Question section because
    * they are all that is necessary for a query.
@@ -45,7 +45,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    * This is used by the Nameservers so they know where to send the packet back to. *
    */
-  private int lnsId = -1;
+  private int senderId = -1;
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
    */
@@ -81,7 +81,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
     this.guid = qname;
     this.key = key;
-    this.lnsId = sender;
+    this.senderId = sender;
   }
 
   /**
@@ -98,7 +98,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(json.getJSONObject(HEADER));
     this.guid = json.getString(GUID);
     this.key = NameRecordKey.valueOf(json.getString(KEY));
-    this.lnsId = json.getInt(LNS_ID);
+    this.senderId = json.getInt(SENDER_ID);
     
     // These will only be present in non-error response packets
     if (header.isResponse() && !header.isAnyKindOfError()) {
@@ -146,7 +146,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
-    this.lnsId = -1;
+    this.senderId = -1;
     this.recordValue = entireRecord;
     this.ttl = TTL;
     this.activeNameServers = activeNameServers;
@@ -168,7 +168,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     json.put(HEADER, getHeader().toJSONObject());
     json.put(KEY, getKey().getName());
     json.put(GUID, getGuid());
-    json.put(LNS_ID, lnsId);
+    json.put(SENDER_ID, senderId);
     return json;
   }
   
@@ -185,7 +185,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     json.put(HEADER, getHeader().toJSONObject());
     json.put(KEY, getKey().getName());
     json.put(GUID, getGuid());
-    json.put(LNS_ID, lnsId);
+    json.put(SENDER_ID, senderId);
     return json;
   }
 
@@ -209,7 +209,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     json.put(HEADER, getHeader().toJSONObject());
     json.put(KEY, getKey().getName());
     json.put(GUID, getGuid());
-    json.put(LNS_ID, lnsId);
+    json.put(SENDER_ID, senderId);
     json.put(TIME_TO_LIVE, getTTL());
     json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
     if (recordValue != null) {
@@ -331,12 +331,12 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.recordValue.put(key.getName(), data);
   }
 
-  public int getLnsId() {
-    return lnsId;
+  public int getSenderId() {
+    return senderId;
   }
 
-  public void setLnsId(int lnsId) {
-    this.lnsId = lnsId;
+  public void setSenderId(int lnsId) {
+    this.senderId = lnsId;
   }
 
   /**

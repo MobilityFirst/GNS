@@ -8,10 +8,6 @@
 package edu.umass.cs.gns.clientsupport;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.clientsupport.FieldMetaData;
-import edu.umass.cs.gns.clientsupport.GroupAccess;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;

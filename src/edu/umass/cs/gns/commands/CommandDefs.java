@@ -95,8 +95,11 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.account.VerifyAccount",
     // ACL
     "edu.umass.cs.gns.commands.acl.AclAdd",
+    "edu.umass.cs.gns.commands.acl.AclAddSelf",
     "edu.umass.cs.gns.commands.acl.AclRemove",
+    "edu.umass.cs.gns.commands.acl.AclRemoveSelf",
     "edu.umass.cs.gns.commands.acl.AclRetrieve",
+    "edu.umass.cs.gns.commands.acl.AclRetrieveSelf",
     // Group
     "edu.umass.cs.gns.commands.group.AddMembersToGroup",
     "edu.umass.cs.gns.commands.group.AddMembersToGroupSelf",

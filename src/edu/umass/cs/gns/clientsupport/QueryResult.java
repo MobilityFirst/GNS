@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.NSResponseCode;
@@ -91,7 +90,7 @@ public class QueryResult {
    */
   private static ValuesMap removeInternalFields(ValuesMap valuesMap) {
     for (String key : valuesMap.keySet()) {
-      if (GNS.isInternalField(key)) {
+      if (InternalField.isInternalField(key)) {
         valuesMap.remove(key);
       }
     }

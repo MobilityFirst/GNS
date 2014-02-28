@@ -11,28 +11,8 @@ public class GNS {
 
   public static final int DEFAULT_TTL_SECONDS = 0;
   public static int startingPort = 24400;
-  public static final String INTERNAL_PREFIX = "_GNS_";
   public static final String GNS_URL_PATH = "GNS";
-
-  /**
-   * Creates a GNS field that is hidden from the user.
-   * 
-   * @param string
-   * @return 
-   */
-  public static String makeInternalField(String string) {
-    return INTERNAL_PREFIX + string;
-  }
-
-  /**
-   * Returns true if field is a GNS field that is hidden from the user.
-   * 
-   * @param key
-   * @return 
-   */
-  public static boolean isInternalField(String key) {
-    return key.startsWith(INTERNAL_PREFIX);
-  }
+  
 
   // This is designed so we can run LNS and NS on the same host if needed
   public enum PortType {
