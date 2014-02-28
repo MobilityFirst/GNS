@@ -10,7 +10,6 @@ import com.mongodb.util.JSON;
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.clientsupport.Protocol;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
@@ -42,7 +41,7 @@ public class MongoRecords implements NoSQLRecords {
   private static final String DBROOTNAME = "GNS";
   public static final String DBNAMERECORD = "NameRecord";
   public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
-  public static final String PAXOSLOG = "PaxosLog";
+
   private DB db;
   private String dbName;
 

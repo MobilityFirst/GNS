@@ -101,8 +101,23 @@ public class Packet {
     OLD_ACTIVE_STOP(111),
     ACTIVE_PAXOS_STOP(112),
     OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(113),
-    PRIMARY_PAXOS_STOP(114);
+    PRIMARY_PAXOS_STOP(114),
+
+
+    // Abhigyan: do not use these packet types. I have defined them for refactoring name server code
+    ACTIVE_ADD (121),  // on an add request replica controller sends to active replica
+    ACTIVE_ADD_CONFIRM (122), // after adding name, active replica confirms to replica controller
+    ACTIVE_REMOVE (123), // on a remove request, replica controller sends to active replica
+    ACTIVE_REMOVE_CONFIRM (124), // after removing name, active replica confirms to replica controller
+    ACTIVE_GROUPCHANGE (125), // replica controller requests an active replica to transition from the old to the new set of active replicas
+    ACTIVE_GROUPCHANGE_CONFIRM (126),  // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+    ACTIVE_COORDINATION(127),  // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+    REPLICA_CONTROLLER_COORDINATION(128);  // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+
+
+
     private int number;
+
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
 
     static {

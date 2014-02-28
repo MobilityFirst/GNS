@@ -704,9 +704,9 @@ public class StartNameServer {
             "Experiment Mode: " + experimentMode, debugMode);
 
     try {
-      //Generate name server lookup table. do this first as hash function depends on ConfigFileInfo
+      //Read host info for all nodes. Do this first because hash function depends on ConfigFileInfo.
       ConfigFileInfo.readHostInfo(nsFile, id);
-      // do this before starting name server. We must initializing hash function to calculate the
+      // Do this before starting name server. We must initialize hash function to calculate the
       // set of replica controllers (primaries) for a name.
       HashFunction.initializeHashFunction();
 

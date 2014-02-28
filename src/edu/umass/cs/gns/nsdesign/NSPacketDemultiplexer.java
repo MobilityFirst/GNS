@@ -1,28 +1,90 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplicaInterface;
+import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
+import edu.umass.cs.gns.packet.Packet;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 /**
  * Work in progress. Inactive code.
  *
- * Forwards incoming json objects to name server which
- * decides whether to send to active replica or replica controller.
+ * Forwards incoming json objects to either active replica or replica controller at this node.
+ *
  * Created by abhigyan on 2/26/14.
  */
 public class NSPacketDemultiplexer extends PacketDemultiplexer{
 
-  NameServer nameServerInterface;
+  NameServerInterface nameServerInterface;
 
-  public NSPacketDemultiplexer(NameServer nameServerInterface) {
+  public NSPacketDemultiplexer(NameServerInterface nameServerInterface) {
     this.nameServerInterface = nameServerInterface;
   }
 
   @Override
   public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
     for (JSONObject json: jsonObjects)
-      nameServerInterface.handleIncomingPacket(json);
+      handleIncomingPacket(json);
+  }
+
+  /**
+   * Entry point for all packets received at name server.
+   *
+   * Based on the packet type it forwards to active replica or replica controller.
+   * @param json JSON object received by NIO package.
+   */
+  public void handleIncomingPacket(JSONObject json){
+    try {
+      //
+      //
+      Packet.PacketType type = Packet.getPacketType(json);
+      switch (type) {
+
+        // Packets sent from LNS
+        case DNS:
+        case UPDATE_ADDRESS_LNS: // will not work for upserts, we should use a different packet type for them
+        case NAME_SERVER_LOAD:
+        case SELECT_REQUEST:
+        case SELECT_RESPONSE:
+          // Packets sent from replica controller
+        case ACTIVE_ADD:
+        case ACTIVE_REMOVE:
+        case ACTIVE_GROUPCHANGE:
+          // packets from coordination modules at active replica
+        case ACTIVE_COORDINATION:
+          ActiveReplicaInterface activeReplica = nameServerInterface.getActiveReplica();
+          if (activeReplica != null)  activeReplica.handleIncomingPacket(json);
+          break;
+
+        // Packets sent from LNS
+        case ADD_RECORD_LNS:
+        case REQUEST_ACTIVES:
+        case REMOVE_RECORD_LNS:
+        case NAMESERVER_SELECTION:
+        case NAME_RECORD_STATS_RESPONSE:
+          // Packets sent from active replica
+        case ACTIVE_ADD_CONFIRM:
+        case ACTIVE_REMOVE_CONFIRM:
+        case ACTIVE_GROUPCHANGE_CONFIRM:
+          // packets from coordination modules at replica controller
+        case REPLICA_CONTROLLER_COORDINATION:
+          ReplicaControllerInterface replicaController = nameServerInterface.getReplicaController();
+          if (replicaController != null)  replicaController.handleIncomingPacket(json);
+          break;
+
+        default:
+          GNS.getLogger().warning("No handler for packet type: " + type.toString());
+          break;
+      }
+    } catch (JSONException e) {
+      GNS.getLogger().severe("JSON Exception here: " + json + " Exception: " + e.getCause());
+      e.printStackTrace();
+    }
   }
 }

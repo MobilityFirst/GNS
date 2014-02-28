@@ -84,7 +84,7 @@ public class NameServer {
 
     if (StartNameServer.experimentMode) loadRecordsBeforeExperiments();
 
-    // there is no need to initialize replication framework, unless we have completed recovery of the existing set of
+    // there is no need to initialize replication framework until we have completed recovery of the existing set of
     // records at this name server.
     initializeReplicationFramework();
 
