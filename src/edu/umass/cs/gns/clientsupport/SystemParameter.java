@@ -19,7 +19,7 @@ public enum SystemParameter {
   EMAIL(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableEmailAccountAuthentication",
   "Determines if email authentication is used."),
   SIGNATURE(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableSignatureVerification",
-  "Determines query and field authentication using signatures and ACLS is enabled."),
+  "Determines if query and field authentication using signatures and ACLS is enabled."),
   MAXGUIDS(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXGUIDS",
   "Puts a limit on the number of guids an account can have."),
   MAXALIASES(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXALIASES",
