@@ -77,6 +77,7 @@ public class Defs {
   public final static String LEVEL = "level";
   public final static String SETPARAMETER = "setParameter";
   public final static String GETPARAMETER = "getParameter";
+  public final static String LISTPARAMETERS = "listParameters";
   //public final static String DELETEALLGUIDRECORDS = "deleteAllGuidRecords";
   public final static String DUMP = "dump";
   public final static String ADDTAG = "addTag";

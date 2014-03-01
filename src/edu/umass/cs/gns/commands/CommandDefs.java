@@ -123,6 +123,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.admin.Admin",
     "edu.umass.cs.gns.commands.admin.GetParameter",
     "edu.umass.cs.gns.commands.admin.SetParameter",
+    "edu.umass.cs.gns.commands.admin.ListParameters",
     "edu.umass.cs.gns.commands.admin.DeleteAllRecords",
     "edu.umass.cs.gns.commands.admin.ResetDatabase",
     "edu.umass.cs.gns.commands.admin.ClearCache",

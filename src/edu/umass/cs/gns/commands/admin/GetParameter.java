@@ -8,9 +8,9 @@
 package edu.umass.cs.gns.commands.admin;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.SystemParameter;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import edu.umass.cs.gns.httpserver.SystemParameter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -44,7 +44,7 @@ public class GetParameter extends GnsCommand {
     String parameterString = json.getString(NAME);
     if (module.isAdminMode()) {
       try {
-        return SystemParameter.valueOf(parameterString.toUpperCase()).getFieldBoolean().toString();
+        return SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString();
       } catch (Exception e) {
         System.out.println("Problem getting parameter: " + e);
       }
