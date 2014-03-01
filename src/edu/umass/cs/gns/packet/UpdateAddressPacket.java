@@ -287,6 +287,10 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     return localNameServerId;
   }
 
+  public void setLocalNameServerId(int localNameServerId) {
+    this.localNameServerId = localNameServerId;
+  }
+
   /**
    * @return the nameServerId
    */

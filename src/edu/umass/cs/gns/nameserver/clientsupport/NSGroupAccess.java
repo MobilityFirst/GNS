@@ -18,7 +18,7 @@ import edu.umass.cs.gns.nameserver.ResultValue;
 public class NSGroupAccess {
 
   public static ResultValue lookup(String guid) throws RecordNotFoundException, FieldNotFoundException {
-    NameRecord nameRecord = NameServer.getNameRecordMultiField(guid, null, GroupAccess.GROUP);
+    NameRecord nameRecord = NameRecord.getNameRecordMultiField(NameServer.recordMap, guid, null, GroupAccess.GROUP);
     return nameRecord.getKey(GroupAccess.GROUP);
   }
 }

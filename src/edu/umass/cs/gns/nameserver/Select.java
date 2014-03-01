@@ -10,15 +10,16 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
 import edu.umass.cs.gns.packet.SelectResponsePacket;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -135,11 +136,11 @@ public class Select {
     BasicRecordCursor cursor = null;
     switch (request.getOperation()) {
       case EQUALS:
-        cursor = NameServer.selectRecords(request.getKey().getName(), request.getValue());
+        cursor = NameRecord.selectRecords(NameServer.recordMap, request.getKey().getName(), request.getValue());
         break;
       case NEAR:
         if (request.getValue() instanceof String) {
-          cursor = NameServer.selectRecordsNear(request.getKey().getName(), (String) request.getValue(),
+          cursor = NameRecord.selectRecordsNear(NameServer.recordMap, request.getKey().getName(), (String) request.getValue(),
                   Double.parseDouble((String) request.getOtherValue()));
         } else {
           break;
@@ -147,13 +148,13 @@ public class Select {
         break;
       case WITHIN:
         if (request.getValue() instanceof String) {
-          cursor = NameServer.selectRecordsWithin(request.getKey().getName(), (String) request.getValue());
+          cursor = NameRecord.selectRecordsWithin(NameServer.recordMap, request.getKey().getName(), (String) request.getValue());
         } else {
           break;
         }
         break;
       case QUERY:
-        cursor = NameServer.selectRecordsQuery(request.getQuery());
+        cursor = NameRecord.selectRecordsQuery(NameServer.recordMap, request.getQuery());
         break;
       default:
         break;

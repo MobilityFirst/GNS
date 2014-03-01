@@ -5,7 +5,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.packet.NameRecordStatsPacket;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -69,7 +69,7 @@ public class SendNameRecordStats extends TimerTask {
           GNS.getLogger().fine("PUSH_STATS: Round " + count + " Name " + name + " To primaries --> " + json);
         }
         int selectedPrimaryNS = -1;
-        for (int x : HashFunction.getPrimaryReplicas(name)) {
+        for (int x : ConsistentHashing.getReplicaControllerSet(name)) {
           if (NameServer.paxosManager.isNodeUp(x)) {
             selectedPrimaryNS = x;
             break;

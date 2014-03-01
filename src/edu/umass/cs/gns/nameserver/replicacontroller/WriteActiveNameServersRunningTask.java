@@ -55,8 +55,8 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
 
     ReplicaControllerRecord rcRecord;
     try {
-      rcRecord = NameServer.getNameRecordPrimaryMultiField(name, ReplicaControllerRecord.ACTIVE_PAXOS_ID,
-              ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
+      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, name,
+              ReplicaControllerRecord.ACTIVE_PAXOS_ID, ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("RCRecord\t" + name + "\tdeleted. Task Cancelled");
       this.cancel();

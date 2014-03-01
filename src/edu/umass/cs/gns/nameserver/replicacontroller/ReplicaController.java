@@ -13,7 +13,7 @@ import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.test.FailureScenario;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -81,13 +81,11 @@ public class ReplicaController {
    * @param name
    */
   public static String getPrimaryPaxosID(String name) {
-    String nameHash = HashFunction.getMD5Hash(name);
-    String key = HashFunction.nsTreeMap.higherKey(nameHash);
-    if (key == null) {
-      return HashFunction.nsTreeMap.firstKey() + "-P";
-    }
-    return key + "-P";
+    return getPaxosIDForReplicaControllerGroup(ConsistentHashing.getReplicaControllerGroupID(name));
+  }
 
+  public static String getPaxosIDForReplicaControllerGroup(String groupID) {
+    return groupID + "-P";
   }
 
   /**
@@ -204,7 +202,8 @@ public class ReplicaController {
 
     ReplicaControllerRecord rcRecord;
     try {
-      rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), getOldActiveStopConfirmFields());
+      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, packet.getName(),
+              getOldActiveStopConfirmFields());
       GNS.getLogger().info("Record read is " + rcRecord);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Exception: name record should exist in DB. Error. " + e.getMessage());
@@ -264,7 +263,8 @@ public class ReplicaController {
   private static void createStartActiveSetTask(OldActiveSetStopPacket packet) {
 
     try {
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(), getGetOldActiveStoppedFields());
+      ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
+              NameServer.replicaController, packet.getName(), getGetOldActiveStoppedFields());
 
       if (StartNameServer.debugMode) {
         GNS.getLogger().info("Primary send: old active stopped. write to nameRecord: " + packet.getName());
@@ -362,8 +362,8 @@ public class ReplicaController {
     ChangeActiveStatusPacket packet = new ChangeActiveStatusPacket(new JSONObject(decision));
 
     try {
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(),
-              getNewActiveStartedFields());
+      ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
+              NameServer.replicaController, packet.getName(), getNewActiveStartedFields());
       GroupChangeProgress.groupChangeComplete(packet.getName());
       GNS.getLogger().info("Group change complete. name = " + rcRecord.getName() + " PaxosID " + rcRecord.getActivePaxosID());
       if (rcRecord.setNewActiveRunning(packet.getPaxosID())) {
@@ -415,8 +415,8 @@ public class ReplicaController {
     readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
 
     try {
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(removeRecord.getName(),
-              readFields);
+      ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
+              NameServer.replicaController, removeRecord.getName(), readFields);
       if (rcRecord.isRemoved()) { // if removed, send confirm to client
         ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, removeRecord);
         NameServer.tcpTransport.sendToID(removeRecord.getLocalNameServerID(), confirmPacket.toJSONObject());
@@ -490,7 +490,8 @@ public class ReplicaController {
     // 
     ReplicaControllerRecord rcRecord = null;
     try {
-      rcRecord = NameServer.getNameRecordPrimaryMultiField(removeRecord.getName(), getApplyMarkedForRemovalFields());
+      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController,
+              removeRecord.getName(), getApplyMarkedForRemovalFields());
 
     } catch (RecordNotFoundException e) {
 
@@ -599,7 +600,7 @@ public class ReplicaController {
       ReplicaControllerRecord record;
       try {
         JSONObject jsonObject = iterator.next();
-        record = new ReplicaControllerRecord(jsonObject);
+        record = new ReplicaControllerRecord(NameServer.replicaController, jsonObject);
       } catch (Exception e) {
         GNS.getLogger().severe("Problem creating ReplicaControllerRecord from JSON" + e);
         continue;

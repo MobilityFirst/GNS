@@ -4,17 +4,19 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.packet.AddRecordPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
-import edu.umass.cs.gns.replicaCoordination.ReplicaControllerPaxos;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
@@ -42,15 +44,17 @@ public class ReplicaController implements  ReplicaControllerInterface{
 
 
   /** Object provides interface to the database table storing replica controller records */
-  private BasicRecordMap replicaControllerDB;
+  public BasicRecordMap replicaControllerDB;
 
   private GNSNodeConfig gnsNodeConfig;
   /**
    * constructor object
    */
-  public ReplicaController(int nodeID, String configFile, GNSNodeConfig gnsNodeConfig, GNSNIOTransport nioServer,
-                           ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+  public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
+                           GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
     this.nodeID = nodeID;
+
+    this.gnsNodeConfig = gnsNodeConfig;
 
     this.nioServer = nioServer;
 
@@ -61,9 +65,10 @@ public class ReplicaController implements  ReplicaControllerInterface{
             // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
 
+    replicaControllerDB.reset();
     // create the activeCoordinator object.
-    rcCoordinator = new ReplicaControllerPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);
-    this.gnsNodeConfig = gnsNodeConfig;
+//    rcCoordinator = new ReplicaControllerPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);
+
 
   }
 
@@ -79,12 +84,13 @@ public class ReplicaController implements  ReplicaControllerInterface{
 
     try {
       Packet.PacketType type = Packet.getPacketType(json);
+      GNSMessagingTask msgTask = null;
       switch (type) {
 
         /** Packets sent from LNS **/
         case ADD_RECORD_LNS:  // add name to GNS
           if(rcCoordinator == null) {
-            Add.executeAddRecord(new AddRecordPacket(json), this);
+            msgTask = Add.executeAddRecord(new AddRecordPacket(json), this);
           } else {
             rcCoordinator.handleRequest(json);
           }
@@ -110,7 +116,7 @@ public class ReplicaController implements  ReplicaControllerInterface{
 
         /**  Packets sent from active replica **/
         case ACTIVE_ADD_CONFIRM:   // confirmation received from active replica that name is added
-          Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
+          msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
           break;
         case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
           if(rcCoordinator == null) {
@@ -135,7 +141,13 @@ public class ReplicaController implements  ReplicaControllerInterface{
           GNS.getLogger().warning("No handler for packet type: " + type.toString());
           break;
       }
+
+      if (msgTask != null) {
+          GNSMessagingTask.send(msgTask, nioServer);
+      }
     } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
       e.printStackTrace();
     }
 
@@ -148,6 +160,14 @@ public class ReplicaController implements  ReplicaControllerInterface{
    */
   public void executeRequestLocal(JSONObject json) {
 
+  }
+
+  public int getNodeID() {
+    return nodeID;
+  }
+
+  public BasicRecordMap getReplicaControllerDB() {
+    return replicaControllerDB;
   }
 
 }

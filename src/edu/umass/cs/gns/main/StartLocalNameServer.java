@@ -4,7 +4,7 @@ import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -308,7 +308,7 @@ public class StartLocalNameServer {
 
     Option cacheSize = OptionBuilder.withArgName("#").hasArg()
             .withDescription("Size of cache at the local name server"
-            + ".Default 1000")
+                    + ".Default 1000")
             .create(CACHE_SIZE);
 
     Option voteInterval = OptionBuilder.withArgName("seconds").hasArg()
@@ -410,12 +410,12 @@ public class StartLocalNameServer {
    */
   public static void main(String[] args) {
     int id = 0;						//node id
-    String nsFile = "";
-    startNew(id, nsFile, args);
-  }//Nameserver file
+    String nsFile = "";  //Nameserver file
+    startLNS(id, nsFile, args);
+  }
 
 
-  public static void startNew(int id, String nsFile, String... args) {
+  public static void startLNS(int id, String nsFile, String... args) {
     try {
       CommandLine parser = null;
       try {
@@ -431,43 +431,69 @@ public class StartLocalNameServer {
         printUsage();
         System.exit(1);
       }
+      String configFile = null;
+      if (parser.hasOption(CONFIG_FILE))
+        configFile = parser.getOptionValue(CONFIG_FILE);
 
-      // load options given in config file in a java properties object
-      Properties prop = new Properties();
-      if (parser.hasOption(CONFIG_FILE))  {
-        String value = parser.getOptionValue(CONFIG_FILE);
-        File f = new File(value);
-        if (f.exists() == false) {
-          System.err.println("Config file not found:" + value);
-          System.exit(2);
-        }
-        InputStream input = new FileInputStream(value);
-        // load a properties file
-        prop.load(input);
+      startLNSConfigFile(id, nsFile, configFile, parser);
+    }  catch (Exception e1) {
+      e1.printStackTrace();
+      printUsage();
+      System.exit(1);
+    }
+  }
 
-      }
+  /**
+   * During testing, we can start LNS by calling this method without using command line parameters.
+   * Three parameters of this method, <code>id</code>, <code>nsFile</code>, and <code>configFile</code>, are
+   * sufficient to start local name server; <code>CommandLine</code> can be null. Values of id and nsFile will not be
+   * used, if config file also contains values of these parameters.
+   *
+   * @param id  ID of local name server
+   * @param nsFile node config file (can be null)
+   * @param configFile config file with parameters (can be null)
+   * @param parser command line arguments (can be null)
+   */
+  public static void startLNSConfigFile(int id, String nsFile, String configFile, CommandLine parser) {
+    try {
 
       // create a hash map with all options including options in config file and the command line arguments
       HashMap<String, String> allValues = new HashMap<String, String>();
 
-      // add options given in config file to hash map
-      for (String propertyName: prop.stringPropertyNames()) {
-        allValues.put(propertyName, prop.getProperty(propertyName));
+      if (configFile != null) {
+        File f = new File(configFile);
+        if (f.exists() == false) {
+          System.err.println("Config file not found:" + configFile);
+          System.exit(2);
+        }
+        InputStream input = new FileInputStream(configFile);
+        // load a properties file
+        Properties prop = new Properties();
+        prop.load(input);
+
+        // add options given in config file to hash map
+        for (String propertyName: prop.stringPropertyNames()) {
+          allValues.put(propertyName, prop.getProperty(propertyName));
+        }
+
       }
 
       // add options given via command line to hashmap. these options can override options given in config file.
-      for (Option option: parser.getOptions()) {
-        String argName = option.getOpt();
-        String value = option.getValue();
-        // if an option has a boolean value, the command line arguments do not say true/false for some of these options
-        // if option name is given as argument on the command line, it means the value is true. therefore, the hashmap
-        // will also assign the value true for these options.
-        if (value == null) value = "true";
-        allValues.put(argName, value);
+      if (parser!= null) {
+        for (Option option: parser.getOptions()) {
+          String argName = option.getOpt();
+          String value = option.getValue();
+          // if an option has a boolean value, the command line arguments do not say true/false for some of these options
+          // if option name is given as argument on the command line, it means the value is true. therefore, the hashmap
+          // will also assign the value true for these options.
+          if (value == null) value = "true";
+          allValues.put(argName, value);
+        }
       }
 
-      id = Integer.parseInt(allValues.get(ID));
-      nsFile = allValues.get(NS_FILE);
+      if (allValues.containsKey(ID)) id = Integer.parseInt(allValues.get(ID));
+      if (allValues.containsKey(NS_FILE))  nsFile = allValues.get(NS_FILE);
+
       cacheSize = (allValues.containsKey(CACHE_SIZE)) ? Integer.parseInt(allValues.get(CACHE_SIZE)) : 10000;
 
       GNS.numPrimaryReplicas = allValues.containsKey(PRIMARY) ?
@@ -601,7 +627,7 @@ public class StartLocalNameServer {
 
     try {
       ConfigFileInfo.readHostInfo(nsFile, id);
-      HashFunction.initializeHashFunction();
+      ConsistentHashing.initialize(GNS.numPrimaryReplicas, ConfigFileInfo.getNumberOfNameServers());
 
       //Start local name server
       new LocalNameServer(id).run();

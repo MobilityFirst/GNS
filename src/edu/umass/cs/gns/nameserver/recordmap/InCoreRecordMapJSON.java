@@ -9,12 +9,13 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Stores GUID, KEY, VALUE triples
@@ -139,7 +140,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   public NameRecord getNameRecord(String name) {
     if (containsName(name)) {
       try {
-        return new NameRecord(recordMap.get(name));
+        return new NameRecord(this, recordMap.get(name));
       } catch (JSONException e) {
         GNS.getLogger().severe("Error getting json record: " + e);
         return null;
@@ -219,7 +220,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
 //
 //  private static void test() throws Exception, FieldNotFoundException {
 //    ConfigFileInfo.readHostInfo("ns1", 4);
-//    HashFunction.initializeHashFunction();
+//    ConsistentHashing.initializeHashFunction();
 //    InCoreRecordMapJSON recordMap = new InCoreRecordMapJSON();
 //    NameRecord nameRecord = createNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "XYZ");
 //    recordMap.addNameRecord(nameRecord);

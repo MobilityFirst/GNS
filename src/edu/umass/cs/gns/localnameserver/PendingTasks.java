@@ -32,7 +32,7 @@ public class PendingTasks {
 
     synchronized (allTasks) {
 //      RequestActivesPacket packet = new RequestActivesPacket(name,LocalNameServer.nodeID);
-//      packet.setActiveNameServers(HashFunction.getPrimaryReplicasNoCache(name));
+//      packet.setActiveNameServers(ConsistentHashing.getPrimaryReplicasNoCache(name));
 //      LocalNameServer.addCacheEntry(packet);
 //      LocalNameServer.executorService.scheduleAtFixedRate(task,0,period, TimeUnit.MILLISECONDS);
 

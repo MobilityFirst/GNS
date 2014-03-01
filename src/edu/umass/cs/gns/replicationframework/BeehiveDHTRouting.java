@@ -1,30 +1,22 @@
 package edu.umass.cs.gns.replicationframework;
 
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 
 //import latencygenerator.LatencyGeneratorPlanetlab;
 //import requestgenerator.Request;
 //import requestgenerator.RequestStat;
 //import util.Config;
-//import util.HashFunction;
+//import util.ConsistentHashing;
 //import util.Util;
 
 public class BeehiveDHTRouting {
@@ -281,9 +273,9 @@ public class BeehiveDHTRouting {
 //		//add 3 primaries
 //		Set<Integer> primarySet;		
 //		try{
-//			HashFunction.initializeHashFunction();
+//			ConsistentHashing.initializeHashFunction();
 //			for (name = 0; name < numnames; name ++) {
-//				primarySet = HashFunction.getPrimaryReplicas(Integer.toString(name));
+//				primarySet = ConsistentHashing.getReplicaControllerSet(Integer.toString(name));
 //				for( int nsID: primarySet){
 //					if(!Config.actives.get(name).contains(nsID))
 //						Config.actives.get(name).add(nsID);

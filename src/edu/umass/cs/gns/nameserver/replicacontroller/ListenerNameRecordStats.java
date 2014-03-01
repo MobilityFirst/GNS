@@ -31,7 +31,7 @@ import java.io.IOException;
  * <p>
  * @see edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask
  * @see edu.umass.cs.gns.packet.NameServerSelectionPacket
- * @see edu.umass.cs.gns.localnameserver.original.NameServerVoteThread
+ * @see edu.umass.cs.gns.localnameserver.NameServerVoteThread
  * @see edu.umass.cs.gns.packet.NameRecordStatsPacket
  * @see edu.umass.cs.gns.nameserver.SendNameRecordStats
  */
@@ -66,7 +66,7 @@ public class ListenerNameRecordStats extends Thread {
     try {
 
 
-      ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(selectionPacket.getName());
+      ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController, selectionPacket.getName());
       try {
         rcRecord.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote(),selectionPacket.getUpdate());
 
@@ -97,7 +97,7 @@ public class ListenerNameRecordStats extends Thread {
 
     ReplicaControllerRecord rcRecord;
     try {
-      rcRecord = NameServer.getNameRecordPrimaryMultiField(statsPacket.getName(), ReplicaControllerRecord.STATS_MAP);
+      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, statsPacket.getName(), ReplicaControllerRecord.STATS_MAP);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found exception. " + statsPacket.getName());
       e.printStackTrace();

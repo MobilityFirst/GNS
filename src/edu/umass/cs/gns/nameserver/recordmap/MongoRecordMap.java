@@ -11,11 +11,12 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MongoRecordMap extends BasicRecordMap {
 
@@ -128,7 +129,7 @@ public class MongoRecordMap extends BasicRecordMap {
       if (json == null) {
         return null;
       } else {
-        return new NameRecord(json);
+        return new NameRecord(this, json);
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("Error getting name record " + name + ": " + e);
@@ -213,7 +214,7 @@ public class MongoRecordMap extends BasicRecordMap {
       if (json == null) {
         return null;
       } else {
-        return new ReplicaControllerRecord(json);
+        return new ReplicaControllerRecord(this, json);
       }
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -255,7 +256,7 @@ public class MongoRecordMap extends BasicRecordMap {
 //
 //  private static void retrieveFieldTest() throws Exception {
 //    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-//    HashFunction.initializeHashFunction();
+//    ConsistentHashing.initializeHashFunction();
 //    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
 //    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS.getName()));
 //    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));

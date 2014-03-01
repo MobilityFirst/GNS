@@ -16,15 +16,10 @@ import edu.umass.cs.gns.nameserver.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.*;
 
 /**
  *
@@ -490,7 +485,7 @@ public class CassandraRecords implements NoSQLRecords {
 //  public static void runTest() {
 //    try {
 //      ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-//      HashFunction.initializeHashFunction();
+//      ConsistentHashing.initializeHashFunction();
 //      CassandraRecords instance = CassandraRecords.getInstance();
 //      //instance.reset(DBNAMERECORD);
 //      Random random = new Random();

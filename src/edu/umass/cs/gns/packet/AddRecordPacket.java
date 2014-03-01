@@ -1,15 +1,12 @@
 package edu.umass.cs.gns.packet;
 
 
-import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * This packet is sent by a local name server to a name server to add a name to GNS.
@@ -107,7 +104,9 @@ public class AddRecordPacket extends BasicPacket {
    */
   public AddRecordPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD_LNS
-            && Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD_NS) {
+            && Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD_NS
+            && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
+            && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
     }
@@ -118,7 +117,6 @@ public class AddRecordPacket extends BasicPacket {
     this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
     this.name = json.getString(NAME);
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
-    //this.value = json.getString(VALUE);
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.ttl = json.getInt(TIME_TO_LIVE);
   }

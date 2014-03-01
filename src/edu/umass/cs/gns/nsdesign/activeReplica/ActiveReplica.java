@@ -4,14 +4,16 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaPaxos;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
@@ -46,22 +48,24 @@ public class ActiveReplica implements ActiveReplicaInterface{
   /**
    * constructor object
    */
-  public ActiveReplica(int nodeID, String configFile, GNSNodeConfig gnsNodeConfig, GNSNIOTransport nioServer,
-                       ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+  public ActiveReplica(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
+                       GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
     this.nodeID = nodeID;
+
+    this.gnsNodeConfig = gnsNodeConfig;
 
     this.nioServer = nioServer;
 
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
+
     String className = "edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap";
     nameRecordDB = (BasicRecordMap) Util.createObject(className,
             // probably should use something more generic here
             MongoRecords.DBNAMERECORD);
-
+    nameRecordDB.reset();
     // create the activeCoordinator object.
-    activeCoordinator = new ActiveReplicaPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);
+//    activeCoordinator = new ActiveReplicaPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);
 
-    this.gnsNodeConfig = gnsNodeConfig;
   }
 
 
@@ -84,6 +88,8 @@ public class ActiveReplica implements ActiveReplicaInterface{
     //  (6) ActiveReplicaCoordinator packets (from other ActiveReplicaCoordinator)
     try {
       Packet.PacketType type = Packet.getPacketType(json);
+
+      GNSMessagingTask msgTask = null;
       switch (type) {
         /** Packets sent from LNS **/
         case DNS:     // lookup sent by lns
@@ -110,7 +116,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
         /** Packets sent from replica controller **/
         case ACTIVE_ADD: // sent when new name is added to GNS
           if (activeCoordinator == null) {
-            Add.executeAddRecord(new AddRecordPacket(json), this);
+            msgTask = Add.executeAddRecord(new AddRecordPacket(json), this);
           } else {
             activeCoordinator.handleRequest(json);
           }
@@ -133,7 +139,12 @@ public class ActiveReplica implements ActiveReplicaInterface{
           GNS.getLogger().warning("No handler for packet type: " + type.toString());
           break;
       }
+      if (msgTask != null) {
+        GNSMessagingTask.send(msgTask, nioServer);
+      }
     } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

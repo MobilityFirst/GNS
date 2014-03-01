@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.activeReplica;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.DNSPacket;
 
 /**
@@ -17,6 +18,6 @@ public class Lookup {
    * @param activeReplica
    */
   public static void executeLookupLocal(DNSPacket packet, ActiveReplica activeReplica) {
-
+    GNS.getLogger().info(" Processing LOOKUP: " + packet.toString());
   }
 }

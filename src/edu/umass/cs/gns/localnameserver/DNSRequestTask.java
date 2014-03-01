@@ -25,7 +25,7 @@ import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -118,7 +118,7 @@ public class DNSRequestTask extends TimerTask {
         }
         if (cacheEntry == null) {
           RequestActivesPacket pkt = new RequestActivesPacket(incomingPacket.getGuid(), LocalNameServer.nodeID);
-          pkt.setActiveNameServers(HashFunction.getPrimaryReplicas(incomingPacket.getGuid()));
+          pkt.setActiveNameServers(ConsistentHashing.getReplicaControllerSet(incomingPacket.getGuid()));
           cacheEntry = LocalNameServer.addCacheEntry(pkt);
         }
 

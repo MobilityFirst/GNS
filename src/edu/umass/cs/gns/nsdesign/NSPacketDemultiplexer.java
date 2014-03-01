@@ -41,14 +41,16 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
    */
   public void handleIncomingPacket(JSONObject json){
     try {
-      //
-      //
+
+
+
       Packet.PacketType type = Packet.getPacketType(json);
+
       switch (type) {
 
         // Packets sent from LNS
         case DNS:
-        case UPDATE_ADDRESS_LNS: // will not work for upserts, we should use a different packet type for them
+        case UPDATE_ADDRESS_LNS:
         case NAME_SERVER_LOAD:
         case SELECT_REQUEST:
         case SELECT_RESPONSE:

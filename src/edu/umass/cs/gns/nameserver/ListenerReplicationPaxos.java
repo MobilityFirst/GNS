@@ -60,7 +60,7 @@ public class ListenerReplicationPaxos {
 
     NameRecord nameRecord;
     try {
-      nameRecord = NameServer.getNameRecordMultiField(oldActiveStopPacket.getName(),ReplicationWorkerPaxos.getActivePaxosStopFields());
+      nameRecord = NameRecord.getNameRecordMultiField(NameServer.recordMap, oldActiveStopPacket.getName(),ReplicationWorkerPaxos.getActivePaxosStopFields());
     } catch (RecordNotFoundException e) {
       GNS.getLogger().info("Record not found exception. Message = " + e.getMessage());
       return;
@@ -81,7 +81,7 @@ public class ListenerReplicationPaxos {
 
   public static void createPaxosInstanceForName(String name, Set<Integer> activeNameServers, String activePaxosID,
                                                 ValuesMap previousValue, long initScoutDelay, int ttl){
-    NameRecord nameRecord = new NameRecord(name, activeNameServers, activePaxosID, previousValue, ttl);
+    NameRecord nameRecord = new NameRecord(NameServer.recordMap, name, activeNameServers, activePaxosID, previousValue, ttl);
     createPaxosInstanceForName(nameRecord, initScoutDelay);
   }
   public static void createPaxosInstanceForName(NameRecord nameRecord, long initScoutDelay){
@@ -173,7 +173,7 @@ class ReplicationWorkerPaxos extends TimerTask {
 
 
           try {
-            NameRecord nameRecord = NameServer.getNameRecordMultiField(packet.getName(), getPrevValueRequestFields());
+            NameRecord nameRecord = NameRecord.getNameRecordMultiField(NameServer.recordMap, packet.getName(), getPrevValueRequestFields());
             ValuesMap value = null;
             try {
               value = nameRecord.getOldValuesOnPaxosIDMatch(packet.getOldActivePaxosID());
@@ -241,7 +241,7 @@ class ReplicationWorkerPaxos extends TimerTask {
 
           NameRecord nameRecord1;
           try {
-            nameRecord1 = NameServer.getNameRecordMultiField(oldActiveStopPacket.getName(), getOldActiveStopFields());
+            nameRecord1 = NameRecord.getNameRecordMultiField(NameServer.recordMap, oldActiveStopPacket.getName(), getOldActiveStopFields());
           } catch (RecordNotFoundException e) {
             GNS.getLogger().info("Record not found exception. Name = " + oldActiveStopPacket.getName());
             break;
@@ -365,9 +365,9 @@ class ReplicationWorkerPaxos extends TimerTask {
     try {
 
       try {
-        NameRecord nameRecord = new NameRecord(originalPacket.getName(), originalPacket.getNewActiveNameServers(),
+        NameRecord nameRecord = new NameRecord(NameServer.recordMap, originalPacket.getName(), originalPacket.getNewActiveNameServers(),
                 originalPacket.getNewActivePaxosID(), previousValue, ttl);
-        NameServer.addNameRecord(nameRecord);
+        NameRecord.addNameRecord(NameServer.recordMap, nameRecord);
         if (StartNameServer.debugMode) GNS.getLogger().info(" NAME RECORD ADDED AT ACTIVE NODE: "
                 + "name record = " + originalPacket.getName());
         if (StartNameServer.eventualConsistency == false) {
@@ -384,7 +384,7 @@ class ReplicationWorkerPaxos extends TimerTask {
 
 //        if (previousValue.containsKey(NameRecordKey.EdgeRecord.getName()))
         try {
-          nameRecord = NameServer.getNameRecord(originalPacket.getName());
+          nameRecord = NameRecord.getNameRecord(NameServer.recordMap, originalPacket.getName());
           nameRecord.handleNewActiveStart(originalPacket.getNewActiveNameServers(),
                   originalPacket.getNewActivePaxosID(), previousValue);
           if (StartNameServer.eventualConsistency == false) {

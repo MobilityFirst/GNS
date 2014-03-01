@@ -1,19 +1,20 @@
 package edu.umass.cs.gns.nameserver.replicacontroller;
 
+import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.StatsInfo;
-import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.database.ColumnFieldType;
-import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordExistsException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.MovingAverage;
 import org.json.JSONException;
@@ -25,84 +26,80 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * This class implements the record which a replica controller stores for a name.
- *
- * <p>
+ * <p/>
+ * <p/>
  * <b>How to use this class:</b>
- * <p>
+ * <p/>
  * <i>1. ADD a new record to database:</i>
- *    Use the constructor <code>public ReplicaControllerRecord(String name, boolean initialize)</code> to create
- *    an new record. Next, insert this record into database by calling <code>addNameRecordPrimary</code> in
- *    <code>NameServer</code>.
- * <p>
+ * Use the constructor <code>public ReplicaControllerRecord(String name, boolean initialize)</code> to create
+ * an new record. Next, insert this record into database by calling <code>addNameRecordPrimary</code> in
+ * <code>NameServer</code>.
+ * <p/>
  * <i>2. READ a record:</i>
- *    First, read record from database and create an in-memory <code>ReplicaControllerRecord</code> object. Then,
- *    use the getter methods in this class to read individual fields. To read record from database, use one of the
- *    methods in <code>NameServer</code>. If you try to read a field which you have not read from database, it
- *    will throw a <code>FieldNotFoundException</code>.
- *    <p>
- *    Usually, a part of the code needs to read a few fields from the database. As database reads are not a
- *    cheap operation, read all fields that are needed in executing a part of code in a single read from database.
- *    You could also read the entire record instead of reading only the fields you need, but reading complete records
- *    could be expensive for large records. Hence we avoid doing so.
- * <p>
+ * First, read record from database and create an in-memory <code>ReplicaControllerRecord</code> object. Then,
+ * use the getter methods in this class to read individual fields. To read record from database, use one of the
+ * methods in <code>NameServer</code>. If you try to read a field which you have not read from database, it
+ * will throw a <code>FieldNotFoundException</code>.
+ * <p/>
+ * Usually, a part of the code needs to read a few fields from the database. As database reads are not a
+ * cheap operation, read all fields that are needed in executing a part of code in a single read from database.
+ * You could also read the entire record instead of reading only the fields you need, but reading complete records
+ * could be expensive for large records. Hence we avoid doing so.
+ * <p/>
  * <i>3. WRITE/UPDATE/MODIFY a record:</i>
- *    An update operation usually modifies a few fields in the record. To make all these updates with a single
- *    database operation, we have implemented a set of update methods in this class, e.g., see method
- *    <code>updateActiveNameServers</code>. The parameters of these methods are values of fields that are to be
- *    updated. Depending on the type of update (e.g., test-and-update, increment), these methods call the
- *    appropriate function in {@link edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface} to do the update.
- *    If your update method needs to read fields in the record, make sure that these fields are already
- *    read from the database.
- *    <p>
- *    Some update operations need not be preceded by a read operation. In such cases, you can create an empty
- *    <code>ReplicaControllerRecord</code> object by calling the constructor
- *    <code>ReplicaControllerRecord(String name)</code>. This constructor initializes only the name field in the record,
- *    and does not result in a database read operation. You can then directly call the update method on this object.
- *    An example of such a method is <code>addReplicaSelectionVote</code>.
- *    <p>
- *    If the existing update methods are not sufficient, write a new update method using the same pattern.
- *    <p>
- * <p>
+ * An update operation usually modifies a few fields in the record. To make all these updates with a single
+ * database operation, we have implemented a set of update methods in this class, e.g., see method
+ * <code>updateActiveNameServers</code>. The parameters of these methods are values of fields that are to be
+ * updated. Depending on the type of update (e.g., test-and-update, increment), these methods call the
+ * appropriate function in {@link edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface} to do the update.
+ * If your update method needs to read fields in the record, make sure that these fields are already
+ * read from the database.
+ * <p/>
+ * Some update operations need not be preceded by a read operation. In such cases, you can create an empty
+ * <code>ReplicaControllerRecord</code> object by calling the constructor
+ * <code>ReplicaControllerRecord(String name)</code>. This constructor initializes only the name field in the record,
+ * and does not result in a database read operation. You can then directly call the update method on this object.
+ * An example of such a method is <code>addReplicaSelectionVote</code>.
+ * <p/>
+ * If the existing update methods are not sufficient, write a new update method using the same pattern.
+ * <p/>
+ * <p/>
  * <i>3. Add a new field to the record:</i>
- *    There are four steps:
- *    (1) Define the field as static {@link edu.umass.cs.gns.database.ColumnField} object in this class.
- *    (2) Add this field in the constructor <code>public ReplicaControllerRecord(String name, boolean initialize)</code>.
- *    (3) Update the method <code>toJSONObject</code>.
- *    (4) Create a getter method for this field.
- *
- * <p>
- *
- *   <b>Internal Design:</b> This class uses a generic <code>HashMap</code> to store fields that are currently in
- *   memory. The keys and values of the hash map are the field names (string) and their values respectively.
- *   Using a generic <code>HashMap</code>  has the advantage that we can store different types of objects in the
- *   same hash map. While reading a field, we need type conversion to get the actual object.
- * <p>
- *   In designing this class, we first thought of defining a class field for every field in the record.
- *   This design would allocate pointers for all fields in the record every time a <code>ReplicaControllerRecord</code>
- *   object is created.  We chose the <code>HashMap</code> design for its efficiency, as it only creates those fields
- *   which are necessary.
- *
- * <p>
- *
- *   <b>Thread safety:</b> This class is not thread-safe.
- *
- *
- *
- * <p>
- * <b>Suggested improvements:</b>
- * We should make this as the only class which reads/writes a <code>ReplicaControllerRecord</code> to the database.
- * Therefore, we should move some of the static methods in <code>NameServer</code> to this class.
- *
- * <p>
+ * There are four steps:
+ * (1) Define the field as static {@link edu.umass.cs.gns.database.ColumnField} object in this class.
+ * (2) Add this field in the constructor <code>public ReplicaControllerRecord(String name, boolean initialize)</code>.
+ * (3) Update the method <code>toJSONObject</code>.
+ * (4) Create a getter method for this field.
+ * <p/>
+ * <p/>
+ * <p/>
+ * <b>Internal Design:</b> This class uses a generic <code>HashMap</code> to store fields that are currently in
+ * memory. The keys and values of the hash map are the field names (string) and their values respectively.
+ * Using a generic <code>HashMap</code>  has the advantage that we can store different types of objects in the
+ * same hash map. While reading a field, we need type conversion to get the actual object.
+ * <p/>
+ * In designing this class, we first thought of defining a class field for every field in the record.
+ * This design would allocate pointers for all fields in the record every time a <code>ReplicaControllerRecord</code>
+ * object is created.  We chose the <code>HashMap</code> design for its efficiency, as it only creates those fields
+ * which are necessary.
+ * <p/>
+ * <p/>
+ * We provide a few static methods in the class for interacting with <code>BasicRecordMap.</code>.
+ * These methods provide a wrapper around <code>BasicRecordMap</code> so that the rest of system
+ * only needs to interact with the class <code>ReplicaControllerRecord</code> and not with
+ * <code>BasicRecordMap</code>. Also, if we change <code>BasicRecordMap</code>, then only this class
+ * needs to be modified, and not the code in other classes in the system.
+ * <p/>
+ * <p/>
+ * <b>Thread safety:</b> This class is not thread-safe.
+ * <p/>
+ * <p/>
  * The design of this class is similar to the design of {@link edu.umass.cs.gns.nameserver.NameRecord} class.
  *
  * @see edu.umass.cs.gns.nameserver.NameRecord
  * @see edu.umass.cs.gns.nameserver.NameServer
  * @see edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface
  * @see edu.umass.cs.gns.exceptions.FieldNotFoundException
- *
- *
- *
  */
 public class ReplicaControllerRecord {
 
@@ -124,6 +121,11 @@ public class ReplicaControllerRecord {
 
   private HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
 
+  /**
+   * Record map object which provides an interface to database
+   */
+  private BasicRecordMap replicaControllerDB;
+
   /********************************************
    * CONSTRUCTORS
    * ******************************************/
@@ -131,7 +133,7 @@ public class ReplicaControllerRecord {
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
-  public ReplicaControllerRecord(String name, boolean initialize) {
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, boolean initialize) {
 
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
@@ -139,9 +141,9 @@ public class ReplicaControllerRecord {
     if (initialize == false) {
       return;
     }
-    hashMap.put(PRIMARY_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
-    hashMap.put(ACTIVE_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
-    hashMap.put(OLD_ACTIVE_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
+    hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    hashMap.put(ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    hashMap.put(OLD_ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
 
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
 
@@ -160,19 +162,19 @@ public class ReplicaControllerRecord {
 
     hashMap.put(KEEP_ALIVE_TIME, 0);
 
+    this.replicaControllerDB = replicaControllerDB;
   }
-
 
   /**
    * ONLY FOR RUNNING EXPERIMENTS!!
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
-  public ReplicaControllerRecord(String name, Set<Integer> actives, boolean initialize) {
-    this(name, initialize);
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<Integer> actives, boolean initialize) {
+    this(replicaControllerDB, name, initialize);
 
     if (StartNameServer.experimentMode == false) {
-      GNS.getLogger().severe("Exception Exception: wrong constructor being used." );
+      GNS.getLogger().severe("Exception Exception: wrong constructor being used.");
       throw new RuntimeException();
     }
 
@@ -183,21 +185,34 @@ public class ReplicaControllerRecord {
 
   /**
    * creates an empty ReplicaControllerRecord object
+   *
    * @param name
    */
-  public ReplicaControllerRecord(String name) {
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name) {
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
-
+    this.replicaControllerDB = replicaControllerDB;
   }
+
+
+  /**
+   * Constructor used by the initialize values read from database
+   *
+   * @param allValues
+   */
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, HashMap<ColumnField, Object> allValues) {
+    this.hashMap = allValues;
+    this.replicaControllerDB = replicaControllerDB;
+  }
+
 
   /**
    * Creates a new ReplicaControllerRecord from a JSONObject.
    *
    * @param json
-   * @throws JSONException
+   * @throws org.json.JSONException
    */
-  public ReplicaControllerRecord(JSONObject json) throws JSONException {
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, JSONObject json) throws JSONException {
     hashMap = new HashMap<ColumnField, Object>();
 
     if (json.has(NAME.getName())) {
@@ -252,6 +267,8 @@ public class ReplicaControllerRecord {
     if (json.has(KEEP_ALIVE_TIME.getName())) {
       hashMap.put(KEEP_ALIVE_TIME, JSONUtils.getObject(KEEP_ALIVE_TIME, json));
     }
+
+    this.replicaControllerDB = replicaControllerDB;
   }
 
   public JSONObject toJSONObject() throws JSONException {
@@ -274,14 +291,6 @@ public class ReplicaControllerRecord {
     return null;
   }
 
-  /**
-   * Constructor used by the initialize values read from database
-   * @param allValues
-   */
-  public ReplicaControllerRecord(HashMap<ColumnField, Object> allValues) {
-    this.hashMap = allValues;
-  }
-
   /********************************************
    * GETTER methods for each ColumnField in replica controller record
    * ******************************************/
@@ -297,6 +306,7 @@ public class ReplicaControllerRecord {
 
   /**
    * Returns the PrimaryNameservers.
+   *
    * @return primaryNameservers as a set of Integers
    */
   public HashSet<Integer> getPrimaryNameservers() throws FieldNotFoundException {
@@ -342,6 +352,7 @@ public class ReplicaControllerRecord {
 
   /**
    * return paxos ID for new activeNameServers
+   *
    * @return
    */
   public String getActivePaxosID() throws FieldNotFoundException {
@@ -432,6 +443,7 @@ public class ReplicaControllerRecord {
 
   /**
    * return the keep alive time value stored in record
+   *
    * @return
    */
   public int getKeepAliveTime() throws FieldNotFoundException {
@@ -441,9 +453,11 @@ public class ReplicaControllerRecord {
     throw new FieldNotFoundException(KEEP_ALIVE_TIME);
   }
 
-  /********************************************
+  /**
+   * *****************************************
    * READ methods: these methods only read one or more fields. they use the above GETTER methods to access the values of fields.
-   * ******************************************/
+   * *****************************************
+   */
   public boolean isAdded() throws FieldNotFoundException {
     // TODO what semantics do you want? == 0 or >= 0
     return getMarkedForRemoval() == 0;
@@ -451,6 +465,7 @@ public class ReplicaControllerRecord {
 
   /**
    * whether the flag is set of not.
+   *
    * @return
    */
   public boolean isMarkedForRemoval() throws FieldNotFoundException {
@@ -520,9 +535,11 @@ public class ReplicaControllerRecord {
   }
 
 
-  /********************************************
+  /**
+   * *****************************************
    * WRITE methods: these methods write one or more fields. they may read values of some fields using the above GETTER methods.
-   * ******************************************/
+   * *****************************************
+   */
   private static ArrayList<ColumnField> setMarkedForRemoval = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getSetMarkedForRemoval() {
@@ -547,7 +564,7 @@ public class ReplicaControllerRecord {
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(1);
 
-      NameServer.replicaController.update(getName(), NAME, fields, values);
+      replicaControllerDB.update(getName(), NAME, fields, values);
       GNS.getLogger().severe("Updating now ... ");
       hashMap.put(MARKED_FOR_REMOVAL, 1);
     }
@@ -593,7 +610,7 @@ public class ReplicaControllerRecord {
     updateValues.add(activePaxosID);
     updateValues.add(newActivePaxosID);
 
-    NameServer.replicaController.update(getName(), NAME, updateFields, updateValues);
+    replicaControllerDB.update(getName(), NAME, updateFields, updateValues);
 
 //    hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, activeRunning);
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, false);
@@ -631,7 +648,7 @@ public class ReplicaControllerRecord {
       values.add(true);
 //      values.add(false);
 
-      NameServer.replicaController.update(getName(),NAME,updateFields,values);
+      replicaControllerDB.update(getName(), NAME, updateFields, values);
       hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
 //      hashMap.put(OLD_ACTIVE_NAMESERVERS_RUNNING, false);
 
@@ -672,7 +689,7 @@ public class ReplicaControllerRecord {
     values.add(lookups.toArrayList());
     values.add(updates.toArrayList());
 
-    NameServer.replicaController.update(getName(), NAME, updateFields, values);
+    replicaControllerDB.update(getName(), NAME, updateFields, values);
 
     hashMap.put(PREV_TOTAL_READ, 0);
     hashMap.put(PREV_TOTAL_WRITE, 0);
@@ -689,11 +706,11 @@ public class ReplicaControllerRecord {
    * @param id Name server id receiving the vote
    */
   public void addReplicaSelectionVote(int id, int vote, int update) throws FieldNotFoundException { //
-    NameServer.replicaController.increment(getName(),
+    replicaControllerDB.increment(getName(),
             ColumnField.keys(PREV_TOTAL_READ, PREV_TOTAL_WRITE),
-            //incrementFields, 
+            //incrementFields,
             ColumnField.values(vote, update),
-            //incrementValues, 
+            //incrementValues,
             VOTES_MAP,
             ColumnField.keys(new ColumnField(Integer.toString(id), ColumnFieldType.INTEGER)),
             //votesMapKeys,
@@ -702,7 +719,6 @@ public class ReplicaControllerRecord {
   }
 
   /**
-   *
    * @param id
    * @param readFrequency
    * @param writeFrequency
@@ -718,7 +734,7 @@ public class ReplicaControllerRecord {
       ArrayList<Object> values = new ArrayList<Object>();
       values.add(statsMap);
 
-      NameServer.replicaController.update(getName(), NAME, updateFields, values);
+      replicaControllerDB.update(getName(), NAME, updateFields, values);
       // StatsMap is already updated in hashMap.
     }
   }
@@ -800,9 +816,89 @@ public class ReplicaControllerRecord {
     ArrayList<Object> values = new ArrayList<Object>();
     values.add(keepAliveTime);
 
-    NameServer.replicaController.update(getName(), NAME, fields, values);
+    replicaControllerDB.update(getName(), NAME, fields, values);
 
   }
+
+
+  /**
+   BEGIN: static methods for reading/writing to database and iterating over records
+   */
+
+
+  /**
+   * Read the complete ReplicaControllerRecord from database
+   *
+   * @param replicaControllerDB
+   * @param name
+   * @return
+   */
+  public static ReplicaControllerRecord getNameRecordPrimary(BasicRecordMap replicaControllerDB, String name)
+          throws RecordNotFoundException {
+    return replicaControllerDB.getNameRecordPrimary(name);
+  }
+
+  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB,
+                                                                       String name, ColumnField... fields)
+          throws RecordNotFoundException {
+    return getNameRecordPrimaryMultiField(replicaControllerDB, name, new ArrayList<ColumnField>(Arrays.asList(fields)));
+  }
+
+  /**
+   * Read name record with select fields
+   *
+   * @param name
+   * @param fields
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB, String name,
+                                                                       ArrayList<ColumnField> fields)
+          throws RecordNotFoundException {
+    return new ReplicaControllerRecord(replicaControllerDB, replicaControllerDB.lookup(name, ReplicaControllerRecord.NAME, fields));
+  }
+
+  /**
+   * Add this record to database
+   *
+   * @param record
+   */
+  public static void addNameRecordPrimary(BasicRecordMap replicaControllerDB, ReplicaControllerRecord record)
+          throws RecordExistsException {
+    replicaControllerDB.addNameRecordPrimary(record);
+  }
+
+  /**
+   * Remove a ReplicaControllerRecord with given name from database
+   *
+   * @param name
+   */
+  public static void removeNameRecordPrimary(BasicRecordMap replicaControllerDB, String name) {
+    replicaControllerDB.removeNameRecord(name);
+  }
+
+  /**
+   * Replace the ReplicaControllerRecord in DB with this copy of ReplicaControllerRecord
+   *
+   * @param record
+   */
+  public static void updateNameRecordPrimary(BasicRecordMap replicaControllerDB, ReplicaControllerRecord record) {
+    replicaControllerDB.updateNameRecordPrimary(record);
+  }
+
+  public static BasicRecordCursor getAllPrimaryRowsIterator(BasicRecordMap replicaControllerDB) {
+    return replicaControllerDB.getAllRowsIterator();
+  }
+
+  //  the nuclear option
+  public static void resetDB(BasicRecordMap replicaControllerDB) {
+    replicaControllerDB.reset();
+  }
+
+  /**
+   * END: static methods for reading/writing to database and iterating over records
+   */
+
 
   // test code
   public static void main(String[] args) throws FieldNotFoundException, Exception {
@@ -816,10 +912,10 @@ public class ReplicaControllerRecord {
   // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
   private static void test() throws FieldNotFoundException, Exception {
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
+    ConsistentHashing.initialize(GNS.numPrimaryReplicas, ConfigFileInfo.getNumberOfNameServers());
     BasicRecordMap replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();
-    ReplicaControllerRecord record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
+    ReplicaControllerRecord record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
     record.addReplicaSelectionVote(1, 5, 4);
     record.addReplicaSelectionVote(1, 1, 4);
     record.addReplicaSelectionVote(2, 2, 4);
@@ -834,7 +930,7 @@ public class ReplicaControllerRecord {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
     // create the lazy record
-    record = new ReplicaControllerRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", true);
+    record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", true);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
     System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
     record.addNameServerStats(10, 50, 75);

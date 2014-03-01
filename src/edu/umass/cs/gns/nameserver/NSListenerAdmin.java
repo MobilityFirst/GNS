@@ -76,7 +76,8 @@ public class NSListenerAdmin extends Thread {
 
             ReplicaControllerRecord nameRecordPrimary = null;
             try {
-              nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeNSInfoPacket.getName(), ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+              nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController,
+                      activeNSInfoPacket.getName(), ReplicaControllerRecord.ACTIVE_NAMESERVERS);
             } catch (RecordNotFoundException e) {
               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
               break;
@@ -92,7 +93,7 @@ public class NSListenerAdmin extends Thread {
 //                    )) {
             // This name server does not contain the name
             // If this is not a primary name server for this name we ignore the request
-//                            Set<Integer> primaryNameServers = HashFunction.getPrimaryReplicas(activeNSInfoPacket.getName());
+//                            Set<Integer> primaryNameServers = ConsistentHashing.getReplicaControllerSet(activeNSInfoPacket.getName());
 //                            if (!primaryNameServers.contains(NameServer.nodeID)) {
 //                                socket.close();
 //                                continue;
@@ -131,12 +132,12 @@ public class NSListenerAdmin extends Thread {
             // if there is an argument it is a TAGNAME we return all the records that have that tag
             if (dumpRequestPacket.getArgument() != null) {
               String tag = dumpRequestPacket.getArgument();
-              BasicRecordCursor cursor = NameServer.getAllRowsIterator();
+              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(NameServer.recordMap);
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.next();
                 try {
-                  nameRecord = new NameRecord(json);
+                  nameRecord = new NameRecord(NameServer.recordMap, json);
                 } catch (JSONException e) {
                   GNS.getLogger().severe("Problem parsing json into NameRecord: " + e + " JSON is " + json.toString());
                 }
@@ -157,12 +158,12 @@ public class NSListenerAdmin extends Thread {
               // OTHERWISE WE RETURN ALL THE RECORD
             } else {
               //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-              BasicRecordCursor cursor = NameServer.getAllRowsIterator();
+              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(NameServer.recordMap);
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.next();
                 try {
-                  nameRecord = new NameRecord(json);
+                  nameRecord = new NameRecord(NameServer.recordMap, json);
                 } catch (JSONException e) {
                   GNS.getLogger().severe("Problem parsing record cursor into NameRecord: " + e + " JSON is " + json.toString());
                 }
@@ -189,12 +190,12 @@ public class NSListenerAdmin extends Thread {
                 GNS.getLogger().fine("NSListenerAdmin (" + NameServer.nodeID + ") : Handling DELETEALLRECORDS request");
                 long startTime = System.currentTimeMillis();
                 int cnt = 0;
-                BasicRecordCursor cursor = NameServer.getAllRowsIterator();
+                BasicRecordCursor cursor = NameRecord.getAllRowsIterator(NameServer.recordMap);
                 while (cursor.hasNext()) {
-                  NameRecord nameRecord = new NameRecord(cursor.next());
+                  NameRecord nameRecord = new NameRecord(NameServer.recordMap, cursor.next());
                   //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                   try {
-                    NameServer.removeNameRecord(nameRecord.getName());
+                    NameRecord.removeNameRecord(NameServer.recordMap, nameRecord.getName());
                   } catch (FieldNotFoundException e) {
                     GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

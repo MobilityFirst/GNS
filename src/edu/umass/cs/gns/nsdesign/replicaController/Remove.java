@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.RemoveRecordPacket;
 
 /**
@@ -30,7 +31,7 @@ public class Remove {
    * @param replicaController ReplicaController calling this method
    */
   public static void executeRemoveRecord(RemoveRecordPacket removeRecordPacket, ReplicaController replicaController) {
-
+    GNS.getLogger().info("Processing REMOVE " + removeRecordPacket);
   }
 
   /**

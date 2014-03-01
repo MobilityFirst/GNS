@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.test;
 
 /**
+ * **This is dead code.***
  * Creates different failure scenarios that are tested in the code
  * User: abhigyan
  * Date: 11/14/13

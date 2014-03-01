@@ -18,7 +18,7 @@ import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.bson.BSONObject;
 import org.json.JSONArray;
@@ -809,7 +809,7 @@ public class MongoRecords implements NoSQLRecords {
   private static void queryTest(int nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     NameServer.nodeID = nodeID;
     ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-    HashFunction.initializeHashFunction();
+    ConsistentHashing.initialize(3, 3);
     MongoRecords instance = MongoRecords.getInstance();
     System.out.println("***ALL RECORDS***");
     instance.printAllEntries(DBNAMERECORD);

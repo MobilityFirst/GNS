@@ -1,8 +1,5 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.util.JSONUtils;
-import java.util.Set;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -129,4 +126,8 @@ public class RemoveRecordPacket extends BasicPacket {
     return localNameServerID;
   }
 
+
+  public void setLocalNameServerID(int localNameServerID) {
+    this.localNameServerID = localNameServerID;
+  }
 }

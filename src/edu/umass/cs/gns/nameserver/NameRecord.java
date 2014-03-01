@@ -1,10 +1,14 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
+import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +40,7 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   private HashMap<ColumnField, Object> hashMap;
 
+  private BasicRecordMap recordMap;
   /********************************************
    * CONSTRUCTORS
    * ******************************************/
@@ -47,12 +52,14 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param values
    * @return
    */
-  public NameRecord(String name, Set<Integer> activeNameServers, String activePaxosID,
+  public NameRecord(BasicRecordMap recordMap, String name, Set<Integer> activeNameServers, String activePaxosID,
           ValuesMap values, int ttl) {
+    this.recordMap = recordMap;
+
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
     hashMap.put(ACTIVE_NAMESERVERS, activeNameServers);
-    hashMap.put(PRIMARY_NAMESERVERS, HashFunction.getPrimaryReplicas(name));
+    hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     hashMap.put(ACTIVE_PAXOS_ID, activePaxosID);
     hashMap.put(OLD_ACTIVE_PAXOS_ID, name + "-0");
     hashMap.put(TIME_TO_LIVE, ttl);
@@ -60,6 +67,8 @@ public class NameRecord implements Comparable<NameRecord> {
     hashMap.put(OLD_VALUES_MAP, new ValuesMap());
     hashMap.put(TOTAL_LOOKUP_REQUEST, 0);
     hashMap.put(TOTAL_UPDATE_REQUEST, 0);
+
+
   }
 
   /**
@@ -68,7 +77,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return
    * @throws JSONException
    */
-  public NameRecord(JSONObject jsonObject) throws JSONException {
+  public NameRecord(BasicRecordMap recordMap, JSONObject jsonObject) throws JSONException {
+    this.recordMap = recordMap;
 
     hashMap = new HashMap<ColumnField, Object>();
     if (jsonObject.has(NAME.getName())) {
@@ -116,7 +126,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * Constructor used by the initialize values read from database
    * @param allValues
    */
-  public NameRecord(HashMap<ColumnField, Object> allValues) {
+  public NameRecord(BasicRecordMap recordMap, HashMap<ColumnField, Object> allValues) {
+    this.recordMap = recordMap;
     this.hashMap = allValues;
   }
 
@@ -124,7 +135,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * Creates an empty name record without checking if name exists in database.
    * @param name
    */
-  public NameRecord(String name) {
+  public NameRecord(BasicRecordMap recordMap, String name) {
+    this.recordMap = recordMap;
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
   }
@@ -310,7 +322,7 @@ public class NameRecord implements Comparable<NameRecord> {
     ArrayList<Object> values = new ArrayList<Object>();
     values.add(1);
 
-    NameServer.recordMap.increment(getName(), incrementFields, values);
+    recordMap.increment(getName(), incrementFields, values);
     // TODO implement batching
   }
 
@@ -321,7 +333,7 @@ public class NameRecord implements Comparable<NameRecord> {
     ArrayList<Object> values = new ArrayList<Object>();
     values.add(1);
 
-    NameServer.recordMap.increment(getName(), incrementFields, values);
+    recordMap.increment(getName(), incrementFields, values);
   }
 
   /**
@@ -341,7 +353,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
       ArrayList<ColumnField> keys = new ArrayList<ColumnField>();
       keys.add(new ColumnField(key,ColumnFieldType.LIST_STRING));
-      NameServer.recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
+      recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
       return true;
 
     }
@@ -376,7 +388,7 @@ public class NameRecord implements Comparable<NameRecord> {
       ArrayList<Object> updatedValues = new ArrayList<Object>();
       updatedValues.add(valuesMap.get(key));
 
-      NameServer.recordMap.update(getName(), NAME, null, null, VALUES_MAP, updatedFields, updatedValues);
+      recordMap.update(getName(), NAME, null, null, VALUES_MAP, updatedFields, updatedValues);
 //      valuesMap.get();
     }
     return updated;
@@ -413,7 +425,7 @@ public class NameRecord implements Comparable<NameRecord> {
       updateValues.add(valuesMap);
       updateValues.add(new ValuesMap());
 
-      NameServer.recordMap.updateConditional(getName(), NAME, ACTIVE_PAXOS_ID, paxosID, updateFields, updateValues,
+      recordMap.updateConditional(getName(), NAME, ACTIVE_PAXOS_ID, paxosID, updateFields, updateValues,
               null,null,null);
 
       hashMap.put(OLD_ACTIVE_PAXOS_ID, paxosID);
@@ -447,7 +459,7 @@ public class NameRecord implements Comparable<NameRecord> {
     updateValues.add(paxosID);
     updateValues.add(currentValue);
 
-    NameServer.recordMap.update(getName(), NAME, updateFields, updateValues);
+    recordMap.update(getName(), NAME, updateFields, updateValues);
 
     hashMap.put(ACTIVE_NAMESERVERS, actives);
     hashMap.put(ACTIVE_PAXOS_ID, paxosID);
@@ -459,7 +471,6 @@ public class NameRecord implements Comparable<NameRecord> {
    * SETTER methods, these methods write to database one field in the name record.
    * ******************************************/
   public void setValuesMap(ValuesMap valuesMap) {
-
     throw new UnsupportedOperationException();
   }
 
@@ -490,6 +501,154 @@ public class NameRecord implements Comparable<NameRecord> {
   public void setOldValuesMap(ValuesMap oldValuesMap) {
     throw new UnsupportedOperationException();
   }
+
+
+
+  /**
+   BEGIN: static methods for reading/writing to database and iterating over records
+   */
+
+  /**
+   * Load a name record from the backing database and retrieve all the fields.
+   * @param name
+   * @return
+   * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+   */
+  public static NameRecord getNameRecord(BasicRecordMap recordMap, String name) throws RecordNotFoundException {
+    return recordMap.getNameRecord(name);
+  }
+
+  /**
+   * Load a name record from the backing database and retrieve certain fields as well.
+   *
+   * @param name
+   * @param systemFields - a list of Field structures representing "system" fields to retrieve
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields)
+          throws RecordNotFoundException {
+    return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
+  }
+
+  /**
+   * Load a name record from the backing database and retrieve certain fields as well.
+   *
+   * @param name
+   * @param systemFields - a list of Field structures representing "system" fields to retrieve
+   * @param userFields - a list of Field structures representing user fields to retrieve
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
+          throws RecordNotFoundException {
+    return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
+  }
+
+  /**
+   * Load a name record from the backing database and retrieve certain fields as well.
+   *
+   * @param name
+   * @param systemFields
+   * @param userFieldNames - strings which name the user fields to return
+   * @return
+   * @throws RecordNotFoundException
+   */
+  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
+          throws RecordNotFoundException {
+    return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
+  }
+
+  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
+    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
+    for (String name : fieldNames) {
+      result.add(new ColumnField(name, ColumnFieldType.LIST_STRING));
+    }
+    return result;
+  }
+
+  /**
+   * Add this name record to DB
+   * @param record
+   * @throws edu.umass.cs.gns.exceptions.RecordExistsException
+   */
+  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws RecordExistsException {
+    recordMap.addNameRecord(record);
+  }
+
+  /**
+   * Replace the name record in DB with this copy of name record
+   * @param record
+   */
+  public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) {
+    recordMap.updateNameRecord(record);
+  }
+
+  /**
+   * Remove name record from DB
+   * @param name
+   */
+  public static void removeNameRecord(BasicRecordMap recordMap, String name) {
+    recordMap.removeNameRecord(name);
+  }
+
+  /**
+   * Returns an iterator for all the rows in the collection with all fields filled in.
+   *
+   * @return
+   */
+  public static BasicRecordCursor getAllRowsIterator(BasicRecordMap recordMap) {
+    return recordMap.getAllRowsIterator();
+  }
+
+  /**
+   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+   * @param key
+   * @param value
+   * @return
+   */
+  public static BasicRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) {
+    return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
+  }
+
+  /**
+   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
+   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+   *
+   * @param key
+   * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * @return
+   */
+  public static BasicRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) {
+    return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
+  }
+
+  /**
+   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
+   * [LONG, LAT]. maxDistance is in meters. The returned value is a BasicRecordCursor.
+   *
+   * @param key
+   * @param value - a string that looks like this: [LONG, LAT]
+   * @param maxDistance - the distance in meters
+   * @return
+   */
+  public static BasicRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) {
+    return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
+  }
+
+  /**
+   * Returns all fields that match the query.
+   *
+   * @param query
+   * @return
+   */
+  public static BasicRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) {
+    return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
+  }
+
+  /******************************
+   * End of name record methods
+   ******************************/
 
   /**
    * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy

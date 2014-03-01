@@ -12,11 +12,11 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.*;
-import java.net.InetAddress;
-import java.util.HashSet;
-import java.util.TimerTask;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashSet;
+import java.util.TimerTask;
 
 /**
  * Sends three types of messages (with retries): AddRecordPacket, RemoveRecordPacket, and
@@ -149,14 +149,17 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       case ADD_RECORD_LNS:
         AddRecordPacket addRecordPacket = (AddRecordPacket) packet;
         addRecordPacket.setLNSRequestID(requestID);
+        addRecordPacket.setLocalNameServerID(LocalNameServer.nodeID);
         break;
       case REMOVE_RECORD_LNS:
         RemoveRecordPacket removeRecordPacket = (RemoveRecordPacket) packet;
         removeRecordPacket.setLNSRequestID(requestID);
+        removeRecordPacket.setLocalNameServerID(LocalNameServer.nodeID);
         break;
       case UPDATE_ADDRESS_LNS:
         UpdateAddressPacket updateAddressPacket = (UpdateAddressPacket) packet;
         updateAddressPacket.setLNSRequestID(requestID);
+        updateAddressPacket.setLocalNameServerId(LocalNameServer.nodeID);
         break;
     }
 

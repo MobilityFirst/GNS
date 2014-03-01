@@ -4,7 +4,7 @@ package edu.umass.cs.gns.main;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -708,7 +708,7 @@ public class StartNameServer {
       ConfigFileInfo.readHostInfo(nsFile, id);
       // Do this before starting name server. We must initialize hash function to calculate the
       // set of replica controllers (primaries) for a name.
-      HashFunction.initializeHashFunction();
+      ConsistentHashing.initialize(GNS.numPrimaryReplicas, ConfigFileInfo.getNumberOfNameServers());
 
       //Start nameserver
       new NameServer(id);

@@ -12,17 +12,15 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.NSResponseCode;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
-import java.util.*;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashSet;
+import java.util.TimerTask;
 
 public class SendUpdatesTask extends TimerTask {
 
@@ -80,7 +78,7 @@ public class SendUpdatesTask extends TimerTask {
 
         if (cacheEntry == null) {
           RequestActivesPacket pkt = new RequestActivesPacket(name, LocalNameServer.nodeID);
-          pkt.setActiveNameServers(HashFunction.getPrimaryReplicas(name));
+          pkt.setActiveNameServers(ConsistentHashing.getReplicaControllerSet(name));
           cacheEntry = LocalNameServer.addCacheEntry(pkt);
         }
 

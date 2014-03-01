@@ -85,7 +85,7 @@ public class ComputeNewActivesTask extends TimerTask {
         }
 
         HashMap<ColumnField, Object> hashMap = iterator.nextHashMap();
-        ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(hashMap);
+        ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController, hashMap);
 
         if (StartNameServer.experimentMode &&  Integer.parseInt(rcRecord.getName()) >=
                 StartNameServer.regularWorkloadSize + StartNameServer.mobileWorkloadSize) continue;
@@ -115,7 +115,7 @@ public class ComputeNewActivesTask extends TimerTask {
       t0 = System.currentTimeMillis();
       int nameCount = 0;
       for (String name : namesConsidered) {
-        ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(name, readFields);
+        ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, name, readFields);
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("I will select new actives for name = " + rcRecord.getName());
         }
@@ -184,7 +184,8 @@ public class ComputeNewActivesTask extends TimerTask {
     try {
       NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
 
-      ReplicaControllerRecord rcRecordPrimary = NameServer.getNameRecordPrimaryMultiField(activeProposalPacket.getName(), getReadFieldsApplyNewActivesProposed());
+      ReplicaControllerRecord rcRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
+              NameServer.replicaController, activeProposalPacket.getName(), getReadFieldsApplyNewActivesProposed());
 
       if (rcRecordPrimary == null) {
         if (StartNameServer.debugMode) {

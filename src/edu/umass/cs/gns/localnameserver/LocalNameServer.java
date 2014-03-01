@@ -7,7 +7,6 @@ package edu.umass.cs.gns.localnameserver;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
@@ -16,38 +15,23 @@ import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.NameServerLoadPacket;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
-import edu.umass.cs.gns.packet.SelectRequestPacket;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.test.LNSExperiment;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
-import edu.umass.cs.gns.util.UpdateTrace;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import edu.umass.cs.gns.util.ConsistentHashing;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  **
@@ -93,12 +77,12 @@ public class LocalNameServer {
   public static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
 
-  /**
-   * ImmutableSet containing names that can be queried by the local name server *
-   */
-  public static ImmutableSet<String> workloadSet;
-  public static List<String> lookupTrace;
-  public static List<UpdateTrace> updateTrace;
+//  /**
+//   * ImmutableSet containing names that can be queried by the local name server *
+//   */
+//  public static ImmutableSet<String> workloadSet;
+//  public static List<String> lookupTrace;
+//  public static List<TestRequest> updateTrace;
 
 
   /**
@@ -165,7 +149,9 @@ public class LocalNameServer {
 //          }
 
     if (StartLocalNameServer.experimentMode) {
-      startExperiment();
+      LNSExperiment.scheduleLookupsUpdates(StartLocalNameServer.lookupTraceFile,
+              StartLocalNameServer.updateTraceFile, StartLocalNameServer.lookupRate,
+              StartLocalNameServer.updateRateRegular, executorService);
     }
 
 
@@ -677,7 +663,7 @@ public class LocalNameServer {
     //CacheEntry cacheEntry = cache.getIfPresent(nameAndType);
     CacheEntry cacheEntry = cache.getIfPresent(name);
     //if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("GNRS Logger: Current cache entry: " + cacheEntry + " Name = " + name + " record " + recordKey);
-    return (cacheEntry != null) ? cacheEntry.getPrimaryNameServer() : HashFunction.getPrimaryReplicas(name);
+    return (cacheEntry != null) ? cacheEntry.getPrimaryNameServer() : ConsistentHashing.getReplicaControllerSet(name);
   }
 
   /**
@@ -947,115 +933,6 @@ public class LocalNameServer {
   /*********************END: methods for monitoring load at name servers. ********************************/
 
 
-
-  /*******BEGIN: during experiments, these methods read workload trace files. Not used outside experiments. ********/
-
-
-  private static void startExperiment() throws IOException, InterruptedException{
-
-    if (StartLocalNameServer.workloadFile != null) {
-      workloadSet = ImmutableSet.copyOf(readWorkloadFile(StartLocalNameServer.workloadFile));
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().info("Workload: " + workloadSet.toString());
-      }
-    }
-
-    if (StartLocalNameServer.lookupTraceFile != null) {
-      lookupTrace = readLookupTrace(StartLocalNameServer.lookupTraceFile);
-    }
-
-    if (StartLocalNameServer.updateTraceFile != null) {
-      updateTrace = readUpdateTrace(StartLocalNameServer.updateTraceFile);
-    }
-
-    Thread.sleep(initialExpDelayMillis); // so that all local name servers can start at the same time.
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Scheduling all queries via intercessor.");
-    }
-    SendQueriesViaIntercessor.schdeduleAllQueries();
-
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Scheduling all updates via intercessor.");
-    }
-    SendUpdatesViaIntercessor.schdeduleAllUpdates();
-  }
-
-
-  /**
-   **
-   * Reads a file containing the workload for this local name server. The method returns a Set containing names that can
-   * be queried by this local name server.
-   *
-   * @param filename Workload file
-   * @return Set containing names that can be queried by this local name server.
-   * @throws IOException
-   */
-  private static Set<String> readWorkloadFile(String filename) throws IOException {
-    Set<String> workloadSet = new HashSet<String>();
-
-    BufferedReader br = new BufferedReader(new FileReader(filename));
-    while (br.ready()) {
-      final String name = br.readLine().trim();
-      if (name != null) {
-        workloadSet.add(name);
-      }
-    }
-    return workloadSet;
-  }
-
-  private static List<String> readLookupTrace(String filename) throws IOException {
-    File file = new File(filename);
-    if (!file.exists()) {
-      return null;
-    }
-    List<String> trace = new ArrayList<String>();
-    BufferedReader br = new BufferedReader(new FileReader(filename));
-    while (br.ready()) {
-      final String name = br.readLine().trim();
-      if (name != null && !name.equals("") && !name.equals("\n")) {
-        trace.add(name);
-      }
-    }
-    return trace;
-  }
-
-  private static List<UpdateTrace> readUpdateTrace(String filename) throws IOException {
-    List<UpdateTrace> trace = new ArrayList<UpdateTrace>();
-    BufferedReader br = new BufferedReader(new FileReader(filename));
-    while (br.ready()) {
-      String line = br.readLine(); //.trim();
-      if (line == null) {
-        continue;
-      }
-      line = line.trim();
-      if (line.length() == 0) continue;
-      // name type (add/remove/update)
-      String[] tokens = line.split("\\s+");
-      if (tokens.length == 2) {
-        trace.add(new UpdateTrace(tokens[0], new Integer(tokens[1])));
-        continue;
-      } else {
-        trace.add(new UpdateTrace(tokens[0], UpdateTrace.UPDATE));
-      }
-
-    }
-    br.close();
-    return trace;
-  }
-
-  /**
-   **
-   * Checks whether <i>name</i> is in the workload set for this local name server.
-   *
-   * @param name Host/device/domain name
-   * @return <i>true</i> if the workload contains <i>name</i>, <i>false</i> otherwise
-   *
-   */
-  public static boolean workloadContainsName(String name) {
-    return workloadSet.contains(name);
-  }
-
-  /*******END: during experiments, these methods read workload trace files. Not used outside experiments. ********/
 
 
   public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {

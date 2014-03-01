@@ -20,19 +20,14 @@ import edu.umass.cs.gns.nameserver.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nameserver.clientsupport.SiteToSiteQueryHandler;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.NSResponseCode;
-import edu.umass.cs.gns.packet.NameServerLoadPacket;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -43,8 +38,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Handle client requests - ADD/REMOVE/LOOKUP/UPDATE + REQUESTACTIVES
@@ -143,10 +136,10 @@ public class ClientRequestWorker extends TimerTask {
     NameRecord nameRecord;
     
     if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) { // we don't need to read for replace-all
-      nameRecord = new NameRecord(updatePacket.getName());
+      nameRecord = new NameRecord(NameServer.recordMap, updatePacket.getName());
     } else {
       try {
-        nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), null, updatePacket.getRecordKey().getName());
+        nameRecord = NameRecord.getNameRecordMultiField(NameServer.recordMap, updatePacket.getName(), null, updatePacket.getRecordKey().getName());
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + updatePacket.getName());
         e.printStackTrace();
@@ -242,10 +235,10 @@ public class ClientRequestWorker extends TimerTask {
     value = addRecordPacket.getValue();
     GNS.getLogger().fine(" ADD FROM NS (ns " + NameServer.nodeID + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
     
-    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(name, true);//NameServer.getNameRecord(name);
+    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController, name, true);//NameServer.getNameRecord(name);
 
     try {
-      NameServer.addNameRecordPrimary(rcRecord);
+      ReplicaControllerRecord.addNameRecordPrimary(NameServer.replicaController, rcRecord);
       
       if (recover) {
         GNS.getLogger().fine("Adding record: " + addRecordPacket.getName());
@@ -255,10 +248,10 @@ public class ClientRequestWorker extends TimerTask {
       ValuesMap valuesMap = new ValuesMap();
       valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
       try {
-        NameRecord nameRecord = new NameRecord(name, rcRecord.getActiveNameservers(), rcRecord.getActivePaxosID(),
+        NameRecord nameRecord = new NameRecord(NameServer.recordMap, name, rcRecord.getActiveNameservers(), rcRecord.getActivePaxosID(),
                 valuesMap, addRecordPacket.getTTL());
         try {
-          NameServer.addNameRecord(nameRecord);
+          NameRecord.addNameRecord(NameServer.recordMap, nameRecord);
           
         } catch (RecordExistsException e) {
           GNS.getLogger().severe("ERROR: Exception: name record exists but replica controller does not exist. This should never happen ");
@@ -277,8 +270,6 @@ public class ClientRequestWorker extends TimerTask {
         GNS.getLogger().severe("Field not found exception. Should not happen because we initialized all fields in record. " + e.getMessage());
         e.printStackTrace();
       }
-      
-      
     } catch (RecordExistsException e) {
       UpdateStatus status = addInProgress.remove(addRecordPacket.getLNSRequestID());
       if (status != null) {
@@ -310,7 +301,7 @@ public class ClientRequestWorker extends TimerTask {
     
     ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
     
-    Set<Integer> primaryNameServers = HashFunction.getPrimaryReplicas(addRecordPacket.getName());
+    Set<Integer> primaryNameServers = ConsistentHashing.getReplicaControllerSet(addRecordPacket.getName());
     UpdateStatus status = new UpdateStatus(addRecordPacket.getName(), addRecordPacket.getLocalNameServerID(), primaryNameServers, confirmPacket);
     status.addNameServerResponded(NameServer.nodeID);
     
@@ -373,7 +364,7 @@ public class ClientRequestWorker extends TimerTask {
     // this must be primary
     ReplicaControllerRecord nameRecordPrimary;
     try {
-      nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(updatePacket.getName(),
+      nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, updatePacket.getName(),
               ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       try {
         if (nameRecordPrimary.isMarkedForRemoval()) {
@@ -466,7 +457,7 @@ public class ClientRequestWorker extends TimerTask {
       ArrayList<ColumnField> fields = new ArrayList<ColumnField>();
       fields.add(NameRecord.ACTIVE_NAMESERVERS);
       try {
-        NameRecord nameRecord = NameServer.getNameRecordMultiField(updatePacket.getName(), fields);
+        NameRecord nameRecord = NameRecord.getNameRecordMultiField(NameServer.recordMap, updatePacket.getName(), fields);
         try {
           if (nameRecord.containsActiveNameServer(NameServer.nodeID)) {
             NameServer.tcpTransport.sendToIDs(nameRecord.getActiveNameServers(), updatePacket.toJSONObject());
@@ -575,10 +566,10 @@ public class ClientRequestWorker extends TimerTask {
       try {
         if (Defs.ALLFIELDS.equals(dnsPacket.getKey().getName())) {
           // need everything so just grab all the fields
-          nameRecord = NameServer.getNameRecord(guid);
+          nameRecord = NameRecord.getNameRecord(NameServer.recordMap, guid);
         } else {
           // otherwise grab a few system fields we need plus the field the user wanted
-          nameRecord = NameServer.getNameRecordMultiField(guid, getDNSPacketFields(), field);
+          nameRecord = NameRecord.getNameRecordMultiField(NameServer.recordMap, guid, getDNSPacketFields(), field);
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
@@ -698,8 +689,9 @@ public class ClientRequestWorker extends TimerTask {
     
     boolean sendError = false;
     try {
-      ReplicaControllerRecord rcRecord = NameServer.getNameRecordPrimaryMultiField(packet.getName(),
-              ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+      ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
+              NameServer.replicaController, packet.getName(), ReplicaControllerRecord.MARKED_FOR_REMOVAL,
+              ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       if (rcRecord.isMarkedForRemoval()) {
         sendError = true;
       } else { // send reply to client

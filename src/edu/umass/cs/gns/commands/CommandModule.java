@@ -8,13 +8,16 @@
 package edu.umass.cs.gns.commands;
 
 import edu.umass.cs.gns.clientsupport.Defs;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static edu.umass.cs.gns.clientsupport.Defs.COMMANDNAME;
+import static edu.umass.cs.gns.clientsupport.Defs.NEWLINE;
 
 /**
  *

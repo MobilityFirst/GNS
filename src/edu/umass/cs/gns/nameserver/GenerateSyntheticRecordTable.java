@@ -9,7 +9,7 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.OutputMemoryUse;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
@@ -97,7 +97,7 @@ public class GenerateSyntheticRecordTable {
 
       try {
         String strName = Integer.toString(name);
-        Set<Integer> primaryNameServer = HashFunction.getPrimaryReplicasNoCache(strName);
+        Set<Integer> primaryNameServer = ConsistentHashing.getReplicaControllerSet(strName);
 
         // Add record into the name server's record table if the name server
         // is the primary replica of this name
@@ -107,7 +107,8 @@ public class GenerateSyntheticRecordTable {
 
           if (StartNameServer.debugMode) GNS.getLogger().fine("PrimaryRecordAdded\tName:\t" + name);
           //Generate an entry for the name and add its record to the name server record table
-          ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName, nameActives.get(name), true);
+          ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(NameServer.replicaController, strName,
+                  nameActives.get(name), true);
           rcRecords.add(nameRecordPrimary.toJSONObject());
           if (rcRecords.size() == batchSize) {
             NameServer.replicaController.bulkInsertRecords(rcRecords);
@@ -139,7 +140,7 @@ public class GenerateSyntheticRecordTable {
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(randomString(10))));
 
           //Add to DB
-          NameRecord nameRecord = new NameRecord(Integer.toString(name), nameActives.get(name), name + "-1", valuesMap,
+          NameRecord nameRecord = new NameRecord(NameServer.recordMap, Integer.toString(name), nameActives.get(name), name + "-1", valuesMap,
                   0);
           nameRecords.add(nameRecord.toJSONObject());
           if (nameRecords.size() == batchSize) {
@@ -202,7 +203,7 @@ public class GenerateSyntheticRecordTable {
             ValuesMap valuesMap = new ValuesMap();
             valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(randomString(10))));
             //Add to DB
-            NameRecord nameRecord = new NameRecord(Integer.toString(nameInt), nameActives.get(nameInt), nameInt + "-1",
+            NameRecord nameRecord = new NameRecord(NameServer.recordMap, Integer.toString(nameInt), nameActives.get(nameInt), nameInt + "-1",
                     valuesMap, 0);
             nameRecords.add(nameRecord.toJSONObject());
             ListenerReplicationPaxos.createPaxosInstanceForName(Integer.toString(nameInt), nameActives.get(nameInt),
@@ -221,7 +222,7 @@ public class GenerateSyntheticRecordTable {
         ValuesMap valuesMap = new ValuesMap();
         valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(randomString(10))));
         //Add to DB
-        NameRecord nameRecord = new NameRecord(Integer.toString(nameInt), nameActives.get(nameInt), nameInt + "-1",
+        NameRecord nameRecord = new NameRecord(NameServer.recordMap, Integer.toString(nameInt), nameActives.get(nameInt), nameInt + "-1",
                 valuesMap, 0);
         nameRecords.add(nameRecord.toJSONObject());
         ListenerReplicationPaxos.createPaxosInstanceForName(nameRecord, 0);
@@ -255,7 +256,7 @@ public class GenerateSyntheticRecordTable {
           String[] tokens = line.split("\\s+");
           int name1 = Integer.parseInt(tokens[0]);
 
-          Set<Integer> primaries = HashFunction.getPrimaryReplicas(tokens[0]);
+          Set<Integer> primaries = ConsistentHashing.getReplicaControllerSet(tokens[0]);
           if (primaries.contains(NameServer.nodeID) == false) continue;
 
           HashSet<Integer> actives = new HashSet<Integer>();
@@ -267,7 +268,8 @@ public class GenerateSyntheticRecordTable {
           if (nameActives.size() == batchSize) {
             ArrayList<JSONObject> rcRecords = new ArrayList<JSONObject>();
             for (int nameInt: nameActives.keySet()) {
-              ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(Integer.toString(nameInt),
+              ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController,
+                      Integer.toString(nameInt),
                       nameActives.get(nameInt), true);
               rcRecords.add(rcRecord.toJSONObject());
             }
@@ -281,8 +283,8 @@ public class GenerateSyntheticRecordTable {
         }
         ArrayList<JSONObject> rcRecords = new ArrayList<JSONObject>();
         for (int nameInt: nameActives.keySet()) {
-          ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(Integer.toString(nameInt),
-                  nameActives.get(nameInt), true);
+          ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController,
+                  Integer.toString(nameInt), nameActives.get(nameInt), true);
           rcRecords.add(rcRecord.toJSONObject());
         }
         numPrimariesAdded += nameActives.size();
@@ -379,19 +381,19 @@ public class GenerateSyntheticRecordTable {
 
       try {
         String strName = Integer.toString(name);
-        Set<Integer> primaryNameServer = HashFunction.getPrimaryReplicas(strName);
+        Set<Integer> primaryNameServer = ConsistentHashing.getReplicaControllerSet(strName);
         if (primaryNameServer.contains(NameServer.nodeID)) {
 
           if (StartNameServer.debugMode) GNS.getLogger().fine("RecordAdded\tName:\t" + name);
           //generate record
-          ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(strName, true);
+          ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController, strName, true);
           rcRecords.add(rcRecord.toJSONObject());
 
           ValuesMap valuesMap = new ValuesMap();
           int address = random.nextInt();
           valuesMap.put(NameRecordKey.EdgeRecord.getName(), new ResultValue(Arrays.asList(Integer.toString(address))));
 
-          NameRecord nameRecord = new NameRecord(strName, rcRecord.getActiveNameservers(),
+          NameRecord nameRecord = new NameRecord(NameServer.recordMap, strName, rcRecord.getActiveNameservers(),
                   rcRecord.getActivePaxosID(), valuesMap, defaultTTLRegularNames);
           nameRecords.add(nameRecord.toJSONObject());
           if (StartNameServer.eventualConsistency == false) {
@@ -475,17 +477,17 @@ public class GenerateSyntheticRecordTable {
       if (name%1000 == 0) GNS.getLogger().info("Name complete: " + name);
       try {
         String strName = Integer.toString(name);
-        Set<Integer> primaryNameServer = HashFunction.getPrimaryReplicas(strName);
+        Set<Integer> primaryNameServer = ConsistentHashing.getReplicaControllerSet(strName);
 
         // Add record into the name server's record table if the name server
         // is the primary replica if this name
         if (StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL) {
 //          //Use the SHA-1 hash of the name as its address
-//          byte[] hash = HashFunction.SHA(strName, sha1);
+//          byte[] hash = ConsistentHashing.SHA(strName, sha1);
 //          int address = ByteUtils.BAToInt(hash);
 //
 //          //Generate an entry for the name and add its record to the name server record table
-//          ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(strName);
+//          ReplicaControllerRecord nameRecordPrimary = new ReplicaControllerRecord(NameServer.replicaControllerstrName);
 //          try {
 //            NameServer.addNameRecordPrimary(nameRecordPrimary);
 //          } catch (RecordExistsException e) {
@@ -514,13 +516,13 @@ public class GenerateSyntheticRecordTable {
 ////					recordTable.put( recordEntry.name, recordEntry );
         } else if (primaryNameServer.contains(NameServer.nodeID)) {
           //Use the SHA-1 hash of the name as its address
-//          byte[] hash = HashFunction.SHA(strName, sha1);
+//          byte[] hash = ConsistentHashing.SHA(strName, sha1);
           int address = random.nextInt(); //ByteUtils.ByteArrayToInt(hash);
           if (StartNameServer.debugMode) GNS.getLogger().fine("RecordAdded\tName:\t" + name);
           //Generate an entry for the name and add its record to the name server record table
-          ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(strName, true);
+          ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController, strName, true);
           try {
-            NameServer.addNameRecordPrimary(rcRecord);
+            ReplicaControllerRecord.addNameRecordPrimary(NameServer.replicaController, rcRecord);
           } catch (RecordExistsException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             continue;
@@ -607,7 +609,7 @@ public class GenerateSyntheticRecordTable {
     StartNameServer.replicationFramework = ReplicationFrameworkType.LOCATION;
     ConfigFileInfo.readHostInfo(configFile, 0);
     GNS.numPrimaryReplicas = GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
-    HashFunction.initializeHashFunction();
+//    ConsistentHashing.initializeHashFunction();
 //    ConfigFileInfo.setNumberOfNameServers(3);
     try{
       new NameServer(0);
@@ -629,7 +631,7 @@ public class GenerateSyntheticRecordTable {
       int name = r.nextInt(names);
       long t1 = System.currentTimeMillis();
       try {
-        NameRecord record = NameServer.getNameRecord(Integer.toString(name));
+        NameRecord record = NameRecord.getNameRecord(NameServer.recordMap, Integer.toString(name));
       } catch (RecordNotFoundException e) {
         System.out.println("Name record not found. record = " + name);
         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -695,7 +697,7 @@ public class GenerateSyntheticRecordTable {
     StartNameServer.replicationFramework = ReplicationFrameworkType.LOCATION;
     ConfigFileInfo.readHostInfo(configFile, 0);
     GNS.numPrimaryReplicas = GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
-    HashFunction.initializeHashFunction();
+//    ConsistentHashing.initializeHashFunction();
 //    ConfigFileInfo.setNumberOfNameServers(3);
     try{
       new NameServer(0);
@@ -784,7 +786,7 @@ public class GenerateSyntheticRecordTable {
   private static void doLookup(int nameInt) {
 
     try {
-      NameRecord record = NameServer.getNameRecord(Integer.toString(nameInt));
+      NameRecord record = NameRecord.getNameRecord(NameServer.recordMap, Integer.toString(nameInt));
     } catch (RecordNotFoundException e) {
       System.out.println("Name record not found. record = " + nameInt);
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -793,7 +795,7 @@ public class GenerateSyntheticRecordTable {
   }
 
   private static void doUpdate(int nameInt) {
-    NameRecord record = new NameRecord(Integer.toString(nameInt));
+    NameRecord record = new NameRecord(NameServer.recordMap, Integer.toString(nameInt));
     ResultValue value = new ResultValue();
     value.add(Util.randomString(10));
     try {
@@ -818,7 +820,7 @@ public class GenerateSyntheticRecordTable {
     StartNameServer.replicationFramework = ReplicationFrameworkType.LOCATION;
     ConfigFileInfo.readHostInfo(configFile, 0);
     GNS.numPrimaryReplicas = GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
-    HashFunction.initializeHashFunction();
+//    ConsistentHashing.initializeHashFunction();
 //    ConfigFileInfo.setNumberOfNameServers(3);
     try{
       new NameServer(0);
@@ -848,7 +850,7 @@ public class GenerateSyntheticRecordTable {
       // we can add mongo records to this
 //      int nameInt = random.nextInt(names);
       int nameInt = i % names;
-      NameRecord record = new NameRecord(Integer.toString(nameInt));
+      NameRecord record = new NameRecord(NameServer.recordMap, Integer.toString(nameInt));
       ResultValue value = new ResultValue();
       value.add(Util.randomString(10));
       long t1 = System.currentTimeMillis();
@@ -912,12 +914,12 @@ public class GenerateSyntheticRecordTable {
       int numValues = 1;
       ValuesMap valuesMap = getValuesMapSynthetic(numValues);
 
-      NameRecord nameRecord = new NameRecord(strName,ConfigFileInfo.getAllNameServerIDs(),strName+"-2",valuesMap, 0);
+      NameRecord nameRecord = new NameRecord(NameServer.recordMap, strName,ConfigFileInfo.getAllNameServerIDs(),strName+"-2",valuesMap, 0);
 //      nameRecord.handleNewActiveStart(ConfigFileInfo.getAllNameServerIDs(),
 //              strName +"-2", valuesMap);
       // first add name record, then create paxos instance for it.
       try {
-        NameServer.addNameRecord(nameRecord);
+        NameRecord.addNameRecord(NameServer.recordMap, nameRecord);
       } catch (RecordExistsException e) {
         GNS.getLogger().warning("Name record already exists. Name = " + strName);
         e.printStackTrace();

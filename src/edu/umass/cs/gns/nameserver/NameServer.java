@@ -1,17 +1,12 @@
 package edu.umass.cs.gns.nameserver;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
-import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.exceptions.RecordExistsException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
@@ -202,31 +197,13 @@ public class NameServer {
 
   public static void createPrimaryPaxosInstances() {
 
-    ArrayList<Integer> nodesSorted = new ArrayList<Integer>();
-    for (String s1 : HashFunction.nsTreeMap.keySet()) {
-      nodesSorted.add(HashFunction.nsTreeMap.get(s1));
-    }
+    HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
 
-    for (int i = 0; i < HashFunction.nsTreeMap.size(); i++) {
-      int paxosMemberIndex = i;
-      String paxosID = HashFunction.getMD5Hash(Integer.toString(nodesSorted.get(paxosMemberIndex))) + "-P";
-      HashSet<Integer> nodes = new HashSet<Integer>();
-      boolean containsNode = false;
-      while (nodes.size() < GNS.numPrimaryReplicas) {
-        if (nodesSorted.get(paxosMemberIndex) == nodeID) {
-          containsNode = true;
-        }
-        nodes.add(nodesSorted.get(paxosMemberIndex));
-        paxosMemberIndex += 1;
-        if (paxosMemberIndex == HashFunction.nsTreeMap.size()) {
-          paxosMemberIndex = 0;
-        }
-      }
+    for (String groupID: groupIDsMembers.keySet()) {
+      String paxosID = ReplicaController.getPaxosIDForReplicaControllerGroup(groupID);
 
-      if (containsNode) {
-        GNS.getLogger().info("Creating paxos instances: " + paxosID + "\t" + nodes);
-        NameServer.paxosManager.createPaxosInstance(paxosID, nodes, "");
-      }
+      GNS.getLogger().info("Creating paxos instances: " + paxosID + "\t" + groupIDsMembers.get(groupID));
+      NameServer.paxosManager.createPaxosInstance(paxosID, groupIDsMembers.get(groupID), "");
     }
 
   }
@@ -235,208 +212,211 @@ public class NameServer {
   /**** End methods for initializing different components of name server ***/
 
 
+//
+//  /******************************
+//   * Name Record methods
+//   ******************************/
+//  /**
+//   * Load a name record from the backing database and retrieve all the fields.
+//   * @param name
+//   * @return
+//   * @throws RecordNotFoundException
+//   */
+//  public static NameRecord getNameRecord(String name) throws RecordNotFoundException {
+//    return recordMap.getNameRecord(name);
+//  }
+//
+//  /**
+//   * Load a name record from the backing database and retrieve certain fields as well.
+//   *
+//   * @param name
+//   * @param systemFields - a list of Field structures representing "system" fields to retrieve
+//   * @return
+//   * @throws RecordNotFoundException
+//   */
+//  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields)
+//          throws RecordNotFoundException {
+//    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
+//  }
+//
+//  /**
+//   * Load a name record from the backing database and retrieve certain fields as well.
+//   *
+//   * @param name
+//   * @param systemFields - a list of Field structures representing "system" fields to retrieve
+//   * @param userFields - a list of Field structures representing user fields to retrieve
+//   * @return
+//   * @throws RecordNotFoundException
+//   */
+//  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
+//          throws RecordNotFoundException {
+//    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
+//  }
+//
+//  /**
+//   * Load a name record from the backing database and retrieve certain fields as well.
+//   *
+//   * @param name
+//   * @param systemFields
+//   * @param userFieldNames - strings which name the user fields to return
+//   * @return
+//   * @throws RecordNotFoundException
+//   */
+//  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
+//          throws RecordNotFoundException {
+//    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
+//  }
+//
+//  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
+//    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
+//    for (String name : fieldNames) {
+//      result.add(new ColumnField(name, ColumnFieldType.LIST_STRING));
+//    }
+//    return result;
+//  }
+//
+//  /**
+//   * Add this name record to DB
+//   * @param record
+//   * @throws RecordExistsException
+//   */
+//  public static void addNameRecord(NameRecord record) throws RecordExistsException {
+//    recordMap.addNameRecord(record);
+//  }
+//
+//  /**
+//   * Replace the name record in DB with this copy of name record
+//   * @param record
+//   */
+//  public static void updateNameRecord(NameRecord record) {
+//    recordMap.updateNameRecord(record);
+//  }
+//
+//  /**
+//   * Remove name record from DB
+//   * @param name
+//   */
+//  public static void removeNameRecord(String name) {
+//    recordMap.removeNameRecord(name);
+//  }
+//
+//  /**
+//   * Returns an iterator for all the rows in the collection with all fields filled in.
+//   *
+//   * @return
+//   */
+//  public static BasicRecordCursor getAllRowsIterator() {
+//    return recordMap.getAllRowsIterator();
+//  }
+//
+//  /**
+//   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+//   * @param key
+//   * @param value
+//   * @return
+//   */
+//  public static BasicRecordCursor selectRecords(String key, Object value) {
+//    return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
+//  }
+//
+//  /**
+//   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
+//   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+//   *
+//   * @param key
+//   * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+//   * @return
+//   */
+//  public static BasicRecordCursor selectRecordsWithin(String key, String value) {
+//    return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
+//  }
+//
+//  /**
+//   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
+//   * [LONG, LAT]. maxDistance is in meters. The returned value is a BasicRecordCursor.
+//   *
+//   * @param key
+//   * @param value - a string that looks like this: [LONG, LAT]
+//   * @param maxDistance - the distance in meters
+//   * @return
+//   */
+//  public static BasicRecordCursor selectRecordsNear(String key, String value, Double maxDistance) {
+//    return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
+//  }
+//
+//  /**
+//   * Returns all fields that match the query.
+//   *
+//   * @param query
+//   * @return
+//   */
+//  public static BasicRecordCursor selectRecordsQuery(String query) {
+//    return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
+//  }
+//
+//  /******************************
+//   * End of name record methods
+//   ******************************/
 
-  /******************************
-   * Name Record methods
-   ******************************/
-  /**
-   * Load a name record from the backing database and retrieve all the fields.
-   * @param name
-   * @return
-   * @throws RecordNotFoundException
-   */
-  public static NameRecord getNameRecord(String name) throws RecordNotFoundException {
-    return recordMap.getNameRecord(name);
-  }
 
-  /**
-   * Load a name record from the backing database and retrieve certain fields as well.
-   * 
-   * @param name
-   * @param systemFields - a list of Field structures representing "system" fields to retrieve
-   * @return
-   * @throws RecordNotFoundException
-   */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields)
-          throws RecordNotFoundException {
-    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
-  }
-  
-  /**
-   * Load a name record from the backing database and retrieve certain fields as well.
-   * 
-   * @param name
-   * @param systemFields - a list of Field structures representing "system" fields to retrieve
-   * @param userFields - a list of Field structures representing user fields to retrieve
-   * @return
-   * @throws RecordNotFoundException
-   */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
-          throws RecordNotFoundException {
-    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
-  }
 
-  /**
-   * Load a name record from the backing database and retrieve certain fields as well.
-   * 
-   * @param name
-   * @param systemFields
-   * @param userFieldNames - strings which name the user fields to return
-   * @return
-   * @throws RecordNotFoundException 
-   */
-  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
-          throws RecordNotFoundException {
-    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
-  }
-
-  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
-    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
-    for (String name : fieldNames) {
-      result.add(new ColumnField(name, ColumnFieldType.LIST_STRING));
-    }
-    return result;
-  }
-
-  /**
-   * Add this name record to DB
-   * @param record
-   * @throws RecordExistsException
-   */
-  public static void addNameRecord(NameRecord record) throws RecordExistsException {
-    recordMap.addNameRecord(record);
-  }
-
-  /**
-   * Replace the name record in DB with this copy of name record
-   * @param record
-   */
-  public static void updateNameRecord(NameRecord record) {
-    recordMap.updateNameRecord(record);
-  }
-
-  /**
-   * Remove name record from DB
-   * @param name
-   */
-  public static void removeNameRecord(String name) {
-    recordMap.removeNameRecord(name);
-  }
-
-  /**
-   * Returns an iterator for all the rows in the collection with all fields filled in.
-   * 
-   * @return 
-   */
-  public static BasicRecordCursor getAllRowsIterator() {
-    return recordMap.getAllRowsIterator();
-  }
-
-  /**
-   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
-   * @param key
-   * @param value
-   * @return 
-   */
-  public static BasicRecordCursor selectRecords(String key, Object value) {
-    return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
-  }
-
-  /**
-   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
-   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
-   * 
-   * @param key
-   * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
-   * @return 
-   */
-  public static BasicRecordCursor selectRecordsWithin(String key, String value) {
-    return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
-  }
-
-  /**
-   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple: 
-   * [LONG, LAT]. maxDistance is in meters. The returned value is a BasicRecordCursor.
-   * 
-   * @param key
-   * @param value - a string that looks like this: [LONG, LAT]
-   * @param maxDistance - the distance in meters
-   * @return 
-   */
-  public static BasicRecordCursor selectRecordsNear(String key, String value, Double maxDistance) {
-    return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
-  }
-
-  /**
-   * Returns all fields that match the query.
-   * 
-   * @param query
-   * @return 
-   */
-  public static BasicRecordCursor selectRecordsQuery(String query) {
-    return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
-  }
-
-  /******************************
-   * End of name record methods
-   ******************************/
-
-  /******************************
-   * Replica controller methods
-   ******************************/
-  /**
-   * Read the complete ReplicaControllerRecord from database
-   * @param name
-   * @return
-   */
-  public static ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException {
-    return replicaController.getNameRecordPrimary(name);
-  }
-
-  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ColumnField... fields)
-          throws RecordNotFoundException {
-    return getNameRecordPrimaryMultiField(name, new ArrayList<ColumnField>(Arrays.asList(fields)));
-  }
-
-  /**
-   * Read name record with select fields
-   * @param name
-   * @param fields
-   * @return
-   * @throws RecordNotFoundException
-   */
-  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ArrayList<ColumnField> fields)
-          throws RecordNotFoundException {
-    return new ReplicaControllerRecord(replicaController.lookup(name, ReplicaControllerRecord.NAME, fields));
-  }
-
-  /**
-   * Add this record to database
-   * @param record
-   */
-  public static void addNameRecordPrimary(ReplicaControllerRecord record) throws RecordExistsException {
-    replicaController.addNameRecordPrimary(record);
-  }
-
-  /**
-   * Remove a ReplicaControllerRecord with given name from database
-   * @param name
-   */
-  public static void removeNameRecordPrimary(String name) {
-    replicaController.removeNameRecord(name);
-  }
-
-  /**
-   * Replace the ReplicaControllerRecord in DB with this copy of ReplicaControllerRecord
-   * @param record
-   */
-  public static void updateNameRecordPrimary(ReplicaControllerRecord record) {
-    replicaController.updateNameRecordPrimary(record);
-  }
-
-  public static BasicRecordCursor getAllPrimaryRowsIterator() {
-    return replicaController.getAllRowsIterator();
-  }
+//  ABHIGYAN: keeping this code commented here because we haven't tested with other code.
+//  /******************************
+//   * Replica controller methods
+//   ******************************/
+//  /**
+//   * Read the complete ReplicaControllerRecord from database
+//   * @param name
+//   * @return
+//   */
+//  public static ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException {
+//    return replicaController.getNameRecordPrimary(name);
+//  }
+//
+//  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ColumnField... fields)
+//          throws RecordNotFoundException {
+//    return getNameRecordPrimaryMultiField(name, new ArrayList<ColumnField>(Arrays.asList(fields)));
+//  }
+//
+//  /**
+//   * Read name record with select fields
+//   * @param name
+//   * @param fields
+//   * @return
+//   * @throws RecordNotFoundException
+//   */
+//  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ArrayList<ColumnField> fields)
+//          throws RecordNotFoundException {
+//    return new ReplicaControllerRecord(replicaController.lookup(name, ReplicaControllerRecord.NAME, fields));
+//  }
+//
+//  /**
+//   * Add this record to database
+//   * @param record
+//   */
+//  public static void addNameRecordPrimary(ReplicaControllerRecord record) throws RecordExistsException {
+//    replicaController.addNameRecordPrimary(record);
+//  }
+//
+//  /**
+//   * Remove a ReplicaControllerRecord with given name from database
+//   * @param name
+//   */
+//  public static void removeNameRecordPrimary(String name) {
+//    replicaController.removeNameRecord(name);
+//  }
+//
+//  /**
+//   * Replace the ReplicaControllerRecord in DB with this copy of ReplicaControllerRecord
+//   * @param record
+//   */
+//  public static void updateNameRecordPrimary(ReplicaControllerRecord record) {
+//    replicaController.updateNameRecordPrimary(record);
+//  }
+//
+//  public static BasicRecordCursor getAllPrimaryRowsIterator() {
+//    return replicaController.getAllRowsIterator();
+//  }
 
   //  the nuclear option
   public static void resetDB() {

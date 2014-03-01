@@ -5,18 +5,19 @@
  */
 package edu.umass.cs.gns.nameserver.clientsupport;
 
-import edu.umass.cs.gns.clientsupport.*;
+import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.util.HashFunction;
+import edu.umass.cs.gns.util.ConsistentHashing;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This class handles sending DNS queries from one NS to another. 
@@ -38,7 +39,7 @@ public class SiteToSiteQueryHandler {
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
     // send a bunch out
-    for (int server : HashFunction.getPrimaryReplicas(name)) {
+    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
       sendQueryInternal(id, server, name, key);
     }
     // now we wait until the first correct packet comes back

@@ -69,7 +69,8 @@ public class StartActiveSetTask extends TimerTask {
 
       ReplicaControllerRecord nameRecordPrimary;
       try {
-        nameRecordPrimary = NameServer.getNameRecordPrimaryMultiField(name, getGetStartupActiveSetFields());
+        nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, name,
+                getGetStartupActiveSetFields());
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
         if (StartNameServer.debugMode) {

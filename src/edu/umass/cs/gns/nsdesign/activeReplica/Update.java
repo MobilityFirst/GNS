@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.activeReplica;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
 
 /*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
@@ -13,7 +14,7 @@ import edu.umass.cs.gns.packet.UpdateAddressPacket;
  */
 public class Update {
 
-  public static void executeUpdateLocal(UpdateAddressPacket packet, ActiveReplica replica) {
-
+  public static void executeUpdateLocal(UpdateAddressPacket packet, ActiveReplicaInterface replica) {
+    GNS.getLogger().info(" Processing UPDATE: " + packet.toString());
   }
 }

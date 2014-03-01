@@ -105,7 +105,7 @@ public class NSPaxosInterface implements PaxosInterface {
       String name = ReplicaController.getNameFromActivePaxosID(paxosID);
       // read all fields of the record
       try {
-        NameRecord nameRecord = NameServer.getNameRecord(name);
+        NameRecord nameRecord = NameRecord.getNameRecord(NameServer.recordMap, name);
         return  (nameRecord == null) ? null: nameRecord.toString();
       } catch (RecordNotFoundException e) {
         GNS.getLogger().warning("Exception Record not found. " + e.getMessage() + "\t" + paxosID);
@@ -134,12 +134,12 @@ public class NSPaxosInterface implements PaxosInterface {
           if (x.length() > 0) {
             recordCount += 1;
             JSONObject json = new JSONObject(x);
-            ReplicaControllerRecord rcr = new ReplicaControllerRecord(json);
+            ReplicaControllerRecord rcr = new ReplicaControllerRecord(NameServer.replicaController, json);
             GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
             try {
-              NameServer.addNameRecordPrimary(rcr);
+              ReplicaControllerRecord.addNameRecordPrimary(NameServer.replicaController, rcr);
             } catch (RecordExistsException e) {
-              NameServer.updateNameRecordPrimary(rcr);
+              ReplicaControllerRecord.updateNameRecordPrimary(NameServer.replicaController, rcr);
             }
 
             startIndex = endIndex;
@@ -152,9 +152,9 @@ public class NSPaxosInterface implements PaxosInterface {
         JSONObject json = new JSONObject(state);
         GNS.getLogger().info("Updated name record in DB: " + paxosID + "\t" + state);
         try {
-          NameServer.addNameRecord(new NameRecord(json));
+          NameRecord.addNameRecord(NameServer.recordMap, new NameRecord(NameServer.recordMap, json));
         } catch (RecordExistsException e) {
-          NameServer.updateNameRecord(new NameRecord(json));
+          NameRecord.updateNameRecord(NameServer.recordMap, new NameRecord(NameServer.recordMap, json));
         }
 
       }
