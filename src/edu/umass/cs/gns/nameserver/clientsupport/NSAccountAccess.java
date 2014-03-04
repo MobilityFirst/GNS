@@ -24,7 +24,7 @@ public class NSAccountAccess {
   public static AccountInfo lookupAccountInfoFromGuid(String guid) {
     ResultValue accountResult = null;
     try {
-      accountResult = NameRecord.getNameRecordMultiField(NameServer.recordMap, guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+      accountResult = NameRecord.getNameRecordMultiField(NameServer.getRecordMap(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -32,7 +32,7 @@ public class NSAccountAccess {
       try {
         guid = lookupPrimaryGuid(guid);
         if (guid != null) {
-          accountResult = NameRecord.getNameRecordMultiField(NameServer.recordMap, guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+          accountResult = NameRecord.getNameRecordMultiField(NameServer.getRecordMap(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
         }
       } catch (FieldNotFoundException e) {
       } catch (RecordNotFoundException e) {
@@ -62,7 +62,7 @@ public class NSAccountAccess {
   public static String lookupPrimaryGuid(String guid) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(NameServer.recordMap, guid, null, AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
+      guidResult = NameRecord.getNameRecordMultiField(NameServer.getRecordMap(), guid, null, AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -85,7 +85,7 @@ public class NSAccountAccess {
   public static String lookupGuid(String name) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(NameServer.recordMap, name, null, AccountAccess.GUID).getKey(AccountAccess.GUID);
+      guidResult = NameRecord.getNameRecordMultiField(NameServer.getRecordMap(), name, null, AccountAccess.GUID).getKey(AccountAccess.GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -120,7 +120,7 @@ public class NSAccountAccess {
   public static GuidInfo lookupGuidInfo(String guid, boolean allowSiteToSiteQuery) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(NameServer.recordMap, guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
+      guidResult = NameRecord.getNameRecordMultiField(NameServer.getRecordMap(), guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }

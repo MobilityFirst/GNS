@@ -84,7 +84,7 @@ public class NSPaxosInterface implements PaxosInterface {
   public String getState(String paxosID) {
 
     if (ReplicaController.isPrimaryPaxosID(paxosID)) {
-      BasicRecordCursor iterator = NameServer.replicaController.getAllRowsIterator();
+      BasicRecordCursor iterator = NameServer.getReplicaController().getAllRowsIterator();
 //    if (StartNameServer.debugMode) GNS.getLogger().info("Got iterator : " + replicationRound);
       StringBuilder sb = new StringBuilder();
       int recordCount = 0;
@@ -105,7 +105,7 @@ public class NSPaxosInterface implements PaxosInterface {
       String name = ReplicaController.getNameFromActivePaxosID(paxosID);
       // read all fields of the record
       try {
-        NameRecord nameRecord = NameRecord.getNameRecord(NameServer.recordMap, name);
+        NameRecord nameRecord = NameRecord.getNameRecord(NameServer.getRecordMap(), name);
         return  (nameRecord == null) ? null: nameRecord.toString();
       } catch (RecordNotFoundException e) {
         GNS.getLogger().warning("Exception Record not found. " + e.getMessage() + "\t" + paxosID);
@@ -134,12 +134,12 @@ public class NSPaxosInterface implements PaxosInterface {
           if (x.length() > 0) {
             recordCount += 1;
             JSONObject json = new JSONObject(x);
-            ReplicaControllerRecord rcr = new ReplicaControllerRecord(NameServer.replicaController, json);
+            ReplicaControllerRecord rcr = new ReplicaControllerRecord(NameServer.getReplicaController(), json);
             GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
             try {
-              ReplicaControllerRecord.addNameRecordPrimary(NameServer.replicaController, rcr);
+              ReplicaControllerRecord.addNameRecordPrimary(NameServer.getReplicaController(), rcr);
             } catch (RecordExistsException e) {
-              ReplicaControllerRecord.updateNameRecordPrimary(NameServer.replicaController, rcr);
+              ReplicaControllerRecord.updateNameRecordPrimary(NameServer.getReplicaController(), rcr);
             }
 
             startIndex = endIndex;
@@ -152,9 +152,9 @@ public class NSPaxosInterface implements PaxosInterface {
         JSONObject json = new JSONObject(state);
         GNS.getLogger().info("Updated name record in DB: " + paxosID + "\t" + state);
         try {
-          NameRecord.addNameRecord(NameServer.recordMap, new NameRecord(NameServer.recordMap, json));
+          NameRecord.addNameRecord(NameServer.getRecordMap(), new NameRecord(NameServer.getRecordMap(), json));
         } catch (RecordExistsException e) {
-          NameRecord.updateNameRecord(NameServer.recordMap, new NameRecord(NameServer.recordMap, json));
+          NameRecord.updateNameRecord(NameServer.getRecordMap(), new NameRecord(NameServer.getRecordMap(), json));
         }
 
       }

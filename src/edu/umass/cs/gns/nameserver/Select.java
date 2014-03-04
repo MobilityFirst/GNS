@@ -45,40 +45,40 @@ public class Select {
     Set<Integer> serverIds = ConfigFileInfo.getAllNameServerIDs();
     // store the into for later
     int queryId = addQueryInfo(serverIds);
-    packet.setNsID(NameServer.nodeID);
+    packet.setNsID(NameServer.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " sending select " + outgoingJSON + " to " + serverIds);
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
     // send to everybody except us (we'll do our stuff below)
     try {
-      NameServer.tcpTransport.sendToIDs(serverIds, outgoingJSON, NameServer.nodeID);
+      NameServer.getTcpTransport().sendToIDs(serverIds, outgoingJSON, NameServer.getNodeID());
     } catch (IOException e) {
       GNS.getLogger().severe("Exception while sending select request: " + e);
     }
     // Now add our responses
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
     processJSONRecords(getJSONRecordsForSelect(packet), info);
-    info.removeServerID(NameServer.nodeID);
+    info.removeServerID(NameServer.getNodeID());
 
   }
 
   public static void handleSelectRequestFromNS(JSONObject incomingJSON) throws JSONException {
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd QueryRequest: " + incomingJSON);
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request);
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacket(request.getId(), request.getLnsID(),
-              request.getLnsQueryId(), request.getNsQueryId(), NameServer.nodeID, jsonRecords);
-      GNS.getLogger().fine("NS" + NameServer.nodeID + " sending back " + jsonRecords.length() + " records");
+              request.getLnsQueryId(), request.getNsQueryId(), NameServer.getNodeID(), jsonRecords);
+      GNS.getLogger().fine("NS" + NameServer.getNodeID() + " sending back " + jsonRecords.length() + " records");
       // and send them back to the originating NS
-      NameServer.tcpTransport.sendToID(request.getNsID(), response.toJSONObject());
+      NameServer.getTcpTransport().sendToID(request.getNsID(), response.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().severe("Exception while handling select request: " + e);
       SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsID(),
-              request.getLnsQueryId(), request.getNsQueryId(), NameServer.nodeID, e.getMessage());
+              request.getLnsQueryId(), request.getNsQueryId(), NameServer.getNodeID(), e.getMessage());
       try {
-        NameServer.tcpTransport.sendToID(request.getNsID(), failResponse.toJSONObject());
+        NameServer.getTcpTransport().sendToID(request.getNsID(), failResponse.toJSONObject());
       } catch (IOException f) {
         GNS.getLogger().severe("Unable to send Failure SelectResponsePacket: " + f);
         return;
@@ -87,30 +87,30 @@ public class Select {
   }
 
   public static void handleSelectResponse(JSONObject json) throws JSONException {
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd QueryResponse: " + json);
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " recvd QueryResponse: " + json);
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " recvd from NS" + packet.getNameServer());
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " recvd from NS" + packet.getNameServer());
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " located query info:" + info.serversYetToRespond());
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " located query info:" + info.serversYetToRespond());
     // if there is no error update our results list
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getJsonArray(), info);
     } else { // error response
-      GNS.getLogger().fine("NS" + NameServer.nodeID + " processing error response: " + packet.getErrorMessage());
+      GNS.getLogger().fine("NS" + NameServer.getNodeID() + " processing error response: " + packet.getErrorMessage());
       // SHOULD SEND BACK AN ERROR TO LNS HERE
     }
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " removing server " + packet.getNameServer());
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " removing server " + packet.getNameServer());
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServer());
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " servers yet to respond:" + info.serversYetToRespond());
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
     // If all the servers have sent us a response we're done.
     // Pull the records out of the info structure and send a response back to the LNS
     if (info.allServersResponded()) {
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacket(packet.getId(), -1, packet.getLnsQueryId(),
               -1, -1, new JSONArray(info.getResponses()));
       try {
-        NameServer.tcpTransport.sendToID(packet.getLnsID(), response.toJSONObject());
+        NameServer.getTcpTransport().sendToID(packet.getLnsID(), response.toJSONObject());
       } catch (IOException f) {
         GNS.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
         return;
@@ -136,11 +136,11 @@ public class Select {
     BasicRecordCursor cursor = null;
     switch (request.getOperation()) {
       case EQUALS:
-        cursor = NameRecord.selectRecords(NameServer.recordMap, request.getKey().getName(), request.getValue());
+        cursor = NameRecord.selectRecords(NameServer.getRecordMap(), request.getKey().getName(), request.getValue());
         break;
       case NEAR:
         if (request.getValue() instanceof String) {
-          cursor = NameRecord.selectRecordsNear(NameServer.recordMap, request.getKey().getName(), (String) request.getValue(),
+          cursor = NameRecord.selectRecordsNear(NameServer.getRecordMap(), request.getKey().getName(), (String) request.getValue(),
                   Double.parseDouble((String) request.getOtherValue()));
         } else {
           break;
@@ -148,13 +148,13 @@ public class Select {
         break;
       case WITHIN:
         if (request.getValue() instanceof String) {
-          cursor = NameRecord.selectRecordsWithin(NameServer.recordMap, request.getKey().getName(), (String) request.getValue());
+          cursor = NameRecord.selectRecordsWithin(NameServer.getRecordMap(), request.getKey().getName(), (String) request.getValue());
         } else {
           break;
         }
         break;
       case QUERY:
-        cursor = NameRecord.selectRecordsQuery(NameServer.recordMap, request.getQuery());
+        cursor = NameRecord.selectRecordsQuery(NameServer.getRecordMap(), request.getQuery());
         break;
       default:
         break;
@@ -167,15 +167,15 @@ public class Select {
 
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info) throws JSONException {
     int length = jsonArray.length();
-    GNS.getLogger().fine("NS" + NameServer.nodeID + " processing " + length + " records");
+    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " processing " + length + " records");
     // org.json sucks... should have converted a long tine ago
     for (int i = 0; i < length; i++) {
       JSONObject record = jsonArray.getJSONObject(i);
       String name = record.getString(NameRecord.NAME.getName());
       if (info.addNewResponse(name, record)) {
-        GNS.getLogger().fine("NS" + NameServer.nodeID + " added record for " + name);
+        GNS.getLogger().fine("NS" + NameServer.getNodeID() + " added record for " + name);
       } else {
-        GNS.getLogger().fine("NS" + NameServer.nodeID + " DID NOT ADD record for " + name);
+        GNS.getLogger().fine("NS" + NameServer.getNodeID() + " DID NOT ADD record for " + name);
       }
     }
   }

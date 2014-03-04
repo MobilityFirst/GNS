@@ -20,10 +20,10 @@ public class NSListenerUDP extends Thread {
 
 
   public NSListenerUDP() {
-    GNS.getLogger().info("NS Node " + NameServer.nodeID + " starting NSListenerUDP on port " +
-            ConfigFileInfo.getNSUdpPort(NameServer.nodeID));
-    udpTransport = new Transport(NameServer.nodeID,
-            ConfigFileInfo.getNSUdpPort(NameServer.nodeID));
+    GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " starting NSListenerUDP on port " +
+            ConfigFileInfo.getNSUdpPort(NameServer.getNodeID()));
+    udpTransport = new Transport(NameServer.getNodeID(),
+            ConfigFileInfo.getNSUdpPort(NameServer.getNodeID()));
   }
 
   @Override
@@ -31,7 +31,7 @@ public class NSListenerUDP extends Thread {
     while (true) {
       try {
         JSONObject incomingJSON = udpTransport.readPacket();
-        NameServer.nsDemultiplexer.handleJSONObject(incomingJSON);
+        NameServer.getNsDemultiplexer().handleJSONObject(incomingJSON);
       } catch (Exception e) {
         GNS.getLogger().fine("Exception in thread: " + e.getMessage());
         e.printStackTrace();

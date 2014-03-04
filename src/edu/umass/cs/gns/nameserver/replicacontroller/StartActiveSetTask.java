@@ -69,7 +69,7 @@ public class StartActiveSetTask extends TimerTask {
 
       ReplicaControllerRecord nameRecordPrimary;
       try {
-        nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, name,
+        nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.getReplicaController(), name,
                 getGetStartupActiveSetFields());
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
@@ -122,11 +122,10 @@ public class StartActiveSetTask extends TimerTask {
         GNS.getLogger().info(" Active Name Server Selected to Query: " + selectedActive);
       }
 
-      NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(name, //nameRecordKey,
-              NameServer.nodeID, selectedActive, newActiveNameServers, oldActiveNameServers,
+      NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(name, NameServer.getNodeID(), selectedActive, newActiveNameServers, oldActiveNameServers,
               oldActivePaxosID, newActivePaxosID, PacketType.NEW_ACTIVE_START, initialValue, false);
       try {
-        NameServer.tcpTransport.sendToID(selectedActive, packet.toJSONObject());
+        NameServer.getTcpTransport().sendToID(selectedActive, packet.toJSONObject());
       } catch (IOException e) {
         GNS.getLogger().severe("IO Exception in sending NewActiveSetStartupPacket: " + e.getMessage());
         e.printStackTrace();

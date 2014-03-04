@@ -202,6 +202,9 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
+  /**
+   * Clears the database and reinitializes all indices.
+   */
   public void reset() {
     MongoRecords.getInstance().reset(collectionName);
   }

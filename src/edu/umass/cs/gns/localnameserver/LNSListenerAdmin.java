@@ -128,7 +128,9 @@ public class LNSListenerAdmin extends Thread {
         case ADMIN_REQUEST:
           AdminRequestPacket incomingPacket = new AdminRequestPacket(incomingJSON);
           switch (incomingPacket.getOperation()) {
+            // Calls remove record on every record
             case DELETEALLRECORDS:
+            // Clears the database and reinitializes all indices.
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.nodeID + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");

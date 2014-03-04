@@ -723,7 +723,7 @@ public class StartNameServer {
    */
   public static void checkFailure(FailureScenario failureScenario) {
 //    GNS.getLogger().fine("Node\t" + StartNameServer.quitNodeID + "\tFailureScenario\t" + failureScenario.toString());
-    if (NameServer.nodeID == StartNameServer.quitNodeID && failureScenario.equals(StartNameServer.failureScenario)) {
+    if (NameServer.getNodeID() == StartNameServer.quitNodeID && failureScenario.equals(StartNameServer.failureScenario)) {
       GNS.getLogger().severe("SYSTEM EXIT. Failure Scenario. " + failureScenario);
       System.exit(2);
     }

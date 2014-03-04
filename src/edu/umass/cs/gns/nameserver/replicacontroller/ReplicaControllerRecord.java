@@ -902,7 +902,7 @@ public class ReplicaControllerRecord {
 
   // test code
   public static void main(String[] args) throws FieldNotFoundException, Exception {
-    NameServer.nodeID = 4;
+    NameServer.setNodeID(4);
     StartNameServer.movingAverageWindowSize = 10;
     test();
     //System.exit(0);
@@ -911,7 +911,7 @@ public class ReplicaControllerRecord {
   // make this query:
   // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
   private static void test() throws FieldNotFoundException, Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+    ConfigFileInfo.readHostInfo("ns1", NameServer.getNodeID());
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, ConfigFileInfo.getNumberOfNameServers());
     BasicRecordMap replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();

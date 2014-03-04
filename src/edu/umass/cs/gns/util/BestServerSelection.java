@@ -169,14 +169,14 @@ public class BestServerSelection {
     if (nameServers.contains(ConfigFileInfo.getClosestNameServer())
             && nameServersQueried != null && !nameServersQueried.contains(ConfigFileInfo.getClosestNameServer())
             && ConfigFileInfo.getPingLatency(ConfigFileInfo.getClosestNameServer()) >= 0
-            && NameServer.paxosManager.isNodeUp(ConfigFileInfo.getClosestNameServer())) {
+            && NameServer.getPaxosManager().isNodeUp(ConfigFileInfo.getClosestNameServer())) {
       return ConfigFileInfo.getClosestNameServer();
     }
     double lowestLatency = Double.MAX_VALUE;
     int nameServerID = -1;
     double pingLatency;
     for (Integer nsID : nameServers) {
-      if (nameServersQueried != null && nameServersQueried.contains(nsID) || NameServer.paxosManager.isNodeUp(nsID) == false) {
+      if (nameServersQueried != null && nameServersQueried.contains(nsID) || NameServer.getPaxosManager().isNodeUp(nsID) == false) {
         continue;
       }
       pingLatency = ConfigFileInfo.getPingLatency(nsID);

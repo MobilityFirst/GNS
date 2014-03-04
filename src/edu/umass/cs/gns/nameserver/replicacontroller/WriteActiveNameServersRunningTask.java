@@ -44,7 +44,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
   public WriteActiveNameServersRunningTask(String name, String paxosID) {
     this.name = name;
     this.paxosID = paxosID;
-    int timeout = NameServer.paxosManager.getFailureDetectionTimeout();
+    int timeout = NameServer.getPaxosManager().getFailureDetectionTimeout();
     if (timeout != -1) MAX_RETRY = (int)(timeout * 1.5 / ReplicaController.RC_TIMEOUT_MILLIS );
   }
 
@@ -55,7 +55,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
 
     ReplicaControllerRecord rcRecord;
     try {
-      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, name,
+      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.getReplicaController(), name,
               ReplicaControllerRecord.ACTIVE_PAXOS_ID, ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("RCRecord\t" + name + "\tdeleted. Task Cancelled");
@@ -96,7 +96,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
             Packet.PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY);
 
     // write to replica controller record object using Primary-paxos that newActive is running
-    NameServer.paxosManager.propose(ReplicaController.getPrimaryPaxosID(name), new RequestPacket(
+    NameServer.getPaxosManager().propose(ReplicaController.getPrimaryPaxosID(name), new RequestPacket(
             Packet.PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY.getInt(), proposePacket.toString(),
             PaxosPacketType.REQUEST, false));
   }

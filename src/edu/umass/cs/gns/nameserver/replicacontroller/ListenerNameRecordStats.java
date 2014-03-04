@@ -66,7 +66,7 @@ public class ListenerNameRecordStats extends Thread {
     try {
 
 
-      ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController, selectionPacket.getName());
+      ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.getReplicaController(), selectionPacket.getName());
       try {
         rcRecord.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote(),selectionPacket.getUpdate());
 
@@ -97,7 +97,7 @@ public class ListenerNameRecordStats extends Thread {
 
     ReplicaControllerRecord rcRecord;
     try {
-      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, statsPacket.getName(), ReplicaControllerRecord.STATS_MAP);
+      rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.getReplicaController(), statsPacket.getName(), ReplicaControllerRecord.STATS_MAP);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found exception. " + statsPacket.getName());
       e.printStackTrace();

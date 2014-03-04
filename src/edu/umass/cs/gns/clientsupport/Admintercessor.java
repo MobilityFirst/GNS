@@ -78,7 +78,11 @@ public class Admintercessor {
             + " Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
   }
 
-  // the nuclear option
+  /**
+   * Clears the database and reinitializes all indices.
+   * 
+   * @return 
+   */
   public static boolean sendResetDB() {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject());

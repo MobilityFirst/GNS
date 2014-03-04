@@ -75,7 +75,7 @@ public class ComputeNewActivesTask extends TimerTask {
     try {
       HashSet<String> namesConsidered = new HashSet<String>();
       GNS.getLogger().info("ComputeNewActives before getting iterator ... ");
-      BasicRecordCursor iterator = NameServer.replicaController.getIterator(ReplicaControllerRecord.NAME, readFields);
+      BasicRecordCursor iterator = NameServer.getReplicaController().getIterator(ReplicaControllerRecord.NAME, readFields);
       GNS.getLogger().info("ComputeNewActives started iterating. ");
       long t0 = System.currentTimeMillis();
       while (iterator.hasNext()) {
@@ -85,7 +85,7 @@ public class ComputeNewActivesTask extends TimerTask {
         }
 
         HashMap<ColumnField, Object> hashMap = iterator.nextHashMap();
-        ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.replicaController, hashMap);
+        ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.getReplicaController(), hashMap);
 
         if (StartNameServer.experimentMode &&  Integer.parseInt(rcRecord.getName()) >=
                 StartNameServer.regularWorkloadSize + StartNameServer.mobileWorkloadSize) continue;
@@ -99,7 +99,7 @@ public class ComputeNewActivesTask extends TimerTask {
                   "\tRound\t" + replicationRound);
         }
 
-        if (!rcRecord.getPrimaryNameservers().contains(NameServer.nodeID)
+        if (!rcRecord.getPrimaryNameservers().contains(NameServer.getNodeID())
                 || !ReplicaController.isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
           rcRecord.recomputeAverageReadWriteRate(); // this will keep moving average calculation updated.
           continue;
@@ -115,7 +115,7 @@ public class ComputeNewActivesTask extends TimerTask {
       t0 = System.currentTimeMillis();
       int nameCount = 0;
       for (String name : namesConsidered) {
-        ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.replicaController, name, readFields);
+        ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.getReplicaController(), name, readFields);
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("I will select new actives for name = " + rcRecord.getName());
         }
@@ -129,7 +129,7 @@ public class ComputeNewActivesTask extends TimerTask {
           }
 
           String newActivePaxosID = ReplicaController.getActivePaxosID(rcRecord);
-          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(), NameServer.nodeID,
+          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(), NameServer.getNodeID(),
                   newActiveNameServers, newActivePaxosID);
           String paxosID = ReplicaController.getPrimaryPaxosID(rcRecord);
           boolean isStop = false;
@@ -137,7 +137,7 @@ public class ComputeNewActivesTask extends TimerTask {
                   PaxosPacketType.REQUEST, isStop);
 
           if (StartNameServer.debugMode) GNS.getLogger().info("Proposal to paxosID: "  + paxosID);
-          String x = NameServer.paxosManager.propose(paxosID, requestPacket);
+          String x = NameServer.getPaxosManager().propose(paxosID, requestPacket);
 
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine("PAXOS PROPOSAL: Proposal done. Response: " + x);
@@ -185,7 +185,7 @@ public class ComputeNewActivesTask extends TimerTask {
       NewActiveProposalPacket activeProposalPacket = new NewActiveProposalPacket(new JSONObject(decision));
 
       ReplicaControllerRecord rcRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
-              NameServer.replicaController, activeProposalPacket.getName(), getReadFieldsApplyNewActivesProposed());
+              NameServer.getReplicaController(), activeProposalPacket.getName(), getReadFieldsApplyNewActivesProposed());
 
       if (rcRecordPrimary == null) {
         if (StartNameServer.debugMode) {
@@ -237,8 +237,8 @@ public class ComputeNewActivesTask extends TimerTask {
       // Step 1 complete: New actives are chosen.
 
       // Step 2: stop old paxos and write to primaries.
-      if (activeProposalPacket.getProposingNode() == NameServer.nodeID || // if I have proposed this change, I will start actives group change process
-              NameServer.paxosManager.isNodeUp(activeProposalPacket.getProposingNode()) == false) { // else if proposing node has failed, then also I will start group change
+      if (activeProposalPacket.getProposingNode() == NameServer.getNodeID() || // if I have proposed this change, I will start actives group change process
+              NameServer.getPaxosManager().isNodeUp(activeProposalPacket.getProposingNode()) == false) { // else if proposing node has failed, then also I will start group change
         GroupChangeProgress.updateGroupChangeProgress(activeProposalPacket.getName(), GroupChangeProgress.GROUP_CHANGE_START);
         ReplicaController.groupChangeStartTimes.put(rcRecordPrimary.getName(), System.currentTimeMillis());
         if (StartNameServer.debugMode) {
@@ -247,7 +247,7 @@ public class ComputeNewActivesTask extends TimerTask {
         }
         StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
                 rcRecordPrimary.getOldActiveNameservers(), rcRecordPrimary.getOldActivePaxosID());
-        NameServer.timer.schedule(stopTask, 0, ReplicaController.RC_TIMEOUT_MILLIS);
+        NameServer.getTimer().schedule(stopTask, 0, ReplicaController.RC_TIMEOUT_MILLIS);
       }
 
     } catch (JSONException e) {
@@ -317,7 +317,7 @@ public class ComputeNewActivesTask extends TimerTask {
     }
 
     //Get a new set of active name servers for this record
-    newActiveNameServers = NameServer.replicationFramework.newActiveReplica(rcRecord, numReplica, count);
+    newActiveNameServers = NameServer.getReplicationFramework().newActiveReplica(rcRecord, numReplica, count);
 
 
     if (StartNameServer.debugMode) {

@@ -11,45 +11,43 @@ import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
-import edu.umass.cs.gns.util.*;
-import org.json.JSONObject;
-
+import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.MovingAverage;
+import edu.umass.cs.gns.util.OutputMemoryUse;
+import edu.umass.cs.gns.util.Util;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONObject;
 
 public class NameServer {
 
   /**
    * Nameserver's id *
    */
-  public static int nodeID;
+  private static int nodeID;
   /**
    * UDP socket over which DNSPackets are received and sent *
    */
-  public static BasicRecordMap recordMap;
-  public static BasicRecordMap replicaController;
-
-  public static ReplicationFrameworkInterface replicationFramework;
-  public static MovingAverage loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
-
-  public static NioServer tcpTransport;
+  private static BasicRecordMap recordMap;
+  private static BasicRecordMap replicaController;
+  private static ReplicationFrameworkInterface replicationFramework;
+  private static MovingAverage loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
+  private static NioServer tcpTransport;
 //  public static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
-
-  public static NSPacketDemultiplexer nsDemultiplexer;
-
-  public static Timer timer = new Timer();
-  public static ScheduledThreadPoolExecutor executorService;
-
-
-  public static PaxosManager paxosManager;
-
+  private static NSPacketDemultiplexer nsDemultiplexer;
+  private static Timer timer = new Timer();
+  private static ScheduledThreadPoolExecutor executorService;
+  private static PaxosManager paxosManager;
   /**
    * Only used during experiments.
    */
-  public static int initialExpDelayMillis = 30000;
-
+  private static int initialExpDelayMillis = 30000;
 
   /**
    * Call this constructor only after parsing all the options given in config file or command line.
@@ -77,7 +75,9 @@ public class NameServer {
     // with database
     initializeTransportObjectsAndPaxosManager();
 
-    if (StartNameServer.experimentMode) loadRecordsBeforeExperiments();
+    if (StartNameServer.experimentMode) {
+      loadRecordsBeforeExperiments();
+    }
 
     // there is no need to initialize replication framework until we have completed recovery of the existing set of
     // records at this name server.
@@ -90,9 +90,7 @@ public class NameServer {
 
   }
 
-
   /**** Begin methods for initializing different components of name server ***/
-
   private void initializeDatabase() {
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
@@ -102,8 +100,9 @@ public class NameServer {
     NameServer.replicaController = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
             // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
-
-    resetDB(); // data
+    // clear out the data base - 
+    // this is being done because paxos will reinsert all the records in the database
+    resetDB();
   }
 
   private void initializeReplicationFramework() {
@@ -129,8 +128,7 @@ public class NameServer {
     }
   }
 
-
-  private void initializeTransportObjectsAndPaxosManager() throws IOException{
+  private void initializeTransportObjectsAndPaxosManager() throws IOException {
 
     // Create the demultiplexer object. This is used by both TCP and UDP.
     nsDemultiplexer = new NSPacketDemultiplexer();
@@ -160,7 +158,7 @@ public class NameServer {
       try {
         Thread.sleep(initialExpDelayMillis); // Abhigyan: wait so that other name servers can bind to respective TCP ports.
       } catch (InterruptedException e) {
-        e.printStackTrace();  
+        e.printStackTrace();
       }
     }
 
@@ -199,7 +197,7 @@ public class NameServer {
 
     HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
 
-    for (String groupID: groupIDsMembers.keySet()) {
+    for (String groupID : groupIDsMembers.keySet()) {
       String paxosID = ReplicaController.getPaxosIDForReplicaControllerGroup(groupID);
 
       GNS.getLogger().info("Creating paxos instances: " + paxosID + "\t" + groupIDsMembers.get(groupID));
@@ -208,10 +206,7 @@ public class NameServer {
 
   }
 
-
   /**** End methods for initializing different components of name server ***/
-
-
 //
 //  /******************************
 //   * Name Record methods
@@ -357,9 +352,6 @@ public class NameServer {
 //  /******************************
 //   * End of name record methods
 //   ******************************/
-
-
-
 //  ABHIGYAN: keeping this code commented here because we haven't tested with other code.
 //  /******************************
 //   * Replica controller methods
@@ -417,8 +409,10 @@ public class NameServer {
 //  public static BasicRecordCursor getAllPrimaryRowsIterator() {
 //    return replicaController.getAllRowsIterator();
 //  }
-
-  //  the nuclear option
+  /**
+   * Clears the database and reinitializes all indices.
+   * DONT CALL THIS UNLESS YOU WANT TO CLEAR ALL THE RECORDS OUT OF THE DATABASE!!!
+   */
   public static void resetDB() {
     recordMap.reset();
     // reset them both
@@ -428,9 +422,7 @@ public class NameServer {
   /******************************
    * End of Replica controller methods
    ******************************/
-
   /*** other methods */
-
   /**
    * Wrapper method to send to LNS
    * @param json  json object to send
@@ -440,7 +432,92 @@ public class NameServer {
     try {
       NameServer.tcpTransport.sendToIDActual(recipientId, json);
     } catch (IOException e) {
-      e.printStackTrace();  
+      e.printStackTrace();
     }
+  }
+
+  /**
+   * @return the nodeID
+   */
+  public static int getNodeID() {
+    return nodeID;
+  }
+
+  /**
+   * THIS SHOULD ONLY BE USED IN TEST CODE!!!
+   * @param aNodeID the nodeID to set
+   */
+  public static void setNodeID(int aNodeID) {
+    nodeID = aNodeID;
+  }
+
+  /**
+   * @return the recordMap
+   */
+  public static BasicRecordMap getRecordMap() {
+    return recordMap;
+  }
+
+  /**
+   * @return the replicaController
+   */
+  public static BasicRecordMap getReplicaController() {
+    return replicaController;
+  }
+
+  /**
+   * @return the replicationFramework
+   */
+  public static ReplicationFrameworkInterface getReplicationFramework() {
+    return replicationFramework;
+  }
+
+  /**
+   * @return the loadMonitor
+   */
+  public static MovingAverage getLoadMonitor() {
+    return loadMonitor;
+  }
+
+  /**
+   * @return the tcpTransport
+   */
+  public static NioServer getTcpTransport() {
+    return tcpTransport;
+  }
+
+  /**
+   * @return the nsDemultiplexer
+   */
+  public static NSPacketDemultiplexer getNsDemultiplexer() {
+    return nsDemultiplexer;
+  }
+
+  /**
+   * @return the timer
+   */
+  public static Timer getTimer() {
+    return timer;
+  }
+
+  /**
+   * @return the executorService
+   */
+  public static ScheduledThreadPoolExecutor getExecutorService() {
+    return executorService;
+  }
+
+  /**
+   * @return the paxosManager
+   */
+  public static PaxosManager getPaxosManager() {
+    return paxosManager;
+  }
+
+  /**
+   * @return the initialExpDelayMillis
+   */
+  public static int getInitialExpDelayMillis() {
+    return initialExpDelayMillis;
   }
 }

@@ -15,9 +15,11 @@ public class AdminRequestPacket extends AdminPacket {
 
   public enum AdminOperation {
 
-    DELETEALLRECORDS, CLEARCACHE,
-    //DELETEALLGUIDRECORDS, 
-    RESETDB, DUMPCACHE, CHANGELOGLEVEL
+    DELETEALLRECORDS, // calls remove record on every record
+    RESETDB, // clears the database and reinitializes all indices
+    CLEARCACHE,
+    DUMPCACHE, 
+    CHANGELOGLEVEL
   };
   public final static String ID = "id";
   private final static String OPERATION = "operation";

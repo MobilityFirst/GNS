@@ -51,11 +51,11 @@ public class SiteToSiteQueryHandler {
 
   private static void sendQueryInternal(int queryId, int recipientId, String name, String key) {
     GNS.getLogger().fine("Sending query " + queryId + " to " + recipientId + " for " + name + " / " + key);
-    DNSPacket queryrecord = new DNSPacket(queryId, name, new NameRecordKey(key), NameServer.nodeID, null, null, null);
+    DNSPacket queryrecord = new DNSPacket(queryId, name, new NameRecordKey(key), NameServer.getNodeID(), null, null, null);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      NameServer.tcpTransport.sendToID(recipientId, json);
+      NameServer.getTcpTransport().sendToID(recipientId, json);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {

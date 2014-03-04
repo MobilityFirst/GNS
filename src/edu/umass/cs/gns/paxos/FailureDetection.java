@@ -110,7 +110,7 @@ public class FailureDetection{
         FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject(), this);
         long initialDelay = timeoutIntervalMillis + r.nextInt(pingIntervalMillis);
         if (StartNameServer.experimentMode) {
-          initialDelay += 2 * NameServer.initialExpDelayMillis; // wait for all name servers to start up.
+          initialDelay += 2 * NameServer.getInitialExpDelayMillis(); // wait for all name servers to start up.
         }
         nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
         nodeStatus.put(monitoredNodeID, true);

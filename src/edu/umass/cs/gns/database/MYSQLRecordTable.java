@@ -25,7 +25,7 @@ public class MYSQLRecordTable {
   private String tableName;
 
   public MYSQLRecordTable() {
-    tableName = TableNameRoot + NameServer.nodeID;
+    tableName = TableNameRoot + NameServer.getNodeID();
     if (debugMode) {
       MySQLUtils.dropTable(tableName);
     }

@@ -76,7 +76,7 @@ public class CassandraRecords implements NoSQLRecords {
           new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName()));
 
   public CassandraRecords() {
-    dbName = DBROOTNAME + NameServer.nodeID;
+    dbName = DBROOTNAME + NameServer.getNodeID();
     GNS.getLogger().info("CASSANDRA: " + dbName + " INIT");
     this.connect("localhost");
     this.createKeyspace();

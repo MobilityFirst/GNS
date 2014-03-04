@@ -68,7 +68,7 @@ public class MongoRecords implements NoSQLRecords {
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine
-      dbName = DBROOTNAME + "-" + NameServer.nodeID;
+      dbName = DBROOTNAME + "-" + NameServer.getNodeID();
       MongoClient mongoClient;
       if (StartNameServer.mongoPort > 0) {
         mongoClient = new MongoClient("localhost", StartNameServer.mongoPort);
@@ -807,8 +807,8 @@ public class MongoRecords implements NoSQLRecords {
   // ALL THE CODE BELOW IS TEST CODE
 //  //test code
   private static void queryTest(int nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
-    NameServer.nodeID = nodeID;
-    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
+    NameServer.setNodeID(nodeID);
+    ConfigFileInfo.readHostInfo("ns1", NameServer.getNodeID());
     ConsistentHashing.initialize(3, 3);
     MongoRecords instance = MongoRecords.getInstance();
     System.out.println("***ALL RECORDS***");

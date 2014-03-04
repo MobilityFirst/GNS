@@ -47,7 +47,7 @@ public class SendNameRecordStats extends TimerTask {
   @Override
   public void run() {
     count++;
-    StatusClient.sendStatus(NameServer.nodeID, "Pushing stats: " + count);
+    StatusClient.sendStatus(NameServer.getNodeID(), "Pushing stats: " + count);
     //Iterate through the NameRecords and push access frequency stats
     ConcurrentHashMap<String, int[]> collectedStats  = allStats;
     allStats = new ConcurrentHashMap<String, int[]>();
@@ -61,7 +61,7 @@ public class SendNameRecordStats extends TimerTask {
         continue;
       }
 
-      NameRecordStatsPacket statsPacket = new NameRecordStatsPacket(name, lookup, update, NameServer.nodeID);
+      NameRecordStatsPacket statsPacket = new NameRecordStatsPacket(name, lookup, update, NameServer.getNodeID());
 
       try {
         JSONObject json = statsPacket.toJSONObject();
@@ -70,14 +70,14 @@ public class SendNameRecordStats extends TimerTask {
         }
         int selectedPrimaryNS = -1;
         for (int x : ConsistentHashing.getReplicaControllerSet(name)) {
-          if (NameServer.paxosManager.isNodeUp(x)) {
+          if (NameServer.getPaxosManager().isNodeUp(x)) {
             selectedPrimaryNS = x;
             break;
           }
         }
-        if (selectedPrimaryNS != -1 && selectedPrimaryNS != NameServer.nodeID) {
-          NameServer.tcpTransport.sendToID(selectedPrimaryNS, json);
-        } else if (selectedPrimaryNS == NameServer.nodeID) {
+        if (selectedPrimaryNS != -1 && selectedPrimaryNS != NameServer.getNodeID()) {
+          NameServer.getTcpTransport().sendToID(selectedPrimaryNS, json);
+        } else if (selectedPrimaryNS == NameServer.getNodeID()) {
           // if same node, then directly call the function
           ListenerNameRecordStats.handleIncomingPacket(json);
         }

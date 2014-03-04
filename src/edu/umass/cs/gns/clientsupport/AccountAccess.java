@@ -7,6 +7,7 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.Util;
 import java.text.ParseException;
@@ -405,7 +406,10 @@ public class AccountAccess {
     
     if (accountInfo.containsAlias(alias)) {
       // remove the NAME -> GUID record
-      Intercessor.sendRemoveRecord(alias);
+      NSResponseCode responseCode;
+      if ((responseCode = Intercessor.sendRemoveRecord(alias)).isAnError()) {
+        return Defs.BADRESPONSE + " " + responseCode.getProtocolCode();
+      }
       accountInfo.removeAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {

@@ -39,6 +39,9 @@ public interface RecordMapInterface {
 
   public Set<String> getAllRowKeys();
 
+  /**
+   * Clears the database and reinitializes all indices.
+   */
   public void reset();
 
   public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException;

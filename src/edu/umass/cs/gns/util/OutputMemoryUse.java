@@ -17,8 +17,8 @@ public class OutputMemoryUse extends TimerTask {
     count++;
     outputMemoryUse(Integer.toString(count) + "sec ");
 
-    GNS.getLogger().info("\tTasksSubmitted\t" + NameServer.executorService.getTaskCount() + "\tTasksCompleted\t"
-            + NameServer.executorService.getCompletedTaskCount());
+    GNS.getLogger().info("\tTasksSubmitted\t" + NameServer.getExecutorService().getTaskCount() + "\tTasksCompleted\t"
+            + NameServer.getExecutorService().getCompletedTaskCount());
 
     // this code was used
   }
