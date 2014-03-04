@@ -59,11 +59,10 @@ import org.apache.commons.cli.ParseException;
  * @author westy
  */
 public class EC2Installer {
-  
+
   // this is the only hardcoded thing in here you should have to change...
   // Note: figure out a better way to do this.. probably with resources
   private static final String DIST_FOLDER_LOCATION = "/Users/westy/Documents/Code/GNS/dist";
-
   private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String PRIVATEKEYFILEEXTENSION = ".pem";
@@ -144,40 +143,55 @@ public class EC2Installer {
    * Starts a set of EC2 hosts running GNS that we call a runset.
    */
   public static void createRunSetMulti(String runSetName) {
+    int timeout = AWSEC2.DEFAULTREACHABILITYWAITTIME;
+    
     System.out.println("EC2 User Name: " + ec2UserName);
     System.out.println("AMI Name: " + amiRecordType.toString());
     System.out.println("Datastore: " + dataStoreType.toString());
     preferences.put(RUNSETNAME, runSetName); // store the last one
     startAllMonitoringAndGUIProcesses();
-    StatusModel.getInstance().queueDeleteAllEntries(); // for gui
     ArrayList<Thread> threads = new ArrayList<Thread>();
-    //String runSetName = nextRunSetName();
     // use threads to do a bunch of installs in parallel
-    int cnt = STARTINGNODENUMBER;
-    for (EC2RegionSpec regionSpec : regionsList) {
-      int i;
-      for (i = 0; i < regionSpec.getCount(); i++) {
-        threads.add(new InstallStartThread(runSetName, regionSpec.getRegion(), cnt, i == 0 ? regionSpec.getIp() : null));
-        cnt = cnt + 1;
+    do {
+      StatusModel.getInstance().queueDeleteAllEntries(); // for gui
+      int cnt = STARTINGNODENUMBER;
+      for (EC2RegionSpec regionSpec : regionsList) {
+        int i;
+        for (i = 0; i < regionSpec.getCount(); i++) {
+          threads.add(new InstallStartThread(runSetName, regionSpec.getRegion(), cnt, i == 0 ? regionSpec.getIp() : null, timeout));
+          cnt = cnt + 1;
+        }
       }
-    }
-    // start em all
-    for (int i = 0; i < threads.size(); i++) {
-      threads.get(i).start();
-    }
-    // and wait for all of them to complete
-    try {
+      // start em all
       for (int i = 0; i < threads.size(); i++) {
-        threads.get(i).join();
+        threads.get(i).start();
       }
-    } catch (Exception e) {
-      System.out.println("Problem joining threads: " + e);
-    }
+      // and wait for all of them to complete
+      try {
+        for (int i = 0; i < threads.size(); i++) {
+          threads.get(i).join();
+        }
+      } catch (Exception e) {
+        System.out.println("Problem joining threads: " + e);
+      }
 
-    System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
+      if (!hostsThatDidNotStart.isEmpty()) {
+        System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
+        timeout = (int) ((float) timeout * 1.5);
+        System.out.println("Killing them all and trying again with timeout " + timeout + "ms");
+        terminateRunSet(runSetName);
+      }
+
+      threads.clear();
+
+      // keep repeating until everything starts
+    } while (!hostsThatDidNotStart.isEmpty());
+
+    // got a complete set running... now on to step 2
+
     System.out.println(idTable.toString());
     // after we know all the hosts are we run the last part
-    threads.clear();
+
 
     // now start all the finishing threads
     for (InstanceInfo info : idTable.values()) {
@@ -269,7 +283,7 @@ public class EC2Installer {
    * @param runSetName - so we can terminate them all together
    * @param id - the GNS ID of this server
    */
-  public static void installPhaseOne(RegionRecord region, String runSetName, int id, String elasticIP) {
+  public static void installPhaseOne(RegionRecord region, String runSetName, int id, String elasticIP, int timeout) {
     String installScript;
     AMIRecord ami = AMIRecord.getAMI(amiRecordType, region);
     if (ami == null) {
@@ -283,6 +297,9 @@ public class EC2Installer {
       default: // MONGO
         switch (amiRecordType) {
           case Amazon_Linux_AMI_2013_03_1:
+            installScript = mongoInstallScript;
+            break;
+          case Amazon_Linux_AMI_2013_09_2:
             installScript = mongoInstallScript;
             break;
           case MongoDB_2_4_8_with_1000_IOPS:
@@ -308,7 +325,7 @@ public class EC2Installer {
       tags.put("id", idString);
       StatusModel.getInstance().queueUpdate(id, "Creating instance");
       // create an instance
-      Instance instance = AWSEC2.createAndInitInstance(ec2, region, ami, nodeName, keyName, installScript, tags, elasticIP);
+      Instance instance = AWSEC2.createAndInitInstance(ec2, region, ami, nodeName, keyName, installScript, tags, elasticIP, timeout);
       if (instance != null) {
         StatusModel.getInstance().queueUpdate(id, "Instance created");
         StatusModel.getInstance().queueUpdate(id, StatusEntry.State.INITIALIZING);
@@ -761,18 +778,20 @@ public class EC2Installer {
     RegionRecord region;
     int id;
     String ip;
+    int timeout;
 
-    public InstallStartThread(String runSetName, RegionRecord region, int id, String ip) {
+    public InstallStartThread(String runSetName, RegionRecord region, int id, String ip, int timeout) {
       super("Install Start " + id);
       this.runSetName = runSetName;
       this.region = region;
       this.id = id;
       this.ip = ip;
+      this.timeout = timeout;
     }
 
     @Override
     public void run() {
-      EC2Installer.installPhaseOne(region, runSetName, id, ip);
+      EC2Installer.installPhaseOne(region, runSetName, id, ip, timeout);
     }
   }
 
