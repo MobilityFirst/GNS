@@ -121,8 +121,8 @@ public class ConfigFileInfo {
         double pingLatency = Double.parseDouble(tokens[4]);
         double latitude = Double.parseDouble(tokens[5]);
         double longitude = Double.parseDouble(tokens[6]);
-        boolean isNameServer;
 
+        // do a bunch of things if it is an NS (as opposed to an LNS)
         if (isNameServerString.startsWith("yes")
                 || isNameServerString.startsWith("Yes")
                 || isNameServerString.startsWith("YES")
@@ -130,7 +130,6 @@ public class ConfigFileInfo {
                 || isNameServerString.startsWith("true")
                 || isNameServerString.startsWith("True")
                 || isNameServerString.startsWith("TRUE")) {
-          isNameServer = true;
           nameServerMapping.put(id, id);
           nameServerCount++;
           //Update the id closest name server
@@ -138,23 +137,19 @@ public class ConfigFileInfo {
             smallestPingLatency = pingLatency;
             closestNameServer = id;
           }
-        } else {
-          isNameServer = false;
         }
         InetAddress ipAddress = null;
         try {
           ipAddress = InetAddress.getByName(ipAddressString);
         } catch (UnknownHostException e) {
-          System.err.println("Problem parsing IP address for NS " + nameServerID + " :" + e);
+          System.err.println("Problem parsing IP address for server " + nameServerID + " :" + e);
         }
         int startingPort;
         if (startingPortString.startsWith("-") || startingPortString.startsWith("default")) {
-          startingPort = GNS.startingPort;
+          startingPort = GNS.STARTINGPORT;
         } else {
           startingPort = Integer.parseInt(startingPortString);
         }
-
-
         addHostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
       }
       br.close();
@@ -164,7 +159,7 @@ public class ConfigFileInfo {
       System.err.println("Problem reading host config for NS " + nameServerID + " :" + e);
     }
 
-    GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
+    GNS.getLogger().info("Number of name servers is : " + nameServerCount);
     numberOfNameServers = nameServerCount;
     GNS.getLogger().fine("Closest name server is " + closestNameServer);
     //    System.exit(2);
@@ -181,8 +176,6 @@ public class ConfigFileInfo {
   }
 
   public static Set<Integer> getAllNameServerIDs() {
-    //      HashSet<Integer> x  = new HashSet<Integer>();
-    //    x.add(1);x.add(2);return x;
     return ImmutableSet.copyOf(nameServerMapping.keySet());
   }
 
@@ -263,6 +256,20 @@ public class ConfigFileInfo {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_PORT.getOffset();
   }
+  
+  /**
+   * Returns the appropriate admin request port for LNS and NS.
+   * 
+   * @param id
+   * @return 
+   */
+  public static int getAdminRequestPort(int id) {
+    if (isNameServer(id)) {
+      return getNSAdminRequestPort(id);
+    } else {
+      return getLNSAdminRequestPort(id);
+    }
+  }
 
   /**
    * Returns the response port of a Local nameserver
@@ -287,14 +294,39 @@ public class ConfigFileInfo {
   }
 
   /**
-   * Returns the ping port
+   * Returns the LNS ping port
+   * 
+   * @param id
+   * @return 
+   */
+  public static int getLNSPingPort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_PING_PORT.getOffset();
+  }
+
+  /**
+   * Returns the NS ping port
+   * 
+   * @param id
+   * @return 
+   */
+  public static int getNSPingPort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+  }
+
+  /**
+   * Returns the appropriate ping port for LNS and NS.
    * 
    * @param id
    * @return 
    */
   public static int getPingPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.PING_PORT.getOffset();
+    if (isNameServer(id)) {
+      return getNSPingPort(id);
+    } else {
+      return getLNSPingPort(id);
+    }
   }
 
   /**

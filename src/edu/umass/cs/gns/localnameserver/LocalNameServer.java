@@ -155,8 +155,8 @@ public class LocalNameServer {
 
     new LNSListenerAdmin().start();
 
-    GNS.getLogger().info("Ping server started on port " + ConfigFileInfo.getPingPort(nodeID));
     PingServer.startServerThread(nodeID);
+    GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
     Pinger.startPinging(nodeID);
 
     //Periodically send nameserver votes for location based replication

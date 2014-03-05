@@ -102,22 +102,16 @@ public class Packet {
     ACTIVE_PAXOS_STOP(112),
     OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(113),
     PRIMARY_PAXOS_STOP(114),
-
-
     // Abhigyan: do not use these packet types. I have defined them for refactoring name server code
-    ACTIVE_ADD (121),  // on an add request replica controller sends to active replica
-    ACTIVE_ADD_CONFIRM (122), // after adding name, active replica confirms to replica controller
-    ACTIVE_REMOVE (123), // on a remove request, replica controller sends to active replica
-    ACTIVE_REMOVE_CONFIRM (124), // after removing name, active replica confirms to replica controller
-    ACTIVE_GROUPCHANGE (125), // replica controller requests an active replica to transition from the old to the new set of active replicas
-    ACTIVE_GROUPCHANGE_CONFIRM (126),  // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
-    ACTIVE_COORDINATION(127),  // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+    ACTIVE_ADD(121), // on an add request replica controller sends to active replica
+    ACTIVE_ADD_CONFIRM(122), // after adding name, active replica confirms to replica controller
+    ACTIVE_REMOVE(123), // on a remove request, replica controller sends to active replica
+    ACTIVE_REMOVE_CONFIRM(124), // after removing name, active replica confirms to replica controller
+    ACTIVE_GROUPCHANGE(125), // replica controller requests an active replica to transition from the old to the new set of active replicas
+    ACTIVE_GROUPCHANGE_CONFIRM(126), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+    ACTIVE_COORDINATION(127), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
     REPLICA_CONTROLLER_COORDINATION(128);  // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
-
-
-
     private int number;
-
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
 
     static {
@@ -153,7 +147,7 @@ public class Packet {
     }
     return null;
   }
-  
+
   // some shorthand helpers
   public static PacketType getPacketType(int number) {
     return PacketType.getPacketType(number);
@@ -334,7 +328,9 @@ public class Packet {
       return;
     }
 
-    if (StartLocalNameServer.debugMode) GNS.getLogger().finer("sendUDPPacket:: to: " + id + " (" + address.getHostName() + ":" + port + ")" + " json: " + json.toString());
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().finer("sendUDPPacket:: to: " + id + " (" + address.getHostName() + ":" + port + ")" + " json: " + json.toString());
+    }
 
     sendUDPPacket(socket, json, address, port);
 
@@ -406,11 +402,17 @@ public class Packet {
         return ConfigFileInfo.getNSAdminRequestPort(nameServerId);
       case LNS_ADMIN_PORT:
         return ConfigFileInfo.getLNSAdminRequestPort(nameServerId);
+      case ADMIN_PORT:
+        return ConfigFileInfo.getAdminRequestPort(nameServerId);
       case LNS_ADMIN_RESPONSE_PORT:
         return ConfigFileInfo.getLNSAdminResponsePort(nameServerId);
       case LNS_ADMIN_DUMP_RESPONSE_PORT:
         return ConfigFileInfo.getLNSAdminDumpReponsePort(nameServerId);
-        case PING_PORT:
+      case LNS_PING_PORT:
+        return ConfigFileInfo.getLNSPingPort(nameServerId);
+      case NS_PING_PORT:
+        return ConfigFileInfo.getNSPingPort(nameServerId);
+      case PING_PORT:
         return ConfigFileInfo.getPingPort(nameServerId);
     }
     return -1;

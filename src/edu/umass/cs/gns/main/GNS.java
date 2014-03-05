@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 public class GNS {
 
   public static final int DEFAULT_TTL_SECONDS = 0;
-  public static int startingPort = 24400;
+  public static final int STARTINGPORT = 24400;
   public static final String GNS_URL_PATH = "GNS";
   
 
@@ -23,9 +23,13 @@ public class GNS {
     LNS_UDP_PORT(3), // UDP port at local name servers
     NS_ADMIN_PORT(4),
     LNS_ADMIN_PORT(5),
+    ADMIN_PORT(-1), // selects either NS_ADMIN_PORT or LNS_ADMIN_PORT
     LNS_ADMIN_RESPONSE_PORT(6),
     LNS_ADMIN_DUMP_RESPONSE_PORT(7),
-    PING_PORT(8);
+    NS_PING_PORT(8),
+    LNS_PING_PORT(9),
+    PING_PORT(-1); // selects either NS_PING_PORT or LNS_PING_PORT
+    
     //
     int offset;
 

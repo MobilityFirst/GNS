@@ -127,6 +127,7 @@ public class NSAccessSupport {
       } else {
         // map over the allowedusers and see if any of them are groups that the user belongs to
         for (String potentialGroupGuid : allowedusers) {
+          // fix this to use the reverse group lookup
           if (NSGroupAccess.lookup(potentialGroupGuid).contains(accesserGuid)) {
             return true;
           }

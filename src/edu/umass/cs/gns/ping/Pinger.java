@@ -38,14 +38,14 @@ public class Pinger {
   }
 
   private static void doPinging() {
-    GNS.getLogger().fine("Waiting for a bit before we start pinging.");
+    GNS.getLogger().info("Waiting for a bit before we start pinging.");
     while (true) {
       Util.sleep(PINGDELAY);
       for (int id : ConfigFileInfo.getAllHostIDs()) {
         try {
           if (id != nodeId) {
             long rtt = pingClient.sendPing(id);
-            GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
+            GNS.getLogger().info("From " + nodeId + " to " + id + " RTT = " + rtt);
             pingTable[id] = rtt;
             // sure why not
             ConfigFileInfo.updatePingLatency(id, rtt);
@@ -54,17 +54,27 @@ public class Pinger {
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
         }
       }
-      GNS.getLogger().fine("PINGER: " + tableToString());
+      GNS.getLogger().info("PINGER: " + tableToString(nodeId));
     }
   }
 
-  public static String tableToString() {
+  public static String tableToString(int node) {
     int hostCnt = ConfigFileInfo.getAllHostIDs().size();
     StringBuilder result = new StringBuilder();
+    result.append("Node   RTT     L/NS Hostname");
+    result.append(NEWLINE);
     for (int i = 0; i < hostCnt; i++) {
-      result.append(i);
-      result.append(" = ");
-      result.append(pingTable[i]);
+      result.append(String.format("%2d", i));
+      if (i != node) {
+        result.append("  =  ");
+        result.append(String.format("%3d", pingTable[i]));
+        result.append("     ");
+      } else {
+        result.append(" {this node} ");
+      }
+      result.append(ConfigFileInfo.isNameServer(i) ? "NS " : "LNS");
+      result.append("  ");
+      result.append(ConfigFileInfo.getIPAddress(i).getHostName());
       result.append(NEWLINE);
     }
 
@@ -77,6 +87,5 @@ public class Pinger {
     ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
     Pinger.startPinging(0);
   }
-  
   public final static String NEWLINE = System.getProperty("line.separator");
 }

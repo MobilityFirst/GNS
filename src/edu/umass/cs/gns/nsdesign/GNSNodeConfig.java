@@ -162,7 +162,7 @@ public class GNSNodeConfig implements NodeConfig {
         }
         int startingPort;
         if (startingPortString.startsWith("-") || startingPortString.startsWith("default")) {
-          startingPort = GNS.startingPort;
+          startingPort = GNS.STARTINGPORT;
         } else {
           startingPort = Integer.parseInt(startingPortString);
         }
@@ -300,14 +300,33 @@ public class GNSNodeConfig implements NodeConfig {
   }
 
   /**
-   * Returns the ping port
+   * Returns the LNS ping port
    * 
    * @param id
    * @return 
    */
-  public int getPingPort(int id) {
+  public int getLNSPingPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.PING_PORT.getOffset();
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_PING_PORT.getOffset();
+  }
+
+  /**
+   * Returns the NS ping port
+   * 
+   * @param id
+   * @return 
+   */
+  public int getNSPingPort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+  }
+  
+  public int getPingPort(int id) {
+    if (isNameServer(id)) {
+      return getNSPingPort(id);
+    } else {
+      return getNSPingPort(id);
+    }
   }
 
   /**

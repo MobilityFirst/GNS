@@ -88,8 +88,8 @@ public class NameServer {
     // START ADMIN THREAD - DO NOT REMOVE THIS
     new NSListenerAdmin().start(); // westy
 
-    GNS.getLogger().info("Ping server started on port " + ConfigFileInfo.getPingPort(nodeID));
     PingServer.startServerThread(nodeID);
+    GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
     Pinger.startPinging(nodeID);
 
     timer.schedule(new OutputMemoryUse(), 100000, 100000); // write stats about system

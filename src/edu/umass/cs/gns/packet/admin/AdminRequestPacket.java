@@ -57,7 +57,7 @@ public class AdminRequestPacket extends AdminPacket {
   public AdminRequestPacket(int id, AdminOperation operation, String argument) {
     this.type = PacketType.ADMIN_REQUEST;
     this.id = id;
-    this.localNameServerId = -1;
+    this.localNameServerId = -1; // implies that it came from a client, not an NS or LNS
     this.operation = operation;
     this.argument = argument;
   }

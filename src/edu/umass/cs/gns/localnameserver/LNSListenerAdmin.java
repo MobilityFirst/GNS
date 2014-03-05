@@ -154,12 +154,19 @@ public class LNSListenerAdmin extends Thread {
               int node = Integer.parseInt(incomingPacket.getArgument());
               if (node == LocalNameServer.getNodeID()) {
                 jsonResponse = new JSONObject();
-                jsonResponse.put("PINGTABLE", Pinger.tableToString());
+                jsonResponse.put("PINGTABLE", Pinger.tableToString(LocalNameServer.getNodeID()));
+                // send a response back to where the request came from
                 responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
+                if (incomingPacket.getLocalNameServerId() < 0) {
+                  // it came from our client
+                  Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
+                } else {
+                  // it came from another LNS
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), incomingPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
+                }
               } else {
-                incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the NS knows where to return it
-                Packet.sendTCPPacket(incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
+                incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
+                Packet.sendTCPPacket(incomingPacket.toJSONObject(), node, GNS.PortType.ADMIN_PORT);
               }
               break;
             case CHANGELOGLEVEL:

@@ -144,7 +144,7 @@ public class EC2Installer {
    */
   public static void createRunSetMulti(String runSetName) {
     int timeout = AWSEC2.DEFAULTREACHABILITYWAITTIME;
-    
+
     System.out.println("EC2 User Name: " + ec2UserName);
     System.out.println("AMI Name: " + amiRecordType.toString());
     System.out.println("Datastore: " + dataStoreType.toString());
@@ -213,23 +213,17 @@ public class EC2Installer {
 
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
     System.out.println("Finished creation of Run Set " + runSetName);
-    // do some bookeeping
-//    HashSet<String> hosts = new HashSet<String>();
-//    for (InstanceInfo info : idTable.values()) {
-//      hosts.add(info.getHostname());
-//    }
-//    runSetHosts.put(runSetName, hosts);
-    // now we send out packets telling all the hosts where to send
-    // there status updates
-    // update the config info so no where to send stuff
+
+    // update the config info so know where to send stuff
     try {
       for (InstanceInfo info : idTable.values()) {
         InetAddress ipAddress = InetAddress.getByName(info.getHostname());
-        ConfigFileInfo.addHostInfo(info.getId(), ipAddress, GNS.startingPort, 0, info.getLocation().getY(), info.getLocation().getX());
+        ConfigFileInfo.addHostInfo(info.getId(), ipAddress, GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
       }
     } catch (UnknownHostException e) {
       System.err.println("Problem parsing IP address " + e);
     }
+    // now we send out packets telling all the hosts where to send their status updates
     StatusListener.sendOutServerInitPackets(idTable.keySet());
   }
   private static final String keyName = "aws";
@@ -538,6 +532,9 @@ public class EC2Installer {
   public enum UpdateAction {
 
     UPDATE,
+    REMOVE_LOGS_AND_UPDATE,
+    REMOVE_LOGS_AND_DELETE_DATABASE_AND_UPDATE,
+    DELETE_DATABASE_AND_UPDATE,
     RESTART,
     REMOVE_LOGS_AND_RESTART,
     REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART,
@@ -645,8 +642,8 @@ public class EC2Installer {
     Option restart = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("restart a runset")
             .create("restart");
-    Option removeLogs = new Option("removeLogs", "remove log files (use with -restart)");
-    Option deleteDatabase = new Option("deleteDatabase", "delete the databases in a runset (use with -restart)");
+    Option removeLogs = new Option("removeLogs", "remove log files (use with -restart or -update)");
+    Option deleteDatabase = new Option("deleteDatabase", "delete the databases in a runset (use with -restart or -update)");
     Option describe = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("describe a runset")
             .create("describe");
@@ -752,7 +749,9 @@ public class EC2Installer {
 //      } else if (terminateAll) {
 //        terminateAllRunSets();
       } else if (runsetUpdate != null) {
-        updateRunSet(runsetUpdate, UpdateAction.UPDATE);
+        updateRunSet(runsetUpdate, (removeLogs
+                ? (deleteDatabase ? UpdateAction.REMOVE_LOGS_AND_DELETE_DATABASE_AND_UPDATE : UpdateAction.REMOVE_LOGS_AND_UPDATE)
+                : (deleteDatabase ? UpdateAction.DELETE_DATABASE_AND_UPDATE : UpdateAction.UPDATE)));
       } else if (runsetRestart != null) {
         updateRunSet(runsetRestart, (removeLogs
                 ? (deleteDatabase ? UpdateAction.REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART : UpdateAction.REMOVE_LOGS_AND_RESTART)
@@ -831,6 +830,19 @@ public class EC2Installer {
       killAllServers(id, hostname);
       switch (action) {
         case UPDATE:
+          copyJARAndConfFiles(id, hostname);
+          break;
+        case REMOVE_LOGS_AND_UPDATE:
+          removeLogFiles(id, hostname);
+          copyJARAndConfFiles(id, hostname);
+          break;
+        case DELETE_DATABASE_AND_UPDATE:
+          deleteDatabase(id, hostname);
+          copyJARAndConfFiles(id, hostname);
+          break;
+        case REMOVE_LOGS_AND_DELETE_DATABASE_AND_UPDATE:
+          removeLogFiles(id, hostname);
+          deleteDatabase(id, hostname);
           copyJARAndConfFiles(id, hostname);
           break;
         case RESTART:

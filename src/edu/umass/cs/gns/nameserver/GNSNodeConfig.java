@@ -35,7 +35,11 @@ public class GNSNodeConfig implements NodeConfig {
 
   @Override
   public int getNodePort(int ID) {
-    if (ConfigFileInfo.isNameServer(ID)) return  ConfigFileInfo.getNSTcpPort(ID);
-    return ConfigFileInfo.getLNSTcpPort(ID);
+    if (ConfigFileInfo.isNameServer(ID)) {
+      return ConfigFileInfo.getNSTcpPort(ID);
+    } else {
+      return ConfigFileInfo.getLNSTcpPort(ID);
+    }
   }
+  
 }

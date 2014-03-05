@@ -131,7 +131,7 @@ class ReplicationWorkerPaxos extends TimerTask {
           NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(json);
 
           // sanity check: am I in set? otherwise quit.
-          if (!packet.getNewActiveNameServers().contains(NameServer.nodeID)) {
+          if (!packet.getNewActiveNameServers().contains(NameServer.getNodeID())) {
             GNS.getLogger().info("ERROR: NewActiveSetStartupPacket reached "
                     + "a non-active name server." + packet.toString());
             break;

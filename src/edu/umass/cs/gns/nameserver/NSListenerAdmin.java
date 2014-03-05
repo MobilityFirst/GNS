@@ -219,7 +219,7 @@ public class NSListenerAdmin extends Thread {
                 int node = Integer.parseInt(adminRequestPacket.getArgument());
                 if (node == NameServer.getNodeID()) {
                   JSONObject jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", Pinger.tableToString());
+                  jsonResponse.put("PINGTABLE", Pinger.tableToString(NameServer.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
                   Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
                 } else {
