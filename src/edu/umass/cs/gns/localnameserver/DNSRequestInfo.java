@@ -91,7 +91,7 @@ public class DNSRequestInfo {
     str.append("\t0");
     str.append("\t0");
     str.append("\t" + nameserverID);
-    str.append("\t" + LocalNameServer.nodeID);
+    str.append("\t" + LocalNameServer.getNodeID());
     str.append("\t" + lookupRecvdTime);
     str.append("\t" + numRestarts);
     str.append("\t[]");

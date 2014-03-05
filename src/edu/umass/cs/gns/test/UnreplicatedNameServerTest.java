@@ -43,7 +43,7 @@ public class UnreplicatedNameServerTest {
 //      testRequest.add(new TestRequest(name, TestRequest.LOOKUP));
 //      testRequest.add(new TestRequest(name, TestRequest.UPDATE));
 //      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
-      TestRequestScheduler.schdeduleAllRequests(testRequest, 1000.0, LocalNameServer.executorService);
+      TestRequestScheduler.schdeduleAllRequests(testRequest, 1000.0, LocalNameServer.getExecutorService());
 
       GNS.getLogger().info("Local name server started ...");
     } catch (IOException e) {

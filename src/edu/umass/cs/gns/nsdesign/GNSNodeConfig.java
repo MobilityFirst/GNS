@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign;
 
-
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.NodeConfig;
@@ -19,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
 /**
  * **
  * This is a utility class that parses configuration files to gather information about each name server/local name server
@@ -33,43 +31,43 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Abhigyan
  */
-public class GNSNodeConfig implements NodeConfig{
+public class GNSNodeConfig implements NodeConfig {
 
   /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
-  private  ConcurrentMap<Integer, HostInfo> hostInfoMapping =
+  private ConcurrentMap<Integer, HostInfo> hostInfoMapping =
           new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
   /**
    * A subset of the above with just the ids of the nameservers, not the LNSs
    */
-  private  ConcurrentMap<Integer, Integer> nameServerMapping =
+  private ConcurrentMap<Integer, Integer> nameServerMapping =
           new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
   /**
    * Number of name server in the system *
    */
-  private  int numberOfNameServers;
+  private int numberOfNameServers;
   /**
    * Id of the closestNameServer to this node *
    */
-  private  int closestNameServer;
+  private int closestNameServer;
 
   /**
    * @return the numberOfNameServer
    */
-  public  int getNumberOfNameServers() {
+  public int getNumberOfNameServers() {
     return numberOfNameServers;
   }
 
-  public  int getNumberOfHosts() {
+  public int getNumberOfHosts() {
     return hostInfoMapping.size();
   }
 
   /**
    * @return the closestNameServer
    */
-  public  int getClosestNameServer() {
+  public int getClosestNameServer() {
     return closestNameServer;
   }
 
@@ -78,7 +76,7 @@ public class GNSNodeConfig implements NodeConfig{
    *
    * @param numberOfNameServers
    */
-  public  void setNumberOfNameServers(int numberOfNameServers) {
+  public void setNumberOfNameServers(int numberOfNameServers) {
     this.numberOfNameServers = numberOfNameServers;
   }
 
@@ -185,23 +183,23 @@ public class GNSNodeConfig implements NodeConfig{
     //    System.exit(2);
   }
 
-  public  void addHostInfo(int id, InetAddress ipAddress, int startingPort, double pingLatency, double latitude, double longitude) {
+  public void addHostInfo(int id, InetAddress ipAddress, int startingPort, double pingLatency, double latitude, double longitude) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
   }
 
-  public  Set<Integer> getAllHostIDs() {
+  public Set<Integer> getAllHostIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
 
-  public  Set<Integer> getAllNameServerIDs() {
+  public Set<Integer> getAllNameServerIDs() {
     //      HashSet<Integer> x  = new HashSet<Integer>();
     //    x.add(1);x.add(2);return x;
     return ImmutableSet.copyOf(nameServerMapping.keySet());
   }
 
-  public  boolean isNameServer(int id) {
+  public boolean isNameServer(int id) {
     if (nameServerMapping.containsKey(id)) {
       return true;
     }
@@ -215,7 +213,7 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id
    * @return NameServerInfo *
    */
-  public  HostInfo getHostInfo(int id) {
+  public HostInfo getHostInfo(int id) {
     return hostInfoMapping.get(id);
   }
 
@@ -225,7 +223,7 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id Nameserver id
    * @return the stats port for a nameserver
    */
-  public  int getNSTcpPort(int id) {
+  public int getNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
   }
@@ -236,7 +234,7 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id Nameserver id
    * @return the stats port for a nameserver
    */
-  public  int getLNSTcpPort(int id) {
+  public int getLNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_TCP_PORT.getOffset();
   }
@@ -247,12 +245,12 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id
    * @return
    */
-  public  int getLNSUdpPort(int id) {
+  public int getLNSUdpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UDP_PORT.getOffset();
   }
 
-  public  int getNSUdpPort(int id) {
+  public int getNSUdpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
   }
@@ -263,7 +261,7 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
-  public  int getNSAdminRequestPort(int id) {
+  public int getNSAdminRequestPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
   }
@@ -274,7 +272,7 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id
    * @return
    */
-  public  int getLNSAdminRequestPort(int id) {
+  public int getLNSAdminRequestPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_PORT.getOffset();
   }
@@ -285,7 +283,7 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id
    * @return
    */
-  public  int getLNSAdminResponsePort(int id) {
+  public int getLNSAdminResponsePort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_RESPONSE_PORT.getOffset();
   }
@@ -296,9 +294,20 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id
    * @return
    */
-  public  int getLNSAdminDumpReponsePort(int id) {
+  public int getLNSAdminDumpReponsePort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_DUMP_RESPONSE_PORT.getOffset();
+  }
+
+  /**
+   * Returns the ping port
+   * 
+   * @param id
+   * @return 
+   */
+  public int getPingPort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.PING_PORT.getOffset();
   }
 
   /**
@@ -307,7 +316,7 @@ public class GNSNodeConfig implements NodeConfig{
    * @param id Nameserver id
    * @return IP address of a nameserver
    */
-  public  InetAddress getIPAddress(int id) {
+  public InetAddress getIPAddress(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? null : nodeInfo.getIpAddress();
   }
@@ -317,43 +326,16 @@ public class GNSNodeConfig implements NodeConfig{
    *
    * @param id Nameserver id
    */
-  public  double getPingLatency(int id) {
+  public double getPingLatency(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getPingLatency();
   }
 
-  public  void updatePingLatency(int id, long responseTime) {
+  public void updatePingLatency(int id, long responseTime) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     if (nodeInfo != null) {
       nodeInfo.updatePingLatency(responseTime);
     }
-    //    return (nodeInfo == null) ? -1 : nodeInfo.getPingLatency();
-  }
-
-  /**
-   * Tests *
-   */
-  public  void main(String[] args) throws Exception {
-    //		ConfigFileInfo.readNameServerInfoLocal( "/Users/hardeep/Desktop/Workspace/GNRS/ns1" );
-    //		System.out.println( ConfigFileInfo.nameServerInfoMapping.toString() );
-    //		System.out.println( ConfigFileInfo.numberOfNameServer );
-    //		System.out.println( ConfigFileInfo.closestNameServer );
-
-    GNSNodeConfig GNSNodeConfig = new GNSNodeConfig("/Users/hardeep/Desktop/Workspace/PlanetlabScripts/src/Ping/name_server_ssh_local", 44);
-    GNSNodeConfig GNSNodeConfig1 = new GNSNodeConfig("/Users/hardeep/Desktop/Workspace/PlanetlabScripts/src/Ping/name_server_ssh_local", 44);
-    System.out.println(GNSNodeConfig.hostInfoMapping.toString());
-    System.out.println(GNSNodeConfig.getNumberOfNameServers());
-    System.out.println(GNSNodeConfig.getClosestNameServer() + "\t" + getPingLatency(getClosestNameServer()));
-
-    Set<Integer> nameservers = new HashSet<Integer>();
-    nameservers.add(1);
-    nameservers.add(45);
-    nameservers.add(48);
-    nameservers.add(36);
-    nameservers.add(59);
-    Set<Integer> nameserverQueried = new HashSet<Integer>();
-    nameserverQueried.add(8);
-    System.out.println(BestServerSelection.getSmallestLatencyNS(nameservers, null));
   }
 
   @Override
@@ -373,7 +355,34 @@ public class GNSNodeConfig implements NodeConfig{
 
   @Override
   public int getNodePort(int ID) {
-    if (this.isNameServer(ID)) return  this.getNSTcpPort(ID);
+    if (this.isNameServer(ID)) {
+      return this.getNSTcpPort(ID);
+    }
     return this.getLNSTcpPort(ID);
+  }
+
+  /**
+   * Tests *
+   */
+  public void main(String[] args) throws Exception {
+    //		ConfigFileInfo.readNameServerInfoLocal( "/Users/hardeep/Desktop/Workspace/GNRS/ns1" );
+    //		System.out.println( ConfigFileInfo.nameServerInfoMapping.toString() );
+    //		System.out.println( ConfigFileInfo.numberOfNameServer );
+    //		System.out.println( ConfigFileInfo.closestNameServer );
+
+    GNSNodeConfig GNSNodeConfig = new GNSNodeConfig("name-server-info", 44);
+    System.out.println(GNSNodeConfig.hostInfoMapping.toString());
+    System.out.println(GNSNodeConfig.getNumberOfNameServers());
+    System.out.println(GNSNodeConfig.getClosestNameServer() + "\t" + getPingLatency(getClosestNameServer()));
+
+    Set<Integer> nameservers = new HashSet<Integer>();
+    nameservers.add(1);
+    nameservers.add(45);
+    nameservers.add(48);
+    nameservers.add(36);
+    nameservers.add(59);
+    Set<Integer> nameserverQueried = new HashSet<Integer>();
+    nameserverQueried.add(8);
+    System.out.println(BestServerSelection.getSmallestLatencyNS(nameservers, null));
   }
 }

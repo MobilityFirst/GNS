@@ -77,7 +77,7 @@ public class SendUpdatesTask extends TimerTask {
         CacheEntry cacheEntry = LocalNameServer.getCacheEntry(name);
 
         if (cacheEntry == null) {
-          RequestActivesPacket pkt = new RequestActivesPacket(name, LocalNameServer.nodeID);
+          RequestActivesPacket pkt = new RequestActivesPacket(name, LocalNameServer.getNodeID());
           pkt.setActiveNameServers(ConsistentHashing.getReplicaControllerSet(name));
           cacheEntry = LocalNameServer.addCacheEntry(pkt);
         }
@@ -95,7 +95,7 @@ public class SendUpdatesTask extends TimerTask {
                     new HashSet<Integer>(), numRestarts + 1),
                     StartLocalNameServer.queryTimeout,
                     ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR).toJSONObject(),
-                    UpdateInfo.getUpdateFailedStats(name, new HashSet<Integer>(), LocalNameServer.nodeID,
+                    UpdateInfo.getUpdateFailedStats(name, new HashSet<Integer>(), LocalNameServer.getNodeID(),
                     updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts + 1, -1), 0);
 
           } catch (JSONException e) {
@@ -146,8 +146,7 @@ public class SendUpdatesTask extends TimerTask {
               name, updateAddressPacket.getRecordKey(),
               updateAddressPacket.getUpdateValue(),
               updateAddressPacket.getOldValue(),
-              updateAddressPacket.getOperation(),
-              LocalNameServer.nodeID, nameServerID, updateAddressPacket.getTTL(),
+              updateAddressPacket.getOperation(), LocalNameServer.getNodeID(), nameServerID, updateAddressPacket.getTTL(),
               //signature info
               updateAddressPacket.getAccessor(),
               updateAddressPacket.getSignature(), 
@@ -197,11 +196,10 @@ public class SendUpdatesTask extends TimerTask {
     UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
     if (updateInfo == null) {
       if (timeoutCount == 0) {
-        GNS.getStatLogger().fine(UpdateInfo.getUpdateFailedStats(name, activesQueried,
-                LocalNameServer.nodeID, updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts, coordinatorID));
+        GNS.getStatLogger().fine(UpdateInfo.getUpdateFailedStats(name, activesQueried, LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts, coordinatorID));
       }
     } else {
-      GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.nodeID, updateAddressPacket.getRequestID(), coordinatorID));
+      GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), coordinatorID));
 
     }
   }

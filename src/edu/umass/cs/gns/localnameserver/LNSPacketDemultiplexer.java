@@ -26,7 +26,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
   public void handleJSONObjects(ArrayList jsonObjects) {
     for (Object o : jsonObjects) {
       //
-      LocalNameServer.executorService.submit(new LNSTask((JSONObject) o));
+      LocalNameServer.getExecutorService().submit(new LNSTask((JSONObject) o));
     }
   }
 

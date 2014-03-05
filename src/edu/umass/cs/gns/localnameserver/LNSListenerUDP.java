@@ -26,9 +26,9 @@ public class LNSListenerUDP extends Thread {
 
   public LNSListenerUDP() throws IOException {
     super("LNSListenerUDP");
-    GNS.getLogger().info("LNS Node " + LocalNameServer.nodeID + " starting LNSListenerUDP on port " 
-            + ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
-    udpTransport = new Transport(LocalNameServer.nodeID, ConfigFileInfo.getLNSUdpPort(LocalNameServer.nodeID));
+    GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " starting LNSListenerUDP on port " 
+            + ConfigFileInfo.getLNSUdpPort(LocalNameServer.getNodeID()));
+    udpTransport = new Transport(LocalNameServer.getNodeID(), ConfigFileInfo.getLNSUdpPort(LocalNameServer.getNodeID()));
 
   }
 

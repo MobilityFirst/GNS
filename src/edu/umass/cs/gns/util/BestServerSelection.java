@@ -27,7 +27,7 @@ public class BestServerSelection {
     double selectServerLatency = Double.MAX_VALUE;
     for (int x : serverIDs) {
       if (ConfigFileInfo.getPingLatency(x) > 0) {
-        double totallatency = 5 * LocalNameServer.nameServerLoads.get(x) + ConfigFileInfo.getPingLatency(x);
+        double totallatency = 5 * LocalNameServer.getNameServerLoads().get(x) + ConfigFileInfo.getPingLatency(x);
         if (totallatency < selectServerLatency) {
           selectServer = x;
           selectServerLatency = totallatency;
@@ -59,8 +59,8 @@ public class BestServerSelection {
 //					  + " Ping latency : " + ConfigFileInfo.getPingLatency(x)
 //					  + " Name server load: " + nameServerLoads.get(x));
       if (ConfigFileInfo.getPingLatency(x) > 0
-              && LocalNameServer.nameServerLoads.containsKey(x)
-              && LocalNameServer.nameServerLoads.get(x) < StartLocalNameServer.serverLoadThreshold
+              && LocalNameServer.getNameServerLoads().containsKey(x)
+              && LocalNameServer.getNameServerLoads().get(x) < StartLocalNameServer.serverLoadThreshold
               && ConfigFileInfo.getPingLatency(x) < selectServerLatency) {
 //				  GNRS.getLogger().fine("Considered server " + x);
         selectServer = x;
@@ -76,10 +76,10 @@ public class BestServerSelection {
     double leastLoad = Double.MAX_VALUE;
     for (int x : serverIDs) {
       if (ConfigFileInfo.getPingLatency(x) > 0
-              && LocalNameServer.nameServerLoads.containsKey(x)
-              && LocalNameServer.nameServerLoads.get(x) < leastLoad) {
+              && LocalNameServer.getNameServerLoads().containsKey(x)
+              && LocalNameServer.getNameServerLoads().get(x) < leastLoad) {
         selectServer = x;
-        leastLoad = LocalNameServer.nameServerLoads.get(x);
+        leastLoad = LocalNameServer.getNameServerLoads().get(x);
       }
     }
     return selectServer;

@@ -35,22 +35,22 @@ public class Select {
     JSONObject outgoingJSON = packet.toJSONObject();
     // Pick one NS to send it to
 
-    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " potential servers are " + serverIds.toString());
+    GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " potential servers are " + serverIds.toString());
     int serverID = BestServerSelection.simpleLatencyLoadHeuristic(serverIds);
     // above might return -1 if the configuration info is not set.. so pick one randomly
     if (serverID == -1) {
       GNS.getLogger().warning("Picking a random server. This is stupid. Fix this.");
       serverID = BestServerSelection.randomServer(serverIds);
     }
-    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
+    GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
     LocalNameServer.sendToNS(outgoingJSON, serverID);
 
   }
 
   public static void handlePacketSelectResponse(JSONObject json) throws JSONException {
-    GNS.getLogger().finer("LNS" + LocalNameServer.nodeID + " recvd QueryResponse: " + json);
+    GNS.getLogger().finer("LNS" + LocalNameServer.getNodeID() + " recvd QueryResponse: " + json);
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().fine("LNS" + LocalNameServer.nodeID + " recvd from NS" + packet.getNameServer());
+    GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " recvd from NS" + packet.getNameServer());
     SelectInfo info = LocalNameServer.getSelectInfo(packet.getLnsQueryId());
     // send a response back to the client
     Intercessor.handleIncomingPackets(packet.toJSONObject());

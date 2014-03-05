@@ -143,7 +143,7 @@ public class Intercessor {
     int id = nextQueryRequestID();
 
 
-    DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.nodeID, reader, signature, message);
+    DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.getNodeID(), reader, signature, message);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();

@@ -32,12 +32,12 @@ public class SelectHandler {
   
   public static String sendSelectRequest(SelectRequestPacket.SelectOperation operation, NameRecordKey key, Object value, Object otherValue) {
     int id = nextRequestID();
-    return sendSelectHelper(id, new SelectRequestPacket(id, LocalNameServer.nodeID, operation, key, value, otherValue)); 
+    return sendSelectHelper(id, new SelectRequestPacket(id, LocalNameServer.getNodeID(), operation, key, value, otherValue)); 
   }
   
   public static String sendSelectQuery(String query) {
     int id = nextRequestID();
-    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, LocalNameServer.nodeID, query));
+    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, LocalNameServer.getNodeID(), query));
   }
   
   public static String sendSelectHelper(int id, SelectRequestPacket sendPacket) {

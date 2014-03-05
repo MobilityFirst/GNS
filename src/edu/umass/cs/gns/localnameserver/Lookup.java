@@ -41,7 +41,7 @@ public class Lookup {
       timeOut = AdaptiveRetransmission.getTimeoutInterval(0);
     }
 
-    LocalNameServer.executorService.scheduleAtFixedRate(queryTaskObject, 0, timeOut, TimeUnit.MILLISECONDS);
+    LocalNameServer.getExecutorService().scheduleAtFixedRate(queryTaskObject, 0, timeOut, TimeUnit.MILLISECONDS);
     GNS.getLogger().finer("Scheduled this object.");
   }
 

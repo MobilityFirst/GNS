@@ -19,13 +19,17 @@ public class AdminRequestPacket extends AdminPacket {
     RESETDB, // clears the database and reinitializes all indices
     CLEARCACHE,
     DUMPCACHE, 
-    CHANGELOGLEVEL
+    CHANGELOGLEVEL,
+    PINGTABLE
+    ;
   };
   public final static String ID = "id";
+  public final static String LNSID = "lnsid";
   private final static String OPERATION = "operation";
   private final static String ARGUMENT = "arg";
   //
   private int id;
+  private int localNameServerId; // is this is set it's the LNS handling this request
   private AdminOperation operation;
   private String argument;
 
@@ -53,6 +57,7 @@ public class AdminRequestPacket extends AdminPacket {
   public AdminRequestPacket(int id, AdminOperation operation, String argument) {
     this.type = PacketType.ADMIN_REQUEST;
     this.id = id;
+    this.localNameServerId = -1;
     this.operation = operation;
     this.argument = argument;
   }
@@ -73,6 +78,7 @@ public class AdminRequestPacket extends AdminPacket {
 
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
+    this.localNameServerId = json.getInt(LNSID);
     this.operation = AdminOperation.valueOf(json.getString(OPERATION));
     this.argument = json.optString(ARGUMENT, null);
   }
@@ -89,6 +95,7 @@ public class AdminRequestPacket extends AdminPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(ID, id);
+    json.put(LNSID, localNameServerId);
     json.put(OPERATION, getOperation().name());
     if (this.argument != null) {
       json.put(ARGUMENT, argument);
@@ -104,6 +111,14 @@ public class AdminRequestPacket extends AdminPacket {
     this.id = id;
   }
 
+  public int getLocalNameServerId() {
+    return localNameServerId;
+  }
+
+  public void setLocalNameServerId(int lnsid) {
+    this.localNameServerId = lnsid;
+  }
+  
   public AdminOperation getOperation() {
     return operation;
   }

@@ -39,7 +39,7 @@ public class Update {
       LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
       SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
               System.currentTimeMillis(), new HashSet<Integer>(), 0);
-      LocalNameServer.executorService.scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+      LocalNameServer.getExecutorService().scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     }
   }
 
@@ -58,7 +58,7 @@ public class Update {
         // update the cache BEFORE we send back the confirmation
         LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
         // send the confirmation back to the originator of the update
-        GNS.getLogger().fine("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.nodeID + ") to "
+        GNS.getLogger().fine("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.getNodeID() + ") to "
                 + " : " + json.toString());
         Intercessor.handleIncomingPackets(json);
         // instrumentation?
@@ -95,8 +95,7 @@ public class Update {
       SendUpdatesTask task = new SendUpdatesTask(updateAddressPacket,
               updateInfo.getSendTime(), new HashSet<Integer>(), updateInfo.getNumRestarts() + 1);
 
-      String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(),
-              LocalNameServer.nodeID, updateAddressPacket.getRequestID(), updateInfo.getSendTime(),
+      String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(), LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), updateInfo.getSendTime(),
               updateInfo.getNumRestarts() + 1, -1);
 
       long delay = StartLocalNameServer.queryTimeout;

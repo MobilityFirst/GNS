@@ -61,7 +61,7 @@ public class UpdateInfo {
     int numTransmissions = 0;
     String msg = "Success-UpdateRequest\t" + name + "\t" + latency
             + "\t" + numTransmissions + "\t" + nameserverID
-            + "\t" + LocalNameServer.nodeID + "\t" + confirmPkt.getRequestID() + "\t" + numRestarts + "\t" + System.currentTimeMillis();
+            + "\t" + LocalNameServer.getNodeID() + "\t" + confirmPkt.getRequestID() + "\t" + numRestarts + "\t" + System.currentTimeMillis();
     return msg;
   }
 

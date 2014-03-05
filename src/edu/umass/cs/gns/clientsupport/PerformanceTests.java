@@ -5,10 +5,6 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.clientsupport.AccountAccess;
-import edu.umass.cs.gns.clientsupport.FieldAccess;
-import edu.umass.cs.gns.clientsupport.Intercessor;
-import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.Stats;
 import edu.umass.cs.gns.util.Util;

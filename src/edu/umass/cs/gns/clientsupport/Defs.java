@@ -73,6 +73,7 @@ public class Defs {
   public final static String RESETDATABASE = "resetDatabase";
   public final static String CLEARCACHE = "clearCache";
   public final static String DUMPCACHE = "dumpCache";
+  public final static String PINGTABLE = "pingTable";
   public final static String CHANGELOGLEVEL = "changeLogLevel";
   public final static String LEVEL = "level";
   public final static String SETPARAMETER = "setParameter";

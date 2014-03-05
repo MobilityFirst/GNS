@@ -45,7 +45,7 @@ public class PendingTasks {
 
       if (requestActivesOngoing.contains(name) == false) {
         RequestActivesTask requestActivesTask = new RequestActivesTask(name);
-        LocalNameServer.executorService.scheduleAtFixedRate(requestActivesTask, initialDelay,
+        LocalNameServer.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
                 StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
         requestActivesOngoing.add(name);
       }
@@ -56,7 +56,7 @@ public class PendingTasks {
   }
 
   public static void addToPendingRequests(String name) {
-    LocalNameServer.executorService.scheduleAtFixedRate(new RequestActivesTask(name), 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    LocalNameServer.getExecutorService().scheduleAtFixedRate(new RequestActivesTask(name), 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -98,11 +98,11 @@ public class PendingTasks {
         //
         if (task.period > 0) {
 //					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. REPEAT!!" );
-          LocalNameServer.executorService.scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
+          LocalNameServer.getExecutorService().scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
 //					LocalNameServer.timer.schedule(task.timerTask, 0, task.period);
         } else {
 //					if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Pending tasks. No repeat." );
-          LocalNameServer.executorService.schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);
+          LocalNameServer.getExecutorService().schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);
 //					LocalNameServer.timer.schedule(task.timerTask, 0);
         }
       }

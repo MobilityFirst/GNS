@@ -117,7 +117,7 @@ public class DNSRequestTask extends TimerTask {
           }
         }
         if (cacheEntry == null) {
-          RequestActivesPacket pkt = new RequestActivesPacket(incomingPacket.getGuid(), LocalNameServer.nodeID);
+          RequestActivesPacket pkt = new RequestActivesPacket(incomingPacket.getGuid(), LocalNameServer.getNodeID());
           pkt.setActiveNameServers(ConsistentHashing.getReplicaControllerSet(incomingPacket.getGuid()));
           cacheEntry = LocalNameServer.addCacheEntry(pkt);
         }
@@ -168,7 +168,7 @@ public class DNSRequestTask extends TimerTask {
 
         int clientQueryID = incomingPacket.getQueryId();
         // set this information in anticipation of creating the json object below
-        incomingPacket.setSenderId(LocalNameServer.nodeID);
+        incomingPacket.setSenderId(LocalNameServer.getNodeID());
         incomingPacket.getHeader().setId(queryId);
         JSONObject json;
         try {

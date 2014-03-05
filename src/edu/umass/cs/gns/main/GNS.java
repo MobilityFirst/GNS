@@ -24,7 +24,9 @@ public class GNS {
     NS_ADMIN_PORT(4),
     LNS_ADMIN_PORT(5),
     LNS_ADMIN_RESPONSE_PORT(6),
-    LNS_ADMIN_DUMP_RESPONSE_PORT(7);
+    LNS_ADMIN_DUMP_RESPONSE_PORT(7),
+    PING_PORT(8);
+    //
     int offset;
 
     PortType(int offset) {

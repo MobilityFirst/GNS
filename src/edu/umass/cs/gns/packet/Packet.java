@@ -410,6 +410,8 @@ public class Packet {
         return ConfigFileInfo.getLNSAdminResponsePort(nameServerId);
       case LNS_ADMIN_DUMP_RESPONSE_PORT:
         return ConfigFileInfo.getLNSAdminDumpReponsePort(nameServerId);
+        case PING_PORT:
+        return ConfigFileInfo.getPingPort(nameServerId);
     }
     return -1;
   }

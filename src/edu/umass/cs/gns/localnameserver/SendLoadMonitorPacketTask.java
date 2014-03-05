@@ -14,7 +14,7 @@ public class SendLoadMonitorPacketTask extends TimerTask {
 
   public SendLoadMonitorPacketTask(int nsID) {
     nameServerID = nsID;
-    nsLoad = new NameServerLoadPacket(LocalNameServer.nodeID, nsID, 0);
+    nsLoad = new NameServerLoadPacket(LocalNameServer.getNodeID(), nsID, 0);
   }
 
   @Override

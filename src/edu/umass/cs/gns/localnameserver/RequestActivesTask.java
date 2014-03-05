@@ -103,7 +103,7 @@ public class RequestActivesTask extends TimerTask
    */
   private static void sendActivesRequestPacketToPrimary(String name, int primaryID) {
 
-    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.nodeID);
+    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getNodeID());
 
     try
     {

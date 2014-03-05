@@ -77,7 +77,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         } catch (JSONException e) {
           GNS.getLogger().severe("Problem converting packet to JSON: " + e);
         }
-        String updateStats = updateInfo.getUpdateFailedStats(getPrimariesQueried(), LocalNameServer.nodeID, getUpdateRequestID(), -1);
+        String updateStats = updateInfo.getUpdateFailedStats(getPrimariesQueried(), LocalNameServer.getNodeID(), getUpdateRequestID(), -1);
         GNS.getStatLogger().fine(updateStats);
 
         throw new CancelExecutorTaskException();
@@ -149,17 +149,17 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       case ADD_RECORD_LNS:
         AddRecordPacket addRecordPacket = (AddRecordPacket) packet;
         addRecordPacket.setLNSRequestID(requestID);
-        addRecordPacket.setLocalNameServerID(LocalNameServer.nodeID);
+        addRecordPacket.setLocalNameServerID(LocalNameServer.getNodeID());
         break;
       case REMOVE_RECORD_LNS:
         RemoveRecordPacket removeRecordPacket = (RemoveRecordPacket) packet;
         removeRecordPacket.setLNSRequestID(requestID);
-        removeRecordPacket.setLocalNameServerID(LocalNameServer.nodeID);
+        removeRecordPacket.setLocalNameServerID(LocalNameServer.getNodeID());
         break;
       case UPDATE_ADDRESS_LNS:
         UpdateAddressPacket updateAddressPacket = (UpdateAddressPacket) packet;
         updateAddressPacket.setLNSRequestID(requestID);
-        updateAddressPacket.setLocalNameServerId(LocalNameServer.nodeID);
+        updateAddressPacket.setLocalNameServerId(LocalNameServer.getNodeID());
         break;
     }
 

@@ -10,6 +10,8 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.ping.PingServer;
+import edu.umass.cs.gns.ping.Pinger;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -85,6 +87,10 @@ public class NameServer {
 
     // START ADMIN THREAD - DO NOT REMOVE THIS
     new NSListenerAdmin().start(); // westy
+
+    GNS.getLogger().info("Ping server started on port " + ConfigFileInfo.getPingPort(nodeID));
+    PingServer.startServerThread(nodeID);
+    Pinger.startPinging(nodeID);
 
     timer.schedule(new OutputMemoryUse(), 100000, 100000); // write stats about system
 

@@ -15,23 +15,36 @@ import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.packet.DNSPacket;
+import edu.umass.cs.gns.packet.NameServerLoadPacket;
+import edu.umass.cs.gns.packet.RequestActivesPacket;
+import edu.umass.cs.gns.packet.SelectRequestPacket;
+import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.ping.PingServer;
+import edu.umass.cs.gns.ping.Pinger;
 import edu.umass.cs.gns.test.LNSExperiment;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  **
@@ -40,11 +53,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class LocalNameServer {
 
-  public static ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
+  private static ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
    * Local Name Server ID *
    */
-  public static int nodeID;
+  private static int nodeID;
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    *
@@ -65,25 +78,33 @@ public class LocalNameServer {
    * Unique and random query ID *
    */
   private static Random randomID;
-
   /**
    * Only used during experiments.
    */
   private static int initialExpDelayMillis = 30000;
-
   private static NioServer tcpTransport;
+  private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
+  /**
+   * @return the executorService
+   */
+  public static ScheduledThreadPoolExecutor getExecutorService() {
+    return executorService;
+  }
 
-  public static ConcurrentHashMap<Integer, Double> nameServerLoads;
+  /**
+   * @return the nodeID
+   */
+  public static int getNodeID() {
+    return nodeID;
+  }
 
-
-//  /**
-//   * ImmutableSet containing names that can be queried by the local name server *
-//   */
-//  public static ImmutableSet<String> workloadSet;
-//  public static List<String> lookupTrace;
-//  public static List<TestRequest> updateTrace;
-
+  /**
+   * @return the nameServerLoads
+   */
+  public static ConcurrentHashMap<Integer, Double> getNameServerLoads() {
+    return nameServerLoads;
+  }
 
   /**
    **
@@ -123,9 +144,6 @@ public class LocalNameServer {
 
 
     new LNSListenerUDP().start();
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("LNS listener started.");
-    }
 
     tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
     new Thread(tcpTransport).start();
@@ -135,12 +153,11 @@ public class LocalNameServer {
 //    new Thread(tcpTransport).start();
 
 
-      new LNSListenerAdmin().start();
+    new LNSListenerAdmin().start();
 
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("LNS listener admin started.");
-    }
-
+    GNS.getLogger().info("Ping server started on port " + ConfigFileInfo.getPingPort(nodeID));
+    PingServer.startServerThread(nodeID);
+    Pinger.startPinging(nodeID);
 
     //Periodically send nameserver votes for location based replication
 
@@ -165,7 +182,6 @@ public class LocalNameServer {
   }
 
   /********************** BEGIN: methods for read/write to info about reads (queries) and updates ****************/
-
   /**
    **
    * Adds information of a transmitted query to a query transmitted map.
@@ -258,7 +274,6 @@ public class LocalNameServer {
     return requestTransmittedMap.get(id);
   }
 
-
   /**
    **
    * Prints information about transmitted queries that have not received a response.
@@ -274,10 +289,7 @@ public class LocalNameServer {
   }
 
   /********************** END: methods for read/write to info about queries (read) and updates ****************/
-
-
   /********************** BEGIN: methods for read/write to the stats map *******************/
-
   public static NameRecordStats getStats(String name) {
 
     NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
@@ -352,10 +364,7 @@ public class LocalNameServer {
   }
 
   /********************** END: methods for read/write to the stats map *******************/
-
   /********************** BEGIN: methods that read/write to the cache at the local name server ****************/
-
-
   public static void invalidateCache() {
     cache.invalidateAll();
   }
@@ -383,7 +392,6 @@ public class LocalNameServer {
     cache.put(entry.getName(), entry);
     return entry;
   }
-
 
   public static CacheEntry addCacheEntry(RequestActivesPacket packet) {
     CacheEntry entry = new CacheEntry(packet);
@@ -865,10 +873,7 @@ public class LocalNameServer {
   }
 
   /********************** END: methods that read/write to the cache at the local name server ****************/
-
-
   /*********************BEGIN: methods for sending packets to name servers. ********************************/
-
   /**
    * Send packet to NS after all packet
    * @param json
@@ -886,7 +891,6 @@ public class LocalNameServer {
     }
   }
 
-
   public static void sendToNSActual(JSONObject json, int ns) {
 //    if (json.toString().length() < 1000) {
 //      try {
@@ -895,19 +899,16 @@ public class LocalNameServer {
 //        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //      }
 //    } else { // for large packets,  use TCP
-      try {
-        tcpTransport.sendToIDActual(ns, json);
-      } catch (IOException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
+    try {
+      tcpTransport.sendToIDActual(ns, json);
+    } catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
 //    }
   }
 
   /*********************END: methods for sending packets to name servers. ********************************/
-
-
   /*********************BEGIN: methods for monitoring load at name servers. ********************************/
-
   private void initializeNameServerLoadMonitoring() {
     nameServerLoads = new ConcurrentHashMap<Integer, Double>();
     Set<Integer> nameServerIDs = ConfigFileInfo.getAllNameServerIDs();
@@ -931,32 +932,29 @@ public class LocalNameServer {
   }
 
   /*********************END: methods for monitoring load at name servers. ********************************/
-
-
-
-
   public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
 
 //    int nodeProduct = 1;
 //    for (int x: nodeIDs) {
 //      nodeProduct =  nodeProduct*x;
 //    }
-    if (nodeIDs == null || nodeIDs.size() == 0) return  -1;
+    if (nodeIDs == null || nodeIDs.size() == 0) {
+      return -1;
+    }
     Random r = new Random(name.hashCode());
-    ArrayList<Integer> x1  = new ArrayList<Integer>(nodeIDs);
+    ArrayList<Integer> x1 = new ArrayList<Integer>(nodeIDs);
     Collections.sort(x1);
     Collections.shuffle(x1, r);
-    for (int x: x1) {
+    for (int x : x1) {
       return x;
     }
-    return  x1.get(0);
+    return x1.get(0);
 //    return  x1.get(count);
   }
-
   /**
    * Test *
    */
- // public static void main(String[] args) throws IOException {
+  // public static void main(String[] args) throws IOException {
 //  	ArrayList<Integer> nameServers = new ArrayList<Integer>();
 //
 //  	nameServers.add(10);
@@ -966,7 +964,7 @@ public class LocalNameServer {
 //  	nameServersQueried.add(15);
 //  	System.out.println(LocalNameServer.beehiveNSChoose(4, nameServers, nameServersQueried ));
 //  	System.out.println(1423);
-    //		ConfigFileInfo.readNameServerInfoLocal( "ns3", 3 );
+  //		ConfigFileInfo.readNameServerInfoLocal( "ns3", 3 );
 //    LocalNameServer.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(100).build();
 //    Header header = new Header(1100, 1, DNSRecordType.RCODE_NO_ERROR);
 //
@@ -993,65 +991,62 @@ public class LocalNameServer {
 //    CacheEntry cacheEntry = cache.getIfPresent("fred");
 //    System.out.println("\ncacheEntry: " + cacheEntry);
 //    
-    //cacheEntry.setValue(null);
-    //System.out.println("\ncacheEntry: " + cacheEntry);
-    //
-    //		Set<Integer> nameserverQueried = new HashSet<Integer>();
-    //		int nameserver = LocalNameServer.getClosestActiveNSFromCache( "h.com", nameserverQueried );
-    //		System.out.println( "\nNameServer: " + nameserver );
-    //
-    //		nameserverQueried.add(2);
-    //		nameserver = LocalNameServer.getClosestActiveNSFromCache( "h.com", nameserverQueried );
-    //		System.out.println( "\nNameServer: " + nameserver );
-    //
-    //		nameserverQueried.add(1);
-    //		nameserver = LocalNameServer.getClosestActiveNSFromCache( "h.com", nameserverQueried );
-    //		System.out.println( "\nNameServer: " + nameserver );
-    //
-    //		//		System.out.println("Address valid --> " + LocalNameServer.isValidAddressInCache( "h.com" ));
-    //		//		while(LocalNameServer.isValidAddressInCache( "h.com" ) ) {
-    //		//			//wait
-    //		//		}
-    //		//		System.out.println("Address valid --> " + LocalNameServer.isValidAddressInCache( "h.com" ));
-    //		//		
-    //		//		System.out.println("Nameserver valid --> " + LocalNameServer.isValidNameserverInCache( "h.com" ));
-    //		//		while(LocalNameServer.isValidNameserverInCache( "h.com" ) ) {
-    //		//			//wait
-    //		//		}
-    //		//		System.out.println("Nameserver valid --> " + LocalNameServer.isValidNameserverInCache( "h.com" ));
-    //
-    //		packet = new DNSPacket( header, "h0.com");
-    //		LocalNameServer.addCacheEntry( packet );
-    //		packet = new DNSPacket( header, "h1.com");
-    //		LocalNameServer.addCacheEntry( packet );
-    //		packet = new DNSPacket( header, "h2.com");
-    //		LocalNameServer.addCacheEntry( packet );
-    //		packet = new DNSPacket( header, "h3.com");
-    //		LocalNameServer.addCacheEntry( packet );
-    //		packet = new DNSPacket( header, "h4.com");
-    //		LocalNameServer.addCacheEntry( packet );
-    //		packet = new DNSPacket( header, "h5.com" );
-    //		LocalNameServer.addCacheEntry( packet );
-    //
-    //		System.out.println(cache.size()  + " " + null + cache.stats().toString());
-    //    Set<String> names = readWorkloadFile("/Users/hardeep/PlanetLabScript/Workload/lns_workload_15kNames_0.01/workload_uoepl1.essex.ac.uk");
-    //    ImmutableSet<String> s = ImmutableSet.copyOf(names);
-    //    System.out.println(s.size());
-    //    System.out.println(s.toString());
-    //    System.out.println(names.toString());
-    //    System.out.println(s.contains("804"));
+  //cacheEntry.setValue(null);
+  //System.out.println("\ncacheEntry: " + cacheEntry);
+  //
+  //		Set<Integer> nameserverQueried = new HashSet<Integer>();
+  //		int nameserver = LocalNameServer.getClosestActiveNSFromCache( "h.com", nameserverQueried );
+  //		System.out.println( "\nNameServer: " + nameserver );
+  //
+  //		nameserverQueried.add(2);
+  //		nameserver = LocalNameServer.getClosestActiveNSFromCache( "h.com", nameserverQueried );
+  //		System.out.println( "\nNameServer: " + nameserver );
+  //
+  //		nameserverQueried.add(1);
+  //		nameserver = LocalNameServer.getClosestActiveNSFromCache( "h.com", nameserverQueried );
+  //		System.out.println( "\nNameServer: " + nameserver );
+  //
+  //		//		System.out.println("Address valid --> " + LocalNameServer.isValidAddressInCache( "h.com" ));
+  //		//		while(LocalNameServer.isValidAddressInCache( "h.com" ) ) {
+  //		//			//wait
+  //		//		}
+  //		//		System.out.println("Address valid --> " + LocalNameServer.isValidAddressInCache( "h.com" ));
+  //		//		
+  //		//		System.out.println("Nameserver valid --> " + LocalNameServer.isValidNameserverInCache( "h.com" ));
+  //		//		while(LocalNameServer.isValidNameserverInCache( "h.com" ) ) {
+  //		//			//wait
+  //		//		}
+  //		//		System.out.println("Nameserver valid --> " + LocalNameServer.isValidNameserverInCache( "h.com" ));
+  //
+  //		packet = new DNSPacket( header, "h0.com");
+  //		LocalNameServer.addCacheEntry( packet );
+  //		packet = new DNSPacket( header, "h1.com");
+  //		LocalNameServer.addCacheEntry( packet );
+  //		packet = new DNSPacket( header, "h2.com");
+  //		LocalNameServer.addCacheEntry( packet );
+  //		packet = new DNSPacket( header, "h3.com");
+  //		LocalNameServer.addCacheEntry( packet );
+  //		packet = new DNSPacket( header, "h4.com");
+  //		LocalNameServer.addCacheEntry( packet );
+  //		packet = new DNSPacket( header, "h5.com" );
+  //		LocalNameServer.addCacheEntry( packet );
+  //
+  //		System.out.println(cache.size()  + " " + null + cache.stats().toString());
+  //    Set<String> names = readWorkloadFile("/Users/hardeep/PlanetLabScript/Workload/lns_workload_15kNames_0.01/workload_uoepl1.essex.ac.uk");
+  //    ImmutableSet<String> s = ImmutableSet.copyOf(names);
+  //    System.out.println(s.size());
+  //    System.out.println(s.toString());
+  //    System.out.println(names.toString());
+  //    System.out.println(s.contains("804"));
   //}
-
-
 }
-
-
 
 /**
  * When we emulate ping latencies between LNS and NS, this task will actually send packets to NS.
  * See option StartLocalNameServer.emulatePingLatencies
  */
 class SendQueryWithDelay extends TimerTask {
+
   /**
    * Json object to send
    */
@@ -1060,6 +1055,7 @@ class SendQueryWithDelay extends TimerTask {
    * Name server to send this packet to.
    */
   int nameServer;
+
   public SendQueryWithDelay(JSONObject json, int nameServer) {
     this.json = json;
     this.nameServer = nameServer;
@@ -1069,6 +1065,4 @@ class SendQueryWithDelay extends TimerTask {
   public void run() {
     LocalNameServer.sendToNSActual(json, nameServer);
   }
-
-
 }

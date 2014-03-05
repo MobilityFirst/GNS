@@ -36,7 +36,7 @@ public class AddRemove {
 
     SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis(), new HashSet<Integer>());
-    LocalNameServer.executorService.scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     addRecordPacket.getLocalNameServerID();
     GNS.getLogger().fine(" Add  Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
   }
@@ -52,7 +52,7 @@ public class AddRemove {
 
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
             System.currentTimeMillis(), new HashSet<Integer>());
-    LocalNameServer.executorService.scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    LocalNameServer.getExecutorService().scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine(" Upsert Task Scheduled. "
@@ -80,7 +80,7 @@ public class AddRemove {
     }
     SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
             System.currentTimeMillis(), new HashSet<Integer>());
-    LocalNameServer.executorService.scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    LocalNameServer.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine(" Remove  Task Scheduled. "
@@ -106,7 +106,7 @@ public class AddRemove {
       // send it back to the orginator of the request
       addInfo.getID();
       JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
-      GNS.getLogger().fine("LNSListenerUpdate CONFIRM ADD (lns " + LocalNameServer.nodeID + ") to "
+      GNS.getLogger().fine("LNSListenerUpdate CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
               + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);
     }
@@ -128,7 +128,7 @@ public class AddRemove {
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       // send it back to the orginator of the request
       JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
-      GNS.getLogger().fine("LNSListenerUpdate CONFIRM REMOVE (lns " + LocalNameServer.nodeID + ") to "
+      GNS.getLogger().fine("LNSListenerUpdate CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
               + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);
       // update our cache

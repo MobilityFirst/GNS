@@ -130,6 +130,23 @@ public class Admintercessor {
     }
   }
   
+  public static String sendPingTable(String size) {
+    int id = nextAdminRequestID();
+    try {
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGTABLE, size).toJSONObject());
+      waitForAdminResponse(id);
+      JSONObject json = adminResult.get(id);
+      if (json != null) {
+        return json.getString("PINGTABLE");
+      } else {
+        return null;
+      }
+    } catch (Exception e) {
+      GNS.getLogger().warning("Ignoring error while sending PINGTABLE request: " + e);
+      return null;
+    }
+  }
+  
   public static boolean sendChangeLogLevel(Level level) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());

@@ -1,27 +1,30 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
+import edu.umass.cs.gns.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
+import edu.umass.cs.gns.ping.Pinger;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Set;
 import java.util.logging.Level;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * *************************************************************
@@ -212,6 +215,16 @@ public class NSListenerAdmin extends Thread {
                 NameServer.getPaxosManager().resetAll();
                 NameServer.resetDB();
                 break;
+              case PINGTABLE:
+                int node = Integer.parseInt(adminRequestPacket.getArgument());
+                if (node == NameServer.getNodeID()) {
+                  JSONObject jsonResponse = new JSONObject();
+                  jsonResponse.put("PINGTABLE", Pinger.tableToString());
+                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
+                } else {
+                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
+                }
               case CHANGELOGLEVEL:
                 Level level = Level.parse(adminRequestPacket.getArgument());
                 GNS.getLogger().info("Changing log level to " + level.getName());

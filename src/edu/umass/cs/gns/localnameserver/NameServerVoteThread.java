@@ -102,7 +102,7 @@ public class NameServerVoteThread extends Thread {
           nameCount++;
           if (StartLocalNameServer.debugMode) GNS.getLogger().fine("\tVoteSent\t" + name +"\t" + vote +"\t" + update+"\t");
 //					int uniqueVoteID = r.nextInt();
-					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.nodeID, 0);
+					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.getNodeID(), 0);
 
           // send to all primaries.
           Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);
