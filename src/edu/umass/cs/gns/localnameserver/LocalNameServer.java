@@ -13,8 +13,8 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageWorker;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.ping.Pinger;
@@ -66,8 +66,8 @@ public class LocalNameServer {
    * Unique and random query ID *
    */
   private static Random random;
-//  private static NioServer tcpTransport;
-  private static GNSNIOTransport tcpTransport;
+  private static NioServer tcpTransport;
+//  private static GNSNIOTransport tcpTransport;
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
   /**
@@ -134,11 +134,11 @@ public class LocalNameServer {
       GNS.getLogger().fine("LNS listener started.");
     }
 
-//    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
 
     // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
-    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
+//    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
+//    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
 
     new Thread(tcpTransport).start();
 
