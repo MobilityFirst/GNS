@@ -12,6 +12,8 @@ import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
+import edu.umass.cs.gns.util.ConsistentHashing;
+
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -69,13 +71,13 @@ public class CacheEntry implements Comparable<CacheEntry> {
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }
     // Also update this
-    this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
+    this.primaryNameServer = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
     this.activeNameServer = packet.getActiveNameServers();
   }
 
   public CacheEntry(RequestActivesPacket packet) {
     this.name = packet.getName();
-    this.primaryNameServer = (HashSet<Integer>) LocalNameServer.getPrimaryNameServers(name);
+    this.primaryNameServer = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
     this.activeNameServer = packet.getActiveNameServers();
   }
 

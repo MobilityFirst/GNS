@@ -10,7 +10,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.util.OutputMemoryUse;
+import edu.umass.cs.gns.util.OutputNodeStats;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -458,10 +458,11 @@ public class GenerateSyntheticRecordTable {
       }
     }
     GNS.getLogger().info("Bulk insert of records. All complete. Total Records: " + totalRecords + "\tTime: "
-            + (t1 - t0) / 1000 + " sec");
-    OutputMemoryUse.outputMemoryUse("BeforeGC " + NameServer.getNodeID() + ":");
+            + (t1 - t0)/1000 + " sec");
+    OutputNodeStats.outputMemoryUse("BeforeGC " + NameServer.getNodeID() + ":");
     System.gc();
-    OutputMemoryUse.outputMemoryUse("AfterGC " + NameServer.getNodeID() + ":");
+    OutputNodeStats.outputMemoryUse("AfterGC " + NameServer.getNodeID() + ":");
+
   }
 
   /**

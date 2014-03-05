@@ -11,23 +11,21 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 public class Update {
 
-  static int updateCount = 0;
-  static Object lock = new ReentrantLock();
+  private static Random r = new Random();
+
 
   public static void handlePacketUpdateAddressLNS(JSONObject json)
           throws JSONException, UnknownHostException {
-    synchronized (lock) {
-      updateCount++;
-    }
 
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(json);
 
@@ -62,7 +60,7 @@ public class Update {
                 + " : " + json.toString());
         Intercessor.handleIncomingPackets(json);
         // instrumentation?
-        if (LocalNameServer.r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
+        if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
           GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt, updateInfo.getName()));
         }
       }

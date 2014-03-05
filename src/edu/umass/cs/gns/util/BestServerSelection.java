@@ -1,11 +1,12 @@
 package edu.umass.cs.gns.util;
 
+import edu.umass.cs.gns.localnameserver.CacheEntry;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class BestServerSelection {
 
@@ -36,6 +37,96 @@ public class BestServerSelection {
     }
     return selectServer;
 
+  }
+
+
+  /**
+   **
+   * select best name server considering ping-latency + server-load including actives and primaries
+   *
+   *
+   * @param name Host/Domain/Device Name
+   * @param nameserverQueried A set of name servers queried and excluded.
+   * @return id of best name server, -1 if none found.
+   */
+  public static int getBestActiveNameServerFromCache(CacheEntry cacheEntry,
+                                                     Set<Integer> nameserverQueried) {
+
+    if (cacheEntry == null || cacheEntry.getActiveNameServers() == null) {
+      return -1;
+    }
+
+    HashSet<Integer> allServers = new HashSet<Integer>();
+    if (cacheEntry.getActiveNameServers() != null) {
+      for (int x : cacheEntry.getActiveNameServers()) {
+        if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
+          allServers.add(x);
+        }
+      }
+    }
+
+
+    return BestServerSelection.simpleLatencyLoadHeuristic(allServers);
+  }
+
+
+
+
+
+  private static int beehiveNSChoose(int closestNS, ArrayList<Integer> nameServers, Set<Integer> nameServersQueried) {
+
+    if (nameServers.contains(closestNS) && (nameServersQueried == null || !nameServersQueried.contains(closestNS))) {
+      return closestNS;
+    }
+
+    Collections.sort(nameServers);
+    for (int x : nameServers) {
+      if (x > closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
+        return x;
+      }
+    }
+
+    for (int x : nameServers) {
+      if (x < closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
+        return x;
+      }
+    }
+
+    return -1;
+  }
+
+  public static int getBeehiveNameServer(Set<Integer> nameserverQueried, CacheEntry cacheEntry) {
+    ArrayList<Integer> allServers = new ArrayList<Integer>();
+    if (cacheEntry.getActiveNameServers() != null) {
+      for (int x : cacheEntry.getActiveNameServers()) {
+        if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
+          allServers.add(x);
+        }
+      }
+    }
+
+//    for (int x : cacheEntry.getPrimaryNameServer()) {
+//      if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
+//        allServers.add(x);
+//      }
+//    }
+    if (allServers.size() == 0) {
+      return -1;
+    }
+
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("BEEHIVE All Name Servers: " + allServers);
+    }
+    if (allServers.contains(ConfigFileInfo.getClosestNameServer())) {
+      return ConfigFileInfo.getClosestNameServer();
+    }
+    return beehiveNSChoose(ConfigFileInfo.getClosestNameServer(), allServers, nameserverQueried);
+//    return allServers.get(r.nextInt(allServers.size()));
+
+    //		int x = beehiveDHTRouting.getDestNS(new Integer(name),
+    //				ConfigFileInfo.getClosestNameServer(), allServers);
+    //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("BEEHIVE Chosen Name Server: " + x);
+    //		return x;
   }
 
   /**

@@ -9,13 +9,14 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.Packet;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.TimerTask;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Created by abhigyan on 2/24/14.
@@ -25,7 +26,6 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
   @Override
   public void handleJSONObjects(ArrayList jsonObjects) {
     for (Object o : jsonObjects) {
-      //
       LocalNameServer.getExecutorService().submit(new LNSTask((JSONObject) o));
     }
   }

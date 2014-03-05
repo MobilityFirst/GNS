@@ -97,7 +97,7 @@ public class ReplicaController implements  ReplicaControllerInterface{
           break;
         case REQUEST_ACTIVES:  // lookup actives for name
           if(rcCoordinator == null) {
-            LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
+            msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
           } else {
             rcCoordinator.handleRequest(json);
           }

@@ -16,13 +16,13 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 /**
  * Created by abhigyan on 2/28/14.
  */
-public class LNSExperiment {
+public class TraceRequestGenerator {
 
 
   /*******BEGIN: during experiments, these methods read workload trace files. Not used outside experiments. ********/
 
 
-  public static void scheduleLookupsUpdates(String lookupTraceFile, String updateTraceFile, double lookupRate,
+  public static void generateLookupsUpdates(String lookupTraceFile, String updateTraceFile, double lookupRate,
                                             double updateRate, ScheduledThreadPoolExecutor executorService)
           throws IOException, InterruptedException{
 
@@ -40,12 +40,12 @@ public class LNSExperiment {
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Scheduling all lookups.");
     }
-    TestRequestScheduler.schdeduleAllRequests(lookupTrace, lookupRate, executorService);
+    new RequestGenerator().generateRequests(lookupTrace, lookupRate, executorService);
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Scheduling all updates via intercessor.");
     }
-    TestRequestScheduler.schdeduleAllRequests(updateTrace, updateRate, executorService);
+    new RequestGenerator().generateRequests(updateTrace, updateRate, executorService);
   }
 
 

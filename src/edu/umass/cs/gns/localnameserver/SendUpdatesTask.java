@@ -111,9 +111,9 @@ public class SendUpdatesTask extends TimerTask {
 
 //        else
         if (StartLocalNameServer.loadDependentRedirection) {
-          nameServerID = LocalNameServer.getBestActiveNameServerFromCache(name, activesQueried);
+          nameServerID = BestServerSelection.getBestActiveNameServerFromCache(cacheEntry,  activesQueried);
         } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
-          nameServerID = LocalNameServer.getBeehiveNameServerFromCache(name, activesQueried);
+          nameServerID = BestServerSelection.getBeehiveNameServer(activesQueried, cacheEntry);
         } else {
           nameServerID = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), activesQueried);
           coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(name, cacheEntry.getActiveNameServers());

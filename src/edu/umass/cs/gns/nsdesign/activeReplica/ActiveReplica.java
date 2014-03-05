@@ -13,6 +13,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -145,6 +149,15 @@ public class ActiveReplica implements ActiveReplicaInterface{
     } catch (JSONException e) {
       e.printStackTrace();
     } catch (IOException e) {
+      e.printStackTrace();
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+    } catch (InvalidKeySpecException e) {
+      e.printStackTrace();
+    } catch (InvalidKeyException e) {
+      e.printStackTrace();
+    } catch (SignatureException e) {
+      // todo what to do in these cases?
       e.printStackTrace();
     }
   }

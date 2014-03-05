@@ -40,10 +40,11 @@ public class UnreplicatedNameServerTest {
       List<TestRequest> testRequest = new ArrayList<TestRequest>();
       testRequest.add(new TestRequest(name, TestRequest.ADD));
       testRequest.add(new TestRequest(name, TestRequest.ADD)); // this should fail
+      // todo is there a way to test responses automatically? e.g., do a lookup after update to test if it works.
 //      testRequest.add(new TestRequest(name, TestRequest.LOOKUP));
 //      testRequest.add(new TestRequest(name, TestRequest.UPDATE));
 //      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
-      TestRequestScheduler.schdeduleAllRequests(testRequest, 1000.0, LocalNameServer.getExecutorService());
+      new RequestGenerator().generateRequests(testRequest, 1000.0, LocalNameServer.getExecutorService());
 
       GNS.getLogger().info("Local name server started ...");
     } catch (IOException e) {

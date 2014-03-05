@@ -1,13 +1,12 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import org.json.JSONObject;
-
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 
 /**
 @author V. Arun
@@ -59,7 +58,7 @@ public class GNSDelayEmulator {
 		long delay=0;
 		if(GNSDelayEmulator.EMULATE_DELAYS) {
 			if(GNSDelayEmulator.USE_CONFIG_FILE_INFO) {
-				delay = (long)ConfigFileInfo.getPingLatency(id);
+				delay = (long)(ConfigFileInfo.getPingLatency(id)/2); // getPingLatency returns RTT, divide by 2 for one-way delay
 			}
 			else {
 				delay = GNSDelayEmulator.DEFAULT_DELAY;

@@ -13,38 +13,26 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.NameServerLoadPacket;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
-import edu.umass.cs.gns.packet.SelectRequestPacket;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONMessageWorker;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.ping.Pinger;
-import edu.umass.cs.gns.test.LNSExperiment;
+import edu.umass.cs.gns.test.TraceRequestGenerator;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  **
@@ -77,12 +65,9 @@ public class LocalNameServer {
   /**
    * Unique and random query ID *
    */
-  private static Random randomID;
-  /**
-   * Only used during experiments.
-   */
-  private static int initialExpDelayMillis = 30000;
-  private static NioServer tcpTransport;
+  private static Random random;
+//  private static NioServer tcpTransport;
+  private static GNSNIOTransport tcpTransport;
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
   /**
@@ -121,7 +106,7 @@ public class LocalNameServer {
     updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
     selectTransmittedMap = new ConcurrentHashMap<Integer, SelectInfo>(10, 0.75f, 3);
 
-    randomID = new Random(System.currentTimeMillis());
+    random = new Random(System.currentTimeMillis());
 
     cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(StartLocalNameServer.cacheSize).build();
     nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
@@ -145,14 +130,28 @@ public class LocalNameServer {
 
     new LNSListenerUDP().start();
 
-    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
-    new Thread(tcpTransport).start();
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("LNS listener started.");
+    }
+
+//    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+
     // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-//    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
-//    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
-//    new Thread(tcpTransport).start();
+    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
+    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
 
+    new Thread(tcpTransport).start();
 
+    if (StartLocalNameServer.experimentMode) {
+      long initialExpDelayMillis = 40000;
+      try {
+        Thread.sleep(initialExpDelayMillis); // Abhigyan: When multiple LNS are running on same machine, we wait for
+        // all lns's to bind to their respective listening port before sending any traffic. Otherwise, another LNS could
+        // start a new connection and bind to this LNS's listening port. We have seen this very often in cluster tests.
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
     new LNSListenerAdmin().start();
 
     PingServer.startServerThread(nodeID);
@@ -166,7 +165,7 @@ public class LocalNameServer {
 //          }
 
     if (StartLocalNameServer.experimentMode) {
-      LNSExperiment.scheduleLookupsUpdates(StartLocalNameServer.lookupTraceFile,
+      TraceRequestGenerator.generateLookupsUpdates(StartLocalNameServer.lookupTraceFile,
               StartLocalNameServer.updateTraceFile, StartLocalNameServer.lookupRate,
               StartLocalNameServer.updateRateRegular, executorService);
     }
@@ -197,7 +196,7 @@ public class LocalNameServer {
     int id;
     //Generate unique id for the query
     do {
-      id = randomID.nextInt();
+      id = random.nextInt();
     } while (requestTransmittedMap.containsKey(id));
 
     //Add query info
@@ -213,7 +212,7 @@ public class LocalNameServer {
     int id;
     //Generate unique id for the query
     do {
-      id = randomID.nextInt();
+      id = random.nextInt();
     } while (updateTransmittedMap.containsKey(id));
 
     //Add update info
@@ -225,7 +224,7 @@ public class LocalNameServer {
   public static int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket) {
     int id;
     do {
-      id = randomID.nextInt();
+      id = random.nextInt();
     } while (requestTransmittedMap.containsKey(id));
 
     //Add query info
@@ -483,181 +482,6 @@ public class LocalNameServer {
   }
 
   /**
-   * Returns the closest active name server from cache that is not in <i>nameserverQueried</i>.' Returns -1 if the cache
-   * does not contain <i>name</i> or if all active name servers are unavailable.
-   *
-   * @param name Host/Domain/Device Name
-   * @param nameserverQueried A set of name servers queried and excluded.
-   */
-  public static int getClosestActiveNSFromCache(String name, //NameRecordKey recordKey,
-          Set<Integer> nameserverQueried) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
-    if (cacheEntry == null || cacheEntry.getActiveNameServers() == null) {
-      return -1;
-    }
-    return BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserverQueried);
-  }
-
-  /**
-   **
-   * select best name server considering ping-latency + server-load including actives and primaries
-   *
-   *
-   * @param name Host/Domain/Device Name
-   * @param nameserverQueried A set of name servers queried and excluded.
-   * @return id of best name server, -1 if none found.
-   */
-  public static int getBestActiveNameServerFromCache(String name, //NameRecordKey recordKey, 
-          Set<Integer> nameserverQueried) {
-
-    CacheEntry cacheEntry = cache.getIfPresent(name);
-    if (cacheEntry == null || cacheEntry.getActiveNameServers() == null) {
-      return -1;
-    }
-
-    HashSet<Integer> allServers = new HashSet<Integer>();
-    if (cacheEntry.getActiveNameServers() != null) {
-      for (int x : cacheEntry.getActiveNameServers()) {
-        if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-          allServers.add(x);
-        }
-      }
-    }
-
-
-    return BestServerSelection.simpleLatencyLoadHeuristic(allServers);
-  }
-  static Random r = new Random();
-
-  public static int getLoadAwareBeehiveNameServerFromCache(String name, //NameRecordKey recordKey,
-          Set<Integer> nameserverQueried) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
-    if (cacheEntry == null) {
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("BEEHIVE No Cache Entry: " + -1);
-      }
-      return -1;
-    }
-
-    ArrayList<Integer> allServers = new ArrayList<Integer>();
-    if (cacheEntry.getActiveNameServers() != null) {
-      for (int x : cacheEntry.getActiveNameServers()) {
-        if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-          allServers.add(x);
-        }
-      }
-    }
-
-    for (int x : cacheEntry.getPrimaryNameServer()) {
-      if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-        allServers.add(x);
-      }
-    }
-    if (allServers.size() == 0) {
-      return -1;
-    }
-
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("BEEHIVE All Name Servers: " + allServers);
-    }
-    if (allServers.contains(ConfigFileInfo.getClosestNameServer())) {
-      return ConfigFileInfo.getClosestNameServer();
-    }
-    return allServers.get(r.nextInt(allServers.size()));
-
-//		int x = beehiveDHTRouting.getDestNS(new Integer(name), 
-//				ConfigFileInfo.getClosestNameServer(), allServers);
-//		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("BEEHIVE Chosen Name Server: " + x);
-//		return x;
-
-  }
-
-  private static int beehiveNSChoose(int closestNS, ArrayList<Integer> nameServers, Set<Integer> nameServersQueried) {
-
-    if (nameServers.contains(closestNS) && (nameServersQueried == null || !nameServersQueried.contains(closestNS))) {
-      return closestNS;
-    }
-
-    Collections.sort(nameServers);
-    for (int x : nameServers) {
-      if (x > closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
-        return x;
-      }
-    }
-
-    for (int x : nameServers) {
-      if (x < closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
-        return x;
-      }
-    }
-
-    return -1;
-  }
-
-  public static int getBeehiveNameServerFromCache(String name, //NameRecordKey recordKey,
-          Set<Integer> nameserverQueried) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
-    if (cacheEntry == null) {
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("BEEHIVE No Cache Entry: " + -1);
-      }
-      return -1;
-    }
-    return getBeehiveNameServer(nameserverQueried, cacheEntry);
-  }
-
-  public static int getBeehiveNameServer(Set<Integer> nameserverQueried, CacheEntry cacheEntry) {
-    ArrayList<Integer> allServers = new ArrayList<Integer>();
-    if (cacheEntry.getActiveNameServers() != null) {
-      for (int x : cacheEntry.getActiveNameServers()) {
-        if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-          allServers.add(x);
-        }
-      }
-    }
-
-//    for (int x : cacheEntry.getPrimaryNameServer()) {
-//      if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-//        allServers.add(x);
-//      }
-//    }
-    if (allServers.size() == 0) {
-      return -1;
-    }
-
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("BEEHIVE All Name Servers: " + allServers);
-    }
-    if (allServers.contains(ConfigFileInfo.getClosestNameServer())) {
-      return ConfigFileInfo.getClosestNameServer();
-    }
-    return beehiveNSChoose(ConfigFileInfo.getClosestNameServer(), allServers, nameserverQueried);
-//    return allServers.get(r.nextInt(allServers.size()));
-
-    //		int x = beehiveDHTRouting.getDestNS(new Integer(name), 
-    //				ConfigFileInfo.getClosestNameServer(), allServers);
-    //		if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("BEEHIVE Chosen Name Server: " + x);
-    //		return x;
-  }
-
-  /**
-   **
-   * Returns the closest name server (active and primary) from cache that is not in <i>nameserverQueried</i>.' Returns
-   * -1 if the cache does not contain <i>name</i> or if all name servers are unavailable.
-   *
-   * @param name Host/Domain/Device Name
-   * @param nameserverQueried A set of name servers queried and excluded.
-   *
-   */
-  public static int getClosestActiveNameServerFromCache(String name, //NameRecordKey recordKey,
-          Set<Integer> nameserverQueried) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
-//      if (StartLocalNameServer.debugMode) GNRS.getLogger().fine(" Name " + name + "ACTIVE NAME SERVERS " + cacheEntry.getActiveNameServers());
-    return (cacheEntry != null && cacheEntry.getActiveNameServers() != null)
-            ? BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserverQueried) : -1;
-  }
-
-  /**
    **
    * Return a Set containing ids of primary replica for <i>name</i>
    *
@@ -693,101 +517,6 @@ public class LocalNameServer {
       }
       return x;
     } catch (Exception e) {
-      return -1;
-    }
-  }
-
-  /**
-   **
-   * Returns the best primary name server (latency + serverload) for <i>name</i>.
-   *
-   * @return best primary name server for <i>name</i>, or -1 if no such name server is present.
-   *
-   */
-  public static int getBestPrimaryNameServer(String name, //NameRecordKey recordKey,
-          Set<Integer> nameserverQueried) {
-    try {
-      Set<Integer> primary = getPrimaryNameServers(name);
-
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Primary Name Servers: " + primary.toString());
-      }
-      HashSet<Integer> allServers = new HashSet<Integer>();
-      for (int x : primary) {
-        if (!allServers.contains(x) && nameserverQueried != null
-                && !nameserverQueried.contains(x)) {
-          allServers.add(x);
-        }
-      }
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("All Servers: " + allServers.toString());
-      }
-      int x = BestServerSelection.simpleLatencyLoadHeuristic(allServers);
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Best Primary Name Server: " + x);
-      }
-      return x;
-    } catch (Exception e) {
-      return -1;
-    }
-  }
-//  static Random r = new Random();
-
-  /**
-   **
-   * Returns the primary name server that would be selected by beehive among primaries for <i>name</i>.
-   *
-   * @return beehive chosen primary name server for <i>name</i>, or -1 if no such name server is present.
-   *
-   */
-  public static int getBeehivePrimaryNameServer(String name, //NameRecordKey recordKey,
-          Set<Integer> nameserverQueried) {
-
-    try {
-      Set<Integer> primary = getPrimaryNameServers(name);
-
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Primary Name Servers: " + primary.toString());
-      }
-      ArrayList<Integer> allServers = new ArrayList<Integer>();
-
-      for (int x : primary) {
-        if (!allServers.contains(x) && nameserverQueried != null
-                && !nameserverQueried.contains(x)) {
-          allServers.add(x);
-        }
-      }
-
-      if (allServers.size() == 0) {
-        return -1;
-      }
-
-      if (allServers.contains(ConfigFileInfo.getClosestNameServer())) {
-        return ConfigFileInfo.getClosestNameServer();
-      }
-
-      return beehiveNSChoose(ConfigFileInfo.getClosestNameServer(), allServers, nameserverQueried);
-//      return allServers.get(r.nextInt(allServers.size()));
-
-      //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("All Servers: " + allServers.toString());
-      //			int a = new Integer(name);
-      //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Name int: " + a);
-      //			int b = ConfigFileInfo.getClosestNameServer();
-      //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("Closest NS: " + b);
-      //			
-      //			int x = beehiveDHTRouting.getDestNS(a, b, allServers);
-      //			if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("BEEHIVE Primary Name Server: " + x);
-      //			
-      //			return x;
-    } catch (Exception e) {
-      StringBuilder s = new StringBuilder();
-      for (StackTraceElement s1 : e.getStackTrace()) {
-        s.append(s1.toString() + "\n");
-      }
-
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Beehive Primary ERROR: " + s.toString());
-      }
       return -1;
     }
   }
@@ -883,7 +612,7 @@ public class LocalNameServer {
 
     if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
       double latency = ConfigFileInfo.getPingLatency(ns)
-              * (1 + r.nextDouble() * StartLocalNameServer.variation);
+              * (1 + random.nextDouble() * StartLocalNameServer.variation);
       long timerDelay = (long) latency;
       LocalNameServer.executorService.schedule(new SendQueryWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
     } else {
@@ -891,7 +620,7 @@ public class LocalNameServer {
     }
   }
 
-  public static void sendToNSActual(JSONObject json, int ns) {
+  static void sendToNSActual(JSONObject json, int ns) {
 //    if (json.toString().length() < 1000) {
 //      try {
 //        LNSListenerUDP.udpTransport.sendPacket(json, ns, GNS.PortType.NS_UDP_PORT);
@@ -932,6 +661,7 @@ public class LocalNameServer {
   }
 
   /*********************END: methods for monitoring load at name servers. ********************************/
+
   public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
 
 //    int nodeProduct = 1;

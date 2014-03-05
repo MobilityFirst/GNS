@@ -13,11 +13,9 @@ import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.ping.Pinger;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
-import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.util.MovingAverage;
-import edu.umass.cs.gns.util.OutputMemoryUse;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.util.*;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
@@ -25,7 +23,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONObject;
 
 public class NameServer {
 
@@ -41,7 +38,7 @@ public class NameServer {
   private static ReplicationFrameworkInterface replicationFramework;
   private static MovingAverage loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
   private static NioServer tcpTransport;
-//  public static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
+//  private static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
   private static NSPacketDemultiplexer nsDemultiplexer;
   private static Timer timer = new Timer();
   private static ScheduledThreadPoolExecutor executorService;
@@ -88,11 +85,13 @@ public class NameServer {
     // START ADMIN THREAD - DO NOT REMOVE THIS
     new NSListenerAdmin().start(); // westy
 
+    timer.schedule(new OutputNodeStats(), 100000, 100000); // write stats about system
+    GNS.getLogger().info("Ping server started on port " + ConfigFileInfo.getPingPort(nodeID));
     PingServer.startServerThread(nodeID);
     GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
     Pinger.startPinging(nodeID);
 
-    timer.schedule(new OutputMemoryUse(), 100000, 100000); // write stats about system
+
 
   }
 

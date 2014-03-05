@@ -350,7 +350,7 @@ public class ClientRequestWorker extends TimerTask {
     } else {
       handleUpdate(updatePacket);
     }
-            NameServer.getLoadMonitor().add((int) (System.currentTimeMillis() - startTime));
+//    NameServer.loadMonitor.add((int) (System.currentTimeMillis() - startTime));
   }
 
   /**
@@ -721,8 +721,9 @@ public class ClientRequestWorker extends TimerTask {
   
   private void handleNameServerLoadPacket() throws JSONException {
     NameServerLoadPacket nsLoad = new NameServerLoadPacket(incomingJSON);
-    nsLoad.setLoadValue(NameServer.getLoadMonitor().getAverage());
-    NameServer.returnToSender(nsLoad.toJSONObject(), nsLoad.getLnsID());
+//    nsLoad.setLoadValue(NameServer.loadMonitor.getAverage());
+//    NameServer.returnToSender(nsLoad.toJSONObject(), nsLoad.getLnsID());
   }
+
   /**************End of private methods in ClientRequestWorker**********************************/
 }

@@ -3,7 +3,7 @@ package edu.umass.cs.gns.paxos;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.packet.paxospacket.*;
-import edu.umass.cs.gns.util.OutputMemoryUse;
+import edu.umass.cs.gns.util.OutputNodeStats;
 import edu.umass.cs.gns.util.Util;
 import net.sourceforge.sizeof.SizeOf;
 import org.json.JSONException;
@@ -1629,13 +1629,13 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       }
       paxosList.add(new PaxosReplicaNew(Util.randomString(5), 0, nodeIDs, null));
     }
-    OutputMemoryUse.outputMemoryUse("Before");
+    OutputNodeStats.outputMemoryUse("Before");
     System.gc();
-    OutputMemoryUse.outputMemoryUse("After");
+    OutputNodeStats.outputMemoryUse("After");
     System.out.println("All paxos objects allocated.");
     try {
       Thread.sleep(10000);
-      OutputMemoryUse.outputMemoryUse("10 sec After");
+      OutputNodeStats.outputMemoryUse("10 sec After");
       Thread.sleep(1000000);
     } catch (InterruptedException e) {
       e.printStackTrace();

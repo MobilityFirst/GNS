@@ -11,24 +11,22 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 
 public class Lookup {
+  private static Random r = new Random();
 
-  static int lookupCount = 0;
-  static Object lock = new ReentrantLock();
 
   public static void handlePacketLookupRequest(JSONObject json, DNSPacket dnsPacket)
           throws JSONException, UnknownHostException {
-    synchronized (lock) {
-      lookupCount++;
-    }
+
     LocalNameServer.incrementLookupRequest(dnsPacket.getGuid()); // important: used to count votes for names.
     DNSRequestTask queryTaskObject = new DNSRequestTask(
             dnsPacket,
@@ -59,7 +57,7 @@ public class Lookup {
         return;
       }
 
-      if (LocalNameServer.r.nextDouble() < StartLocalNameServer.outputSampleRate) {
+      if (r.nextDouble() < StartLocalNameServer.outputSampleRate) {
         query.setRecvTime(System.currentTimeMillis());
         String stats = query.getLookupStats();
         GNS.getStatLogger().fine("Success-LookupRequest\t" + stats);;

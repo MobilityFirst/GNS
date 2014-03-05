@@ -142,9 +142,9 @@ public class DNSRequestTask extends TimerTask {
         }
 
         if (StartLocalNameServer.loadDependentRedirection) {
-          ns = LocalNameServer.getBestActiveNameServerFromCache(incomingPacket.getGuid(), nameserversQueried);
+          ns = BestServerSelection.getBestActiveNameServerFromCache(cacheEntry, nameserversQueried);
         } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
-          ns = LocalNameServer.getBeehiveNameServer(nameserversQueried, cacheEntry);
+          ns = BestServerSelection.getBeehiveNameServer(nameserversQueried, cacheEntry);
         } else {
           coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getGuid(),
                   cacheEntry.getActiveNameServers());
