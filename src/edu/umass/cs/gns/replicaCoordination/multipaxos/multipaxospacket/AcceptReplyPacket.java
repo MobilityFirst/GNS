@@ -36,9 +36,9 @@ public class AcceptReplyPacket extends PaxosPacket {
 //     */
 //    public int commitSlot;
 
-    private static final  String NODE_ID = "ar1";
-    private static final  String BALLOT_NUMBER = "ar2";
-    private static final  String SLOT_NUMBER = "ar3";
+    private static final  String NODE_ID = "node";
+    private static final  String BALLOT_NUMBER = "ballot";
+    private static final  String SLOT_NUMBER = "slot";
 //    private static final  String COMMIT_SLOT = "ar4";
 
     public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber) {//, int commitSlot

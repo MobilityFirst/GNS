@@ -99,7 +99,7 @@ public class PaxosCoordinator {
 					 */
 					log.info("Node " + this.pcs.getBallot().coordinatorID + " resigning as coordinator");
 					resignAsCoordinator();
-				}
+				} else {log.info("Preempted request#: " + acceptReply.slotNumber);}
 			}
 			else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
 				committedPValue = pcs.handleAcceptReplyMyBallot(acceptReply);

@@ -69,6 +69,7 @@ public class PaxosManager {
 		messenger = new PaxosMessenger(niot);
 	}
 
+	// FIXME: separate paxosID from group change version number
 	public PaxosInstanceStateMachine createPaxosInstance(String paxosID, int id, Set<Integer> gms, PaxosInterface app) {
 		PaxosInstanceStateMachine pism = new PaxosInstanceStateMachine(paxosID, id, gms, app, this);
 		pinstances.put(paxosID, pism);
@@ -93,13 +94,30 @@ public class PaxosManager {
 			break;
 		}
 	}
+
+	/* paxosID is GUID, without the version number denoting the current
+	 * group.
+	 */
+	public String propose(String paxosID, RequestPacket requestPacket) {
+		assert(false) : "This method has not yet been implemented is probably not needed.";
+		return null;
+	}
+
+	public void resetAll() {
+		assert(false) : "This method has not yet been implemented is probably not needed.";
+	}
 	/********************* End of public methods ***********************/
 
 	/* All messaging is done using PaxosMessenger and MessagingTask. 
 	 * This method 
 	 */
 	protected void send(MessagingTask mtask)  throws JSONException, IOException {
-		messenger.send(mtask);
+		if(mtask==null) return;
+		if(mtask instanceof LogMessagingTask) {
+			this.paxosLogger.logAndMessage((LogMessagingTask)mtask, this.messenger);
+		} else {
+			messenger.send(mtask);
+		}
 	}
 
 	protected PaxosLogger getPaxosLogger() {
@@ -240,8 +258,32 @@ public class PaxosManager {
 			}
 			Thread.sleep(5000);
 
-			System.out.println("\n\nTest completed. Currently unable to produce an automated success/failure message.\n" +
-			"Number of exceptions (including assert violations) = " + numExceptions+".");
+			int numCommitted=0;
+			boolean[] committedReqs = new boolean[numReqs];
+			for(int i=0; i<nNodes; i++) {
+				for(int j=0; j<nNodes; j++) {
+					if(i!=0 &&j!=0 && i>j) {
+						assert(apps[i].getNumCommitted()==apps[j].getNumCommitted()) : 
+								"numCommitted@" + i + "="+apps[i].getNumCommitted() + ", numCommitted@" + j +"="+apps[j].getNumCommitted();
+						numCommitted = apps[i].getNumCommitted();
+						for(int k=0; k<numCommitted; k++) {
+							assert(apps[i].getRequest(k).equals(apps[j].getRequest(k)));
+							System.out.println("Request " + k + " = " + apps[i].getRequest(k));
+							String[] pieces = apps[i].getRequest(k).split("\\s");
+							int reqnum = (pieces!=null && pieces.length>=6 ? Integer.parseInt(pieces[5]) : -1);
+							if(reqnum>=0) committedReqs[reqnum] = true;
+						}
+					}
+				}
+			}
+			String preemptedReqs = "[ ";
+			for(int i=0; i<numReqs; i++) {
+				if(!committedReqs[i]) preemptedReqs += (i + " ");
+			}
+			preemptedReqs += "]";
+
+			System.out.println("\n\nTest completed. Executed " + numCommitted + " requests consistently out of " + 
+			numReqs + " received requests; Preempted requests = " + preemptedReqs + "; numExceptions="+ numExceptions+".");
 			System.exit(1);
 		} catch(Exception e) {
 			e.printStackTrace();

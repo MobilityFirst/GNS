@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import java.util.HashMap;
+
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 
@@ -8,12 +10,21 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestP
  */
 public class DefaultPaxosInterfaceApp implements PaxosInterface {
 	String myState = new String("Initial state");
+	HashMap<Integer,String> committed = new HashMap<Integer,String>();
+	int seqnum=0;
 
 	@Override
-	public void handlePaxosDecision(String paxosID,
+	public synchronized void handlePaxosDecision(String paxosID,
 			RequestPacket requestPacket, boolean recovery) {
 		System.out.println("PaxosID " + paxosID + " executing request " + requestPacket.requestID + " by changing state to " + requestPacket.value);
 		myState = requestPacket.value;
+		committed.put(seqnum++, requestPacket.value);
+	}
+	public synchronized int getNumCommitted() {
+		return committed.size();
+	}
+	public synchronized String getRequest(int reqnum) {
+		return committed.get(reqnum);
 	}
 
 	@Override

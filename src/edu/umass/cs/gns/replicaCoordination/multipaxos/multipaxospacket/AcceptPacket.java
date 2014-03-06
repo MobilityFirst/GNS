@@ -21,8 +21,8 @@ public class AcceptPacket extends PaxosPacket {
    * slotNumber up to which decisions have been applied at sending node
    */
   public int slotNumberAtReplica;
-  String NODE = "x1";
-  String SLOT = "x2";
+  String NODE = "node";
+  String SLOT = "slot#@replica";
 
   public AcceptPacket(int nodeID, PValuePacket pValue, int packetType, int slotNumber) {
     this.packetType = packetType;

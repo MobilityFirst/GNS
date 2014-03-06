@@ -25,11 +25,11 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.Synchron
 @author V. Arun
  */
 
-/* This class is the top-level paxos class per application. This 
- * is the only class that exposes public methods. Actually even this 
- * class will soon become "protected" as the only way to use it will be 
- * through the corresponding PaxosManager even if there is just one 
- * paxos group being used by an application.
+/* This class is the top-level paxos class per application or paxos group
+ * on a machine. This is the only class that exposes public methods. 
+ * Actually even this class will soon become "protected" as the only way 
+ * to use it will be through the corresponding PaxosManager even if there 
+ * is just one paxos application running on the machine.
  * 
  * This class delegates much of the interesting paxos actions to 
  * PaxosAcceptorState and PaxosCoordinator. It delegates all messaging
@@ -141,6 +141,7 @@ public class PaxosInstanceStateMachine {
 		if(PaxosInstanceStateMachine.TEST_FAILED_NODE_ID == this.myID) return; // act like dead.
 		
 		MessagingTask rfcTask = checkRunForCoordinator(); // Check periodically, especially if we get any messages
+		//sendMessagingTask(rfcTask);
 		
 		MessagingTask mtask=null;
 		switch(msgType) {
@@ -157,8 +158,8 @@ public class PaxosInstanceStateMachine {
 			break;
 			// coordinator --> replica
 		case  PaxosPacket.DECISION:
-			handleCommittedRequest(new ProposalPacket(msg));
-			// send nothing
+			mtask = handleCommittedRequest(new ProposalPacket(msg));
+			// send nothing, but log decision
 			break;
 			// coordinator --> replica
 		case PaxosPacketType.PREPARE:
@@ -213,35 +214,36 @@ public class PaxosInstanceStateMachine {
 			break;
 		}
 
-
-		try {
-			sendMessagingTask(mtask);
-			sendMessagingTask(rfcTask);
-		} catch(IOException e) {
-			e.printStackTrace();
-			log.severe("IOException encountered in PaxosManager while sending " + mtask);
-			/* FIXME: We can't throw this exception upward because it will get sent all
-			 * the way back up to PacketDemultiplexer whose incoming packet initiated
-			 * this whole chain of events. It seems silly for PacketDemultiplexer
-			 * to throw an IOException caused by the sends resulting from processing
-			 * that packet. So we should handle this exception right here.
-			 * 
-			 * But what should we do? We could ignore it as the network does not need
-			 * to be reliable anyway. Revisit as needed.
-			 */
-		}
+		/*if(mtask!=null && !mtask.isEmpty()) log.info("Node " + this.myID + " sending response: " + mtask.toString() + 
+				" for request: " + PaxosPacket.typeToString[msg.getInt(PaxosPacket.ptype)] + ": " + msg);
+		*/
+		
+		sendMessagingTask(mtask);
+		sendMessagingTask(rfcTask);
 	}
 	
 	
 	/************** Start of private methods ****************/
 
 	/* The one method for all message sending. */
-	private void sendMessagingTask(MessagingTask mtask) throws JSONException, IOException{
+	private void sendMessagingTask(MessagingTask mtask) throws JSONException {
 		if(mtask==null) return;
-		log.info("Node " + this.myID + " sending response: " + mtask.toString());
+		if(!mtask.isEmpty()) log.info("Node " + this.myID + " sending: " + mtask.toString());
 		mtask.putPaxosID(this.paxosID);
-		paxosManager.send(mtask);
-		
+		try {
+			paxosManager.send(mtask);
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.severe("IOException encountered in PaxosManager while sending " + mtask);
+			/* FIXME: We can't throw this exception upward because it will get sent all
+			 * the way back up to PacketDemultiplexer whose incoming packet initiated
+			 * this whole chain of events. It seems silly for PacketDemultiplexer
+			 * to throw an IOException caused by the sends resulting from processing
+			 * that packet. So we should handle this exception right here. But what 
+			 * should we do? We can ignore it as the network does not need to be 
+			 * reliable anyway. Revisit as needed.
+			 */
+		}
 	}
 
 	/* "Phase0"
@@ -251,7 +253,7 @@ public class PaxosInstanceStateMachine {
 	 * proposal to the current coordinator.
 	 */
 	private MessagingTask handleRequest(RequestPacket msg) throws JSONException {
-		log.info("Phase0/CLIENT_REQUEST: Node " + this.myID + " received request " + msg);
+		log.info("Node " + this.myID + " Phase0/CLIENT_REQUEST: " + msg);
 		return handleProposal(new ProposalPacket(0, msg, PaxosPacketType.PROPOSAL));
 	}
 
@@ -269,8 +271,8 @@ public class PaxosInstanceStateMachine {
 		MessagingTask mtask=null; // could be multicast or unicast to coordinator.
 		AcceptPacket acceptPacket=null;
 		if(this.coordinator.exists(this.paxosState.getBallot())) { // propose to all
-			log.info("Phase2a/ACCEPT: Coordinator at " + this.myID + 
-					" exists (maybe active or inactive), initiating accept phase for " + proposal);
+			log.info("Node " + this.myID + " Phase2a/ACCEPT: Coordinator " + 
+					"exists (maybe active or inactive), initiating accept phase for " + proposal);
 			acceptPacket = this.coordinator.propose(this.groupMembers, proposal.req);
 			if(acceptPacket!=null) mtask = new MessagingTask(this.groupMembers, acceptPacket); // multicast accept to all
 		}
@@ -299,7 +301,7 @@ public class PaxosInstanceStateMachine {
 		PreparePacket prepareReply = this.paxosState.handlePrepare(prepare);
 		/* Can resign here, but might lose requests forcing client retransmissions. */
 		//this.coordinator.resignIfActiveCoordinator(this.paxosState.getBallot()); 
-		MessagingTask mtask = new MessagingTask(prepareReply.coordinatorID, prepareReply);
+		LogMessagingTask mtask = new LogMessagingTask(prepareReply.coordinatorID, prepareReply, (PaxosPacket)prepare);
 		return mtask;
 	}
 
@@ -355,7 +357,7 @@ public class PaxosInstanceStateMachine {
 		Ballot b = this.paxosState.acceptAndUpdateBallot(accept); 
 		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.myID, b, accept.pValue.proposal.slot); 
 		
-		MessagingTask mtask = new MessagingTask(accept.nodeID, acceptReply);
+		LogMessagingTask mtask = new LogMessagingTask(accept.nodeID, acceptReply, accept);
 		return mtask;
 	}
 
@@ -375,7 +377,7 @@ public class PaxosInstanceStateMachine {
 		if(committedPValue!=null) {
 			this.paxosState.putCommittedRequest(committedPValue.proposal.slot, committedPValue.proposal.req); // inform self of decision
 			multicastDecision = new MessagingTask(this.groupMembers, committedPValue); // inform others of the decision
-			log.info("Phase3/COMMIT: Coordinator " + this.myID + " sending commit for " + committedPValue);
+			log.info("Node " + this.myID + " Phase3/COMMIT: Coordinator " + " sending commit for " + committedPValue);
 		}
 		return multicastDecision;
 	}
@@ -393,7 +395,7 @@ public class PaxosInstanceStateMachine {
 	 * if we happen to receive and process in parallel duplicate
 	 * ProposalPackets reporting the same committed request).
 	 */
-	private void handleCommittedRequest(ProposalPacket proposal) {
+	private LogMessagingTask handleCommittedRequest(ProposalPacket proposal) {
 		/* The structure below executes the nest committed request if
 		 * it arrives in order, and then executes as many more as are
 		 * queued in order. NOTE: Do not change this code structure 
@@ -419,6 +421,7 @@ public class PaxosInstanceStateMachine {
 		}
 		
 		// No messaging task here.
+		return new LogMessagingTask((PaxosPacket)proposal);
 	}
 	
 
@@ -516,7 +519,7 @@ public class PaxosInstanceStateMachine {
 	private void handleNodeStatusUpdate(
 			FailureDetectionPacket failureDetectionPacket) {
 		// TODO Auto-generated method stub
-		assert(false) : "This method has not yet been implemented.";
+		assert(false) : "This method has not yet been implemented is probably not needed.";
 	}
 
 	/********************** End of failure detection and recovery methods *****************/

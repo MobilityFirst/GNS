@@ -5,7 +5,6 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.PaxosPacket;
-import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.Ballot;
 
 public class PValuePacket extends PaxosPacket {
@@ -19,7 +18,7 @@ public class PValuePacket extends PaxosPacket {
 		this.proposal = p;
 	}
 
-	static String BALLOT = "b1";
+	static String BALLOT = "ballot";
 
 	public PValuePacket(JSONObject json) throws JSONException{
 		this.proposal = new ProposalPacket(json);

@@ -27,9 +27,10 @@ public class PaxosMessenger {
 	}
 	
 	public void send(MessagingTask mtask) throws JSONException, IOException {
-		if(mtask==null) return;
+		if(mtask==null || mtask.recipients==null || mtask.msgs==null) return;
 		for(int m=0; m<mtask.msgs.length; m++) {
 			for(int r=0; r<mtask.recipients.length; r++) {
+				if(mtask.msgs[m]==null) continue;
 				JSONObject jsonMsg = mtask.msgs[m].toJSONObject();
 				nioTransport.sendToID(mtask.recipients[r], jsonMsg);
 				log.finest("Sent " + PaxosPacket.typeToString[jsonMsg.getInt(PaxosPacket.ptype)]+ " to node " + mtask.recipients[r] + ": " + jsonMsg);

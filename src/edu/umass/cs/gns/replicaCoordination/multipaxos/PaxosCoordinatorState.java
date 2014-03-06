@@ -50,7 +50,7 @@ public class PaxosCoordinatorState  {
 	private boolean active = false; 
 
 	/* This field is really unrelated to paxos coordinator state. It is kept 
-	 * here so that we can piggyback on coordinator back and forth messages
+	 * here so that we can piggyback on coordinator back-and-forth messages
 	 * to disseminate the maximum cumulatively executed slot at nodes, which 
 	 * is useful for garbage collection. nodeSlotNumbers[i] is the slot number 
 	 * up to which members[i] has executed all requests. Once all nodes have 
@@ -98,8 +98,8 @@ public class PaxosCoordinatorState  {
 		PValuePacket pvalue = new PValuePacket(this.myBallot, 
 				new ProposalPacket(this.nextProposalSlotNumber++, request, PaxosPacketType.PROPOSAL));
 		assert(!this.myProposals.containsKey(pvalue.proposal.slot));
-		log.info("Node " + this.myBallot.coordinatorID + " inserting request: " + request);
 		this.myProposals.put(pvalue.proposal.slot, new ProposalStateAtCoordinator(members,pvalue));
+		log.info("Node " + this.myBallot.coordinatorID + " inserting proposal: " + pvalue);
 		if(this.isActive()) {
 			log.finest("Coordinator at node " + this.myBallot.coordinatorID + " is active");
 			acceptPacket =  this.initCommander(members, pvalue);
@@ -195,20 +195,19 @@ public class PaxosCoordinatorState  {
 	 * were being received.
 	 */
 	public synchronized void combinePValuesOntoProposals(int[] members) {
-		if(this.carryoverProposals.isEmpty()) return;
+		if(this.carryoverProposals.isEmpty()) return; // no need to process stop requests either
 		
 		int maxPValueSlot = getMaxPValueSlot(carryoverProposals);
 		int maxCommittedSlot = getMaxSlotNumberAcrossNodes(); // we are sure that all slots have been filled
 
 		/* Combine carryoverProposals with myProposals prioritizing the former
 		 * and selecting no-ops for slots for which neither contain a value.
-		 * FIXME: need to copy carryoverProposals on to myProposals instead.
 		 */
 		for (int curSlot = maxCommittedSlot; curSlot <= maxPValueSlot; curSlot++) {
 			if(this.carryoverProposals.containsKey(curSlot)) { // received pvalues dominate local proposals
 				this.myProposals.put(curSlot, 
 						new ProposalStateAtCoordinator(members, this.carryoverProposals.get(curSlot)));
-			} else if(!this.myProposals.containsKey(curSlot)) { // no-ops if neither received pvalue nor local proposal
+			} else if(!this.myProposals.containsKey(curSlot)) { // no-ops if neither received nor local proposal
 				this.myProposals.put(curSlot, 
 						new ProposalStateAtCoordinator(members, makeNoopPValue(curSlot)));
 			}
@@ -217,17 +216,52 @@ public class PaxosCoordinatorState  {
 		 * the maximum slot for which some request has been (cumulatively) 
 		 * executed by some node, the maximum slot in received pvalues, and the
 		 *  nextProposalSlotNumber that reflects the highest locally proposed
-		 *  slot number.
-		 *  
-		 *  Note: It must be the case here that every slot between maxCommittedSlot
-		 *  and the updated nextProposalSlotNumber below must have been proposed with
-		 *  some proposal value, even a no-op. Otherwise, the replicated state machine
-		 *  could be stuck forever. 
+		 *  slot number. 
 		 */
 		updateNextProposalSlotNumber(Math.max(Math.max(maxPValueSlot+1, maxCommittedSlot), 
 				this.nextProposalSlotNumber));
+		assert(noGaps(maxCommittedSlot, this.nextProposalSlotNumber, this.myProposals)); // gaps means state machine will be stuck
 
-		assert(noGaps(maxCommittedSlot, this.nextProposalSlotNumber, this.myProposals));
+		processStop(members); // need to ensure that a regular request does not follow a stop
+	}
+	
+	/* Phase1b
+	 * Utility method to handle stop requests correctly after combining pvalues 
+	 * on to proposals. The goal is to make sure that there is no request after
+	 * a stop request. If there is a request after a stop in a higher ballot, 
+	 * the stop has to be turned into a noop. If there is a request after a 
+	 * stop in a lower ballot, the request should be turned into a stop.
+	 */
+	public synchronized void processStop(int[] members) {
+		for(ProposalStateAtCoordinator psac1 : this.myProposals.values()) {
+			for(ProposalStateAtCoordinator psac2 : this.myProposals.values()) {
+				if(psac1.pValuePacket.proposal.req.isStopRequest() && // 1 is stop
+						!psac2.pValuePacket.proposal.req.isStopRequest() && // other is not stop
+						!psac2.pValuePacket.proposal.req.value.equals(PaxosInstanceStateMachine.NO_OP) && // other is not noop
+						psac1.pValuePacket.proposal.slot < psac2.pValuePacket.proposal.slot)  // other has a higher slot
+				{
+					if(psac1.pValuePacket.ballot.compareTo(psac2.pValuePacket.ballot) > 0) { // stop ballot > other ballot
+						// convert request to stop
+						RequestPacket req = psac2.pValuePacket.proposal.req;
+						RequestPacket stopReq = new RequestPacket(req.clientID, req.value, req.getType(), true);
+						PValuePacket stopPValue = psac2.pValuePacket;
+						stopPValue.ballot = this.myBallot;
+						stopPValue.proposal = new ProposalPacket(stopPValue.proposal.slot, stopReq, PaxosPacket.PROPOSAL);
+						ProposalStateAtCoordinator stopProposal = new ProposalStateAtCoordinator(members, stopPValue);
+						this.myProposals.put(stopPValue.proposal.slot, stopProposal);
+					}
+					else if(psac1.pValuePacket.ballot.compareTo(psac2.pValuePacket.ballot) < 0) { // stop ballot < other ballot
+						// convert stop to noop
+						PValuePacket noopPValue = this.makeNoopPValue(psac2.pValuePacket.proposal.slot);
+						ProposalStateAtCoordinator noopProposal = new ProposalStateAtCoordinator(members, noopPValue);
+						this.myProposals.put(noopPValue.proposal.slot, noopProposal);
+					}
+					else {
+						assert(false) : "Some coordinator proposed a regular request after a slot";
+					}
+				}
+			}
+		} 
 	}
 
 	/* Phase1b
@@ -261,6 +295,8 @@ public class PaxosCoordinatorState  {
 		/* The two structures below have no more use. They
 		 * hardly take up any space, especially coz the latter
 		 * is a NullIfEmptyMap, but why bother to even keep that.
+		 * Plus it serves as an implicit assert(false) if any
+		 * code tries to access these structures here onwards.
 		 */
 		this.waitforMyBallot = null;
 		this.carryoverProposals = null;
@@ -364,9 +400,9 @@ public class PaxosCoordinatorState  {
 	}
 	private synchronized AcceptPacket initCommander(ProposalStateAtCoordinator pstate) {
 		//this.myProposals.put(pstate.pValuePacket.proposal.slot, pstate); // unnecessary, remove?
-		log.info("initCommandering " + pstate.pValuePacket.proposal.req);
+		log.info("Node " + this.myBallot.coordinatorID + " initCommandering " + pstate.pValuePacket);
 		AcceptPacket acceptPacket = new AcceptPacket(this.myBallot.coordinatorID, 
-				pstate.pValuePacket, PaxosPacketType.ACCEPT, 0);
+				pstate.pValuePacket, PaxosPacketType.ACCEPT, 0); //FIXME: slotNumberAtReplica != 0 in general
 		return acceptPacket;
 	}
 	private synchronized void updateNextProposalSlotNumber(int s) {

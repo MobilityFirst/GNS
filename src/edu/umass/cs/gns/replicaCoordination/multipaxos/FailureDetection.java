@@ -32,7 +32,7 @@ public class FailureDetection {
 	// final static
 	private final static long DETECTION_TIMEOUT_MILLIS = 5000;
 	private final static long INTER_PING_PERIOD_MILLIS = 3000;
-	private final static long LONGER_COORDINATOR_FAILURE_TIMEOUT = 7; // 7ms just for testing 
+	private final static long LONGER_COORDINATOR_FAILURE_TIMEOUT = 10000;  
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);

@@ -20,7 +20,7 @@ public class RequestPacket extends PaxosPacket {
 
 	private boolean stop = false;
 
-	//    String CLIENT_ID = "y1";
+	    String CLIENT_ID = "client_id";
 	//    String PAXOS_REQUEST_ID = "y2";
 	//    String VALUE = "y3";
 
@@ -48,7 +48,7 @@ public class RequestPacket extends PaxosPacket {
 
 	public RequestPacket(JSONObject json) throws JSONException{
 		this.packetType = PaxosPacketType.REQUEST;
-		String x = json.getString("y1");
+		String x = json.getString(CLIENT_ID);
 		String[] tokens = x.split("\\s");
 		this.clientID = Integer.parseInt(tokens[0]);
 		this.requestID = Integer.parseInt(tokens[1]);
@@ -67,9 +67,9 @@ public class RequestPacket extends PaxosPacket {
 	    Packet.putPacketType(json, PacketType.PAXOS_PACKET); json.put(PaxosPacket.paxosIDKey, this.paxosID);
 
 		if (stop) {
-			json.put("y1", clientID + " " + requestID + " " + 1 + " " + value);
+			json.put(CLIENT_ID, clientID + " " + requestID + " " + 1 + " " + value);
 		} else {
-			json.put("y1", clientID + " " + requestID + " " + 0 + " " + value);
+			json.put(CLIENT_ID, clientID + " " + requestID + " " + 0 + " " + value);
 		}
 		return json;
 	}

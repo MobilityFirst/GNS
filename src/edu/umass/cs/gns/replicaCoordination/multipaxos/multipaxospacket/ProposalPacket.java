@@ -15,7 +15,7 @@ public class ProposalPacket extends PaxosPacket {
 	
 	public RequestPacket req;
 
-	public  static String SLOT = "s1";
+	public  static String SLOT = "slot";
     public  static String GC_SLOT = "s2";
 
     public  int gcSlot = 0;
