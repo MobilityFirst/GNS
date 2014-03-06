@@ -83,12 +83,12 @@ public class ConfigFileInfo {
     try {
       br = new BufferedReader(new FileReader(nodeInfoFile));
     } catch (FileNotFoundException e1) {
-      e1.printStackTrace();
+      GNS.getLogger().severe("Host info file not found: " + e1);
       System.exit(0);
     }
 
     int nameServerCount = 0;
-    double smallestPingLatency = Double.MAX_VALUE;
+    long smallestPingLatency = Long.MAX_VALUE;
 
     try {
       while (br.ready()) {
@@ -107,7 +107,7 @@ public class ConfigFileInfo {
           for (String str : tokens) {
             System.err.println(str);
           }
-          System.err.println("Format:\nHostID IsNS? IPAddress [StartingPort | - ] Ping-Latency Latitude Longitude");
+          System.err.println("Format:\nHostID IsNS? IPAddress [StartingPort | - ] Ping-Latency(ms) Latitude Longitude");
           System.err.println("\nwhere IsNS? is yes or no\n and StartingPort is a port number, but can also be a dash \"-\""
                   + " (or the word \"default\") to indicate that the default port can be used in the distributed case.");
           //System.err.println("Format:\nNameServerID IPAddress Ping-Latency Latitude Longitude");
@@ -118,7 +118,7 @@ public class ConfigFileInfo {
         String isNameServerString = tokens[1];
         String ipAddressString = tokens[2];
         String startingPortString = tokens[3];
-        double pingLatency = Double.parseDouble(tokens[4]);
+        long pingLatency = Long.parseLong(tokens[4]);
         double latitude = Double.parseDouble(tokens[5]);
         double longitude = Double.parseDouble(tokens[6]);
 
@@ -162,10 +162,9 @@ public class ConfigFileInfo {
     GNS.getLogger().info("Number of name servers is : " + nameServerCount);
     numberOfNameServers = nameServerCount;
     GNS.getLogger().fine("Closest name server is " + closestNameServer);
-    //    System.exit(2);
   }
 
-  public static void addHostInfo(int id, InetAddress ipAddress, int startingPort, double pingLatency, double latitude, double longitude) {
+  public static void addHostInfo(int id, InetAddress ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
@@ -340,14 +339,15 @@ public class ConfigFileInfo {
     return (nodeInfo == null) ? null : nodeInfo.getIpAddress();
   }
 
+  public static final long INVALID_PING_LATENCY = -1L;
   /**
    * Returns the ping latency between a local namserver and a nameserver.
    *
    * @param id Nameserver id
    */
-  public static double getPingLatency(int id) {
+  public static long getPingLatency(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getPingLatency();
+    return (nodeInfo == null) ? INVALID_PING_LATENCY : nodeInfo.getPingLatency();
   }
 
   public static void updatePingLatency(int id, long responseTime) {

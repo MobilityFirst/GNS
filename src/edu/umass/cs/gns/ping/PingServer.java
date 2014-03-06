@@ -18,18 +18,18 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 /**
- *
+ * The PingServer class handles the client side of the GNS ping protocol.
+ * The PingClient class handles the flip side of this protocol.
+ * 
  * @author westy
  */
 public class PingServer {
 
-  public static void main(String args[]) throws Exception {
-    String configFile = args[0];
-    NameServer.setNodeID(0);
-    ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
-    startServer(0);
-  }
-
+  /**
+   * Starts a thread which handles ping requests sent from the client.
+   * 
+   * @param nodeID 
+   */
   public static void startServerThread(final int nodeID) {
     (new Thread() {
       @Override
@@ -50,7 +50,7 @@ public class PingServer {
           serverSocket.receive(receivePacket);
           String sentence = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength());
           GNS.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + sentence + "|");
-          // send it right back
+          // Send it right back
           InetAddress IPAddress = receivePacket.getAddress();
           int port = receivePacket.getPort();
           sendData = sentence.getBytes();
@@ -65,5 +65,12 @@ public class PingServer {
     } catch (SocketException e) {
       GNS.getLogger().severe("Error creating DatagramSocket " + e);
     }
+  }
+
+  public static void main(String args[]) throws Exception {
+    String configFile = args[0];
+    NameServer.setNodeID(0);
+    ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
+    startServer(0);
   }
 }

@@ -96,12 +96,12 @@ public class GNSNodeConfig implements NodeConfig {
     try {
       br = new BufferedReader(new FileReader(nodeInfoFile));
     } catch (FileNotFoundException e1) {
-      e1.printStackTrace();
+       GNS.getLogger().severe("Host info file not found: " + e1);
       System.exit(0);
     }
 
     int nameServerCount = 0;
-    double smallestPingLatency = Double.MAX_VALUE;
+    long smallestPingLatency = Long.MAX_VALUE;
 
     try {
       while (br.ready()) {
@@ -120,7 +120,7 @@ public class GNSNodeConfig implements NodeConfig {
           for (String str : tokens) {
             System.err.println(str);
           }
-          System.err.println("Format:\nHostID IsNS? IPAddress [StartingPort | - ] Ping-Latency Latitude Longitude");
+          System.err.println("Format:\nHostID IsNS? IPAddress [StartingPort | - ] Ping-Latency(ms) Latitude Longitude");
           System.err.println("\nwhere IsNS? is yes or no\n and StartingPort is a port number, but can also be a dash \"-\""
                   + " (or the word \"default\") to indicate that the default port can be used in the distributed case.");
           //System.err.println("Format:\nNameServerID IPAddress Ping-Latency Latitude Longitude");
@@ -131,10 +131,9 @@ public class GNSNodeConfig implements NodeConfig {
         String isNameServerString = tokens[1];
         String ipAddressString = tokens[2];
         String startingPortString = tokens[3];
-        double pingLatency = Double.parseDouble(tokens[4]);
+        long pingLatency = Long.parseLong(tokens[4]);
         double latitude = Double.parseDouble(tokens[5]);
         double longitude = Double.parseDouble(tokens[6]);
-        boolean isNameServer;
 
         if (isNameServerString.startsWith("yes")
                 || isNameServerString.startsWith("Yes")
@@ -143,7 +142,6 @@ public class GNSNodeConfig implements NodeConfig {
                 || isNameServerString.startsWith("true")
                 || isNameServerString.startsWith("True")
                 || isNameServerString.startsWith("TRUE")) {
-          isNameServer = true;
           nameServerMapping.put(id, id);
           nameServerCount++;
           //Update the id closest name server
@@ -151,9 +149,7 @@ public class GNSNodeConfig implements NodeConfig {
             smallestPingLatency = pingLatency;
             closestNameServer = id;
           }
-        } else {
-          isNameServer = false;
-        }
+        } 
         InetAddress ipAddress = null;
         try {
           ipAddress = InetAddress.getByName(ipAddressString);
@@ -183,7 +179,7 @@ public class GNSNodeConfig implements NodeConfig {
     //    System.exit(2);
   }
 
-  public void addHostInfo(int id, InetAddress ipAddress, int startingPort, double pingLatency, double latitude, double longitude) {
+  public void addHostInfo(int id, InetAddress ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
@@ -345,7 +341,7 @@ public class GNSNodeConfig implements NodeConfig {
    *
    * @param id Nameserver id
    */
-  public double getPingLatency(int id) {
+  public long getPingLatency(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getPingLatency();
   }

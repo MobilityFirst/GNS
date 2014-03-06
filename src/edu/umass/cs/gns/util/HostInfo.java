@@ -25,7 +25,7 @@ public class HostInfo {
   /**
    * RTT latency between the local nameserver and this nameserver *
    */
-  private double pingLatency;
+  private long pingLatency;
   /**
    * Latitude of this nameserver *
    */
@@ -42,12 +42,12 @@ public class HostInfo {
    * @param id Name server id
    * @param ipAddress Name server IP address
    * @param startingPortNumber first port number of block of ports used for TCP and UDP comms
-   * @param pingLatency RTT latency between the local nameserver and this nameserver
+   * @param pingLatency RTT latency between the local nameserver and this nameserver in milleseconds
    * @param latitude Latitude of the nameserver
    * @param longitude Longitude of the nameserver
    ***********************************************************
    */
-  public HostInfo(int id, InetAddress ipAddress, int startingPortNumber, double pingLatency, double latitude, double longitude) {
+  public HostInfo(int id, InetAddress ipAddress, int startingPortNumber, long pingLatency, double latitude, double longitude) {
 
     this.id = id;
     this.ipAddress = ipAddress;
@@ -68,13 +68,17 @@ public class HostInfo {
   public int getStartingPortNumber() {
     return startingPortNumber;
   }
-
-  public synchronized double getPingLatency() {
+  /**
+   * Returns ping latency in milleseconds
+   * 
+   * @return pingLatency (ms)
+   */
+  public long getPingLatency() {
     return pingLatency;
   }
 
-  public synchronized void updatePingLatency(long responseTime) {
-    pingLatency = pingLatency + 0.1*responseTime;
+  public synchronized void updatePingLatency(long pingLatency) {
+    this.pingLatency = pingLatency;
   }
 
   public double getLatitude() {

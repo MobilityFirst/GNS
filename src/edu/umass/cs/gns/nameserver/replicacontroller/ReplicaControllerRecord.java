@@ -511,7 +511,7 @@ public class ReplicaControllerRecord {
         int votes = entry.getValue();
         //Skip name server that are unreachable
         // from main branch 269
-        if (ConfigFileInfo.getPingLatency(nameServerId) == -1) { //|| getPrimaryNameservers().contains(nameServerId)
+        if (ConfigFileInfo.getPingLatency(nameServerId) == ConfigFileInfo.INVALID_PING_LATENCY) {
           continue;
         }
         if (!replicas.contains(nameServerId)

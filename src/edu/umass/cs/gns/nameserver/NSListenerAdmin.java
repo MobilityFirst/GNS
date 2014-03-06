@@ -14,7 +14,7 @@ import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gns.ping.Pinger;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.io.IOException;
@@ -219,12 +219,13 @@ public class NSListenerAdmin extends Thread {
                 int node = Integer.parseInt(adminRequestPacket.getArgument());
                 if (node == NameServer.getNodeID()) {
                   JSONObject jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", Pinger.tableToString(NameServer.getNodeID()));
+                  jsonResponse.put("PINGTABLE", PingManager.tableToString(NameServer.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
                   Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
+                break;
               case CHANGELOGLEVEL:
                 Level level = Level.parse(adminRequestPacket.getArgument());
                 GNS.getLogger().info("Changing log level to " + level.getName());
@@ -237,7 +238,6 @@ public class NSListenerAdmin extends Thread {
 
             }
             break;
-
           case STATUS_INIT:
             StatusClient.handleStatusInit(socket.getInetAddress());
             StatusClient.sendStatus(NameServer.getNodeID(), "NS Ready");

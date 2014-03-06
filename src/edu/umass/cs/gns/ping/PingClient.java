@@ -21,7 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- *
+ * The PingClient class handles the client side of the GNS ping protocol.
+ * The PingServer class handles the flip side of this protocol.
+ * 
  * @author westy
  */
 public class PingClient {
@@ -43,34 +45,50 @@ public class PingClient {
     }
   }
 
+  /**
+   * Sends a ping request to the node.
+   * 
+   * @param nodeId
+   * @return the round trip time or -1L if the request times out
+   * @throws IOException 
+   */
   public long sendPing(int nodeId) throws IOException {
     InetAddress IPAddress = ConfigFileInfo.getIPAddress(nodeId);
     int port = ConfigFileInfo.getPingPort(nodeId);
     byte[] sendData;
+    // make an id and turn it into a string for sending out
     int id = nextRequestID();
     String sendString = Integer.toString(id);
     sendData = sendString.getBytes();
-    GNS.getLogger().fine("SENDING " + sendData.length + " bytes : |" + sendString + "|");
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+    // record the send time
     queryTimeStamp.put(id, System.currentTimeMillis());
     clientSocket.send(sendPacket);
-    GNS.getLogger().fine("Sent packet for " + id);
+    GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
     waitForResponsePacket(id);
-    return queryResultMap.get(id);
+    long result = queryResultMap.get(id);
+    if (result == -1L) {
+      GNS.getLogger().fine("TIMEOUT for send to " + nodeId);
+    }
+    queryResultMap.remove(id);
+    return result;
   }
 
+  // handles ping responses
   private void receiveResponses() {
+    GNS.getLogger().fine("Starting receive response loop");
     while (true) {
       try {
         byte[] receiveData = new byte[1024];
         DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+        GNS.getLogger().fine("Looking for response");
         clientSocket.receive(receivePacket);
         Long receivedTime = System.currentTimeMillis();
         String receivedString = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength());
         GNS.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + receivedString + "|");
+        // grab the requested id from the received packet
         int id = Integer.parseInt(receivedString);
         processPingResponse(id, receivedTime);
-        //clientSocket.close();
       } catch (IOException e) {
         GNS.getLogger().severe("Error waiting for response " + e);
         Util.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
@@ -79,12 +97,26 @@ public class PingClient {
       }
     }
   }
+  
+  private static final int TIMEOUT = 10000;
 
-  private void waitForResponsePacket(int sequenceNumber) {
+  private void waitForResponsePacket(int id) {
+    GNS.getLogger().fine("Sent packet for " + id + ", waiting for response");
     try {
+//      synchronized (monitor) {
+//        while (!queryResultMap.containsKey(id)) {
+//          monitor.wait();
+//        }
+//      }
       synchronized (monitor) {
-        while (!queryResultMap.containsKey(sequenceNumber)) {
-          monitor.wait();
+        long timeoutExpiredMs = System.currentTimeMillis() + TIMEOUT;
+        while (!queryResultMap.containsKey(id)) {
+          monitor.wait(timeoutExpiredMs - System.currentTimeMillis());
+          if (System.currentTimeMillis() >= timeoutExpiredMs) {
+            // we timed out... only got partial results{
+            queryResultMap.put(id, -1L);
+            break;
+          }
         }
       }
     } catch (InterruptedException x) {
@@ -92,7 +124,9 @@ public class PingClient {
     }
   }
 
+  // updates the result map with the rtound trip time of the packet
   private void processPingResponse(int id, long receivedTime) {
+    GNS.getLogger().fine("Processing response for " + id);
     synchronized (monitor) {
       Long timeDif = receivedTime - queryTimeStamp.get(id);
       queryResultMap.put(id, timeDif);
@@ -109,6 +143,14 @@ public class PingClient {
     }).start();
   }
 
+  private int nextRequestID() {
+    int id;
+    do {
+      id = randomID.nextInt();
+    } while (queryResultMap.containsKey(id));
+    return id;
+  }
+
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     NameServer.setNodeID(0);
@@ -118,13 +160,5 @@ public class PingClient {
       GNS.getLogger().info("RTT = " + pingClient.sendPing(0));
       Util.sleep(1000);
     }
-  }
-
-  private int nextRequestID() {
-    int id;
-    do {
-      id = randomID.nextInt();
-    } while (queryResultMap.containsKey(id));
-    return id;
   }
 }

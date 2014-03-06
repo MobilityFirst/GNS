@@ -28,7 +28,7 @@ public class BestServerSelection {
     double selectServerLatency = Double.MAX_VALUE;
     for (int x : serverIDs) {
       if (ConfigFileInfo.getPingLatency(x) > 0) {
-        double totallatency = 5 * LocalNameServer.getNameServerLoads().get(x) + ConfigFileInfo.getPingLatency(x);
+        double totallatency = 5 * LocalNameServer.getNameServerLoads().get(x) + (double) ConfigFileInfo.getPingLatency(x);
         if (totallatency < selectServerLatency) {
           selectServer = x;
           selectServerLatency = totallatency;
@@ -144,7 +144,7 @@ public class BestServerSelection {
     int selectServer = -1;
 
     // select closest server: whose latency is below Threshold.
-    double selectServerLatency = Double.MAX_VALUE;
+    long selectServerLatency = Long.MAX_VALUE;
     for (int x : serverIDs) {
 //			  GNRS.getLogger().fine("Consider server " + x 
 //					  + " Ping latency : " + ConfigFileInfo.getPingLatency(x)
@@ -184,9 +184,9 @@ public class BestServerSelection {
     if ((activeNameServer.contains(ConfigFileInfo.getClosestNameServer()) || primaryNameServer.contains(ConfigFileInfo.getClosestNameServer())) && nameserverQueried != null && !nameserverQueried.contains(ConfigFileInfo.getClosestNameServer()) && ConfigFileInfo.getPingLatency(ConfigFileInfo.getClosestNameServer()) >= 0) {
       return ConfigFileInfo.getClosestNameServer();
     }
-    double lowestLatency = Double.MAX_VALUE;
+    long lowestLatency = Long.MAX_VALUE;
     int nameServerID = -1;
-    double pingLatency = -1;
+    long pingLatency = ConfigFileInfo.INVALID_PING_LATENCY;
     for (Integer nsID : activeNameServer) {
       if (nameserverQueried != null && nameserverQueried.contains(nsID)) {
         continue;
@@ -228,9 +228,9 @@ public class BestServerSelection {
             && ConfigFileInfo.getPingLatency(ConfigFileInfo.getClosestNameServer()) >= 0) {
       return ConfigFileInfo.getClosestNameServer();
     }
-    double lowestLatency = Double.MAX_VALUE;
+    long lowestLatency = Long.MAX_VALUE;
     int nameServerID = -1;
-    double pingLatency;
+    long pingLatency;
     for (Integer nsID : nameServers) {
       if (nameserverQueried != null && nameserverQueried.contains(nsID)) {
         continue;
@@ -263,9 +263,9 @@ public class BestServerSelection {
             && NameServer.getPaxosManager().isNodeUp(ConfigFileInfo.getClosestNameServer())) {
       return ConfigFileInfo.getClosestNameServer();
     }
-    double lowestLatency = Double.MAX_VALUE;
+    long lowestLatency = Long.MAX_VALUE;
     int nameServerID = -1;
-    double pingLatency;
+    long pingLatency;
     for (Integer nsID : nameServers) {
       if (nameServersQueried != null && nameServersQueried.contains(nsID) || NameServer.getPaxosManager().isNodeUp(nsID) == false) {
         continue;

@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,6 +37,17 @@ public class Protocol {
   public String processQuery(String host, String action, String queryString) {
     String fullString = action + QUERYPREFIX + queryString; // for signature check
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
+    // make sure none of the arguments are empty
+    if (queryMap.values().contains("")) {
+      // find they key that has an empty value
+      String result = "";
+      for (Entry<String, String> entry : queryMap.entrySet()) {
+        if ("".equals(entry.getValue())) {
+          result = " " + entry.getKey();
+        }
+      }
+      return BADRESPONSE + " " + "Empty argument" + result;
+    }
 
     //new command processing
     queryMap.put(COMMANDNAME, action);

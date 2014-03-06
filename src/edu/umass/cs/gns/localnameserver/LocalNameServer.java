@@ -16,15 +16,12 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
-import edu.umass.cs.gns.ping.Pinger;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -33,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  **
@@ -99,7 +98,7 @@ public class LocalNameServer {
    * @throws IOException
    */
   public LocalNameServer(int nodeID) throws IOException {
-    GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion() + "\n");
+    GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     LocalNameServer.nodeID = nodeID;
 
     requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
@@ -156,7 +155,7 @@ public class LocalNameServer {
 
     PingServer.startServerThread(nodeID);
     GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
-    Pinger.startPinging(nodeID);
+    PingManager.startPinging(nodeID);
 
     //Periodically send nameserver votes for location based replication
 
@@ -611,8 +610,7 @@ public class LocalNameServer {
   public static void sendToNS(JSONObject json, int ns) {
 
     if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
-      double latency = ConfigFileInfo.getPingLatency(ns)
-              * (1 + random.nextDouble() * StartLocalNameServer.variation);
+      double latency = ConfigFileInfo.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation);
       long timerDelay = (long) latency;
       LocalNameServer.executorService.schedule(new SendQueryWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
     } else {

@@ -10,8 +10,8 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
-import edu.umass.cs.gns.ping.Pinger;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.util.*;
 import org.json.JSONObject;
@@ -60,7 +60,7 @@ public class NameServer {
   public NameServer(int nodeID) throws IOException {
 
     NameServer.nodeID = nodeID;
-    GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion() + "\n");
+    GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
 
     GNS.getLogger().info("NS Node " + NameServer.nodeID + " using " + StartNameServer.dataStore.toString() + " data"
             + " store");
@@ -89,7 +89,7 @@ public class NameServer {
     GNS.getLogger().info("Ping server started on port " + ConfigFileInfo.getPingPort(nodeID));
     PingServer.startServerThread(nodeID);
     GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
-    Pinger.startPinging(nodeID);
+    PingManager.startPinging(nodeID);
 
 
 
