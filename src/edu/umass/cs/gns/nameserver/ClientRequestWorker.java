@@ -45,20 +45,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author abhigyan
  */
 public class ClientRequestWorker extends TimerTask {
-  
+
   private JSONObject incomingJSON;
   private Packet.PacketType packetType;
   private static ConcurrentHashMap<Integer, UpdateStatus> addInProgress = new ConcurrentHashMap<Integer, UpdateStatus>();
-  
+
   public ClientRequestWorker(JSONObject json, Packet.PacketType packetType) {
     this.packetType = packetType;
     this.incomingJSON = json;
   }
-  
+
   public static void handleIncomingPacket(JSONObject json, Packet.PacketType packetType) {
     NameServer.getExecutorService().submit(new ClientRequestWorker(json, packetType));
   }
-  
+
   @Override
   public void run() {
     //
@@ -134,7 +134,7 @@ public class ClientRequestWorker extends TimerTask {
     }
     UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
     NameRecord nameRecord;
-    
+
     if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) { // we don't need to read for replace-all
       nameRecord = new NameRecord(NameServer.getRecordMap(), updatePacket.getName());
     } else {
@@ -154,14 +154,14 @@ public class ClientRequestWorker extends TimerTask {
     try {
       result = nameRecord.updateKey(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(),
               updatePacket.getOldValue(), updatePacket.getOperation());
-      
+
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Update operation result = " + result + "\t"
                 + updatePacket.getUpdateValue());
       }
-      
-      
-      
+
+
+
       if (!result) { // update failed
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("Update operation failed " + incomingJSON);
@@ -171,19 +171,19 @@ public class ClientRequestWorker extends TimerTask {
           ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
           NameServer.returnToSender(failPacket.toJSONObject(), updatePacket.getLocalNameServerId());
-          
+
           if (StartNameServer.debugMode) {
             GNS.getLogger().fine("Error msg sent to client for failed update " + incomingJSON);
           }
         }
         return;
       }
-      
+
       boolean msgLNS = false;
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Update applied" + incomingJSON);
       }
-      
+
       if (updatePacket.getNameServerId() == NameServer.getNodeID()) {
         msgLNS = true;
       }
@@ -194,7 +194,7 @@ public class ClientRequestWorker extends TimerTask {
       if (msgLNS) {
         ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
                 updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-        
+
         NameServer.returnToSender(confirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
@@ -205,14 +205,14 @@ public class ClientRequestWorker extends TimerTask {
       e.printStackTrace();
       return;
     }
-    
+
     long t1 = System.currentTimeMillis();
     if (t1 - t0 > 20) {
       GNS.getLogger().warning("Long latency HandleUpdateAddressNS " + (t1 - t0));
     }
-    
-    
-    
+
+
+
   }
 
   /**
@@ -224,7 +224,7 @@ public class ClientRequestWorker extends TimerTask {
    * @throws IOException
    */
   public static void handleAddRecordNS(JSONObject incomingJSON, boolean recover) throws JSONException, IOException {
-    
+
     AddRecordPacket addRecordPacket;
     String name;
     NameRecordKey nameRecordKey;
@@ -234,17 +234,17 @@ public class ClientRequestWorker extends TimerTask {
     nameRecordKey = addRecordPacket.getRecordKey();
     value = addRecordPacket.getValue();
     GNS.getLogger().fine(" ADD FROM NS (ns " + NameServer.getNodeID() + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
-    
+
     ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(NameServer.getReplicaController(), name, true);//NameServer.getNameRecord(name);
 
     try {
       ReplicaControllerRecord.addNameRecordPrimary(NameServer.getReplicaController(), rcRecord);
-      
+
       if (recover) {
         GNS.getLogger().fine("Adding record: " + addRecordPacket.getName());
         return;
       }
-      
+
       ValuesMap valuesMap = new ValuesMap();
       valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
       try {
@@ -252,7 +252,7 @@ public class ClientRequestWorker extends TimerTask {
                 valuesMap, addRecordPacket.getTTL());
         try {
           NameRecord.addNameRecord(NameServer.getRecordMap(), nameRecord);
-          
+
         } catch (RecordExistsException e) {
           GNS.getLogger().severe("ERROR: Exception: name record exists but replica controller does not exist. This should never happen ");
           e.printStackTrace();
@@ -283,11 +283,11 @@ public class ClientRequestWorker extends TimerTask {
       }
       GNS.getLogger().fine("Record already exists ... continue " + e.getMessage());
     }
-    
+
   }
-  
+
   private void handleAddRecordLNSPacket() throws JSONException, IOException {
-    
+
     AddRecordPacket addRecordPacket;
     String name;
     NameRecordKey nameRecordKey;
@@ -296,15 +296,15 @@ public class ClientRequestWorker extends TimerTask {
     name = addRecordPacket.getName();
     nameRecordKey = addRecordPacket.getRecordKey();
     value = addRecordPacket.getValue();
-    
+
     GNS.getLogger().fine(" ADD FROM LNS (ns " + NameServer.getNodeID() + ") : " + name + "/" + nameRecordKey.toString() + ", " + value);
-    
+
     ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
-    
+
     Set<Integer> primaryNameServers = ConsistentHashing.getReplicaControllerSet(addRecordPacket.getName());
     UpdateStatus status = new UpdateStatus(addRecordPacket.getName(), addRecordPacket.getLocalNameServerID(), primaryNameServers, confirmPacket);
     status.addNameServerResponded(NameServer.getNodeID());
-    
+
     Random r = new Random();
     int nsReqID = r.nextInt(); // request ID assigned by this name server
     addInProgress.put(nsReqID, status);
@@ -314,14 +314,14 @@ public class ClientRequestWorker extends TimerTask {
     addRecordPacket.setLNSRequestID(nsReqID);
     addRecordPacket.setLocalNameServerID(NameServer.getNodeID());
     addRecordPacket.setType(Packet.PacketType.ADD_RECORD_NS);
-    
+
     RequestPacket requestPacket = new RequestPacket(Packet.PacketType.ADD_RECORD_NS.getInt(),
             addRecordPacket.toString(), PaxosPacketType.REQUEST, false);
     String primaryPaxosID = ReplicaController.getPrimaryPaxosID(name);
     NameServer.getPaxosManager().propose(primaryPaxosID, requestPacket);
-    
+
   }
-  
+
   private void handleUpdateAddressLNS() throws JSONException, IOException,
           InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
     long startTime = System.currentTimeMillis();
@@ -394,7 +394,7 @@ public class ClientRequestWorker extends TimerTask {
       if (activeNS != null) {
         activeID = BestServerSelection.getSmallestLatencyNS(activeNS, null);
       }
-      
+
       if (activeID != -1) {
         // forward update to active NS
         // updated to use a less kludgey operation - Westy
@@ -411,7 +411,7 @@ public class ClientRequestWorker extends TimerTask {
         ConfirmUpdateLNSPacket failConfirmPacket =
                 ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
-        
+
         String msg = " UPSERT-FAILED\t" + updatePacket.getName()
                 + "\t" + NameServer.getNodeID() + "\t" + updatePacket.getLocalNameServerId();
         if (StartNameServer.debugMode) {
@@ -469,22 +469,22 @@ public class ClientRequestWorker extends TimerTask {
         }
       } catch (RecordNotFoundException e) {
         sendFailure = true;
-        
+
       }
       if (sendFailure) {
         ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         // inform LNS of failed request
         NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
-        
+
         if (StartNameServer.debugMode) {
           GNS.getLogger().fine(" UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
                   + "\t" + NameServer.getNodeID() + "\t" + updatePacket.getLocalNameServerId());// + "\t" + updatePacket.getSequenceNumber());
         }
       }
-      
+
       return;
     }
-    
+
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine(" Update Packet : " + updatePacket);
     }
@@ -498,27 +498,27 @@ public class ClientRequestWorker extends TimerTask {
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine(" Update proposed to paxosID = " + paxosID);
     }
-    
+
     if (paxosID == null) {
       ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
       // inform LNS of failed request
       NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
-      
+
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine(" UpdateRequest-InvalidNameServer\t" + updatePacket.getName()
                 + "\t" + NameServer.getNodeID() + "\t" + updatePacket.getLocalNameServerId());// + "\t" + updatePacket.getSequenceNumber());
       }
     }
-    
+
     long endTime = System.currentTimeMillis();
-    
+
     if (endTime - startTime > 10) {
       GNS.getLogger().warning("Long latency HandleUpdate " + (endTime - startTime));
     }
-    
+
   }
   private static ArrayList<ColumnField> dnsField = new ArrayList<ColumnField>();
-  
+
   private static ArrayList<ColumnField> getDNSPacketFields() {
     synchronized (dnsField) {
       if (dnsField.size() == 0) {
@@ -528,14 +528,12 @@ public class ClientRequestWorker extends TimerTask {
       return dnsField;
     }
   }
-  
+
   private void handleDNSPacket() throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
-    if (StartNameServer.debugMode) {
-      GNS.getLogger().fine("NS received DNS lookup request: " + incomingJSON);
-    }
+    GNS.getLogger().fine("NS " + NameServer.getNodeID() + " received DNS lookup request: " + incomingJSON);
     DNSPacket dnsPacket = new DNSPacket(incomingJSON);
-    
+
     // the only dns reponses we should see are coming in respone to SiteToSiteQueryHandler requests
     if (!dnsPacket.isQuery()) {
       // handle the special case of queries that were sent between name servers
@@ -578,10 +576,11 @@ public class ClientRequestWorker extends TimerTask {
       // Now we either have a name record with stuff it in or a null one
       // Time to send something back to the client
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord);
+      //GNS.getLogger().info("NS " + NameServer.getNodeID() + " returning DNS response: " + dnsPacket.toJSONObject());
       NameServer.returnToSender(dnsPacket.toJSONObject(), dnsPacket.getSenderId());
     }
   }
-  
+
   private NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException {
     GuidInfo guidInfo, readerGuidInfo;
@@ -639,16 +638,16 @@ public class ClientRequestWorker extends TimerTask {
           // assume no error... change it below if there is an error
           dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
           dnsPacket.setTTL(nameRecord.getTimeToLive());
-          // Either returing one value or a bunch
+          // Either returning one value or a bunch
           if (nameRecord.containsKey(key)) {
             dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
-            GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid);
+            //GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid);
           } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
-            GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + guid);
+            //GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
             // or we don't actually have the field
           } else { // send error msg.
-            GNS.getLogger().fine("Record doesn't contain field: " + key + " name  = " + guid);
+            //GNS.getLogger().info("Record doesn't contain field: " + key + " name  = " + guid);
             dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
           }
           // For some reason the Guid of the packet is null
@@ -672,7 +671,7 @@ public class ClientRequestWorker extends TimerTask {
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
     }
     return dnsPacket;
-    
+
   }
 
   /**
@@ -688,7 +687,7 @@ public class ClientRequestWorker extends TimerTask {
     if (StartNameServer.debugMode) {
       GNS.getLogger().fine("Name = " + packet.getName());
     }
-    
+
     boolean sendError = false;
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
@@ -710,7 +709,7 @@ public class ClientRequestWorker extends TimerTask {
       e.printStackTrace();
       return;
     }
-    
+
     if (sendError) {
       packet.setActiveNameServers(null);
       NameServer.returnToSender(packet.toJSONObject(), packet.getLNSID());
@@ -718,14 +717,13 @@ public class ClientRequestWorker extends TimerTask {
         GNS.getLogger().fine("Error: Record does not exist for " + packet.getName());
       }
     }
-    
+
   }
-  
+
   private void handleNameServerLoadPacket() throws JSONException {
     NameServerLoadPacket nsLoad = new NameServerLoadPacket(incomingJSON);
 //    nsLoad.setLoadValue(NameServer.loadMonitor.getAverage());
 //    NameServer.returnToSender(nsLoad.toJSONObject(), nsLoad.getLnsID());
   }
-
   /**************End of private methods in ClientRequestWorker**********************************/
 }

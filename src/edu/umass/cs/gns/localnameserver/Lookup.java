@@ -79,12 +79,8 @@ public class Lookup {
 
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket) throws JSONException {
     GNS.getLogger().fine("LNS-RecvdPkt\t" + json);
-    GNS.getLogger().fine("Query-" + dnsPacket.getQueryId() + "\t"
-            + System.currentTimeMillis() + "\t" + dnsPacket.getGuid() + "\tListener-response-enter");
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
-      GNS.getLogger().finer("LNSListenerResponse: Received ResponseNum: "
-              + (0) + " --> " + dnsPacket.toJSONObject().toString());
       //Match response to the query sent
       DNSRequestInfo query = LocalNameServer.removeDNSRequestInfo(dnsPacket.getQueryId());
       if (query == null) {
@@ -112,7 +108,7 @@ public class Lookup {
         GNS.getLogger().finer("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
       }
       // send response to user right now.
-      sendReplyToUser(query, dnsPacket.getRecordValue(), dnsPacket.getTTL());
+      sendReplyToUser(query, dnsPacket.getRecordValue(), dnsPacket.getTTL(), dnsPacket.getResponder());
     }
 
   }
@@ -165,11 +161,12 @@ public class Lookup {
    *
    * @param query
    */
-  private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL) {
+  private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, int responder) {
 
     try {
       DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getHeader().getId(), query.getIncomingPacket().getGuid(),
               query.getIncomingPacket().getKey(), returnValue, TTL, new HashSet<Integer>());
+      outgoingPacket.setResponder(responder);
       Intercessor.handleIncomingPackets(outgoingPacket.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);

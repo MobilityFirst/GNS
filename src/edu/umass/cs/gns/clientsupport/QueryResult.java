@@ -30,14 +30,19 @@ public class QueryResult {
    * Instrumentation - records the time between the LNS sending the request to the NS and the return message.
    */
   private long roundTripTime; // how long this query took
+  /**
+   * Instrumentation - what nameserver responded to this query
+   */
+  private int responder;
 
   /**
    * Creates a "normal" (non-error) QueryResult.
    * 
    * @param valuesMap 
    */
-  public QueryResult(ValuesMap valuesMap) {
+  public QueryResult(ValuesMap valuesMap, int responder) {
     this.valuesMap = valuesMap;
+    this.responder = responder;
   }
 
   /**
@@ -45,8 +50,9 @@ public class QueryResult {
    * 
    * @param errorCode 
    */
-  public QueryResult(NSResponseCode errorCode) {
+  public QueryResult(NSResponseCode errorCode, int responder) {
     this.errorCode = errorCode;
+    this.responder = responder;
   }
 
   /**
@@ -127,9 +133,13 @@ public class QueryResult {
     this.roundTripTime = roundTripTime;
   }
 
+  public int getResponder() {
+    return responder;
+  }
+
   @Override
   public String toString() {
-    return "QueryResult{" + "valuesMap=" + valuesMap + ", errorCode=" + errorCode + ", roundTripTime=" + roundTripTime + '}';
+    return "QueryResult{" + "valuesMap=" + valuesMap + ", errorCode=" + errorCode + ", roundTripTime=" + roundTripTime + ", responder=" + responder + '}';
   }
   
 }

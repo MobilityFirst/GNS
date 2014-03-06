@@ -87,6 +87,7 @@ public class Defs {
   public final static String CLEARTAGGED = "clearTagged";
   public final static String RTTTEST = "rttTest";
   public final static String N = "n";
+  public final static String GUIDCNT = "guidCnt";
   //
   public final static String OKRESPONSE = "+OK+";
   public final static String NULLRESPONSE = "+EMPTY+";

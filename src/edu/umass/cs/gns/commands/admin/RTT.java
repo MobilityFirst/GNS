@@ -26,7 +26,7 @@ public class RTT extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{N};
+    return new String[]{N, GUIDCNT};
   }
 
   @Override
@@ -36,9 +36,16 @@ public class RTT extends GnsCommand {
 
   @Override
   public String execute(JSONObject json) throws JSONException {
-    String sizeString = json.getString(N);
-    int size = Integer.parseInt(sizeString);
-    return PerformanceTests.runRttPerformanceTest(size);
+    if (module.isAdminMode()) {
+      String sizeString = json.getString(N);
+      int size = Integer.parseInt(sizeString);
+      String guidCntString = json.getString(GUIDCNT);
+      int guidCnt = Integer.parseInt(guidCntString);
+      return PerformanceTests.runRttPerformanceTest(size, guidCnt);
+    } else {
+      return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
+    }
+
   }
 
   @Override

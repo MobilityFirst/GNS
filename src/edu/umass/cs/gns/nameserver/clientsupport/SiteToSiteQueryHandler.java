@@ -11,13 +11,12 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * This class handles sending DNS queries from one NS to another. 
@@ -72,7 +71,7 @@ public class SiteToSiteQueryHandler {
           GNS.getLogger().finer("First STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
 
-          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue()));
+          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), NameServer.getNodeID()));
           monitor.notifyAll();
         } else {
           GNS.getLogger().finer("Later STS Response (" + id + "): "
@@ -85,7 +84,7 @@ public class SiteToSiteQueryHandler {
           GNS.getLogger().finer("First STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
-          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode()));
+          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), NameServer.getNodeID()));
           monitor.notifyAll();
         } else {
           GNS.getLogger().finer("Later STS Response (" + id + "): "

@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.util.JSONUtils;
+import java.util.Random;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -86,6 +87,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.guid = qname;
     this.key = key;
     this.senderId = sender;
+    this.responder = -1;
   }
 
   /**
@@ -156,6 +158,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.recordValue = entireRecord;
     this.ttl = TTL;
     this.activeNameServers = activeNameServers;
+    this.responder = -1;
   }
 
   /**

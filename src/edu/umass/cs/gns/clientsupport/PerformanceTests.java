@@ -12,6 +12,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -27,6 +30,7 @@ public class PerformanceTests {
   private static final String ACCOUNTNAME = "RoundTripPerformanceTest";
   private static final String PUBLICKEY = "RTT";
   private static final String NEWLINE = System.getProperty("line.separator");
+  private static Map<Integer, ArrayList<Double>> times;
 
   /**
    * This method implements the Round Trip time test. 
@@ -41,63 +45,86 @@ public class PerformanceTests {
    * @param numFields
    * @return 
    */
-  public static String runRttPerformanceTest(int numFields) {
-    // Put things in this string to report our results.
+  public static String runRttPerformanceTest(int numFields, int guidCnt) {
     StringBuilder result = new StringBuilder();
+    String accountGuid;
+    // see if we already registered our GUID
+    if ((accountGuid = AccountAccess.lookupGuid(ACCOUNTNAME)) == null) {
+      // if not we use the method  below which bypasses the normal email verification requirement
+      // but first we create a GUID from our public key
+      accountGuid = ClientUtils.createGuidFromPublicKey(PUBLICKEY);
+      AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false);
+    }
+    times = new HashMap<Integer, ArrayList<Double>>();
+    result.append("GUIDs:");
+    result.append(NEWLINE);
+    for (String guid : createSomeGuids(AccountAccess.lookupAccountInfoFromGuid(accountGuid), guidCnt)) {
+      result.append(guid);
+      result.append(NEWLINE);
+      runTestForGuid(guid, numFields);
+    }
+    //result.append(runTestForGuid(accountGuid, numFields));
+    result.append(resultsToString());
+    return result.toString();
+  }
+
+  private static ArrayList<String> createSomeGuids(AccountInfo info, int count) {
+    ArrayList<String> result = new ArrayList<String>();
+
+    for (int i = 0; i < count; i++) {
+      String name = "RTT-" + Util.randomString(6);
+      String publicKey = name + "-KEY";
+      String guid = ClientUtils.createGuidFromPublicKey(publicKey);
+      AccountAccess.addGuid(info, name, guid, publicKey);
+      result.add(guid);
+    }
+    return result;
+  }
+
+  private static void runTestForGuid(String guid, int numFields) {
     ArrayList<String> fields = new ArrayList<String>();
-    ArrayList<Double> times = new ArrayList<Double>();
-
     try {
-      String guid;
-      // see if we already registered our GUID
-      if ((guid = AccountAccess.lookupGuid(ACCOUNTNAME)) == null) {
-        // if not we use the method  below which bypasses the normal email verification requirement
-        // but first we create a GUID from our public key
-        guid = ClientUtils.createGuidFromPublicKey(PUBLICKEY);
-        AccountAccess.addAccount(ACCOUNTNAME, guid, PUBLICKEY, "", false);
-      }
-
       // Create n random fields with random values first. Do all of them before we do the reads
       // so the GNS has time to "settle".
       for (int i = 0; i < numFields; i++) {
         String field = "RTT-" + Util.randomString(7);
-        if (!FieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))), 
+        if (!FieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))),
                 // ignore signature for now
                 null, null, null).isAnError()) {
           fields.add(field);
-        } else {
-          result.append("Unable to create " + field);
-          result.append(NEWLINE);
         }
       }
       // Next go through all the fields we just created and read the values back,
       // acessing the RoundTripTime fields of the ValuesMap class which records the
       // time between the LNS sending the request to the NS and the return message.
       for (String field : fields) {
-       QueryResult value = Intercessor.sendQuery(guid, field, null, null, null);
+        QueryResult value = Intercessor.sendQuery(guid, field, null, null, null);
         if (!value.isError()) {
           //result.append(value.getRoundTripTime());
-          times.add(new Double(value.getRoundTripTime()));
+          if (times.get(value.getResponder()) == null) {
+            times.put(value.getResponder(), new ArrayList<Double>());
+          }
+          times.get(value.getResponder()).add(new Double(value.getRoundTripTime()));
         } else {
-          //result.append(field + " is " + null);
         }
-        //result.append(NEWLINE);
       }
-      // Put some statistics in the results string.
-      result.append("N = " + times.size());
-      result.append(NEWLINE);
-      Stats stats = new Stats(times);
-      result.append("Avg = " + stats.getMean());
-      result.append(NEWLINE);
-      result.append("StdDev = " + stats.getStdDev());
-      result.append(NEWLINE);
     } catch (Exception e) {
-      result.append("Error during RTT Test: ");
-      result.append(e.getMessage());
+    }
+  }
+
+  private static String resultsToString() {
+    StringBuilder result = new StringBuilder();
+    for (Entry<Integer, ArrayList<Double>> entry : times.entrySet()) {
+      Stats stats = new Stats(times.get(entry.getKey()));
       result.append(NEWLINE);
-      StringWriter sw = new StringWriter();
-      e.printStackTrace(new PrintWriter(sw));
-      result.append(sw.toString());
+      result.append("Node: ");
+      result.append(entry.getKey());
+      result.append(NEWLINE);
+      result.append("Fields read = " + stats.getN());
+      result.append(NEWLINE);
+      result.append("Avg RTT = " + Math.round(stats.getMean())  + "ms");
+      result.append(NEWLINE);
+      result.append("StdDev = " + Math.round(stats.getStdDev())  + "ms");
       result.append(NEWLINE);
     }
     return result.toString();

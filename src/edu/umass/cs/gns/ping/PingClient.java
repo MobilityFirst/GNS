@@ -64,12 +64,12 @@ public class PingClient {
     // record the send time
     queryTimeStamp.put(id, System.currentTimeMillis());
     clientSocket.send(sendPacket);
-    GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
+    //GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
     waitForResponsePacket(id);
     long result = queryResultMap.get(id);
-    if (result == -1L) {
-      GNS.getLogger().fine("TIMEOUT for send to " + nodeId);
-    }
+//    if (result == -1L) {
+//      GNS.getLogger().fine("TIMEOUT for send to " + nodeId);
+//    }
     queryResultMap.remove(id);
     return result;
   }
@@ -81,11 +81,11 @@ public class PingClient {
       try {
         byte[] receiveData = new byte[1024];
         DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-        GNS.getLogger().fine("Looking for response");
+        //GNS.getLogger().fine("Looking for response");
         clientSocket.receive(receivePacket);
         Long receivedTime = System.currentTimeMillis();
         String receivedString = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength());
-        GNS.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + receivedString + "|");
+        //GNS.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + receivedString + "|");
         // grab the requested id from the received packet
         int id = Integer.parseInt(receivedString);
         processPingResponse(id, receivedTime);
@@ -101,7 +101,7 @@ public class PingClient {
   private static final int TIMEOUT = 10000;
 
   private void waitForResponsePacket(int id) {
-    GNS.getLogger().fine("Sent packet for " + id + ", waiting for response");
+    //GNS.getLogger().fine("Sent packet for " + id + ", waiting for response");
     try {
 //      synchronized (monitor) {
 //        while (!queryResultMap.containsKey(id)) {
@@ -126,7 +126,7 @@ public class PingClient {
 
   // updates the result map with the rtound trip time of the packet
   private void processPingResponse(int id, long receivedTime) {
-    GNS.getLogger().fine("Processing response for " + id);
+    //GNS.getLogger().fine("Processing response for " + id);
     synchronized (monitor) {
       Long timeDif = receivedTime - queryTimeStamp.get(id);
       queryResultMap.put(id, timeDif);

@@ -22,6 +22,10 @@ public class Stats {
     this.data = data;
     size = data.size();
   }
+  
+  public int getN() {
+    return (int) size;
+  }
 
   public double getMean() {
     double sum = 0.0;

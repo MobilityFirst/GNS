@@ -65,8 +65,8 @@ public class PingManager {
             long rtt = pingClient.sendPing(id);
             GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
             pingTable[id][windowSlot] = rtt;
-            // update the configuration file info... the reason we're here
-            ConfigFileInfo.updatePingLatency(id, rtt);
+            // update the configuration file info with the current average... the reason we're here
+            ConfigFileInfo.updatePingLatency(id, nodeAverage(id));
           }
         } catch (PortUnreachableException e) {
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
@@ -76,6 +76,25 @@ public class PingManager {
       }
       GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
       windowSlot = (windowSlot + 1) % WINDOWSIZE;
+    }
+  }
+
+  private static long nodeAverage(int node) {
+    // calculate the average ignoring bad samples
+    int count = WINDOWSIZE; // tracks the number of good samples
+    double total = 0;
+    for (int j = 0; j < WINDOWSIZE; j++) {
+      if (pingTable[node][j] != -1L) {
+        total = total + pingTable[node][j];
+      } else {
+        count = count - 1;
+      }
+    }
+    if (count == 0) {
+      // probably should never happen but just in case
+      return 999L;
+    } else {
+      return Math.round(total / count);
     }
   }
 
@@ -94,18 +113,7 @@ public class PingManager {
       result.append(String.format("%2d", i));
       if (i != node) {
         result.append(" = ");
-        // calculate the average ignoring bad samples
-        int count = WINDOWSIZE; // tracks the number of good samples
-        double total = 0;
-        for (int j = 0; j < WINDOWSIZE; j++) {
-          if (pingTable[i][j] != -1L) {
-            total = total + pingTable[i][j];
-          } else {
-            count = count - 1;
-          }
-        }
-        double avg = total / count;
-        result.append(String.format("%3d", Math.round(avg)));
+        result.append(String.format("%3d", nodeAverage(i)));
         result.append(" : ");
         // not print out all the samples... just do it in array order 
         // maybe do it in time order someday if we want to be cute

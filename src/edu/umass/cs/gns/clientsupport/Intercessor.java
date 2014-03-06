@@ -62,7 +62,7 @@ public class Intercessor {
   public static Transport transport;
   private static ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
   // Instrumentation
-  private static ConcurrentMap<Integer, Date> queryTimeStamp;
+  private static ConcurrentMap<Integer, Long> queryTimeStamp;
 
   public static int getLocalServerID() {
     return localServerID;
@@ -79,7 +79,7 @@ public class Intercessor {
   static {
     randomID = new Random();
     queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
-    queryTimeStamp = new ConcurrentHashMap<Integer, Date>(10, 0.75f, 3);
+    queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
 
@@ -99,7 +99,7 @@ public class Intercessor {
           ConfirmUpdateLNSPacket packet = new ConfirmUpdateLNSPacket(json);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
-          GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");// + packet.getName() + "/" + packet.getRecordKey().getName());
+          GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.getResponseCode());
             monitorUpdate.notifyAll();
@@ -114,7 +114,7 @@ public class Intercessor {
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
-              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue()));
+              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), dnsResponsePacket.getResponder()));
               monitor.notifyAll();
             }
           } else {
@@ -122,7 +122,7 @@ public class Intercessor {
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
-              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode()));
+              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), dnsResponsePacket.getResponder()));
               monitor.notifyAll();
             }
           }
@@ -147,7 +147,7 @@ public class Intercessor {
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      queryTimeStamp.put(id, new Date()); // rtt instrumentation
+      queryTimeStamp.put(id, System.currentTimeMillis()); // rtt instrumentation
       injectPacketIntoLNSQueue(json);
 
     } catch (JSONException e) {
@@ -168,12 +168,12 @@ public class Intercessor {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
 
     }
-    Date receiptTime = new Date(); // instrumentation
+    Long receiptTime = System.currentTimeMillis(); // instrumentation
     QueryResult result = queryResultMap.get(id);
     queryResultMap.remove(id);
-    Date sentTime = queryTimeStamp.get(id); // instrumentation
+    Long sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
-    long rtt = receiptTime.getTime() - sentTime.getTime();
+    long rtt = receiptTime - sentTime;
     GNS.getLogger().fine("Query (" + id + ") RTT = " + rtt + "ms");
     GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
     result.setRoundTripTime(rtt);

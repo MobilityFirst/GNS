@@ -49,12 +49,12 @@ public class PingServer {
           DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
           serverSocket.receive(receivePacket);
           String sentence = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength());
-          GNS.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + sentence + "|");
+          //GNS.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + sentence + "|");
           // Send it right back
           InetAddress IPAddress = receivePacket.getAddress();
           int port = receivePacket.getPort();
           sendData = sentence.getBytes();
-          GNS.getLogger().fine("SENDING " + sendData.length + " bytes : |" + sentence + "|");
+          //GNS.getLogger().fine("SENDING " + sendData.length + " bytes : |" + sentence + "|");
           DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
           serverSocket.send(sendPacket);
         } catch (IOException e) {
