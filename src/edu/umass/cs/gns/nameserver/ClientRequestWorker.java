@@ -557,6 +557,7 @@ public class ClientRequestWorker extends TimerTask {
     if (errorCode.isAnError()) {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.getHeader().setResponseCode(errorCode);
+      dnsPacket.setResponder(NameServer.getNodeID());
       GNS.getLogger().fine("Sending to " + dnsPacket.getSenderId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
       NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getSenderId());
     } else {
@@ -623,6 +624,7 @@ public class ClientRequestWorker extends TimerTask {
    */
   private DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord) {
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+    dnsPacket.setResponder(NameServer.getNodeID());
     // change it to a response packet
     String guid = dnsPacket.getGuid();
     String key = dnsPacket.getKey().getName();

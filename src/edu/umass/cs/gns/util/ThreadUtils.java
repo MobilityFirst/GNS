@@ -20,7 +20,7 @@ public class ThreadUtils {
     try {
       Thread.sleep(ms);
     } catch (Exception c) {
-      GNS.getLogger().severe("error sleeping :" + c);
+      GNS.getLogger().severe("Error sleeping :" + c);
     }
   }
   

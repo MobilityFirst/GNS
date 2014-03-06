@@ -2,14 +2,29 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.packet.paxospacket.*;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.*;
-import java.util.*;
+import edu.umass.cs.gns.packet.paxospacket.AcceptPacket;
+import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.packet.paxospacket.PreparePacket;
+import edu.umass.cs.gns.packet.paxospacket.ProposalPacket;
+import edu.umass.cs.gns.packet.paxospacket.StatePacket;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * NOTE: This class is extremely important for GNS. After restarting a name server, we depend on this class to recover
@@ -566,7 +581,7 @@ public class PaxosLogger extends Thread {
         fileWriter.close();
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 50) {
-          GNS.getLogger().severe("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " MsgCount = "
+          GNS.getLogger().warning("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " MsgCount = "
                   + logCmdCopy.size());
         }
         msgCount += logCmdCopy.size();

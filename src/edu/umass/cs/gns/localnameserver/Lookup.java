@@ -13,13 +13,12 @@ import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 /**
@@ -56,7 +55,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Lookup {
 
-  private static Random r = new Random();
+  private static Random random = new Random();
 
 
   public static void handlePacketLookupRequest(JSONObject json, DNSPacket dnsPacket)
@@ -89,10 +88,11 @@ public class Lookup {
       //Match response to the query sent
       DNSRequestInfo query = LocalNameServer.removeDNSRequestInfo(dnsPacket.getQueryId());
       if (query == null) {
+        // if there is none it means we already handled this request?
         return;
       }
 
-      if (r.nextDouble() < StartLocalNameServer.outputSampleRate) {
+      if (random.nextDouble() < StartLocalNameServer.outputSampleRate) {
         query.setRecvTime(System.currentTimeMillis());
         String stats = query.getLookupStats();
         GNS.getStatLogger().fine("Success-LookupRequest\t" + stats);;

@@ -17,12 +17,11 @@ import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.util.BestServerSelection;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.HashSet;
 import java.util.TimerTask;
 import java.util.logging.Level;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 /**
@@ -136,7 +135,7 @@ public class DNSRequestTask extends TimerTask {
 
       if (value != null) {
         if (transmissionCount > 1) {
-          LocalNameServer.removeSelectInfo(queryId);
+          LocalNameServer.removeDNSRequestInfo(queryId);
         }
         loggingForAddressInCache();
         sendCachedReplyToUser(value, cacheEntry.getTTL());
@@ -189,7 +188,7 @@ public class DNSRequestTask extends TimerTask {
   private void requestNewActives() {
     GNS.getLogger().severe("Invalid name server for " + incomingPacket.getGuid());
     if (transmissionCount > 1) {
-      LocalNameServer.removeSelectInfo(queryId);
+      LocalNameServer.removeDNSRequestInfo(queryId);
     }
 
     boolean firstInvalidActiveError = (numInvalidActiveError == 0);

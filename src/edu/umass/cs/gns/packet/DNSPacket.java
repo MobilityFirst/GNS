@@ -26,6 +26,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public final static String RECORD_VALUE = "recordValue";
   public final static String ACTIVE_NAME_SERVERS = "Active";
   public final static String SENDER_ID = "senderId";
+  public final static String RESPONDER = "rspndr";
   /*
    * The header, guid, key and lnsId are called the Question section because
    * they are all that is necessary for a query.
@@ -63,7 +64,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * A list of active name servers for the name *
    */
   private Set<Integer> activeNameServers;
-
+  /**
+   * For response packets this is the node that responded
+   */
+  private int responder = -1;
 
   /**
    * Constructs a packet for querying a name server for name information.
@@ -99,7 +103,9 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.guid = json.getString(GUID);
     this.key = NameRecordKey.valueOf(json.getString(KEY));
     this.senderId = json.getInt(SENDER_ID);
-    
+    // read the optional responder if it is there
+    this.responder = json.optInt(RESPONDER, -1);
+
     // These will only be present in non-error response packets
     if (header.isResponse() && !header.isAnyKindOfError()) {
       this.ttl = json.getInt(TIME_TO_LIVE);
@@ -164,14 +170,11 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   public JSONObject toJSONObjectQuestion() throws JSONException {
     JSONObject json = new JSONObject();
-    super.addToJSONObject(json);
-    json.put(HEADER, getHeader().toJSONObject());
-    json.put(KEY, getKey().getName());
-    json.put(GUID, getGuid());
-    json.put(SENDER_ID, senderId);
+    // include signatures and but not response section
+    addToJSONObjectHelper(json, true, false);
     return json;
   }
-  
+
   /**
    * Converts this packet's query section to a JSONObject and removes all the
    * signature information as well.
@@ -181,11 +184,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   public JSONObject toJSONObjectForErrorResponse() throws JSONException {
     JSONObject json = new JSONObject();
-    // don't add any of the signature stuff
-    json.put(HEADER, getHeader().toJSONObject());
-    json.put(KEY, getKey().getName());
-    json.put(GUID, getGuid());
-    json.put(SENDER_ID, senderId);
+    // no signatures and no response section
+    addToJSONObjectHelper(json, false, false);
     return json;
   }
 
@@ -205,15 +205,29 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
-    super.addToJSONObject(json);
+    addToJSONObjectHelper(json, true, true);
+  }
+
+  public void addToJSONObjectHelper(JSONObject json, boolean includeSignatureSection, boolean includeReponseSection) throws JSONException {
+    if (includeSignatureSection) {
+      super.addToJSONObject(json);
+    }
+    // query section
     json.put(HEADER, getHeader().toJSONObject());
     json.put(KEY, getKey().getName());
     json.put(GUID, getGuid());
     json.put(SENDER_ID, senderId);
-    json.put(TIME_TO_LIVE, getTTL());
-    json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
-    if (recordValue != null) {
-      json.put(RECORD_VALUE, recordValue.toJSONObject());
+    // this goes in with query (if it's not empty -1) in case it's an error response and we want to know the reponder
+    if (responder != -1) {
+      json.put(RESPONDER, responder);
+    }
+    // response section
+    if (includeReponseSection) {
+      json.put(TIME_TO_LIVE, getTTL());
+      json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
+      if (recordValue != null) {
+        json.put(RECORD_VALUE, recordValue.toJSONObject());
+      }
     }
   }
 
@@ -352,4 +366,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public void setActiveNameServers(Set<Integer> activeNameServers) {
     this.activeNameServers = activeNameServers;
   }
+
+  public int getResponder() {
+    return responder;
+  }
+
+  public void setResponder(int responder) {
+    this.responder = responder;
+  }
+  
 }

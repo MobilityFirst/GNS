@@ -74,6 +74,9 @@ public class Lookup {
     if (errorCode.isAnError()) {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.getHeader().setResponseCode(errorCode);
+      // PUT THE ID OF THE NAME SERVER IN THE RESPONSE
+      GNS.getLogger().warning("****PUT THE ID OF THE NAME SERVER IN THE RESPONSE");
+      //dnsPacket.setResponder(NameServer.getNodeID());
       GNS.getLogger().fine("Sending to " + dnsPacket.getSenderId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
       msgTask = new GNSMessagingTask(dnsPacket.getSenderId(), dnsPacket.toJSONObjectForErrorResponse());
 //      NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getSenderId());
@@ -99,7 +102,6 @@ public class Lookup {
     }
     return msgTask;
   }
-
   private static ArrayList<ColumnField> dnsField = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getDNSPacketFields() {
@@ -154,6 +156,9 @@ public class Lookup {
    */
   private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, ActiveReplica activeReplica) {
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+    // PUT THE ID OF THE NAME SERVER IN THE RESPONSE
+    GNS.getLogger().warning("****PUT THE ID OF THE NAME SERVER IN THE RESPONSE");
+    //dnsPacket.setResponder(NameServer.getNodeID());
     // change it to a response packet
     String guid = dnsPacket.getGuid();
     String key = dnsPacket.getKey().getName();
@@ -203,5 +208,4 @@ public class Lookup {
     return dnsPacket;
 
   }
-
 }

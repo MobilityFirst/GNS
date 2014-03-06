@@ -7,7 +7,6 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.DNSPacket;
-
 import java.util.Set;
 
 /**************************************************************
