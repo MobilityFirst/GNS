@@ -50,53 +50,57 @@ public class GNSNIOTransport extends NIOTransport {
 	 * to call which of these methods. They have been copied over from the older NioServer
 	 * and need to be documented or overhauled completely.
 	 */
-	public void sendToIDs(Set<Integer> destIDs, JSONObject jsonData) throws IOException {
-		sendToIDs(destIDs, jsonData, -1);
+	public int sendToIDs(Set<Integer> destIDs, JSONObject jsonData) throws IOException {
+		return sendToIDs(destIDs, jsonData, -1);
 	}
 
-	public void sendToIDs(short[] destIDs, JSONObject jsonData) throws IOException {
-		sendToIDs(destIDs, jsonData, -1);
+	public int sendToIDs(short[] destIDs, JSONObject jsonData) throws IOException {
+		return sendToIDs(destIDs, jsonData, -1);
 	}
 
-	public void sendToIDs(short[]destIDs, JSONObject jsonData, int excludeID) throws IOException {
+	public int sendToIDs(short[]destIDs, JSONObject jsonData, int excludeID) throws IOException {
 		TreeSet<Integer> IDs = new TreeSet<Integer>();
 		for (int destID: destIDs) {
 			IDs.add((int)destIDs[destID]);
 		}
-		sendToIDs(IDs, jsonData, excludeID);
+		return sendToIDs(IDs, jsonData, excludeID);
 	}
 
-    public void sendToIDs(Set<Integer> destIDs, JSONObject jsonData, int excludeID) throws IOException {
+    public int sendToIDs(Set<Integer> destIDs, JSONObject jsonData, int excludeID) throws IOException {
+    	int written=0;
 		for (int destID:destIDs) {
 			if (destID == excludeID) continue;
-			sendToID(destID, jsonData);
+			written += sendToID(destID, jsonData);
 		}
+		return written;
 	}
 
-	public boolean sendToID(int id, JSONObject jsonData) throws IOException {
+    /* FIXME: This method returns a meaningless value. Need to get 
+     * return value from task scheduled in the future, so we need
+     * to use Executor instead of Timer in GNSDelayEmulator.
+     */
+	public int sendToID(int id, JSONObject jsonData) throws IOException {
 		GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
-		return true;
+		return jsonData.length(); 
 	}
 
-	/* This method returns true for no good reason. Nobody checks the return
-	 * value. Exists only for backwards compatibility. It must be corrected to void. 
-	 * 
-	 * This method adds a header only if a socket channel is used to send to
+	/* This method adds a header only if a socket channel is used to send to
 	 * a remote node, otherwise it hands over the message directly to the worker.
 	 */
-	public boolean sendToIDActual(int destID, JSONObject jsonData) throws IOException {
+	public int sendToIDActual(int destID, JSONObject jsonData) throws IOException {
+		int written = 0;
 		if(destID==this.myID) {
-
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 			jsonArray.add(jsonData);
 			NIOInstrumenter.incrSent(); // instrumentation
 			((JSONMessageWorker)worker).processJSONMessages(jsonArray);
+			written = jsonData.length();
 		}
 		else {
 			String headeredMsg = JSONMessageWorker.prependHeader(jsonData.toString());
-			this.sendUnderlying(destID, headeredMsg.getBytes());
+			written = this.sendUnderlying(destID, headeredMsg.getBytes());
 		}
-		return true;
+		return written;
 	}
 	/********************End of public send methods*****************************************/	
 	
@@ -104,8 +108,8 @@ public class GNSNIOTransport extends NIOTransport {
 	 * all NIO sends actually happen given the maddening number of different public send
 	 * methods above. Do NOT add more gunk to this method.
 	 */
-	private void sendUnderlying(int id, byte[] data) throws IOException {
-		this.send(id, data);
+	private int sendUnderlying(int id, byte[] data) throws IOException {
+		return this.send(id, data);
 	}
 	private static JSONObject JSONify(int msgNum, String s) throws JSONException{
 		return new JSONObject("{\"msg\" : \"" + s + "\" , \"msgNum\" : " + msgNum + "}");

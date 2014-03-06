@@ -72,7 +72,7 @@ public class NIOTransport implements Runnable {
 	 * was established but the remote end crashed before the 
 	 * send was complete.
 	 */
-	protected static final int MAX_QUEUED_SENDS = 128; 
+	protected static final int MAX_QUEUED_SENDS = 1024; 
 	
 	protected static final int MIN_INTER_CONNECT_TIME = 1000; // milliseconds before reconnection attempts
 
@@ -130,19 +130,20 @@ public class NIOTransport implements Runnable {
 	 * is finished in a non-blocking manner by the selector thread. Data to be
 	 * sent is queued in pendingWrites, which is read later by the selector thread.
 	 */
-	public void send(int id, byte[] data) throws IOException {
+	public int send(int id, byte[] data) throws IOException {
 		log.finest("Node " + myID + " invoked send (" + id + ", " + 
 				new String(data) + "), checking connection status..");
-		send(new InetSocketAddress(this.nodeConfig.getNodeAddress(id), 
+		return send(new InetSocketAddress(this.nodeConfig.getNodeAddress(id), 
 				this.nodeConfig.getNodePort(id)), data);
 	}
 
-	public void send(InetSocketAddress isa, byte[] data) throws IOException {
+	public int send(InetSocketAddress isa, byte[] data) throws IOException {
 		testAndIntiateConnection(isa);
 		NIOInstrumenter.incrSent();
-		this.queuePendingWrite(isa, data);
+		int written = this.queuePendingWrite(isa, data);
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
+		return written;
 	}
 
 	public void run() {
@@ -312,8 +313,9 @@ public class NIOTransport implements Runnable {
 	/* Invoked by application threads so that the selector thread can
 	 * process them.
 	 */
-	private void queuePendingWrite(InetSocketAddress isa, byte[] data) throws IOException {
+	private int queuePendingWrite(InetSocketAddress isa, byte[] data) throws IOException {
 		synchronized (this.pendingWrites) {
+			int queuedBytes=0;
 			ArrayList<ByteBuffer> queue = (ArrayList<ByteBuffer>) this.pendingWrites.get(isa);
 			if(queue==null) {
 				queue = new ArrayList<ByteBuffer>();
@@ -321,11 +323,13 @@ public class NIOTransport implements Runnable {
 			}
 			if(queue.size() < NIOTransport.MAX_QUEUED_SENDS) {
 				queue.add(ByteBuffer.wrap(data));
+				queuedBytes =+ data.length;
 				log.finest("Node " + this.myID + " queued: " + new String(data));
 			} else {
 				log.warning("Node " + this.myID + "'s queue too full, dropping message");
-				throw new IOException("Node " + this.myID + "'s queue too full ");
+				//throw new IOException("Node " + this.myID + "'s queue too full ");
 			}
+			return queuedBytes;
 		}
 	}
 
