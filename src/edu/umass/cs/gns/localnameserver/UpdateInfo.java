@@ -4,6 +4,12 @@ import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
 import java.util.Set;
 
+/**************************************************************
+ * This class represents a data structure to store information
+ * about update/add/remove requests transmitted by the local name
+ * server. It contains a few fields only for logging statistics
+ * related to the requests.
+ *************************************************************/
 public class UpdateInfo {
 
   /**
@@ -24,14 +30,17 @@ public class UpdateInfo {
   private int nameserverID;
 
   private UpdateAddressPacket updateAddressPacket;
-  private int numRestarts;
+
+  /** number of times this request has received invalid active error */
+  private int numInvalidActiveError;
+
   public UpdateInfo(int id, String name, long sendTime, int nameserverId,
-                    UpdateAddressPacket updateAddressPacket1, int numRestarts) {
+                    UpdateAddressPacket updateAddressPacket1, int numInvalidActiveError) {
     this.id = id;
     this.name = name;
     this.sendTime = sendTime;
     this.nameserverID = nameserverId;
-    this.numRestarts = numRestarts;
+    this.numInvalidActiveError = numInvalidActiveError;
     this.updateAddressPacket = updateAddressPacket1;
   }
 
@@ -61,7 +70,7 @@ public class UpdateInfo {
     int numTransmissions = 0;
     String msg = "Success-UpdateRequest\t" + name + "\t" + latency
             + "\t" + numTransmissions + "\t" + nameserverID
-            + "\t" + LocalNameServer.getNodeID() + "\t" + confirmPkt.getRequestID() + "\t" + numRestarts + "\t" + System.currentTimeMillis();
+            + "\t" + LocalNameServer.getNodeID() + "\t" + confirmPkt.getRequestID() + "\t" + numInvalidActiveError + "\t" + System.currentTimeMillis();
     return msg;
   }
 
@@ -77,8 +86,8 @@ public class UpdateInfo {
     this.nameserverID = nameserverID;
   }
 
-  public synchronized int getNumRestarts() {
-    return numRestarts;
+  public synchronized int getNumInvalidActiveError() {
+    return numInvalidActiveError;
   }
 
   public synchronized long getLatency() {
@@ -91,7 +100,7 @@ public class UpdateInfo {
     long latency = System.currentTimeMillis() - sendTime;
     String msg = "Failed-UpdateNoActiveResponse\t" + name + "\t" + latency
             + "\t" + activesQueried.size() + "\t" + activesQueried
-            + "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + coordinatorID + "\t" + System.currentTimeMillis();
+            + "\t" + lnsID + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + coordinatorID + "\t" + System.currentTimeMillis();
     return msg;
   }
 

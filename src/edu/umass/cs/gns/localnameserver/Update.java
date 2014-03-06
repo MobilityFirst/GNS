@@ -19,6 +19,23 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Class contains a few static methods for handling update requests from clients as well responses to updates from
+ * name servers. Most functionality for handling updates from clients is implemented in
+ * <code>SendUpdatesTask</code>. So also refer to its documentation.
+ * <p>
+ * An update request is sent to an active replica of a name, except for a special type of update called upsert (update + insert).
+ * Refer to documentation in {@link edu.umass.cs.gns.localnameserver.Lookup} to know how a local name server obtains
+ * the set of active replicas. Like other requests, updates are also retransmitted to a different name server
+ * if no confirmation is received until a timeout value.
+ * <p>
+ * An upsert request may create a new name record, unlike an update which modifies an existing name record.
+ * Becasue addition of a name is done by replica controllers, we send an upserts to replica controllers.
+ * If upsert request is for an already existing name, it is handled like an update. To this end, replica controllers
+ * will forward the request to active replicas.
+ * <p>
+ *
+ */
 public class Update {
 
   private static Random r = new Random();
@@ -48,11 +65,14 @@ public class Update {
       GNS.getLogger().fine("ConfirmUpdateLNS recvd: ResponseNum: " + " --> " + confirmPkt.toString());
     }
 
+    // if update info isnt available, we cant do anything.
+    UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(confirmPkt.getLNSRequestID());
+    if (updateInfo == null) {
+      GNS.getLogger().warning("Update info not found. quitting.  " + confirmPkt);
+      return;
+    }
+
     if (confirmPkt.isSuccess()) {
-      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(confirmPkt.getLNSRequestID());
-      if (updateInfo == null) {
-        GNS.getLogger().warning("Update confirm return info not found.");
-      } else {
         // update the cache BEFORE we send back the confirmation
         LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
         // send the confirmation back to the originator of the update
@@ -63,49 +83,44 @@ public class Update {
         if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
           GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt, updateInfo.getName()));
         }
-      }
     } else if (confirmPkt.getResponseCode().isAccessOrSignatureError()) {
       // if it's an access or signature failure just return it to the client support
-      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(confirmPkt.getLNSRequestID());
-      if (updateInfo == null) {
-        GNS.getLogger().warning("Update confirm return info not found, punting.");
-      } else {
         Intercessor.handleIncomingPackets(json);
-      }
-      // If any of the code under here was documented better I suppose I might 
-      // try to figure out if there was more to do above.
+
     } else {
-      // if update failed, invalidate active name servers
-
-      // SendUpdatesTask will create a task to get new actives
-      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(confirmPkt.getLNSRequestID());
-      if (updateInfo == null) {
-        return;
-      }
-
-
-      LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
-
-      UpdateAddressPacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
-
-      GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
-
-      SendUpdatesTask task = new SendUpdatesTask(updateAddressPacket,
-              updateInfo.getSendTime(), new HashSet<Integer>(), updateInfo.getNumRestarts() + 1);
-
-      String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(), LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), updateInfo.getSendTime(),
-              updateInfo.getNumRestarts() + 1, -1);
-
-      long delay = StartLocalNameServer.queryTimeout;
-      if (updateInfo.getNumRestarts() == 0) {
-        delay = 0;
-      }
-      PendingTasks.addToPendingRequests(updateInfo.getName(), task, StartLocalNameServer.queryTimeout,
-              ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR).toJSONObject(), failedStats, delay);
-
-
-
+      // current active replica set invalid, so obtain the current set of actives for a name by contacting
+      // replica controllers.
+      handleInvalidActiveError(updateInfo);
     }
+
+  }
+
+  /**
+   * Update request reached invalid active replica, so obtain a new set of actives and send request again.
+   * @param updateInfo
+   * @throws JSONException
+   */
+  private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException{
+    GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
+
+    UpdateAddressPacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
+
+    // clear out current cache
+    LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
+
+    // create objects that must be passed to PendingTasks
+    SendUpdatesTask task = new SendUpdatesTask(updateAddressPacket, updateInfo.getSendTime(), new HashSet<Integer>(),
+            updateInfo.getNumInvalidActiveError() + 1);
+    String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(),
+            LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), updateInfo.getSendTime(), updateInfo.getNumInvalidActiveError() + 1, -1);
+    ConfirmUpdateLNSPacket confirmFailPacket = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
+
+
+    boolean firstInvalidActiveError = (updateInfo.getNumInvalidActiveError() == 0);
+
+    PendingTasks.addToPendingRequests(updateInfo.getName(), task, StartLocalNameServer.queryTimeout,
+            confirmFailPacket.toJSONObject(), failedStats, firstInvalidActiveError);
+
 
   }
 }

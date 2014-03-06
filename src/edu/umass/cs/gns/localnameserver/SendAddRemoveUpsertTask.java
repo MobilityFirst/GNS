@@ -20,8 +20,11 @@ import java.util.TimerTask;
 
 /**
  * Sends three types of messages (with retries): AddRecordPacket, RemoveRecordPacket, and
- * UpdateAddressPacket with upsert.  These messages are sent one by one to all primaries in order of their distance.
- * If no response is received until {@code maxQueryWaitTime}, an error response is sent to client.
+ * UpdateAddressPacket with upsert to replica controllers. These messages are sent one by one to all
+ * primaries in order of their distance until
+ * (1) local name server receives a response from one of the primary replicas.
+ * (2) no response is received until {@code maxQueryWaitTime}. In this case, an error response is sent to client.
+ *
  * User: abhigyan
  * Date: 8/9/13
  * Time: 4:59 PM
@@ -52,72 +55,18 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         GNS.getLogger().fine("ENTER name = " + getName() + " timeout = " + getTimeoutCount());
       }
 
-      if (getTimeoutCount() > 0 && LocalNameServer.getUpdateInfo(getUpdateRequestID()) == null) {
-        if (StartLocalNameServer.debugMode) {
-          GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
-        }
+      if (isResponseReceived() || isMaxWaitTimeExceeded()) {
         throw new CancelExecutorTaskException();
       }
 
-      if (getTimeoutCount() > 0 && System.currentTimeMillis() - getRequestRecvdTime() > StartLocalNameServer.maxQueryWaitTime) {
-        UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(getUpdateRequestID());
+      int nameServerID = selectNS();
 
-        if (updateInfo == null) {
-          GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
-          throw new CancelExecutorTaskException();
-        }
-        GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + getUpdateRequestID() + " name = " + getName());
-        ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(getPacket());
-        try {
-          if (confirmPkt != null) {
-            Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
-          } else {
-            GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
-          }
-        } catch (JSONException e) {
-          GNS.getLogger().severe("Problem converting packet to JSON: " + e);
-        }
-        String updateStats = updateInfo.getUpdateFailedStats(getPrimariesQueried(), LocalNameServer.getNodeID(), getUpdateRequestID(), -1);
-        GNS.getStatLogger().fine(updateStats);
+      sendToNS(nameServerID);
 
-        throw new CancelExecutorTaskException();
-      }
-      if (getPrimariesQueried().size() == GNS.numPrimaryReplicas) {
-        getPrimariesQueried().clear();
-      }
-      int nameServerID = LocalNameServer.getClosestPrimaryNameServer(getName(), getPrimariesQueried());
-
-      if (nameServerID == -1) {
-        GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + getPrimariesQueried());
-        return;
-      } else {
-        getPrimariesQueried().add(nameServerID);
-      }
-      if (getTimeoutCount() == 0) {
-        updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, null);
-        GNS.getLogger().fine("Update Info Added: Id = " + getUpdateRequestID());
-        updatePacketWithRequestID(getPacket(), getUpdateRequestID());
-      }
-      // create the packet that we'll send to the primary
-
-      GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
-
-      // and send it off
-      try {
-        JSONObject jsonToSend = getPacket().toJSONObject();
-        LocalNameServer.sendToNS(jsonToSend, nameServerID);
-
-        GNS.getLogger().fine("SendAddRequest: Send to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
-                " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
-      } catch (JSONException e) {
-        e.printStackTrace();
-      }
     }catch (Exception e) {
-      // we catch all exceptions to print stack trace because executor service will not print any error in case
-      // of exception
+      // we catch all exceptions here because executor service will not print any exception messages
       if (e.getClass().equals(CancelExecutorTaskException.class)) {
-      // this exception is only to terminate this task from repeat execution; this is the only way we can terminate this task
-
+      // this exception is only way to terminate this task from repeat execution
         throw new RuntimeException();
       }
       GNS.getLogger().severe("Exception Exception Exception ... ");
@@ -125,6 +74,84 @@ public class SendAddRemoveUpsertTask extends TimerTask {
     }
   }
 
+  private boolean isResponseReceived() {
+    if (getTimeoutCount() > 0 && LocalNameServer.getUpdateInfo(getUpdateRequestID()) == null) {
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private boolean isMaxWaitTimeExceeded() {
+
+    if (getTimeoutCount() > 0 && System.currentTimeMillis() - getRequestRecvdTime() > StartLocalNameServer.maxQueryWaitTime) {
+      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(getUpdateRequestID());
+
+      if (updateInfo == null) {
+        GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
+        return true;
+      }
+      GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + getUpdateRequestID() + " name = " + getName());
+      ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(getPacket());
+      try {
+        if (confirmPkt != null) {
+          Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
+        } else {
+          GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
+        }
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Problem converting packet to JSON: " + e);
+      }
+      String updateStats = updateInfo.getUpdateFailedStats(getPrimariesQueried(), LocalNameServer.getNodeID(), getUpdateRequestID(), -1);
+      GNS.getStatLogger().fine(updateStats);
+
+      return true;
+    }
+    return false;
+  }
+
+
+  private int selectNS() {
+    if (getPrimariesQueried().size() == GNS.numPrimaryReplicas) {
+      getPrimariesQueried().clear();
+    }
+    int nameServerID = LocalNameServer.getClosestPrimaryNameServer(getName(), getPrimariesQueried());
+
+    if (nameServerID == -1) {
+      GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + getPrimariesQueried());
+    } else {
+      getPrimariesQueried().add(nameServerID);
+    }
+    return nameServerID;
+  }
+
+  private void sendToNS(int nameServerID) {
+
+    if (nameServerID == -1) return;
+
+    if (getTimeoutCount() == 0) {
+      updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, null);
+      GNS.getLogger().fine("Update Info Added: Id = " + getUpdateRequestID());
+      updatePacketWithRequestID(getPacket(), getUpdateRequestID());
+    }
+    // create the packet that we'll send to the primary
+
+    GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
+
+    // and send it off
+    try {
+      JSONObject jsonToSend = getPacket().toJSONObject();
+      LocalNameServer.sendToNS(jsonToSend, nameServerID);
+
+      GNS.getLogger().fine("SendAddRequest: Send to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
+              " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+
+  }
   // This code screams for using a super class other than BasicPacket
   private ConfirmUpdateLNSPacket getConfirmFailurePacket(BasicPacket packet) {
     ConfirmUpdateLNSPacket confirm;

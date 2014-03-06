@@ -8,6 +8,8 @@ import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONMessageWorker;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.ping.PingManager;
@@ -33,12 +35,13 @@ public class NameServer {
   /**
    * UDP socket over which DNSPackets are received and sent *
    */
+
   private static BasicRecordMap recordMap;
   private static BasicRecordMap replicaController;
   private static ReplicationFrameworkInterface replicationFramework;
   private static MovingAverage loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
-  private static NioServer tcpTransport;
-//  private static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
+//  private static NioServer tcpTransport;
+  private static NioServer tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
   private static NSPacketDemultiplexer nsDemultiplexer;
   private static Timer timer = new Timer();
   private static ScheduledThreadPoolExecutor executorService;
@@ -117,7 +120,8 @@ public class NameServer {
     if (!(StartNameServer.replicationFramework == ReplicationFrameworkType.STATIC
             || StartNameServer.replicationFramework == ReplicationFrameworkType.OPTIMAL)) {
 
-      // Abhigyan: commented this because we are using lns votes instead of stats send by actives to decide replication
+      // Abhigyan: commented this because we are replicating using votes sent by local name servers instead of stats
+      // send by actives
       // TODO longer term solution is to integrate IP geo-location database at name servers.
 //        executorService.scheduleAtFixedRate(new SendNameRecordStats(),
 //                (new Random()).nextInt((int) StartNameServer.aggregateInterval),

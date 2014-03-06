@@ -4,7 +4,12 @@ import java.util.Random;
 
 /*************************************************************
 * This class implements the object for maintaining name record
-* statistic. It also provides method to calculate votes.
+* statistics. It provides method to calculate votes, i.e., number
+ * of lookup requests, and update requests received for a name
+ * at this local nam server.
+ *
+ * @see edu.umass.cs.gns.localnameserver.NameServerVoteThread
+ * @see edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats
 * 
 * @author Hardeep Uppal
  ************************************************************/

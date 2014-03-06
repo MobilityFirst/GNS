@@ -12,68 +12,59 @@ import java.util.TimerTask;
 
 
 /**
- * Send request to primary (replica controllers) to obtain set of actives.
+ * Send request to primary (replica controllers) to obtain set of actives (including retransmissions).
  *
- * The repeat execution is cancelled when cache is found to contain valid set of active name servers.
- * (or after waiting twice the query timeout period.
+ * The repeat execution is cancelled in two cases:
+ * (1) local name server receives a response from one of the replica controllers.
+ * (2) no response is received until max wait time. in this case, we send error messages for all pending requests
+ * for this name.
  *
- *
+ * @see edu.umass.cs.gns.localnameserver.PendingTasks
+ * @see edu.umass.cs.gns.packet.RequestActivesPacket
  */
-public class RequestActivesTask extends TimerTask
-{
-  int count = 0;
+public class RequestActivesTask extends TimerTask {
 
-  String name;
+  /**number of messages sent to replica controllers*/
+  private int numAttempts = 0;
+  private String name;
+  private HashSet<Integer> nameServersQueried;
+  private int requestID;
 
-  HashSet<Integer> nameServersQueried;
-
-  public RequestActivesTask(String name) {
+  private long startTime;
+  public RequestActivesTask(String name, int requestID) {
     this.name = name;
-    nameServersQueried = new HashSet<Integer>();
+    this.nameServersQueried = new HashSet<Integer>();
+    this.requestID = requestID;
+    this.startTime = System.currentTimeMillis();
   }
 
   @Override
-  public void run()
-  {
+  public void run()  {
     try {
 
-      count ++;
-      // check whether actives Received
-      synchronized (PendingTasks.allTasks) {
-        if (PendingTasks.allTasks.containsKey(name) == false) {
-          PendingTasks.requestActivesOngoing.remove(name);
-          throw  new CancelExecutorTaskException();
-        }
+      numAttempts++;
+      // check whether actives received
+      if (PendingTasks.isReplyReceived(requestID))  {
+        GNS.getLogger().fine("Reply received for requestID " + requestID);
 
-        if (LocalNameServer.isValidNameserverInCache(name)) {
-          PendingTasks.requestActivesOngoing.remove(name);
-          PendingTasks.runPendingRequestsForName(name);
-          throw  new CancelExecutorTaskException();
-        }
+        throw  new CancelExecutorTaskException();
       }
 
-      // max number of attempts have been made,
-      if (count > GNS.numPrimaryReplicas) {
-
-        GNS.getLogger().warning("Error: No actives received for name: " + name + " after " + count + " attempts.");
-
-        if (count > 2*StartLocalNameServer.maxQueryWaitTime/StartLocalNameServer.queryTimeout) {
-          GNS.getLogger().severe("Error: No actives received for name. Requests failed. " + name + " after " + count +
+      if (numAttempts > GNS.numPrimaryReplicas) {
+        GNS.getLogger().warning("Error: No actives received for name: " + name + " after " + numAttempts + " attempts.");
+        if (System.currentTimeMillis() - startTime > StartLocalNameServer.maxQueryWaitTime) {
+          // max number of attempts have been made,
+          GNS.getLogger().severe("Error: No actives received for name  " + name + " after " + numAttempts +
                   " attempts.");
-          try {
-            PendingTasks.sendErrorMsgForName(name);
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
-          synchronized (PendingTasks.allTasks) {
-            PendingTasks.requestActivesOngoing.remove(name);
-          }
+          PendingTasks.sendErrorMsgForName(name, requestID);
           throw  new CancelExecutorTaskException();
         }
       }
+
       // next primary to be queried
       int primaryID = LocalNameServer.getClosestPrimaryNameServer(name, nameServersQueried);
       if (primaryID == -1) {
+        // we clear this set to resend requests to the same set of name servers
         nameServersQueried.clear();
         primaryID = LocalNameServer.getClosestPrimaryNameServer(name, nameServersQueried);
         if (primaryID == -1) {
@@ -84,11 +75,12 @@ public class RequestActivesTask extends TimerTask
       }
       nameServersQueried.add(primaryID);
       // send packet to primary
-      sendActivesRequestPacketToPrimary(name, primaryID);
-    } catch (Exception e) {
+      sendActivesRequestPacketToPrimary(name, primaryID, requestID);
+    } catch (Exception e) { // we catch all possible exceptions because executor service does not print message on exception
       if (e.getClass().equals(CancelExecutorTaskException.class)) {
         throw new RuntimeException();
       }
+      // all exceptions other than CancelExecutorTaskException are logged.
       GNS.getLogger().severe("Unexpected exception in main active request loop: " + e);
       e.printStackTrace();
     }
@@ -98,18 +90,17 @@ public class RequestActivesTask extends TimerTask
 
   /**
    * send request to primary to send actives
-   * @param name
-   * @param primaryID
+   * @param name name for which actives are requested
+   * @param primaryID ID of name server
+   * @param requestID requestID for <code>RequestActivesPacket</code>
    */
-  private static void sendActivesRequestPacketToPrimary(String name, int primaryID) {
+  private void sendActivesRequestPacketToPrimary(String name, int primaryID, int requestID) {
 
-    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getNodeID());
-
+    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getNodeID(), requestID);
     try
     {
       JSONObject sendJson = packet.toJSONObject();
       LocalNameServer.sendToNS(sendJson,primaryID);
-
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID
               + "\tname\t" + name);
     } catch (JSONException e)
@@ -117,37 +108,6 @@ public class RequestActivesTask extends TimerTask
       if (StartLocalNameServer.debugMode) GNS.getLogger().fine("JSON Exception in sending packet. name\t" + name);
       e.printStackTrace();
     }
-
-  }
-
-  /**
-   * Recvd reply from primary with current actives, update the cache.
-   * @param json
-   * @throws JSONException
-   */
-  public static void handleActivesRequestReply(JSONObject json) throws JSONException {
-    RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json);
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Recvd request actives packet: " + requestActivesPacket +
-            " name\t" + requestActivesPacket.getName());
-    if (requestActivesPacket.getActiveNameServers() == null ||
-            requestActivesPacket.getActiveNameServers().size() == 0) {
-      GNS.getLogger().fine("Null set of actives received for name " + requestActivesPacket.getName()  +
-              " sending error");
-      PendingTasks.sendErrorMsgForName(requestActivesPacket.getName());
-      return;
-    }
-
-    if (LocalNameServer.containsCacheEntry(requestActivesPacket.getName())) {
-      LocalNameServer.updateCacheEntry(requestActivesPacket);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Updating cache Name:" +
-              requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
-    } else {
-      LocalNameServer.addCacheEntry(requestActivesPacket);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Adding to cache Name:" +
-              requestActivesPacket.getName()+ " Actives: " + requestActivesPacket.getActiveNameServers());
-    }
-
-    PendingTasks.runPendingRequestsForName(requestActivesPacket.getName());
 
   }
 

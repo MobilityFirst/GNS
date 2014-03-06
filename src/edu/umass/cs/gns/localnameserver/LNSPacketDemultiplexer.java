@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 
 /**
+ * Implements the <code>PacketDemultiplexer</code> interface for using the {@link edu.umass.cs.gns.nio} package.
+ *
  * Created by abhigyan on 2/24/14.
  */
 public class LNSPacketDemultiplexer extends PacketDemultiplexer {
@@ -31,9 +33,8 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
   }
 
   /**
-   * This class de-multiplexes all packets received at this local name server.
-   *
-   * @param json
+   * This is the entry point for all message received at a local name server. It de-multiplexes packets based on
+   * their packet type and forwards to appropriate classes.
    */
   public static void demultiplexLNSPackets(JSONObject json) {
     try {
@@ -82,7 +83,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           NameServerVoteThread.handleNameServerSelection(json);
           break;
         case REQUEST_ACTIVES:
-          RequestActivesTask.handleActivesRequestReply(json);
+          PendingTasks.handleActivesRequestReply(json);
           break;
         case SELECT_REQUEST:
           Select.handlePacketSelectRequest(json);

@@ -20,7 +20,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Represents the cache entry used at the local name server to cache DNS records
+ * Represents the cache entry used at the local name server to cache DNS records.
+ * The cache store three key information:
+ * (1) set of key-value pairs for a name record.
+ * (2) ttl value for record.
+ * (3) set of active replicas for a name.
+ *
+ * The TTL is used only to determine whether key value pairs are valid.
+ * The set of active replicas is valid for an infinite period until
+ * explicitly invalidated or updated by local name server. The TTL value is set based on TTL value
+ * stored at name servers, and is not determined by the local name server.
  *
  */
 public class CacheEntry implements Comparable<CacheEntry> {

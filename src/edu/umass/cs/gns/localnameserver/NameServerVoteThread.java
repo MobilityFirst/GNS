@@ -13,14 +13,21 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**************************************************************
- * This class implements the thread that periodically multicast 
+ * This class implements the thread that periodically multicasts
  * nameserver selection votes to primary nameservers of a name.
  * <br/>
- * The votes are collected at the primary nameservers and used
+ * The votes are reported to the primary nameservers and used
  * to select active nameservers with the highest votes during 
- * replication period. 
- * 
- * @author Hardeep Uppal
+ * replication period.
+ * <br/>
+ * We have add support to also report the number of updates for a
+ * name received at local name server. The ratio of lookups
+ * to updates for a name is used to decide the number of active
+ * replicas.
+ * <br/>
+ * @see edu.umass.cs.gns.localnameserver.NameRecordStats
+ * @see edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats
+ * @author Hardeep Uppal, Abhigyan
  *************************************************************/
 public class NameServerVoteThread extends Thread {
 
@@ -112,7 +119,6 @@ public class NameServerVoteThread extends Thread {
           }
           Thread.sleep(5); // we are sleeping between sending votes. if we do not sleep, there will be a period
           // where all resources are used for sending votes, which will affect other traffic at LNS.
-          //  due to this, it will take longer to send out all votes,
         } catch (Exception e) {
           e.printStackTrace();
         }

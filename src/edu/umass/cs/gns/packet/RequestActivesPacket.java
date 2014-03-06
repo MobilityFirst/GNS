@@ -25,28 +25,36 @@ public class RequestActivesPacket extends BasicPacket
 	public final static String NAME = "name";
 	public static final String ACTIVES = "actives";
 	public final static String LNSID = "lnsid";
+  public final static String LNS_REQ_ID = "lnsreqid";
 
   /**
    * Name for which the active replicas are being requested
    */
-	String name;
+	private String name;
 
   /**
    * Local name server sending the request.
    */
-  int lnsID;
+  private int lnsID;
 
   /**
    * Active name servers for the name. This field is populated when name server
    * sends a reply to a local name server.
    */
-	Set<Integer> activeNameServers;
+  private Set<Integer> activeNameServers;
 
 
-	public RequestActivesPacket(String name, int lnsID) {
+  /**
+   * Unique request ID assigned by local name server.
+   */
+  private int lnsRequestID;
+
+
+	public RequestActivesPacket(String name, int lnsID, int lnsRequestID) {
 		this.name = name;
 		this.type = PacketType.REQUEST_ACTIVES;
 		this.lnsID = lnsID;
+    this.lnsRequestID = lnsRequestID;
 	}
 
 	public RequestActivesPacket(JSONObject json) throws JSONException {
@@ -54,6 +62,7 @@ public class RequestActivesPacket extends BasicPacket
 		this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVES));
 		this.type = PacketType.REQUEST_ACTIVES;
 		this.lnsID = json.getInt(LNSID);
+    this.lnsRequestID = json.getInt(LNS_REQ_ID);
   }
 
 	@Override
@@ -64,6 +73,7 @@ public class RequestActivesPacket extends BasicPacket
 		json.put(ACTIVES,new JSONArray(activeNameServers));
 		Packet.putPacketType(json, getType());
 		json.put(LNSID, lnsID);
+    json.put(LNS_REQ_ID, lnsRequestID);
 		return json;
 	}
 
@@ -83,4 +93,8 @@ public class RequestActivesPacket extends BasicPacket
 	public int getLNSID() {
 		return lnsID;
 	}
+
+  public int getLnsRequestID() {
+    return lnsRequestID;
+  }
 }

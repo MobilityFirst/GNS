@@ -8,10 +8,13 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.DNSPacket;
 
+import java.util.Set;
+
 /**************************************************************
  * This class represents a data structure to store information
  * about queries (name lookup) transmitted by the local name
- * server
+ * server. It contains a few fields only for logging statistics
+ * related to the requests.
  * 
  *************************************************************/
 public class DNSRequestInfo {
@@ -27,7 +30,7 @@ public class DNSRequestInfo {
   private long recvTime = -1;
 
   private DNSPacket incomingPacket;
-  public int numRestarts;
+  public int numInvalidActiveError;
 
   private int nameserverID;
 
@@ -47,8 +50,27 @@ public class DNSRequestInfo {
     this.lookupRecvdTime = time;
 
     this.incomingPacket = incomingPacket;
-    this.numRestarts = numRestarts;
+    this.numInvalidActiveError = numRestarts;
     this.nameserverID = nameserverID;
+  }
+
+  public static String getFailureLogMessage(int lookupNumber, NameRecordKey recordKey, String name,
+                                            int transmissionCount, long receivedTime, int numRestarts,
+                                            int coordinatorID, Set<Integer> nameserversQueried) {
+    String failureCode = "Failed-LookupNoActiveResponse";
+    if (nameserversQueried == null || nameserversQueried.isEmpty()) {
+      failureCode = "Failed-LookupNoPrimaryResponse";
+    }
+
+    return (failureCode + "\t"
+            + lookupNumber + "\t"
+            + recordKey + "\t"
+            + name + "\t"
+            + transmissionCount + "\t"
+            + receivedTime + "\t"
+            + numRestarts + "\t"
+            + coordinatorID + "\t"
+            + nameserversQueried);
   }
 
 
@@ -93,7 +115,7 @@ public class DNSRequestInfo {
     str.append("\t" + nameserverID);
     str.append("\t" + LocalNameServer.getNodeID());
     str.append("\t" + lookupRecvdTime);
-    str.append("\t" + numRestarts);
+    str.append("\t" + numInvalidActiveError);
     str.append("\t[]");
     str.append("\t[]");
 

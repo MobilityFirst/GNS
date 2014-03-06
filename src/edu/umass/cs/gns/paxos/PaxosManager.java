@@ -498,7 +498,8 @@ public class PaxosManager {
       ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
       tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
 //      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
-//      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
+//      tcpTransportLocal = new NioServer(nodeID, config, jsonMessageWorker);
+
 
       if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID);
 

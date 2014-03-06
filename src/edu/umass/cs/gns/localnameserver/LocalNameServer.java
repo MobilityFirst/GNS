@@ -14,6 +14,8 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONMessageWorker;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.ping.PingManager;
@@ -66,7 +68,8 @@ public class LocalNameServer {
    */
   private static Random random;
   private static NioServer tcpTransport;
-//  private static GNSNIOTransport tcpTransport;
+//  private static GNSNIOTransport tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
+
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
   /**
@@ -287,6 +290,7 @@ public class LocalNameServer {
   }
 
   /********************** END: methods for read/write to info about queries (read) and updates ****************/
+
   /********************** BEGIN: methods for read/write to the stats map *******************/
   public static NameRecordStats getStats(String name) {
 
