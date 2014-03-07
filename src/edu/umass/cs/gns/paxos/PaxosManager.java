@@ -131,11 +131,10 @@ public class PaxosManager {
 
     failureDetection = new FailureDetection(N, nodeID, executorService, this, failureDetectionPing,
             failureDetectionTimeout);
-
-    //
     startAllPaxosReplicas();
     startPaxosMaintenanceActions();
   }
+
   /**
    * Constructor used during testing only.
    * @param testConfigFile config file used for tests

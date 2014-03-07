@@ -11,6 +11,9 @@ import java.util.Properties;
  */
 public class TestConfig {
 
+
+
+
   int numPaxosReplicas;
 
   int startingPort = 23434;
