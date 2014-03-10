@@ -38,6 +38,9 @@ public class GNSNIOTransport extends NIOTransport {
 	public GNSNIOTransport(int id, NodeConfig nodeConfig, JSONMessageWorker worker) throws IOException {
 		super(id, nodeConfig, worker); // Switched order of the latter two arguments
 	}
+	public void addPacketDemultiplexer(PacketDemultiplexer pd) {
+		((JSONMessageWorker)this.worker).addPacketDemultiplexer(pd);
+	}
 	
 	/********************Start of send methods*****************************************/
 	/* A sequence of ugly public methods that are essentially redundant ways of 

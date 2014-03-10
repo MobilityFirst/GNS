@@ -49,21 +49,33 @@ public class JSONMessageWorker implements DataProcessingWorker {
 
 	public static final String HEADER_PATTERN = "&"; // Could be an arbitrary string
 	private HashMap<SocketChannel,String> sockStreams=null;
-	private PacketDemultiplexer packetDemux=null;
+	//private PacketDemultiplexer packetDemux=null;
+	private ArrayList<PacketDemultiplexer> packetDemuxes=null;
 	
 	Logger log = GNS.getLogger();
 	
 	public JSONMessageWorker(PacketDemultiplexer pd) {
-		packetDemux = pd;
+		packetDemuxes = new ArrayList<PacketDemultiplexer>();
+		packetDemuxes.add(pd);
+		//packetDemux = pd;
 		sockStreams = new HashMap<SocketChannel,String>();
 	}
 	
 	/* Note: Use with care. This will change demultiplexing behavior
 	 * midway, which is usually not what you want to do. This is 
-	 * useful to set in the beginning 
+	 * useful to set in the beginning. 
+	 * 
+	 * synchronized because it may be invoked when NIO is using
+	 * packetDemuxes in processJSONMessage(.).
 	 */
-	public void setMessageWorker(PacketDemultiplexer pd) {
-		packetDemux = pd; 
+	public synchronized void addPacketDemultiplexer(PacketDemultiplexer pd) {
+		//packetDemux = pd; 
+		packetDemuxes.add(pd);
+	}
+	/* FIXME: To be deprecated. Exists only for backwards compatibility.
+	 */
+	public synchronized void setPacketDemultiplexer(PacketDemultiplexer pd) {
+		this.addPacketDemultiplexer(pd);
 	}
 
 	/* Header is of the form pattern<size>pattern. The pattern is 
@@ -94,13 +106,23 @@ public class JSONMessageWorker implements DataProcessingWorker {
 		processJSONMessages(jsonArray);
 		return jsonArray.size();
 	}	
-	/* Actual message processing is done by packetDemux. This class is only
-	 * a shell for pre-processing a byte stream into JSON messages.
+	/* Actual message processing is done by packetDemux. This class only
+	 * pre-processes a byte stream into JSON messages.
 	 */
 	public void processJSONMessages(ArrayList<JSONObject> jsonArray) {
-		if(this.packetDemux!=null && jsonArray!=null) {
-			for(int i=0; i<jsonArray.size(); i++) NIOInstrumenter.incrJSONRcvd();
-			this.packetDemux.handleJSONObjects(jsonArray);
+		if(jsonArray!=null && !jsonArray.isEmpty()) {
+			for(JSONObject jsonMsg : jsonArray) this.processJSONMessage(jsonMsg);
+		}
+	}
+	/* FIXME: Need handleJSONObject to return a boolean value 
+	 * so that we can stop at the first demultiplexer that 
+	 * successfully handles the packet.
+	 */
+	private synchronized void processJSONMessage(JSONObject jsonMsg) {
+		NIOInstrumenter.incrJSONRcvd();
+		//this.packetDemux.handleJSONObject(jsonMsg);
+		for(PacketDemultiplexer pd : this.packetDemuxes) {
+			pd.handleJSONObject(jsonMsg);
 		}
 	}
 			
@@ -204,7 +226,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		JSONMessageWorker jmw = new JSONMessageWorker(null);
+		JSONMessageWorker jmw = new JSONMessageWorker(new DefaultPacketDemultiplexer());
 		String msg = "{\"msg\" : \"Hello  world\"}"; //JSON formatted
 		String hMsg = JSONMessageWorker.prependHeader(msg);
 		try {
