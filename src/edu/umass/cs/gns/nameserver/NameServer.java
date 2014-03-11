@@ -11,6 +11,7 @@ import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageWorker;
 import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
@@ -41,7 +42,7 @@ public class NameServer {
   private static ReplicationFrameworkInterface replicationFramework;
   private static MovingAverage loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
 //  private static NioServer tcpTransport;
-  private static NioServer tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
+  private static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
   private static NSPacketDemultiplexer nsDemultiplexer;
   private static Timer timer = new Timer();
   private static ScheduledThreadPoolExecutor executorService;
@@ -149,19 +150,13 @@ public class NameServer {
     // Don't start the listening socket because paxos manager is not initialized yet. Another reason is that
     // we are still doing log recovery and don't want to process new messages.
 
-    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
-    tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
+//    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
+//    tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
 
     // Abhigyan: we are testing with GNSNIOTransport so keeping this code here
-//    JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
-//    tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
+    JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
+    tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
 
-    // Create paxos manager and do log recovery (if logs exist). paxos manager wont send any messages yet.
-    paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
-            new NSPaxosInterface(), executorService, StartNameServer.paxosLogFolder);
-
-    // start listening socket
-    new Thread(tcpTransport).start();
 
     if (StartNameServer.experimentMode) {
       try {
@@ -170,11 +165,26 @@ public class NameServer {
         e.printStackTrace();
       }
     }
+    // start listening socket
+    new Thread(tcpTransport).start();
 
-    // now listening socket is running, start failure detector and other process in paxos which require sending messages.
-    paxosManager.startPaxos(StartNameServer.failureDetectionPingInterval, StartNameServer.failureDetectionTimeoutInterval);
+
+    PaxosConfig paxosConfig = new PaxosConfig();
+    paxosConfig.setFailureDetectionPingMillis(StartNameServer.failureDetectionPingInterval);
+    paxosConfig.setFailureDetectionTimeoutMillis(StartNameServer.failureDetectionTimeoutInterval);
+    paxosConfig.setPaxosLogFolder(StartNameServer.paxosLogFolder);
+    // Create paxos manager and do log recovery (if logs exist). paxos manager wont send any messages yet.
+    paxosManager = new PaxosManager(nodeID, new GNSNodeConfig(), tcpTransport,
+            new NSPaxosInterface(), paxosConfig);
+
+//    paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
+//            new NSPaxosInterface(), executorService, StartNameServer.paxosLogFolder);
+
+//    // now listening socket is running, start failure detector and other process in paxos which require sending messages.
+//    paxosManager.startPaxos(StartNameServer.failureDetectionPingInterval, StartNameServer.failureDetectionTimeoutInterval);
 
     createPrimaryPaxosInstances();
+
   }
 
   private void loadRecordsBeforeExperiments() {
@@ -210,214 +220,13 @@ public class NameServer {
       String paxosID = ReplicaController.getPaxosIDForReplicaControllerGroup(groupID);
 
       GNS.getLogger().info("Creating paxos instances: " + paxosID + "\t" + groupIDsMembers.get(groupID));
-      NameServer.paxosManager.createPaxosInstance(paxosID, groupIDsMembers.get(groupID), "");
+      NameServer.paxosManager.createPaxosInstance(paxosID, 0, groupIDsMembers.get(groupID), "");
     }
 
   }
 
   /**** End methods for initializing different components of name server ***/
-//
-//  /******************************
-//   * Name Record methods
-//   ******************************/
-//  /**
-//   * Load a name record from the backing database and retrieve all the fields.
-//   * @param name
-//   * @return
-//   * @throws RecordNotFoundException
-//   */
-//  public static NameRecord getNameRecord(String name) throws RecordNotFoundException {
-//    return recordMap.getNameRecord(name);
-//  }
-//
-//  /**
-//   * Load a name record from the backing database and retrieve certain fields as well.
-//   *
-//   * @param name
-//   * @param systemFields - a list of Field structures representing "system" fields to retrieve
-//   * @return
-//   * @throws RecordNotFoundException
-//   */
-//  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields)
-//          throws RecordNotFoundException {
-//    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
-//  }
-//
-//  /**
-//   * Load a name record from the backing database and retrieve certain fields as well.
-//   *
-//   * @param name
-//   * @param systemFields - a list of Field structures representing "system" fields to retrieve
-//   * @param userFields - a list of Field structures representing user fields to retrieve
-//   * @return
-//   * @throws RecordNotFoundException
-//   */
-//  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
-//          throws RecordNotFoundException {
-//    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
-//  }
-//
-//  /**
-//   * Load a name record from the backing database and retrieve certain fields as well.
-//   *
-//   * @param name
-//   * @param systemFields
-//   * @param userFieldNames - strings which name the user fields to return
-//   * @return
-//   * @throws RecordNotFoundException
-//   */
-//  public static NameRecord getNameRecordMultiField(String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
-//          throws RecordNotFoundException {
-//    return new NameRecord(recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
-//  }
-//
-//  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
-//    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
-//    for (String name : fieldNames) {
-//      result.add(new ColumnField(name, ColumnFieldType.LIST_STRING));
-//    }
-//    return result;
-//  }
-//
-//  /**
-//   * Add this name record to DB
-//   * @param record
-//   * @throws RecordExistsException
-//   */
-//  public static void addNameRecord(NameRecord record) throws RecordExistsException {
-//    recordMap.addNameRecord(record);
-//  }
-//
-//  /**
-//   * Replace the name record in DB with this copy of name record
-//   * @param record
-//   */
-//  public static void updateNameRecord(NameRecord record) {
-//    recordMap.updateNameRecord(record);
-//  }
-//
-//  /**
-//   * Remove name record from DB
-//   * @param name
-//   */
-//  public static void removeNameRecord(String name) {
-//    recordMap.removeNameRecord(name);
-//  }
-//
-//  /**
-//   * Returns an iterator for all the rows in the collection with all fields filled in.
-//   *
-//   * @return
-//   */
-//  public static BasicRecordCursor getAllRowsIterator() {
-//    return recordMap.getAllRowsIterator();
-//  }
-//
-//  /**
-//   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
-//   * @param key
-//   * @param value
-//   * @return
-//   */
-//  public static BasicRecordCursor selectRecords(String key, Object value) {
-//    return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
-//  }
-//
-//  /**
-//   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
-//   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
-//   *
-//   * @param key
-//   * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
-//   * @return
-//   */
-//  public static BasicRecordCursor selectRecordsWithin(String key, String value) {
-//    return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
-//  }
-//
-//  /**
-//   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
-//   * [LONG, LAT]. maxDistance is in meters. The returned value is a BasicRecordCursor.
-//   *
-//   * @param key
-//   * @param value - a string that looks like this: [LONG, LAT]
-//   * @param maxDistance - the distance in meters
-//   * @return
-//   */
-//  public static BasicRecordCursor selectRecordsNear(String key, String value, Double maxDistance) {
-//    return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
-//  }
-//
-//  /**
-//   * Returns all fields that match the query.
-//   *
-//   * @param query
-//   * @return
-//   */
-//  public static BasicRecordCursor selectRecordsQuery(String query) {
-//    return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
-//  }
-//
-//  /******************************
-//   * End of name record methods
-//   ******************************/
-//  ABHIGYAN: keeping this code commented here because we haven't tested with other code.
-//  /******************************
-//   * Replica controller methods
-//   ******************************/
-//  /**
-//   * Read the complete ReplicaControllerRecord from database
-//   * @param name
-//   * @return
-//   */
-//  public static ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException {
-//    return replicaController.getNameRecordPrimary(name);
-//  }
-//
-//  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ColumnField... fields)
-//          throws RecordNotFoundException {
-//    return getNameRecordPrimaryMultiField(name, new ArrayList<ColumnField>(Arrays.asList(fields)));
-//  }
-//
-//  /**
-//   * Read name record with select fields
-//   * @param name
-//   * @param fields
-//   * @return
-//   * @throws RecordNotFoundException
-//   */
-//  public static ReplicaControllerRecord getNameRecordPrimaryMultiField(String name, ArrayList<ColumnField> fields)
-//          throws RecordNotFoundException {
-//    return new ReplicaControllerRecord(replicaController.lookup(name, ReplicaControllerRecord.NAME, fields));
-//  }
-//
-//  /**
-//   * Add this record to database
-//   * @param record
-//   */
-//  public static void addNameRecordPrimary(ReplicaControllerRecord record) throws RecordExistsException {
-//    replicaController.addNameRecordPrimary(record);
-//  }
-//
-//  /**
-//   * Remove a ReplicaControllerRecord with given name from database
-//   * @param name
-//   */
-//  public static void removeNameRecordPrimary(String name) {
-//    replicaController.removeNameRecord(name);
-//  }
-//
-//  /**
-//   * Replace the ReplicaControllerRecord in DB with this copy of ReplicaControllerRecord
-//   * @param record
-//   */
-//  public static void updateNameRecordPrimary(ReplicaControllerRecord record) {
-//    replicaController.updateNameRecordPrimary(record);
-//  }
-//
-//  public static BasicRecordCursor getAllPrimaryRowsIterator() {
-//    return replicaController.getAllRowsIterator();
-//  }
+
   /**
    * Clears the database and reinitializes all indices.
    * DONT CALL THIS UNLESS YOU WANT TO CLEAR ALL THE RECORDS OUT OF THE DATABASE!!!
@@ -491,7 +300,7 @@ public class NameServer {
   /**
    * @return the tcpTransport
    */
-  public static NioServer getTcpTransport() {
+  public static GNSNIOTransport getTcpTransport() {
     return tcpTransport;
   }
 

@@ -72,8 +72,8 @@ public class FailureDetection{
 	 * @param N number of nodes
 	 * @param nodeID ID of this node 
 	 */
-	 public FailureDetection(int N, int nodeID, ScheduledThreadPoolExecutor executorService,
-                                         PaxosManager paxosManager, int pingIntervalMillis, int timeoutIntervalMillis) {
+	 public FailureDetection(int N, int nodeID, ScheduledThreadPoolExecutor executorService, PaxosManager paxosManager,
+                           int pingIntervalMillis, int timeoutIntervalMillis) {
 		 this.nodeID = nodeID;
      this.N =  N;
      this.startingTime = System.currentTimeMillis();

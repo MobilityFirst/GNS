@@ -13,10 +13,6 @@ public class PaxosPacketType {
    * Request sent from client to Paxos Replica.
    */
   public static final int REQUEST = 1;
-//  /**
-//   * Response from Paxos replica to client.
-//   */
-//  public static final int RESPONSE = 0;
   /**
    * 
    */

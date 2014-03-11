@@ -13,10 +13,8 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageWorker;
-import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
@@ -24,6 +22,9 @@ import edu.umass.cs.gns.test.TraceRequestGenerator;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -32,8 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  **
@@ -67,8 +66,8 @@ public class LocalNameServer {
    * Unique and random query ID *
    */
   private static Random random;
-  private static NioServer tcpTransport;
-//  private static GNSNIOTransport tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
+//  private static NioServer tcpTransport;
+  private static GNSNIOTransport tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
@@ -136,13 +135,11 @@ public class LocalNameServer {
       GNS.getLogger().fine("LNS listener started.");
     }
 
-    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+//    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
 
     // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-//    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
-//    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
-
-    new Thread(tcpTransport).start();
+    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
+    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
 
     if (StartLocalNameServer.experimentMode) {
       long initialExpDelayMillis = 40000;
@@ -154,6 +151,9 @@ public class LocalNameServer {
         e.printStackTrace();
       }
     }
+
+    new Thread(tcpTransport).start();
+
     new LNSListenerAdmin().start();
 
     PingServer.startServerThread(nodeID);

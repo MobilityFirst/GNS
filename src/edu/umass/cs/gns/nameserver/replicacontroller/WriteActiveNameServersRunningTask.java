@@ -44,7 +44,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
   public WriteActiveNameServersRunningTask(String name, String paxosID) {
     this.name = name;
     this.paxosID = paxosID;
-    int timeout = NameServer.getPaxosManager().getFailureDetectionTimeout();
+    int timeout = StartNameServer.failureDetectionTimeoutInterval;
     if (timeout != -1) MAX_RETRY = (int)(timeout * 1.5 / ReplicaController.RC_TIMEOUT_MILLIS );
   }
 

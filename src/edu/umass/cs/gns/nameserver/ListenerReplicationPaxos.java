@@ -89,8 +89,9 @@ public class ListenerReplicationPaxos {
 
 
       if (StartNameServer.eventualConsistency == false) {
-        boolean created = NameServer.getPaxosManager().createPaxosInstance(nameRecord.getActivePaxosID(), nameRecord.getActiveNameServers(),
-                nameRecord.toString());
+        boolean created = NameServer.getPaxosManager().createPaxosInstance(nameRecord.getName(),
+                ReplicaController.getVersionFromPaxosID(nameRecord.getActivePaxosID()),
+                nameRecord.getActiveNameServers(), nameRecord.toString());
         if (StartNameServer.debugMode) GNS.getLogger().info(" NAME RECORD ADDED AT ACTIVE NODE: "
                 + "name record = " + nameRecord.getName());
         if (created) {
@@ -261,7 +262,7 @@ class ReplicationWorkerPaxos extends TimerTask {
               if (StartNameServer.eventualConsistency) {
                 NameServer.getTcpTransport().sendToIDs(nameRecord1.getActiveNameServers(), oldActiveStopPacket.toJSONObject());
               } else {
-                NameServer.getPaxosManager().propose(paxosID, new RequestPacket(PacketType.ACTIVE_PAXOS_STOP.getInt(),
+                NameServer.getPaxosManager().propose(nameRecord1.getName(), new RequestPacket(PacketType.ACTIVE_PAXOS_STOP.getInt(),
                         oldActiveStopPacket.toString(), PaxosPacketType.REQUEST, true));
               }
 
@@ -371,7 +372,8 @@ class ReplicationWorkerPaxos extends TimerTask {
         if (StartNameServer.debugMode) GNS.getLogger().info(" NAME RECORD ADDED AT ACTIVE NODE: "
                 + "name record = " + originalPacket.getName());
         if (StartNameServer.eventualConsistency == false) {
-          boolean created = NameServer.getPaxosManager().createPaxosInstance(originalPacket.getNewActivePaxosID(),
+          boolean created = NameServer.getPaxosManager().createPaxosInstance(originalPacket.getName(),
+                  ReplicaController.getVersionFromPaxosID(originalPacket.getNewActivePaxosID()),
                   originalPacket.getNewActiveNameServers(), nameRecord.toString());
           if (created) {
             if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. " + nameRecord.getName());
@@ -388,7 +390,8 @@ class ReplicationWorkerPaxos extends TimerTask {
           nameRecord.handleNewActiveStart(originalPacket.getNewActiveNameServers(),
                   originalPacket.getNewActivePaxosID(), previousValue);
           if (StartNameServer.eventualConsistency == false) {
-            boolean created = NameServer.getPaxosManager().createPaxosInstance(originalPacket.getNewActivePaxosID(),
+            boolean created = NameServer.getPaxosManager().createPaxosInstance(originalPacket.getName(),
+                    ReplicaController.getVersionFromPaxosID(originalPacket.getNewActivePaxosID()),
                     originalPacket.getNewActiveNameServers(), nameRecord.toString());
             if (created) {
               if (StartNameServer.debugMode) GNS.getLogger().info(" PAXOS INSTANCE CREATED AT ACTIVE NAME SERVER. " + nameRecord.getName());

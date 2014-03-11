@@ -164,15 +164,15 @@ public class NSPaxosInterface implements PaxosInterface {
     }
   }
 
-  @Override
-  public String getPaxosKeyForPaxosID(String paxosID) {
-    if (ReplicaController.isPrimaryPaxosID(paxosID)) return paxosID; // paxos between primaries
-    else { // paxos between actives.
-      int index = paxosID.lastIndexOf("-");
-      if (index == -1) return paxosID;
-      return paxosID.substring(0, index);
-    }
-  }
+//  @Override
+//  public String getPaxosKeyForPaxosID(String paxosID) {
+//    if (ReplicaController.isPrimaryPaxosID(paxosID)) return paxosID; // paxos between primaries
+//    else { // paxos between actives.
+//      int index = paxosID.lastIndexOf("-");
+//      if (index == -1) return paxosID;
+//      return paxosID.substring(0, index);
+//    }
+//  }
 
 
 }

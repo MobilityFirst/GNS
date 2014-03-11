@@ -1,8 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
-//import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import org.json.JSONException;
@@ -31,10 +29,10 @@ public class DefaultPaxosInterface implements PaxosInterface {
   /**
    * Transport object. It is needed to send responses to client.
    */
-  NioServer nioServer;
+  GNSNIOTransport nioServer;
 
 
-  public DefaultPaxosInterface(int nodeID, NioServer nioServer) {
+  public DefaultPaxosInterface(int nodeID, GNSNIOTransport nioServer) {
     this.nodeID = nodeID;
     this.nioServer = nioServer;
   }
@@ -67,8 +65,4 @@ public class DefaultPaxosInterface implements PaxosInterface {
     // empty method becasue this only for running paxos tests independently
   }
 
-  @Override
-  public String getPaxosKeyForPaxosID(String paxosID) {
-    return paxosID;
-  }
 }

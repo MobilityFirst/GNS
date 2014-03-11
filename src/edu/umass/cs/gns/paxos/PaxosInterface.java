@@ -27,7 +27,4 @@ public interface PaxosInterface {
 
   public abstract void updateState(String paxosID, String state);
 
-  public abstract String getPaxosKeyForPaxosID(String paxosID);
-
-
 }

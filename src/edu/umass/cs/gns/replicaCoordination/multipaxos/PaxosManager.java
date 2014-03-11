@@ -1,5 +1,15 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.packet.PaxosPacket;
+import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
@@ -11,22 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageWorker;
-import edu.umass.cs.gns.nio.NIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nio.SampleNodeConfig;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.packet.PaxosPacket;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 
 /**
 @author V. Arun
@@ -178,7 +172,8 @@ public class PaxosManager {
 				niots[i] = new GNSNIOTransport(members[i], snc, jmws[i]);
 				new Thread(niots[i]).start();
 				pms[i] = new PaxosManager(members[i], snc, niots[i]);
-				jmws[i].setMessageWorker(new PaxosPacketDemultiplexer(pms[i]));
+				//jmws[i].setMessageWorker(new PaxosPacketDemultiplexer(pms[i]));
+        jmws[i].setPacketDemultiplexer(new PaxosPacketDemultiplexer(pms[i]));
 				
 				//pms[i].monitor(gms);
 				if(i!=0) pms[i].monitor(gms);

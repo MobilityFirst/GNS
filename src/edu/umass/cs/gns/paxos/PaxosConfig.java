@@ -76,7 +76,7 @@ public class PaxosConfig {
       if (prop.containsKey(DEFAULT_FD_PING_MILLIS)) failureDetectionTimeoutMillis = Integer.parseInt(prop.getProperty(PARAM_FD_TIMEOUT_MILLIS));
 
     } catch (IOException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();
     }
   }
 

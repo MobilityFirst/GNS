@@ -31,7 +31,8 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
       Packet.PacketType type = Packet.getPacketType(json);
       switch (type) {
         case PAXOS_PACKET:
-          NameServer.getPaxosManager().handleIncomingPacket(json);
+          if (NameServer.getPaxosManager() != null) // check because transport object initialized before paxos manager
+            NameServer.getPaxosManager().handleIncomingPacket(json);
           break;
         // client requests: ADD/REMOVE/UPDATE/LOOKUP
         case DNS:

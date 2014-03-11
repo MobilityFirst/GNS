@@ -123,6 +123,15 @@ public class ReplicaController {
     return activePaxosID.substring(0, index);
   }
 
+  public static int getVersionFromPaxosID(String paxosID) {
+    int index = paxosID.lastIndexOf("-");
+    if (index == -1) {
+      GNS.getLogger().severe("Exception ERROR: Improperly formatted active paxos ID: " + paxosID);
+      return -1;
+    }
+    return Integer.parseInt(paxosID.substring(index + 1));
+  }
+
   /*****END: Methods that return paxosID among actives and among primaries for a name*************/
   /************START: Public/private methods related to changes in set of active replicas*******************/
   public static void handleIncomingPacket(JSONObject json) {

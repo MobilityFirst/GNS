@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  *
  */
-public class PaxosManager {
+public class PaxosManager extends AbstractPaxosManager {
 
   static final String PAXOS_ID = "PXS";
 
@@ -40,7 +40,7 @@ public class PaxosManager {
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
    */
-  private  NioServer nioServer;
+  private  GNSNIOTransport nioServer;
 
   /**
    * Object stores all paxos instances.
@@ -96,21 +96,23 @@ public class PaxosManager {
 
   FailureDetection failureDetection;
 
+  private boolean initialized = false;
 
   /********************BEGIN: public methods for paxos manager********************/
 
-  public PaxosManager(int numberOfNodes, int nodeID, NioServer nioServer, PaxosInterface outputHandler,
-                      ScheduledThreadPoolExecutor executorService, String paxosLogFolder) {
+  public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransport nioServer,
+                              PaxosInterface outputHandler, PaxosConfig paxosConfig) {
+    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
+    int numberOfNodes = nodeConfig.getNodeCount();
+
+    this.executorService = new ScheduledThreadPoolExecutor(2);
     this.N = numberOfNodes;
     this.nodeID = nodeID;
     this.nioServer = nioServer;
-
     this.clientRequestHandler = outputHandler;
 
-    this.executorService = executorService;
-
     // recover previous state if exists using logger
-    paxosLogger = new PaxosLogger(paxosLogFolder, nodeID, this);
+    paxosLogger = new PaxosLogger(paxosConfig.getPaxosLogFolder(), nodeID, this);
     long t0 = System.currentTimeMillis();
     ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.recoverPaxosLogs();
 
@@ -120,19 +122,13 @@ public class PaxosManager {
     paxosLogger.start();
     if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instances: " + paxosInstances.size());
 
-//    if (debug && paxosInstances.size() == 0) createTestPaxosInstance();
-
-
     GNS.getLogger().info("Paxos manager initialization complete");
 
-  }
-
-  public void startPaxos(int failureDetectionPing, int failureDetectionTimeout) {
-
-    failureDetection = new FailureDetection(N, nodeID, executorService, this, failureDetectionPing,
-            failureDetectionTimeout);
+    failureDetection = new FailureDetection(N, nodeID, executorService, this, paxosConfig.getFailureDetectionPingMillis(),
+            paxosConfig.getFailureDetectionTimeoutMillis());
     startAllPaxosReplicas();
     startPaxosMaintenanceActions();
+    initialized = true;
   }
 
   /**
@@ -141,7 +137,7 @@ public class PaxosManager {
    * @param nodeID ID of this node
    */
   public PaxosManager(String testConfigFile, int nodeID) {
-
+    super(nodeID, null, null, null, null); // this wont work!
 //    debug = true;
     TestConfig testConfig1= new TestConfig(testConfigFile);
     this.N = testConfig1.numPaxosReplicas;
@@ -149,7 +145,7 @@ public class PaxosManager {
 
     this.nioServer =  initTransport(testConfig1.numPaxosReplicas + 1,  testConfig1.startingPort);
 
-    clientRequestHandler = new DefaultPaxosInterface(nodeID, nioServer);
+    this.clientRequestHandler = new DefaultPaxosInterface(nodeID, nioServer);
 
     this.executorService = new ScheduledThreadPoolExecutor(testConfig1.maxThreads);
     failureDetection = new FailureDetection(N, nodeID, executorService, this, 1000000, 3000000);
@@ -169,7 +165,9 @@ public class PaxosManager {
   /**
    * Adds a new Paxos instance to the set of actives.
    */
-  public  boolean createPaxosInstance(String paxosID, Set<Integer> nodeIDs, String initialState) {
+  public  boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, String initialState) {
+
+    String paxosID = getPaxosIDWithVersionNumber(paxosIDNoVersion, version);
 
     if(StartNameServer.debugMode) GNS.getLogger().info(paxosID + "\tEnter createPaxos");
     if (nodeIDs.size() < 3) {
@@ -228,13 +226,13 @@ public class PaxosManager {
   /**
    *
    */
-  void startResendPendingMessages() {
+  protected void startResendPendingMessages() {
     ResendPendingMessagesTask task = new ResendPendingMessagesTask(this);
     // single time execution
     executorService.schedule(task, RESEND_PENDING_MSG_INTERVAL_MILLIS,TimeUnit.MILLISECONDS);
   }
 
-  PaxosReplicaInterface createPaxosReplicaObject(String paxosID, int nodeID, Set<Integer> nodeIDs1) {
+  protected PaxosReplicaInterface createPaxosReplicaObject(String paxosID, int nodeID, Set<Integer> nodeIDs1) {
     return new PaxosReplica(paxosID, nodeID, nodeIDs1, this);
   }
 
@@ -253,7 +251,7 @@ public class PaxosManager {
         GNS.getLogger().info(" Proposing to  " + replica.getPaxosID());
         replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
       } catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        e.printStackTrace();  
       }
       return replica.getPaxosID();
     }
@@ -279,25 +277,17 @@ public class PaxosManager {
    * @param nodeID  ID of node to be tested
    * @return <code>true</code> if failure detector tells node is up
    */
-  public  boolean isNodeUp(int nodeID) {
+  public boolean isNodeUp(int nodeID) {
     if (failureDetection == null) return true;
     return failureDetection.isNodeUp(nodeID);
   }
 
-  /**
-   * Returns -1 if failure detection not initialized, otherwise returns timeout for failure detection.
-   * @return
-   */
-  public int getFailureDetectionTimeout() {
-    if (failureDetection == null) return -1;
-    return failureDetection.timeoutIntervalMillis;
-  }
 
   /**
    * Handle incoming message, incoming message could be of any Paxos instance.
    * @param json json obejct received
    */
-  public  void handleIncomingPacket(JSONObject json) throws JSONException {
+  public  void handleIncomingPacket(JSONObject json) {
 
     int incomingPacketType;
     try {
@@ -312,7 +302,7 @@ public class PaxosManager {
         try {
           paxosLogger.logMessage(new LoggingCommand(json.getString(PAXOS_ID), json, LoggingCommand.LOG_AND_EXECUTE));
         } catch (JSONException e) {
-          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+          e.printStackTrace();  
         }
 
         break;
@@ -337,7 +327,17 @@ public class PaxosManager {
   }
 
   String getPaxosKeyFromPaxosID(String paxosID) {
-    return clientRequestHandler.getPaxosKeyForPaxosID(paxosID);
+    return getPaxosIDNoVersion(paxosID);
+  }
+
+  private String getPaxosIDWithVersionNumber(String paxosIDNoVersion, int version) {
+    return paxosIDNoVersion + ":" + version;
+  }
+
+  private String getPaxosIDNoVersion(String paxosID) {
+    int index = paxosID.lastIndexOf(":");
+    if (index == -1) return paxosID;
+    return paxosID.substring(0, index);
   }
 
   /**
@@ -369,7 +369,7 @@ public class PaxosManager {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destID, json);
     } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();  
     }
 
   }
@@ -379,7 +379,7 @@ public class PaxosManager {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destIDs, json);
     } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();  
     }
 
   }
@@ -389,7 +389,7 @@ public class PaxosManager {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destIDs, json, excludeID);
     } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();  
     }
 
   }
@@ -474,14 +474,14 @@ public class PaxosManager {
     Set<Integer> x = new HashSet<Integer>();
     for (int i = 0;  i < N; i++)
       x.add(i);
-    createPaxosInstance(testPaxosID, x, clientRequestHandler.getState(testPaxosID));
+    createPaxosInstance(testPaxosID, 0, x, clientRequestHandler.getState(testPaxosID));
   }
 
   /**
    * initialize transport object during Paxos debugging/testing
    *
    */
-  private  NioServer initTransport(int numNodes, int startingPort) {
+  private  GNSNIOTransport initTransport(int numNodes, int startingPort) {
 
     // demux object for paxos
     PaxosPacketDemultiplexer paxosDemux = new PaxosPacketDemultiplexer(this);
@@ -490,14 +490,14 @@ public class PaxosManager {
     PaxosNodeConfig config = new PaxosNodeConfig(numNodes, startingPort);
 
 
-    NioServer tcpTransportLocal = null;
+    GNSNIOTransport tcpTransportLocal = null;
     try {
       GNS.getLogger().fine(" Node ID is " + nodeID);
 
-      ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
-      tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
-//      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
-//      tcpTransportLocal = new NioServer(nodeID, config, jsonMessageWorker);
+//      ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
+//      tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
+      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
+      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
 
 
       if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID);
@@ -506,7 +506,7 @@ public class PaxosManager {
       new Thread(tcpTransportLocal).start();
     } catch (IOException e) {
       GNS.getLogger().severe(" Could not initialize TCP socket at client");
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();  
     }
     return tcpTransportLocal;
   }
@@ -528,7 +528,7 @@ public class PaxosManager {
 
       }
 //      GNS.getLogger().fine("Sending message to " + destID + "\t" + json);
-      nioServer.sendToID(destID, json);
+      if (initialized) nioServer.sendToID(destID, json);
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to ID. " + destID);
@@ -543,7 +543,7 @@ public class PaxosManager {
       if (!debug) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
-      nioServer.sendToIDs(destIDs, json);
+      if (initialized) nioServer.sendToIDs(destIDs, json);
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. " + destIDs);
@@ -558,7 +558,7 @@ public class PaxosManager {
       if (!debug) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
-      nioServer.sendToIDs(destIDs, json, excludeID);
+      if (initialized) nioServer.sendToIDs(destIDs, json, excludeID);
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. ");
@@ -604,11 +604,7 @@ class PaxosPacketDemultiplexer extends PacketDemultiplexer {
   public void handleJSONObjects(ArrayList jsonObjects) {
     for (Object j: jsonObjects) {
       JSONObject json = (JSONObject)j;
-      try {
         paxosManager.handleIncomingPacket(json);
-      } catch (JSONException e) {
-        e.printStackTrace();
-      }
     }
   }
 }
@@ -637,7 +633,7 @@ class HandlePaxosMessageTask extends TimerTask {
       try {
         paxosID = json.getString(PaxosManager.PAXOS_ID);
       } catch (JSONException e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        e.printStackTrace();  
         return;
       }
 
