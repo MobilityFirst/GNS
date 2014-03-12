@@ -4,7 +4,7 @@ import sys
 # *** MUST set values of 'gnrs_jar' and 'working_dir' ***
 
 # gns jar
-gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS-document/dist/GNS.jar'
+gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS-latest/dist/GNS.jar'
 
 # top level folder
 working_dir = '/Users/abhigyan/Documents/gns_output/'  # location of top-level folder checked out from SVN.
@@ -25,7 +25,7 @@ trace_folder = working_dir + '/local/trace/'
 # parameters used only by scripts for running experiments
 experiment_run_time = 1    # duration of experiment (seconds)
 
-delete_paxos_log = True   # if True, delete all paxos logs before starting a new experiment. if False, recover data from logs.
+delete_paxos_log = True   # if True, delete old paxos logs. if False, recover data from logs, if they exist.
 
 start_db = False   #
 

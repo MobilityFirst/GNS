@@ -3,12 +3,12 @@ import os, sys
 ############### UPDATE VALUES BELOW ####################
 
 # values of these variables are pathnames on the machine where the script is running
-output_folder = '/home/abhigyan/gnrs/results/jan30/gns_output2/'  # path where output from experiment will be stored
-ns_file = '/home/abhigyan/gnrs/pkg_data/pl_ns'  # file with list of name servers (one per line)
-lns_file = '/home/abhigyan/gnrs/pkg_data/pl_lns'  # file with list of local name servers (one per line)
+output_folder = '/home/abhigyan/gnrs/results/jan30/gns_output/'  # path where output from experiment will be stored
+ns_file = '/home/abhigyan/gnrs/planetlab/nodes/pl_ns'  # file with list of name servers (one per line)
+lns_file = '/home/abhigyan/gnrs/planetlab/nodes/pl_lns'  # file with list of local name servers (one per line)
 
-user = 'ec2-user'  # user name to log in to every machine
-ssh_key = '/home/abhigyan/ec2/id_rsa'  # ssh key used for logging into remote machine
+user = 'umass_nameservice'  # user name to log in to every machine
+ssh_key = '/home/abhigyan/.ssh/id_rsa'  # ssh key used for logging into remote machine
 jar_file = '/home/abhigyan/gnrs/GNS.jar'  # path of the GNS jar on local machine,
 
 # values of these variables are pathnames on the remote machine
@@ -49,7 +49,7 @@ extra_wait = 30
 failed_nodes = None
 
 scheme = 'locality'
-schemes = {'beehive':0, 'locality':1, 'uniform':2, 'static3':3, 'replicate_all':4}
+schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_all': 4}
 
 debug_mode = False
 
