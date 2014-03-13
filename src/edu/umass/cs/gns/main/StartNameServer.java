@@ -91,6 +91,8 @@ public class StartNameServer {
 
   public static final String FAILURE_DETECTION_TIMEOUT_INTERVAL = "failureDetectionTimeoutInterval";
 
+  public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
+
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
 
   public static final String VARIATION = "variation";
@@ -161,6 +163,7 @@ public class StartNameServer {
   // Don't be surprised if things break when this is set to true. - Westy
   public static boolean eventualConsistency = false;
 
+  public static boolean useGNSNIOTransport = false;
   public static boolean emulatePingLatencies = false;
   public static double variation = 0.1;
   public static int workerThreadCount = 5; // number of worker threads
@@ -278,6 +281,8 @@ public class StartNameServer {
 
     Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec", true, "paxos starts at most this many seconds after start of experiment");
 
+    Option useGNSNIOTransport = new Option(USE_GNS_NIO_TRANSPORT, "if true, we use class GNSNIOTransport.java, else use NioServer.java");
+
     Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "add packet delay equal to ping delay between two servers (used for emulation).");
     Option variation = new Option(VARIATION, true, "variation");
 
@@ -366,6 +371,8 @@ public class StartNameServer {
     commandLineOptions.addOption(failureDetectionTimeoutInterval);
     commandLineOptions.addOption(paxosStartMinDelaySec);
     commandLineOptions.addOption(paxosStartMaxDelaySec);
+
+    commandLineOptions.addOption(useGNSNIOTransport);
     commandLineOptions.addOption(emulatePingLatencies);
     commandLineOptions.addOption(variation);
 
@@ -486,21 +493,6 @@ public class StartNameServer {
       }
 //      System.out.println("All values: " + allValues);
 
-//      id = Integer.parseInt(parser.getOptionValue("id", Integer.toString(id)));
-//      nsFile = parser.getOptionValue("nsfile", nsFile);
-//
-//      GNS.numPrimaryReplicas = Integer.parseInt(parser.getOptionValue("primary", Integer.toString(GNS.DEFAULT_NUM_PRIMARY_REPLICAS)));
-//      aggregateInterval = Integer.parseInt(parser.getOptionValue("aInterval", DEFAULTAGGREGATEINTERVAL)) * 1000;
-//      analysisInterval = Integer.parseInt(parser.getOptionValue("rInterval", DEFAULTANALYSISINTERVAL)) * 1000;
-//      normalizingConstant = Double.parseDouble(parser.getOptionValue("nconstant", DEFAULTNORMALIZINGCONSTANT));
-//      movingAverageWindowSize = Integer.parseInt(parser.getOptionValue("mavg", DEFAULTMOVINGAVERAGEWINDOWSIZE));
-//
-//      ttlConstant = Double.parseDouble(parser.getOptionValue("ttlconstant", DEFAULTTTLCONSTANT));
-//      TTLRegularName = Integer.parseInt(parser.getOptionValue("rttl", DEFAULTTTLREGULARNAME));
-//      TTLMobileName = Integer.parseInt(parser.getOptionValue("mttl", DEFAULTTTLMOBILENAME));
-//
-//      regularWorkloadSize = Integer.parseInt(parser.getOptionValue("rworkload", DEFAULTREGULARWORKLOADSIZE));
-//      mobileWorkloadSize = Integer.parseInt(parser.getOptionValue("mworkload", DEFAULTMOBILEMOBILEWORKLOADSIZE));
 
 
       id = allValues.containsKey(ID) ? Integer.parseInt(allValues.get(ID)) : id;
@@ -596,6 +588,10 @@ public class StartNameServer {
 //        paxosStartMinDelaySec = Integer.parseInt(allValues.get("paxosStartMinDelaySec"));
 //        paxosStartMaxDelaySec = Integer.parseInt(allValues.get("paxosStartMaxDelaySec"));
 //      }
+
+      if (allValues.containsKey(USE_GNS_NIO_TRANSPORT)) {
+        useGNSNIOTransport = allValues.containsKey(USE_GNS_NIO_TRANSPORT) && Boolean.parseBoolean(allValues.get(USE_GNS_NIO_TRANSPORT));
+      }
 
       if (allValues.containsKey(EMULATE_PING_LATENCIES)) {
         emulatePingLatencies = allValues.containsKey(EMULATE_PING_LATENCIES) && Boolean.parseBoolean(allValues.get(EMULATE_PING_LATENCIES));

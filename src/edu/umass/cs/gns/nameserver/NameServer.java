@@ -7,10 +7,7 @@ import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageWorker;
-import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.ping.PingManager;
@@ -30,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class NameServer {
 
   /**
-   * Nameserver's id *
+   * Name server's id *
    */
   private static int nodeID;
   /**
@@ -41,8 +38,9 @@ public class NameServer {
   private static BasicRecordMap replicaController;
   private static ReplicationFrameworkInterface replicationFramework;
   private static MovingAverage loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
-  private static NioServer tcpTransport;
-//  private static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
+
+  private static GNSNIOTransportInterface tcpTransport;
+
   private static NSPacketDemultiplexer nsDemultiplexer;
   private static Timer timer = new Timer();
   private static ScheduledThreadPoolExecutor executorService;
@@ -76,7 +74,11 @@ public class NameServer {
 
     // database must be initialized before creating paxos manager. during recovery process, paxos manager interacts
     // with database
-    initializeTransportObjectsAndPaxosManager();
+    initializeTransportObjects();
+
+    initializePaxosManager();
+
+    createPrimaryPaxosInstances();
 
     if (StartNameServer.experimentMode) {
       loadRecordsBeforeExperiments();
@@ -100,6 +102,7 @@ public class NameServer {
   }
 
   /**** Begin methods for initializing different components of name server ***/
+
   private void initializeDatabase() {
     // THIS IS WHERE THE NAMESERVER DELEGATES TO THE APPROPRIATE BACKING STORE
     NameServer.recordMap = (BasicRecordMap) Util.createObject(StartNameServer.dataStore.getClassName(),
@@ -138,7 +141,11 @@ public class NameServer {
     }
   }
 
-  private void initializeTransportObjectsAndPaxosManager() throws IOException {
+  /**
+   * Creates TCP and UDP transport objects.
+   * @throws IOException
+   */
+  private void initializeTransportObjects() throws IOException {
 
     // Create the demultiplexer object. This is used by both TCP and UDP.
     nsDemultiplexer = new NSPacketDemultiplexer();
@@ -146,16 +153,14 @@ public class NameServer {
     // Start listening on UDP socket.
     new NSListenerUDP().start();
 
-    // create a TCP transport object because we need to pass it to paxos manager.
-    // Don't start the listening socket because paxos manager is not initialized yet. Another reason is that
-    // we are still doing log recovery and don't want to process new messages.
-
-    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
-    tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
-
     // Abhigyan: we are testing with GNSNIOTransport so keeping this code here
-//    JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
-//    tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
+    if (StartNameServer.useGNSNIOTransport) {
+      JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
+      tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
+    } else {
+      ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
+      tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
+    }
 
     if (StartNameServer.experimentMode) {
       try {
@@ -167,6 +172,12 @@ public class NameServer {
     // start listening socket
     new Thread(tcpTransport).start();
 
+  }
+
+  /**
+   * Create the paxos manager object which will recover from logs and start the failure detector.
+   */
+  private void initializePaxosManager() throws IOException {
 
     PaxosConfig paxosConfig = new PaxosConfig();
     paxosConfig.setFailureDetectionPingMillis(StartNameServer.failureDetectionPingInterval);
@@ -176,16 +187,11 @@ public class NameServer {
     paxosManager = new PaxosManager(nodeID, new NameServerNodeConfig(), tcpTransport,
             new NSPaxosInterface(), paxosConfig);
 
-//    paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
-//            new NSPaxosInterface(), executorService, StartNameServer.paxosLogFolder);
-
-//    // now listening socket is running, start failure detector and other process in paxos which require sending messages.
-//    paxosManager.startPaxos(StartNameServer.failureDetectionPingInterval, StartNameServer.failureDetectionTimeoutInterval);
-
-    createPrimaryPaxosInstances();
-
   }
 
+  /**
+   * In experiment mode, this will load all name records at the start of the experiment.
+   */
   private void loadRecordsBeforeExperiments() {
     if (StartNameServer.experimentMode) {
 
@@ -211,7 +217,7 @@ public class NameServer {
     return initialDelayMillis;
   }
 
-  public static void createPrimaryPaxosInstances() {
+  private static void createPrimaryPaxosInstances() {
 
     HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
 
@@ -247,7 +253,7 @@ public class NameServer {
    */
   public static void returnToSender(JSONObject json, int recipientId) {
     try {
-      NameServer.tcpTransport.sendToIDActual(recipientId, json);
+      NameServer.tcpTransport.sendToID(recipientId, json);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -299,7 +305,7 @@ public class NameServer {
   /**
    * @return the tcpTransport
    */
-  public static NioServer getTcpTransport() {
+  public static GNSNIOTransportInterface getTcpTransport() {
     return tcpTransport;
   }
 

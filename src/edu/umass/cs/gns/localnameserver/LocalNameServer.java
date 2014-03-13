@@ -13,8 +13,7 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
@@ -66,8 +65,8 @@ public class LocalNameServer {
    * Unique and random query ID *
    */
   private static Random random;
-  private static NioServer tcpTransport;
-//  private static GNSNIOTransport tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
+  private static GNSNIOTransportInterface tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
+
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
@@ -135,11 +134,12 @@ public class LocalNameServer {
       GNS.getLogger().fine("LNS listener started.");
     }
 
-    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
-
-    // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-//    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
-//    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
+    if (StartLocalNameServer.useGNSNIOTransport) {
+      // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
+      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), new JSONMessageWorker(new LNSPacketDemultiplexer()));
+    } else {
+      tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+    }
 
     if (StartLocalNameServer.experimentMode) {
       long initialExpDelayMillis = 40000;
@@ -193,8 +193,8 @@ public class LocalNameServer {
    * @return A unique id for the query
    */
   public static int addDNSRequestInfo(String name, NameRecordKey recordKey,
-          int nameserverID, long time, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, int numRestarts) {
+                                      int nameserverID, long time, String queryStatus, int lookupNumber,
+                                      DNSPacket incomingPacket, int numRestarts) {
     int id;
     //Generate unique id for the query
     do {
@@ -210,7 +210,7 @@ public class LocalNameServer {
   }
 
   public static int addUpdateInfo(String name, int nameserverID, long time,
-          int numRestarts, UpdateAddressPacket updateAddressPacket) {
+                                  int numRestarts, UpdateAddressPacket updateAddressPacket) {
     int id;
     //Generate unique id for the query
     do {
@@ -605,6 +605,7 @@ public class LocalNameServer {
   }
 
   /********************** END: methods that read/write to the cache at the local name server ****************/
+
   /*********************BEGIN: methods for sending packets to name servers. ********************************/
   /**
    * Send packet to NS after all packet
@@ -641,6 +642,7 @@ public class LocalNameServer {
   }
 
   /*********************END: methods for sending packets to name servers. ********************************/
+
   /*********************BEGIN: methods for monitoring load at name servers. ********************************/
   private void initializeNameServerLoadMonitoring() {
     nameServerLoads = new ConcurrentHashMap<Integer, Double>();

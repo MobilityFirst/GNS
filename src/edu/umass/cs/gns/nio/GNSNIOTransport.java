@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * 
  */
-public class GNSNIOTransport extends NIOTransport {
+public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInterface{
 	
 	Timer timer = new Timer();
 	
@@ -78,19 +78,19 @@ public class GNSNIOTransport extends NIOTransport {
 		return written;
 	}
 
-    /* FIXME: This method returns a meaningless value. Need to get 
+    /* FIXME: This method returns a meaningless value. Need to get
      * return value from task scheduled in the future, so we need
      * to use Executor instead of Timer in GNSDelayEmulator.
      */
 	public int sendToID(int id, JSONObject jsonData) throws IOException {
 		GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
-		return jsonData.length(); 
+		return jsonData.length();
 	}
 
 	/* This method adds a header only if a socket channel is used to send to
 	 * a remote node, otherwise it hands over the message directly to the worker.
 	 */
-	public int sendToIDActual(int destID, JSONObject jsonData) throws IOException {
+	protected int sendToIDActual(int destID, JSONObject jsonData) throws IOException {
 		int written = 0;
 		if(destID==this.myID) {
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();

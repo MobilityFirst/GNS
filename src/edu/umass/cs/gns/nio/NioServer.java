@@ -29,7 +29,7 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NioServer implements Runnable {
+public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   public static String Version = "$Revision$";
   
@@ -158,15 +158,17 @@ public class NioServer implements Runnable {
 //        return sendToID(destID, destPort, json);
 //    }
 
-  public void sendToIDs(Set<Integer> destIDs, JSONObject json) throws IOException {
+  public int sendToIDs(Set<Integer> destIDs, JSONObject json) throws IOException {
     sendToIDs(destIDs, json, -1);
+    return 0;
   }
 
-  public void sendToIDs(short[] destIDs, JSONObject json) throws IOException {
+  public int sendToIDs(short[] destIDs, JSONObject json) throws IOException {
     sendToIDs(destIDs, json, -1);
+    return 0;
   }
 
-  public void sendToIDs(short[]destIDs, JSONObject json, int excludeID) throws IOException {
+  public int sendToIDs(short[]destIDs, JSONObject json, int excludeID) throws IOException {
 //    if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
 //      ArrayList e = new ArrayList();
 //      e.add(json);
@@ -185,9 +187,10 @@ public class NioServer implements Runnable {
       }
       sendToID(destID, json);
     }
+    return 0;
   }
 
-  public void sendToIDs(Set<Integer> destIDs, JSONObject json, int excludeID) throws IOException {
+  public int sendToIDs(Set<Integer> destIDs, JSONObject json, int excludeID) throws IOException {
     if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
       ArrayList e = new ArrayList();
       e.add(json);
@@ -198,6 +201,7 @@ public class NioServer implements Runnable {
       if (destID == ID || destID == excludeID) continue;
       sendToID(destID, json);
     }
+    return 0;
 
 ////        System.out.println(" Here in sendtoIDs");
 //    String s = json.toString();
@@ -250,25 +254,26 @@ public class NioServer implements Runnable {
 //        sendToID(destID, json);
 //      }
 //    }
+
   }
 
   private Random random = new Random();
 
-  public boolean sendToID(int destID, JSONObject json) throws IOException {
+  public int sendToID(int destID, JSONObject json) throws IOException {
     if (StartNameServer.emulatePingLatencies) {
       long delay = ConfigFileInfo.getPingLatency(destID);
       delay = (long) ((1.0  + StartNameServer.variation * random.nextDouble()) * delay);
       //    GNS.getLogger().severe("Delaying packet by " + delay + "ms");
       SendQueryWithDelay2 timerObject = new SendQueryWithDelay2(this, destID, json);
       t.schedule(timerObject, delay/2);
-      return true;
+      return 0;
     } else {
       sendToIDActual(destID,json);
-      return true;
+      return 0;
     }
   }
 
-  public boolean sendToIDActual(int destID, JSONObject json) throws IOException {
+  boolean sendToIDActual(int destID, JSONObject json) throws IOException {
 
     if (destID == ID) { // to send to same node, directly call the demultiplexer
       ArrayList e = new ArrayList();

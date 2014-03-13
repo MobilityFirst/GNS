@@ -112,7 +112,7 @@ public class StartLocalNameServer {
 
   public static final String STAT_CONSOLE_OUTPUT_LEVEL = "statConsoleOutputLevel";
 
-  public static final String TINY_QUERY = "tinyQuery";
+  public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
 
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
 
@@ -200,7 +200,8 @@ public class StartLocalNameServer {
    */
   public static double serverLoadThreshold = 5.0; //
 
-  public static boolean tinyQuery = false;
+
+  public static boolean useGNSNIOTransport = false;
 
   /**
    *
@@ -253,8 +254,9 @@ public class StartLocalNameServer {
     Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "statFileLoggingLevel");
     Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "statConsoleOutputLevel");
 
-    Option tinyQuery = new Option(TINY_QUERY, "tiny query mode");
-    Option delayScheduling = new Option(EMULATE_PING_LATENCIES, "add packet delay equal to ping delay between two servers (used for emulation).");
+    Option useGNSNIOTransport = new Option(USE_GNS_NIO_TRANSPORT, "if true, we use class GNSNIOTransport.java, else use NioServer.java");
+
+    Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "add packet delay equal to ping delay between two servers (used for emulation).");
     Option variation = new Option(VARIATION, true, "variation");
 
     Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
@@ -376,8 +378,8 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(consoleOutputLevel);
     commandLineOptions.addOption(statConsoleOutputLevel);
     commandLineOptions.addOption(statFileLoggingLevel);
-    commandLineOptions.addOption(tinyQuery);
-    commandLineOptions.addOption(delayScheduling);
+    commandLineOptions.addOption(useGNSNIOTransport);
+    commandLineOptions.addOption(emulatePingLatencies);
     commandLineOptions.addOption(variation);
 
     CommandLineParser parser = new GnuParser();
@@ -583,9 +585,8 @@ public class StartLocalNameServer {
         GNS.statConsoleOutputLevel = allValues.get(STAT_CONSOLE_OUTPUT_LEVEL);
       }
 
-      if (allValues.containsKey(TINY_QUERY) && Boolean.parseBoolean(allValues.get(TINY_QUERY))) {
-        tinyQuery = allValues.containsKey(TINY_QUERY);
-      }
+      useGNSNIOTransport =  allValues.containsKey(USE_GNS_NIO_TRANSPORT) &&
+              Boolean.parseBoolean(allValues.get(USE_GNS_NIO_TRANSPORT));
 
       emulatePingLatencies = allValues.containsKey(EMULATE_PING_LATENCIES) &&
               Boolean.parseBoolean(allValues.get(EMULATE_PING_LATENCIES));

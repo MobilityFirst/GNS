@@ -40,7 +40,7 @@ public class PaxosManager {
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
    */
-  private  NioServer nioServer;
+  private  GNSNIOTransportInterface nioServer;
 
   /**
    * Object stores all paxos instances.
@@ -100,7 +100,7 @@ public class PaxosManager {
 
   /********************BEGIN: public methods for paxos manager********************/
 
-  public PaxosManager(int nodeID, NodeConfig nodeConfig, NioServer nioServer,
+  public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransportInterface nioServer,
                               PaxosInterface outputHandler, PaxosConfig paxosConfig) {
 //    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
     int numberOfNodes = nodeConfig.getNodeCount();
