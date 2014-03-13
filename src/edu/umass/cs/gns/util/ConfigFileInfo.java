@@ -24,13 +24,11 @@ public class ConfigFileInfo {
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
-  private static ConcurrentMap<Integer, HostInfo> hostInfoMapping =
-          new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
+  private static ConcurrentMap<Integer, HostInfo> hostInfoMapping = new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
   /**
    * A subset of the above with just the ids of the nameservers, not the LNSs
    */
-  private static ConcurrentMap<Integer, Integer> nameServerMapping =
-          new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
+  private static ConcurrentMap<Integer, Integer> nameServerMapping = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
   /**
    * Number of name server in the system *
    */

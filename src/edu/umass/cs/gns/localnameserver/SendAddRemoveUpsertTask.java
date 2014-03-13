@@ -38,8 +38,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   private int timeoutCount = -1;
   private long requestRecvdTime;
 
-  public SendAddRemoveUpsertTask(BasicPacket packet, String name,
-                                 long requestRecvdTime,
+  public SendAddRemoveUpsertTask(BasicPacket packet, String name, long requestRecvdTime,
                                  HashSet<Integer> primariesQueried) {
     this.name = name;
     this.packet = packet;
@@ -130,6 +129,8 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   private void sendToNS(int nameServerID) {
 
     if (nameServerID == -1) return;
+
+    primariesQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {
       updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, null);

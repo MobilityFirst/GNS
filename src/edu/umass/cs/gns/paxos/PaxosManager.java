@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  *
  */
-public class PaxosManager extends AbstractPaxosManager {
+public class PaxosManager {
 
   static final String PAXOS_ID = "PXS";
 
@@ -40,7 +40,7 @@ public class PaxosManager extends AbstractPaxosManager {
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
    */
-  private  GNSNIOTransport nioServer;
+  private  NioServer nioServer;
 
   /**
    * Object stores all paxos instances.
@@ -100,9 +100,9 @@ public class PaxosManager extends AbstractPaxosManager {
 
   /********************BEGIN: public methods for paxos manager********************/
 
-  public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransport nioServer,
+  public PaxosManager(int nodeID, NodeConfig nodeConfig, NioServer nioServer,
                               PaxosInterface outputHandler, PaxosConfig paxosConfig) {
-    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
+//    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
     int numberOfNodes = nodeConfig.getNodeCount();
 
     this.executorService = new ScheduledThreadPoolExecutor(2);
@@ -137,9 +137,9 @@ public class PaxosManager extends AbstractPaxosManager {
    * @param nodeID ID of this node
    */
   public PaxosManager(String testConfigFile, int nodeID) {
-    super(nodeID, null, null, null, null); // this wont work!
+//    super(nodeID, null, null, null, null); // TODO not sure if this will work?
 //    debug = true;
-    TestConfig testConfig1= new TestConfig(testConfigFile);
+    TestConfig testConfig1 = new TestConfig(testConfigFile);
     this.N = testConfig1.numPaxosReplicas;
     this.nodeID = nodeID;
 
@@ -160,6 +160,7 @@ public class PaxosManager extends AbstractPaxosManager {
     createTestPaxosInstance(testConfig1.testPaxosID);
 
     startPaxosMaintenanceActions();
+
   }
 
   /**
@@ -481,7 +482,7 @@ public class PaxosManager extends AbstractPaxosManager {
    * initialize transport object during Paxos debugging/testing
    *
    */
-  private  GNSNIOTransport initTransport(int numNodes, int startingPort) {
+  private  NioServer initTransport(int numNodes, int startingPort) {
 
     // demux object for paxos
     PaxosPacketDemultiplexer paxosDemux = new PaxosPacketDemultiplexer(this);
@@ -490,14 +491,14 @@ public class PaxosManager extends AbstractPaxosManager {
     PaxosNodeConfig config = new PaxosNodeConfig(numNodes, startingPort);
 
 
-    GNSNIOTransport tcpTransportLocal = null;
+    NioServer tcpTransportLocal = null;
     try {
       GNS.getLogger().fine(" Node ID is " + nodeID);
 
-//      ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
-//      tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
-      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
-      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
+      ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
+      tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
+//      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
+//      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
 
 
       if (StartNameServer.debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID);

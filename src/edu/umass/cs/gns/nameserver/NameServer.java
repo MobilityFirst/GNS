@@ -41,8 +41,8 @@ public class NameServer {
   private static BasicRecordMap replicaController;
   private static ReplicationFrameworkInterface replicationFramework;
   private static MovingAverage loadMonitor = new MovingAverage(StartNameServer.loadMonitorWindow);
-//  private static NioServer tcpTransport;
-  private static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
+  private static NioServer tcpTransport;
+//  private static GNSNIOTransport tcpTransport; // Abhigyan: we are testing with GNSNIOTransport so keeping this field here
   private static NSPacketDemultiplexer nsDemultiplexer;
   private static Timer timer = new Timer();
   private static ScheduledThreadPoolExecutor executorService;
@@ -150,13 +150,12 @@ public class NameServer {
     // Don't start the listening socket because paxos manager is not initialized yet. Another reason is that
     // we are still doing log recovery and don't want to process new messages.
 
-//    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
-//    tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
+    ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
+    tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
 
     // Abhigyan: we are testing with GNSNIOTransport so keeping this code here
-    JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
-    tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
-
+//    JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
+//    tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
 
     if (StartNameServer.experimentMode) {
       try {
@@ -174,7 +173,7 @@ public class NameServer {
     paxosConfig.setFailureDetectionTimeoutMillis(StartNameServer.failureDetectionTimeoutInterval);
     paxosConfig.setPaxosLogFolder(StartNameServer.paxosLogFolder);
     // Create paxos manager and do log recovery (if logs exist). paxos manager wont send any messages yet.
-    paxosManager = new PaxosManager(nodeID, new GNSNodeConfig(), tcpTransport,
+    paxosManager = new PaxosManager(nodeID, new NameServerNodeConfig(), tcpTransport,
             new NSPaxosInterface(), paxosConfig);
 
 //    paxosManager = new PaxosManager(ConfigFileInfo.getNumberOfNameServers(), nodeID, tcpTransport,
@@ -300,7 +299,7 @@ public class NameServer {
   /**
    * @return the tcpTransport
    */
-  public static GNSNIOTransport getTcpTransport() {
+  public static NioServer getTcpTransport() {
     return tcpTransport;
   }
 

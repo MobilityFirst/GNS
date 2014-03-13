@@ -13,8 +13,8 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageWorker;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
@@ -66,8 +66,8 @@ public class LocalNameServer {
    * Unique and random query ID *
    */
   private static Random random;
-//  private static NioServer tcpTransport;
-  private static GNSNIOTransport tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
+  private static NioServer tcpTransport;
+//  private static GNSNIOTransport tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
@@ -135,11 +135,11 @@ public class LocalNameServer {
       GNS.getLogger().fine("LNS listener started.");
     }
 
-//    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+    tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
 
     // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
-    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
+//    JSONMessageWorker worker = new JSONMessageWorker(new LNSPacketDemultiplexer());
+//    tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), worker);
 
     if (StartLocalNameServer.experimentMode) {
       long initialExpDelayMillis = 40000;
@@ -614,9 +614,11 @@ public class LocalNameServer {
   public static void sendToNS(JSONObject json, int ns) {
 
     if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
-      double latency = ConfigFileInfo.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation);
+      // packets from LNS to NS will be delayed by twice the one-way latency because we do not have data to emulate
+      // latency on the reverse path from NS to LNS.
+      double latency = (ConfigFileInfo.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation))/2;
       long timerDelay = (long) latency;
-      LocalNameServer.executorService.schedule(new SendQueryWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
+      LocalNameServer.executorService.schedule(new SendMessageWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
     } else {
       sendToNSActual(json, ns);
     }
@@ -631,7 +633,7 @@ public class LocalNameServer {
 //      }
 //    } else { // for large packets,  use TCP
     try {
-      tcpTransport.sendToIDActual(ns, json);
+      tcpTransport.sendToID(ns, json);
     } catch (IOException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
@@ -777,7 +779,7 @@ public class LocalNameServer {
  * When we emulate ping latencies between LNS and NS, this task will actually send packets to NS.
  * See option StartLocalNameServer.emulatePingLatencies
  */
-class SendQueryWithDelay extends TimerTask {
+class SendMessageWithDelay extends TimerTask {
 
   /**
    * Json object to send
@@ -788,7 +790,7 @@ class SendQueryWithDelay extends TimerTask {
    */
   int nameServer;
 
-  public SendQueryWithDelay(JSONObject json, int nameServer) {
+  public SendMessageWithDelay(JSONObject json, int nameServer) {
     this.json = json;
     this.nameServer = nameServer;
   }

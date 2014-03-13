@@ -186,7 +186,7 @@ public class DNSRequestTask extends TimerTask {
   }
 
   private void requestNewActives() {
-    GNS.getLogger().severe("Invalid name server for " + incomingPacket.getGuid());
+    GNS.getLogger().fine("Invalid name server for " + incomingPacket.getGuid());
     if (transmissionCount > 1) {
       LocalNameServer.removeDNSRequestInfo(queryId);
     }
