@@ -70,6 +70,8 @@ public class LocalNameServer {
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
+  private static long initialExpDelayMillis = 30000;
+
   /**
    * @return the executorService
    */
@@ -137,12 +139,15 @@ public class LocalNameServer {
     if (StartLocalNameServer.useGNSNIOTransport) {
       // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
       tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), new JSONMessageWorker(new LNSPacketDemultiplexer()));
+      if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(StartLocalNameServer.variation);
     } else {
-      tcpTransport = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+      NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
+      if (StartLocalNameServer.emulatePingLatencies) nioServer.emulateConfigFileDelays(StartLocalNameServer.variation);
+      tcpTransport = nioServer;
     }
 
     if (StartLocalNameServer.experimentMode) {
-      long initialExpDelayMillis = 40000;
+
       try {
         Thread.sleep(initialExpDelayMillis); // Abhigyan: When multiple LNS are running on same machine, we wait for
         // all lns's to bind to their respective listening port before sending any traffic. Otherwise, another LNS could
@@ -155,10 +160,13 @@ public class LocalNameServer {
     new Thread(tcpTransport).start();
 
     new LNSListenerAdmin().start();
-
-    PingServer.startServerThread(nodeID);
-    GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
-    PingManager.startPinging(nodeID);
+    if (StartLocalNameServer.emulatePingLatencies == false) {
+      // we emulate latencies based on ping latency given in config file,
+      // and do not want ping latency values to be updated
+      PingServer.startServerThread(nodeID);
+      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
+      PingManager.startPinging(nodeID);
+    }
 
     //Periodically send nameserver votes for location based replication
 
@@ -617,8 +625,7 @@ public class LocalNameServer {
     if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
       // packets from LNS to NS will be delayed by twice the one-way latency because we do not have data to emulate
       // latency on the reverse path from NS to LNS.
-      double latency = (ConfigFileInfo.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation))/2;
-      long timerDelay = (long) latency;
+      long timerDelay  = (long) (ConfigFileInfo.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation))/2;
       LocalNameServer.executorService.schedule(new SendMessageWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
     } else {
       sendToNSActual(json, ns);

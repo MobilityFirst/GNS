@@ -595,7 +595,7 @@ public class ReplicaController {
   /************END: Public/private methods related to removing a record from GNS*******************/
   /************START: Public/private methods related to handling failure of a name server node*******************/
   public static void handleNodeFailure(FailureDetectionPacket fdPacket) {
-    if (fdPacket.status == true) {
+    if (fdPacket.status) {
       return; // node was down and it came up, don't worry about that
     }
     int failedNode = fdPacket.responderNodeID;

@@ -98,7 +98,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
         /** Packets sent from LNS **/
         case DNS:     // lookup sent by lns
           if (activeCoordinator == null) {
-            Lookup.executeLookupLocal(new DNSPacket(json), this);
+            msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this);
           } else {
             activeCoordinator.handleRequest(json);
           }

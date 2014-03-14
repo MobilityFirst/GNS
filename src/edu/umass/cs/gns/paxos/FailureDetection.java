@@ -20,12 +20,12 @@ public class FailureDetection{
 	/**
 	 * Frequency of pinging a node.
 	 */
-	 int pingIntervalMillis = 10000;
+	 private int pingIntervalMillis = 10000;
 
   /**
    * Interval after which a node is declared as failed is no response is received
    */
-	 int timeoutIntervalMillis = 30000;
+  private int timeoutIntervalMillis = 30000;
 
 	/**
 	 * number of nodes.
@@ -50,7 +50,7 @@ public class FailureDetection{
 	/**
 	 * 
 	 */
-	 ReentrantLock lock = new ReentrantLock();
+	 private ReentrantLock lock = new ReentrantLock();
 
 //	public DatagramSocket socket;
 
@@ -81,6 +81,9 @@ public class FailureDetection{
      this.paxosManager = paxosManager;
      this.pingIntervalMillis = pingIntervalMillis;
      this.timeoutIntervalMillis = timeoutIntervalMillis;
+     assert this.pingIntervalMillis*3 >= this.timeoutIntervalMillis;
+     GNS.getLogger().info("Failure Detector: Ping Interval: " + this.pingIntervalMillis +
+             " Timeout: " + this.timeoutIntervalMillis);
 		for (int i = 0; i < N; i++) {
 			if (i == nodeID) {
 				nodeStatus.put(nodeID, true);
@@ -352,8 +355,7 @@ class FailureDetectionTask extends TimerTask{
     try{
 		// send a FD packet
 		if (failureDetection.nodeInfo.containsKey(destNodeID)) {
-			if (StartNameServer.debugMode && destNodeID == 0) GNS.getLogger().fine(failureDetection.nodeID
-              + "FD sent request " + destNodeID);
+			GNS.getLogger().fine(failureDetection.nodeID + "FD sent request " + destNodeID);
       failureDetection.paxosManager.sendMessage(destNodeID, json, null);
 		}
 		else {
@@ -376,7 +378,8 @@ class HandleFailureDetectionPacketTask extends TimerTask{
 
     FailureDetectionPacket fdPacket;
 
-  FailureDetection failureDetection;
+    FailureDetection failureDetection;
+
     HandleFailureDetectionPacketTask(JSONObject json, FailureDetection failureDetection) {
       this.failureDetection = failureDetection;
         try {

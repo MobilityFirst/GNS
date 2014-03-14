@@ -21,6 +21,10 @@ import java.util.concurrent.ConcurrentMap;
 public class ConfigFileInfo {
 
   /**
+   * Node ID of this node.
+   */
+  private static int myID;
+  /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
@@ -75,6 +79,7 @@ public class ConfigFileInfo {
    * @throws IOException *
    */
   public static void readHostInfo(String nodeInfoFile, int nameServerID) {
+    myID = nameServerID;
     // Reads in data from a text file containing information about each name server
     // in the system.
     BufferedReader br = null;
@@ -338,12 +343,14 @@ public class ConfigFileInfo {
   }
 
   public static final long INVALID_PING_LATENCY = -1L;
+
   /**
    * Returns the ping latency between a local namserver and a nameserver.
    *
    * @param id Nameserver id
    */
   public static long getPingLatency(int id) {
+    if (id == myID) return 0; // ping latency to the node itself is zero.
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? INVALID_PING_LATENCY : nodeInfo.getPingLatency();
   }

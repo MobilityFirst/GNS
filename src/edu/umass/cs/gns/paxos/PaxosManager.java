@@ -103,10 +103,9 @@ public class PaxosManager {
   public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransportInterface nioServer,
                               PaxosInterface outputHandler, PaxosConfig paxosConfig) {
 //    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
-    int numberOfNodes = nodeConfig.getNodeCount();
 
+    this.N =  nodeConfig.getNodeCount();
     this.executorService = new ScheduledThreadPoolExecutor(2);
-    this.N = numberOfNodes;
     this.nodeID = nodeID;
     this.nioServer = nioServer;
     this.clientRequestHandler = outputHandler;
@@ -346,7 +345,7 @@ public class PaxosManager {
    * Some of them may elect a new co-ordinator.
    */
   void informNodeStatus(FailureDetectionPacket fdPacket) {
-    GNS.getLogger().info("Handling node failure = " + fdPacket.responderNodeID);
+    GNS.getLogger().severe("Handling node failure = " + fdPacket.responderNodeID);
     for (String x: paxosInstances.keySet()) {
       PaxosReplicaInterface r = paxosInstances.get(x);
 

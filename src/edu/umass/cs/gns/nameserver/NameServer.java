@@ -93,10 +93,14 @@ public class NameServer {
 
     timer.schedule(new OutputNodeStats(), 100000, 100000); // write stats about system
     GNS.getLogger().info("Ping server started on port " + ConfigFileInfo.getPingPort(nodeID));
-    PingServer.startServerThread(nodeID);
-    GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
-    PingManager.startPinging(nodeID);
 
+    if (StartNameServer.emulatePingLatencies == false) {
+    // we emulate latencies based on ping latency given in config file,
+    // and do not want ping latency values to be updated
+      PingServer.startServerThread(nodeID);
+      GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
+      PingManager.startPinging(nodeID);
+    }
 
 
   }
@@ -157,9 +161,17 @@ public class NameServer {
     if (StartNameServer.useGNSNIOTransport) {
       JSONMessageWorker worker = new JSONMessageWorker(nsDemultiplexer);
       tcpTransport = new GNSNIOTransport(nodeID, new GNSNodeConfig(), worker);
+      if (StartNameServer.emulatePingLatencies) {
+        GNSDelayEmulator.emulateConfigFileDelays(StartNameServer.variation);
+      }
+
     } else {
       ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(nsDemultiplexer);
-      tcpTransport = new NioServer(nodeID, worker, new GNSNodeConfig());
+      NioServer nioServer = new NioServer(nodeID, worker, new GNSNodeConfig());
+      if (StartNameServer.emulatePingLatencies) {
+        nioServer.emulateConfigFileDelays(StartNameServer.variation);
+      }
+      tcpTransport = nioServer;
     }
 
     if (StartNameServer.experimentMode) {

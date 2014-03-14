@@ -15,12 +15,13 @@ import java.util.List;
 /**
  * Runs tests for a single name server without coordination among multiple replicas.
  * It creates one local name server to send requests.
+ *
  * Created by abhigyan on 2/28/14.
  */
 public class UnreplicatedNameServerTest {
 
   public static void main(String[] args) {
-
+    GNS.statConsoleOutputLevel = GNS.consoleOutputLevel = GNS.fileLoggingLevel = GNS.statFileLoggingLevel = "FINE";
     try {
       String nodeConfigFile = "resources/testCodeResources/singleNStest/node_config_1ns_1lns";
       String nsConfigFile = "resources/testCodeResources/singleNStest/gns-ns.conf";
@@ -41,7 +42,7 @@ public class UnreplicatedNameServerTest {
       testRequest.add(new TestRequest(name, TestRequest.ADD));
       testRequest.add(new TestRequest(name, TestRequest.ADD)); // this should fail
       // todo is there a way to test responses automatically? e.g., do a lookup after update to test if it works.
-//      testRequest.add(new TestRequest(name, TestRequest.LOOKUP));
+      testRequest.add(new TestRequest(name, TestRequest.LOOKUP));
 //      testRequest.add(new TestRequest(name, TestRequest.UPDATE));
 //      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
       new RequestGenerator().generateRequests(testRequest, 1000.0, LocalNameServer.getExecutorService());

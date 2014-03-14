@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nio;
 
-import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONObject;
 
@@ -17,8 +16,8 @@ import java.util.TimerTask;
  */
 public class GNSDelayEmulator {
 
-  private static boolean EMULATE_DELAYS = StartNameServer.emulatePingLatencies;
-  private static double VARIATION = StartNameServer.variation;
+  private static boolean EMULATE_DELAYS = false;
+  private static double VARIATION = 0.1; // 10% variation in latency
   private static boolean USE_CONFIG_FILE_INFO = false; // Enable this after figuring out how to use config file
   private static long DEFAULT_DELAY = 100; // 100ms
 
@@ -55,6 +54,12 @@ public class GNSDelayEmulator {
 
   public static void emulateDelays() {
     GNSDelayEmulator.EMULATE_DELAYS = true;
+  }
+
+  public static void emulateConfigFileDelays(double variation) {
+    GNSDelayEmulator.EMULATE_DELAYS = true;
+    GNSDelayEmulator.VARIATION = variation;
+    GNSDelayEmulator.USE_CONFIG_FILE_INFO = true;
   }
 
   private static long getDelay(int id) {

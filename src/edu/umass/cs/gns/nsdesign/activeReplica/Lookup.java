@@ -68,7 +68,9 @@ public class Lookup {
     // Check the signature and access
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     if (reader != null) { // reader will be null for internal system reads
-      errorCode = signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST);
+      errorCode = NSResponseCode.NO_ERROR;
+      // TODO Abhigyan: assuming signature and ACL check are always successful
+      //signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST);
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
@@ -102,6 +104,7 @@ public class Lookup {
     }
     return msgTask;
   }
+
   private static ArrayList<ColumnField> dnsField = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getDNSPacketFields() {

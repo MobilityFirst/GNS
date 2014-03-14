@@ -12,7 +12,6 @@ package edu.umass.cs.gns.nio;
 /* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONObject;
 
@@ -61,6 +60,10 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   //    private HashMap<Integer, InetAddress> IDToIPMappings;
   private NodeConfig nodeConfig;
 
+  private boolean emulateDelay = false;
+  private double variation = 0.1;
+
+
   public NioServer(int ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
     connectedIDs = new SocketChannel[nodeConfig.getNodeCount()];
     pendingChangeByNode = new boolean[nodeConfig.getNodeCount()];
@@ -87,6 +90,14 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
     this.workerObject = worker;
     this.nodeConfig = nodeConfig;
     t.schedule(new WakeupSelectorTask(this),1,1);
+  }
+
+  /**
+   * After this method is called, we emulate an additional delay in packets sent to all nodes.
+   */
+  public void emulateConfigFileDelays(double variation) {
+    this.emulateDelay = true;
+    this.variation = variation;
   }
 
   void wakeupSelector() {
@@ -258,11 +269,10 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   }
 
   private Random random = new Random();
-
   public int sendToID(int destID, JSONObject json) throws IOException {
-    if (StartNameServer.emulatePingLatencies) {
+    if (emulateDelay) {
       long delay = ConfigFileInfo.getPingLatency(destID);
-      delay = (long) ((1.0  + StartNameServer.variation * random.nextDouble()) * delay);
+      delay = (long) ((1.0  + this.variation * random.nextDouble()) * delay);
       //    GNS.getLogger().severe("Delaying packet by " + delay + "ms");
       SendQueryWithDelay2 timerObject = new SendQueryWithDelay2(this, destID, json);
       t.schedule(timerObject, delay/2);
@@ -543,7 +553,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
     if (numRead == -1) {
       // Remote entity shut the socket down cleanly. Do the
       // same from our end and cancel the channel.
-      if (StartNameServer.debugMode) GNS.getLogger().warning("REMOTE ENTITY SHUT DOWN SOCKET CLEANLY.");
+      GNS.getLogger().warning("REMOTE ENTITY SHUT DOWN SOCKET CLEANLY.");
       key.channel().close();
       key.cancel();
       //

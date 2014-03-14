@@ -577,11 +577,10 @@ public class StartNameServer {
 
       if (allValues.containsKey(FAILURE_DETECTION_MSG_INTERVAL)) {
         failureDetectionPingInterval = Integer.parseInt(allValues.get(FAILURE_DETECTION_MSG_INTERVAL)) * 1000;
-//        PaxosManager.setFailureDetectionPingInterval();
+
       }
       if (allValues.containsKey(FAILURE_DETECTION_TIMEOUT_INTERVAL)) {
-        failureDetectionTimeoutInterval = Integer.parseInt(allValues.get(FAILURE_DETECTION_MSG_INTERVAL)) * 1000;
-//        PaxosManager.setFailureDetectionTimeoutInterval(Integer.parseInt(allValues.get(FAILURE_DETECTION_TIMEOUT_INTERVAL)) * 1000);
+        failureDetectionTimeoutInterval = Integer.parseInt(allValues.get(FAILURE_DETECTION_TIMEOUT_INTERVAL)) * 1000;
       }
 
 //      if (experimentMode) {
