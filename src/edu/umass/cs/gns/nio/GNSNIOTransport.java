@@ -11,6 +11,7 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 
@@ -128,7 +129,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 		int port = 2000;
 		int nNodes=100;
 		SampleNodeConfig snc = new SampleNodeConfig(port);
-		snc.localSetup(nNodes);
+		snc.localSetup(nNodes+2);
 		JSONMessageWorker[] workers = new JSONMessageWorker[nNodes+1];
 		for(int i=0; i<nNodes+1; i++) workers[i] = new JSONMessageWorker(new DefaultPacketDemultiplexer());
 		GNSNIOTransport[] niots = new GNSNIOTransport[nNodes];
@@ -175,7 +176,6 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 			}
 
 			int oneToOneTestNum=1;
-			int concTestNum=25;
 			/*************************************************************************/
 			Thread.sleep(1000);
 			System.out.println("\n\n\nBeginning test of " + oneToOneTestNum*nNodes + 
@@ -220,25 +220,43 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 			
 			/*************************************************************************/
 			Thread.sleep(1000);
-			System.out.println("\n\n\nBeginning test of " + concTestNum*nNodes + " random, concurrent, " +
+			System.out.println("\n\n\nBeginning test of random, concurrent, " +
 			" any-to-any messages with emulated delays");
 			Thread.sleep(1000);
 			/*************************************************************************/			
 			
-			for(int i=0; i<nNodes*concTestNum; i++) {
+			int load = nNodes*25;
+			int msgsToFailed=0;
+			ScheduledFuture<TX>[] futures = new ScheduledFuture[load];
+			for(int i=0; i<load; i++) {
 				int k = (int)(Math.random()*nNodes);
 				int j = (int)(Math.random()*nNodes);
 				//long millis = (long)(Math.random()*1000);
+				
+				if(i%100==0) {
+					j = nNodes+1; // Periodically try sending to a non-existent node
+					msgsToFailed++;
+				}
+				
 				TX task = new TX(k, j, niots, msgNum++);
 				System.out.println("Scheduling random message " + i + " with msgNum " + msgNum);
-				execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
+				futures[i] = (ScheduledFuture<TX>)execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
+			}
+			int numExceptions = 0;
+			for(int i=0; i<load; i++) {
+				try {
+					futures[i].get();
+				} catch(Exception e) {
+					//e.printStackTrace();
+					numExceptions++;
+				}
 			}
 
 			/*************************************************************************/
 
 			Thread.sleep(2000);
-			System.out.println("\n\n\nPrinting overall stats:");
-			System.out.println((new NIOInstrumenter()));	
+			System.out.println("\n\n\nPrinting overall stats. Number of exceptions =  " + numExceptions);
+			System.out.println((new NIOInstrumenter()+"\n"));	
 			boolean pending=false;
 			for(int i=0; i<nNodes; i++) {
 				if(niots[i].getPendingSize() > 0) {
@@ -246,8 +264,10 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 					pending=true;
 				}
 			}
-			assert(pending==false && NIOInstrumenter.getMissing()==0) : "Unsent pending messages in NIO";
-			if(!pending && NIOInstrumenter.getMissing()==0) System.out.println("SUCCESS: no pending messages!");
+			int missing = NIOInstrumenter.getMissing();
+			assert(pending==false || missing==msgsToFailed) : 
+				"Unsent pending messages in NIO";
+			if(!pending || missing==msgsToFailed) System.out.println("\nSUCCESS: no pending messages to non-failed nodes!");
 
 	} catch (IOException e) {
 		e.printStackTrace();

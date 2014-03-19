@@ -256,26 +256,37 @@ public class NIOTransport implements Runnable {
 	private void write(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		InetSocketAddress isa = getSockAddrFromSockChannel(socketChannel);
-		/* The assertion below is expected to hold because there should be an isa
-		 * for each about-to-be-written socket channel. The selector thread
+		/* At this point, isa can be null as follows. The selector thread
 		 * tries to write to a socket channel only if a write op interest
 		 * was previously registered. A write op interest is registered
-		 * upon either a finishConnect or upon finding an entry in 
-		 * pendingWrites. A null isa here can only mean that a write op
-		 * interest was registered on some socket channel 
-		 * but there is no write in pendingWrites because the corresponding
-		 * write was written to a different socket channel. This means that
-		 * two connections (or socket channels) were established for the same
-		 * isa. That can not happen because testAndInitiateConnection is 
-		 * synchronized.
+		 * upon either a finishConnection or upon finding an entry in 
+		 * pendingWrites. A null isa here means that a write op
+		 * interest was registered on some socket channel either in 
+		 * finishConnection or registerWriteInterests, but the 
+		 * corresponding isa was subsequently remapped to a different
+		 * socket channel before the socket channel's key was canceled by 
+		 * the selector thread. This can happen if some app calls send
+		 * and, by consequence, testAndInitiateConnection multiple times
+		 * in quick succession to a failed node and the selector thread
+		 * has not had a chance to call cleanup() and cancel the key 
+		 * corresponding to an earlier socket channel.
+		 * 
+		 * Such orphaned sockets, i.e., those without an isa, can be
+		 * cleaned up as the corresponding isa would be mapped to a 
+		 * different socket channel that will be registered for writes
+		 * by registerWriteInterests if there are any outstanding 
+		 * writes to that isa.
 		 */
-		assert (isa!=null) : "Node " + myID + " SocketChannel " + socketChannel + " is orphaned with no InetSocketAddress.";
-		if(isa==null) log.severe("Null socket address for a write-ready socket!");
-		try {
-			// If all data gets written successfully, switch back to read mode.
-			if(this.writeAllPendingWrites(isa, socketChannel)) key.interestOps(SelectionKey.OP_READ); // synchronized
-		} catch(IOException e) {
-			this.cleanupRetry(key, socketChannel, isa); // Will close socket channel and retry (but still fail)
+		if(isa==null) {
+			log.severe("Null socket address for a write-ready socket!");
+			this.cleanup(key, socketChannel); 
+		} else {
+			try {
+				// If all data gets written successfully, switch back to read mode.
+				if(this.writeAllPendingWrites(isa, socketChannel)) key.interestOps(SelectionKey.OP_READ); // synchronized
+			} catch(IOException e) {
+				this.cleanupRetry(key, socketChannel, isa); // Will close socket channel and retry (but may still fail)
+			}
 		}
 	}
 
@@ -326,7 +337,7 @@ public class NIOTransport implements Runnable {
 				queuedBytes =+ data.length;
 				log.finest("Node " + this.myID + " queued: " + new String(data));
 			} else {
-				log.warning("Node " + this.myID + "'s queue too full, dropping message");
+				log.warning("Node " + this.myID + "'s queue for " + isa + " too full, dropping message: " + new String(data));
 				//throw new IOException("Node " + this.myID + "'s queue too full ");
 			}
 			return queuedBytes;
@@ -569,8 +580,7 @@ public class NIOTransport implements Runnable {
 			connected = socketChannel.finishConnect();
 		} catch (IOException e) {
 			// Cancel the channel's registration with our selector
-			log.severe("Connection exception on socket " + socketChannel);
-			//key.cancel();
+			log.severe("Node"+this.myID + ": Connection exception on socket " + socketChannel);
 			this.cleanup(key, socketChannel);
 		}
 
@@ -608,7 +618,7 @@ public class NIOTransport implements Runnable {
 		int port = 2000;
 		int nNodes=100;
 		SampleNodeConfig snc = new SampleNodeConfig(port);
-		snc.localSetup(nNodes+2);
+		snc.localSetup(nNodes+1);
 		DefaultDataProcessingWorker worker = new DefaultDataProcessingWorker();
 		NIOTransport[] niots = new NIOTransport[nNodes];
 
@@ -696,7 +706,7 @@ public class NIOTransport implements Runnable {
 				int k = (int)(Math.random()*nNodes); if(k>=nNodes) k = nNodes-1;
 				int j = (int)(Math.random()*nNodes);
 				long millis = (long)(Math.random()*1000);
-				if(i%100==0) j = nNodes+1; // Periodically try sending to a non-existent node
+				if(i%100==0) j = nNodes; // Periodically try sending to a non-existent node
 				TX task = new TX(k, j, niots);
 				System.out.println("Scheduling random message " + i + " from " + k + " to " + j);
 				futures[i] = (ScheduledFuture<TX>)execpool.schedule(task, millis, TimeUnit.MILLISECONDS);

@@ -21,7 +21,7 @@ public class NIOInstrumenter {
 	public static synchronized void incrJSONRcvd() {totalJSONRcvd++;} 
 	public static synchronized void incrPktsRcvd() {totalPktsRcvd++;} 
 	
-	public static synchronized int getMissing() {return totalJSONRcvd - totalSent;}
+	public static synchronized int getMissing() {return totalSent-totalJSONRcvd;}
 
 	public void disable() {enabled=false;}
 	public void enable() {enabled=true;}
