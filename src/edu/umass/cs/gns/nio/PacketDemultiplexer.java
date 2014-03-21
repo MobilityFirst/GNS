@@ -3,14 +3,11 @@ package edu.umass.cs.gns.nio;
 import org.json.JSONObject;
 
 public abstract class PacketDemultiplexer {
-	/* FIXME: Change return type to boolean for both methods below, otherwise message 
-	 * processing will be inefficient.
-	 */
-//	public abstract void handleJSONObjects(ArrayList<JSONObject> jsonObjects);
 
-	/* FIXME: Must override this method, otherwise message proecessing will be
-	 * inefficient as a single-element ArrayList will be created for each
-	 * received message. 
+	/**
+   * The return value should return true if and only if the multiplexer matched against
+   * any of the packet types it was looking for. It doesn't matter if the rest of the
+   * processing resulted in an error or not.
 	 */
 	public abstract boolean handleJSONObject(JSONObject jsonObject);
 
