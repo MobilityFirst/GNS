@@ -6,10 +6,7 @@ import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
@@ -67,6 +64,7 @@ public class ReplicaController implements  ReplicaControllerInterface{
 
     replicaControllerDB.reset();
     // create the activeCoordinator object.
+    rcCoordinator = null;
 //    rcCoordinator = new ReplicaControllerPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);
 
 
@@ -94,6 +92,9 @@ public class ReplicaController implements  ReplicaControllerInterface{
           } else {
             rcCoordinator.handleRequest(json);
           }
+          break;
+        case UPDATE_ADDRESS_LNS:  // add name to GNS
+          msgTask = Upsert.handleUpsert(new UpdateAddressPacket(json), this);
           break;
         case REQUEST_ACTIVES:  // lookup actives for name
           if(rcCoordinator == null) {
@@ -168,6 +169,10 @@ public class ReplicaController implements  ReplicaControllerInterface{
 
   public BasicRecordMap getReplicaControllerDB() {
     return replicaControllerDB;
+  }
+
+  public ReplicaControllerCoordinator getRcCoordinator() {
+    return rcCoordinator;
   }
 
 }

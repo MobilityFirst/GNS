@@ -17,11 +17,12 @@ import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
 import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.util.BestServerSelection;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashSet;
 import java.util.TimerTask;
 import java.util.logging.Level;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 /**
@@ -114,7 +115,8 @@ public class DNSRequestTask extends TimerTask {
     if (System.currentTimeMillis() - receivedTime > StartLocalNameServer.maxQueryWaitTime) {
       // send error response to user and log error
       if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid());
+        GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid() +
+        "Wait time: " + (System.currentTimeMillis() - receivedTime) + " Max wait: " + StartLocalNameServer.maxQueryWaitTime);
       }
 
       DNSRequestInfo query = LocalNameServer.removeDNSRequestInfo(queryId);

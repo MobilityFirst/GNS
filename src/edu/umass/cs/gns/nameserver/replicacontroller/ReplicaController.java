@@ -418,7 +418,6 @@ public class ReplicaController {
     // 3. primaries remove record (paxos operation among primaries)
     // 4. send confirmation to client
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
-    //ReplicaControllerRecord nameRecordPrimary = NameServer.getNameRecordPrimaryLazy(removeRecord.getName());
 
     ArrayList<ColumnField> readFields = new ArrayList<ColumnField>();
     readFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
@@ -435,7 +434,7 @@ public class ReplicaController {
         return;
       }
 
-      if (rcRecord.isMarkedForRemoval() == true) {
+      if (rcRecord.isMarkedForRemoval()) {
         if (StartNameServer.debugMode) {
           GNS.getLogger().info("Already marked for removal. Name record will be deleted soon. So request is dropped.");
         }
@@ -465,6 +464,7 @@ public class ReplicaController {
     }
 
   }
+
   private static ArrayList<ColumnField> applyMarkedForRemovalFields = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getApplyMarkedForRemovalFields() {
@@ -505,6 +505,7 @@ public class ReplicaController {
     } catch (RecordNotFoundException e) {
 
       e.printStackTrace();
+      // todo send error to client
     }
 
     try {

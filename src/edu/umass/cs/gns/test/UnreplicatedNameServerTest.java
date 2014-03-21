@@ -1,16 +1,12 @@
 package edu.umass.cs.gns.test;
 
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.NameServer;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.util.TestRequest;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Runs tests for a single name server without coordination among multiple replicas.
@@ -37,15 +33,24 @@ public class UnreplicatedNameServerTest {
 
       StartLocalNameServer.startLNSConfigFile(lnsID, nodeConfigFile, lnsConfigFile, null);
 
-      String name = "abhigyan";
-      List<TestRequest> testRequest = new ArrayList<TestRequest>();
-      testRequest.add(new TestRequest(name, TestRequest.ADD));
-      testRequest.add(new TestRequest(name, TestRequest.ADD)); // this should fail
-      // todo is there a way to test responses automatically? e.g., do a lookup after update to test if it works.
-      testRequest.add(new TestRequest(name, TestRequest.LOOKUP));
+//      String name = "abhigyan";
+//      List<TestRequest> testRequest = new ArrayList<TestRequest>();
+//      testRequest.add(new TestRequest(name, TestRequest.ADD));
+//      testRequest.add(new TestRequest(name, TestRequest.ADD)); // this should fail
+//      // todo is there a way to test responses automatically? e.g., do a lookup after update to test if it works.
+//      testRequest.add(new TestRequest(name, TestRequest.LOOKUP));
+//      testRequest.add(new TestRequest("abcddfad", TestRequest.LOOKUP));
+//
 //      testRequest.add(new TestRequest(name, TestRequest.UPDATE));
+//
+//      testRequest.add(new TestRequest("qwserty", TestRequest.UPDATE));
+//
 //      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
-      new RequestGenerator().generateRequests(testRequest, 1000.0, LocalNameServer.getExecutorService());
+//
+//      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
+
+//      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
+//      new RequestGenerator().generateRequests(testRequest, 2000.0, LocalNameServer.getExecutorService());
 
       GNS.getLogger().info("Local name server started ...");
     } catch (IOException e) {

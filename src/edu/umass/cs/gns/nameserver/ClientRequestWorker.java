@@ -156,8 +156,7 @@ public class ClientRequestWorker extends TimerTask {
               updatePacket.getOldValue(), updatePacket.getOperation());
 
       if (StartNameServer.debugMode) {
-        GNS.getLogger().fine("Update operation result = " + result + "\t"
-                + updatePacket.getUpdateValue());
+        GNS.getLogger().fine("Update operation result = " + result + "\t" + updatePacket.getUpdateValue());
       }
 
 
@@ -517,6 +516,7 @@ public class ClientRequestWorker extends TimerTask {
     }
 
   }
+
   private static ArrayList<ColumnField> dnsField = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getDNSPacketFields() {

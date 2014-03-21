@@ -9,10 +9,9 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameRecord;
-//import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.clientsupport.NSAccessSupport;
-import edu.umass.cs.gns.nameserver.clientsupport.NSAccountAccess;
-import edu.umass.cs.gns.nameserver.clientsupport.SiteToSiteQueryHandler;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.clientsupport.SiteToSiteQueryHandler;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.DNSRecordType;
@@ -54,7 +53,7 @@ public class Lookup {
     // the only dns reponses we should see are coming in respone to SiteToSiteQueryHandler requests
     if (!dnsPacket.isQuery()) {
       // handle the special case of queries that were sent between name servers
-      SiteToSiteQueryHandler.handleDNSResponsePacket(dnsPacket);
+      SiteToSiteQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
       return null;
       // todo handle this
     }
@@ -68,9 +67,7 @@ public class Lookup {
     // Check the signature and access
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     if (reader != null) { // reader will be null for internal system reads
-      errorCode = NSResponseCode.NO_ERROR;
-      // TODO Abhigyan: assuming signature and ACL check are always successful
-      //signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST);
+      errorCode = signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST, activeReplica);
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
@@ -117,22 +114,23 @@ public class Lookup {
     }
   }
 
-  private static NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access)
+  public static NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access,
+                                                    ActiveReplica activeReplica)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException {
     GuidInfo guidInfo, readerGuidInfo;
-    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
       GNS.getLogger().fine("Name " + guid + " key = " + field + ": BAD_GUID_ERROR");
       return NSResponseCode.BAD_GUID_ERROR;
     }
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
-    } else if ((readerGuidInfo = NSAccountAccess.lookupGuidInfo(reader, true)) == null) {
+    } else if ((readerGuidInfo = NSAccountAccess.lookupGuidInfo(reader, true, activeReplica)) == null) {
       GNS.getLogger().fine("Name " + guid + " key = " + field + ": BAD_ACCESOR_ERROR");
       return NSResponseCode.BAD_ACCESOR_ERROR;
     }
     // unsigned case, must be world readable
     if (signature == null) {
-      if (!NSAccessSupport.fieldAccessibleByEveryone(access, guidInfo.getGuid(), field)) {
+      if (!NSAccessSupport.fieldAccessibleByEveryone(access, guidInfo.getGuid(), field, activeReplica)) {
         GNS.getLogger().fine("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         return NSResponseCode.ACCESS_ERROR;
       }
@@ -141,7 +139,7 @@ public class Lookup {
       if (!NSAccessSupport.verifySignature(readerGuidInfo, signature, message)) {
         GNS.getLogger().fine("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         return NSResponseCode.SIGNATURE_ERROR;
-      } else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, readerGuidInfo)) {
+      } else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, readerGuidInfo, activeReplica)) {
         GNS.getLogger().fine("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         return NSResponseCode.ACCESS_ERROR;
       }

@@ -35,6 +35,14 @@ public class NameRecord implements Comparable<NameRecord> {
   public final static ColumnField OLD_VALUES_MAP = new ColumnField("nr_oldValuesMap", ColumnFieldType.VALUES_MAP);
   public final static ColumnField TOTAL_UPDATE_REQUEST = new ColumnField("nr_totalUpdate", ColumnFieldType.INTEGER);
   public final static ColumnField TOTAL_LOOKUP_REQUEST = new ColumnField("nr_totalLookup", ColumnFieldType.INTEGER);
+
+//  public final static ArrayList<ColumnField> DNS_FIELDS = new ArrayList<ColumnField>();
+//
+//  static {
+//    DNS_FIELDS.add(NameRecord.ACTIVE_NAMESERVERS);
+//    DNS_FIELDS.add(NameRecord.TIME_TO_LIVE);
+//    }
+
   /**
    * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
    */
@@ -364,7 +372,7 @@ public class NameRecord implements Comparable<NameRecord> {
      * This saves us a database read.
      * 
      * To implement this, we require some changes to both ClientRequestWorker.updateAdddressNS and NameRecord.updateKey. 
-     * Abhighyan had made both these changes but unknowingly commented out the change in ClientRequestWorker.updateAdddressNS.
+     * Abhigyan had made both these changes but unknowingly commented out the change in ClientRequestWorker.updateAdddressNS.
      * I will uncomment it, so that a REPLACE_ALL can proceed without doing a database read.
      * There could be other operations like REPLACE_ALL which could proceed without DB read, 
      * and should be handled similar to REPLACE_ALL. In my experiments, I was using REPLACE_ALL so I have

@@ -67,6 +67,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
             // probably should use something more generic here
             MongoRecords.DBNAMERECORD);
     nameRecordDB.reset();
+    activeCoordinator = null;
     // create the activeCoordinator object.
 //    activeCoordinator = new ActiveReplicaPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);
 
@@ -104,11 +105,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
           }
           break;
         case UPDATE_ADDRESS_LNS: // update sent by lns.
-          if (activeCoordinator == null) {
-            Update.executeUpdateLocal(new UpdateAddressPacket(json), this);
-          } else {
-            activeCoordinator.handleRequest(json);
-          }
+          msgTask = Update.handleUpdate(json, this);
           break;
         case SELECT_REQUEST: // ?? Abhigyan: need to understand how selects are implemented and if they need coordination
           break;
@@ -186,4 +183,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
     return nioServer;
   }
 
+  public ActiveReplicaCoordinator getActiveCoordinator() {
+    return activeCoordinator;
+  }
 }

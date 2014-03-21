@@ -10,6 +10,8 @@ import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
 
+/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 /**
  * Includes code which a replica controller executes to add a name to GNS. If name servers are replicated,
  * then methods in this class will be executed after  the coordination among replica controllers at name servers
@@ -62,6 +64,7 @@ public class Add {
   public static GNSMessagingTask executeAddActiveConfirm(AddRecordPacket addRecordPacket,
                                                          ReplicaController replicaController)
           throws JSONException {
+
     GNS.getLogger().info("Add complete informing client. " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
     ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
     return new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());

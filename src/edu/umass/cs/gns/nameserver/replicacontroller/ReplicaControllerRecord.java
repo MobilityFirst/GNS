@@ -553,7 +553,7 @@ public class ReplicaControllerRecord {
   }
 
   /**
-   * set marked for removal as
+   * set marked for removal : 0 --> 1. 1 means record is in the process of being removed.
    */
   public void setMarkedForRemoval() throws FieldNotFoundException {
     int markedForRemoval = getMarkedForRemoval();
