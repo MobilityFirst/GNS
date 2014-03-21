@@ -10,7 +10,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantLock;
@@ -108,9 +107,12 @@ public class UnreplicatedServer {
  */
 class SimplePacketDemultiplexer extends PacketDemultiplexer {
 
-  @Override
-  public void handleJSONObjects(ArrayList jsonObjects) {
-    for (Object o : jsonObjects) {
+
+  public boolean handleJSONObject(JSONObject jsonObject) {
+    UnreplicatedSendClientResponseTask task = new UnreplicatedSendClientResponseTask(jsonObject);
+    // run the task to handle client request
+    UnreplicatedServer.executorService.submit(task);
+    return true;
 //            try {
 //                UnreplicatedServer.tcpTransport.sendToID(requestPacket.clientID, jsonObject);
 //                System.out.println("Sent to client ...");
@@ -140,12 +142,6 @@ class SimplePacketDemultiplexer extends PacketDemultiplexer {
 //                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //            }
 
-      UnreplicatedSendClientResponseTask task = new UnreplicatedSendClientResponseTask((JSONObject) o);
-      // run the task to handle client request
-      UnreplicatedServer.executorService.submit(task);
-
-
-    }
   }
 }
 

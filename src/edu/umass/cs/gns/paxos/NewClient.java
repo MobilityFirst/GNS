@@ -264,12 +264,12 @@ public class NewClient  extends PacketDemultiplexer{
       e.printStackTrace();  
     }
   }
-  @Override
-  public void handleJSONObjects(ArrayList jsonObjects) {
-    for (Object j: jsonObjects) {
-      handlePaxosDecision((JSONObject) j);
-    }
-  }
+
+//  public void handleJSONObjects(ArrayList jsonObjects) {
+//    for (Object j: jsonObjects) {
+//
+//    }
+//  }
 
 
   /**
@@ -315,6 +315,11 @@ public class NewClient  extends PacketDemultiplexer{
 
   }
 
+  @Override
+  public boolean handleJSONObject(JSONObject jsonObject) {
+    handlePaxosDecision(jsonObject);
+    return true;
+  }
 }
 
 

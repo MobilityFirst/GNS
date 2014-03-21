@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.nio;
 
-import java.util.ArrayList;
-
 import org.json.JSONObject;
 
 /**
@@ -21,14 +19,11 @@ public class DefaultPacketDemultiplexer extends PacketDemultiplexer {
 		// TODO Auto-generated constructor stub
 	}
 
-	@Override
-	public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
-		for(JSONObject jo : jsonObjects) {
-			incrPktsRcvd();
-			System.out.println("Received pkt: " + jo);
-		}
-	}
-	
+  public boolean handleJSONObject(JSONObject jsonObject) {
+    incrPktsRcvd();
+    System.out.println("Received pkt: " + jsonObject);
+    return true;
+  }
 
 	/**
 	 * @param args

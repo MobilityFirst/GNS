@@ -557,7 +557,7 @@ public class ReplicaControllerRecord {
    */
   public void setMarkedForRemoval() throws FieldNotFoundException {
     int markedForRemoval = getMarkedForRemoval();
-    GNS.getLogger().info("Marked for removal value: " + markedForRemoval);
+    GNS.getLogger().fine("Marked for removal value: " + markedForRemoval);
     if (markedForRemoval == 0) {
       ArrayList<ColumnField> fields = getSetMarkedForRemoval();
 
@@ -565,7 +565,7 @@ public class ReplicaControllerRecord {
       values.add(1);
 
       replicaControllerDB.update(getName(), NAME, fields, values);
-      GNS.getLogger().severe("Updating now ... ");
+      GNS.getLogger().fine("Updating now ... ");
       hashMap.put(MARKED_FOR_REMOVAL, 1);
     }
   }

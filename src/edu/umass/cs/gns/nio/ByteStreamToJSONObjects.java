@@ -61,7 +61,8 @@ import java.util.List;
     socketData.put(socket, remainingString);
 
     // call the packet demultiplexer object.
-    packetDemux.handleJSONObjects(allJSONs);
+    for (Object jsonObject: allJSONs)
+      packetDemux.handleJSONObject((JSONObject) jsonObject);
 
 //        recvdMessageCount++;
 //        if (StartNameServer.debugMode) GNS.getLogger().finer(y + " Received message count = "
@@ -97,7 +98,8 @@ import java.util.List;
         socketData.put(dataEvent.socket, remainingString);
 
         // call the packet demultiplexer object.
-        packetDemux.handleJSONObjects(allJSONs);
+        for (Object jsonObject: allJSONs)
+          packetDemux.handleJSONObject((JSONObject) jsonObject);
 
 
         recvdMessageCount++;

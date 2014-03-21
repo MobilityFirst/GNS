@@ -5,10 +5,10 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
-import java.io.IOException;
-import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 /**
  * All packets received at name server (TCP/UDP) pass through this demultiplexer.
@@ -19,16 +19,11 @@ import org.json.JSONObject;
 public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
   @Override
-  public void handleJSONObjects(ArrayList jsonObjects) {
-    for (Object j : jsonObjects) {
-      handleJSONObject((JSONObject) j);
-    }
-
-  }
-
-  public void handleJSONObject(JSONObject json) {
+  public boolean handleJSONObject(JSONObject json) {
+    boolean isPacketTypeFound = true;
     try {
       Packet.PacketType type = Packet.getPacketType(json);
+
       switch (type) {
         case PAXOS_PACKET:
           if (NameServer.getPaxosManager() != null) // check because transport object initialized before paxos manager
@@ -74,7 +69,8 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           break;
 
         default:
-          GNS.getLogger().warning("No handler for packet type: " + type.toString());
+          isPacketTypeFound = false;
+//          GNS.getLogger().warning("No handler for packet type: " + type.toString());
           break;
       }
     } catch (JSONException e) {
@@ -86,5 +82,6 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
       GNS.getLogger().severe("Unexpected exception in while handling JSON packets:");
       e.printStackTrace();
     }
+    return isPacketTypeFound;
   }
 }

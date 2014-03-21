@@ -45,7 +45,7 @@ public class RequestGenerator {
     }
 
     double delay = 0;
-
+    LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer();
     GNS.getLogger().info(" Initial update delay: " + delay);
     List<Double> delays = new ArrayList<Double>();
     List<TimerTask> tasks = new ArrayList<TimerTask>();
@@ -53,13 +53,13 @@ public class RequestGenerator {
     for (TestRequest u : testRequest) {
       count++;
       if (u.type == TestRequest.LOOKUP) {
-        tasks.add(new GenerateLookupRequest(u.name, count));
+        tasks.add(new GenerateLookupRequest(u.name, count, lnsPacketDemultiplexer));
       }else if (u.type == TestRequest.UPDATE) {
-        tasks.add(new GenerateUpdateRequest(u.name, count));
+        tasks.add(new GenerateUpdateRequest(u.name, count, lnsPacketDemultiplexer));
       } else if (u.type == TestRequest.ADD) {
-        tasks.add(new GenerateAddRequest(u.name, count));
+        tasks.add(new GenerateAddRequest(u.name, count, lnsPacketDemultiplexer));
       } else if (u.type == TestRequest.REMOVE) {
-        tasks.add(new GenerateRemoveRequest(u.name, count));
+        tasks.add(new GenerateRemoveRequest(u.name, count, lnsPacketDemultiplexer));
       }
       delays.add(delay);
       delay += exponentialDistribution.exponential();
@@ -89,13 +89,15 @@ public class RequestGenerator {
 
   class GenerateUpdateRequest extends TimerTask {
 
-    int updateCount;
-    String name;
+    private int updateCount;
+    private String name;
+    private LNSPacketDemultiplexer packetDemultiplexer;
 
-    public GenerateUpdateRequest(String name, int updateCount) {
+    public GenerateUpdateRequest(String name, int updateCount, LNSPacketDemultiplexer packetDemultiplexer) {
 
       this.updateCount = updateCount;
       this.name = name;
+      this.packetDemultiplexer = packetDemultiplexer;
     }
 
     @Override
@@ -111,7 +113,7 @@ public class RequestGenerator {
               //ignore signature info
               null, null, null);
       try {
-        LNSPacketDemultiplexer.demultiplexLNSPackets(updateAddressPacket.toJSONObject());
+        packetDemultiplexer.handleJSONObject(updateAddressPacket.toJSONObject());
       } catch (JSONException e) {
         e.printStackTrace();
       }
@@ -120,13 +122,15 @@ public class RequestGenerator {
 
   class GenerateAddRequest extends TimerTask {
 
-    int requestCount;
-    String name;
+    private int requestCount;
+    private String name;
+    private LNSPacketDemultiplexer packetDemultiplexer;
 
-    public GenerateAddRequest(String name, int count) {
+    public GenerateAddRequest(String name, int count, LNSPacketDemultiplexer packetDemultiplexer) {
 
       this.requestCount = count;
       this.name = name;
+      this.packetDemultiplexer = packetDemultiplexer;
     }
 
     @Override
@@ -138,7 +142,7 @@ public class RequestGenerator {
               -1, GNS.DEFAULT_TTL_SECONDS);
 
       try {
-        LNSPacketDemultiplexer.demultiplexLNSPackets(packet.toJSONObject());
+        packetDemultiplexer.handleJSONObject(packet.toJSONObject());
       } catch (JSONException e) {
         e.printStackTrace();
       }
@@ -147,13 +151,17 @@ public class RequestGenerator {
 
   class GenerateRemoveRequest extends TimerTask {
 
-    int requestCount;
-    String name;
+    private int requestCount;
+    private String name;
+    private LNSPacketDemultiplexer packetDemultiplexer;
 
-    public GenerateRemoveRequest(String name, int count) {
+
+    public GenerateRemoveRequest(String name, int count, LNSPacketDemultiplexer packetDemultiplexer) {
 
       this.requestCount = count;
       this.name = name;
+      this.packetDemultiplexer = packetDemultiplexer;
+
     }
 
     @Override
@@ -162,7 +170,7 @@ public class RequestGenerator {
       RemoveRecordPacket packet = new RemoveRecordPacket(requestCount, name, -1);
 
       try {
-        LNSPacketDemultiplexer.demultiplexLNSPackets(packet.toJSONObject());
+        packetDemultiplexer.handleJSONObject(packet.toJSONObject());
       } catch (JSONException e) {
         e.printStackTrace();
       }
@@ -172,13 +180,15 @@ public class RequestGenerator {
 
   class GenerateLookupRequest extends TimerTask {
 
-    int lookupCount;
-    String name;
+    private int lookupCount;
+    private String name;
+    private LNSPacketDemultiplexer packetDemultiplexer;
 
-    public GenerateLookupRequest(String name, int lookupCount) {
+    public GenerateLookupRequest(String name, int lookupCount, LNSPacketDemultiplexer packetDemultiplexer) {
 
       this.lookupCount = lookupCount;
       this.name = name;
+      this.packetDemultiplexer = packetDemultiplexer;
     }
 
     @Override
@@ -189,7 +199,7 @@ public class RequestGenerator {
       JSONObject json;
       try {
         json = queryRecord.toJSONObjectQuestion();
-        LNSPacketDemultiplexer.demultiplexLNSPackets(json);
+        packetDemultiplexer.handleJSONObject(json);
       } catch (JSONException e) {
         e.printStackTrace();
 

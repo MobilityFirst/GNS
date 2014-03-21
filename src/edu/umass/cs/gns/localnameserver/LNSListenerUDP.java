@@ -8,9 +8,9 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.packet.Transport;
 import edu.umass.cs.gns.util.ConfigFileInfo;
-import java.io.IOException;
-import java.util.ArrayList;
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 /**
  * Listens on a UDP port for requests from end-users, and responses from name servers.
@@ -36,9 +36,7 @@ public class LNSListenerUDP extends Thread {
   public void run() {
     while (true) {
       JSONObject json = udpTransport.readPacket();
-      ArrayList<JSONObject> jsonObjects = new ArrayList<JSONObject>();
-      jsonObjects.add(json);
-      lnsPacketDemultiplexer.handleJSONObjects(jsonObjects);
+      lnsPacketDemultiplexer.handleJSONObject(json);
     }
   }
 

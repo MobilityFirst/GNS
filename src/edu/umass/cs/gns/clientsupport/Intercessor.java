@@ -10,24 +10,17 @@ import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.NSResponseCode;
-import edu.umass.cs.gns.packet.Packet;
-import static edu.umass.cs.gns.packet.Packet.getPacketType;
-import edu.umass.cs.gns.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.packet.Transport;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static edu.umass.cs.gns.packet.Packet.getPacketType;
 
 /**
  * One of a number of class that implement client support in the GNS server. 
@@ -82,6 +75,9 @@ public class Intercessor {
     queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
+
+  // local instance of LNSPacketDemultiplexer class.
+  private static LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer();
 
   /**
    * This is invoked to receive packets. It updates the appropriate map
@@ -350,6 +346,7 @@ public class Intercessor {
     }
   }
 
+
   /**
    * Helper function for sending JSON packets to the Local Name Server. 
    * This does not require a socket based send (just a dispatch)
@@ -358,6 +355,9 @@ public class Intercessor {
    * @param jsonObject 
    */
   public static void injectPacketIntoLNSQueue(JSONObject jsonObject) {
-    LNSPacketDemultiplexer.demultiplexLNSPackets(jsonObject);
+    boolean isPacketTypeFound = lnsPacketDemultiplexer.handleJSONObject(jsonObject);
+    if (isPacketTypeFound == false) {
+      GNS.getLogger().severe("Packet type not found at demultiplexer: " + isPacketTypeFound);
+    }
   }
 }

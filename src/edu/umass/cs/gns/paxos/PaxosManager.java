@@ -600,12 +600,12 @@ class PaxosPacketDemultiplexer extends PacketDemultiplexer {
   public PaxosPacketDemultiplexer(PaxosManager paxosManager) {
     this.paxosManager = paxosManager;
   }
+
+
   @Override
-  public void handleJSONObjects(ArrayList jsonObjects) {
-    for (Object j: jsonObjects) {
-      JSONObject json = (JSONObject)j;
-        paxosManager.handleIncomingPacket(json);
-    }
+  public boolean handleJSONObject(JSONObject jsonObject) {
+    paxosManager.handleIncomingPacket(jsonObject);
+    return true;
   }
 }
 

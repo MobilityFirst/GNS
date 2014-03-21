@@ -8,8 +8,6 @@ import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
 /*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
 
 /**
@@ -27,11 +25,11 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
     this.nameServerInterface = nameServerInterface;
   }
 
-  @Override
-  public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
-    for (JSONObject json: jsonObjects)
-      handleIncomingPacket(json);
-  }
+//
+//  public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
+//    for (JSONObject json: jsonObjects)
+//      handleIncomingPacket(json);
+//  }
 
   /**
    * Entry point for all packets received at name server.
@@ -39,7 +37,8 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
    * Based on the packet type it forwards to active replica or replica controller.
    * @param json JSON object received by NIO package.
    */
-  public void handleIncomingPacket(JSONObject json){
+  public boolean handleJSONObject(JSONObject json){
+    boolean isPacketTypeFound = true;
     try {
 
 
@@ -81,12 +80,14 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
           break;
 
         default:
-          GNS.getLogger().warning("No handler for packet type: " + type.toString());
+          isPacketTypeFound = false;
+//          GNS.getLogger().warning("No handler for packet type: " + type.toString());
           break;
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON Exception here: " + json + " Exception: " + e.getCause());
       e.printStackTrace();
     }
+    return isPacketTypeFound;
   }
 }

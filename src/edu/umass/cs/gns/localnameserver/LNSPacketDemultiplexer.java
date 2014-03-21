@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.packet.Packet;
@@ -15,8 +14,6 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.TimerTask;
 
 /**
  * Implements the <code>PacketDemultiplexer</code> interface for using the {@link edu.umass.cs.gns.nio} package.
@@ -25,18 +22,13 @@ import java.util.TimerTask;
  */
 public class LNSPacketDemultiplexer extends PacketDemultiplexer {
 
-  @Override
-  public void handleJSONObjects(ArrayList jsonObjects) {
-    for (Object o : jsonObjects) {
-      LocalNameServer.getExecutorService().submit(new LNSTask((JSONObject) o));
-    }
-  }
 
   /**
    * This is the entry point for all message received at a local name server. It de-multiplexes packets based on
    * their packet type and forwards to appropriate classes.
    */
-  public static void demultiplexLNSPackets(JSONObject json) {
+  public boolean handleJSONObject(JSONObject json) {
+    boolean isPacketTypeFound = true;
     try {
       switch (Packet.getPacketType(json)) {
         case DNS:
@@ -91,7 +83,9 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
         case SELECT_RESPONSE:
           Select.handlePacketSelectResponse(json);
           break;
-
+        default:
+          isPacketTypeFound = false;
+          break;
       }
     } catch (JSONException e) {
       e.printStackTrace();
@@ -102,26 +96,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
     } catch (UnknownHostException e) {
       e.printStackTrace();
     }
+    return isPacketTypeFound;
   }
 
-  class LNSTask extends TimerTask {
-
-    JSONObject json;
-
-    public LNSTask(JSONObject jsonObject) {
-      this.json = jsonObject;
-    }
-
-    @Override
-    public void run() {
-
-      try {
-        LNSPacketDemultiplexer.demultiplexLNSPackets(json);
-      } catch (Exception e) {
-        GNS.getLogger().severe("Exception handling packets: " + e.getMessage());
-        e.printStackTrace();
-      }
-
-    }
-  }
 }

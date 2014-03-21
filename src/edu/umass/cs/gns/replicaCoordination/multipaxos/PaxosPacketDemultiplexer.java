@@ -1,14 +1,9 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.packet.Packet;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
 @author V. Arun
@@ -21,25 +16,30 @@ public class PaxosPacketDemultiplexer extends PacketDemultiplexer {
 		paxosManager = pm;
 	}
 
-	@Override
-	public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
-		for (Object j : jsonObjects) {
-			handleJSONObject((JSONObject) j);
-		}
-
-	}
+//	@Override
+//	public void handleJSONObjects(ArrayList<JSONObject> jsonObjects) {
+//		for (Object j : jsonObjects) {
+//			handleJSONObject((JSONObject) j);
+//		}
+//
+//	}
 	
-	public void handleJSONObject(JSONObject jsonMsg) {
+	public boolean handleJSONObject(JSONObject jsonMsg) {
+    boolean isPacketTypeFound = true;
 		try {
 			Packet.PacketType type = Packet.getPacketType(jsonMsg);
 			switch (type) {
 			case PAXOS_PACKET:
 				paxosManager.handleIncomingPacket(jsonMsg);
 				break;
+      default:
+        isPacketTypeFound = false;
+        break;
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-		} 
+		}
+    return isPacketTypeFound;
 	}
 
 	/**

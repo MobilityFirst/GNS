@@ -191,9 +191,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
         continue;
       }
       else if (destID == ID) {
-        ArrayList e = new ArrayList();
-        e.add(json);
-        workerObject.getPacketDemux().handleJSONObjects(e);
+        workerObject.getPacketDemux().handleJSONObject(json);
         continue;
       }
       sendToID(destID, json);
@@ -203,9 +201,8 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   public int sendToIDs(Set<Integer> destIDs, JSONObject json, int excludeID) throws IOException {
     if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
-      ArrayList e = new ArrayList();
-      e.add(json);
-      workerObject.getPacketDemux().handleJSONObjects(e);
+
+      workerObject.getPacketDemux().handleJSONObject(json);
     }
 
     for (int destID:destIDs) {
@@ -286,9 +283,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   boolean sendToIDActual(int destID, JSONObject json) throws IOException {
 
     if (destID == ID) { // to send to same node, directly call the demultiplexer
-      ArrayList e = new ArrayList();
-      e.add(json);
-      workerObject.getPacketDemux().handleJSONObjects(e);
+      workerObject.getPacketDemux().handleJSONObject(json);
       return true;
     }
 

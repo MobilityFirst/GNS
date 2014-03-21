@@ -221,10 +221,7 @@ public class NameServer {
   private long getInitialDelayForComputingNewActives() {
     long initialDelayMillis = initialExpDelayMillis + StartNameServer.analysisInterval + // wait for one interval for estimating demand
             (new Random()).nextInt((int) StartNameServer.analysisInterval); // randomize to avoid synchronization among replicas.
-    if (StartNameServer.experimentMode && StartNameServer.quitAfterTimeSec > 0) {
-      initialDelayMillis = initialExpDelayMillis + (long) (StartNameServer.analysisInterval * 1.5);
 
-    }
     GNS.getLogger().info("ComputeNewActives Initial delay " + initialDelayMillis);
     return initialDelayMillis;
   }
