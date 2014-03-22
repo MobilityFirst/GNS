@@ -98,7 +98,7 @@ public class Remove {
   }
 
 
-  public static GNSMessagingTask executeActiveReplicaStop
+
   /**
    * Executes second phase of remove operation at replica controllers, which finally removes the record from database
    * and sends confirmation to local name server.
