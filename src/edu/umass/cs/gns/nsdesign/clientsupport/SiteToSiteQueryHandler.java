@@ -20,6 +20,8 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 /**
  * This class handles sending DNS queries from one NS to another. 
  * Currently it is used by the code that does ACL checks in the NS to look up GUID info.

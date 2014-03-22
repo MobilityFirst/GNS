@@ -19,6 +19,8 @@ import org.json.JSONException;
 
 import java.text.ParseException;
 
+/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 public class NSAccountAccess {
 
   public static AccountInfo lookupAccountInfoFromGuid(String guid, ActiveReplica activeReplica) {

@@ -26,6 +26,8 @@ import java.util.Set;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 
+/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 /**
  * Provides signing and ACL checks for commands.
  * 

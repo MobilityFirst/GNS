@@ -9,6 +9,8 @@ import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
+/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 /**
  * GroupAccess provides an interface to the group information in the GNS.
  *

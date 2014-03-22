@@ -18,6 +18,8 @@ import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
 import java.util.HashSet;
 import java.util.Set;
 
+/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 /**
  * Implements metadata on fields.
  *

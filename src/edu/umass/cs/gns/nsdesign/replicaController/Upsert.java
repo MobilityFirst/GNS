@@ -17,20 +17,16 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Handles the upsert case of UpdateAddressPacket.
- * If record exists, it forwards packet to active replica. Otherwise, it executes an add operation at replica controller.
+ * Handles the upsert case of UpdateAddressPacket. If the record exists in the replica controller database, upsert is
+ * converted to an update operation and forwarded to an active replica (on a possibly remote node) to execute the update.
+ * Otherwise, upsert is convert to an add operation and is executed by the replica controller module.
+ *
+ *
  * Created by abhigyan on 3/21/14.
  */
 public class Upsert {
 
 
-  /**
-   * Handles the upsert case of UpdateAddressPacket
-   * If record exists, it forwards packet to active replica. Otherwise, it executes an add operation.
-   * @param updatePacket
-   * @throws org.json.JSONException
-   * @throws java.io.IOException
-   */
   public static GNSMessagingTask handleUpsert(UpdateAddressPacket updatePacket, ReplicaController replicaController) throws JSONException, IOException {
     // this must be primary
     //

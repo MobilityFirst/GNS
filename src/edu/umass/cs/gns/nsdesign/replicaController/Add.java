@@ -52,7 +52,6 @@ public class Add {
       // send error to client
       ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, addRecordPacket);
       gnsMessagingTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
-
     }
     return gnsMessagingTask;
   }
