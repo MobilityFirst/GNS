@@ -247,6 +247,7 @@ public class ReplicaController {
       e.printStackTrace();
     }
   }
+
   private static ArrayList<ColumnField> oldActiveStoppedFields = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getGetOldActiveStoppedFields() {
@@ -546,6 +547,7 @@ public class ReplicaController {
     }
 
   }
+
   private static ArrayList<ColumnField> newActiveStartedFields = new ArrayList<ColumnField>();
 
   private static ArrayList<ColumnField> getNewActiveStartedFields() {
@@ -575,8 +577,6 @@ public class ReplicaController {
       GNS.getLogger().info("PAXOS DECISION stop primary paxos decision received.");
     }
     OldActiveSetStopPacket packet = new OldActiveSetStopPacket(new JSONObject(value));
-    String paxosID = getPrimaryPaxosID(packet.getName());
-//		String name = packet.getName();
     RemoveRecordPacket removeRecordPacket = removeRecordRequests.remove(packet.getName());
     NameServer.getReplicaController().removeNameRecord(packet.getName());
 

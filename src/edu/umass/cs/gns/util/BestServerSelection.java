@@ -278,6 +278,8 @@ public class BestServerSelection {
     }
     return nameServerID;
   }
+
+
   private static Random random = new Random();
 
   public static int randomServer(Set<Integer> serverIDs) {

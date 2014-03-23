@@ -34,7 +34,7 @@ public class Upsert {
     GNSMessagingTask msgTask = null;
     ReplicaControllerRecord nameRecordPrimary;
     try {
-      nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(replicaController.getReplicaControllerDB(), updatePacket.getName(),
+      nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(replicaController.getDB(), updatePacket.getName(),
               ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       if (nameRecordPrimary.isMarkedForRemoval()) {
         ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);

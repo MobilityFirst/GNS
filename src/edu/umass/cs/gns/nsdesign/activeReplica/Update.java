@@ -73,10 +73,10 @@ public class Update {
     NameRecord nameRecord;
 
     if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) { // we don't need to read for replace-all
-      nameRecord = new NameRecord(replica.getNameRecordDB(), updatePacket.getName());
+      nameRecord = new NameRecord(replica.getDB(), updatePacket.getName());
     } else {
       try {
-        nameRecord = NameRecord.getNameRecordMultiField(replica.getNameRecordDB(), updatePacket.getName(), null, updatePacket.getRecordKey().getName());
+        nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), updatePacket.getName(), null, updatePacket.getRecordKey().getName());
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + updatePacket.getName());
         e.printStackTrace();

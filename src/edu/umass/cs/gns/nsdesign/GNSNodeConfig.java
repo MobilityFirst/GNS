@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nsdesign;
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.HostInfo;
 
 import java.io.BufferedReader;
@@ -376,6 +375,33 @@ public class GNSNodeConfig implements NodeConfig {
     return this.getLNSTcpPort(ID);
   }
 
+
+  public int getClosestNameServer(Set<Integer> nameServers, Set<Integer> excludeNameServers) {
+    if (nameServers == null) {
+      return -1;
+    }
+
+    if (nameServers.contains(getClosestNameServer())
+            && excludeNameServers != null && !excludeNameServers.contains(getClosestNameServer())
+            && getPingLatency(getClosestNameServer()) >= 0) {
+      return getClosestNameServer();
+    }
+    long lowestLatency = Long.MAX_VALUE;
+    int nameServerID = -1;
+    long pingLatency;
+    for (Integer nsID : nameServers) {
+      if (excludeNameServers != null && excludeNameServers.contains(nsID)) {
+        continue;
+      }
+      pingLatency = getPingLatency(nsID);
+      if (pingLatency >= 0 && pingLatency < lowestLatency) {
+        lowestLatency = pingLatency;
+        nameServerID = nsID;
+      }
+    }
+    return nameServerID;
+  }
+
   /**
    * Tests *
    */
@@ -398,6 +424,9 @@ public class GNSNodeConfig implements NodeConfig {
     nameservers.add(59);
     Set<Integer> nameserverQueried = new HashSet<Integer>();
     nameserverQueried.add(8);
-    System.out.println(BestServerSelection.getSmallestLatencyNS(nameservers, null));
+    System.out.println(getClosestNameServer(nameservers, null));
   }
+
+
+
 }

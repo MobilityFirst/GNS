@@ -90,7 +90,7 @@ public class StopActiveSetTask extends TimerTask {
         GNS.getLogger().info(" Old Active Name Server Selected to Query: " + selectedOldActive);
       }
 
-      OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, NameServer.getNodeID(), selectedOldActive, oldPaxosID,
+      OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, 0, NameServer.getNodeID(), selectedOldActive, oldPaxosID,
               PacketType.OLD_ACTIVE_STOP);
       if (StartNameServer.debugMode) {
         GNS.getLogger().info(" Old active stop Sent Packet: " + packet);

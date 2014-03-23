@@ -23,8 +23,8 @@ import java.util.ArrayList;
  */
 public class GNSMessagingTask {
 
-  final int[] recipients;
-  final JSONObject[] msgs;
+  public final int[] recipients;
+  public final JSONObject[] msgs;
 
   // Unicast
   public GNSMessagingTask(int destID, JSONObject pkt) {

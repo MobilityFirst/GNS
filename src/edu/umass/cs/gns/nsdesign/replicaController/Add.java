@@ -40,11 +40,11 @@ public class Add {
 
     GNSMessagingTask gnsMessagingTask;
     GNS.getLogger().info("Executing ADD at replica controller " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
-    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getReplicaControllerDB(),
+    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(),
             addRecordPacket.getName(), true);
     // change packet type
     try {
-      ReplicaControllerRecord.addNameRecordPrimary(replicaController.getReplicaControllerDB(), rcRecord);
+      ReplicaControllerRecord.addNameRecordPrimary(replicaController.getDB(), rcRecord);
       addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
       gnsMessagingTask = new GNSMessagingTask(replicaController.getNodeID(), addRecordPacket.toJSONObject());
 

@@ -86,10 +86,10 @@ public class Lookup {
       try {
         if (Defs.ALLFIELDS.equals(dnsPacket.getKey().getName())) {
           // need everything so just grab all the fields
-          nameRecord = NameRecord.getNameRecord(activeReplica.getNameRecordDB(), guid);
+          nameRecord = NameRecord.getNameRecord(activeReplica.getDB(), guid);
         } else {
           // otherwise grab a few system fields we need plus the field the user wanted
-          nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getNameRecordDB(), guid, getDNSPacketFields(), field);
+          nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, getDNSPacketFields(), field);
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);

@@ -6,6 +6,7 @@ import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplicaInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
+import edu.umass.cs.gns.util.ConsistentHashing;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +35,8 @@ public class NameServer implements NameServerInterface{
   private ActiveReplicaInterface activeReplica;
 
   private ReplicaControllerInterface replicaController;
+
+  private int numReplicaControllers = 1;
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -84,6 +87,10 @@ public class NameServer implements NameServerInterface{
    */
   private void init(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
     // create nio server
+
+    if (configParameters.containsKey(NSParameterNames.PRIMARY_REPLICAS))
+      numReplicaControllers = Integer.parseInt(configParameters.get(NSParameterNames.PRIMARY_REPLICAS));
+    ConsistentHashing.initialize(numReplicaControllers, gnsNodeConfig.getNumberOfNameServers());
 
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
 

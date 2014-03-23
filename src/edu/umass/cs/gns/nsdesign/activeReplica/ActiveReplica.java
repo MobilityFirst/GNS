@@ -73,7 +73,6 @@ public class ActiveReplica implements ActiveReplicaInterface{
 
   }
 
-
   /**
    * Entry point for all packets sent to active replica.
    *
@@ -107,9 +106,11 @@ public class ActiveReplica implements ActiveReplicaInterface{
         case UPDATE_ADDRESS_LNS: // update sent by lns.
           msgTask = Update.handleUpdate(json, this);
           break;
-        case SELECT_REQUEST: // ?? Abhigyan: need to understand how selects are implemented and if they need coordination
+        case SELECT_REQUEST:
+          Select.handleSelectRequest(json, this);
           break;
-        case SELECT_RESPONSE: // ?? Abhigyan: need to figure how selects are implemented and if they need coordination
+        case SELECT_RESPONSE:
+          Select.handleSelectResponse(json, this);
           break;
         case NAME_SERVER_LOAD:  // Report the load at name server to LNS.
           break;
@@ -123,11 +124,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
           }
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          if (activeCoordinator == null) {
-            Remove.executeRemoveLocal(new RemoveRecordPacket(json), this);
-          } else {
-            activeCoordinator.handleRequest(json);
-          }
+          msgTask = Remove.handleActiveRemovePacket(new OldActiveSetStopPacket(json), this);
           break;
         case ACTIVE_GROUPCHANGE: // change the set of active replicas for a name
           break;
@@ -136,6 +133,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
         case ACTIVE_COORDINATION:
           activeCoordinator.handleRequest(json);
           break;
+        // SELECT
         default:
           GNS.getLogger().warning("No handler for packet type: " + type.toString());
           break;
@@ -171,7 +169,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
     return nodeID;
   }
 
-  public BasicRecordMap getNameRecordDB(){
+  public BasicRecordMap getDB(){
     return nameRecordDB;
   }
 

@@ -23,6 +23,8 @@ public class RemoveRecordPacket extends BasicPacket {
   private final static String NAME = "name";
   private final static String LOCALNAMESERVERID = "local";
 
+  private final static String NAME_SERVER_ID = "nsID";
+
   /** 
    * Unique identifier used by the entity making the initial request to confirm
    */
@@ -42,6 +44,12 @@ public class RemoveRecordPacket extends BasicPacket {
    * Id of local nameserver sending this request *
    */
   private int localNameServerID;
+
+
+  /**
+   * Id of name server who received this request from client
+   */
+  private int nameServerID;
   
 
   /**
@@ -58,6 +66,7 @@ public class RemoveRecordPacket extends BasicPacket {
     this.requestID = requestID;
     this.name = name;
     this.localNameServerID = localNameServerID;
+    this.nameServerID = -1; // this field will be set by name server after it received the packet
   }
 
   /**
@@ -79,6 +88,7 @@ public class RemoveRecordPacket extends BasicPacket {
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
+    this.nameServerID = json.getInt(NAME_SERVER_ID);
   }
 
   /**
@@ -96,6 +106,7 @@ public class RemoveRecordPacket extends BasicPacket {
     json.put(LNSREQID, getLNSRequestID());
     json.put(NAME, getName());
     json.put(LOCALNAMESERVERID, getLocalNameServerID());
+    json.put(NAME_SERVER_ID, getNameServerID());
     return json;
   }
 
@@ -129,5 +140,14 @@ public class RemoveRecordPacket extends BasicPacket {
 
   public void setLocalNameServerID(int localNameServerID) {
     this.localNameServerID = localNameServerID;
+  }
+
+
+  public int getNameServerID() {
+    return nameServerID;
+  }
+
+  public void setNameServerID(int nameServerID) {
+    this.nameServerID = nameServerID;
   }
 }

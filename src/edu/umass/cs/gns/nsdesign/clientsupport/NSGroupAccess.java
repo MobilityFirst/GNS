@@ -21,7 +21,7 @@ import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
 public class NSGroupAccess {
 
   public static ResultValue lookup(String guid, ActiveReplica activeReplica) throws RecordNotFoundException, FieldNotFoundException {
-    NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getNameRecordDB(), guid, null, GroupAccess.GROUP);
+    NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, GroupAccess.GROUP);
     return nameRecord.getKey(GroupAccess.GROUP);
   }
 }

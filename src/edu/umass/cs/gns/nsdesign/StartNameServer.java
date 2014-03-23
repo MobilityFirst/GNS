@@ -29,7 +29,7 @@ public class StartNameServer {
    * @return hash map with KEY = parameter names, VALUE = values of parameters in String form
    * @throws IOException
    */
-  private static HashMap<String, String> getParametersAsHashMap(String ... args) throws IOException {
+  public static HashMap<String, String> getParametersAsHashMap(String ... args) throws IOException {
 
 
     CommandLine parser = null;

@@ -2,6 +2,7 @@ package edu.umass.cs.gns.main;
 
 
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -130,6 +131,7 @@ public class StartNameServer {
   public static final String NAME_ACTIVES = "nameActives";
 
 
+
 //  public static String configFile;
 
   public static ReplicationFrameworkType replicationFramework;
@@ -192,6 +194,7 @@ public class StartNameServer {
   public static int failureDetectionPingInterval;
 
   public static int failureDetectionTimeoutInterval;
+
 
   @SuppressWarnings("static-access")
   /**************************************************************
@@ -333,6 +336,7 @@ public class StartNameServer {
 
     Option nameActives = new Option(NAME_ACTIVES, false, "list of name actives provided to this file");
 
+
     commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(nodeId);
@@ -392,6 +396,7 @@ public class StartNameServer {
     commandLineOptions.addOption(signatureCheck);
     commandLineOptions.addOption(quitAfterTime);
     commandLineOptions.addOption(nameActives);
+
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
   }
@@ -497,6 +502,7 @@ public class StartNameServer {
 
       id = allValues.containsKey(ID) ? Integer.parseInt(allValues.get(ID)) : id;
       nsFile = allValues.containsKey(NS_FILE) ? allValues.get(NS_FILE) : nsFile;
+
 
       GNS.numPrimaryReplicas = allValues.containsKey(PRIMARY_REPLICAS) ? Integer.parseInt(allValues.get(PRIMARY_REPLICAS)) : GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
       aggregateInterval = allValues.containsKey(AGGREGATE_INTERVAL) ? Integer.parseInt(allValues.get(AGGREGATE_INTERVAL)) * 1000 : DEFAULTAGGREGATEINTERVAL * 1000;

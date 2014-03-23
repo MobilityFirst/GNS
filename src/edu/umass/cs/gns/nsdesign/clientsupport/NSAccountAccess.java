@@ -26,7 +26,7 @@ public class NSAccountAccess {
   public static AccountInfo lookupAccountInfoFromGuid(String guid, ActiveReplica activeReplica) {
     ResultValue accountResult = null;
     try {
-      accountResult = NameRecord.getNameRecordMultiField(activeReplica.getNameRecordDB(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+      accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -34,7 +34,7 @@ public class NSAccountAccess {
       try {
         guid = lookupPrimaryGuid(guid, activeReplica);
         if (guid != null) {
-          accountResult = NameRecord.getNameRecordMultiField(activeReplica.getNameRecordDB(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+          accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
         }
       } catch (FieldNotFoundException e) {
       } catch (RecordNotFoundException e) {
@@ -64,7 +64,7 @@ public class NSAccountAccess {
   public static String lookupPrimaryGuid(String guid, ActiveReplica activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getNameRecordDB(), guid, null, AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -87,7 +87,7 @@ public class NSAccountAccess {
   public static String lookupGuid(String name, ActiveReplica activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getNameRecordDB(), name, null, AccountAccess.GUID).getKey(AccountAccess.GUID);
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), name, null, AccountAccess.GUID).getKey(AccountAccess.GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -122,7 +122,7 @@ public class NSAccountAccess {
   public static GuidInfo lookupGuidInfo(String guid, boolean allowSiteToSiteQuery, ActiveReplica activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getNameRecordDB(), guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }

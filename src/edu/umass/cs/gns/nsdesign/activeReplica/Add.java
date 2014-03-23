@@ -32,11 +32,11 @@ public class Add {
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
 
-    NameRecord nameRecord = new NameRecord(activeReplica.getNameRecordDB(), addRecordPacket.getName(),
+    NameRecord nameRecord = new NameRecord(activeReplica.getDB(), addRecordPacket.getName(),
             ConsistentHashing.getReplicaControllerSet(addRecordPacket.getName()),
             addRecordPacket.getName() + "-1", valuesMap, addRecordPacket.getTTL());
     try {
-      NameRecord.addNameRecord(activeReplica.getNameRecordDB(), nameRecord);
+      NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
 
     } catch (RecordExistsException e) {
       GNS.getLogger().severe("ERROR: Exception: name record already exists! This should never happen ");

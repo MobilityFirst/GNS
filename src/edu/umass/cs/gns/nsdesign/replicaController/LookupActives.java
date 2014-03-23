@@ -29,7 +29,7 @@ public class LookupActives {
     boolean isError = false;
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
-              replicaController.getReplicaControllerDB(), packet.getName(), ReplicaControllerRecord.MARKED_FOR_REMOVAL,
+              replicaController.getDB(), packet.getName(), ReplicaControllerRecord.MARKED_FOR_REMOVAL,
               ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       if (rcRecord.isMarkedForRemoval()) {
         isError = true;

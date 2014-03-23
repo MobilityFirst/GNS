@@ -27,23 +27,29 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class ReplicaController implements  ReplicaControllerInterface{
 
+  public static final int RC_TIMEOUT_MILLIS = 3000;
+
   /** object handles coordination among replicas on a request, if necessary */
-  private ReplicaControllerCoordinator rcCoordinator;
+  private final ReplicaControllerCoordinator rcCoordinator;
 
   /**ID of this node*/
-  private int nodeID;
+  private final int nodeID;
 
   /** nio server*/
-  private GNSNIOTransport nioServer;
+  private final GNSNIOTransport nioServer;
 
   /** executor service for handling timer tasks*/
-  private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
-
+  private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
   /** Object provides interface to the database table storing replica controller records */
-  public BasicRecordMap replicaControllerDB;
+  private final BasicRecordMap replicaControllerDB;
 
-  private GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig gnsNodeConfig;
+
+  private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap();
+
+  private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
+
   /**
    * constructor object
    */
@@ -104,11 +110,7 @@ public class ReplicaController implements  ReplicaControllerInterface{
           }
           break;
         case REMOVE_RECORD_LNS: // remove name from GNS
-          if(rcCoordinator == null) {
-            Remove.executeRemoveRecord(new RemoveRecordPacket(json), this);
-          } else {
-            rcCoordinator.handleRequest(json);
-          }
+          msgTask = Remove.handleRemoveRecordLNS(new RemoveRecordPacket(json), this);
           break;
         case NAMESERVER_SELECTION: // stats reported from local name servers
           // we don't expect to use coordination for this packet
@@ -120,11 +122,7 @@ public class ReplicaController implements  ReplicaControllerInterface{
           msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
           break;
         case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-          if(rcCoordinator == null) {
-            Remove.executeRemoveActiveConfirm(new RemoveRecordPacket(json), this);
-          } else {
-            rcCoordinator.handleRequest(json);
-          }
+          msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this);
           break;
         case ACTIVE_GROUPCHANGE_CONFIRM:  // confirmation received from active replica that group change for a name is complete
           // not implemented yet, we wont be doing group changes with one name server
@@ -167,12 +165,31 @@ public class ReplicaController implements  ReplicaControllerInterface{
     return nodeID;
   }
 
-  public BasicRecordMap getReplicaControllerDB() {
+  public BasicRecordMap getDB() {
     return replicaControllerDB;
+  }
+
+  public GNSNIOTransport getNioServer() {
+    return nioServer;
   }
 
   public ReplicaControllerCoordinator getRcCoordinator() {
     return rcCoordinator;
   }
 
+  public UniqueIDHashMap getOngoingStopActiveRequests() {
+    return ongoingStopActiveRequests;
+  }
+
+  public UniqueIDHashMap getOngoingStartActiveRequests() {
+    return ongoingStartActiveRequests;
+  }
+
+  public GNSNodeConfig getGnsNodeConfig() {
+    return gnsNodeConfig;
+  }
+
+  public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+    return scheduledThreadPoolExecutor;
+  }
 }
