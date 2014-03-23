@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.util.Set;
 

@@ -68,7 +68,7 @@ public class ReplicaController implements  ReplicaControllerInterface{
             // probably should use something more generic here
             MongoRecords.DBREPLICACONTROLLER);
 
-    replicaControllerDB.reset();
+//    replicaControllerDB.reset();
     // create the activeCoordinator object.
     rcCoordinator = null;
 //    rcCoordinator = new ReplicaControllerPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);

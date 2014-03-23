@@ -8,7 +8,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.clientsupport.SiteToSiteQueryHandler;

@@ -6,7 +6,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
 import edu.umass.cs.gns.packet.NSResponseCode;

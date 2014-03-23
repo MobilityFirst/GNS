@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageWorker;
 import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
@@ -90,6 +91,7 @@ public class NameServer implements NameServerInterface{
 
     if (configParameters.containsKey(NSParameterNames.PRIMARY_REPLICAS))
       numReplicaControllers = Integer.parseInt(configParameters.get(NSParameterNames.PRIMARY_REPLICAS));
+    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
     ConsistentHashing.initialize(numReplicaControllers, gnsNodeConfig.getNumberOfNameServers());
 
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);

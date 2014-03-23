@@ -12,10 +12,10 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
 

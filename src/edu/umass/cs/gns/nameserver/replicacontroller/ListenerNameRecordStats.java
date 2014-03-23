@@ -5,6 +5,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.NameRecordStatsPacket;
 import edu.umass.cs.gns.packet.NameServerSelectionPacket;
 import edu.umass.cs.gns.packet.Packet;

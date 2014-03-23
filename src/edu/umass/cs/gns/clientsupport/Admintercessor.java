@@ -9,7 +9,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import static edu.umass.cs.gns.packet.Packet.getPacketType;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.packet.admin.AdminResponsePacket;

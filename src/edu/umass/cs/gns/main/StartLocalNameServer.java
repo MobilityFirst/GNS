@@ -201,7 +201,7 @@ public class StartLocalNameServer {
   public static double serverLoadThreshold = 5.0; //
 
 
-  public static boolean useGNSNIOTransport = false;
+  public static boolean useGNSNIOTransport = true;
 
   /**
    *

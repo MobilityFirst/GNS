@@ -7,7 +7,7 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 import static edu.umass.cs.gns.packet.Packet.*;
 import edu.umass.cs.gns.packet.SelectRequestPacket;

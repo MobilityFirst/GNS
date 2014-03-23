@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.packet.AddRecordPacket;
 import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;

@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign.activeReplica;
 
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.packet.AddRecordPacket;

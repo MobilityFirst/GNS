@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nameserver;
+package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.BasicRecordCursor;
@@ -7,7 +7,8 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;

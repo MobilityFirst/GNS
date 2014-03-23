@@ -1,14 +1,13 @@
 package edu.umass.cs.gns.nameserver;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
-import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;

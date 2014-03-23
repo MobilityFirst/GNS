@@ -66,7 +66,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
     nameRecordDB = (BasicRecordMap) Util.createObject(className,
             // probably should use something more generic here
             MongoRecords.DBNAMERECORD);
-    nameRecordDB.reset();
+//    nameRecordDB.reset();
     activeCoordinator = null;
     // create the activeCoordinator object.
 //    activeCoordinator = new ActiveReplicaPaxos(nioServer, new edu.umass.cs.gns.nameserver.GNSNodeConfig(), this);

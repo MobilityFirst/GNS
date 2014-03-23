@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nameserver.replicacontroller;
+package edu.umass.cs.gns.nameserver.recordmap;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
@@ -11,8 +11,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.StatsInfo;
-import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -94,9 +92,9 @@ import java.util.concurrent.ConcurrentMap;
  * <b>Thread safety:</b> This class is not thread-safe.
  * <p/>
  * <p/>
- * The design of this class is similar to the design of {@link edu.umass.cs.gns.nameserver.NameRecord} class.
+ * The design of this class is similar to the design of {@link edu.umass.cs.gns.nameserver.recordmap.NameRecord} class.
  *
- * @see edu.umass.cs.gns.nameserver.NameRecord
+ * @see edu.umass.cs.gns.nameserver.recordmap.NameRecord
  * @see edu.umass.cs.gns.nameserver.NameServer
  * @see edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface
  * @see edu.umass.cs.gns.exceptions.FieldNotFoundException

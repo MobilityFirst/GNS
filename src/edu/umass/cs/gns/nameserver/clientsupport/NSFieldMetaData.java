@@ -11,7 +11,7 @@ import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import java.util.HashSet;

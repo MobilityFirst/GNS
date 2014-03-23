@@ -165,7 +165,7 @@ public class StartNameServer {
   // Don't be surprised if things break when this is set to true. - Westy
   public static boolean eventualConsistency = false;
 
-  public static boolean useGNSNIOTransport = false;
+  public static boolean useGNSNIOTransport = true;
   public static boolean emulatePingLatencies = false;
   public static double variation = 0.1;
   public static int workerThreadCount = 5; // number of worker threads

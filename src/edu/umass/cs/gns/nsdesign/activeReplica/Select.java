@@ -8,7 +8,7 @@ package edu.umass.cs.gns.nsdesign.activeReplica;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NSSelectInfo;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.packet.SelectRequestPacket;
 import edu.umass.cs.gns.packet.SelectResponsePacket;
 import org.json.JSONArray;

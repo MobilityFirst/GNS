@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaControllerRecord;
+import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.packet.RequestActivesPacket;
 import org.json.JSONException;

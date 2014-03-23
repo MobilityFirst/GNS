@@ -11,7 +11,7 @@ import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecord;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
 

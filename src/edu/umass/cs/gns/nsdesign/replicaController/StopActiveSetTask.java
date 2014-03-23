@@ -5,7 +5,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.packet.BasicPacket;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
-import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 

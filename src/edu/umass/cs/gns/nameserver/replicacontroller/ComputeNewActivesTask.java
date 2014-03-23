@@ -8,6 +8,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
