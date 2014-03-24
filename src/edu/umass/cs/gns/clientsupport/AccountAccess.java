@@ -359,7 +359,7 @@ public class AccountAccess {
       if (updateAccountInfo(accountInfo)) {
         return Defs.OKRESPONSE;
       } else {
-        return Defs.BADRESPONSE + Defs.UPDATEERROR;
+        return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
       }
     } else {
       return Defs.BADRESPONSE + " " + Defs.BADGUID;
@@ -478,6 +478,7 @@ public class AccountAccess {
         return true;
       }
     } catch (JSONException e) {
+      GNS.getLogger().warning("Problem parsing account info:" + e);
     }
     return false;
   }
@@ -492,6 +493,7 @@ public class AccountAccess {
         return true;
       }
     } catch (JSONException e) {
+      GNS.getLogger().warning("Problem parsing guid info:" + e);
     }
     return false;
   }
