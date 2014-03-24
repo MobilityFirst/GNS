@@ -107,6 +107,8 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.group.AddToGroupSelf",
     "edu.umass.cs.gns.commands.group.GetGroupMembers",
     "edu.umass.cs.gns.commands.group.GetGroupMembersSelf",
+    "edu.umass.cs.gns.commands.group.GetGroups",
+    "edu.umass.cs.gns.commands.group.GetGroupsSelf",
     "edu.umass.cs.gns.commands.group.GrantMembership",
     "edu.umass.cs.gns.commands.group.GrantMemberships",
     "edu.umass.cs.gns.commands.group.RemoveFromGroup",
