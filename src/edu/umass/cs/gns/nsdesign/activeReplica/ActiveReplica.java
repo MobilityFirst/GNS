@@ -157,6 +157,11 @@ public class ActiveReplica implements ActiveReplicaInterface{
     }
   }
 
+  @Override
+  public void resetDB() {
+    nameRecordDB.reset();
+  }
+
   /**
    * ActiveReplicaCoordinator calls this method to locally execute a decision.
    * Depending on request type, this method will call a private method to execute request.

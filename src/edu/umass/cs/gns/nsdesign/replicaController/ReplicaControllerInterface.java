@@ -10,4 +10,5 @@ public interface ReplicaControllerInterface {
 
   public void handleIncomingPacket(JSONObject json);
 
+  void resetDB();
 }

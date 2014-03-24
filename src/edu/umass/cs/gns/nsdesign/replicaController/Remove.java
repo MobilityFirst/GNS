@@ -65,7 +65,7 @@ public class Remove {
       }
 
     } catch (RecordNotFoundException e) {
-      // return failure, because record was not even found in deleted state
+      // return failure, because record was not even found
       ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, removeRecord);
       GNS.getLogger().severe("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
       msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
@@ -93,7 +93,7 @@ public class Remove {
 
       rcRecord.setMarkedForRemoval();
 
-      GNS.getLogger().info("PAXOS DECISION applied. Name Record marked for removal " + removeRecord);
+      GNS.getLogger().info("Name Record marked for removal " + removeRecord);
 
       if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
                                                               // so it will inform actives

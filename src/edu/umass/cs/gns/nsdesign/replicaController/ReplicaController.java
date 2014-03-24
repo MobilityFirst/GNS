@@ -152,6 +152,11 @@ public class ReplicaController implements  ReplicaControllerInterface{
 
   }
 
+  @Override
+  public void resetDB() {
+    replicaControllerDB.reset();
+  }
+
 
   /**
    * ReplicaControllerCoordinator calls this method to locally execute a decision.

@@ -10,4 +10,6 @@ public interface ActiveReplicaInterface {
 
   public void handleIncomingPacket(JSONObject json);
 
+  void resetDB();
+
 }

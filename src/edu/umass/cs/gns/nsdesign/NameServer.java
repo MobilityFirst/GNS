@@ -119,4 +119,9 @@ public class NameServer implements NameServerInterface{
   public ReplicaControllerInterface getReplicaController() {
     return replicaController;
   }
+
+  public void resetDB() {
+    activeReplica.resetDB();
+    replicaController.resetDB();
+  }
 }

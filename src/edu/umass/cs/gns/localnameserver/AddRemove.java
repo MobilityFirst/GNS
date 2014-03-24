@@ -59,8 +59,6 @@ public class AddRemove {
   /**
    *
    * @param updateAddressPacket
-   * @param address
-   * @param port
    * @throws JSONException
    */
   static void handleUpsert(UpdateAddressPacket updateAddressPacket) throws JSONException {
@@ -121,7 +119,7 @@ public class AddRemove {
       // send it back to the orginator of the request
       addInfo.getID();
       JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
-      GNS.getLogger().fine("LNSListenerUpdate CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
+      GNS.getLogger().fine(" CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
               + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);
     }
@@ -143,7 +141,7 @@ public class AddRemove {
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       // send it back to the orginator of the request
       JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
-      GNS.getLogger().fine("LNSListenerUpdate CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
+      GNS.getLogger().fine(" CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
               + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);
       // update our cache
