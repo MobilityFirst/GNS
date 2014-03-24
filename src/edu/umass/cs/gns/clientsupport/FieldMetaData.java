@@ -20,7 +20,7 @@ public class FieldMetaData {
   private static final String MetaDataPrefix = "_MD_";
 
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
-    return InternalField.makeInternalField(MetaDataPrefix + metaDataType.name() + "_" + key);
+    return InternalField.makeInternalFieldString(MetaDataPrefix + metaDataType.name() + "_" + key);
   }
 
   public static boolean isMetaDataField(String string) {

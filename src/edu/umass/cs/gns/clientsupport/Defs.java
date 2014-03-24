@@ -58,6 +58,7 @@ public class Defs {
   public final static String ADDTOGROUP = "addToGroup";
   public final static String REMOVEFROMGROUP = "removeFromGroup";
   public final static String GETGROUPMEMBERS = "getGroupMembers";
+  public final static String GETGROUPS = "getGroups";
   //
   public final static String REQUESTJOINGROUP = "requestJoinGroup";
   public final static String RETRIEVEGROUPJOINREQUESTS = "retrieveGroupJoinRequests";

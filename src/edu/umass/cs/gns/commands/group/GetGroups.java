@@ -20,12 +20,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * Command to return the groups that a GUID is a member of formatted as a JSON Array.
+ * 
  * @author westy
  */
-public class GetGroupMembers extends GnsCommand {
+public class GetGroups extends GnsCommand {
 
-  public GetGroupMembers(CommandModule module) {
+  public GetGroups(CommandModule module) {
     super(module);
   }
 
@@ -36,7 +37,7 @@ public class GetGroupMembers extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return GETGROUPMEMBERS;
+    return GETGROUPS;
   }
 
   @Override
@@ -48,11 +49,11 @@ public class GetGroupMembers extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    return new JSONArray(GroupAccess.lookup(guid, reader, signature, message)).toString();
+    return new JSONArray(GroupAccess.lookupGroups(guid, reader, signature, message)).toString();
   }
 
   @Override
   public String getCommandDescription() {
-    return "Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command.";
+    return "Returns the groups that a guid is a member of formatted as a JSON Array. Reader guid needs to have read access and sign the command.";
   }
 }

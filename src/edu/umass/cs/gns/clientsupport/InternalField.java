@@ -20,7 +20,7 @@ public class InternalField {
    * @param string
    * @return
    */
-  public static String makeInternalField(String string) {
+  public static String makeInternalFieldString(String string) {
     return INTERNAL_PREFIX + string;
   }
 
