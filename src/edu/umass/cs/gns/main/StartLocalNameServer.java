@@ -130,7 +130,7 @@ public class StartLocalNameServer {
   public static String updateTraceFile;
   public static int numQuery;
   public static int numUpdate;
-  public static long voteIntervalMillis = 1000;
+  public static long voteIntervalMillis = 100000;
   public static boolean isSyntheticWorkload = false;
   public static String name;
   public static int cacheSize = 1000;
