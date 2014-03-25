@@ -75,6 +75,7 @@ public class Defs {
   public final static String CLEARCACHE = "clearCache";
   public final static String DUMPCACHE = "dumpCache";
   public final static String PINGTABLE = "pingTable";
+  public final static String PINGVALUE = "pingValue";
   public final static String CHANGELOGLEVEL = "changeLogLevel";
   public final static String LEVEL = "level";
   public final static String SETPARAMETER = "setParameter";
@@ -88,6 +89,7 @@ public class Defs {
   public final static String CLEARTAGGED = "clearTagged";
   public final static String RTTTEST = "rttTest";
   public final static String N = "n";
+  public final static String N2 = "n2";
   public final static String GUIDCNT = "guidCnt";
   //
   public final static String OKRESPONSE = "+OK+";

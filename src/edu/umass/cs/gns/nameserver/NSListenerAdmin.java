@@ -225,6 +225,18 @@ public class NSListenerAdmin extends Thread {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
                 break;
+              case PINGVALUE:
+                int node1 = Integer.parseInt(adminRequestPacket.getArgument());
+                int node2 = Integer.parseInt(adminRequestPacket.getArgument2());
+                if (node1 == NameServer.getNodeID()) {
+                  JSONObject jsonResponse = new JSONObject();
+                  jsonResponse.put("PINGVALUE", PingManager.nodeAverage(node2));
+                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
+                } else {
+                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
+                }
+                break;
               case CHANGELOGLEVEL:
                 Level level = Level.parse(adminRequestPacket.getArgument());
                 GNS.getLogger().info("Changing log level to " + level.getName());

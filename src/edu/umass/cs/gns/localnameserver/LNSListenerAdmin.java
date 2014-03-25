@@ -171,6 +171,29 @@ public class LNSListenerAdmin extends Thread {
                 returnResponsePacketToSender(incomingPacket.getLocalNameServerId(), responsePacket);
               }
               break;
+            case PINGVALUE:
+              int node1 = Integer.parseInt(incomingPacket.getArgument());
+              int node2 = Integer.parseInt(incomingPacket.getArgument2());
+              if (node1 < ConfigFileInfo.getNumberOfHosts() && node2 < ConfigFileInfo.getNumberOfHosts()) {
+                if (node1 == LocalNameServer.getNodeID()) {
+                  // handle it here
+                  jsonResponse = new JSONObject();
+                  jsonResponse.put("PINGVALUE", PingManager.nodeAverage(node2));
+                  // send a response back to where the request came from
+                  responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
+                  returnResponsePacketToSender(incomingPacket.getLocalNameServerId(), responsePacket);
+                } else {
+                  // send it to the server that can handle it
+                  incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
+                  Packet.sendTCPPacket(incomingPacket.toJSONObject(), node1, GNS.PortType.ADMIN_PORT);
+                }
+              } else { // the incoming packet contained an invalid host number
+                jsonResponse = new JSONObject();
+                jsonResponse.put("ERROR", "Bad host number");
+                responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
+                returnResponsePacketToSender(incomingPacket.getLocalNameServerId(), responsePacket);
+              }
+              break;
             case CHANGELOGLEVEL:
               Level level = Level.parse(incomingPacket.getArgument());
               GNS.getLogger().info("Changing log level to " + level.getName());

@@ -129,10 +129,10 @@ public class Admintercessor {
     }
   }
   
-  public static String sendPingTable(String size) {
+  public static String sendPingTable(String node) {
     int id = nextAdminRequestID();
     try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGTABLE, size).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGTABLE, node).toJSONObject());
       waitForAdminResponse(id);
       JSONObject json = adminResult.get(id);
       if (json != null) {
@@ -145,6 +145,26 @@ public class Admintercessor {
       }
     } catch (Exception e) {
       GNS.getLogger().warning("Ignoring error while sending PINGTABLE request: " + e);
+      return null;
+    }
+  }
+  
+  public static String sendPingValue(String node1, String node2) {
+    int id = nextAdminRequestID();
+    try {
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1, node2).toJSONObject());
+      waitForAdminResponse(id);
+      JSONObject json = adminResult.get(id);
+      if (json != null) {
+        if (json.optString("ERROR", null) != null) {
+          return BADRESPONSE + " " + json.getString("ERROR");
+        }
+        return json.getString("PINGVALUE");
+      } else {
+        return null;
+      }
+    } catch (Exception e) {
+      GNS.getLogger().warning("Ignoring error while sending PINGVALUE request: " + e);
       return null;
     }
   }

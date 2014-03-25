@@ -9,8 +9,8 @@ package edu.umass.cs.gns.commands.admin;
 
 import edu.umass.cs.gns.clientsupport.Admintercessor;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.commands.data.CommandModule;
+import edu.umass.cs.gns.commands.data.GnsCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,15 +36,15 @@ public class PingTable extends GnsCommand {
 
   @Override
   public String execute(JSONObject json) throws JSONException, NumberFormatException {
-    String sizeString = json.getString(N);
+    String nodeString = json.getString(N);
     if (module.isAdminMode()) {
-      return Admintercessor.sendPingTable(sizeString);
+      return Admintercessor.sendPingTable(nodeString);
     }
     return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
   }
 
   @Override
   public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.";
+    return "[ONLY IN ADMIN MODE] Returns a table of ping values for the given node.";
   }
 }

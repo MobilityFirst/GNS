@@ -79,7 +79,14 @@ public class PingManager {
     }
   }
 
-  private static long nodeAverage(int node) {
+  /**
+   * Calculates the average ping time from the given node.
+   * Returns 999L if value can't be determined.
+   * 
+   * @param node
+   * @return 
+   */
+  public static long nodeAverage(int node) {
     // calculate the average ignoring bad samples
     int count = WINDOWSIZE; // tracks the number of good samples
     double total = 0;
