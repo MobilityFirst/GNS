@@ -5,8 +5,9 @@
  * 
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.commands.data;
+package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;

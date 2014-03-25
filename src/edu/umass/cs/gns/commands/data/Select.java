@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.commands.data;
 
+import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import org.json.JSONException;

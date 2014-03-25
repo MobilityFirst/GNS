@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.clientsupport;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.commands.data.CommandModule;
-import edu.umass.cs.gns.commands.data.GnsCommand;
+import edu.umass.cs.gns.commands.CommandModule;
+import edu.umass.cs.gns.commands.GnsCommand;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Util;

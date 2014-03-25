@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.commands.data;
+package edu.umass.cs.gns.commands;
 
 /**
  *
@@ -137,6 +137,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.admin.GetTagged",
     "edu.umass.cs.gns.commands.admin.Dump",
     "edu.umass.cs.gns.commands.admin.PingTable",
+    "edu.umass.cs.gns.commands.admin.PingValue",
     "edu.umass.cs.gns.commands.admin.RTT"};
 
   public static String[] getCommandDefs() {
