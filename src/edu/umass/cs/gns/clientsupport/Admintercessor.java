@@ -149,6 +149,10 @@ public class Admintercessor {
     }
   }
   
+  public static String sendPingValue(int node1, int node2) {
+    return sendPingValue(Integer.toString(node1), Integer.toString(node2));
+  }
+  
   public static String sendPingValue(String node1, String node2) {
     int id = nextAdminRequestID();
     try {

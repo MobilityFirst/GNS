@@ -138,7 +138,9 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.admin.Dump",
     "edu.umass.cs.gns.commands.admin.PingTable",
     "edu.umass.cs.gns.commands.admin.PingValue",
-    "edu.umass.cs.gns.commands.admin.RTT"};
+    "edu.umass.cs.gns.commands.admin.RTT",
+    "edu.umass.cs.gns.commands.admin.RTTQuick"
+  };
 
   public static String[] getCommandDefs() {
     return commands;

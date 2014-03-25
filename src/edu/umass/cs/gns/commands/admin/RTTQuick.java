@@ -18,15 +18,15 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RTT extends GnsCommand {
+public class RTTQuick extends GnsCommand {
 
-  public RTT(CommandModule module) {
+  public RTTQuick(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{N, GUIDCNT};
+    return new String[]{GUIDCNT};
   }
 
   @Override
@@ -37,11 +37,9 @@ public class RTT extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws JSONException {
     if (module.isAdminMode()) {
-      String sizeString = json.getString(N);
-      int size = Integer.parseInt(sizeString);
       String guidCntString = json.getString(GUIDCNT);
       int guidCnt = Integer.parseInt(guidCntString);
-      return PerformanceTests.runRttPerformanceTest(size, guidCnt, true);
+      return PerformanceTests.runRttPerformanceTest(5, guidCnt, false);
     } else {
       return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
     }
@@ -50,6 +48,6 @@ public class RTT extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Runs the round trip test.";
+    return "Runs the round trip test with 5 reads and only shows bad results.";
   }
 }

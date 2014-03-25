@@ -5,11 +5,10 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.util.Stats;
 import edu.umass.cs.gns.util.Util;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,7 +44,7 @@ public class PerformanceTests {
    * @param numFields
    * @return 
    */
-  public static String runRttPerformanceTest(int numFields, int guidCnt) {
+  public static String runRttPerformanceTest(int numFields, int guidCnt, boolean verbose) {
     StringBuilder result = new StringBuilder();
     String accountGuid;
     // see if we already registered our GUID
@@ -56,15 +55,28 @@ public class PerformanceTests {
       AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false);
     }
     times = new HashMap<Integer, ArrayList<Double>>();
-    result.append("GUIDs:");
-    result.append(NEWLINE);
-    for (String guid : createSomeGuids(AccountAccess.lookupAccountInfoFromGuid(accountGuid), guidCnt)) {
-      result.append(guid);
+    if (verbose) {
+      result.append("GUIDs:");
       result.append(NEWLINE);
+    }
+    for (String guid : createSomeGuids(AccountAccess.lookupAccountInfoFromGuid(accountGuid), guidCnt)) {
+      if (verbose) {
+        result.append(guid);
+        result.append(NEWLINE);
+      }
       runTestForGuid(guid, numFields);
     }
     //result.append(runTestForGuid(accountGuid, numFields));
-    result.append(resultsToString());
+    if (verbose) {
+      result.append(resultsToString());
+    } else {
+      String checkResult = checkForExcessiveRtt();
+      if (checkResult.isEmpty()) {
+        result.append("All RTTs within specified parameters.");
+      } else {
+        result.append(checkResult);
+      }
+    }
     return result.toString();
   }
 
@@ -112,6 +124,38 @@ public class PerformanceTests {
     }
   }
 
+  private static int getComparisonPingValue(int node) {
+    String result = Admintercessor.sendPingValue(LocalNameServer.getNodeID(), node);
+    if (result.startsWith(Defs.BADRESPONSE)) {
+      return 999;
+    } else {
+      return Integer.parseInt(result);
+    }
+  }
+  
+  private static final int EXCESSIVE_RTT_DIFFERENCE = 100; 
+  
+  private static String checkForExcessiveRtt() {
+    StringBuilder result = new StringBuilder();
+    for (Entry<Integer, ArrayList<Double>> entry : times.entrySet()) {
+      int node = entry.getKey();
+      Stats stats = new Stats(times.get(node));
+      int avg = (int) Math.round(stats.getMean());
+      int ping = getComparisonPingValue(node);
+      if (avg - ping > EXCESSIVE_RTT_DIFFERENCE) {
+        result.append("Node ");
+        result.append(entry.getKey());
+        result.append(" has excessive rtt of ");
+        result.append(avg);
+        result.append("ms (ping is ");
+        result.append(ping);
+        result.append("ms) ");
+        result.append(NEWLINE);
+      }
+    }
+    return result.toString();
+  }
+
   private static String resultsToString() {
     StringBuilder result = new StringBuilder();
     for (Entry<Integer, ArrayList<Double>> entry : times.entrySet()) {
@@ -122,9 +166,11 @@ public class PerformanceTests {
       result.append(NEWLINE);
       result.append("Fields read = " + stats.getN());
       result.append(NEWLINE);
-      result.append("Avg RTT = " + Math.round(stats.getMean())  + "ms");
+      result.append("Avg RTT = " + Math.round(stats.getMean()) + "ms");
       result.append(NEWLINE);
-      result.append("StdDev = " + Math.round(stats.getStdDev())  + "ms");
+      result.append("StdDev = " + Math.round(stats.getStdDev()) + "ms");
+      result.append(NEWLINE);
+      result.append("Ping = " + getComparisonPingValue(entry.getKey()) + "ms");
       result.append(NEWLINE);
     }
     return result.toString();
