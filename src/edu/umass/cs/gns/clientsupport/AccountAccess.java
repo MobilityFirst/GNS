@@ -8,6 +8,7 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.packet.NSResponseCode;
+import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.Util;
 import java.text.ParseException;
@@ -170,7 +171,7 @@ public class AccountAccess {
     String response;
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(Defs.OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
-        String verifyCode = Util.randomString(6);
+        String verifyCode = createVerificationCode(name);
         AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
         accountInfo.setVerificationCode(verifyCode);
         accountInfo.noteUpdate();
@@ -195,6 +196,13 @@ public class AccountAccess {
       }
     }
     return response;
+  }
+  
+  private static final String SECRET = "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
+          + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
+
+  private static String createVerificationCode(String name) {
+    return ByteUtils.toHex(SHA1HashFunction.getInstance().hash(name + SECRET));
   }
   
   public static String verifyAccount(String guid, String code) {

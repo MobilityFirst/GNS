@@ -211,7 +211,7 @@ public class Intercessor {
 
   public static NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
-    GNS.getLogger().finer("Sending remove: " + name);
+    GNS.getLogger().info("Sending remove: " + name);
     RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
@@ -222,7 +222,7 @@ public class Intercessor {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().finer("Remove (" + id + "): " + name + "\n  Returning: " + result);
+    GNS.getLogger().info("Remove (" + id + "): " + name + "\n  Returning: " + result);
     return result;
   }
 
