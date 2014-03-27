@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.json.JSONException;
 
 /**
- * Provides the basic interface to GNS accounts. 
+ * Provides the basic interface to GNS accounts.
  * <p>
  * See {@link AccountInfo} for more details about accounts.
  * <p>
@@ -26,7 +26,7 @@ import org.json.JSONException;
  * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
  * GUID: "GUID" -> GUID (primary) for secondary guid<br>
  * GUID: "GUID_INFO" -> {guid info}<br>
- * HRN:  "GUID" -> GUID<br>
+ * HRN: "GUID" -> GUID<br>
  * <p>
  * GUID = Globally Unique Identifier<br>
  * HRN = Human Readable Name<br>
@@ -47,12 +47,13 @@ public class AccountAccess {
    * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
    * GUID: "GUID" -> GUID (primary) for secondary guid<br>
    * GUID: "GUID_INFO" -> {guid info}<br>
-   * HRN:  "GUID" -> GUID<br>
+   * HRN: "GUID" -> GUID<br>
    * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
-   @param guid
-   @return 
+   *
+   * @param guid
+   * @return
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid) {
     return lookupAccountInfoFromGuid(guid, false);
@@ -66,14 +67,14 @@ public class AccountAccess {
    * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
    * GUID: "GUID" -> GUID (primary) for secondary guid<br>
    * GUID: "GUID_INFO" -> {guid info}<br>
-   * HRN:  "GUID" -> GUID<br>
+   * HRN: "GUID" -> GUID<br>
    * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
    *
-   @param guid
-   @param allowSubGuids
-   @return 
+   * @param guid
+   * @param allowSubGuids
+   * @return
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowSubGuids) {
     QueryResult accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
@@ -104,7 +105,7 @@ public class AccountAccess {
    * otherwise returns null.
    * <p>
    * GUID = Globally Unique Identifier
-   * 
+   *
    * @param guid
    * @return a GUID
    */
@@ -123,7 +124,7 @@ public class AccountAccess {
    * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
-   * 
+   *
    * @param name
    * @return a GUID
    */
@@ -141,7 +142,7 @@ public class AccountAccess {
    * Obtains the guid info record from the database for GUID given.
    * <p>
    * GUID = Globally Unique Identifier<br>
-   * 
+   *
    * @param guid
    * @return an {@link GuidInfo} instance
    */
@@ -164,7 +165,7 @@ public class AccountAccess {
    * Obtains the account info record from the database for the account whose HRN is name.
    * <p>
    * HRN = Human Readable Name<br>
-   * 
+   *
    * @param name
    * @return an {@link AccountInfo} instance
    */
@@ -212,7 +213,8 @@ public class AccountAccess {
             return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to send email";
           }
         } else {
-          // if we do this we're probably housed anyway, but just in case try to remove the account
+          // Account info could not be updated.
+          // If we're here we're probably hosed anyway, but just in case try to remove the account
           removeAccount(accountInfo);
           return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
         }
@@ -227,7 +229,7 @@ public class AccountAccess {
   private static String createVerificationCode(String name) {
     return ByteUtils.toHex(SHA1HashFunction.getInstance().hash(name + SECRET));
   }
-  
+
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 
   public static String verifyAccount(String guid, String code) {
@@ -258,39 +260,11 @@ public class AccountAccess {
 
   }
 
-//  public static String verifyAccount(String guid, String code) {
-//    AccountInfo accountInfo;
-//    if ((accountInfo = lookupAccountInfoFromGuid(guid)) != null) {
-//      if (!accountInfo.isVerified()) {
-//        if (accountInfo.getVerificationCode() != null && code != null) {
-//          if (accountInfo.getVerificationCode().equals(code)) {
-//            accountInfo.setVerificationCode(null);
-//            accountInfo.setVerified(true);
-//            accountInfo.noteUpdate();
-//            if (updateAccountInfo(accountInfo)) {
-//              return Defs.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
-//            } else {
-//              return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
-//            }
-//          } else {
-//            return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct";
-//          }
-//        } else {
-//          return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code";
-//        }
-//      } else {
-//        return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified";
-//      }
-//    } else {
-//      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info";
-//    }
-//  }
-
   /**
    * Create a new GNS user account.
-   * 
+   *
    * THIS CAN BYPASS THE EMAIL VERIFICATION if you set emailVerify to false;
-   * 
+   *
    * <p>
    * This adds three records to the GNS for the account:<br>
    * NAME: "_GNS_GUID" -> guid<br>
@@ -335,22 +309,29 @@ public class AccountAccess {
 
   /**
    * Removes a GNS user account.
-   * 
+   *
    * @param accountInfo
-   * @return status result 
+   * @return status result
    */
   public static String removeAccount(AccountInfo accountInfo) {
-
-    // do this first add to make sure this account exists
+    // First remove any group links
+    GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid());
+    // Then remove the HRN link
     if (!Intercessor.sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
       Intercessor.sendRemoveRecord(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
         Intercessor.sendRemoveRecord(alias);
       }
+      // get rid of all subguids
       for (String guid : accountInfo.getGuids()) {
-        Intercessor.sendRemoveRecord(guid);
+        GuidInfo guidInfo = lookupGuidInfo(guid);
+        if (guidInfo != null) { // should not be null, ignore if it is
+          removeGuid(accountInfo, guidInfo, true);
+        }
       }
+
+      // all is well
       return Defs.OKRESPONSE;
     } else {
       return Defs.BADRESPONSE + " " + Defs.BADACCOUNT;
@@ -364,12 +345,12 @@ public class AccountAccess {
    * GUID: "_GNS_PRIMARY_GUID" -> GUID (primary) for secondary guid<br>
    * GUID: "_GNS_GUID_INFO" -> {guid info}<br>
    * HRN: "_GNS_GUID" -> GUID<br>
-   * 
+   *
    * @param accountInfo - the accountInfo of the account to add the GUID to
    * @param name = the human readable name to associate with the GUID
    * @param guid - the new GUID
    * @param publicKey - the public key to use with the new account
-   * @return status result 
+   * @return status result
    */
   public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
     try {
@@ -405,22 +386,45 @@ public class AccountAccess {
 
   /**
    * Remove a GUID associated with an account.
-   * 
+   *
    * @param accountInfo
    * @param guid
    * @return status result
    */
   public static String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
+    return removeGuid(accountInfo, guid, false);
+  }
 
+  /**
+   * Remove a GUID associated with an account.
+   * If dontWorryAboutAccountGuid is true we're deleting the account guid as well
+   * so we don't have to update that info.
+   *
+   * @param accountInfo
+   * @param guid
+   * @param dontWorryAboutAccountGuid
+   * @return
+   */
+  public static String removeGuid(AccountInfo accountInfo, GuidInfo guid, boolean dontWorryAboutAccountGuid) {
+    // First remove any group links
+    GroupAccess.cleanupGroupsForDelete(guid.getGuid());
+    // Then remove the guid record
     if (!Intercessor.sendRemoveRecord(guid.getGuid()).isAnError()) {
       // remove reverse record
       Intercessor.sendRemoveRecord(guid.getName());
-      accountInfo.removeGuid(guid.getGuid());
-      accountInfo.noteUpdate();
-      if (updateAccountInfo(accountInfo)) {
+      // Possibly update the account guid we are associated with to
+      // tell them we are gone
+      if (dontWorryAboutAccountGuid) {
         return Defs.OKRESPONSE;
       } else {
-        return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
+        // update the account guid to know that we deleted the guid
+        accountInfo.removeGuid(guid.getGuid());
+        accountInfo.noteUpdate();
+        if (updateAccountInfo(accountInfo)) {
+          return Defs.OKRESPONSE;
+        } else {
+          return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
+        }
       }
     } else {
       return Defs.BADRESPONSE + " " + Defs.BADGUID;
@@ -432,10 +436,10 @@ public class AccountAccess {
    * <p>
    * These records will be added:<br>
    * HRN: "_GNS_GUID" -> GUID<br>
-   * 
+   *
    * @param accountInfo
    * @param alias
-   * @return status result 
+   * @return status result
    */
   public static String addAlias(AccountInfo accountInfo, String alias) {
     accountInfo.addAlias(alias);
@@ -445,7 +449,7 @@ public class AccountAccess {
     if (!Intercessor.sendAddRecord(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       if (updateAccountInfo(accountInfo)) {
         return Defs.OKRESPONSE;
-      } else {
+      } else { // back out if we got an error
         Intercessor.sendRemoveRecord(alias);
         accountInfo.removeAlias(alias);
         return Defs.BADRESPONSE + " " + Defs.BADALIAS;
@@ -458,10 +462,10 @@ public class AccountAccess {
 
   /**
    * Remove an alias from an account.
-   * 
+   *
    * @param accountInfo
    * @param alias
-   * @return status result 
+   * @return status result
    */
   public static String removeAlias(AccountInfo accountInfo, String alias) {
 
@@ -482,10 +486,10 @@ public class AccountAccess {
 
   /**
    * Set the password of an account.
-   * 
+   *
    * @param accountInfo
    * @param password
-   * @return status result 
+   * @return status result
    */
   public static String setPassword(AccountInfo accountInfo, String password) {
     accountInfo.setPassword(password);
@@ -498,10 +502,10 @@ public class AccountAccess {
 
   /**
    * Add a tag to a GUID.
-   * 
+   *
    * @param guidInfo
    * @param tag
-   * @return status result 
+   * @return status result
    */
   public static String addTag(GuidInfo guidInfo, String tag) {
     guidInfo.addTag(tag);
@@ -515,10 +519,10 @@ public class AccountAccess {
 
   /**
    * Remove a tag from a GUID.
-   * 
+   *
    * @param guidInfo
    * @param tag
-   * @return status result 
+   * @return status result
    */
   public static String removeTag(GuidInfo guidInfo, String tag) {
     guidInfo.removeTag(tag);

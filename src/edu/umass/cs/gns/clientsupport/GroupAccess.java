@@ -7,7 +7,7 @@ import edu.umass.cs.gns.packet.NSResponseCode;
 /**
  * GroupAccess provides an interface to the group information in the GNS.
  *
- * The members of a group are stored in a record whose key is the GROUP string. 
+ * The members of a group are stored in a record whose key is the GROUP string.
  *
  * @author westy
  */
@@ -32,13 +32,13 @@ public class GroupAccess {
 
   /**
    * Sends a request to the NS to add a single GUID to a group.
-   * 
+   *
    * @param guid
    * @param memberGuid
    * @param writer
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
@@ -55,13 +55,13 @@ public class GroupAccess {
 
   /**
    * Sends a request to the NS to add a list of GUIDs to a group.
-   * 
+   *
    * @param guid
    * @param members
    * @param writer
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message) {
     NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null,
@@ -79,13 +79,13 @@ public class GroupAccess {
 
   /**
    * Sends a request to the NS to remove a single GUID from a group.
-   * 
+   *
    * @param guid
    * @param memberGuid
    * @param writer
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message) {
     NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, UpdateOperation.REMOVE, writer, signature, message);
@@ -100,13 +100,13 @@ public class GroupAccess {
 
   /**
    * Sends a request to the NS to remove a list of GUIDs from a group.
-   * 
+   *
    * @param guid
    * @param members
    * @param writer
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message) {
     NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null,
@@ -124,12 +124,12 @@ public class GroupAccess {
 
   /**
    * Returns the members of the group GUID.
-   * 
+   *
    * @param guid
    * @param reader
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, GROUP, reader, signature, message);
@@ -139,15 +139,15 @@ public class GroupAccess {
       return new ResultValue();
     }
   }
-  
+
   /**
    * Returns the groups that a GUID is a member of.
-   * 
+   *
    * @param guid
    * @param reader
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, GROUPS, reader, signature, message);
@@ -155,6 +155,18 @@ public class GroupAccess {
       return new ResultValue(result.get(GROUPS));
     } else {
       return new ResultValue();
+    }
+  }
+
+  /**
+   * Removes all group links when we're deleting a guid.
+   * 
+   * @param guid 
+   */
+  public static void cleanupGroupsForDelete(String guid) {
+    // just so you know all the nulls mean we're ignoring signatures and authentication
+    for (String groupGuid : GroupAccess.lookupGroups(guid, null, null, null).toStringSet()) {
+      removeFromGroup(groupGuid, guid, null, null, null);
     }
   }
 
@@ -188,9 +200,8 @@ public class GroupAccess {
 
   public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
-
     if (!addToGroup(guid, requests, writer, signature, message).isAnError()) {
-    //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE, writer, signature, message).isAnError()) {
+      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE, writer, signature, message).isAnError()) {
       if (!Intercessor.sendUpdateRecord(guid, JOINREQUESTS, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
         return true;
       }
@@ -200,9 +211,8 @@ public class GroupAccess {
 
   public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
-
     if (!removeFromGroup(guid, requests, writer, signature, message).isAnError()) {
-    //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
+      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
       if (!Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
         return true;
       }
