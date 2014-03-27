@@ -29,7 +29,7 @@ public class Email {
    * @param args message
    */
   public static void main(String[] args) {
-      emailSSL("abcd", "abhigyan.sharma@gmail.com", "first message");
+    emailSSL("abcd", "abhigyan.sharma@gmail.com", "first message");
 //    if (args.length < 2) {
 //      System.out.println("Usage: Email [to] [message]");
 //      System.exit(-1);
@@ -39,14 +39,23 @@ public class Email {
 //    }
   }
 
+  /**
+   * Attempts using a few different methods to send email to the recipient.
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @return
+   */
   public static boolean email(String subject, String recipient, String text) {
-      if (emailSSL(subject, recipient, text)) {
-          return true;
-      } else if (emailLocal(subject, recipient, text)) {
+    if (emailSSL(subject, recipient, text, true)) {
       return true;
-    } else if (emailTLS(subject, recipient, text)) {
+    } else if (emailLocal(subject, recipient, text, true)) {
+      return true;
+    } else if (emailTLS(subject, recipient, text, true)) {
       return true;
     } else {
+      GNS.getLogger().warning("Unable to send email to " + recipient);
       return false;
     }
   }
@@ -67,7 +76,29 @@ public class Email {
   private static final String password = "deadDOG8";
   private static final String smtpHost = "smtp.gmail.com";
 
+  /**
+   * Attempts to use SSL to send a message to the recipient.
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @return
+   */
   public static boolean emailSSL(String subject, String recipient, String text) {
+    return emailSSL(subject, recipient, text, false);
+  }
+
+  /**
+   * Attempts to use SSL to send a message to the recipient.
+   * If suppressWarning is true no warning message will be logged if this fails.
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @param suppressWarning
+   * @return
+   */
+  public static boolean emailSSL(String subject, String recipient, String text, boolean suppressWarning) {
     if (StartLocalNameServer.noEmail) {
       return true;
     }
@@ -100,13 +131,37 @@ public class Email {
       return true;
 
     } catch (Exception e) {
-      GNS.getLogger().warning("Unable to send email: " + e);
+      if (!suppressWarning) {
+        GNS.getLogger().warning("Unable to send email: " + e);
+      }
       return false;
     }
   }
 
-  // TLS doesn't work with Dreamhost
+  /**
+   * Attempts to use TLS to send a message to the recipient.
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @return
+   */
   public static boolean emailTLS(String subject, String recipient, String text) {
+    return emailTLS(subject, recipient, text, false);
+  }
+
+  /**
+   * Attempts to use TLS to send a message to the recipient.
+   * If suppressWarning is true no warning message will be logged if this fails.
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @param suppressWarning
+   * @return
+   */
+  // TLS doesn't work with Dreamhost
+  public static boolean emailTLS(String subject, String recipient, String text, boolean suppressWarning) {
     final String username = "admin@gns.name";
     final String password = "deadDOG8";
 
@@ -137,12 +192,36 @@ public class Email {
       return true;
 
     } catch (Exception e) {
-      GNS.getLogger().warning("Unable to send email: " + e);
+      if (!suppressWarning) {
+        GNS.getLogger().warning("Unable to send email: " + e);
+      }
       return false;
     }
   }
 
+  /**
+   * Attempts to use the local emailer to send a message to the recipient.
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @return
+   */
   public static boolean emailLocal(String subject, String recipient, String text) {
+    return emailLocal(subject, recipient, text, false);
+  }
+
+  /**
+   * Attempts to use the local emailer to send a message to the recipient.
+   * If suppressWarning is true no warning message will be logged if this fails.
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @param suppressWarning
+   * @return
+   */
+  public static boolean emailLocal(String subject, String recipient, String text, boolean suppressWarning) {
     // Get system properties
     Properties properties = System.getProperties();
 
@@ -174,8 +253,10 @@ public class Email {
       Transport.send(message);
       GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       return true;
-    } catch (Exception m) {
-      GNS.getLogger().warning("Unable to send email: " + m);
+    } catch (Exception e) {
+      if (!suppressWarning) {
+        GNS.getLogger().warning("Unable to send email: " + e);
+      }
       return false;
     }
 
