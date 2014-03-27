@@ -3,8 +3,8 @@ package edu.umass.cs.gns.nsdesign.activeReplica;
 
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.packet.AddRecordPacket;
 import edu.umass.cs.gns.packet.Packet;
@@ -39,8 +39,13 @@ public class Add {
       NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
 
     } catch (RecordExistsException e) {
-      GNS.getLogger().severe("ERROR: Exception: name record already exists! This should never happen ");
-      e.printStackTrace();
+      NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
+      try {
+        NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
+      } catch (RecordExistsException e1) {
+        e1.printStackTrace();
+      }
+      GNS.getLogger().info("Name record already exists, i.e., record deleted and reinserted.");
     }
     addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD_CONFIRM);
     return new GNSMessagingTask(activeReplica.getNodeID(), addRecordPacket.toJSONObject());
