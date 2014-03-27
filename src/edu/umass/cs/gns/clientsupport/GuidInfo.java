@@ -1,6 +1,12 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
 package edu.umass.cs.gns.clientsupport;
 
-//import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.nameserver.ResultValueString;
 import edu.umass.cs.gns.util.Format;
@@ -8,12 +14,18 @@ import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.text.ParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Stores the username, GUID and public key for a user
+ * Stores the guid and associated human readable name, public key and
+ * other information for a guid.
+ *
+ * This class handles the conversion to and from JSON objects as well as 
+ * conversion to the format which can be store in the database.
  *
  * @author westy
  */
@@ -40,8 +52,14 @@ public class GuidInfo {
   private Set<String> tags;
   private Date created;
   private Date updated;
-  
 
+  /**
+   * Creates a GuidInfo instance with a human readable name, guid and public key.
+   *
+   * @param userName
+   * @param guid
+   * @param publicKey 
+   */
   public GuidInfo(String userName, String guid, String publicKey) {
     this.name = userName;
     this.guid = guid;
@@ -53,24 +71,43 @@ public class GuidInfo {
   }
 
   /**
-   * Convert GuidInfo to and from the format which is used to store it in the DB. 
-   * Use a JSON Object which is put as the first element of an ArrayList
+   Convert GuidInfo to and from the format which is used to store it in the DB. 
+   Use a JSON Object which is put as the first element of an ArrayList
+   @return
+   @throws JSONException 
    */
   public ResultValue toDBFormat() throws JSONException {
     return new ResultValue(Arrays.asList(toJSONObject().toString()));
   }
 
+  /**
+   Creates a GuidInfo instance from a ResultValueString which is the format that
+   is used to store the object in the database.
+  
+   @param queryResult
+   @throws JSONException
+   @throws ParseException 
+   */
   public GuidInfo(ResultValueString queryResult) throws JSONException, ParseException {
     this(new JSONObject(queryResult.get(0)));
   }
-  public static final String PUBLICKEY = "publickey";
-  public static final String NAME = "name";
-  public static final String GUID = "guid";
-  public static final String TYPE = "type";
-  public static final String CREATED = "created";
-  public static final String UPDATED = "updated";
-  public static final String TAGS = "tags";
 
+  // JSON Conversion
+  private static final String PUBLICKEY = "publickey";
+  private static final String NAME = "name";
+  private static final String GUID = "guid";
+  private static final String TYPE = "type";
+  private static final String CREATED = "created";
+  private static final String UPDATED = "updated";
+  private static final String TAGS = "tags";
+
+  /**
+   Creates a GuidInfo instance from a JSONObject.
+  
+   @param json
+   @throws JSONException
+   @throws ParseException 
+   */
   public GuidInfo(JSONObject json) throws JSONException, ParseException {
     this.publicKey = json.getString(PUBLICKEY);
     this.name = json.getString(NAME);
@@ -81,6 +118,12 @@ public class GuidInfo {
     this.tags = JSONUtils.JSONArrayToHashSet(json.getJSONArray(TAGS));
   }
 
+  /**
+   * Converts this instance into a JSONObject.
+   *
+   * @return
+   * @throws JSONException 
+   */
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PUBLICKEY, publicKey);
@@ -93,50 +136,104 @@ public class GuidInfo {
     return json;
   }
 
-  
+  /**
+   * Returns the human readable name.
+   *
+   * @return
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Returns the guid.
+   *
+   * @return
+   */
   public String getGuid() {
     return guid;
   }
 
+  /**
+   * Returns the public key.
+   *
+   * @return
+   */
   public String getPublicKey() {
     return publicKey;
   }
 
+  /**
+   * Returns the type. Currently an unused feature.
+   *
+   * @return
+   */
   public String getType() {
     return type;
   }
 
+  /**
+   * Returns the creation date of the guid.
+   *
+   * @return
+   */
   public Date getCreated() {
     return created;
   }
 
+  /**
+   * Returns the update date of the guid.
+   *
+   * @return
+   */
   public Date getUpdated() {
     return updated;
   }
 
+  /**
+   * Updates the update date of the guid.
+   *
+   */
   public void noteUpdate() {
     this.updated = new Date();
   }
 
+  /**
+   * Returns true if this guid contains the tag.
+   *
+   * @param tag
+   * @return
+   */
   public boolean containsTag(String tag) {
     return tags.contains(tag);
   }
 
+  /**
+   * Adds the tag to the guid.
+   *
+   * @param tag
+   */
   public void addTag(String tag) {
     tags.add(tag);
   }
 
+  /**
+   * Removes the tag from the guid.
+   *
+   * @param tag
+   */
   public void removeTag(String tag) {
     tags.remove(tag);
   }
 
+  /**
+   * Returns a informational string version of the instance. 
+   *
+   * @return the string
+   */
   @Override
   public String toString() {
     return "GuidInfo{" + "guid=" + guid + ", name=" + name + ", publicKey=" + publicKey + ", type=" + type + ", tags=" + tags + ", created=" + created + ", updated=" + updated + '}';
   }
-  
+
 }

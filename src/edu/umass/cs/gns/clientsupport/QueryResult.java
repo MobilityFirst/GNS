@@ -12,7 +12,8 @@ import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.packet.NSResponseCode;
 
 /**
- * Either a ValuesMap or an Error.
+ * Either a ValuesMap or an Error. Also
+ * has some instrumentation for round trip times and what server responded.
  * 
  * @author westy
  */
@@ -141,5 +142,5 @@ public class QueryResult {
   public String toString() {
     return "QueryResult{" + "valuesMap=" + valuesMap + ", errorCode=" + errorCode + ", roundTripTime=" + roundTripTime + ", responder=" + responder + '}';
   }
-  
+
 }
