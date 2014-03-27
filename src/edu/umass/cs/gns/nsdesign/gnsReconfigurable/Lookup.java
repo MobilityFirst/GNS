@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReplica;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
@@ -39,7 +39,7 @@ public class Lookup {
    * @param dnsPacket
    * @param activeReplica
    */
-  public static GNSMessagingTask executeLookupLocal(DNSPacket dnsPacket, ActiveReplica activeReplica)
+  public static GNSMessagingTask executeLookupLocal(DNSPacket dnsPacket, GnsReconfigurable activeReplica)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
 
@@ -115,7 +115,7 @@ public class Lookup {
   }
 
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access,
-                                                    ActiveReplica activeReplica)
+                                                    GnsReconfigurable activeReplica)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
@@ -155,7 +155,7 @@ public class Lookup {
    * @param nameRecord
    * @return
    */
-  private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, ActiveReplica activeReplica) {
+  private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsReconfigurable activeReplica) {
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     // PUT THE ID OF THE NAME SERVER IN THE RESPONSE
     GNS.getLogger().warning("****PUT THE ID OF THE NAME SERVER IN THE RESPONSE");

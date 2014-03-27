@@ -5,7 +5,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 
@@ -20,7 +20,7 @@ import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
  */
 public class NSGroupAccess {
 
-  public static ResultValue lookup(String guid, ActiveReplica activeReplica) throws RecordNotFoundException, FieldNotFoundException {
+  public static ResultValue lookup(String guid, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
     NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, GroupAccess.GROUP);
     return nameRecord.getKey(GroupAccess.GROUP);
   }

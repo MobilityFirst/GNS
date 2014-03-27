@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReplica;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
@@ -31,7 +31,7 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class Update {
 
-  public static GNSMessagingTask handleUpdate(JSONObject json, ActiveReplica replica)
+  public static GNSMessagingTask handleUpdate(JSONObject json, GnsReconfigurable replica)
           throws JSONException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 
     UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(json);
@@ -46,7 +46,7 @@ public class Update {
   }
 
 
-  public static GNSMessagingTask executeUpdateLocal(UpdateAddressPacket updatePacket, ActiveReplica replica)
+  public static GNSMessagingTask executeUpdateLocal(UpdateAddressPacket updatePacket, GnsReconfigurable replica)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
     GNS.getLogger().info(" Processing UPDATE: " + updatePacket);
 

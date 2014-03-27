@@ -21,7 +21,7 @@ import org.json.JSONException;
  * <p/>
  * An add request is first received by a replica controller, but it also needs to be executed at active replicas.
  * Initially, active replicas are co-located with replica controllers therefore replica controller forwards an add
- * request to the ActiveReplica at the same node.
+ * request to the GnsReconfigurable at the same node.
  * <p/>
  * <p/>
  * Created by abhigyan on 2/27/14.
@@ -57,7 +57,7 @@ public class Add {
   }
 
   /**
-   * Method is called after ActiveReplica confirms it has added the record. This methods sends confirmation
+   * Method is called after GnsReconfigurable confirms it has added the record. This methods sends confirmation
    * to local name server that record is added.
    */
   public static GNSMessagingTask executeAddActiveConfirm(AddRecordPacket addRecordPacket,

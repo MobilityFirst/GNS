@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplicaInterface;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.UpdateAddressPacket;
@@ -68,7 +68,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case ACTIVE_GROUPCHANGE:
           // packets from coordination modules at active replica
         case ACTIVE_COORDINATION:
-          ActiveReplicaInterface activeReplica = nameServerInterface.getActiveReplica();
+          GnsReconfigurableInterface activeReplica = nameServerInterface.getActiveReplica();
           if (activeReplica != null)  activeReplica.handleIncomingPacket(json);
           break;
 

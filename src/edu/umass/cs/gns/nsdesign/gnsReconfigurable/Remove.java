@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReplica;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -62,7 +62,7 @@ public class Remove {
    * @throws JSONException
    */
   public static GNSMessagingTask handleActiveRemovePacket(OldActiveSetStopPacket oldActiveStopPacket,
-                                                          ActiveReplica replica) throws JSONException {
+                                                          GnsReconfigurable replica) throws JSONException {
 
     GNSMessagingTask msgTask = null;
 
@@ -109,7 +109,7 @@ public class Remove {
    * Updates the database to indicate that this node is no longer an active replica, which effectively removes the
    * record from this active replica.
    */
-  public static GNSMessagingTask handleActivePaxosStop(OldActiveSetStopPacket oldActiveStopPacket, ActiveReplica replica) {
+  public static GNSMessagingTask handleActivePaxosStop(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable replica) {
     GNSMessagingTask msgTask = null;
     GNS.getLogger().info("Active removed: Name = " + oldActiveStopPacket.getName() + "\t" + oldActiveStopPacket);
     String paxosID = oldActiveStopPacket.getPaxosIDToBeStopped();
@@ -135,7 +135,7 @@ public class Remove {
    * replica controller.
    */
   private static GNSMessagingTask getActiveRemovedConfirmationMsg(OldActiveSetStopPacket oldActiveStopPacket,
-                                                                  ActiveReplica replica) throws JSONException {
+                                                                  GnsReconfigurable replica) throws JSONException {
     GNSMessagingTask msgTask = null;
     // confirm to primary name server that this set of actives has stopped
     if (oldActiveStopPacket.getActiveReceiver() == replica.getNodeID()) {

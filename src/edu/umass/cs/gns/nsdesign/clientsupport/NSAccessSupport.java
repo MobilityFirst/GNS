@@ -13,7 +13,7 @@ import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
 
@@ -66,7 +66,7 @@ public class NSAccessSupport {
    * @param readerInfo
    * @return
    */
-  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo, ActiveReplica activeReplica) {
+  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo, GnsReconfigurable activeReplica) {
     return verifyAccess(access, contectInfo, ALLFIELDS, readerInfo, activeReplica);
   }
 
@@ -80,7 +80,7 @@ public class NSAccessSupport {
    * @param accessorInfo
    * @return
    */
-  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, ActiveReplica activeReplica) {
+  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) {
     GNS.getLogger().fine("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
@@ -94,7 +94,7 @@ public class NSAccessSupport {
     }
   }
   
-  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, ActiveReplica activeReplica) {
+  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
       return true;
@@ -118,7 +118,7 @@ public class NSAccessSupport {
 
   }
 
-  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers, ActiveReplica activeReplica) {
+  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers, GnsReconfigurable activeReplica) {
     try {
       if (allowedusers.contains(accesserGuid)) {
         return true;
@@ -150,7 +150,7 @@ public class NSAccessSupport {
     return result;
   }
 
-  public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field, ActiveReplica activeReplica) {
+  public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field, GnsReconfigurable activeReplica) {
     try {
       return NSFieldMetaData.lookup(access, guid, field, activeReplica).contains(EVERYONE)
               || NSFieldMetaData.lookup(access, guid, ALLFIELDS, activeReplica).contains(EVERYONE);

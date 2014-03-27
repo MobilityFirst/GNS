@@ -9,7 +9,7 @@ import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.NameRecordKey;
 //import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
@@ -36,7 +36,7 @@ public class SiteToSiteQueryHandler {
   private static ConcurrentMap<Integer, Integer> outStandingQueries = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
-  public static QueryResult sendQuery(String name, String key, ActiveReplica activeReplica) {
+  public static QueryResult sendQuery(String name, String key, GnsReconfigurable activeReplica) {
     GNS.getLogger().fine("Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
@@ -52,7 +52,7 @@ public class SiteToSiteQueryHandler {
     return result;
   }
 
-  private static void sendQueryInternal(int queryId, int recipientId, String name, String key, ActiveReplica activeReplica) {
+  private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurable activeReplica) {
     GNS.getLogger().fine("Sending query " + queryId + " to " + recipientId + " for " + name + " / " + key);
     DNSPacket queryrecord = new DNSPacket(queryId, name, new NameRecordKey(key), activeReplica.getNodeID(), null, null, null);
     JSONObject json;
@@ -66,7 +66,7 @@ public class SiteToSiteQueryHandler {
     }
   }
 
-  public static void handleDNSResponsePacket(DNSPacket dnsResponsePacket, ActiveReplica activeReplica) {
+  public static void handleDNSResponsePacket(DNSPacket dnsResponsePacket, GnsReconfigurable activeReplica) {
     int id = dnsResponsePacket.getQueryId();
     if (!dnsResponsePacket.containsAnyError()) {
       //Packet is a response and does not have a response error

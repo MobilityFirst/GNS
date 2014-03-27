@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReplica;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 /**
  * On a change in the set of active replicas of a name, this class handle the transition from the old to the new

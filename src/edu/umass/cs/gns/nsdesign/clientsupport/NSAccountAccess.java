@@ -14,7 +14,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import org.json.JSONException;
 
 import java.text.ParseException;
@@ -23,7 +23,7 @@ import java.text.ParseException;
 
 public class NSAccountAccess {
 
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, ActiveReplica activeReplica) {
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurable activeReplica) {
     ResultValue accountResult = null;
     try {
       accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
@@ -61,7 +61,7 @@ public class NSAccountAccess {
    * @param guid
    * @return a GUID
    */
-  public static String lookupPrimaryGuid(String guid, ActiveReplica activeReplica) {
+  public static String lookupPrimaryGuid(String guid, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
       guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
@@ -84,7 +84,7 @@ public class NSAccountAccess {
    * @param name
    * @return a GUID
    */
-  public static String lookupGuid(String name, ActiveReplica activeReplica) {
+  public static String lookupGuid(String name, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
       guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), name, null, AccountAccess.GUID).getKey(AccountAccess.GUID);
@@ -106,7 +106,7 @@ public class NSAccountAccess {
    * @param guid
    * @return an {@link edu.umass.cs.gns.clientsupport.GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, ActiveReplica activeReplica) {
+  public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurable activeReplica) {
     return lookupGuidInfo(guid, false, activeReplica);
   }
 
@@ -119,7 +119,7 @@ public class NSAccountAccess {
    * @param allowSiteToSiteQuery
    * @return
    */
-  public static GuidInfo lookupGuidInfo(String guid, boolean allowSiteToSiteQuery, ActiveReplica activeReplica) {
+  public static GuidInfo lookupGuidInfo(String guid, boolean allowSiteToSiteQuery, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
       guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
@@ -142,7 +142,7 @@ public class NSAccountAccess {
     return null;
   }
 
-  public static ResultValue lookupGuidInfoSiteToSite(String guid, String key,ActiveReplica activeReplica) {
+  public static ResultValue lookupGuidInfoSiteToSite(String guid, String key,GnsReconfigurable activeReplica) {
     QueryResult queryResult = SiteToSiteQueryHandler.sendQuery(guid, key, activeReplica);
     if (!queryResult.isError()) {
       return queryResult.get(AccountAccess.GUID_INFO);
@@ -160,7 +160,7 @@ public class NSAccountAccess {
    * @param name
    * @return an {@link edu.umass.cs.gns.clientsupport.AccountInfo} instance
    */
-  public static AccountInfo lookupAccountInfoFromName(String name, ActiveReplica activeReplica) {
+  public static AccountInfo lookupAccountInfoFromName(String name, GnsReconfigurable activeReplica) {
     String guid = lookupGuid(name, activeReplica);
     if (guid != null) {
       return lookupAccountInfoFromGuid(guid, activeReplica);

@@ -3,8 +3,8 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageWorker;
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplica;
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplicaInterface;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 /**
  * Work in progress. Inactive code.
  * <p>
- * This class represents a name server in GNS. It contains an ActiveReplica and a ReplicaController object
+ * This class represents a name server in GNS. It contains an GnsReconfigurable and a ReplicaController object
  * to handle functionality related to active replica and replica controller respectively.
  * <p>
  * The code in this class is used only during initializing the system. Thereafter, replica controller and active
@@ -33,7 +33,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class NameServer implements NameServerInterface{
 
 
-  private ActiveReplicaInterface activeReplica;
+  private GnsReconfigurableInterface activeReplica;
 
   private ReplicaControllerInterface replicaController;
 
@@ -83,7 +83,7 @@ public class NameServer implements NameServerInterface{
 
   /**
    * This methods actually does the work. It start a listening socket at the name server for incoming messages,
-   * and creates <code>ActiveReplica</code> and <code>ReplicaController</code> objects.
+   * and creates <code>GnsReconfigurable</code> and <code>ReplicaController</code> objects.
    * @throws IOException
    */
   private void init(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
@@ -105,13 +105,13 @@ public class NameServer implements NameServerInterface{
 
     // be careful to give same 'nodeID' to active replica and replica controller!
 
-    activeReplica = new ActiveReplica(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor);
+    activeReplica = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor);
 
     replicaController = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor);
   }
 
   @Override
-  public ActiveReplicaInterface getActiveReplica() {
+  public GnsReconfigurableInterface getActiveReplica() {
     return activeReplica;
   }
 

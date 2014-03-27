@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReplica;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 
 import edu.umass.cs.gns.exceptions.RecordExistsException;
@@ -21,11 +21,11 @@ public class Add {
    * Adds a new <code>NameRecord</code> to database, and replies to <code>ReplicaController</code> on the same node
    * that the record is added.
    * @param addRecordPacket <code>AddRecordPacket</code> sent by <code>ReplicaController</code>
-   * @param activeReplica <code>ActiveReplica</code> calling this method
+   * @param activeReplica <code>GnsReconfigurable</code> calling this method
    * @return GNSMessagingTask to send to replica controller on same node.
    * @throws JSONException
    */
-  public static GNSMessagingTask executeAddRecord(AddRecordPacket addRecordPacket, ActiveReplica activeReplica)
+  public static GNSMessagingTask executeAddRecord(AddRecordPacket addRecordPacket, GnsReconfigurable activeReplica)
           throws JSONException {
 
     GNS.getLogger().info("Add record at Active replica. name = " + addRecordPacket.getName());

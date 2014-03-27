@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nsdesign.activeReplica.ActiveReplicaInterface;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
 
 /*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
@@ -9,7 +9,7 @@ import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
  * A name server in GNS implement this interface.
  *
  * The main purpose of the <code>NameServerInterface</code> is to provide the <code>NSPacketDemultiplexer</code>
- * a reference to <code>ActiveReplicaInterface</code> and  <code>ReplicaControllerInterface</code> so it
+ * a reference to <code>GnsReconfigurableInterface</code> and  <code>ReplicaControllerInterface</code> so it
  * can forward incoming packets accordingly.
  *
  *
@@ -17,7 +17,7 @@ import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
  */
 public interface NameServerInterface {
 
-  public ActiveReplicaInterface getActiveReplica();
+  public GnsReconfigurableInterface getActiveReplica();
 
   public ReplicaControllerInterface getReplicaController();
 

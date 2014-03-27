@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReplica;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 /*
  * Copyright (C) 2014
  * University of Massachusetts
@@ -31,7 +31,7 @@ public class Select {
   private static Random randomID = new Random();
   private static ConcurrentMap<Integer, NSSelectInfo> queriesInProgress = new ConcurrentHashMap<Integer, NSSelectInfo>(10, 0.75f, 3);
 
-  public static void handleSelectRequest(JSONObject incomingJSON, ActiveReplica ar) throws JSONException, UnknownHostException {
+  public static void handleSelectRequest(JSONObject incomingJSON, GnsReconfigurable ar) throws JSONException, UnknownHostException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
       handleSelectRequestFromNS(incomingJSON, ar);
@@ -40,7 +40,7 @@ public class Select {
     }
   }
 
-  public static void handleSelectRequestFromLNS(JSONObject incomingJSON, ActiveReplica ar) throws JSONException, UnknownHostException {
+  public static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable ar) throws JSONException, UnknownHostException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
 
     Set<Integer> serverIds = ar.getGNSNodeConfig().getAllNameServerIDs();
@@ -60,7 +60,7 @@ public class Select {
     // fixed this problem.
   }
 
-  public static void handleSelectRequestFromNS(JSONObject incomingJSON, ActiveReplica ar) throws JSONException {
+  public static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable ar) throws JSONException {
     GNS.getLogger().fine("NS" + ar.getNodeID() + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
@@ -84,7 +84,7 @@ public class Select {
     }
   }
 
-  public static void handleSelectResponse(JSONObject json, ActiveReplica ar) throws JSONException {
+  public static void handleSelectResponse(JSONObject json, GnsReconfigurable ar) throws JSONException {
     GNS.getLogger().fine("NS" + ar.getNodeID() + " recvd QueryResponse: " + json);
     SelectResponsePacket packet = new SelectResponsePacket(json);
     GNS.getLogger().fine("NS" + ar.getNodeID() + " recvd from NS" + packet.getNameServer());
@@ -128,7 +128,7 @@ public class Select {
     return id;
   }
 
-  private static JSONArray getJSONRecordsForSelect(SelectRequestPacket request, ActiveReplica ar) {
+  private static JSONArray getJSONRecordsForSelect(SelectRequestPacket request, GnsReconfigurable ar) {
     JSONArray jsonRecords = new JSONArray();
     // actually only need name and values map... fix this
     BasicRecordCursor cursor = null;
@@ -163,7 +163,7 @@ public class Select {
     return jsonRecords;
   }
 
-  private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info, ActiveReplica ar) throws JSONException {
+  private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info, GnsReconfigurable ar) throws JSONException {
     int length = jsonArray.length();
     GNS.getLogger().fine("NS" + ar.getNodeID() + " processing " + length + " records");
     // org.json sucks... should have converted a long tine ago

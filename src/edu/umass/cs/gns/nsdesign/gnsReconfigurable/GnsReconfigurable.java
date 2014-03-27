@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReplica;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
@@ -6,7 +6,9 @@ import edu.umass.cs.gns.nameserver.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
@@ -29,7 +31,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * We keep a single instance of this class for all names for whom this name server is an active replica.
  * Created by abhigyan on 2/26/14.
  */
-public class ActiveReplica implements ActiveReplicaInterface{
+public class GnsReconfigurable implements GnsReconfigurableInterface{
 
   /** object handles coordination among replicas on a request, if necessary */
   private ActiveReplicaCoordinator activeCoordinator;
@@ -40,7 +42,7 @@ public class ActiveReplica implements ActiveReplicaInterface{
   /** nio server*/
   private GNSNIOTransport nioServer;
 
-  /** executor service for handling tasks*/
+  /** executor service for handling tasks */
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
   /** Object provides interface to the database table storing name records */
@@ -52,8 +54,8 @@ public class ActiveReplica implements ActiveReplicaInterface{
   /**
    * constructor object
    */
-  public ActiveReplica(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-                       GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+  public GnsReconfigurable(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
+                           GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
     this.nodeID = nodeID;
 
     this.gnsNodeConfig = gnsNodeConfig;
@@ -188,5 +190,30 @@ public class ActiveReplica implements ActiveReplicaInterface{
 
   public ActiveReplicaCoordinator getActiveCoordinator() {
     return activeCoordinator;
+  }
+
+  @Override
+  public String getFinalState(String name, int version) {
+    return null;
+  }
+
+  @Override
+  public void putInitialState(String name, int version, String state) {
+
+  }
+
+  @Override
+  public void handleDecision(String name, RequestPacket requestPacket, boolean recovery) {
+
+  }
+
+  @Override
+  public String getState(String name) {
+    return null;
+  }
+
+  @Override
+  public void updateState(String name, String state) {
+    // todo implement this and above methods
   }
 }
