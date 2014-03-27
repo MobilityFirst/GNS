@@ -10,9 +10,10 @@ import edu.umass.cs.gns.nameserver.ResultValue;
 import edu.umass.cs.gns.packet.NSResponseCode;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
-import edu.umass.cs.gns.util.Util;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import org.json.JSONException;
 
 /**
@@ -78,7 +79,7 @@ public class AccountAccess {
     QueryResult accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
     if (accountResult.isError()) {
       if (allowSubGuids) {
-         // if allowSubGuids is true assume this is a guid that is "owned" by an account guid so
+        // if allowSubGuids is true assume this is a guid that is "owned" by an account guid so
         // we look  up the owning account guid
         guid = lookupPrimaryGuid(guid);
         if (guid != null) {
@@ -226,34 +227,64 @@ public class AccountAccess {
   private static String createVerificationCode(String name) {
     return ByteUtils.toHex(SHA1HashFunction.getInstance().hash(name + SECRET));
   }
+  
+  private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 
   public static String verifyAccount(String guid, String code) {
     AccountInfo accountInfo;
-    if ((accountInfo = lookupAccountInfoFromGuid(guid)) != null) {
-      if (!accountInfo.isVerified()) {
-        if (accountInfo.getVerificationCode() != null && code != null) {
-          if (accountInfo.getVerificationCode().equals(code)) {
-            accountInfo.setVerificationCode(null);
-            accountInfo.setVerified(true);
-            accountInfo.noteUpdate();
-            if (updateAccountInfo(accountInfo)) {
-              return Defs.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
-            } else {
-              return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
-            }
-          } else {
-            return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct";
-          }
-        } else {
-          return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code";
-        }
-      } else {
-        return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified";
-      }
-    } else {
+    if ((accountInfo = lookupAccountInfoFromGuid(guid)) == null) {
       return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info";
     }
+    if (accountInfo.isVerified()) {
+      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified";
+    }
+    if (accountInfo.getVerificationCode() == null && code == null) {
+      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code";
+    }
+    if ((new Date()).getTime() - accountInfo.getCreated().getTime() > TWO_HOURS_IN_MILLESECONDS) {
+      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account code no longer valid";
+    }
+    if (!accountInfo.getVerificationCode().equals(code)) {
+      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct";
+    }
+    accountInfo.setVerificationCode(null);
+    accountInfo.setVerified(true);
+    accountInfo.noteUpdate();
+    if (updateAccountInfo(accountInfo)) {
+      return Defs.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
+    } else {
+      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
+    }
+
   }
+
+//  public static String verifyAccount(String guid, String code) {
+//    AccountInfo accountInfo;
+//    if ((accountInfo = lookupAccountInfoFromGuid(guid)) != null) {
+//      if (!accountInfo.isVerified()) {
+//        if (accountInfo.getVerificationCode() != null && code != null) {
+//          if (accountInfo.getVerificationCode().equals(code)) {
+//            accountInfo.setVerificationCode(null);
+//            accountInfo.setVerified(true);
+//            accountInfo.noteUpdate();
+//            if (updateAccountInfo(accountInfo)) {
+//              return Defs.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
+//            } else {
+//              return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
+//            }
+//          } else {
+//            return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct";
+//          }
+//        } else {
+//          return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code";
+//        }
+//      } else {
+//        return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified";
+//      }
+//    } else {
+//      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info";
+//    }
+//  }
 
   /**
    * Create a new GNS user account.
