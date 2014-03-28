@@ -23,6 +23,29 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * This class handles select operations which have a similar semantics to an SQL SELECT.
+ * The semantics is that we want to look up all the records with a given value or whose
+ * value falls in a given range or that more generally match a query.
+ * 
+ * On the request side when we get a GROUP_SETUP request we do the regular broadcast thing.
+ * Also need to handle GROUP_SETUP for a group that already exists.
+ * 
+ * On the response side for a GROUP_SETUP we do the regular collate thing plus we
+ * set the value of the group guid and the values of last_refreshed_time and the min_refresh_interval. 
+ * We need a GROUP info structure to hold these things.
+ * 
+ * On the request side when we get a GROUP_LOOKUP request we need to 
+ * 1) Check to see if enough time has passed since the last update 
+ * (current time > last_refreshed_time + min_refresh_interval). If it has we
+ * do the usual query broadcast. 
+ * If not we send back the response with the current value of the group guid
+ * 
+ * On the response when see a GROUP_LOOKUP it means that  enough time has passed since the last update 
+ * (in the other case the response is sent back request side).
+ * We handle this exactly the same as we do GROUP_SETUP.
+ * 
+ *
+ * 
  *
  * @author westy
  */
@@ -31,18 +54,56 @@ public class Select {
   private static Random randomID = new Random();
   private static ConcurrentMap<Integer, NSSelectInfo> queriesInProgress = new ConcurrentHashMap<Integer, NSSelectInfo>(10, 0.75f, 3);
 
+  /**
+   * Handles a SelectRequestPacket coming from an LNS or NS.
+   *
+   * @param incomingJSON
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
   public static void handleSelectRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
+      // if it's from an NS that means we're going to lookup some records in our
+      // database and send them back to the NS that send this to us
       handleSelectRequestFromNS(incomingJSON);
     } else {
+      // if it's from an LNS we're going to handle the sending of queries and merging back together
       handleSelectRequestFromLNS(incomingJSON);
     }
   }
 
-  public static void handleSelectRequestFromLNS(JSONObject incomingJSON) throws JSONException, UnknownHostException {
+  private static void handleSelectRequestFromLNS(JSONObject incomingJSON) throws JSONException, UnknownHostException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
+    switch (packet.getOperation()) {
+      case EQUALS:
+      case NEAR:
+      case QUERY:
+      case WITHIN:
+        handleSelectRequestQueryFromLNS(packet);
+        break;
+      case GROUP_SETUP:
+        GNS.getLogger().severe("Not yet implemented: " + packet.getOperation());
+        break;
+      case GROUP_LOOKUP:
+        GNS.getLogger().severe("Not yet implemented: " + packet.getOperation());
+        break;
+      default:
+        GNS.getLogger().severe("Unknown SelectRequestPacket operation: " + packet.getOperation());
+        break;
+    }
+  }
 
+  /**
+   * Handles a SelectRequestPacket that has a simple query coming from an LNS. This NS is going to broadcast the packet to
+   * a set of servers (currently all) and collate the results (also adding it's own results)
+   * before sending them back to the LNS.
+   *
+   * @param incomingJSON
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
+  private static void handleSelectRequestQueryFromLNS(SelectRequestPacket packet) throws JSONException, UnknownHostException {
     Set<Integer> serverIds = ConfigFileInfo.getAllNameServerIDs();
     // store the into for later
     int queryId = addQueryInfo(serverIds);
@@ -50,20 +111,22 @@ public class Select {
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     GNS.getLogger().fine("NS" + NameServer.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
-    // send to everybody except us (we'll do our stuff below)
     try {
-      NameServer.getTcpTransport().sendToIDs(serverIds, outgoingJSON, NameServer.getNodeID());
+      // send it to everyone including ourself
+      NameServer.getTcpTransport().sendToIDs(serverIds, outgoingJSON);
     } catch (IOException e) {
       GNS.getLogger().severe("Exception while sending select request: " + e);
     }
-    // Now add our responses
-    NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
-    processJSONRecords(getJSONRecordsForSelect(packet), info);
-    info.removeServerID(NameServer.getNodeID());
-
   }
 
-  public static void handleSelectRequestFromNS(JSONObject incomingJSON) throws JSONException {
+  /**
+   * Handles a SelectRequestPacket coming from another NS by collecting the
+   * appropriate records from the database and sending them back to the collecting NS.
+   *
+   * @param incomingJSON
+   * @throws JSONException
+   */
+  private static void handleSelectRequestFromNS(JSONObject incomingJSON) throws JSONException {
     GNS.getLogger().fine("NS" + NameServer.getNodeID() + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
@@ -87,8 +150,14 @@ public class Select {
     }
   }
 
+  /**
+   * Handles a SelectResponsePacket coming back from a NameServer.
+   * This method is going to collect all the responses
+   *
+   * @param json
+   * @throws JSONException
+   */
   public static void handleSelectResponse(JSONObject json) throws JSONException {
-    GNS.getLogger().fine("NS" + NameServer.getNodeID() + " recvd QueryResponse: " + json);
     SelectResponsePacket packet = new SelectResponsePacket(json);
     GNS.getLogger().fine("NS" + NameServer.getNodeID() + " recvd from NS" + packet.getNameServer());
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
