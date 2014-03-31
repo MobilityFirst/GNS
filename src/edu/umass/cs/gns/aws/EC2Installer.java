@@ -141,6 +141,8 @@ public class EC2Installer {
 
   /**
    * Starts a set of EC2 hosts running GNS that we call a runset.
+   * 
+   * @param runSetName
    */
   public static void createRunSetMulti(String runSetName) {
     int timeout = AWSEC2.DEFAULTREACHABILITYWAITTIME;
@@ -162,16 +164,15 @@ public class EC2Installer {
           cnt = cnt + 1;
         }
       }
-      // start em all
-      for (int i = 0; i < threads.size(); i++) {
-        threads.get(i).start();
+      for (Thread thread : threads) {
+        thread.start();
       }
       // and wait for all of them to complete
       try {
-        for (int i = 0; i < threads.size(); i++) {
-          threads.get(i).join();
+        for (Thread thread : threads) {
+          thread.join();
         }
-      } catch (Exception e) {
+      } catch (InterruptedException e) {
         System.out.println("Problem joining threads: " + e);
       }
 
@@ -199,15 +200,15 @@ public class EC2Installer {
       //GNS.getLogger().info("Finishing install for " + entry.getKey());
       threads.add(new InstallFinishThread(info.getId(), info.getHostname()));
     }
-    for (int i = 0; i < threads.size(); i++) {
-      threads.get(i).start();
+    for (Thread thread : threads) {
+      thread.start();
     }
     // and wait form the to complete
     try {
-      for (int i = 0; i < threads.size(); i++) {
-        threads.get(i).join();
+      for (Thread thread : threads) {
+        thread.join();
       }
-    } catch (Exception e) {
+    } catch (InterruptedException e) {
       System.out.println("Problem joining threads: " + e);
     }
 
@@ -276,6 +277,8 @@ public class EC2Installer {
    * @param region - the EC2 region where we are starting this host
    * @param runSetName - so we can terminate them all together
    * @param id - the GNS ID of this server
+   * @param elasticIP
+   * @param timeout
    */
   public static void installPhaseOne(RegionRecord region, String runSetName, int id, String elasticIP, int timeout) {
     String installScript;
@@ -344,7 +347,10 @@ public class EC2Installer {
         StatusModel.getInstance().queueUpdate(id, StatusEntry.State.ERROR, "Did not start");
         hostsThatDidNotStart.put(id, id);
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
+      System.out.println("Problem creating EC2 instance " + idString + " in " + region.name() + ": " + e);
+      e.printStackTrace();
+    } catch (IllegalArgumentException e) {
       System.out.println("Problem creating EC2 instance " + idString + " in " + region.name() + ": " + e);
       e.printStackTrace();
     }
@@ -383,7 +389,7 @@ public class EC2Installer {
             + "java -cp " + GNSFileName + " " + MongoRecordsClass + " -clear");
   }
   private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
-  private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
+  private static final String StartNSClass = "edu.umass.cs.gns.nsdesign.StartNameServer";
   // unused
   //private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
 
@@ -502,7 +508,10 @@ public class EC2Installer {
           }
         }
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
+      System.out.println("Problem terminating EC2 instances: " + e);
+      e.printStackTrace();
+    } catch (IllegalArgumentException e) {
       System.out.println("Problem terminating EC2 instances: " + e);
       e.printStackTrace();
     }
@@ -523,7 +532,10 @@ public class EC2Installer {
           }
         }
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
+      System.out.println("Problem terminating EC2 instances: " + e);
+      e.printStackTrace();
+    } catch (IllegalArgumentException e) {
       System.out.println("Problem terminating EC2 instances: " + e);
       e.printStackTrace();
     }
@@ -545,6 +557,7 @@ public class EC2Installer {
    * Copies the latest version of the JAR files to the all the hosts in the runset given by name and restarts all the servers.
    *
    * @param name
+   * @param action
    */
   public static void updateRunSet(String name, UpdateAction action) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -552,15 +565,15 @@ public class EC2Installer {
     for (InstanceInfo info : idTable.values()) {
       threads.add(new UpdateThread(info.getId(), info.getHostname(), action));
     }
-    for (int i = 0; i < threads.size(); i++) {
-      threads.get(i).start();
+    for (Thread thread : threads) {
+      thread.start();
     }
     // and wait for them to complete
     try {
-      for (int i = 0; i < threads.size(); i++) {
-        threads.get(i).join();
+      for (Thread thread : threads) {
+        thread.join();
       }
-    } catch (Exception e) {
+    } catch (InterruptedException e) {
       System.out.println("Problem joining threads: " + e);
     }
   }
@@ -694,7 +707,7 @@ public class EC2Installer {
     });
     try {
       new StatusListener().start();
-    } catch (Exception e) {
+    } catch (IOException e) {
       System.out.println("Unable to start Status Listener: " + e.getMessage());
     }
   }
@@ -763,7 +776,7 @@ public class EC2Installer {
         System.exit(1);
       }
 
-    } catch (Exception e1) {
+    } catch (ParseException e1) {
       e1.printStackTrace();
       printUsage();
       System.exit(1);

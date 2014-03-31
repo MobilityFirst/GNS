@@ -12,6 +12,42 @@
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/RemoveFieldUnsigned.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nameserver/clientsupport/NSAccessSupport.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nameserver/clientsupport/SiteToSiteQueryHandler.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReplaceOrCreate.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nameserver/ClientRequestWorker.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/Email.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReplaceOrCreateListSelf.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nameserver/clientsupport/NSGroupAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/GroupAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/Replace.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nameserver/Select.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/packet/SelectRequestPacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSGroupAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nameserver/clientsupport/NSAccountAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/Intercessor.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSFieldMetaData.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/UpdateOperation.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReadOne.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/SiteToSiteQueryHandler.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Select.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReplaceList.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/Create.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReplaceOrCreateSelf.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/packet/UpdateAddressPacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReplaceOrCreateList.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/SelectHandler.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/RemoveField.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSAccessSupport.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReplaceOrCreateUnsigned.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/FieldAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nameserver/recordmap/NameRecord.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/SelectQuery.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/RemoveFieldSelf.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/ReplaceOrCreateListUnsigned.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/AbstractUpdate.java</file>
+        </group>
     </open-files>
 </project-private>
