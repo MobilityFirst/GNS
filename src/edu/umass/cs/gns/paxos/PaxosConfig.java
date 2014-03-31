@@ -40,7 +40,7 @@ public class PaxosConfig {
 
   // default values of parameters
 
-  private static final String DEFAULT_PAXOS_LOG_FOLDER = "log/paxosLog";
+  private static final String DEFAULT_PAXOS_LOG_FOLDER = "paxosLog";
 
   private static final int DEFAULT_FD_PING_MILLIS = 10000;
 

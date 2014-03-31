@@ -1,7 +1,7 @@
 echo "Running mongo db on ..."
 dbFolder=/Users/abhigyan/Documents/gnrs-db/
-#mongobinFolder=/opt/local/bin/
-mongobinFolder=/Users/abhigyan/Documents/software/mongodb-osx-x86_64-2.4.5/bin
+mongobinFolder=/opt/local/bin/
+#mongobinFolder=/Users/abhigyan/Documents/software/mongodb-osx-x86_64-2.4.5/bin
 port=27017  # if 
 
 #/Users/abhigyan/Documents/mongodb-linux-x86_64-2.2.2/bin/

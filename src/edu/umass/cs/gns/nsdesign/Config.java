@@ -12,7 +12,7 @@ import java.util.HashMap;
  */
 public class Config {
 
-  private static final String DEFAULTPAXOSLOGPATHNAME = "log/paxos_log";
+  private static final String DEFAULTPAXOSLOGPATHNAME = "paxosLog";
 
 
   private static boolean initialized = false;
