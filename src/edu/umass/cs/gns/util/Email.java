@@ -54,18 +54,23 @@ public class Email {
       return true;
     } else if (emailTLS(subject, recipient, text, true)) {
       return true;
+      // no run it again with error messages turned on
+    } else if (emailSSL(subject, recipient, text, false)) {
+      return true;
+    } else if (emailLocal(subject, recipient, text, false)) {
+      return true;
+    } else if (emailTLS(subject, recipient, text, false)) {
+      return true;
     } else {
       GNS.getLogger().warning("Unable to send email to " + recipient);
       return false;
     }
   }
-
   /* To send to multiple users
    void addRecipients(Message.RecipientType type, 
    Address[] addresses)
    throws MessagingException
    */
-
   /* authentication 
 
    props.setProperty("mail.user", "myuser");
