@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
-import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stats;
 import edu.umass.cs.gns.util.Util;
 import java.util.ArrayList;

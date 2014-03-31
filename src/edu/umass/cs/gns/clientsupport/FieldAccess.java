@@ -7,10 +7,10 @@ package edu.umass.cs.gns.clientsupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.packet.NSResponseCode;
-import edu.umass.cs.gns.packet.SelectRequestPacket;
+import edu.umass.cs.gns.util.NameRecordKey;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,19 +1,20 @@
 package edu.umass.cs.gns.clientsupport;
 
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.httpserver.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
-import java.util.Map.Entry;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static edu.umass.cs.gns.clientsupport.Defs.*;
+import static edu.umass.cs.gns.httpserver.Defs.*;
 
 /**
  * THIS CLASS IS A STUB THAT IS GOING AWAY SOON.
@@ -69,6 +70,7 @@ public class Protocol {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
       }
     } catch (JSONException e) {
+      e.printStackTrace();
       return BADRESPONSE + " " + JSONPARSEERROR + " " + e;
     } catch (NoSuchAlgorithmException e) {
       return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;

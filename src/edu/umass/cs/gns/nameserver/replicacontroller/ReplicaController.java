@@ -10,11 +10,12 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.*;
 import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * This class implements three operations of a replica controller that are interlinked to one another:
  * changing the set of active replicas for a name, removing a name from GNS, and handling failure of a name server.
- *
+ * @deprecated
  * TODO class needs lot more documentation.
  */
 public class ReplicaController {

@@ -10,6 +10,7 @@ import org.json.JSONObject;
  * This class represents a data structure to store information
  * about queries (SELECT like lookup) transmitted by the local name
  * server.
+ * @deprecated
  *************************************************************/
 public class NSSelectInfo {
 

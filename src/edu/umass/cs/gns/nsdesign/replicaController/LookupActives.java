@@ -3,9 +3,9 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
+import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import org.json.JSONException;
 
 /**
@@ -17,7 +17,6 @@ import org.json.JSONException;
  * Created by abhigyan on 2/27/14.
  */
 public class LookupActives {
-
 
   public static GNSMessagingTask executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController)
           throws JSONException{

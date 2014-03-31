@@ -11,8 +11,8 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConfigFileInfo;
@@ -29,7 +29,7 @@ import java.util.*;
  *
  * If it determines that the set of actives need to change, it starts the process by proposing a new set of
  * actives to other replica controllers.  Once replica controllers (aka primaries) have agreed upon a new set of
- * actives, they make this change in the database, they start the process of informing old and new set of actives.
+ * actives, they make this change in the database and start the process of informing old and new set of actives.
  *
  * For each name there will be multiple nodes who will be replica contollers. However, only one of these
  * nodes initiates the process of changing the set of active replica. Which node will do so is determined by:
@@ -46,6 +46,7 @@ import java.util.*;
  * group change events.
  *
  * @author abhigyan
+ * @deprecated
  */
 public class ComputeNewActivesTask extends TimerTask {
 

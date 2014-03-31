@@ -2,7 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.packet.paxospacket.*;
+import edu.umass.cs.gns.paxos.paxospacket.*;
 import edu.umass.cs.gns.util.OutputNodeStats;
 import edu.umass.cs.gns.util.Util;
 import net.sourceforge.sizeof.SizeOf;

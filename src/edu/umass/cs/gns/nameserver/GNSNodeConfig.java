@@ -15,6 +15,7 @@ import java.net.InetAddress;
  * User: abhigyan
  * Date: 8/16/13
  * Time: 12:10 PM
+ * @deprecated
  */
 public class GNSNodeConfig implements NodeConfig {
 

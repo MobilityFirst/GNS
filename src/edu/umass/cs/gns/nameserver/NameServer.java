@@ -24,6 +24,9 @@ import java.util.Timer;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @deprecated
+ */
 public class NameServer {
 
   /**
@@ -101,8 +104,6 @@ public class NameServer {
       GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
       PingManager.startPinging(nodeID);
     }
-
-
   }
 
   /**** Begin methods for initializing different components of name server ***/

@@ -12,10 +12,9 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -198,7 +197,7 @@ public class SendUpdatesTask extends TimerTask {
         updateInfo.setNameserverID(nameServerID);
       }
       if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().fine("LNSListenerUpdate: Send to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID
+        GNS.getLogger().fine("Send update to: " + nameServerID + " Name:" + name + " Id:" + updateRequestID
                 + " Time:" + System.currentTimeMillis()
                 + " --> " + jsonToSend.toString());
       }

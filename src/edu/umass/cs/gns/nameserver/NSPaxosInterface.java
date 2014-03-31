@@ -9,8 +9,8 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ComputeNewActivesTask;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.PaxosInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,13 +23,19 @@ import java.io.IOException;
  * Date: 6/29/13
  * Time: 8:34 PM
  * To change this template use File | Settings | File Templates.
+ *
+ * @deprecated
  */
 public class NSPaxosInterface implements PaxosInterface {
 
   @Override
-  public void handlePaxosDecision(String paxosID, RequestPacket req, boolean recovery) {
+  public void handleDecision(String paxosID, String stringReq, boolean recovery) {
     long t0 = System.currentTimeMillis();
+    RequestPacket req=null;
     try {
+    	
+    	// FIXME: Changed RequestPacket to a string argument. Check and remove FIXME.
+    	req = new RequestPacket(new JSONObject(stringReq));
 
       // messages decided in to paxos between actives
       if (req.clientID == Packet.PacketType.ACTIVE_PAXOS_STOP.getInt()) {
@@ -75,9 +81,8 @@ public class NSPaxosInterface implements PaxosInterface {
       GNS.getLogger().warning("Long delay " + (t1 - t0) + "ms. Packet: " + req.value);
   }
 
-  @Override
+  // FIXME: Removed an @Override from here. This method is no loger in PaxosInterface.
   public void handleFailureMessage(FailureDetectionPacket fdPacket) {
-
     ReplicaController.handleNodeFailure(fdPacket);
   }
 
@@ -157,12 +162,21 @@ public class NSPaxosInterface implements PaxosInterface {
         } catch (RecordExistsException e) {
           NameRecord.updateNameRecord(NameServer.getRecordMap(), new NameRecord(NameServer.getRecordMap(), json));
         }
-
       }
     } catch (JSONException e) {
-
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public void deleteStateBeforeRecovery() {
+    throw new UnsupportedOperationException();
+  }
+
+
+  @Override
+  public void stop(String paxosID, String value) {
+
   }
 
 //  @Override

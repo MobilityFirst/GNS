@@ -6,11 +6,12 @@ package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * Provides the basics for Packets including a type field.
  * 
  * @author westy
+ * @deprecated
  */
 public abstract class BasicPacket implements PacketInterface {
 

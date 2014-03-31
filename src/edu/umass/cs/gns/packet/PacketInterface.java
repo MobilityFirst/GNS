@@ -6,8 +6,8 @@ package edu.umass.cs.gns.packet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-/**
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
+/** @deprecated
  *
  * @author westy
  */

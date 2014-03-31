@@ -5,11 +5,13 @@
 package edu.umass.cs.gns.database;
 
 import edu.umass.cs.gns.main.GNS;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  *
  * @author westy

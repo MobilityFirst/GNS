@@ -3,7 +3,11 @@ package edu.umass.cs.gns.packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 
+/**
+ * @deprecated
+ */
 public class NameServerLoadPacket extends BasicPacket {
 
   private int nsID;

@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  *
  * @author westy

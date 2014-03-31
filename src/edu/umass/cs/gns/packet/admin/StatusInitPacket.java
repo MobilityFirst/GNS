@@ -3,12 +3,13 @@ package edu.umass.cs.gns.packet.admin;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This class implements a packet that tells the name server
  * to initial the status system.
  * 
  * @author Westy
+ * @deprecated
  */
 public class StatusInitPacket extends AdminPacket {
 

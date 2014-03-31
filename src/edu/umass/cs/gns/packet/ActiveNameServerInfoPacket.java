@@ -1,18 +1,19 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.util.NameRecordKey;
 import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * ***********************************************************
  * This class implements the packet transmitted between local nameserver and a primary nameserver to get information
  * about the current active nameserver set.
  *
  * @author Hardeep Uppal
+ * @deprecated
  ***********************************************************
  */
 public class ActiveNameServerInfoPacket extends BasicPacket {

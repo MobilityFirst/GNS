@@ -9,8 +9,7 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.StatsInfo;
+import edu.umass.cs.gns.util.StatsInfo;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -98,6 +97,8 @@ import java.util.concurrent.ConcurrentMap;
  * @see edu.umass.cs.gns.nameserver.NameServer
  * @see edu.umass.cs.gns.nameserver.recordmap.RecordMapInterface
  * @see edu.umass.cs.gns.exceptions.FieldNotFoundException
+ *
+ * @deprecated
  */
 public class ReplicaControllerRecord {
 
@@ -900,8 +901,9 @@ public class ReplicaControllerRecord {
 
   // test code
   public static void main(String[] args) throws FieldNotFoundException, Exception {
-    NameServer.setNodeID(4);
-    StartNameServer.movingAverageWindowSize = 10;
+    // todo fix this test
+//    NameServer.setNodeID(4);
+//    StartNameServer.movingAverageWindowSize = 10;
     test();
     //System.exit(0);
   }
@@ -909,7 +911,8 @@ public class ReplicaControllerRecord {
   // make this query:
   // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
   private static void test() throws FieldNotFoundException, Exception {
-    ConfigFileInfo.readHostInfo("ns1", NameServer.getNodeID());
+    int nodeID = 4;
+    ConfigFileInfo.readHostInfo("ns1", nodeID);
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, ConfigFileInfo.getNumberOfNameServers());
     BasicRecordMap replicaController = new MongoRecordMap(MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();

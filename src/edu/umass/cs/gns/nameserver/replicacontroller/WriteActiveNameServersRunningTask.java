@@ -8,8 +8,8 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.ChangeActiveStatusPacket;
 import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 
 import java.util.TimerTask;
 
@@ -25,6 +25,8 @@ import java.util.TimerTask;
  * User: abhigyan
  * Date: 11/14/13
  * Time: 9:24 AM
+ *
+ * @deprecated
  */
 public class WriteActiveNameServersRunningTask extends TimerTask {
 

@@ -8,11 +8,11 @@ package edu.umass.cs.gns.packet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /*************************************************************
- * This class implements a packet that contains a response 
+ * This class implements a packet that contains a response
  * to a select statement.
- * 
+ *   @deprecated
  * @author Westy
  ************************************************************/
 public class SelectResponsePacket extends BasicPacket {

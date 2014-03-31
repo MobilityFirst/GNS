@@ -12,11 +12,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Set;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * Reliable UDP send and receive
  *
  * This could be further integrated with the Packet class as they both are doing similar things. - Westy
+ * @deprecated
  */
 public class Transport {
 

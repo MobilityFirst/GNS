@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentMap;
  * We handle this exactly the same as we do GROUP_SETUP.
  * 
  *
- * 
+ *    @deprecated
  *
  * @author westy
  */

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * So we have these packets see and we convert them back and forth to and from JSON Objects.
  * And send them over UDP and TCP connections. And we have an enum called PacketType that we
@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * 
  * This is our basic way of transmitting data.
  * It's a bit of a hodgepodge at this point due to multiple authors, but it works.
- * 
+ * @deprecated
  * @author westy
  */
 public class Packet {
@@ -97,11 +97,14 @@ public class Packet {
     NEW_ACTIVE_START_CONFIRM_TO_PRIMARY(104),
     NEW_ACTIVE_START_PREV_VALUE_REQUEST(105),
     NEW_ACTIVE_START_PREV_VALUE_RESPONSE(106),
+
     //
     OLD_ACTIVE_STOP(111),
     ACTIVE_PAXOS_STOP(112),
     OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(113),
     PRIMARY_PAXOS_STOP(114),
+    DELETE_OLD_ACTIVE_STATE(115), // Abhigyan: (new packet type). send to old active replica to delete state.
+
     // Abhigyan: do not use these packet types. I have defined them for refactoring name server code
     ACTIVE_ADD(121), // on an add request replica controller sends to active replica
     ACTIVE_ADD_CONFIRM(122), // after adding name, active replica confirms to replica controller

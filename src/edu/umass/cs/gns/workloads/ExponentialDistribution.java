@@ -2,7 +2,7 @@ package edu.umass.cs.gns.workloads;
 
 import java.util.Random;
 
-public class ExponentialDistribution {
+public class ExponentialDistribution implements ProbabilityDistribution {
 
 	/** Random number generator **/
 	private Random random = new Random();
@@ -45,4 +45,14 @@ public class ExponentialDistribution {
 		}
 		System.out.println("Avg: " + sum / 1000);
 	}
+
+  @Override
+  public double getNextArrivalDelay() {
+    return exponential();
+  }
+
+  @Override
+  public double getMean() {
+    return mean;
+  }
 }

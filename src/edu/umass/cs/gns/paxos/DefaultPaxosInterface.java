@@ -1,8 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
-import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -37,7 +36,7 @@ public class DefaultPaxosInterface implements PaxosInterface {
     this.nioServer = nioServer;
   }
 
-  @Override
+//  @Override
   public void handlePaxosDecision(String paxosID, RequestPacket requestPacket, boolean recovery) {
     // check
     if (nodeID == 0)
@@ -50,9 +49,24 @@ public class DefaultPaxosInterface implements PaxosInterface {
       }
   }
 
+
   @Override
-  public void handleFailureMessage(FailureDetectionPacket fdPacket) {
-    //
+  public void handleDecision(String paxosID, String value, boolean recovery) {
+    // check
+    // TODO fixme
+//    if (nodeID == 0)
+//      try {
+//        nioServer.sendToID(requestPacket.clientID, requestPacket.toJSONObject());
+//      } catch (JSONException e) {
+//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
+  }
+
+  @Override
+  public void stop(String paxosID, String value) {
+    // todo fixme.
   }
 
   @Override
@@ -63,6 +77,11 @@ public class DefaultPaxosInterface implements PaxosInterface {
   @Override
   public void updateState(String paxosID, String state) {
     // empty method becasue this only for running paxos tests independently
+  }
+
+  @Override
+  public void deleteStateBeforeRecovery() {
+
   }
 
 }

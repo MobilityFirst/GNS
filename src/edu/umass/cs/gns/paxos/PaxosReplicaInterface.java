@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.packet.paxospacket.*;
+import edu.umass.cs.gns.paxos.paxospacket.*;
 import org.json.JSONObject;
 
 import java.util.Map;

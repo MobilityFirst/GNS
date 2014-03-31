@@ -8,10 +8,9 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.NSResponseCode;
+import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import java.net.UnknownHostException;
 import java.util.HashSet;
@@ -36,7 +35,7 @@ import org.json.JSONObject;
  * request for a name at this local name server and therefore no cache entry would exist for it. (2) the cache entry
  * may have been evicted due to replacement policy. (3) the set of active replicas changes over time, therefore
  * the cached set of active replicas may not be valid; A local name server learns this upon sending a request to
- * an invalid active replica, which generates a pre-defined error code in {@link edu.umass.cs.gns.packet.NSResponseCode}.
+ * an invalid active replica, which generates a pre-defined error code in {@link edu.umass.cs.gns.util.NSResponseCode}.
  * <p>
  * In all the above cases, a local name server obtains the set of active replicas for a name by requests the replica
  * controllers for that name. The replica controllers for a name are fixed and a local name server can compute the set of

@@ -9,10 +9,7 @@ import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.util.OutputNodeStats;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.util.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,6 +29,7 @@ import java.util.*;
  *
  * @author Hardeep Uppal, Abhigyan
  * **********************************************************
+ * @deprecated
  */
 public class GenerateSyntheticRecordTable {
 

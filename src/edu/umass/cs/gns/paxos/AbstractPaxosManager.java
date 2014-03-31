@@ -1,13 +1,8 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
 import org.json.JSONObject;
 
 import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Abstract class describing an interface for a PaxosManager.
@@ -17,13 +12,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public abstract class AbstractPaxosManager {
 
 
-  /**
-   * This constructor is empty. An implementation of AbstractPaxosManager should override this constructor.
-   */
-  public AbstractPaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransport gnsnioTransport,
-                              PaxosInterface outputHandler, PaxosConfig paxosConfig) {
-
-  }
 
   /**
    *
@@ -34,17 +22,18 @@ public abstract class AbstractPaxosManager {
    * @return true if paxos instance is created. false if another instance with same ID and version already exists, or
    * size of nodeIDs is less than 3.
    */
-  public abstract boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, String initialState);
+  public abstract boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, PaxosInterface paxosInterface);
 
   /**
    * Propose requestPacket in the paxos instance with the given paxosID.
    *
    * ReqeustPacket.clientID is used to distinguish which method proposed this value.
    * @param paxosIDNoVersion paxosID of the paxos group excluding version number
-   * @param requestPacket request to be proposed
+   * @param value request to be proposed
+   * @param stop true if this a stop request, false otherwise.
    * @return NULL if no paxos instance with given paxos ID was found, returns paxosIDNoVersion otherwise.
    */
-  public abstract String propose(String paxosIDNoVersion, RequestPacket requestPacket);
+  public abstract String propose(String paxosIDNoVersion, String value, boolean stop);
 
 
   /**

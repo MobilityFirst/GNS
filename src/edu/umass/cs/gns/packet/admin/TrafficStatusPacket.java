@@ -5,16 +5,18 @@ import edu.umass.cs.gns.main.GNS.PortType;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.Format;
-import java.text.ParseException;
-import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.util.Date;
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  *
  * This class implements a packet that contains sends traffic status information
  *
- * @author Westy 
+ * @author Westy
+ * @deprecated
  * 
  */
 public class TrafficStatusPacket extends AdminPacket {

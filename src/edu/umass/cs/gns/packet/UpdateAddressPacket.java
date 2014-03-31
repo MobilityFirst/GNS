@@ -2,14 +2,14 @@ package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.util.NameRecordKey;
+import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.JSONUtils;
 import net.sourceforge.sizeof.SizeOf;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  *
  * Implements the packet transmitted from a local name server to update the name to value mapping.
@@ -34,7 +34,7 @@ import org.json.JSONObject;
  *
  * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
  * But it uses fields in this packet in sending the reply.
- *
+ * @deprecated
  * @author Westy
  */
 public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
@@ -342,7 +342,6 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     try {
       size = up.toJSONObject().toString().getBytes().length;
     } catch (JSONException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     System.out.println("Size = " + size);

@@ -12,7 +12,7 @@ import org.json.JSONObject;
  * can reach the name server without getting fragmented.
  *
  * @author abhigyan
- * 
+ * @deprecated
  */
 public class NSListenerUDP extends Thread {
 

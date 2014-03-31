@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+/**
+ * @deprecated
+ */
 public class MongoRecordMap extends BasicRecordMap {
 
   private String collectionName;

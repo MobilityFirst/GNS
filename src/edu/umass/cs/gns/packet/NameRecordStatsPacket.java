@@ -2,7 +2,7 @@ package edu.umass.cs.gns.packet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * 
  * This class implements a packet used to aggregate read and write frequency of a name from an active nameserver. A
@@ -15,7 +15,7 @@ import org.json.JSONObject;
  * locality of demand at active name servers, so local name servers are doing this task.
  *
  * @author Hardeep Uppal
- 
+ @deprecated
  */
 public class NameRecordStatsPacket extends BasicPacket {
 

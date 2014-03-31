@@ -3,10 +3,10 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageWorker;
+import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import edu.umass.cs.gns.nsdesign.recordmap.MongoRecords;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
-import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerInterface;
 import edu.umass.cs.gns.util.ConsistentHashing;
 
 import java.io.File;
@@ -30,14 +30,16 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * <p>
  * Created by abhigyan on 2/26/14.
  */
-public class NameServer implements NameServerInterface{
+public class NameServer implements NameServerInterface {
 
 
-  private GnsReconfigurableInterface activeReplica;
+  private GnsReconfigurable gnsReconfigurable; // app
+ 
+  private ActiveReplica activeReplica; // reconfiguration logic
+ 
+  private ReplicaController replicaController; // replica control logic
 
-  private ReplicaControllerInterface replicaController;
 
-  private int numReplicaControllers = 1;
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -46,12 +48,11 @@ public class NameServer implements NameServerInterface{
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
   public NameServer(int nodeID, String configFile, GNSNodeConfig gnsNodeConfig) throws IOException{
-
     // load options given in config file in a java properties object
     Properties prop = new Properties();
 
     File f = new File(configFile);
-    if (f.exists() == false) {
+    if (!f.exists()) {
       System.err.println("Config file not found:" + configFile);
       System.exit(2);
     }
@@ -75,7 +76,7 @@ public class NameServer implements NameServerInterface{
    * @param configParameters  Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
-  public NameServer(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
+  public NameServer(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
 
     init(nodeID, configParameters, gnsNodeConfig);
 
@@ -85,14 +86,15 @@ public class NameServer implements NameServerInterface{
    * This methods actually does the work. It start a listening socket at the name server for incoming messages,
    * and creates <code>GnsReconfigurable</code> and <code>ReplicaController</code> objects.
    * @throws IOException
+   * 
+   * NIOTransport will create an additional listening thread. threadPoolExecutor will create a few more shared
+   * pool of threads.
    */
   private void init(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
     // create nio server
 
-    if (configParameters.containsKey(NSParameterNames.PRIMARY_REPLICAS))
-      numReplicaControllers = Integer.parseInt(configParameters.get(NSParameterNames.PRIMARY_REPLICAS));
-    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
-    ConsistentHashing.initialize(numReplicaControllers, gnsNodeConfig.getNumberOfNameServers());
+//    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
+    ConsistentHashing.initialize(Config.numReplicaControllers, gnsNodeConfig.getNumberOfNameServers());
 
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
 
@@ -103,25 +105,33 @@ public class NameServer implements NameServerInterface{
     int numThreads = 5;
     ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(numThreads);
 
-    // be careful to give same 'nodeID' to active replica and replica controller!
-
-    activeReplica = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor);
-
-    replicaController = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor);
+    // be careful to give same 'nodeID' to gnsReconfigurable, active replica and replica controller!
+    MongoRecords mongoRecords = new MongoRecords(nodeID, -1);
+    gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor, mongoRecords);
+    GNS.getLogger().fine("GNS initialized. ");
+    activeReplica = gnsReconfigurable.getActiveReplica();
+    GNS.getLogger().fine("Active replica initialized. ");
+    replicaController = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor, mongoRecords);
   }
 
   @Override
-  public GnsReconfigurableInterface getActiveReplica() {
+  public GnsReconfigurable getGnsReconfigurable() {
+    return gnsReconfigurable;
+  }
+
+  @Override
+  public ActiveReplica getActiveReplica() {
     return activeReplica;
   }
 
   @Override
-  public ReplicaControllerInterface getReplicaController() {
+  public ReplicaController getReplicaController() {
     return replicaController;
   }
 
-  public void resetDB() {
-    activeReplica.resetDB();
-    replicaController.resetDB();
+  public void reset() {
+
+    gnsReconfigurable.resetGNS();
+    replicaController.resetRC();
   }
 }

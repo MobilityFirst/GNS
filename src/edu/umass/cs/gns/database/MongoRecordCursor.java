@@ -5,20 +5,18 @@
  */
 package edu.umass.cs.gns.database;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  * Provides a cursor that can be used to iterate through rows of a collection.
  * Currently can generate rows as HashMaps or JSONObjects (which are really the same structure anyway)

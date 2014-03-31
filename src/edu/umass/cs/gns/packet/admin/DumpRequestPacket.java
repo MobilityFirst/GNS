@@ -4,13 +4,14 @@ import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  *
  * This class implements the packet transmitted between local nameserver and a primary nameserver to get information about the
  * contents of the nameserver;
  *
  * @author Westy
+ * @deprecated
  */
 public class DumpRequestPacket extends AdminPacket {
 

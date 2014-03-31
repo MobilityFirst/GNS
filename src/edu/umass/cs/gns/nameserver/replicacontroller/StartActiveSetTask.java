@@ -6,7 +6,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.Packet.PacketType;
@@ -30,7 +30,7 @@ import java.util.TimerTask;
  * @see edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController
  * @see edu.umass.cs.gns.nameserver.ListenerReplicationPaxos
  * @author abhigyan
- *
+ * @deprecated
  */
 public class StartActiveSetTask extends TimerTask {
 
@@ -68,9 +68,9 @@ public class StartActiveSetTask extends TimerTask {
 
       numAttempts ++;
 
-      ReplicaControllerRecord nameRecordPrimary;
+      ReplicaControllerRecord rcRecord;
       try {
-        nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.getReplicaController(), name,
+        rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.getReplicaController(), name,
                 getGetStartupActiveSetFields());
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
@@ -82,7 +82,7 @@ public class StartActiveSetTask extends TimerTask {
       }
 
       try {
-        if (!nameRecordPrimary.getActivePaxosID().equals(newActivePaxosID)) {
+        if (!rcRecord.getActivePaxosID().equals(newActivePaxosID)) {
           if (StartNameServer.debugMode) {
             GNS.getLogger().info(" Actives got accepted and replaced by new actives. Quitting. ");
           }

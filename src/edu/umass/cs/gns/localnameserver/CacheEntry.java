@@ -6,12 +6,10 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.RequestActivesPacket;
+import edu.umass.cs.gns.util.NameRecordKey;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.ConsistentHashing;
 
 import java.util.HashSet;

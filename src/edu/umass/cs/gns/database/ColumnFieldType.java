@@ -2,14 +2,16 @@ package edu.umass.cs.gns.database;
 
 import com.mongodb.DBObject;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.ValuesMap;
 import edu.umass.cs.gns.util.JSONUtils;
-import java.util.ArrayList;
-import java.util.HashMap;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  * Created with IntelliJ IDEA.
  * User: abhigyan

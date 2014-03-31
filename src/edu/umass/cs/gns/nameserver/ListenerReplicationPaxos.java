@@ -12,9 +12,10 @@ import edu.umass.cs.gns.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.util.BestServerSelection;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * servers.
  *
  * @author abhigyan
- *
+ * @deprecated
  */
 public class ListenerReplicationPaxos {
 
@@ -114,6 +115,7 @@ public class ListenerReplicationPaxos {
 /**
  * Timer object used to handle updates message related to replication of record between actives replicas and
  * between an active replica and a replica controller.
+ * @deprecated
  */
 class ReplicationWorkerPaxos extends TimerTask {
 
@@ -433,6 +435,9 @@ class ReplicationWorkerPaxos extends TimerTask {
 
 }
 
+/**
+ * @deprecated
+ */
 class NewActiveStartInfo {
 
   public NewActiveSetStartupPacket packet;
@@ -457,7 +462,9 @@ class NewActiveStartInfo {
   }
 }
 
-
+/**
+ * @deprecated
+ */
 class CopyStateFromOldActiveTask extends TimerTask {
 
   NewActiveSetStartupPacket packet;

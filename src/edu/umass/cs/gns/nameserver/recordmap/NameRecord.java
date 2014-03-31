@@ -7,8 +7,8 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
@@ -22,6 +22,7 @@ import java.util.Set;
 /**
  * 
  * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
+ * @deprecated
  */
 public class NameRecord implements Comparable<NameRecord> {
 

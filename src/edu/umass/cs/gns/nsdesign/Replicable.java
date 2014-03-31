@@ -1,16 +1,19 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
+import edu.umass.cs.gns.nsdesign.replicaController.Application;
 
 /**
  * Created by abhigyan on 3/27/14.
  */
-public interface Replicable {
+/* PaxosInterface is the same as this interface.
+ */
+public interface Replicable extends Application {
 
-  public abstract void handleDecision(String name, RequestPacket requestPacket, boolean recovery);
+  //public void handleDecision(String name, String value, boolean recovery);
 
-  public abstract String getState(String name);
+  public String getState(String name);
 
-  public abstract void updateState(String name, String state);
+  public void updateState(String name, String state);
 
+  public void deleteStateBeforeRecovery();
 }

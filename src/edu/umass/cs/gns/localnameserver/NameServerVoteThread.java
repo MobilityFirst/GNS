@@ -2,7 +2,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.packet.NameServerSelectionPacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;

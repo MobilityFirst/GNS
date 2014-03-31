@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 import java.util.Set;
 
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This packet is sent by local name server to a name server to request the current active replicas
  * for a name. The name server replies also uses this packet to send the reply to a local name server.
@@ -16,7 +16,7 @@ import java.util.Set;
  * If the name server is a replica controller for this name and the name exists, then the field
  * <code>activeNameServers</code> in the packet is filled with the current set of active name servers.
  * Otherwise, <code>activeNameServers</code> is set to null.
- *
+ *    @deprecated
  * @author Abhigyan
  */
 public class RequestActivesPacket extends BasicPacket

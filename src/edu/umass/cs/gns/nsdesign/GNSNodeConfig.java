@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class GNSNodeConfig implements NodeConfig {
 
+  public static final long INVALID_PING_LATENCY = -1L;
+
   /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *

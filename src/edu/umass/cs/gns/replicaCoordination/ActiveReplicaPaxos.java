@@ -10,10 +10,10 @@ import org.json.JSONObject;
 /**
 @author V. Arun
  */
-
+// fixme delete this file
 /* Work in progress. Inactive code.
  */
-public class ActiveReplicaPaxos implements ActiveReplicaCoordinator {
+public class ActiveReplicaPaxos {
 
 	PaxosManager paxosManager=null;
 	NodeConfig nodeConfig=null;
@@ -26,12 +26,13 @@ public class ActiveReplicaPaxos implements ActiveReplicaCoordinator {
     this.activeReplica = activeReplica;
 	}
 	
-	@Override
-	public int handleRequest(JSONObject request) {
+
+	public int coordinateRequest(JSONObject request) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
-	public int handleRequest(BasicPacket bp) {
+
+  public int handleRequest(BasicPacket bp) {
 		return 0;
 	}
 

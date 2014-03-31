@@ -12,10 +12,11 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
+//import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -27,7 +28,8 @@ import org.json.JSONObject;
 
 import java.net.UnknownHostException;
 import java.util.*;
-
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
  * representation

@@ -5,8 +5,12 @@
  */
 package edu.umass.cs.gns.database;
 
-import java.util.HashMap;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 
 /**
  * A cursor that can be used to iterate through a collection of GNS served records as JSONObjects.

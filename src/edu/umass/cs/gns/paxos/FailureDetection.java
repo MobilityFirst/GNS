@@ -1,10 +1,9 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.packet.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -66,8 +65,11 @@ public class FailureDetection{
 
      ScheduledThreadPoolExecutor executorService;
      PaxosManager paxosManager;
+    private boolean debugMode = true;
 
-	/**
+  private boolean experimentMode  = false;
+
+  /**
 	 * initialize the failure detection module
 	 * @param N number of nodes
 	 * @param nodeID ID of this node 
@@ -92,7 +94,7 @@ public class FailureDetection{
 			}
 			startNodeMonitoring(i);
 		}
-		if (StartNameServer.debugMode) GNS.getLogger().fine("Failure detection initialized for " + N + " nodes");
+		GNS.getLogger().info("Failure detection initialized for " + N + " nodes");
 	}
 	
 	/**
@@ -112,7 +114,7 @@ public class FailureDetection{
       {
         FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject(), this);
         long initialDelay = timeoutIntervalMillis + r.nextInt(pingIntervalMillis);
-        if (StartNameServer.experimentMode) {
+        if (experimentMode) {
           initialDelay += 2 * NameServer.getInitialExpDelayMillis(); // wait for all name servers to start up.
         }
         nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
@@ -124,7 +126,8 @@ public class FailureDetection{
         GNS.getLogger().severe("JSON EXCEPTION HERE !! " + e.getMessage());
         e.printStackTrace();
       }
-      if (StartNameServer.debugMode) GNS.getLogger().fine(nodeID + " started monitoring node " + monitoredNodeID);
+
+      if (debugMode) GNS.getLogger().fine(nodeID + " started monitoring node " + monitoredNodeID);
     } finally {
       lock.unlock();
     }
@@ -174,7 +177,7 @@ public class FailureDetection{
 			if (nodeInfo.containsKey(responderNodeID)) {
 
 				nodeInfo.put(responderNodeID, System.currentTimeMillis());
-				if (StartNameServer.debugMode) GNS.getLogger().finer(nodeID + "FD received response "
+				if (debugMode) GNS.getLogger().finer(nodeID + "FD received response "
                         + responderNodeID);
 			}
 
@@ -193,7 +196,7 @@ public class FailureDetection{
         try{
             if (nodeInfo.containsKey(responderNodeID)) {
                 nodeInfo.put(responderNodeID, System.currentTimeMillis());
-                if (StartNameServer.debugMode) GNS.getLogger().finer(nodeID + "FD reset " + responderNodeID);
+                if (debugMode) GNS.getLogger().finer(nodeID + "FD reset " + responderNodeID);
             }
 
         } finally {
@@ -317,7 +320,10 @@ public class FailureDetection{
 		}
 	}
 
-	
+
+  public boolean isDebugMode() {
+    return debugMode;
+  }
 }
 
 
@@ -325,10 +331,10 @@ public class FailureDetection{
 class FailureDetectionTask extends TimerTask{
 
 	/**
-	 * JSONObject  is a FailureDetectionPacket object. 
+	 * JSONObject  is a FailureDetectionPacket object.
 	 */
 	JSONObject json;
-	
+
 	/**
 	 * Send failure detection packet to the destination node ID.
 	 */
@@ -336,26 +342,28 @@ class FailureDetectionTask extends TimerTask{
 
   FailureDetection failureDetection;
 
-	/**
-	 * Constructor
-	 * @param destNodeID which node to monitor
-	 * @param json failure detection packet to send
-	 */
-	public FailureDetectionTask(int destNodeID, JSONObject json, FailureDetection failureDetection) {
-		this.destNodeID = destNodeID;
-		this.json = json;
+  /**
+   * Constructor
+   *
+   * @param destNodeID which node to monitor
+   * @param json       failure detection packet to send
+   */
+  public FailureDetectionTask(int destNodeID, JSONObject json, FailureDetection failureDetection) {
+    this.destNodeID = destNodeID;
+    this.json = json;
     this.failureDetection = failureDetection;
-		if (StartNameServer.debugMode) GNS.getLogger().fine(failureDetection.nodeID + " Started FailureDetectionTask for "
-            + destNodeID);
-	}
-	
-	
+    if (failureDetection.isDebugMode())
+      GNS.getLogger().fine(failureDetection.nodeID + " Started FailureDetectionTask for "
+              + destNodeID);
+  }
+
+
 	@Override
 	public void run() {
     try{
 		// send a FD packet
 		if (failureDetection.nodeInfo.containsKey(destNodeID)) {
-			GNS.getLogger().fine(failureDetection.nodeID + "FD sent request " + destNodeID);
+			GNS.getLogger().finer(failureDetection.nodeID + "FD sent request " + destNodeID);
       failureDetection.paxosManager.sendMessage(destNodeID, json, null);
 		}
 		else {
@@ -363,7 +371,7 @@ class FailureDetectionTask extends TimerTask{
 			cancel();
 			return;
 		}
-		
+
 		// check if node has failed, or come up.
 		failureDetection.notifyNodeOfStatusChange(destNodeID);
     }catch (Exception e) {
@@ -374,47 +382,46 @@ class FailureDetectionTask extends TimerTask{
 }
 
 
+
 class HandleFailureDetectionPacketTask extends TimerTask{
 
-    FailureDetectionPacket fdPacket;
+  FailureDetectionPacket fdPacket;
 
-    FailureDetection failureDetection;
+  FailureDetection failureDetection;
 
-    HandleFailureDetectionPacketTask(JSONObject json, FailureDetection failureDetection) {
-      this.failureDetection = failureDetection;
+  HandleFailureDetectionPacketTask(JSONObject json, FailureDetection failureDetection) {
+    this.failureDetection = failureDetection;
+    try {
+      fdPacket = new FailureDetectionPacket(json);
+    } catch (JSONException e) {
+      GNS.getLogger().severe("JSON Exception " + e.getMessage());
+    }
+  }
+
+  @Override
+  public void run() {
+    try {
+      if (failureDetection ==  null) return; // this case can happen if a packet arrives before we have
+      // initialized failure detection
+      if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT) {
+
+        FailureDetectionPacket fdResponse = fdPacket.getFailureDetectionResponse();
+        failureDetection.resetNodeInfo(fdPacket.senderNodeID);
         try {
-            fdPacket = new FailureDetectionPacket(json);
-        } catch (JSONException e) {
-            GNS.getLogger().severe("JSON Exception " + e.getMessage());
+            GNS.getLogger().finer(failureDetection.nodeID + "FD sent response to " + fdPacket.senderNodeID);
+          failureDetection.paxosManager.sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject(), null);
+        } catch (JSONException e)
+        {
+          GNS.getLogger().severe("JSON Exception " + e.getMessage());
         }
-    }
-
-    @Override
-    public void run() {
-      try {
-         if (failureDetection ==  null) return; // this case can happen if a packet arrives before we have
-        // initialized failure detection
-        if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT) {
-
-            FailureDetectionPacket fdResponse = fdPacket.getFailureDetectionResponse();
-            failureDetection.resetNodeInfo(fdPacket.senderNodeID);
-            try
-            {
-                if(StartNameServer.debugMode)
-                    GNS.getLogger().finer(failureDetection.nodeID + "FD sent response " + fdPacket.senderNodeID);
-              failureDetection.paxosManager.sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject(), null);
-            } catch (JSONException e)
-            {
-                GNS.getLogger().severe("JSON Exception " + e.getMessage());
-            }
-        }
-        else if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_RESPONSE) {
-          failureDetection.updateNodeInfo(fdPacket.responderNodeID);
-        }
-
-      } catch (Exception e) {
-        GNS.getLogger().severe("Exception in failure detection packet task. " + fdPacket);
-        e.printStackTrace();
+      } else if (fdPacket!= null && fdPacket.packetType == PaxosPacketType.FAILURE_RESPONSE) {
+        GNS.getLogger().finer(failureDetection.nodeID + "FD recvd response from " + fdPacket.responderNodeID);
+        failureDetection.updateNodeInfo(fdPacket.responderNodeID);
       }
+
+    } catch (Exception e) {
+      GNS.getLogger().severe("Exception in failure detection packet task. " + fdPacket);
+      e.printStackTrace();
     }
+  }
 }

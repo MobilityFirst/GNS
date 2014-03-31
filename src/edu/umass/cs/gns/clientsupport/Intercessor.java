@@ -8,9 +8,10 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.NameRecordKey;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static edu.umass.cs.gns.packet.Packet.getPacketType;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 
 /**
  * One of a number of class that implement client support in the GNS server. 

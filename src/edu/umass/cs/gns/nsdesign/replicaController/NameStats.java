@@ -8,5 +8,5 @@ package edu.umass.cs.gns.nsdesign.replicaController;
  * Created by abhigyan on 2/27/14.
  */
 public class NameStats {
-
+  // todo fill up this class
 }

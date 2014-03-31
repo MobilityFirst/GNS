@@ -16,7 +16,7 @@ import java.util.*;
  * Before calling any method in this class, <code>initialize</code> method must be called. If <code>initialize</code>
  * method is called multiple times, the initialization is done based on the first call; later calls make no difference.
  *
- * The class is thread-safe provided <code>initialize</code> is called before calling any other method.
+ * The class is thread-safe.
  *
  * @author  Abhigyan
  */

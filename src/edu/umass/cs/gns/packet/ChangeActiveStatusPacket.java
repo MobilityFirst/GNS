@@ -5,7 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.packet.Packet.PacketType;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 
 /**
  * This packet is sent among replica controllers after a group change for a name is complete.
@@ -13,6 +13,7 @@ import edu.umass.cs.gns.packet.Packet.PacketType;
  * to indicate the completion of group change.
  * It contains two fields: <code>name</code> and  <code>paxosID</code>. paxosID is the ID of the paxos
  * group between new set of active replicas.
+ * @deprecated
  */
 public class ChangeActiveStatusPacket extends BasicPacket
 {
@@ -31,7 +32,7 @@ public class ChangeActiveStatusPacket extends BasicPacket
 	String paxosID;
 	
 	/**
-	 * Depending on packet type, two information are conveyed. 
+	 * Depending on packet type, two information are conveyed.
 	 * if packet type = Either old active is set to not running, or new active is set to running.
 	 * @param paxosID
 	 */

@@ -8,6 +8,7 @@ import java.util.Set;
 
 /**
  * Created by abhigyan on 2/23/14.
+ * @deprecated
  */
 public class UpdateStatus {
 

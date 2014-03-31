@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -86,7 +87,7 @@ public class GNSMessagingTask {
   /**
    * Send GNSMessagingTask using GNSNIOTransport.
    */
-  public static void send(GNSMessagingTask mtask, GNSNIOTransport nioTransport) throws JSONException, IOException {
+  public static void send(GNSMessagingTask mtask, GNSNIOTransportInterface nioTransport) throws JSONException, IOException {
     if(mtask==null) return;
     for(int m=0; m<mtask.msgs.length; m++) {
       for(int r=0; r<mtask.recipients.length; r++) {
@@ -96,12 +97,5 @@ public class GNSMessagingTask {
     }
   }
 
-  /**
-   * @param args
-   */
-  public static void main(String[] args) {
-    // TODO Auto-generated method stub
-
-  }
 
 }

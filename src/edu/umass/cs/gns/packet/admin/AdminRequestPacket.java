@@ -4,12 +4,13 @@ import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * 
  * This class implements the packet transmitted to send an admin request.
  *
  * @author Westy
+ * @deprecated
  */
 public class AdminRequestPacket extends AdminPacket {
 

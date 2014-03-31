@@ -7,8 +7,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.SelectRequestPacket;
-import edu.umass.cs.gns.packet.SelectResponsePacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.net.UnknownHostException;

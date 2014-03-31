@@ -1,22 +1,19 @@
 package edu.umass.cs.gns.packet;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-
+import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.packet.Packet.PacketType;
-
+import java.util.HashSet;
+import java.util.Set;
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This packet is exchanged among replica controllers to propose a new set of actives among primary name servers.
  *
  * This packet is created by a replica controller that wants to propose a new set of actives. The packet is
  * then forwarded to the appropriate paxos instance among replica controllers. After being committed by active replicas,
  * each replica controller updates its database with the new set of proposed actives.
- *
+ *     @deprecated
  * @author abhigyan
  *
  */

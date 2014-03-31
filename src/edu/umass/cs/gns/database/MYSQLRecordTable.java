@@ -1,16 +1,19 @@
 package edu.umass.cs.gns.database;
 
 import edu.umass.cs.gns.main.GNS;
-import static edu.umass.cs.gns.main.StartNameServer.debugMode;
 import edu.umass.cs.gns.nameserver.NameServer;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import static edu.umass.cs.gns.main.StartNameServer.debugMode;
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  * A front end to the mySQL table which stores the fields and values
  *

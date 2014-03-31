@@ -14,7 +14,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+/**************** FIXME Package deprecated by nsdesign/replicationFramework. this will soon be deleted. **/
 
+
+/**
+ * @deprecated
+ */
 public class KMediods  implements ReplicationFrameworkInterface {
 
 	/**

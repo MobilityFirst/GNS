@@ -1,22 +1,19 @@
 package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.util.JSONUtils;
-import java.util.Random;
+import edu.umass.cs.gns.util.*;
+
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  **
  * Packet transmitted between the local name server and a name server. All communications inside of the domain protocol are carried
  * in a single DNS packet. The packet contains the query from a local name server and a response from the name server.
  *
- *
+ *            @deprecated
  */
 public class DNSPacket extends BasicPacketWithSignatureInfo {
 
@@ -120,7 +117,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   }
 
   /**
-   * Creates a DNS packet for when you just have a single field you want to return. 
+   * Creates a DNS packet for when you just have a single field you want to return.
    * This packet has both a query and response section.
    * 
    * @param id

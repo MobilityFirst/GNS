@@ -2,7 +2,6 @@ package edu.umass.cs.gns.main;
 
 
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.test.FailureScenario;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -18,11 +17,11 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import static edu.umass.cs.gns.util.Util.println;
-
+/**************** FIXME Package deprecated by nsdesign/StartNameServer.java. this will soon be deleted. **/
 /**
  * 
  * Starts a single instance of the Nameserver with the specified parameters.
- *
+ *           @deprecated
  */
 public class StartNameServer {
 

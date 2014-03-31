@@ -2,7 +2,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.packet.NameServerLoadPacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 
 import java.util.TimerTask;

@@ -6,11 +6,11 @@
  * Initial developer(s): Westy.
  */
 package edu.umass.cs.gns.packet;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This class describes the record types for DNS Packets.
  * @author Westy
- *
+ *       @deprecated
  */
 public enum DNSRecordType {
 

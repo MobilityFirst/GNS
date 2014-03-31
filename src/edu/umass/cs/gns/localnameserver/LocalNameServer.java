@@ -9,18 +9,15 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nameserver.GNSNodeConfig;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nio.*;
-import edu.umass.cs.gns.packet.*;
-import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.ping.PingServer;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
 import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,7 +62,8 @@ public class LocalNameServer {
    * Unique and random query ID *
    */
   private static Random random;
-  private static GNSNIOTransportInterface tcpTransport; // Abhigyan: keeping this here because we are testing with GNSNIOTransport
+
+  private static GNSNIOTransportInterface tcpTransport;
 
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
@@ -160,19 +158,14 @@ public class LocalNameServer {
     new Thread(tcpTransport).start();
 
     new LNSListenerAdmin().start();
-    if (StartLocalNameServer.emulatePingLatencies == false) {
-      // we emulate latencies based on ping latency given in config file,
-      // and do not want ping latency values to be updated
-      PingServer.startServerThread(nodeID);
-      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
-      PingManager.startPinging(nodeID);
-    }
-
-    //Periodically send nameserver votes for location based replication
-
-//          if (StartLocalNameServer.experimentMode) {
-//            runSimpleTest();
-//          }
+    // todo enable ping server after adding support for it at client.
+//    if (StartLocalNameServer.emulatePingLatencies == false) {
+//      // we emulate latencies based on ping latency given in config file,
+//      // and do not want ping latency values to be updated
+//      PingServer.startServerThread(nodeID);
+//      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
+//      PingManager.startPinging(nodeID);
+//    }
 
     if (StartLocalNameServer.experimentMode) {
       TraceRequestGenerator.generateLookupsUpdates(StartLocalNameServer.lookupTraceFile,
@@ -180,10 +173,10 @@ public class LocalNameServer {
               StartLocalNameServer.updateRateRegular, executorService);
     }
 
-
-    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
-      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
-    }
+    // todo abhigyan: un-comment this after enabling group changes of active replicas at name server.
+//    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
+//      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
+//    }
 
     if (StartLocalNameServer.experimentMode == false) {
       GnsHttpServer.runHttp(LocalNameServer.nodeID);

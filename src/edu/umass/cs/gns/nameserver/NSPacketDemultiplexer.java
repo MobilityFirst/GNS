@@ -14,7 +14,7 @@ import java.io.IOException;
  * All packets received at name server (TCP/UDP) pass through this demultiplexer.
  * This thread implements PacketDemultiplex interface for GNS.
  * @author abhigyan
- *
+ * @deprecated
  */
 public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
@@ -74,7 +74,6 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           break;
       }
     } catch (JSONException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();

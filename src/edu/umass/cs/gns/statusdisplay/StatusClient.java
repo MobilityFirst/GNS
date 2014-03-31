@@ -5,7 +5,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.admin.StatusPacket;
 import edu.umass.cs.gns.packet.admin.TrafficStatusPacket;

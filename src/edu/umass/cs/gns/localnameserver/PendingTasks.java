@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import edu.umass.cs.gns.packet.RequestActivesPacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 

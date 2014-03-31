@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see edu.umass.cs.gns.nameserver.replicacontroller.StopActiveSetTask
  * @see edu.umass.cs.gns.nameserver.replicacontroller.WriteActiveNameServersRunningTask
  * Created by abhigyan on 2/23/14.
+ * @deprecated
  */
 public class GroupChangeProgress {
 

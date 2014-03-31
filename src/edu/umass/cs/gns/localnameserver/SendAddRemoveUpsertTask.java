@@ -11,7 +11,8 @@ import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -92,7 +93,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
         return true;
       }
-      GNS.getLogger().fine("ADD FAILED no response until MAX-wait time: " + getUpdateRequestID() + " name = " + getName());
+      GNS.getLogger().fine("Request FAILED no response until MAX-wait time: " + getUpdateRequestID() + " name = " + getName());
       ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(getPacket());
       try {
         if (confirmPkt != null) {
@@ -146,7 +147,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       JSONObject jsonToSend = getPacket().toJSONObject();
       LocalNameServer.sendToNS(jsonToSend, nameServerID);
 
-      GNS.getLogger().fine("SendAddRequest: Send to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
+      GNS.getLogger().fine(" Send request to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
               " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
     } catch (JSONException e) {
       e.printStackTrace();

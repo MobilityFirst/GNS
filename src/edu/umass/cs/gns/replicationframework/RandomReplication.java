@@ -5,12 +5,13 @@ import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 
 import java.util.*;
-
+/**************** FIXME Package deprecated by nsdesign/replicationFramework. this will soon be deleted. **/
 /*************************************************************
  * This class implements the ReplicationFramework interface
  * and is used to randomly select new active nameservers.
  * 
  * @author Hardeep Uppal
+ * @deprecated
  ************************************************************/
 public class RandomReplication implements ReplicationFrameworkInterface {
 

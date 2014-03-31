@@ -7,10 +7,9 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NSSelectInfo;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
-import edu.umass.cs.gns.packet.SelectRequestPacket;
-import edu.umass.cs.gns.packet.SelectResponsePacket;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * This class implements a thread that periodically pushes read and write stats for names in its lookup table.
  *
  * @author Hardeep Uppal
+ * @deprecated
  * **********************************************************
  */
 public class SendNameRecordStats extends TimerTask {

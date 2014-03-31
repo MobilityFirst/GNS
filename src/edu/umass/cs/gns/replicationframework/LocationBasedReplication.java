@@ -8,13 +8,14 @@ import edu.umass.cs.gns.util.ConfigFileInfo;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-
+/**************** FIXME Package deprecated by nsdesign/replicationFramework. this will soon be deleted. **/
 /*************************************************************
  * This class implements the ReplicationFramework interface
  * and is used to select active name servers based on location
  * of the demand.
  * 
  * @author Hardeep Uppal
+ @deprecated
  ************************************************************/
 public class LocationBasedReplication implements ReplicationFrameworkInterface {
 

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,9 +8,9 @@ import org.json.JSONObject;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
- * TODO write documentation for this class.
+ * @deprecated
  */
 public class NewActiveSetStartupPacket extends BasicPacket {
 

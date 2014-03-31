@@ -30,7 +30,7 @@ import java.util.Set;
 
 /**
  * Provides signing and ACL checks for commands.
- * 
+ * @deprecated
  * @author westy
  */
 public class NSAccessSupport {

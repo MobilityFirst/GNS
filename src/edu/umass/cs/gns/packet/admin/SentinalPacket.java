@@ -3,11 +3,12 @@ package edu.umass.cs.gns.packet.admin;
 import edu.umass.cs.gns.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This class implements the packet used to mark the end of a dump request.
  * 
  * @author Westy
+ * @deprecated
  **/
 public class SentinalPacket extends AdminPacket {
 

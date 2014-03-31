@@ -2,12 +2,12 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.packet.AddRecordPacket;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.NSResponseCode;
-import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 
 /*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
@@ -28,6 +28,18 @@ import org.json.JSONException;
  */
 public class Add {
 
+  public static GNSMessagingTask handleAddRecordLNS(AddRecordPacket addRecordPacket, ReplicaController replicaController) throws JSONException {
+    GNSMessagingTask msgTask = null;
+    addRecordPacket.setNameServerID(replicaController.getNodeID());
+    if(replicaController.getRcCoordinator() == null) {
+      msgTask = executeAddRecord(addRecordPacket, replicaController);
+    } else {
+      replicaController.getRcCoordinator().coordinateRequest(addRecordPacket.toJSONObject());
+    }
+    return msgTask;
+  }
+
+
   /**
    * Adds a name in the database at this replica controller and forwards the request to the active replica at
    * the same node. If name exists in database, it will send error message to the client.
@@ -42,10 +54,12 @@ public class Add {
     GNS.getLogger().info("Executing ADD at replica controller " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
     ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(),
             addRecordPacket.getName(), true);
+
     // change packet type
     try {
       ReplicaControllerRecord.addNameRecordPrimary(replicaController.getDB(), rcRecord);
       addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
+      GNS.getLogger().fine("*********************************************************sending message to " + replicaController.getNodeID());
       gnsMessagingTask = new GNSMessagingTask(replicaController.getNodeID(), addRecordPacket.toJSONObject());
 
     } catch (RecordExistsException e) {
@@ -61,11 +75,13 @@ public class Add {
    * to local name server that record is added.
    */
   public static GNSMessagingTask executeAddActiveConfirm(AddRecordPacket addRecordPacket,
-                                                         ReplicaController replicaController)
-          throws JSONException {
-
-    GNS.getLogger().info("Add complete informing client. " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
-    ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
-    return new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+                         ReplicaController replicaController) throws JSONException {
+    GNSMessagingTask msgTask = null;
+    if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
+      GNS.getLogger().info("Add complete informing client. " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
+      ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
+      msgTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+    }
+    return msgTask;
   }
 }

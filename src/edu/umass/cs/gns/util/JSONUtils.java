@@ -7,9 +7,7 @@ package edu.umass.cs.gns.util;
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.StatsInfo;
-import edu.umass.cs.gns.nameserver.ValuesMap;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

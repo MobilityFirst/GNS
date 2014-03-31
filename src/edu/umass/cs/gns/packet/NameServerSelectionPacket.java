@@ -2,7 +2,7 @@ package edu.umass.cs.gns.packet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /*************************************************************
  * This class provides the packet transmitted from a local name
  * server to indicate its closest (least ping latency) name 
@@ -20,7 +20,7 @@ import org.json.JSONObject;
  * and it is not the role of local name servers to send this information. However, currently we don't have a
  * way of inferring locality of demand at active name servers, so local name servers are doing this task.
  *
- *
+ *   @deprecated
  * @author Hardeep Uppal, Abhigyan
  ************************************************************/
 public class NameServerSelectionPacket extends BasicPacket {

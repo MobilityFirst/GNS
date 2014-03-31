@@ -4,9 +4,10 @@ import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class Remove {
     applyMarkedForRemovalFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
     applyMarkedForRemovalFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
     applyMarkedForRemovalFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
-    applyMarkedForRemovalFields.add(ReplicaControllerRecord.ACTIVE_PAXOS_ID);
+    applyMarkedForRemovalFields.add(ReplicaControllerRecord.ACTIVE_VERSION);
   }
 
   /**
@@ -61,7 +62,7 @@ public class Remove {
       if (rc.getRcCoordinator() == null) {
         msgTask = executeMarkRecordForRemoval(removeRecord, rc);
       } else {
-        rc.getRcCoordinator().handleRequest(removeRecord.toJSONObject());
+        rc.getRcCoordinator().coordinateRequest(removeRecord.toJSONObject());
       }
 
     } catch (RecordNotFoundException e) {
@@ -86,38 +87,43 @@ public class Remove {
   public static GNSMessagingTask executeMarkRecordForRemoval(RemoveRecordPacket removeRecord, ReplicaController rc)
           throws JSONException{
     GNSMessagingTask msgTask = null;
-
+    boolean sendError = false;
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(rc.getDB(),
               removeRecord.getName(), applyMarkedForRemovalFields);
-
+      // put (name, request)
       rcRecord.setMarkedForRemoval();
+      if (rcRecord.isMarkedForRemoval()) {  // check if record marked as removed, it may not be if a group change for
+        //  this name is in progress concurrently.
+        GNS.getLogger().info("Name Record marked for removal " + removeRecord);
 
-      GNS.getLogger().info("Name Record marked for removal " + removeRecord);
-
-      if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
-                                                              // so it will inform actives
-        if (rcRecord.isActiveRunning()) { // if active is running, stop current actives
+        if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
+                                                                // so it will inform actives
+          assert rcRecord.isActiveRunning(); // active must be running
           StopActiveSetTask stopActiveSetTask = new StopActiveSetTask(removeRecord.getName(),
-                  rcRecord.getActiveNameservers(),rcRecord.getActivePaxosID(), Packet.PacketType.ACTIVE_REMOVE,
+                  rcRecord.getActiveNameservers(),rcRecord.getActiveVersion(), Packet.PacketType.ACTIVE_REMOVE,
                   removeRecord, rc);
           rc.getScheduledThreadPoolExecutor().scheduleAtFixedRate(stopActiveSetTask, 0,
                   ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+
+        } else {
+          GNS.getLogger().info("SKIP: remove record request does not not contain " + rcRecord.getName());
         }
-        // the else of the above if means active name servers not running, i.e., group change is in progress.
-        // We let new actives become functional and then we will stop the new actives to remove the record.
       } else {
-        GNS.getLogger().info("SKIP: remove record request does not not contain " + rcRecord.getName());
+        GNS.getLogger().info("Remove record not executed because group change for the name is in progress "
+                + removeRecord);
+        sendError = true;
       }
-
     } catch (RecordNotFoundException e) {
-      ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, removeRecord);
-
+      sendError = true;
       GNS.getLogger().info("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
-      msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field Not Found Exception. " + e.getMessage());
       e.printStackTrace();
+    }
+    if (sendError) {
+      ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, removeRecord);
+      msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
     }
     return msgTask;
   }
@@ -132,10 +138,11 @@ public class Remove {
     RemoveRecordPacket removePacket = (RemoveRecordPacket) rc.getOngoingStopActiveRequests().remove(activeStop.getRequestID());
     GNS.getLogger().fine("RC remove packet fetched ... " + removePacket);
     if (removePacket != null) { // response has not been already received
+        removePacket.changePacketTypeToRcRemove();
         if (rc.getRcCoordinator() == null) {
           msgTask = executeRemoveRecord(removePacket, rc);
         } else {
-          rc.getRcCoordinator().handleRequest(activeStop);
+          rc.getRcCoordinator().coordinateRequest(removePacket.toJSONObject());
         }
     } else {
       GNS.getLogger().info("Duplicate or delayed response for old active stop: " + activeStop);

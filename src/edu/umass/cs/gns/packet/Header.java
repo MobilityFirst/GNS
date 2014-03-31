@@ -7,11 +7,13 @@
  */
 package edu.umass.cs.gns.packet;
 
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This class represents the DNS packet header.
+ * @deprecated
  */
 public class Header {
 

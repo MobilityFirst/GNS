@@ -11,6 +11,11 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
+/**************** FIXME Package deprecated by nsdesign/replicationFramework. this will soon be deleted.
+ *
+ *
+ * @deprecated
+ * **/
 
 //import latencygenerator.LatencyGeneratorPlanetlab;
 //import requestgenerator.Request;
@@ -18,6 +23,7 @@ import java.util.TreeMap;
 //import util.Config;
 //import util.ConsistentHashing;
 //import util.Util;
+
 
 public class BeehiveDHTRouting {
 	
@@ -605,6 +611,9 @@ public class BeehiveDHTRouting {
 	
 }
 
+/**
+ * @deprecated
+ */
 class IDInformation{
 	byte[] bytes;
 	BigInteger bigInteger;
@@ -624,6 +633,9 @@ class IDInformation{
 	}
 }
 
+/**
+ * @deprecated
+ */
 class RoutingTable{
 	int[][] rtable;
 	ArrayList<Integer> leafset;

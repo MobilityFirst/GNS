@@ -7,12 +7,14 @@ package edu.umass.cs.gns.database;
 
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.util.ResultValue;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import org.json.JSONObject;
-
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  * Provides an interface for insert, update, remove and lookup operations in a nosql database
  *

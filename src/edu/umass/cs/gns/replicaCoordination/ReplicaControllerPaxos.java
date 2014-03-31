@@ -10,13 +10,13 @@ import org.json.JSONObject;
 /**
 @author V. Arun
  */ 
-
+// fixme delete this file
 /* The purpose of this class is to abstract away all group change operations 
  * done using paxos. This is meant to subsume much of the functionality of 
  * the currently static class PaxosManager. We probably need an instantiable
  * version of PaxosManager anyway that is customized for replica controllers.
  */
-public class ReplicaControllerPaxos implements ReplicaControllerCoordinator {
+public class ReplicaControllerPaxos {
 
 
   PaxosManager paxosManager=null;
@@ -30,8 +30,8 @@ public class ReplicaControllerPaxos implements ReplicaControllerCoordinator {
     this.replicaController = replicaController;
   }
 
-	@Override
-	public int handleRequest(JSONObject request) {
+
+	public int coordinateRequest(JSONObject request) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

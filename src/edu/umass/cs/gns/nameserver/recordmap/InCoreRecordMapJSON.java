@@ -19,6 +19,7 @@ import java.util.Set;
  * Stores GUID, KEY, VALUE triples
  *
  * @author westy
+ * @deprecated
  */
 public class InCoreRecordMapJSON extends BasicRecordMap {
   private static final String NAME = NameRecord.NAME.getName();

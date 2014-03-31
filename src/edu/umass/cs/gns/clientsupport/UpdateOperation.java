@@ -6,8 +6,8 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;

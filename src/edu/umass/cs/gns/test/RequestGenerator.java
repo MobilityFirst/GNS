@@ -4,11 +4,12 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.packet.*;
+import edu.umass.cs.gns.util.NameRecordKey;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.TestRequest;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
+import edu.umass.cs.gns.workloads.ProbabilityDistribution;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RequestGenerator {
 
-  public  void generateRequests(List<TestRequest> testRequest, double requestRateMillis,
+  public  void generateRequests(List<TestRequest> testRequest, ProbabilityDistribution probDistribution,
                                 ScheduledThreadPoolExecutor executorService) {
     if (testRequest == null) {
       if (StartLocalNameServer.debugMode) {
@@ -33,9 +34,9 @@ public class RequestGenerator {
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Number of requests:" + testRequest.size());
     }
-    ExponentialDistribution exponentialDistribution = new ExponentialDistribution(requestRateMillis);
+//    ExponentialDistribution exponentialDistribution = new ExponentialDistribution(requestRateMillis);
 
-    double expectedDurationSec = (testRequest.size() * requestRateMillis) / 1000;
+    double expectedDurationSec = (testRequest.size() * probDistribution.getMean()) / 1000;
 
     String msg = "SendRequestStart Expected-Duration " + expectedDurationSec
             + " Number-Requests " + testRequest.size();
@@ -44,7 +45,7 @@ public class RequestGenerator {
       GNS.getLogger().fine(msg);
     }
 
-    double delay = 0;
+    double delay = probDistribution.getMean();
     LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer();
     GNS.getLogger().info(" Initial update delay: " + delay);
     List<Double> delays = new ArrayList<Double>();
@@ -62,7 +63,7 @@ public class RequestGenerator {
         tasks.add(new GenerateRemoveRequest(u.name, count, lnsPacketDemultiplexer));
       }
       delays.add(delay);
-      delay += exponentialDistribution.exponential();
+      delay += probDistribution.getNextArrivalDelay();
     }
     long t0 = System.currentTimeMillis();
     for (int i = 0; i < testRequest.size(); i++) {

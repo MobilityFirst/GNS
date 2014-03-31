@@ -5,15 +5,16 @@
  */
 package edu.umass.cs.gns.packet;
 
-import edu.umass.cs.gns.nameserver.NameRecordKey;
+import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
- * A SelectRequestPacket is like a DNS packet without a GUID, but with a key and value. 
+ * A SelectRequestPacket is like a DNS packet without a GUID, but with a key and value.
  * The semantics is that we want to look up all the records that have a field named key with the given value.
  * We also use this to do automatic group GUID maintenence.
  * @author westy
+ * @deprecated
  */
 public class SelectRequestPacket extends BasicPacket {
 

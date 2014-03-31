@@ -8,6 +8,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+/**************** FIXME Package deprecated by nsdesign/replicationFramework. this will soon be deleted. **/
+
+/**
+ * @deprecated
+ */
 public class BeehiveReplication {
 	
 	private static double M;

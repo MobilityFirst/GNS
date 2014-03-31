@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.test;
 
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
@@ -11,6 +10,8 @@ import edu.umass.cs.gns.util.TestRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+// fixme delete this class
 
 /**
  * Runs tests for a single name server without coordination among multiple replicas.
@@ -33,7 +34,7 @@ public class UnreplicatedNameServerTest {
 
       GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFile, nameserverID);
       NameServer nameServer = new NameServer(0, nsConfigFile, nodeConfig);
-      nameServer.resetDB();
+      nameServer.reset();
       GNS.getLogger().info("Name server created ..");
 
       StartLocalNameServer.startLNSConfigFile(lnsID, nodeConfigFile, lnsConfigFile, null);
@@ -57,7 +58,7 @@ public class UnreplicatedNameServerTest {
 //
 //      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
 
-      new RequestGenerator().generateRequests(testRequest, 5000.0, LocalNameServer.getExecutorService());
+//      new RequestGenerator().generateRequests(testRequest, 5000.0, LocalNameServer.getExecutorService());
 
       GNS.getLogger().info("Local name server started ...");
     } catch (IOException e) {

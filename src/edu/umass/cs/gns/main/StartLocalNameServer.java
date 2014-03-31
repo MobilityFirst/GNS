@@ -207,7 +207,7 @@ public class StartLocalNameServer {
    *
    */
   public static boolean emulatePingLatencies = false;
-  public static double variation = 0.1; // 10 % addition
+  public static double variation = 0.1; // 10 % variation above latency in config file.
 
   @SuppressWarnings("static-access")
   /**

@@ -7,16 +7,17 @@ package edu.umass.cs.gns.nameserver.clientsupport;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameRecordKey;
 import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.packet.DNSPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.NameRecordKey;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This class handles sending DNS queries from one NS to another. 
@@ -24,6 +25,7 @@ import org.json.JSONObject;
  *
  * 
  * @author westy
+ * @deprecated
  */
 public class SiteToSiteQueryHandler {
 

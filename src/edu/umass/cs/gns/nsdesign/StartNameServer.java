@@ -31,7 +31,6 @@ public class StartNameServer {
    */
   public static HashMap<String, String> getParametersAsHashMap(String ... args) throws IOException {
 
-
     CommandLine parser = null;
     Options commandLineOptions = NSParameterNames.getAllOptions();
 
@@ -107,7 +106,8 @@ public class StartNameServer {
   public static void main(String[] args) throws IOException{
 
     HashMap<String, String> allValues = getParametersAsHashMap(args);
-
+    // initialize config options.
+    Config.initialize(allValues);
     int nodeID = Integer.parseInt(allValues.get(NSParameterNames.ID));
     String nodeConfigFile = allValues.get(NSParameterNames.NS_FILE);
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nodeConfigFile, nodeID);

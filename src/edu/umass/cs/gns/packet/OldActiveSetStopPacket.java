@@ -3,7 +3,7 @@ package edu.umass.cs.gns.packet;
 import edu.umass.cs.gns.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This packet is sent by a replica controller to an active replica while changing the
  * set of active replicas for a name. Active replica, on receiving the packet, proposes
@@ -13,7 +13,7 @@ import org.json.JSONObject;
  * field to <code>OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY</code> and send the same packet to
  * primaries.
  *
- *
+ * @deprecated
  * Refer to the classes <link>StopActiveSetTask</link> and <code>ListenerReplicationPaxos</code>
  * for more documentation.
  */

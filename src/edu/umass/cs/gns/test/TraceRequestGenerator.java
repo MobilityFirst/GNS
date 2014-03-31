@@ -3,6 +3,7 @@ package edu.umass.cs.gns.test;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.util.TestRequest;
+import edu.umass.cs.gns.workloads.ExponentialDistribution;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,13 +15,12 @@ import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
+ *
  * Created by abhigyan on 2/28/14.
  */
 public class TraceRequestGenerator {
 
-
-  /*******BEGIN: during experiments, these methods read workload trace files. Not used outside experiments. ********/
-
+  /******* BEGIN: during experiments, these methods read workload trace files. Not used outside experiments. ********/
 
   public static void generateLookupsUpdates(String lookupTraceFile, String updateTraceFile, double lookupRate,
                                             double updateRate, ScheduledThreadPoolExecutor executorService)
@@ -40,12 +40,13 @@ public class TraceRequestGenerator {
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Scheduling all lookups.");
     }
-    new RequestGenerator().generateRequests(lookupTrace, lookupRate, executorService);
+    new RequestGenerator().generateRequests(lookupTrace, new ExponentialDistribution(lookupRate), executorService);
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Scheduling all updates via intercessor.");
     }
-    new RequestGenerator().generateRequests(updateTrace, updateRate, executorService);
+
+    new RequestGenerator().generateRequests(updateTrace, new ExponentialDistribution(updateRate), executorService);
   }
 
 
@@ -119,18 +120,7 @@ public class TraceRequestGenerator {
     return trace;
   }
 
-//  /**
-//   **
-//   * Checks whether <i>name</i> is in the workload set for this local name server.
-//   *
-//   * @param name Host/device/domain name
-//   * @return <i>true</i> if the workload contains <i>name</i>, <i>false</i> otherwise
-//   *
-//   */
-//  public static boolean workloadContainsName(Set<SString name) {
-//    return workloadSet.contains(name);
-//  }
+  /******* END: during experiments, these methods read workload trace files. Not used outside experiments. ********/
 
-  /*******END: during experiments, these methods read workload trace files. Not used outside experiments. ********/
 
 }

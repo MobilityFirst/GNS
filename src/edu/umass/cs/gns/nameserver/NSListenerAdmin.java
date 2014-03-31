@@ -16,20 +16,21 @@ import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Set;
 import java.util.logging.Level;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * *************************************************************
  * This class implements a thread that returns a list of active name servers for a name. The thread waits for request packet over a
  * UDP socket and sends a response containing the current active nameserver for a name record.
- *
+*                         @deprecated
  * @author Hardeep Uppal ************************************************************
  */
 public class NSListenerAdmin extends Thread {
@@ -253,7 +254,6 @@ public class NSListenerAdmin extends Thread {
             StatusClient.handleStatusInit(socket.getInetAddress());
             StatusClient.sendStatus(NameServer.getNodeID(), "NS Ready");
             break;
-
         }
 
         socket.close();

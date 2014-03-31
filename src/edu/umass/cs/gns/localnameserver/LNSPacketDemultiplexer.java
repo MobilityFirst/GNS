@@ -6,8 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 

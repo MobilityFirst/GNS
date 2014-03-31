@@ -6,14 +6,14 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.packet.NSResponseCode;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+
 import org.json.JSONException;
 
 /**

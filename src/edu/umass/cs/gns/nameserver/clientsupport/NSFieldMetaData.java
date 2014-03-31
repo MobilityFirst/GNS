@@ -13,7 +13,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.util.ResultValue;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +21,7 @@ import java.util.Set;
  * Implements metadata on fields.
  *
  * @author westy
+ * @deprecated
  */
 public class NSFieldMetaData {
 

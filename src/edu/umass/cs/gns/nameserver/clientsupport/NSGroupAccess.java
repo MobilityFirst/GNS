@@ -5,7 +5,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.util.ResultValue;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 /**
@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nameserver.ResultValue;
  * The members of a group are stored in a record whose key is the GROUP string. 
  *
  * @author westy
+ * @deprecated
  */
 public class NSGroupAccess {
 

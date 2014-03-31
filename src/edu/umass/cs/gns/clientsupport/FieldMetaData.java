@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
-import edu.umass.cs.gns.packet.NSResponseCode;
+import edu.umass.cs.gns.util.NSResponseCode;
 import java.util.HashSet;
 import java.util.Set;
 

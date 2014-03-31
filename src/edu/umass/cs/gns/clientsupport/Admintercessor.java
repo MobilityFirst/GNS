@@ -5,17 +5,19 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
-import static edu.umass.cs.gns.packet.Packet.getPacketType;
-import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
-import edu.umass.cs.gns.packet.admin.AdminResponsePacket;
-import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gns.packet.admin.SentinalPacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.SentinalPacket;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.text.ParseException;
@@ -23,9 +25,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 
 /**
  * Implements some administrative functions for accessing the GNS.

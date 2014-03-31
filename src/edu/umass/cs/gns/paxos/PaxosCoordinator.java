@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.packet.paxospacket.PValuePacket;
+import edu.umass.cs.gns.paxos.paxospacket.PValuePacket;
 
 import java.util.ArrayList;
 import java.util.HashMap;

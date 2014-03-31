@@ -16,11 +16,11 @@ public interface GNSNIOTransportInterface extends Runnable {
 
   public int sendToIDs(Set<Integer> destIDs, JSONObject jsonData) throws IOException;
 
+  public int sendToIDs(Set<Integer> destIDs, JSONObject jsonData, int excludeID) throws IOException;
+
   public int sendToIDs(short[] destIDs, JSONObject jsonData) throws IOException;
 
   public int sendToIDs(short[]destIDs, JSONObject jsonData, int excludeID) throws IOException;
-
-  public int sendToIDs(Set<Integer> destIDs, JSONObject jsonData, int excludeID) throws IOException;
 
   public int sendToID(int id, JSONObject jsonData) throws IOException;
 

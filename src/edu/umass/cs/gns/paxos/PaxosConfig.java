@@ -15,7 +15,10 @@ import java.util.Properties;
  */
 public class PaxosConfig {
 
+
   // configuration parameters
+  private boolean debugMode = true;
+
 
   /** Paxos logs are stored in this folder */
   private String paxosLogFolder = DEFAULT_PAXOS_LOG_FOLDER;
@@ -37,7 +40,7 @@ public class PaxosConfig {
 
   // default values of parameters
 
-  private static final String DEFAULT_PAXOS_LOG_FOLDER = "paxosLog";
+  private static final String DEFAULT_PAXOS_LOG_FOLDER = "log/paxosLog";
 
   private static final int DEFAULT_FD_PING_MILLIS = 10000;
 
@@ -63,6 +66,7 @@ public class PaxosConfig {
     }
 
     try {
+
       Properties prop = new Properties();
 
       InputStream input = new FileInputStream(configFile);
@@ -75,6 +79,7 @@ public class PaxosConfig {
 
       if (prop.containsKey(DEFAULT_FD_PING_MILLIS)) failureDetectionTimeoutMillis = Integer.parseInt(prop.getProperty(PARAM_FD_TIMEOUT_MILLIS));
 
+      // todo create parsing option for debugMode
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -102,5 +107,13 @@ public class PaxosConfig {
 
   public void setFailureDetectionTimeoutMillis(int failureDetectionTimeoutMillis) {
     this.failureDetectionTimeoutMillis = failureDetectionTimeoutMillis;
+  }
+
+  public boolean isDebugMode() {
+    return debugMode;
+  }
+
+  public void setDebugMode(boolean debugMode) {
+    this.debugMode = debugMode;
   }
 }

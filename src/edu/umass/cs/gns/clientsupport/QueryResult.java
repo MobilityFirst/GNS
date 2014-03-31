@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.nameserver.ResultValue;
-import edu.umass.cs.gns.nameserver.ValuesMap;
-import edu.umass.cs.gns.packet.NSResponseCode;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.util.NSResponseCode;
 
 /**
  * Either a ValuesMap or an Error. Also

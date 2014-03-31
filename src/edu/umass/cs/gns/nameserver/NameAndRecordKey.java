@@ -1,8 +1,11 @@
 package edu.umass.cs.gns.nameserver;
 
+import edu.umass.cs.gns.util.NameRecordKey;
+
 /**
  * Abhigyan: I think we can delete this class now.
  * @author westy
+ * @deprecated
  */
 public class NameAndRecordKey {
   

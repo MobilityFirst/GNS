@@ -2,15 +2,17 @@ package edu.umass.cs.gns.packet.admin;
 
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.util.Format;
-import java.text.ParseException;
-import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.util.Date;
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This class implements a packet that contains status information
  * 
  * @author Westy
+ * @deprecated
  */
 public class StatusPacket extends AdminPacket {
 

@@ -74,19 +74,19 @@ public class GNS {
   /**
    * Logging level for main logger
    */
-  public static String fileLoggingLevel = "INFO";
+  public static String fileLoggingLevel = "FINE";
   /**
    * Console output level for main logger
    */
-  public static String consoleOutputLevel = "INFO";
+  public static String consoleOutputLevel = "FINE";
   /**
    * Logging level for stat logger
    */
-  public static String statFileLoggingLevel = "INFO";
+  public static String statFileLoggingLevel = "FINE";
   /**
    * Console output level for stat logger
    */
-  public static String statConsoleOutputLevel = "WARNING";  // don't send these to the console normally
+  public static String statConsoleOutputLevel = "FINE";  // don't send these to the console normally
   private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
   public static boolean initRun = false;
 

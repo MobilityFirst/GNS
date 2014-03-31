@@ -29,6 +29,7 @@ import java.util.TimerTask;
  * @see edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController
  * @see edu.umass.cs.gns.nameserver.ListenerReplicationPaxos
  * @author abhigyan
+ * @deprecated
  */
 public class StopActiveSetTask extends TimerTask {
 

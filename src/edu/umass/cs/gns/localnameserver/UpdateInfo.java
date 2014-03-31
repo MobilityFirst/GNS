@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import java.util.Set;
 
 /**************************************************************

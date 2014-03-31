@@ -2,9 +2,10 @@ package edu.umass.cs.gns.packet;
 
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This class implements the packet that confirms update, add and remove transactions. The packet is transmitted from an
  * active name server to a local name server that had originally sent the address update. Also used to send
@@ -13,7 +14,7 @@ import org.json.JSONObject;
  * Name server sets the <code>requestID</code> and <code>LNSRequestID</code> field based on the original request,
  * which could be update, add and remove. If this fields are not set correctly, request will not be routed back to
  * client.
- *
+ *          @deprecated
  */
 public class ConfirmUpdateLNSPacket extends BasicPacket {
 

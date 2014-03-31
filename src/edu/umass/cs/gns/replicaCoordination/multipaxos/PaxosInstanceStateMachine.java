@@ -10,7 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.packet.PaxosPacket;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
@@ -239,7 +239,7 @@ public class PaxosInstanceStateMachine {
 			 * the way back up to PacketDemultiplexer whose incoming packet initiated
 			 * this whole chain of events. It seems silly for PacketDemultiplexer
 			 * to throw an IOException caused by the sends resulting from processing
-			 * that packet. So we should handle this exception right here. But what 
+			 * that packet. So we should handle this exception right here. But what
 			 * should we do? We can ignore it as the network does not need to be 
 			 * reliable anyway. Revisit as needed.
 			 */

@@ -6,12 +6,12 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.packet.NSResponseCode;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.UpdateAddressPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,7 +39,7 @@ public class Update {
     if (replica.getActiveCoordinator() == null) {
       return Update.executeUpdateLocal(updateAddressPacket, replica);
     } else {
-      replica.getActiveCoordinator().handleRequest(updateAddressPacket.toJSONObject());
+      replica.getActiveCoordinator().coordinateRequest(updateAddressPacket.toJSONObject());
       return null;
     }
 
@@ -68,7 +68,6 @@ public class Update {
 //      NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
       return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
     }
-
 
     NameRecord nameRecord;
 

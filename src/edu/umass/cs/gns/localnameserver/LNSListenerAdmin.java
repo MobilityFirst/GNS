@@ -7,14 +7,17 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
-import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.packet.admin.SentinalPacket;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import edu.umass.cs.gns.util.ConfigFileInfo;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -24,8 +27,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * A separate thread that runs in the LNS that handles administrative (AKA non-data related, non-user)

@@ -7,15 +7,15 @@ import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.clientsupport.SiteToSiteQueryHandler;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.packet.DNSPacket;
-import edu.umass.cs.gns.packet.DNSRecordType;
-import edu.umass.cs.gns.packet.NSResponseCode;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -43,12 +43,7 @@ public class Lookup {
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
 
-    GNSMessagingTask msgTask = null;
-
-//    if (StartNameServer.debugMode) {
-//      GNS.getLogger().fine("NS received DNS lookup request: " + incomingJSON);
-//    }
-//    DNSPacket dnsPacket = new DNSPacket(incomingJSON);
+    GNSMessagingTask msgTask;
 
     // the only dns reponses we should see are coming in respone to SiteToSiteQueryHandler requests
     if (!dnsPacket.isQuery()) {
@@ -89,7 +84,7 @@ public class Lookup {
           nameRecord = NameRecord.getNameRecord(activeReplica.getDB(), guid);
         } else {
           // otherwise grab a few system fields we need plus the field the user wanted
-          nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, getDNSPacketFields(), field);
+          nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, dnsFields, field);
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
@@ -102,16 +97,11 @@ public class Lookup {
     return msgTask;
   }
 
-  private static ArrayList<ColumnField> dnsField = new ArrayList<ColumnField>();
+  private static ArrayList<ColumnField> dnsFields = new ArrayList<ColumnField>();
 
-  private static ArrayList<ColumnField> getDNSPacketFields() {
-    synchronized (dnsField) {
-      if (dnsField.size() == 0) {
-        dnsField.add(NameRecord.ACTIVE_NAMESERVERS);
-        dnsField.add(NameRecord.TIME_TO_LIVE);
-      }
-      return dnsField;
-    }
+  static {
+    dnsFields.add(NameRecord.ACTIVE_NAMESERVERS);
+    dnsFields.add(NameRecord.TIME_TO_LIVE);
   }
 
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access,
@@ -201,7 +191,7 @@ public class Lookup {
         }
       }
     } catch (FieldNotFoundException e) {
-      if (StartNameServer.debugMode) {
+      if (Config.debugMode) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       }
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);

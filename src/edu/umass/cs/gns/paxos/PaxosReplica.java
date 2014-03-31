@@ -2,8 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.packet.paxospacket.*;
+import edu.umass.cs.gns.paxos.paxospacket.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -245,6 +244,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
    */
   private static final ReentrantLock minSlotLock = new ReentrantLock();
 
+  private boolean debugMode = false;
   /************ End of coordinator variables *****************/
 
   /**
@@ -580,7 +580,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
     }
     try {
       acceptorLock.lock();
-      if (StartNameServer.debugMode)
+      if (debugMode)
         GNS.getLogger().info("\tResendingMessage\t" + paxosID + "\t" + state.pValuePacket.proposal.slot +
                 "\t" + acceptorBallot + "\t");
       if (state.pValuePacket.ballot.compareTo(acceptorBallot) != 0) return false;
@@ -737,11 +737,11 @@ public class PaxosReplica extends PaxosReplicaInterface{
         PaxosReplicaInterface r = paxosManager.paxosInstances.get(paxosManager.getPaxosKeyFromPaxosID(paxosID));
         if (r == null) return;
         if (r.getPaxosID().equals(paxosID)) {
-          if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance removed " + paxosID  + "\tReq ");
+          if (debugMode) GNS.getLogger().fine("Paxos instance removed " + paxosID  + "\tReq ");
           paxosManager.paxosInstances.remove(paxosManager.getPaxosKeyFromPaxosID(paxosID));
 
         } else {
-          if (StartNameServer.debugMode) GNS.getLogger().fine("Paxos instance already removed " + paxosID);
+          if (debugMode) GNS.getLogger().fine("Paxos instance already removed " + paxosID);
         }
       }
     }
@@ -764,7 +764,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
     if (prop != null) {
       runGC(prop.gcSlot);
 
-      if (StartNameServer.debugMode) GNS.getLogger().fine(paxosID + "\t" +nodeID +
+      if (debugMode) GNS.getLogger().fine(paxosID + "\t" +nodeID +
               " Decision recvd at slot = " + prop.slot + " req = " + prop.req);
 
       committedRequests.put(prop.slot, prop.req);
@@ -1047,7 +1047,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
   private void handleProposal(ProposalPacket p) throws JSONException {
 
 
-    if (StartNameServer.debugMode)
+    if (debugMode)
       GNS.getLogger().fine(paxosID + "C\t" +nodeID +
               " Coordinator handling proposal: " + p.toJSONObject().toString());
 
@@ -1697,7 +1697,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
       return;  // I have failed!! not possible.
     }
 
-    if (StartNameServer.debugMode)
+    if (debugMode)
       GNS.getLogger().fine(paxosID + "C\t" +nodeID + " Node failed:"  + packet.responderNodeID);
 
     int coordinatorID = -1;
@@ -1715,7 +1715,7 @@ public class PaxosReplica extends PaxosReplicaInterface{
       GNS.getLogger().warning(paxosID + "C\t" + nodeID + " Coordinator failed\t" + packet.responderNodeID +
               " Propose new ballot.");
       GNS.getLogger().severe(paxosID + "C\t" +nodeID +"C coordinator has failed " + coordinatorID);
-      if (StartNameServer.debugMode)
+      if (debugMode)
         GNS.getLogger().fine(paxosID + "C\t" +nodeID + " current ballot coordinator failed " + coordinatorID);
       // I should try to get a new ballot accepted.
       initScout();

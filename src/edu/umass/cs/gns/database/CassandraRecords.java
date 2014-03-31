@@ -14,13 +14,14 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.ResultValue;
+import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
-
+/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
+ * FIXME Make changes to that file until we include this package again.. **/
 /**
  *
  * @author westy

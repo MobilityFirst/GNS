@@ -10,9 +10,9 @@ import edu.umass.cs.gns.replicationframework.KMediods;
 import edu.umass.cs.gns.replicationframework.LocationBasedReplication;
 import edu.umass.cs.gns.replicationframework.RandomReplication;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
-
+/**************** FIXME Package deprecated by nsdesign/replicationFramework/. this will soon be deleted. **/
 /**
- *
+ * @deprecated
  * @author westy
  */
 public enum ReplicationFrameworkType {

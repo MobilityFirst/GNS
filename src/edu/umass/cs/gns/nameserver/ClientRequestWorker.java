@@ -22,10 +22,9 @@ import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
 import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.packet.*;
-import edu.umass.cs.gns.packet.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.packet.paxospacket.RequestPacket;
-import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
+import edu.umass.cs.gns.util.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Handle client requests - ADD/REMOVE/LOOKUP/UPDATE + REQUESTACTIVES
  *
  * @author abhigyan
+ * @deprecated
  */
 public class ClientRequestWorker extends TimerTask {
 

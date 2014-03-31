@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nameserver.recordmap;
 /**
  *
  * @author westy
+ * @deprecated
  */
 public abstract class BasicRecordMap implements RecordMapInterface {
 

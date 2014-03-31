@@ -10,6 +10,7 @@ import java.net.InetAddress;
  * about name servers and not local name servers, because local name servers are not involved in paxos.
  *
  * Created by abhigyan on 3/13/14.
+ * @deprecated
  */
 public class NameServerNodeConfig implements NodeConfig {
 

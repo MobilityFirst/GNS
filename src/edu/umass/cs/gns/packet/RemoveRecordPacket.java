@@ -2,7 +2,7 @@ package edu.umass.cs.gns.packet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
+/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
 /**
  * This packet is sent by a local name server to a name server to remove a name from GNS.
  *
@@ -14,7 +14,7 @@ import org.json.JSONObject;
  *
  * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
  * But it uses fields in this packet in sending the reply.
- *
+ *  @deprecated
  */
 public class RemoveRecordPacket extends BasicPacket {
 
