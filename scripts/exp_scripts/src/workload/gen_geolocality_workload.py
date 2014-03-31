@@ -30,7 +30,7 @@ num_lns = -1  # set this to -1 if you want to generate trace for all LNS in lns 
 def main():
 
     trace_folder = '../resources/workload'    # folder where output will be generated
-    lns_geo_file = '../resources/pl_lns_geo'   # files with hostname, and lat-long of local name servers (lns)
+    lns_geo_file = '../resources/pl_lns_geo_ec2'   # files with hostname, and lat-long of local name servers (lns)
     gen_mobile_trace(trace_folder, lns_geo_file)
 
 
