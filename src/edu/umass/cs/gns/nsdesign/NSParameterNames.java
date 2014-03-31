@@ -119,6 +119,8 @@ public class NSParameterNames {
 
   public static final String NAME_ACTIVES = "nameActives";
 
+  public static final String SINGLE_NS = "singleNS";
+
 //  public static final String USE_COORDINATION = "coordination";
 
 
@@ -257,6 +259,8 @@ public class NSParameterNames {
 
     Option nameActives = new Option(NAME_ACTIVES, false, "list of name actives provided to this file");
 
+    Option singleNS = new Option(SINGLE_NS, false, "If true, run a single name server");
+
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(nodeId);
@@ -314,6 +318,7 @@ public class NSParameterNames {
     commandLineOptions.addOption(signatureCheck);
     commandLineOptions.addOption(quitAfterTime);
     commandLineOptions.addOption(nameActives);
+    commandLineOptions.addOption(singleNS);
 
     return commandLineOptions;
   }

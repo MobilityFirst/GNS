@@ -43,7 +43,7 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
 	public static final int RC_TIMEOUT_MILLIS = 3000;
 
 	/** object handles coordination among replicas on a request, if necessary */
-	private final ReplicaControllerCoordinator rcCoordinator;
+	private ReplicaControllerCoordinator rcCoordinator = null;
 
 	/**ID of this node*/
 	private final int nodeID;
@@ -80,12 +80,13 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
 
     this.replicaControllerDB =  new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
-		// create the activeCoordinator object.
-    PaxosConfig paxosConfig = new PaxosConfig();
-    paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
+    if (!Config.singleNS) {
+      // create the activeCoordinator object.
+      PaxosConfig paxosConfig = new PaxosConfig();
+      paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
 
-		rcCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig), this, paxosConfig);
-
+      rcCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig), this, paxosConfig);
+    }
     // todo disabling group change functionality as it is not active now.
 //		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);

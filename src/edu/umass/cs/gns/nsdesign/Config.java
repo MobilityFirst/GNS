@@ -21,6 +21,7 @@ public class Config {
 
   public static boolean experimentMode = false;
 
+  public static boolean singleNS = false;
 
   public static int numReplicaControllers = 3;
 
@@ -51,10 +52,13 @@ public class Config {
     if (initialized) return;
 
     initialized = true;
+
+
+
     if (allValues.containsKey(NSParameterNames.PRIMARY_REPLICAS)) {
       Config.numReplicaControllers = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));
       GNS.numPrimaryReplicas = numReplicaControllers;
-    }
+     }
 
     if (allValues.containsKey(NSParameterNames.FILE_LOGGING_LEVEL)) {
       GNS.fileLoggingLevel = allValues.get(NSParameterNames.FILE_LOGGING_LEVEL);
@@ -75,6 +79,10 @@ public class Config {
       paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
     }
 
+    if (allValues.containsKey(NSParameterNames.SINGLE_NS)) {
+      numReplicaControllers = 1;
+      singleNS = true;
+    }
 
   }
 

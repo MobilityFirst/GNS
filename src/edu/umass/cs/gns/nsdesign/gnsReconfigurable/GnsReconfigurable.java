@@ -43,7 +43,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
 
   /** object handles coordination among replicas on a request, if necessary */
-  private ActiveReplicaCoordinator activeCoordinator;
+  private ActiveReplicaCoordinator activeCoordinator = null;
 
   private ActiveReplica activeReplica;
 
@@ -79,10 +79,11 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
 
     this.nameRecordDB = new MongoRecordMap(mongoRecords, MongoRecords.DBNAMERECORD);
 
-    PaxosConfig paxosConfig = new PaxosConfig();
-    paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/gnsReconfigurable");
-    this.activeCoordinator = new ActiveReplicaCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig), this, paxosConfig);
-
+    if (!Config.singleNS) {
+      PaxosConfig paxosConfig = new PaxosConfig();
+      paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/gnsReconfigurable");
+      this.activeCoordinator = new ActiveReplicaCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig), this, paxosConfig);
+    }
     this.activeReplica = new ActiveReplica(nodeID, configParameters, gnsNodeConfig, nioServer, this.scheduledThreadPoolExecutor, this);
 
   }
