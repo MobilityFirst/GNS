@@ -565,15 +565,10 @@ public class Packet {
    * @throws java.io.IOException *
    */
   public static void main(String[] args) throws IOException {
-    System.out.println(getPacketType(16));
-//    ConfigFileInfo.readHostInfo("ns3", 3);
-//    Set<Integer> ids = new HashSet<Integer>();
-//    ids.add(0);
-//    ids.add(1);
-//    ids.add(2);
-//    ids.add(3);
-//    ids.add(4);
-//
-//    sendTCPPacketToClosestNameServer(ids, new JSONObject(), 3, GNRS.PortType.REPLICATION_PORT);
+    System.out.println(PacketType.DNS);
+    System.out.println(getPacketType(5));
+    System.out.println(getPacketType(5).toString());
+    System.out.println(PacketType.valueOf("REQUEST_ACTIVES").toString());
+    System.out.println(PacketType.valueOf("REQUEST_ACTIVES").getInt());
   }
 }
