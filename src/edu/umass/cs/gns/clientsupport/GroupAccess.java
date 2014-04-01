@@ -42,7 +42,7 @@ public class GroupAccess {
    */
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null,
+    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
             UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
@@ -64,7 +64,7 @@ public class GroupAccess {
    * @return
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message) {
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null,
+    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null, 1,
             UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
@@ -88,7 +88,8 @@ public class GroupAccess {
    * @return
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message) {
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, UpdateOperation.REMOVE, writer, signature, message);
+    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
+            UpdateOperation.REMOVE, writer, signature, message);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
@@ -109,7 +110,7 @@ public class GroupAccess {
    * @return
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message) {
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null,
+    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null, 1,
             UpdateOperation.REMOVE, writer, signature, message);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
@@ -172,12 +173,14 @@ public class GroupAccess {
 
   public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
+    return Intercessor.sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
+            UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
   }
 
   public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
+    return Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
+            UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
   }
 
   public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message) {
@@ -202,7 +205,8 @@ public class GroupAccess {
 
     if (!addToGroup(guid, requests, writer, signature, message).isAnError()) {
       //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE, writer, signature, message).isAnError()) {
-      if (!Intercessor.sendUpdateRecord(guid, JOINREQUESTS, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
+      if (!Intercessor.sendUpdateRecord(guid, JOINREQUESTS, requests, null, -1,
+              UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
         return true;
       }
     }
@@ -213,7 +217,8 @@ public class GroupAccess {
 
     if (!removeFromGroup(guid, requests, writer, signature, message).isAnError()) {
       //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
-      if (!Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
+      if (!Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, -1,
+              UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
         return true;
       }
     }

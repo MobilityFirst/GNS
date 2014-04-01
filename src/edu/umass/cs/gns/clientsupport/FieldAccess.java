@@ -90,15 +90,17 @@ public class FieldAccess {
     }
   }
 
-  public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue, UpdateOperation operation,
+  public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue, int argument,
+          UpdateOperation operation,
           String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, key, value, oldValue, operation, writer, signature, message);
+    return Intercessor.sendUpdateRecord(guid, key, value, oldValue, argument, 
+            operation, writer, signature, message);
   }
 
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, key, value, null, UpdateOperation.CREATE, writer, signature, message);
+    return Intercessor.sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.CREATE, writer, signature, message);
   }
 
   public static String select(String key, Object value) {

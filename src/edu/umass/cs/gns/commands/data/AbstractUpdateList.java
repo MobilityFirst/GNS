@@ -41,6 +41,7 @@ public abstract class AbstractUpdateList extends GnsCommand {
     String field = json.getString(FIELD);
     String value = json.getString(VALUE);
     String oldValue = json.optString(OLDVALUE, null);
+    int argument = json.optInt(ARGUMENT, -1);
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
@@ -48,6 +49,7 @@ public abstract class AbstractUpdateList extends GnsCommand {
     if (!(responseCode = FieldAccess.update(guid, field,
             JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
+            argument,
             getUpdateOperation(),
             writer, signature, message)).isAnError()) {
       return OKRESPONSE;

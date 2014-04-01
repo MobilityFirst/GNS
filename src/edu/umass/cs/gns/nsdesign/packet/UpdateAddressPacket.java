@@ -21,7 +21,7 @@ import org.json.JSONObject;
  * (2) Upserts which update an existing record or else create a new name record.
  *
  * Regarding TTL field: If we are using upserts, if the upserts leads to creating a new name record, then TTL value
- * in this packet is used to set  ttl for this name record. The value given in the TTL field in not
+ * in this packet is used to set ttl for this name record. The value given in the TTL field in not
  * considered in other cases.
  *
  * Future work: I think we should allow clients to change TTLs for a name record after a record is created.
@@ -49,6 +49,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
   private final static String LOCAL_NAMESERVER_ID = "lnsID";
   private final static String TTL = "ttl";
   private final static String OPERATION = "operation";
+  private final static String ARGUMENT = "argument";
   //
   // We have two ids in here. First one (requestID) is used by the entity making the initial request (often the intercessor).
   // Second (LNSRequestID) is used by the LNS to keep track of it's update records.
@@ -70,13 +71,22 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    */
   private NameRecordKey recordKey;
   /**
-   * Value for updating *
+   * Value for updating
+   * For simplicity's sake even when we are just updating with a single value it is converted into a
+   * list (which is what ResultValue really is).
    */
   private ResultValue updateValue;
   /**
-   * The old value to replace in a substitute operation *
+   * The old value to replace in a substitute operation
+   *  * For simplicity's sake even when we are just updating with a single value it is converted into a
+   * list (which is what ResultValue really is).
    */
   private ResultValue oldValue;
+  /**
+   * Currently this is used in as the index in the get and set operations.
+   * When used with set the value in updateValue will be the one to set the element to.
+   */
+  private int argument;
   /**
    * The operation to perform *
    */
@@ -106,7 +116,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.
    * Used by client support to create a packet to send to the LNS.
-   * 
+   *
    * @param type
    * @param requestID
    * @param name
@@ -118,18 +128,18 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    * @param ttl
    * @param writer
    * @param signature
-   * @param message 
+   * @param message
    */
   public UpdateAddressPacket(Packet.PacketType type, int requestID, String name, NameRecordKey recordKey,
-          ResultValue newValue, ResultValue oldValue, UpdateOperation operation, int localNameServerId, int ttl,
+          ResultValue newValue, ResultValue oldValue, int argument, UpdateOperation operation, int localNameServerId, int ttl,
           String writer, String signature, String message) {
-    this(type, requestID, -1, name, recordKey, newValue, oldValue, operation, localNameServerId, -1, ttl,
+    this(type, requestID, -1, name, recordKey, newValue, oldValue, argument, operation, localNameServerId, -1, ttl,
             writer, signature, message);
   }
 
   /**
-   *  Constructs a new UpdateAddressPacket with the given parameters.
-   *  Used by the LNS to create a packet to send to the NS.
+   * Constructs a new UpdateAddressPacket with the given parameters.
+   * Used by the LNS to create a packet to send to the NS.
    *
    * @param type
    * @param requestID
@@ -151,6 +161,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
           String name, NameRecordKey recordKey,
           ResultValue newValue,
           ResultValue oldValue,
+          int argument,
           UpdateOperation operation,
           int localNameServerId, int nameServerId, int ttl,
           // signature info
@@ -166,6 +177,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     this.operation = operation;
     this.updateValue = newValue;
     this.oldValue = oldValue;
+    this.argument = argument;
     this.localNameServerId = localNameServerId;
     this.nameServerId = nameServerId;
     this.ttl = ttl;
@@ -188,6 +200,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
     this.operation = UpdateOperation.valueOf(json.getString(OPERATION));
     this.updateValue = JSONUtils.JSONArrayToResultValue(json.getJSONArray(NEWVALUE));
+    this.argument = json.optInt(ARGUMENT, -1);
     this.oldValue = json.has(OLDVALUE) ? JSONUtils.JSONArrayToResultValue(json.getJSONArray(OLDVALUE)) : null;
     this.localNameServerId = json.getInt(LOCAL_NAMESERVER_ID);
     this.nameServerId = json.getInt(NAMESERVER_ID);
@@ -228,6 +241,9 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     if (getOldValue() != null) {
       json.put(OLDVALUE, new JSONArray(getOldValue()));
     }
+    if (getArgument() != -1) {
+      json.put(ARGUMENT, getArgument());
+    }
     json.put(LOCAL_NAMESERVER_ID, getLocalNameServerId());
     json.put(NAMESERVER_ID, getNameServerId());
     json.put(TTL, getTTL());
@@ -235,6 +251,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
 
   /**
    * Return the id used the client support for bookkeeping.
+   *
    * @return
    */
   public int getRequestID() {
@@ -278,6 +295,10 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
 
   public ResultValue getOldValue() {
     return oldValue;
+  }
+
+  public int getArgument() {
+    return argument;
   }
 
   /**
@@ -331,7 +352,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     x.add("12345678");
     //
     UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS, 32234234, 123, "12322323",
-            NameRecordKey.EdgeRecord, x, null, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
+            NameRecordKey.EdgeRecord, x, null, -1, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
 
     SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields

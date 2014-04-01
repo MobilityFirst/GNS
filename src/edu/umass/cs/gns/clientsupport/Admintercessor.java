@@ -31,7 +31,7 @@ import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 
 /**
  * Implements some administrative functions for accessing the GNS.
- * 
+ *
  * @author westy
  */
 public class Admintercessor {
@@ -81,8 +81,8 @@ public class Admintercessor {
 
   /**
    * Clears the database and reinitializes all indices.
-   * 
-   * @return 
+   *
+   * @return
    */
   public static boolean sendResetDB() {
     try {
@@ -130,7 +130,7 @@ public class Admintercessor {
       return null;
     }
   }
-  
+
   public static String sendPingTable(String node) {
     int id = nextAdminRequestID();
     try {
@@ -150,11 +150,11 @@ public class Admintercessor {
       return null;
     }
   }
-  
+
   public static String sendPingValue(int node1, int node2) {
     return sendPingValue(Integer.toString(node1), Integer.toString(node2));
   }
-  
+
   public static String sendPingValue(String node1, String node2) {
     int id = nextAdminRequestID();
     try {
@@ -174,7 +174,7 @@ public class Admintercessor {
       return null;
     }
   }
-  
+
   public static boolean sendChangeLogLevel(Level level) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
@@ -249,7 +249,7 @@ public class Admintercessor {
     if (result != null) {
       return formatDumpRecords(result);
     } else {
-      return null;
+      return Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "No response to dump command!";
     }
   }
 
@@ -262,8 +262,11 @@ public class Admintercessor {
           dumpMonitor.wait(timeoutExpiredMs - System.currentTimeMillis());
           if (System.currentTimeMillis() >= timeoutExpiredMs) {
             // we timed out... only got partial results{
-            dumpResult.put(id, dumpStorage.get(id));
-            dumpStorage.remove(id);
+            Map<Integer, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
+            if (recordsMap != null) { // can be null if we timed out before getting any responses
+              dumpResult.put(id, recordsMap);
+              dumpStorage.remove(id);
+            }
             break;
           }
         }
@@ -277,10 +280,10 @@ public class Admintercessor {
 
   private static String formatDumpRecords(Map<Integer, TreeSet<NameRecord>> recordsMap) {
     // now process all the records we received
-    
+
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<Integer>missingIDs = new HashSet(ConfigFileInfo.getAllNameServerIDs());
+    Set<Integer> missingIDs = new HashSet(ConfigFileInfo.getAllNameServerIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + missingIDs.toString());
@@ -413,7 +416,7 @@ public class Admintercessor {
   }
 
   private static void sendAdminPacket(JSONObject json) throws IOException {
-      LNSListenerAdmin.handlePacket(json, null);
+    LNSListenerAdmin.handlePacket(json, null);
   }
 
   private static int nextDumpRequestID() {

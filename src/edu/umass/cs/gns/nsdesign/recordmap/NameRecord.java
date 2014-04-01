@@ -351,9 +351,11 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return True if the update does anything, false otherwise.
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
-  public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues,
+  public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) throws FieldNotFoundException {
 
+    // handle special case for REMOVE_FIELD operation
+    
     if (operation.equals(UpdateOperation.REMOVE_FIELD)) { // remove the field with name = key from values map.
 
       ArrayList<ColumnField> keys = new ArrayList<ColumnField>();
@@ -385,7 +387,7 @@ public class NameRecord implements Comparable<NameRecord> {
     } else {
       valuesMap = getValuesMap(); // this will throw an exception if field is not read.
     }
-    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation); //this updates the values map as well
+    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, argument, operation); //this updates the values map as well
     if (updated) {
       // commit update to database
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();

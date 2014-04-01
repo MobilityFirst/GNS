@@ -90,8 +90,9 @@ public class Update {
     }
     boolean result;
     try {
-      result = nameRecord.updateKey(updatePacket.getRecordKey().getName(), updatePacket.getUpdateValue(),
-              updatePacket.getOldValue(), updatePacket.getOperation());
+      result = nameRecord.updateKey(updatePacket.getRecordKey().getName(),
+              updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
+              updatePacket.getOperation());
 
       if (StartNameServer.debugMode) {
         GNS.getLogger().fine("Update operation result = " + result + "\t"

@@ -232,16 +232,19 @@ public class Intercessor {
    * 
    * @param name
    * @param key
-   * @param newValue
-   * @param oldValue
+   * @param newValue - the new value to update with
+   * @param oldValue - the old value to update with for substitute
+   * @param argument - the index for the set operation
    * @param operation
    * @return 
    */
-  public static NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue, UpdateOperation operation,
+  public static NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue, 
+          int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     return sendUpdateRecord(name, key,
             new ResultValue(Arrays.asList(newValue)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
+            argument,
             operation,
             writer, signature, message);
   }
@@ -251,15 +254,17 @@ public class Intercessor {
    * 
    * @param name
    * @param key
-   * @param newValue
-   * @param oldValue
+   * @param newValue - the new value to update with
+   * @param oldValue - the old value to update with for substitute
+   * @param argument - the index for the set operation
    * @param operation
    * @return 
    */
-  public static NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue, UpdateOperation operation,
+  public static NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue, 
+          int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
-    sendUpdateRecordHelper(name, key, newValue, oldValue, id, operation, writer, signature, message);
+    sendUpdateRecordHelper(id, name, key, newValue, oldValue, argument, operation, writer, signature, message);
     // now we wait until the correct packet comes back
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
@@ -280,7 +285,8 @@ public class Intercessor {
    */
   public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
-    return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
+    // currently don't support the argument parameter
+    return sendUpdateRecord(name, key, newValue, oldValue, -1, operation, null, null, null);
   }
 
   /**
@@ -295,11 +301,12 @@ public class Intercessor {
    */
   public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
-    return sendUpdateRecord(name, key, newValue, oldValue, operation, null, null, null);
+    // currently don't support the argument parameter
+    return sendUpdateRecord(name, key, newValue, oldValue, -1, operation, null, null, null);
   }
 
-  private static void sendUpdateRecordHelper(String name, String key, ResultValue newValue,
-          ResultValue oldValue, int id, UpdateOperation operation,
+  private static void sendUpdateRecordHelper(int id, String name, String key, ResultValue newValue,
+          ResultValue oldValue, int argument, UpdateOperation operation,
           String writer, String signature, String message) {
 
     GNS.getLogger().finer("Sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
@@ -308,6 +315,7 @@ public class Intercessor {
             name, new NameRecordKey(key),
             newValue,
             oldValue,
+            argument,
             operation, localServerID, GNS.DEFAULT_TTL_SECONDS,
             writer, signature, message);
     try {

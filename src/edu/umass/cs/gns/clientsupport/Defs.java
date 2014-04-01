@@ -42,6 +42,7 @@ public class Defs {
   public final static String REMOVELIST = "removeList";
   public final static String SUBSTITUTE = "substitute";
   public final static String SUBSTITUTELIST = "substituteList";
+  public final static String SET = "set";
   public final static String CLEAR = "clear";
   public final static String READ = "read";
   public final static String READONE = "readOne";
@@ -139,6 +140,7 @@ public class Defs {
   public final static String FIELD = "field";
   public final static String VALUE = "value";
   public final static String OLDVALUE = "oldvalue";
+  public final static String ARGUMENT = "argument";
   public final static String MEMBER = "member";
   public final static String MEMBERS = "members";
   // Fields for HTTP get queries

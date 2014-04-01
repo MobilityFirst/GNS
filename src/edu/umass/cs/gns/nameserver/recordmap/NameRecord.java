@@ -390,7 +390,7 @@ public class NameRecord implements Comparable<NameRecord> {
     } else {
       valuesMap = getValuesMap(); // this will throw an exception if field is not read.
     }
-    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, operation); //this updates the values map as well
+    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, -1, operation); //this updates the values map as well
     if (updated) {
       // commit update to database
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();

@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * CREATE - creates the field with the given value
+ * CREATE - creates the field with the given value;<br>
  * REPLACE_ALL - replaces the current values with this list;<br>
  * REMOVE - deletes the values from the current values;<br>
  * REPLACESINGLETON - treats the value as a singleton and replaces the current value with this one<br>
@@ -26,6 +26,7 @@ import java.util.Set;
  * SUBSTITUTE - replaces all instances of the old value with the new value - if old and new are lists does a pairwise replacement<br>
  * 
  * REMOVE_FIELD - slightly different than the rest in that it actually removes the field
+ * SET - sets the element of the list specified by the argument index
  */
 public enum UpdateOperation {
 
@@ -39,7 +40,8 @@ public enum UpdateOperation {
   APPEND_OR_CREATE(true, APPEND),
   REPLACE_ALL_OR_CREATE(true, REPLACE_ALL),
   APPEND_WITH_DUPLICATION(false),
-  SUBSTITUTE(false);
+  SUBSTITUTE(false),
+  SET(false);
   //
   boolean upsert;
   UpdateOperation nonUpsertEquivalent = null;
@@ -76,13 +78,14 @@ public enum UpdateOperation {
    * @param operation
    * @return false if the value was not updated true otherwise
    */
-  public static boolean updateValuesMap(ValuesMap valuesMap, String key, ResultValue newValues, ResultValue oldValues,
+  public static boolean updateValuesMap(ValuesMap valuesMap, String key, 
+          ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) {
     ResultValue valuesList = valuesMap.get(key);
     if (valuesList == null) {
       valuesList = new ResultValue();
     }
-    if (updateValuesList(valuesList, key, newValues, oldValues, operation)) {
+    if (updateValuesList(valuesList, key, newValues, oldValues, argument, operation)) {
       valuesMap.put(key, valuesList);
       return true;
     } else {
@@ -90,7 +93,8 @@ public enum UpdateOperation {
     }
   }
 
-  private static boolean updateValuesList(ResultValue valuesList, String key, ResultValue newValues, ResultValue oldValues,
+  private static boolean updateValuesList(ResultValue valuesList, String key, 
+          ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) {
     switch (operation) {
       case CLEAR:
@@ -145,6 +149,12 @@ public enum UpdateOperation {
           }
         }
         return changed;
+      case SET:
+        if (!newValues.isEmpty() && argument < valuesList.size()) {
+          // ignoring anything more than the first element of the new values
+          valuesList.set(argument, newValues.get(0));
+        }
+        return true;
       default:
         return false;
     }

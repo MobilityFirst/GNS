@@ -77,6 +77,8 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.data.SubstituteListUnsigned",
     "edu.umass.cs.gns.commands.data.SubstituteSelf",
     "edu.umass.cs.gns.commands.data.SubstituteUnsigned",
+    "edu.umass.cs.gns.commands.data.Set",
+    "edu.umass.cs.gns.commands.data.SetSelf",
     // Account
     "edu.umass.cs.gns.commands.account.AddAlias",
     "edu.umass.cs.gns.commands.account.AddGuid",

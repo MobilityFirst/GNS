@@ -177,6 +177,7 @@ public class SendUpdatesTask extends TimerTask {
             name, updateAddressPacket.getRecordKey(),
             updateAddressPacket.getUpdateValue(),
             updateAddressPacket.getOldValue(),
+            updateAddressPacket.getArgument(),
             updateAddressPacket.getOperation(), LocalNameServer.getNodeID(), nameServerID, updateAddressPacket.getTTL(),
             //signature info
             updateAddressPacket.getAccessor(),

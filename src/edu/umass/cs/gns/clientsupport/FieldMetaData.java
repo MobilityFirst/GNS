@@ -80,7 +80,7 @@ public class FieldMetaData {
    * @param value 
    */
   public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.APPEND_OR_CREATE,
+    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.APPEND_OR_CREATE,
             writer, signature, message);
   }
 
@@ -97,7 +97,7 @@ public class FieldMetaData {
   }
 
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.REMOVE, writer, signature, message);
+    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.REMOVE, writer, signature, message);
   }
 
   @Deprecated

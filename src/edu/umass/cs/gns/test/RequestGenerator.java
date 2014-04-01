@@ -109,7 +109,7 @@ public class RequestGenerator {
 
       UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
               updateCount, updateCount,
-              name, NameRecordKey.EdgeRecord, newValue, null,
+              name, NameRecordKey.EdgeRecord, newValue, null, -1,
               UpdateOperation.REPLACE_ALL, -1, -1, GNS.DEFAULT_TTL_SECONDS,
               //ignore signature info
               null, null, null);

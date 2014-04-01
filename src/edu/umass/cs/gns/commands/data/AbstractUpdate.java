@@ -41,6 +41,7 @@ public abstract class AbstractUpdate extends GnsCommand {
     String field = json.getString(FIELD);
     String value = json.optString(VALUE, null); // will be null for removeField op
     String oldValue = json.optString(OLDVALUE, null);
+    int index = json.optInt(N, -1);
     // writer might be unspecified so we use the guid
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
@@ -51,6 +52,7 @@ public abstract class AbstractUpdate extends GnsCommand {
                     // special case for the removeField op which doesn't need a value
                     : new ResultValue(),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
+            index,
             getUpdateOperation(), 
             writer, signature, message)).isAnError()) {
       return OKRESPONSE;
