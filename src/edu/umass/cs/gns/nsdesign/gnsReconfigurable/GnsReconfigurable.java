@@ -16,6 +16,8 @@ import edu.umass.cs.gns.nsdesign.recordmap.MongoRecords;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosInterface;
+import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -63,6 +65,8 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
   /** Configuration for all nodes in GNS **/
   private GNSNodeConfig gnsNodeConfig;
 
+  private PingManager pingManager;
+
   /**
    * constructor object
    */
@@ -74,6 +78,13 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     this.gnsNodeConfig = gnsNodeConfig;
 
     this.nioServer = nioServer;
+
+    if (!Config.emulatePingLatencies) {
+      // when emulating ping latencies we do not
+      PingServer.startServerThread(nodeID, gnsNodeConfig);
+      this.pingManager = new PingManager(nodeID, gnsNodeConfig);
+      this.pingManager.startPinging();
+    }
 
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
 
@@ -528,4 +539,11 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     return null;
   }
 
+  public PingManager getPingManager() {
+    return pingManager;
+  }
+
+  public void setPingManager(PingManager pingManager) {
+    this.pingManager = pingManager;
+  }
 }

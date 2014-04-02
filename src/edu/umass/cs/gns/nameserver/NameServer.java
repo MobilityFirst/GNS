@@ -10,8 +10,6 @@ import edu.umass.cs.gns.nameserver.replicacontroller.ReplicaController;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
-import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.util.*;
 import org.json.JSONObject;
@@ -100,9 +98,9 @@ public class NameServer {
     if (StartNameServer.emulatePingLatencies == false) {
     // we emulate latencies based on ping latency given in config file,
     // and do not want ping latency values to be updated
-      PingServer.startServerThread(nodeID);
-      GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
-      PingManager.startPinging(nodeID);
+//      PingServer.startServerThread(nodeID);
+//      GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
+//      PingManager.startPinging(nodeID);
     }
   }
 

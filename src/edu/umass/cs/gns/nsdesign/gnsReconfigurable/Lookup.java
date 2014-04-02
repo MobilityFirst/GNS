@@ -69,7 +69,6 @@ public class Lookup {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.getHeader().setResponseCode(errorCode);
       // PUT THE ID OF THE NAME SERVER IN THE RESPONSE
-      GNS.getLogger().warning("****PUT THE ID OF THE NAME SERVER IN THE RESPONSE");
       //dnsPacket.setResponder(NameServer.getNodeID());
       GNS.getLogger().fine("Sending to " + dnsPacket.getSenderId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
       msgTask = new GNSMessagingTask(dnsPacket.getSenderId(), dnsPacket.toJSONObjectForErrorResponse());

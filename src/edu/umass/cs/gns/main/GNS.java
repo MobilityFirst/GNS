@@ -1,11 +1,14 @@
 package edu.umass.cs.gns.main;
 
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+
 import edu.umass.cs.gns.util.Logging;
 import java.io.IOException;
 import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
+
 
 public class GNS {
 

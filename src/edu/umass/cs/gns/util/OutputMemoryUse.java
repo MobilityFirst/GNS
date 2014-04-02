@@ -6,6 +6,7 @@ import edu.umass.cs.gns.nameserver.NameServer;
 import java.util.TimerTask;
 
 /**
+ * Outputs JVM memory stats periodically.
  * Created by abhigyan on 2/23/14.
  */
 public class OutputMemoryUse extends TimerTask {

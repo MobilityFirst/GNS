@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.test;
 
 /**
  * A request we send from local name server to name server during experiments, and in testing.

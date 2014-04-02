@@ -2,15 +2,10 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.ConfigFileInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
+import edu.umass.cs.gns.nsdesign.packet.NameServerSelectionPacket;
 
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**************************************************************
  * This class implements the thread that periodically multicasts
@@ -34,13 +29,10 @@ public class NameServerVoteThread extends Thread {
 
 	/** Time interval in ms between transmitting votes **/
 	private long voteIntervalMillis;
-	/** Start interval **/
-	private long startInterval;
+
+
+//  public static ConcurrentHashMap<Integer,Integer> unackedVotes = new ConcurrentHashMap<Integer,Integer>();
 	
-	
-	public static ConcurrentHashMap<Integer,Integer> unackedVotes = new ConcurrentHashMap<Integer,Integer>();
-	
-	Random r = new Random();
 	/**************************************************************
 	 * Constructs a new NameServerVoteThread that periodically 
 	 * multicast nameserver selection votes to primary nameservers 
@@ -71,7 +63,8 @@ public class NameServerVoteThread extends Thread {
 		} catch (InterruptedException e) {
 			if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Initial thread sleeping period.");
 		}
-		this.startInterval = System.currentTimeMillis();
+		/* Start interval */
+    long startInterval = System.currentTimeMillis();
 		while (true) {
 			// sleep between loops
 			interval = System.currentTimeMillis() - startInterval;
@@ -130,32 +123,13 @@ public class NameServerVoteThread extends Thread {
 	}
 
 	private int selectNSToVoteFor() {
-
     if (StartLocalNameServer.loadDependentRedirection) {
-      Set<Integer> allNS = ConfigFileInfo.getAllNameServerIDs();
-      return BestServerSelection.simpleLatencyLoadHeuristic(allNS);
+      Set<Integer> allNS = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
+      return LocalNameServer.selectBestUsingLatecyPlusLoad(allNS);
     } else {
-			return ConfigFileInfo.getClosestNameServer();
+			return LocalNameServer.getGnsNodeConfig().getClosestNameServer();
 		}
 	}
 
-	/**
-	 * 
-	 * @param json
-	 * @throws JSONException 
-	 */
-	public static void handleNameServerSelection(JSONObject json) throws JSONException {
-		
-		NameServerSelectionPacket nameserverSelection = new NameServerSelectionPacket(json);
-		removeVoteAcked(nameserverSelection.getUniqueID());
-	}
-	
-	public static void removeVoteAcked(int ID) {
-		unackedVotes.remove(ID);
-	}
-	
-	public static boolean isVoteAcked(int ID) {
-		return ! unackedVotes.containsKey(ID);
-	}
 }
 

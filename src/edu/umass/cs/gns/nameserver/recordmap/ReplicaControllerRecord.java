@@ -99,6 +99,7 @@ import java.util.concurrent.ConcurrentMap;
  * @see edu.umass.cs.gns.exceptions.FieldNotFoundException
  *
  * @deprecated
+ *
  */
 public class ReplicaControllerRecord {
 

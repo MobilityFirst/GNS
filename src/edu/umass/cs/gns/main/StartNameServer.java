@@ -536,7 +536,7 @@ public class StartNameServer {
       } else if (allValues.containsKey(OPTIMAL) && Boolean.parseBoolean(allValues.get(OPTIMAL))) {
         replicationFramework = ReplicationFrameworkType.OPTIMAL;
       } else {
-        replicationFramework = GNS.DEFAULT_REPLICATION_FRAMEWORK;
+        replicationFramework = ReplicationFrameworkType.LOCATION;
         nameServerVoteSize = DEFAULT_NAMESERVER_VOTE_SIZE;
       }
 

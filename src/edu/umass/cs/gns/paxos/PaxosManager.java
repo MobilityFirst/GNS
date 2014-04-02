@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-//import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;

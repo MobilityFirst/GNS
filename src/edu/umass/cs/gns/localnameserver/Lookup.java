@@ -8,16 +8,18 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.util.ValuesMap;
-import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
+import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.ValuesMap;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 /**

@@ -7,8 +7,6 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.TestRequest;
-import edu.umass.cs.gns.workloads.ExponentialDistribution;
 import edu.umass.cs.gns.workloads.ProbabilityDistribution;
 import org.json.JSONException;
 import org.json.JSONObject;

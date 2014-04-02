@@ -16,7 +16,7 @@ import java.io.IOException;
  * Listens on a UDP port for requests from end-users, and responses from name servers.
  *
  * @author abhigyan
- *
+ * @deprecated
  */
 public class LNSListenerUDP extends Thread {
 

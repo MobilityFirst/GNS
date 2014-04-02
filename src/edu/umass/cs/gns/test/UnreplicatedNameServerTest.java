@@ -5,7 +5,6 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.NameServer;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.util.TestRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;

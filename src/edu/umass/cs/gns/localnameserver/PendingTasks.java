@@ -3,15 +3,15 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-
-import edu.umass.cs.gns.nsdesign.packet.*;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Initiates tasks to obtain the set of active replicas for a name from replica controller, and stores requests for

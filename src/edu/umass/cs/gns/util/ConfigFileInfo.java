@@ -16,7 +16,8 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * **
  * This is a utility class that parses configuration files to gather information about each name server in the system
- * 
+ * @deprecated  use {@link edu.umass.cs.gns.nsdesign.GNSNodeConfig} instead.
+ *
  */
 public class ConfigFileInfo {
 

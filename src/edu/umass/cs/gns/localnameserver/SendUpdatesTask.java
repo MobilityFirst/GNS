@@ -10,10 +10,10 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.ReplicationFrameworkType;
+import edu.umass.cs.gns.nsdesign.replicationframework.RandomReplication;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.BestServerSelection;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -140,11 +140,14 @@ public class SendUpdatesTask extends TimerTask {
   private int selectNS(CacheEntry cacheEntry) {
     int nameServerID;
     if (StartLocalNameServer.loadDependentRedirection) {
-      nameServerID = BestServerSelection.getBestActiveNameServerFromCache(cacheEntry, activesQueried);
+      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestNameServer(cacheEntry.getActiveNameServers(),
+              activesQueried);
     } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
-      nameServerID = BestServerSelection.getBeehiveNameServer(activesQueried, cacheEntry);
+      nameServerID = RandomReplication.getBeehiveNameServer(LocalNameServer.getGnsNodeConfig(),
+              cacheEntry.getActiveNameServers(), activesQueried);
     } else {
-      nameServerID = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), activesQueried);
+      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestNameServer(cacheEntry.getActiveNameServers(),
+              activesQueried);
       coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(name, cacheEntry.getActiveNameServers());
     }
     return nameServerID;

@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.util;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -23,12 +21,8 @@ import java.util.*;
 public class ConsistentHashing {
 
 
-  private static int numPrimaryReplicas;
+  private static int numReplicaControllers;
 
-  private static int numNodes;
-
-  /** Cache hash results **/
-  private static Cache<String, Set<Integer>> cache;
 
   /**
    * A treemap whose keys are hashes of ID of all name servers, and values are IDs of name servers.
@@ -53,13 +47,11 @@ public class ConsistentHashing {
     }
     synchronized (lock) {   // lock so that we do not initialize nsTreeMap multiple times.
       if (nsTreeMap != null) return;
-      ConsistentHashing.numNodes = numNameServers;
-      ConsistentHashing.numPrimaryReplicas = numReplicaControllers;
+      ConsistentHashing.numReplicaControllers = numReplicaControllers;
       nsTreeMap = new TreeMap<String, Integer>();
-      cache = CacheBuilder.newBuilder().concurrencyLevel(2).maximumSize(10000).build();
       // Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
       nsTreeMap = new TreeMap<String, Integer>();
-      for (int i = 0; i < numNodes; i++) {
+      for (int i = 0; i < numNameServers; i++) {
         nsTreeMap.put(getMD5Hash(Integer.toString(i)), i);
       }
     }
@@ -77,14 +69,9 @@ public class ConsistentHashing {
     }
 
     Set<Integer> primaryReplicas;
-    if ((primaryReplicas = cache.getIfPresent(name)) != null) {
-//    	GNRS.getLogger().fine("Return from Hash function cache: Name = " + name + " Primaries = " + primaryReplicas);
-      return primaryReplicas;
-    }
 
     primaryReplicas = getPrimaryReplicasNoCache(name);
 //    GNRS.getLogger().fine("Compute primaries and return: Name = " + name + " Primaries = " + primaryReplicas);
-    cache.put(name, primaryReplicas);
     return primaryReplicas;
   }
 
@@ -120,7 +107,7 @@ public class ConsistentHashing {
       String paxosID = getMD5Hash(Integer.toString(nodesSorted.get(paxosMemberIndex)));
       HashSet<Integer> nodes = new HashSet<Integer>();
       boolean hasNode = false;
-      while (nodes.size() < numPrimaryReplicas) {
+      while (nodes.size() < numReplicaControllers) {
         if (nodesSorted.get(paxosMemberIndex) == nodeID) {
           hasNode = true;
         }
@@ -173,14 +160,14 @@ public class ConsistentHashing {
       primaryNameServers.add((Integer) entry.getValue());
       s = (String) entry.getKey();
 //        System.out.println("x\t" + entry.getValue());
-      if (primaryNameServers.size() == numPrimaryReplicas) return primaryNameServers;
+      if (primaryNameServers.size() == numReplicaControllers) return primaryNameServers;
     }
 
     Map.Entry entry = nsTreeMap.firstEntry();
     primaryNameServers.add((Integer) entry.getValue());
 //      System.out.println("y\t" + entry.getValue());
     s = (String) entry.getKey();
-    while(primaryNameServers.size() != numPrimaryReplicas) {
+    while(primaryNameServers.size() != numReplicaControllers) {
       entry = nsTreeMap.higherEntry(s);
       primaryNameServers.add((Integer) entry.getValue());
       s = (String) entry.getKey();

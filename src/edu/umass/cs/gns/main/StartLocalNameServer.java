@@ -1,9 +1,10 @@
 package edu.umass.cs.gns.main;
 
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
-import edu.umass.cs.gns.replicationframework.BeehiveDHTRouting;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+//import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.apache.commons.cli.*;
 
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import static edu.umass.cs.gns.util.Util.println;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 
 /**
  * ************************************************************
@@ -627,11 +629,12 @@ public class StartLocalNameServer {
     println("Debug Mode: " + debugMode, debugMode);
 
     try {
-      ConfigFileInfo.readHostInfo(nsFile, id);
-      ConsistentHashing.initialize(GNS.numPrimaryReplicas, ConfigFileInfo.getNumberOfNameServers());
+//      ConfigFileInfo.readHostInfo(nsFile, id);
+      GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nsFile, id);
+      ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNumberOfNameServers());
 
       //Start local name server
-      new LocalNameServer(id).run();
+      new LocalNameServer(id, gnsNodeConfig);
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -8,8 +8,9 @@
 package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+//import edu.umass.cs.gns.nameserver.NameServer;
+//import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.utils.Util;
 import java.io.IOException;
 import java.net.PortUnreachableException;
@@ -23,20 +24,23 @@ import java.net.PortUnreachableException;
 public class PingManager {
 
   private final static int TIME_BETWEEN_PINGS = 30000;
-  private static int nodeId;
-  private static PingClient pingClient;
+  private  int nodeId;
+  private  PingClient pingClient;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
-  private static long pingTable[][]; // the place we store all the sampled rtt values
+  private  long pingTable[][]; // the place we store all the sampled rtt values
+  private GNSNodeConfig gnsNodeConfig;
+  public PingManager(int nodeId, GNSNodeConfig gnsNodeConfig) {
+    this.nodeId = nodeId;
+    this.gnsNodeConfig = gnsNodeConfig;
 
+  }
   /**
    * Starts the pinging thread for the given node.
-   * 
-   * @param nodeId 
    */
-  public static void startPinging(int nodeId) {
-    PingManager.nodeId = nodeId;
-    PingManager.pingClient = new PingClient();
-    int hostCnt = ConfigFileInfo.getAllHostIDs().size();
+  public  void startPinging() {
+//    PingManager.nodeId = nodeId;
+    pingClient = new PingClient(gnsNodeConfig);
+    int hostCnt = gnsNodeConfig.getAllHostIDs().size();
     pingTable = new long[hostCnt][WINDOWSIZE];
     // initialize the whole thing to -1 which represents a bad or unknown sample
     for (int i = 0; i < hostCnt; i++) {
@@ -53,12 +57,12 @@ public class PingManager {
     }).start();
   }
 
-  private static void doPinging() {
+  private  void doPinging() {
     GNS.getLogger().fine("Waiting for a bit before we start pinging.");
     int windowSlot = 0;
     while (true) {
       Util.sleep(TIME_BETWEEN_PINGS);
-      for (int id : ConfigFileInfo.getAllHostIDs()) {
+      for (int id : gnsNodeConfig.getAllHostIDs()) {
         try {
           if (id != nodeId) {
             GNS.getLogger().fine("Send from " + nodeId + " to " + id);
@@ -66,7 +70,7 @@ public class PingManager {
             GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
             pingTable[id][windowSlot] = rtt;
             // update the configuration file info with the current average... the reason we're here
-            ConfigFileInfo.updatePingLatency(id, nodeAverage(id));
+            gnsNodeConfig.updatePingLatency(id, nodeAverage(id));
           }
         } catch (PortUnreachableException e) {
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
@@ -86,7 +90,7 @@ public class PingManager {
    * @param node
    * @return 
    */
-  public static long nodeAverage(int node) {
+  public  long nodeAverage(int node) {
     // calculate the average ignoring bad samples
     int count = WINDOWSIZE; // tracks the number of good samples
     double total = 0;
@@ -111,8 +115,8 @@ public class PingManager {
    * @param node
    * @return 
    */
-  public static String tableToString(int node) {
-    int hostCnt = ConfigFileInfo.getAllHostIDs().size();
+  public  String tableToString(int node) {
+    int hostCnt = gnsNodeConfig.getAllHostIDs().size();
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    L/NS Hostname");
     result.append(NEWLINE);
@@ -136,9 +140,9 @@ public class PingManager {
         // for this node just output something useful
         result.append("  {this node }                                   ");
       }
-      result.append(ConfigFileInfo.isNameServer(i) ? "  NS " : "  LNS");
+      result.append(gnsNodeConfig.isNameServer(i) ? "  NS " : "  LNS");
       result.append("  ");
-      result.append(ConfigFileInfo.getIPAddress(i).getHostName());
+      result.append(gnsNodeConfig.getIPAddress(i).getHostName());
       result.append(NEWLINE);
     }
 
@@ -147,9 +151,10 @@ public class PingManager {
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
-    NameServer.setNodeID(0);
-    ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
-    PingManager.startPinging(0);
+    int nodeID = 0;
+    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
+//    ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
+    new PingManager(nodeID, gnsNodeConfig1).startPinging();
   }
   public final static String NEWLINE = System.getProperty("line.separator");
 }

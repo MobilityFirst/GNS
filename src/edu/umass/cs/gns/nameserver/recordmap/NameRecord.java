@@ -23,6 +23,7 @@ import java.util.Set;
  * 
  * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
  * @deprecated
+ *
  */
 public class NameRecord implements Comparable<NameRecord> {
 

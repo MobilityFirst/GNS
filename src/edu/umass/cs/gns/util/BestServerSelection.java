@@ -8,6 +8,9 @@ import edu.umass.cs.gns.nameserver.NameServer;
 
 import java.util.*;
 
+/**
+ * @deprecated
+ */
 public class BestServerSelection {
 
   /**

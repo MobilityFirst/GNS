@@ -9,7 +9,7 @@ import java.util.Random;
  * at this local nam server.
  *
  * @see edu.umass.cs.gns.localnameserver.NameServerVoteThread
- * @see edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats
+ * @see edu.umass.cs.gns.nsdesign.replicaController.NameStats
 * 
 * @author Hardeep Uppal
  ************************************************************/

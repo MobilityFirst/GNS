@@ -5,8 +5,9 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.util.NameRecordKey;
-import edu.umass.cs.gns.nsdesign.packet.*;
+
 import java.util.Set;
 
 /**************************************************************

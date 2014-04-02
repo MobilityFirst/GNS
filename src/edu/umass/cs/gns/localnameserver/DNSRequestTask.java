@@ -9,13 +9,13 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.ReplicationFrameworkType;
+import edu.umass.cs.gns.nsdesign.replicationframework.RandomReplication;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.BestServerSelection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -206,13 +206,13 @@ public class DNSRequestTask extends TimerTask {
   private int selectNS(CacheEntry cacheEntry) {
     int ns;
     if (StartLocalNameServer.loadDependentRedirection) {
-      ns = BestServerSelection.getBestActiveNameServerFromCache(cacheEntry, nameserversQueried);
+      ns = LocalNameServer.selectBestUsingLatecyPlusLoad(nameserversQueried);
     } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
-      ns = BestServerSelection.getBeehiveNameServer(nameserversQueried, cacheEntry);
+      ns = RandomReplication.getBeehiveNameServer(LocalNameServer.getGnsNodeConfig(), cacheEntry.getActiveNameServers(), nameserversQueried);
     } else {
       coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getGuid(),
               cacheEntry.getActiveNameServers());
-      ns = BestServerSelection.getSmallestLatencyNS(cacheEntry.getActiveNameServers(), nameserversQueried);
+      ns = LocalNameServer.getGnsNodeConfig().getClosestNameServer(cacheEntry.getActiveNameServers(), nameserversQueried);
     }
     return ns;
   }

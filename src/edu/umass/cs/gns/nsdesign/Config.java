@@ -26,6 +26,7 @@ public class Config {
   public static int numReplicaControllers = 3;
 
 
+
   // paxos parameters
   public static int failureDetectionTimeoutInterval = 30000;
   public static int failureDetectionPingInterval = 10000;
@@ -45,7 +46,8 @@ public class Config {
   public static final int NS_TIMEOUT_MILLIS = 2000;
 
 
-
+  // testing related parameters
+  public static boolean emulatePingLatencies = false;
 
 
   public static synchronized void initialize(HashMap<String, String> allValues) {

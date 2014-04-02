@@ -1,4 +1,5 @@
-package edu.umass.cs.gns.nameserver;
+package edu.umass.cs.gns.nsdesign;
+
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
@@ -6,16 +7,16 @@ import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
-import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.packet.ActiveNameServerInfoPacket;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.admin.AdminRequestPacket;
-import edu.umass.cs.gns.packet.admin.AdminResponsePacket;
-import edu.umass.cs.gns.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +31,7 @@ import java.util.logging.Level;
  * *************************************************************
  * This class implements a thread that returns a list of active name servers for a name. The thread waits for request packet over a
  * UDP socket and sends a response containing the current active nameserver for a name record.
-*                         @deprecated
+ *
  * @author Hardeep Uppal ************************************************************
  */
 public class NSListenerAdmin extends Thread {
@@ -40,16 +41,25 @@ public class NSListenerAdmin extends Thread {
    */
   private ServerSocket serverSocket;
 
+  private GnsReconfigurable gnsReconfigurable;
+
+  private ReplicaController replicaController;
+
+  private GNSNodeConfig gnsNodeConfig;
+
   /**
    * *************************************************************
    * Creates a new listener thread for handling response packet
    *
    * @throws IOException ************************************************************
    */
-  public NSListenerAdmin() {
+  public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ReplicaController replicaController, GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
+    this.gnsReconfigurable = gnsReconfigurable;
+    this.replicaController = replicaController;
+    this.gnsNodeConfig = gnsNodeConfig;
     try {
-      this.serverSocket = new ServerSocket(ConfigFileInfo.getNSAdminRequestPort(NameServer.getNodeID()));
+      this.serverSocket = new ServerSocket(gnsNodeConfig.getNSAdminRequestPort(gnsReconfigurable.getNodeID()));
     } catch (IOException e) {
       GNS.getLogger().severe("Unable to create NSListenerAdmin server: " + e);
     }
@@ -62,7 +72,7 @@ public class NSListenerAdmin extends Thread {
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("NS Node " + NameServer.getNodeID() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
+    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();
@@ -79,7 +89,7 @@ public class NSListenerAdmin extends Thread {
 
             ReplicaControllerRecord nameRecordPrimary = null;
             try {
-              nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(NameServer.getReplicaController(),
+              nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(replicaController.getDB(),
                       activeNSInfoPacket.getName(), ReplicaControllerRecord.ACTIVE_NAMESERVERS);
             } catch (RecordNotFoundException e) {
               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -128,19 +138,19 @@ public class NSListenerAdmin extends Thread {
 
             DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON);
 
-            dumpRequestPacket.setPrimaryNameServer(NameServer.getNodeID());
+            dumpRequestPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
 
-            StatusClient.sendStatus(NameServer.getNodeID(), "Dumping records");
+            StatusClient.sendStatus(gnsReconfigurable.getNodeID(), "Dumping records");
             JSONArray jsonArray = new JSONArray();
             // if there is an argument it is a TAGNAME we return all the records that have that tag
             if (dumpRequestPacket.getArgument() != null) {
               String tag = dumpRequestPacket.getArgument();
-              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(NameServer.getRecordMap());
+              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.next();
                 try {
-                  nameRecord = new NameRecord(NameServer.getRecordMap(), json);
+                  nameRecord = new NameRecord(gnsReconfigurable.getDB(), json);
                 } catch (JSONException e) {
                   GNS.getLogger().severe("Problem parsing json into NameRecord: " + e + " JSON is " + json.toString());
                 }
@@ -161,12 +171,12 @@ public class NSListenerAdmin extends Thread {
               // OTHERWISE WE RETURN ALL THE RECORD
             } else {
               //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(NameServer.getRecordMap());
+              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.next();
                 try {
-                  nameRecord = new NameRecord(NameServer.getRecordMap(), json);
+                  nameRecord = new NameRecord(gnsReconfigurable.getDB(), json);
                 } catch (JSONException e) {
                   GNS.getLogger().severe("Problem parsing record cursor into NameRecord: " + e + " JSON is " + json.toString());
                 }
@@ -176,7 +186,7 @@ public class NSListenerAdmin extends Thread {
               }
             }
             if (GNS.getLogger().isLoggable(Level.FINER)) {
-              GNS.getLogger().finer("NSListenrAdmin for " + NameServer.getNodeID() + " is " + jsonArray.toString());
+              GNS.getLogger().finer("NSListenrAdmin for " + gnsReconfigurable.getNodeID() + " is " + jsonArray.toString());
             }
             dumpRequestPacket.setJsonArray(jsonArray);
             Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), dumpRequestPacket.getLocalNameServer(), GNS.PortType.LNS_ADMIN_PORT);
@@ -190,15 +200,15 @@ public class NSListenerAdmin extends Thread {
             AdminRequestPacket adminRequestPacket = new AdminRequestPacket(incomingJSON);
             switch (adminRequestPacket.getOperation()) {
               case DELETEALLRECORDS:
-                GNS.getLogger().fine("NSListenerAdmin (" + NameServer.getNodeID() + ") : Handling DELETEALLRECORDS request");
+                GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling DELETEALLRECORDS request");
                 long startTime = System.currentTimeMillis();
                 int cnt = 0;
-                BasicRecordCursor cursor = NameRecord.getAllRowsIterator(NameServer.getRecordMap());
+                BasicRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
                 while (cursor.hasNext()) {
-                  NameRecord nameRecord = new NameRecord(NameServer.getRecordMap(), cursor.next());
+                  NameRecord nameRecord = new NameRecord(gnsReconfigurable.getDB(), cursor.next());
                   //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                   try {
-                    NameRecord.removeNameRecord(NameServer.getRecordMap(), nameRecord.getName());
+                    NameRecord.removeNameRecord(gnsReconfigurable.getDB(), nameRecord.getName());
                   } catch (FieldNotFoundException e) {
                     GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -206,24 +216,22 @@ public class NSListenerAdmin extends Thread {
                   //DBNameRecord.removeNameRecord(nameRecord.getName());
                   cnt++;
                 }
-                GNS.getLogger().fine("NSListenerAdmin (" + NameServer.getNodeID() + ") : Deleting " + cnt + " records took "
+                GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Deleting " + cnt + " records took "
                         + (System.currentTimeMillis() - startTime) + "ms");
                 break;
               // Clears the database and reinitializes all indices
               case RESETDB:
-                GNS.getLogger().fine("NSListenerAdmin (" + NameServer.getNodeID() + ") : Handling RESETDB request");
-                NameServer.getPaxosManager().resetAll();
-                NameServer.resetDB();
+                GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling RESETDB request");
+                edu.umass.cs.gns.nameserver.NameServer.getPaxosManager().resetAll();
+                edu.umass.cs.gns.nameserver.NameServer.resetDB();
                 break;
               case PINGTABLE:
                 int node = Integer.parseInt(adminRequestPacket.getArgument());
-                if (node == NameServer.getNodeID()) {
+                if (node == gnsReconfigurable.getNodeID()) {
                   JSONObject jsonResponse = new JSONObject();
-                  // FIXME class is deprecated : so I am not fixing the static reference for PingManager here
-//                  jsonResponse.put("PINGTABLE", PingManager.tableToString(NameServer.getNodeID()));
+                  jsonResponse.put("PINGTABLE", gnsReconfigurable.getPingManager().tableToString(gnsReconfigurable.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
                   Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
-                  throw  new UnsupportedOperationException();
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
@@ -231,10 +239,9 @@ public class NSListenerAdmin extends Thread {
               case PINGVALUE:
                 int node1 = Integer.parseInt(adminRequestPacket.getArgument());
                 int node2 = Integer.parseInt(adminRequestPacket.getArgument2());
-                if (node1 == NameServer.getNodeID()) {
+                if (node1 == gnsReconfigurable.getNodeID()) {
                   JSONObject jsonResponse = new JSONObject();
-                  // FIXME class is deprecated : so I am not fixing the static reference for PingManager here
-//                  jsonResponse.put("PINGVALUE", PingManager.nodeAverage(node2));
+                  jsonResponse.put("PINGVALUE", gnsReconfigurable.getPingManager().nodeAverage(node2));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
                   Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
                 } else {
@@ -248,13 +255,14 @@ public class NSListenerAdmin extends Thread {
                 break;
               case CLEARCACHE:
                 // shouldn't ever get this
-                GNS.getLogger().warning("NSListenerAdmin (" + NameServer.getNodeID() + ") : Ignoring CLEARCACHE request");
+                GNS.getLogger().warning("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Ignoring CLEARCACHE request");
                 break;
+
             }
             break;
           case STATUS_INIT:
             StatusClient.handleStatusInit(socket.getInetAddress());
-            StatusClient.sendStatus(NameServer.getNodeID(), "NS Ready");
+            StatusClient.sendStatus(gnsReconfigurable.getNodeID(), "NS Ready");
             break;
         }
 
@@ -277,9 +285,9 @@ public class NSListenerAdmin extends Thread {
    * @throws JSONException ************************************************************
    */
   private void sendactiveNameServerInfo(ActiveNameServerInfoPacket activeNSInfoPacket,
-          Socket socket, int numRequest, Set<Integer> activeNameServers) throws IOException, JSONException {
+                                        Socket socket, int numRequest, Set<Integer> activeNameServers) throws IOException, JSONException {
     activeNSInfoPacket.setActiveNameServers(activeNameServers);
-    activeNSInfoPacket.setPrimaryNameServer(NameServer.getNodeID());
+    activeNSInfoPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
     Packet.sendTCPPacket(activeNSInfoPacket.toJSONObject(), socket);
     GNS.getLogger().fine("NSListenrAdmin: Response RequestNum:" + numRequest + " --> " + activeNSInfoPacket.toString());
   }

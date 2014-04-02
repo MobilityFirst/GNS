@@ -8,8 +8,7 @@
 package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.utils.Util;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -35,8 +34,9 @@ public class PingClient {
   // Records the send time of each request
   private ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
   private Random randomID = new Random();
-
-  public PingClient() {
+  private GNSNodeConfig gnsNodeConfig;
+  public PingClient(GNSNodeConfig gnsNodeConfig) {
+    this.gnsNodeConfig = gnsNodeConfig;
     try {
       clientSocket = new DatagramSocket();
       startReceiveThread();
@@ -53,8 +53,8 @@ public class PingClient {
    * @throws IOException 
    */
   public long sendPing(int nodeId) throws IOException {
-    InetAddress IPAddress = ConfigFileInfo.getIPAddress(nodeId);
-    int port = ConfigFileInfo.getPingPort(nodeId);
+    InetAddress IPAddress = gnsNodeConfig.getIPAddress(nodeId);
+    int port = gnsNodeConfig.getPingPort(nodeId);
     byte[] sendData;
     // make an id and turn it into a string for sending out
     int id = nextRequestID();
@@ -153,9 +153,9 @@ public class PingClient {
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
-    NameServer.setNodeID(0);
-    ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
-    PingClient pingClient = new PingClient();
+    int nodeID = 0;
+    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
+    PingClient pingClient = new PingClient(gnsNodeConfig1);
     while (true) {
       GNS.getLogger().info("RTT = " + pingClient.sendPing(0));
       Util.sleep(1000);

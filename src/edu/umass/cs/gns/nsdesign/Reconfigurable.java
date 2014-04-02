@@ -17,6 +17,6 @@ public interface Reconfigurable extends Application {
 
 	public int deleteFinalState(String name, int version);
 
-//	public int[] getCurrentOldVersions(String name);
+ //	public int[] getCurrentOldVersions(String name);
 
 }

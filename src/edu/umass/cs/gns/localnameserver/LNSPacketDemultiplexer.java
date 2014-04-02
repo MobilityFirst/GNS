@@ -6,7 +6,8 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,9 +71,6 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           AddRemove.handlePacketConfirmRemoveLNS(json);
           break;
         // Others
-        case NAMESERVER_SELECTION:
-          NameServerVoteThread.handleNameServerSelection(json);
-          break;
         case REQUEST_ACTIVES:
           PendingTasks.handleActivesRequestReply(json);
           break;

@@ -10,12 +10,12 @@ import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nameserver.GNSNodeConfig;
 import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
-import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
@@ -71,6 +71,16 @@ public class LocalNameServer {
   private static long initialExpDelayMillis = 30000;
 
   /**
+   * GNS node config object used by LNS to get node information, such as IP, Port, ping latency.
+   */
+  private static GNSNodeConfig gnsNodeConfig;
+
+  /**
+   * Ping manager object for pinging other nodes and updating ping latencies in {@link #gnsNodeConfig}.
+   */
+  private static PingManager pingManager;
+
+  /**
    * @return the executorService
    */
   public static ScheduledThreadPoolExecutor getExecutorService() {
@@ -91,6 +101,15 @@ public class LocalNameServer {
     return nameServerLoads;
   }
 
+  public static PingManager getPingManager() {
+    return pingManager;
+  }
+
+  public static GNSNodeConfig getGnsNodeConfig() {
+    return gnsNodeConfig;
+  }
+
+
   /**
    **
    * Constructs a local name server and assigns it a node id.
@@ -98,54 +117,42 @@ public class LocalNameServer {
    * @param nodeID Local Name Server Id
    * @throws IOException
    */
-  public LocalNameServer(int nodeID) throws IOException {
+  public LocalNameServer(int nodeID, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     LocalNameServer.nodeID = nodeID;
-
+    LocalNameServer.gnsNodeConfig = gnsNodeConfig;
     requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
     updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
     selectTransmittedMap = new ConcurrentHashMap<Integer, SelectInfo>(10, 0.75f, 3);
-
     random = new Random(System.currentTimeMillis());
-
     cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(StartLocalNameServer.cacheSize).build();
     nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
-  }
-
-  /**
-   **
-   * Starts the Local Name Server.
-   *
-   * @throws Exception
-   */
-  public void run() throws Exception {
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
 
+    startTransport();
 
-    // name server loads initialized.
-    if (StartLocalNameServer.loadDependentRedirection) {
-      initializeNameServerLoadMonitoring();
+    if (!StartLocalNameServer.experimentMode) { // creates exceptions with multiple local name servers on on machine
+      GnsHttpServer.runHttp(LocalNameServer.nodeID);
     }
 
-
-    new LNSListenerUDP().start();
-
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("LNS listener started.");
+    if (!StartLocalNameServer.emulatePingLatencies) {
+      // we emulate latencies based on ping latency given in config file,
+      // and do not want ping latency values to be updated by the ping module.
+      PingServer.startServerThread(nodeID, gnsNodeConfig);
+      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + gnsNodeConfig.getPingPort(nodeID));
+      pingManager = new PingManager(nodeID, gnsNodeConfig);
+      pingManager.startPinging();
     }
 
-    if (StartLocalNameServer.useGNSNIOTransport) {
-      // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, new GNSNodeConfig(), new JSONMessageWorker(new LNSPacketDemultiplexer()));
-      if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(StartLocalNameServer.variation);
-    } else {
-      NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), new GNSNodeConfig());
-      if (StartLocalNameServer.emulatePingLatencies) nioServer.emulateConfigFileDelays(StartLocalNameServer.variation);
-      tcpTransport = nioServer;
-    }
+    // moved lns listener admin after starting ping manager because it was accessing ping manager.
+    new LNSListenerAdmin().start();
+
+    // todo abhigyan: un-comment this after enabling group changes of active replicas at name server.
+//    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
+//      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
+//    }
 
     if (StartLocalNameServer.experimentMode) {
-
       try {
         Thread.sleep(initialExpDelayMillis); // Abhigyan: When multiple LNS are running on same machine, we wait for
         // all lns's to bind to their respective listening port before sending any traffic. Otherwise, another LNS could
@@ -153,34 +160,36 @@ public class LocalNameServer {
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-    }
-
-    new Thread(tcpTransport).start();
-
-    new LNSListenerAdmin().start();
-    // todo enable ping server after adding support for it at client.
-//    if (StartLocalNameServer.emulatePingLatencies == false) {
-//      // we emulate latencies based on ping latency given in config file,
-//      // and do not want ping latency values to be updated
-//      PingServer.startServerThread(nodeID);
-//      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + ConfigFileInfo.getPingPort(nodeID));
-//      PingManager.startPinging(nodeID);
-//    }
-
-    if (StartLocalNameServer.experimentMode) {
       TraceRequestGenerator.generateLookupsUpdates(StartLocalNameServer.lookupTraceFile,
               StartLocalNameServer.updateTraceFile, StartLocalNameServer.lookupRate,
               StartLocalNameServer.updateRateRegular, executorService);
+
+      // name server loads initialized.
+      if (StartLocalNameServer.loadDependentRedirection)  {
+        initializeNameServerLoadMonitoring();
+      }
     }
 
-    // todo abhigyan: un-comment this after enabling group changes of active replicas at name server.
-//    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
-//      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
-//    }
+  }
 
-    if (StartLocalNameServer.experimentMode == false) {
-      GnsHttpServer.runHttp(LocalNameServer.nodeID);
+  private void startTransport() throws IOException {
+
+//    new LNSListenerUDP().start();
+
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("LNS listener started.");
     }
+
+    if (StartLocalNameServer.useGNSNIOTransport) {
+      // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
+      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageWorker(new LNSPacketDemultiplexer()));
+      if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(StartLocalNameServer.variation);
+    } else {
+      NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), gnsNodeConfig);
+      if (StartLocalNameServer.emulatePingLatencies) nioServer.emulateConfigFileDelays(StartLocalNameServer.variation);
+      tcpTransport = nioServer;
+    }
+    new Thread(tcpTransport).start();
   }
 
   /********************** BEGIN: methods for read/write to info about reads (queries) and updates ****************/
@@ -515,7 +524,7 @@ public class LocalNameServer {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
       }
-      int x = BestServerSelection.getSmallestLatencyNS(primary, nameServersQueried);
+      int x = gnsNodeConfig.getClosestNameServer(primary, nameServersQueried);
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
       }
@@ -582,6 +591,7 @@ public class LocalNameServer {
 //		//		responseTime.add( stats );
 //		return stats;
 //	}
+
   /**
    **
    * Prints local name server cache (and sorts it for convenience)
@@ -618,7 +628,7 @@ public class LocalNameServer {
     if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
       // packets from LNS to NS will be delayed by twice the one-way latency because we do not have data to emulate
       // latency on the reverse path from NS to LNS.
-      long timerDelay  = (long) (ConfigFileInfo.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation))/2;
+      long timerDelay  = (long) (gnsNodeConfig.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation))/2;
       LocalNameServer.executorService.schedule(new SendMessageWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
     } else {
       sendToNSActual(json, ns);
@@ -646,7 +656,7 @@ public class LocalNameServer {
   /*********************BEGIN: methods for monitoring load at name servers. ********************************/
   private void initializeNameServerLoadMonitoring() {
     nameServerLoads = new ConcurrentHashMap<Integer, Double>();
-    Set<Integer> nameServerIDs = ConfigFileInfo.getAllNameServerIDs();
+    Set<Integer> nameServerIDs = gnsNodeConfig.getAllNameServerIDs();
     for (int x : nameServerIDs) {
       nameServerLoads.put(x, 0.0);
     }
@@ -667,6 +677,35 @@ public class LocalNameServer {
   }
 
   /*********************END: methods for monitoring load at name servers. ********************************/
+
+
+  /**
+   * ************************************************************
+   * Returns closest server including ping-latency and server-load.
+   *
+   * @return Best name server among serverIDs given.
+   * ***********************************************************
+   */
+  public static int selectBestUsingLatecyPlusLoad(Set<Integer> serverIDs) {
+
+    if (serverIDs == null || serverIDs.size() == 0) {
+      return -1;
+    }
+
+    int selectServer = -1;
+    // select server whose latency + load is minimum
+    double selectServerLatency = Double.MAX_VALUE;
+    for (int x : serverIDs) {
+      if (gnsNodeConfig.getPingLatency(x) > 0) {
+        double totallatency = 5 * getNameServerLoads().get(x) + (double) gnsNodeConfig.getPingLatency(x);
+        if (totallatency < selectServerLatency) {
+          selectServer = x;
+          selectServerLatency = totallatency;
+        }
+      }
+    }
+    return selectServer;
+  }
 
   public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
 

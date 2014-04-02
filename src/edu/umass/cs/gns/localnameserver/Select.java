@@ -7,13 +7,16 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.ConfigFileInfo;
-import java.net.UnknownHostException;
-import java.util.Set;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.UnknownHostException;
+import java.util.Set;
+
+//import edu.umass.cs.gns.util.BestServerSelection;
+//import edu.umass.cs.gns.util.ConfigFileInfo;
 
 /**
  * Handles sending and receiving of queries.
@@ -26,13 +29,13 @@ public class Select {
 
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
 
-    Set<Integer> serverIds = ConfigFileInfo.getAllNameServerIDs();
+    Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
     int queryId = LocalNameServer.addSelectInfo(packet.getKey(), packet);
     packet.setLnsQueryId(queryId);
     JSONObject outgoingJSON = packet.toJSONObject();
     // Pick one NS to send it to
-    GNS.getLogger().warning("Picking a random server. This is stupid. Fix this.");
-    int serverID = BestServerSelection.randomServer(serverIds);
+    GNS.getLogger().fine("Picking closest server.");
+    int serverID = LocalNameServer.getGnsNodeConfig().getClosestNameServer(serverIds, null);
     GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
     LocalNameServer.sendToNS(outgoingJSON, serverID);
   }

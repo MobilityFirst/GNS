@@ -16,6 +16,7 @@ public class SelectInfo {
    * @param time System time when query was transmitted
    * @param nameserverID Response name server ID
    * @param queryStatus Query Status
+   *                    todo update doc
    **************************************************************/
   public SelectInfo(int id) {
     this.id = id;

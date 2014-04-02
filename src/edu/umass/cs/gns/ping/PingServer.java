@@ -8,8 +8,7 @@
 package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.utils.Util;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -30,18 +29,18 @@ public class PingServer {
    * 
    * @param nodeID 
    */
-  public static void startServerThread(final int nodeID) {
+  public static void startServerThread(final int nodeID, final GNSNodeConfig gnsNodeConfig) {
     (new Thread() {
       @Override
       public void run() {
-        startServer(nodeID);
+        startServer(nodeID, gnsNodeConfig);
       }
     }).start();
   }
 
-  private static void startServer(int nodeID) {
+  private static void startServer(int nodeID, GNSNodeConfig gnsNodeConfig) {
     try {
-      DatagramSocket serverSocket = new DatagramSocket(ConfigFileInfo.getPingPort(nodeID));
+      DatagramSocket serverSocket = new DatagramSocket(gnsNodeConfig.getPingPort(nodeID));
       byte[] receiveData = new byte[1024];
       byte[] sendData;
       while (true) {
@@ -69,8 +68,8 @@ public class PingServer {
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
-    NameServer.setNodeID(0);
-    ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
-    startServer(0);
+    int nodeID = 0;
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
+    startServer(nodeID, gnsNodeConfig);
   }
 }

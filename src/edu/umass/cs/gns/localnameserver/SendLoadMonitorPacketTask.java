@@ -9,8 +9,8 @@ import java.util.TimerTask;
 
 public class SendLoadMonitorPacketTask extends TimerTask {
 
-  int nameServerID;
-  NameServerLoadPacket nsLoad;
+  private int nameServerID;
+  private NameServerLoadPacket nsLoad;
 
   public SendLoadMonitorPacketTask(int nsID) {
     nameServerID = nsID;
