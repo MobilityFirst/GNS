@@ -6,10 +6,20 @@ package edu.umass.cs.gns.nsdesign.recordmap;
  * All Rights Reserved
  */
 
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.clientsupport.Defs;
-import edu.umass.cs.gns.database.*;
+import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.database.MongoCollectionSpec;
+import edu.umass.cs.gns.database.MongoRecordCursor;
+import edu.umass.cs.gns.database.NoSQLRecords;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -22,9 +32,13 @@ import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 //import edu.umass.cs.gns.nameserver.NameServer;
 
@@ -62,13 +76,13 @@ public class MongoRecords implements NoSQLRecords {
 //  }
 
   private void init(int nodeID, int mongoPort) {
-    MongoCollectionSpec.addCollectionSpec(DBNAMERECORD, edu.umass.cs.gns.nameserver.recordmap.NameRecord.NAME);
-    MongoCollectionSpec.addCollectionSpec(DBREPLICACONTROLLER, edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord.NAME);
+    MongoCollectionSpec.addCollectionSpec(DBNAMERECORD, edu.umass.cs.gns.nsdesign.recordmap.NameRecord.NAME);
+    MongoCollectionSpec.addCollectionSpec(DBREPLICACONTROLLER,edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord.NAME);
     // add location as another index
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(edu.umass.cs.gns.nameserver.recordmap.NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME, "2d"));
+            .addOtherIndex(new BasicDBObject(edu.umass.cs.gns.nsdesign.recordmap.NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME, "2d"));
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(edu.umass.cs.gns.nameserver.recordmap.NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
+            .addOtherIndex(new BasicDBObject(edu.umass.cs.gns.nsdesign.recordmap.NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + nodeID;
@@ -836,23 +850,23 @@ public class MongoRecords implements NoSQLRecords {
     System.out.println("***LOCATION QUERY***");
     MongoRecordCursor cursor;
     if (search instanceof Double) {
-      cursor = instance.selectRecords(DBNAMERECORD, edu.umass.cs.gns.nameserver.recordmap.NameRecord.VALUES_MAP, key, search, true);
+      cursor = instance.selectRecords(DBNAMERECORD, edu.umass.cs.gns.nsdesign.recordmap.NameRecord.VALUES_MAP, key, search, true);
     } else if (other != null) {
-      cursor = instance.selectRecordsNear(DBNAMERECORD, edu.umass.cs.gns.nameserver.recordmap.NameRecord.VALUES_MAP, key, (String) search, (Double) other, true);
+      cursor = instance.selectRecordsNear(DBNAMERECORD, edu.umass.cs.gns.nsdesign.recordmap.NameRecord.VALUES_MAP, key, (String) search, (Double) other, true);
     } else {
-      cursor = instance.selectRecordsWithin(DBNAMERECORD, edu.umass.cs.gns.nameserver.recordmap.NameRecord.VALUES_MAP, key, (String) search, true);
+      cursor = instance.selectRecordsWithin(DBNAMERECORD, edu.umass.cs.gns.nsdesign.recordmap.NameRecord.VALUES_MAP, key, (String) search, true);
     }
     while (cursor.hasNext()) {
       try {
         JSONObject json = cursor.next();
-        System.out.println(json.getString(edu.umass.cs.gns.nameserver.recordmap.NameRecord.NAME.getName()) + " -> " + json.toString());
+        System.out.println(json.getString(edu.umass.cs.gns.nsdesign.recordmap.NameRecord.NAME.getName()) + " -> " + json.toString());
       } catch (Exception e) {
         System.out.println("Exception: " + e);
         e.printStackTrace();
       }
     }
     System.out.println("***ALL RECORDS ACTIVE FIELD***");
-    cursor = instance.getAllRowsIterator(DBNAMERECORD, edu.umass.cs.gns.nameserver.recordmap.NameRecord.NAME, new ArrayList<ColumnField>(Arrays.asList(NameRecord.ACTIVE_NAMESERVERS)));
+    cursor = instance.getAllRowsIterator(DBNAMERECORD, edu.umass.cs.gns.nsdesign.recordmap.NameRecord.NAME, new ArrayList<ColumnField>(Arrays.asList(NameRecord.ACTIVE_NAMESERVERS)));
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject().toString());
     }
