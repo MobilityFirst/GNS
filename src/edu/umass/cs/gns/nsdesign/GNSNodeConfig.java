@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
+
 /**
  * **
  * This is a utility class that parses configuration files to gather information about each name server/local name server
@@ -403,7 +403,6 @@ public class GNSNodeConfig implements NodeConfig {
     }
     return nameServerID;
   }
-
 
 
   /**

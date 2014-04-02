@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+//import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ThreadUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +17,7 @@ import java.util.Set;
  * Reliable UDP send and receive
  *
  * This could be further integrated with the Packet class as they both are doing similar things. - Westy
+ *
  */
 public class Transport {
 
@@ -79,13 +80,15 @@ public class Transport {
   }
 
   public void sendPacket(JSONObject json, int destID, GNS.PortType portType) throws JSONException {
-    sendPacket(json, destID, Packet.getPort(destID, portType));
+    throw new UnsupportedOperationException();
+//    sendPacket(json, destID, Packet.getPort(destID, portType));
   }
 
   public void sendPacket(JSONObject json, int destID, int port) throws JSONException {
     // make a copy of JSON object
-    InetAddress address = ConfigFileInfo.getIPAddress(destID);
-    sendPacket(json, address, port);
+    throw  new UnsupportedOperationException();
+//    InetAddress address = ConfigFileInfo.getIPAddress(destID);
+//    sendPacket(json, address, port);
   }
 
   public void sendPacket(JSONObject json, InetAddress address, int port) throws JSONException {
@@ -99,17 +102,18 @@ public class Transport {
   }
 
   public void sendPacketToAll(JSONObject json, GNS.PortType portType, Set<Integer> destIDs) throws JSONException {
-    sendPacketToAll(json, portType, destIDs, -1);
+    throw new UnsupportedOperationException();
+//    sendPacketToAll(json, portType, destIDs, -1);
   }
 
-  public void sendPacketToAll(JSONObject json, GNS.PortType portType, Set<Integer> destIDs, int excludeNameServerId) throws JSONException {
-    for (Integer id : destIDs) {
-      if (id.intValue() == excludeNameServerId) {
-        continue;
-      }
-      sendPacket(json, id, Packet.getPort(id, portType));
-    }
-  }
+//  public void sendPacketToAll(JSONObject json, GNS.PortType portType, Set<Integer> destIDs, int excludeNameServerId) throws JSONException {
+//    for (Integer id : destIDs) {
+//      if (id.intValue() == excludeNameServerId) {
+//        continue;
+//      }
+//      sendPacket(json, id, Packet.getPort(id, portType));
+//    }
+//  }
 
   public JSONObject readPacket() {
     while (true) {

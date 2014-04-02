@@ -42,6 +42,7 @@ public class Header {
    * @param qr Specifies whether this message is a query (0), or a response (1)
    * @param rcode Response code
 	 ***********************************************************
+   *
    */
   public Header(int id, DNSRecordType qr, NSResponseCode rcode) {
     this.id = id;

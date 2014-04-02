@@ -4,8 +4,6 @@ import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 
-/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
 /**
  * A name server in GNS implement this interface.
  *

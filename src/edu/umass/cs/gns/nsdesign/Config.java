@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.main.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 
@@ -32,7 +33,7 @@ public class Config {
   public static int failureDetectionPingInterval = 10000;
   public static String paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
 
-
+  public static DataStoreType dataStore = DataStoreType.MONGO;
 
 
   // active replica group change related parameters

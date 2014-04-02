@@ -510,6 +510,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     // we are doing nothing here. because we will not be adding records, but updating them.
   }
 
+  /**
+   * Nuclear option for clearing out all state at GNS.
+   */
   public void resetGNS() {
     nameRecordDB.reset();
     activeCoordinator.reset();

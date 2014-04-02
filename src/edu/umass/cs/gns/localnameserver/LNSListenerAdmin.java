@@ -103,7 +103,7 @@ public class LNSListenerAdmin extends Thread {
             JSONObject json = dumpRequestPacket.toJSONObject();
             Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
             replicationMap.put(id, serverIds.size());
-            Packet.multicastTCP(serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT);
+            Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
           } else {
             // INCOMING - send it out to original requester
@@ -133,7 +133,7 @@ public class LNSListenerAdmin extends Thread {
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getNodeID() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
               Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
-              Packet.multicastTCP(serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
+              Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               // clear the cache
               LocalNameServer.invalidateCache();
               break;
@@ -158,7 +158,7 @@ public class LNSListenerAdmin extends Thread {
                   returnResponsePacketToSender(incomingPacket.getLocalNameServerId(), responsePacket);
                 } else {
                   incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
-                  Packet.sendTCPPacket(incomingPacket.toJSONObject(), node, GNS.PortType.ADMIN_PORT);
+                  Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
@@ -181,7 +181,7 @@ public class LNSListenerAdmin extends Thread {
                 } else {
                   // send it to the server that can handle it
                   incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
-                  Packet.sendTCPPacket(incomingPacket.toJSONObject(), node1, GNS.PortType.ADMIN_PORT);
+                  Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
@@ -198,7 +198,7 @@ public class LNSListenerAdmin extends Thread {
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getNodeID() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
               serverIds = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
-              Packet.multicastTCP(serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
+              Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               break;
             default:
               GNS.getLogger().severe("Unknown admin request in packet: " + incomingJSON);
@@ -230,7 +230,7 @@ public class LNSListenerAdmin extends Thread {
       Admintercessor.handleIncomingAdminResponsePackets(packet.toJSONObject());
     } else {
       // it came from another LNS
-      Packet.sendTCPPacket(packet.toJSONObject(), senderId, GNS.PortType.LNS_ADMIN_PORT);
+      Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(), senderId, GNS.PortType.LNS_ADMIN_PORT);
     }
   }
 }

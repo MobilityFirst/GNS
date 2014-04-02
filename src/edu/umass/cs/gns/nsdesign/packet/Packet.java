@@ -1,9 +1,8 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
-//import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.util.BestServerSelection;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+//import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -319,10 +318,10 @@ public class Packet {
    * @param json JsonObject representing the packet
    * @throws java.io.IOException *
    */
-  public static void sendUDPPacket(int id, DatagramSocket socket, JSONObject json, GNS.PortType type)
+  public static void sendUDPPacket(GNSNodeConfig gnsNodeConfig, int id, DatagramSocket socket, JSONObject json, GNS.PortType type)
           throws IOException {
-    InetAddress address = ConfigFileInfo.getIPAddress(id);
-    int port = getPort(id, type);
+    InetAddress address = gnsNodeConfig.getIPAddress(id);
+    int port = getPort(gnsNodeConfig, id, type);
 
     if (address == null || port == -1) {
       GNS.getLogger().warning("sendUDPPacket:: FAIL! address: " + address + " port: " + port + " to: " + id + " json: " + json.toString());
@@ -348,7 +347,6 @@ public class Packet {
    *
    * //
    *
-   * @param id Name server id
    * @param socket DatagramSocket over which the packet is sent
    * @param json JsonObject representing the packet
    * @throws java.io.IOException *
@@ -366,14 +364,14 @@ public class Packet {
     socket.send(packet);
   }
 
-  public static void multicastUDP(Set<Integer> nameServerIds, JSONObject json, GNS.PortType portType, int excludeNameServerId, DatagramSocket socket) {
+  public static void multicastUDP(GNSNodeConfig gnsNodeConfig, Set<Integer> nameServerIds, JSONObject json, GNS.PortType portType, int excludeNameServerId, DatagramSocket socket) {
     for (Integer id : nameServerIds) {
       if (id.intValue() == excludeNameServerId) {
         continue;
       }
       try {
-        int port = getPort(id, portType);
-        InetAddress addr = ConfigFileInfo.getIPAddress(id);
+        int port = getPort(gnsNodeConfig, id, portType);
+        InetAddress addr = gnsNodeConfig.getIPAddress(id);
         sendUDPPacket(socket, json, addr, port);
       } catch (IOException e) {
         GNS.getLogger().severe("Exception: socket closed by nameserver " + id);
@@ -389,32 +387,32 @@ public class Packet {
    * @param nameServerId Name server id //
    * @param portType	GNS port type*
    */
-  public static int getPort(int nameServerId, GNS.PortType portType) {
+  public static int getPort(GNSNodeConfig gnsNodeConfig, int nameServerId, GNS.PortType portType) {
     switch (portType) {
       case NS_TCP_PORT:
-        return ConfigFileInfo.getNSTcpPort(nameServerId);
+        return gnsNodeConfig.getNSTcpPort(nameServerId);
       case LNS_TCP_PORT:
-        return ConfigFileInfo.getLNSTcpPort(nameServerId);
+        return gnsNodeConfig.getLNSTcpPort(nameServerId);
       case NS_UDP_PORT:
-        return ConfigFileInfo.getNSUdpPort(nameServerId);
+        return gnsNodeConfig.getNSUdpPort(nameServerId);
       case LNS_UDP_PORT:
-        return ConfigFileInfo.getLNSUdpPort(nameServerId);
+        return gnsNodeConfig.getLNSUdpPort(nameServerId);
       case NS_ADMIN_PORT:
-        return ConfigFileInfo.getNSAdminRequestPort(nameServerId);
+        return gnsNodeConfig.getNSAdminRequestPort(nameServerId);
       case LNS_ADMIN_PORT:
-        return ConfigFileInfo.getLNSAdminRequestPort(nameServerId);
+        return gnsNodeConfig.getLNSAdminRequestPort(nameServerId);
       case ADMIN_PORT:
-        return ConfigFileInfo.getAdminRequestPort(nameServerId);
+        return gnsNodeConfig.getNSAdminRequestPort(nameServerId);
       case LNS_ADMIN_RESPONSE_PORT:
-        return ConfigFileInfo.getLNSAdminResponsePort(nameServerId);
+        return gnsNodeConfig.getLNSAdminResponsePort(nameServerId);
       case LNS_ADMIN_DUMP_RESPONSE_PORT:
-        return ConfigFileInfo.getLNSAdminDumpReponsePort(nameServerId);
+        return gnsNodeConfig.getLNSAdminDumpReponsePort(nameServerId);
       case LNS_PING_PORT:
-        return ConfigFileInfo.getLNSPingPort(nameServerId);
+        return gnsNodeConfig.getLNSPingPort(nameServerId);
       case NS_PING_PORT:
-        return ConfigFileInfo.getNSPingPort(nameServerId);
+        return gnsNodeConfig.getNSPingPort(nameServerId);
       case PING_PORT:
-        return ConfigFileInfo.getPingPort(nameServerId);
+        return gnsNodeConfig.getPingPort(nameServerId);
     }
     return -1;
   }
@@ -428,14 +426,14 @@ public class Packet {
    * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
    * @throws java.io.IOException *
    */
-  public static Socket sendTCPPacket(JSONObject json, int nameserverId, GNS.PortType portType) throws IOException {
-    int port = getPort(nameserverId, portType);
+  public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, int nameserverId, GNS.PortType portType) throws IOException {
+    int port = getPort(gnsNodeConfig, nameserverId, portType);
     if (port == -1) {
       GNS.getLogger().warning("sendTCPPacket:: FAIL, BAD PORT! to: " + nameserverId + " json: " + json.toString());
       throw new IOException("Invalid port number " + port);
     }
 
-    InetAddress addr = ConfigFileInfo.getIPAddress(nameserverId);
+    InetAddress addr = gnsNodeConfig.getIPAddress(nameserverId);
     if (addr == null) {
       GNS.getLogger().warning("sendTCPPacket:: FAIL, BAD ADDRESS! to: " + nameserverId + " port: " + port + " json: " + json.toString());
       return null;
@@ -450,7 +448,7 @@ public class Packet {
    * Sends a Packet to a name server using TCP.
    *
    * @param json JsonObject representing the packet //
-   * @param nameserverId Name server id
+   * @param socket Socket on which to send the packet
    * @throws java.io.IOException *
    */
   public static void sendTCPPacket(JSONObject json, Socket socket) throws IOException {
@@ -476,8 +474,8 @@ public class Packet {
    * @param numRetry Number of re-try if the connection fails before successfully sending the packet.
    * @param portType Type of port to connect *
    */
-  public static void multicastTCP(Set<Integer> nameServerIds, JSONObject json, int numRetry, GNS.PortType portType) {
-    multicastTCP(nameServerIds, json, numRetry, portType, -1);
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set<Integer> nameServerIds, JSONObject json, int numRetry, GNS.PortType portType) {
+    multicastTCP(gnsNodeConfig, nameServerIds, json, numRetry, portType, -1);
   }
 
   /**
@@ -490,8 +488,8 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServerId Id of name server which is excluded from multicast *
    */
-  public static void multicastTCP(Set<Integer> nameServerIds, JSONObject json, int numRetry, GNS.PortType portType, int excludeNameServerId) {
-    multicastTCP(nameServerIds, json, numRetry, portType, new HashSet<Integer>(Arrays.asList(excludeNameServerId)));
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set<Integer> nameServerIds, JSONObject json, int numRetry, GNS.PortType portType, int excludeNameServerId) {
+    multicastTCP(gnsNodeConfig, nameServerIds, json, numRetry, portType, new HashSet<Integer>(Arrays.asList(excludeNameServerId)));
   }
 
   /**
@@ -504,7 +502,7 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServers *
    */
-  public static void multicastTCP(Set<Integer> nameServerIds, JSONObject json, int numRetry, GNS.PortType portType, Set<Integer> excludeNameServers) {
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set<Integer> nameServerIds, JSONObject json, int numRetry, GNS.PortType portType, Set<Integer> excludeNameServers) {
     int tries;
     for (Integer id : nameServerIds) {
       if (excludeNameServers != null && excludeNameServers.contains(id)) {
@@ -515,7 +513,7 @@ public class Packet {
       do {
         tries += 1;
         try {
-          Socket socket = Packet.sendTCPPacket(json, id, portType);
+          Socket socket = Packet.sendTCPPacket(gnsNodeConfig, json, id, portType);
           if (socket != null) {
             socket.close();
           }
@@ -539,18 +537,19 @@ public class Packet {
    * @return Returns the <i>Socket</i> over which the packet was transmitted. Returns <i>null</i> if no connection was successful in
    * sending the packet. *
    */
-  public static Socket sendTCPPacketToClosestNameServer(Set<Integer> nameServerIds, JSONObject json,
+  public static Socket sendTCPPacketToClosestNameServer(GNSNodeConfig gnsNodeConfig, Set<Integer> nameServerIds, JSONObject json,
           int numRetry, GNS.PortType portType) {
+
     int attempt = 0;
     Set<Integer> excludeNameServer = new HashSet<Integer>();
     int id;
 
     do {
       attempt++;
-      id = BestServerSelection.getSmallestLatencyNS(nameServerIds, excludeNameServer);
+      id = gnsNodeConfig.getClosestNameServer(nameServerIds, excludeNameServer);
       excludeNameServer.add(id);
       try {
-        return Packet.sendTCPPacket(json, id, portType);
+        return Packet.sendTCPPacket(gnsNodeConfig, json, id, portType);
       } catch (IOException e) {
         GNS.getLogger().severe("Exception: socket closed by nameserver " + id);
         e.printStackTrace();

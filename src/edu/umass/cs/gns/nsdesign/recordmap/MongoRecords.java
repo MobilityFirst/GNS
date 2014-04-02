@@ -13,9 +13,11 @@ import edu.umass.cs.gns.database.*;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
-import edu.umass.cs.gns.util.*;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +25,8 @@ import org.json.JSONObject;
 
 import java.net.UnknownHostException;
 import java.util.*;
+
+//import edu.umass.cs.gns.nameserver.NameServer;
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
@@ -806,8 +810,7 @@ public class MongoRecords implements NoSQLRecords {
   // ALL THE CODE BELOW IS TEST CODE
 //  //test code
   private static void queryTest(int nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
-    NameServer.setNodeID(nodeID);
-    ConfigFileInfo.readHostInfo("ns1", NameServer.getNodeID());
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
     ConsistentHashing.initialize(3, 3);
     MongoRecords instance = new MongoRecords(nodeID,  -1);
     System.out.println("***ALL RECORDS***");

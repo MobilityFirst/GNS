@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
+//import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import org.json.JSONException;
@@ -115,7 +115,7 @@ public class FailureDetection{
         FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject(), this);
         long initialDelay = timeoutIntervalMillis + r.nextInt(pingIntervalMillis);
         if (experimentMode) {
-          initialDelay += 2 * NameServer.getInitialExpDelayMillis(); // wait for all name servers to start up.
+          initialDelay *= 5; // wait for all name servers to start up.
         }
         nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
         nodeStatus.put(monitoredNodeID, true);

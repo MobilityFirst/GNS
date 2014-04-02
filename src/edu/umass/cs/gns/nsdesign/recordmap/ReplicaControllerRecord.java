@@ -9,8 +9,8 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.util.StatsInfo;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.MovingAverage;
@@ -484,7 +484,7 @@ public class ReplicaControllerRecord {
    *
    * @param numReplica Number of name servers to be selected.
    */
-  public Set<Integer> getHighestVotedReplicaID(int numReplica) throws FieldNotFoundException { //
+  public Set<Integer> getHighestVotedReplicaID(GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
     Set<Integer> replicas = new HashSet<Integer>();
 
     for (int i = 1; i <= numReplica; i++) {
@@ -496,7 +496,7 @@ public class ReplicaControllerRecord {
         int votes = entry.getValue();
         //Skip name server that are unreachable
         // from main branch 269
-        if (ConfigFileInfo.getPingLatency(nameServerId) == ConfigFileInfo.INVALID_PING_LATENCY) {
+        if (gnsNodeConfig.getPingLatency(nameServerId) == GNSNodeConfig.INVALID_PING_LATENCY) {
           continue;
         }
         if (!replicas.contains(nameServerId)
@@ -908,8 +908,8 @@ public class ReplicaControllerRecord {
   private static void test() throws FieldNotFoundException, Exception {
     Config.movingAverageWindowSize = 10;
     int nodeID = 4;
-    ConfigFileInfo.readHostInfo("ns1", nodeID);
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, ConfigFileInfo.getNumberOfNameServers());
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
+    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNumberOfNameServers());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();
@@ -941,7 +941,7 @@ public class ReplicaControllerRecord {
     record.addReplicaSelectionVote(14, 4, 0);
     record.addNameServerStats(11, 50, 75);
     record.addNameServerStats(12, 50, 75);
-    System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(3));
+    System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(gnsNodeConfig, 3));
 //    record.updateMovingAvgAggregateLookupFrequency(10);
 //    record.updateMovingAvgAggregateLookupFrequency(30);
 //    record.updateMovingAvgAggregateLookupFrequency(50);

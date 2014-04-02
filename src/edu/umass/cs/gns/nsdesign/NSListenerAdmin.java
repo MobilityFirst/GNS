@@ -6,6 +6,7 @@ import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+//import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket;
@@ -189,7 +190,7 @@ public class NSListenerAdmin extends Thread {
               GNS.getLogger().finer("NSListenrAdmin for " + gnsReconfigurable.getNodeID() + " is " + jsonArray.toString());
             }
             dumpRequestPacket.setJsonArray(jsonArray);
-            Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), dumpRequestPacket.getLocalNameServer(), GNS.PortType.LNS_ADMIN_PORT);
+            Packet.sendTCPPacket(gnsNodeConfig, dumpRequestPacket.toJSONObject(), dumpRequestPacket.getLocalNameServer(), GNS.PortType.LNS_ADMIN_PORT);
             //Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), socket);
 
             if (GNS.getLogger().isLoggable(Level.FINER)) {
@@ -222,8 +223,8 @@ public class NSListenerAdmin extends Thread {
               // Clears the database and reinitializes all indices
               case RESETDB:
                 GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling RESETDB request");
-                edu.umass.cs.gns.nameserver.NameServer.getPaxosManager().resetAll();
-                edu.umass.cs.gns.nameserver.NameServer.resetDB();
+                replicaController.resetRC();
+                gnsReconfigurable.resetGNS();
                 break;
               case PINGTABLE:
                 int node = Integer.parseInt(adminRequestPacket.getArgument());
@@ -231,7 +232,7 @@ public class NSListenerAdmin extends Thread {
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", gnsReconfigurable.getPingManager().tableToString(gnsReconfigurable.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
+                  Packet.sendTCPPacket(gnsNodeConfig, responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
@@ -243,7 +244,7 @@ public class NSListenerAdmin extends Thread {
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", gnsReconfigurable.getPingManager().nodeAverage(node2));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
+                  Packet.sendTCPPacket(gnsNodeConfig, responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
                 }

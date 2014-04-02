@@ -13,9 +13,10 @@ import org.json.JSONObject;
  * field to <code>OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY</code> and send the same packet to
  * primaries.
  *
- * @deprecated
+ *
  * Refer to the classes <link>StopActiveSetTask</link> and <code>ListenerReplicationPaxos</code>
  * for more documentation.
+ * @deprecated
  */
 public class OldActiveSetStopPacket extends BasicPacket
 {

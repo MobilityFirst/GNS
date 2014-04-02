@@ -8,29 +8,27 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
-import edu.umass.cs.gns.clientsupport.Admintercessor;
-import edu.umass.cs.gns.clientsupport.FieldAccess;
-import edu.umass.cs.gns.clientsupport.FieldMetaData;
-import edu.umass.cs.gns.clientsupport.GroupAccess;
-import edu.umass.cs.gns.clientsupport.Intercessor;
-import edu.umass.cs.gns.clientsupport.SelectHandler;
+import edu.umass.cs.gns.clientsupport.*;
 import edu.umass.cs.gns.clientsupport.Defs;
-import edu.umass.cs.gns.clientsupport.Protocol;
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.paxos.PaxosReplica;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
+
+//import edu.umass.cs.gns.main.StartNameServer;
 
 /**
  *
@@ -179,8 +177,8 @@ public class GnsHttpServer {
                 + NioServer.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
         String serverLocalNameServerID = "\nLocal Name Server ID: " + localNameServerID + "\n";
-        String numberOfNameServers = "Name Server Count: " + ConfigFileInfo.getNumberOfNameServers() + "\n";
-        String backingStoreClass = "Backing Store Class: " + StartNameServer.dataStore.getClassName() + "\n\n";
+        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNumberOfNameServers() + "\n";
+        String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 
         responseBody.write(buildVersionInfo.getBytes());
         responseBody.write(serverVersionInfo.getBytes());

@@ -363,9 +363,12 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
     }
   }
 
+  /**
+   * Nuclear option for clearing out all state at GNS.
+   */
   public void resetRC() {
-    replicaControllerDB.reset();
     rcCoordinator.reset();
+    replicaControllerDB.reset();
   }
 
   /******END: miscellaneous methods needed by replica controller module ****/

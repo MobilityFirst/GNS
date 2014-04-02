@@ -3,7 +3,7 @@ package edu.umass.cs.gns.replicaCoordination;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.NodeConfig;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
-import edu.umass.cs.gns.packet.BasicPacket;
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import org.json.JSONObject;
 

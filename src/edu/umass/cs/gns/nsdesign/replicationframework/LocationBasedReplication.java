@@ -43,9 +43,9 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
     }
     //		 Use top-K based on locality.
     if (numReplica > Config.nameServerVoteSize) {
-      newActiveNameServerSet = nameRecordPrimary.getHighestVotedReplicaID(Config.nameServerVoteSize);
+      newActiveNameServerSet = nameRecordPrimary.getHighestVotedReplicaID(rc.getGnsNodeConfig(), Config.nameServerVoteSize);
     } else {
-      newActiveNameServerSet = nameRecordPrimary.getHighestVotedReplicaID(numReplica);
+      newActiveNameServerSet = nameRecordPrimary.getHighestVotedReplicaID(rc.getGnsNodeConfig(), numReplica);
     }
 
     // Select based on votes as much as you can.

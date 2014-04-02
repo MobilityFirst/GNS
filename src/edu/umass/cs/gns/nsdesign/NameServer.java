@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
 
 /**
  * Work in progress. Inactive code.
