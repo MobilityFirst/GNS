@@ -17,7 +17,7 @@ public class PaxosConfig {
 
 
   // configuration parameters
-  private boolean debugMode = true;
+  private boolean debugMode = false;
 
 
   /** Paxos logs are stored in this folder */

@@ -22,6 +22,31 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * This class handles select operations which have a similar semantics to an SQL SELECT.
+ * The semantics is that we want to look up all the records with a given value or whose
+ * value falls in a given range or that more generally match a query.
+ * 
+ * The SelectRequestPacket is sent to some NS (determining which one is done by the
+ * LNS). This NS handles the broadcast to all of the NSs and the collection of results.
+ * 
+ * Here's what the handling NS does:
+ * 
+ * On the request side when we get a GROUP_SETUP request we do the regular broadcast thing.
+ * Also need to handle GROUP_SETUP for a group that already exists.
+ * 
+ * On the response side for a GROUP_SETUP we do the regular collate thing and return the results,
+ * plus we set the value of the group guid and the values of last_refreshed_time and the min_refresh_interval. 
+ * We need a GROUP info structure to hold these things.
+ * 
+ * On the request side when we get a GROUP_LOOKUP request we need to 
+ * 1) Check to see if enough time has passed since the last update 
+ * (current time > last_refreshed_time + min_refresh_interval). If it has we
+ * do the usual query broadcast. 
+ * If not enough time has elapsed we send back the response with the current value of the group guid.
+ * 
+ * On the response when see a GROUP_LOOKUP it means that  enough time has passed since the last update 
+ * (in the other case the response is sent back on request side of things).
+ * We handle this exactly the same as we do GROUP_SETUP (set group, return results, time bookkeeping).
  *
  * @author westy
  */
@@ -50,13 +75,10 @@ public class Select {
     JSONObject outgoingJSON = packet.toJSONObject();
     GNS.getLogger().fine("NS" + ar.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
     try {
-      ar.getNioServer().sendToIDs(serverIds, outgoingJSON); //, ar.getNodeID()
+      ar.getNioServer().sendToIDs(serverIds, outgoingJSON); // send to myself too
     } catch (IOException e) {
       GNS.getLogger().severe("Exception while sending select request: " + e);
     }
-    // Abhigyan: There was a bug here in case there is just one name server. We were not checking whether all
-    // name servers have responded in that case. Sending out the select request to all name servers (including myself)
-    // fixed this problem.
   }
 
   public static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable ar) throws JSONException {
@@ -151,6 +173,8 @@ public class Select {
         }
         break;
       case QUERY:
+      case GROUP_SETUP: // just like a query except we're creating a new group guid to maintain results
+      case GROUP_LOOKUP: // just like a query except we're potentially updating the group guid to maintain results
         cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
         break;
       default:

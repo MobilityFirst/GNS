@@ -26,7 +26,10 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
   /**
    * This is the entry point for all message received at a local name server. It de-multiplexes packets based on
    * their packet type and forwards to appropriate classes.
+   * @param json
+   * @return false if and invalid packet type is received
    */
+  @Override
   public boolean handleJSONObject(JSONObject json) {
     boolean isPacketTypeFound = true;
     try {

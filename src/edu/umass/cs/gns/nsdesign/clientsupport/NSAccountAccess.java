@@ -107,7 +107,7 @@ public class NSAccountAccess {
    * @return an {@link edu.umass.cs.gns.clientsupport.GuidInfo} instance
    */
   public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurable activeReplica) {
-    return lookupGuidInfo(guid, false, activeReplica);
+    return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica);
   }
 
   /**
@@ -116,10 +116,10 @@ public class NSAccountAccess {
    * a query will be sent another name server to find the record.
    *
    * @param guid
-   * @param allowSiteToSiteQuery
+   * @param allowQueryToOtherNSs
    * @return
    */
-  public static GuidInfo lookupGuidInfo(String guid, boolean allowSiteToSiteQuery, GnsReconfigurable activeReplica) {
+  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
       guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
@@ -127,8 +127,8 @@ public class NSAccountAccess {
     } catch (RecordNotFoundException e) {
     }
     // If we're allowed we go looking at other NameServers for the record in question.
-    if (guidResult == null && allowSiteToSiteQuery) {
-      guidResult = lookupGuidInfoSiteToSite(guid, AccountAccess.GUID_INFO, activeReplica);
+    if (guidResult == null && allowQueryToOtherNSs) {
+      guidResult = lookupGuidOnAnotherNameServer(guid, activeReplica);
     }
     if (guidResult != null) {
       try {
@@ -142,8 +142,10 @@ public class NSAccountAccess {
     return null;
   }
 
-  public static ResultValue lookupGuidInfoSiteToSite(String guid, String key,GnsReconfigurable activeReplica) {
-    QueryResult queryResult = SiteToSiteQueryHandler.sendQuery(guid, key, activeReplica);
+  private static ResultValue lookupGuidOnAnotherNameServer(String guid, GnsReconfigurable activeReplica) {
+    QueryResult queryResult = SiteToSiteQueryHandler.sendQuery(guid, AccountAccess.GUID_INFO, activeReplica);
+    // new and not working
+    //QueryResult queryResult = LNSQueryHandler.sendQuery(guid, AccountAccess.GUID_INFO, activeReplica);
     if (!queryResult.isError()) {
       return queryResult.get(AccountAccess.GUID_INFO);
     } else {

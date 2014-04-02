@@ -51,7 +51,7 @@ public class Add {
           throws JSONException {
 
     GNSMessagingTask gnsMessagingTask;
-    GNS.getLogger().info("Executing ADD at replica controller " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
+    GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
     ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(),
             addRecordPacket.getName(), true);
 
@@ -78,7 +78,7 @@ public class Add {
                          ReplicaController replicaController) throws JSONException {
     GNSMessagingTask msgTask = null;
     if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
-      GNS.getLogger().info("Add complete informing client. " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
+      GNS.getLogger().fine("Add complete informing client. " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
       ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
       msgTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
     }

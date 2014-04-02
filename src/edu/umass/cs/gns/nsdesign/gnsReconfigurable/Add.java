@@ -22,7 +22,7 @@ public class Add {
           throws JSONException {
 
     GNSMessagingTask msgTask = null;
-    GNS.getLogger().info("Add record at Active replica. name = " + addRecordPacket.getName() + " node id: " +
+    GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() + " node id: " +
             activeReplica.getNodeID());
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
@@ -48,7 +48,7 @@ public class Add {
       } catch (RecordExistsException e1) {
         e1.printStackTrace();
       }
-      GNS.getLogger().info("Name record already exists, i.e., record deleted and reinserted.");
+      GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
     }
 
     // this will create state needed for coordination

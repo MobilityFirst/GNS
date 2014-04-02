@@ -23,7 +23,7 @@ public class LookupActives {
 
     GNSMessagingTask msgTask = null;
 
-    GNS.getLogger().info("Received Request Active Packet Name = " + packet.getName());
+    GNS.getLogger().fine("Received Request Active Packet Name = " + packet.getName());
 
     boolean isError = false;
     try {
@@ -36,7 +36,7 @@ public class LookupActives {
         packet.setActiveNameServers(rcRecord.getActiveNameservers());
         msgTask = new GNSMessagingTask(packet.getLNSID(), packet.toJSONObject());
 
-        GNS.getLogger().info("Sent actives for " + packet.getName() + " Actives = " + rcRecord.getActiveNameservers());
+        GNS.getLogger().fine("Sent actives for " + packet.getName() + " Actives = " + rcRecord.getActiveNameservers());
       }
     } catch (RecordNotFoundException e) {
       isError = true;

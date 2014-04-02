@@ -192,7 +192,7 @@ public class RequestGenerator {
 
     @Override
     public void run() {
-      DNSPacket queryRecord = new DNSPacket(lookupCount, name, NameRecordKey.EdgeRecord, -1, null, null, null);
+      DNSPacket queryRecord = new DNSPacket(-1, lookupCount, name, NameRecordKey.EdgeRecord, null, null, null);
       queryRecord.getHeader().setId(lookupCount);
 
       JSONObject json;

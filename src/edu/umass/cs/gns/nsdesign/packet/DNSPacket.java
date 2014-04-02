@@ -1,11 +1,14 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.*;
+import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.NameRecordKey;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.Set;
 
 /**
@@ -17,14 +20,20 @@ import java.util.Set;
  */
 public class DNSPacket extends BasicPacketWithSignatureInfo {
 
-  public final static String HEADER = "dns_header";
-  public final static String GUID = "dns_guid";
-  public final static String KEY = "dns_key";
-  public final static String TIME_TO_LIVE = "ttlAddress";
-  public final static String RECORD_VALUE = "recordValue";
-  public final static String ACTIVE_NAME_SERVERS = "Active";
-  public final static String SENDER_ID = "senderId";
-  public final static String RESPONDER = "rspndr";
+  private final static String HEADER = "dns_header";
+  private final static String GUID = "dns_guid";
+  private final static String KEY = "dns_key";
+  private final static String TIME_TO_LIVE = "ttlAddress";
+  private final static String RECORD_VALUE = "recordValue";
+  private final static String ACTIVE_NAME_SERVERS = "Active";
+  private final static String LNS_ID = "lnsId";
+  private final static String SOURCE_ID = "sourceId"; 
+  private final static String RESPONDER = "rspndr";
+  /**
+   * This is the source ID of a packet that should be returned to the intercessor of the LNS.
+   * Otherwise the sourceId field contains the number of the NS who made the request.
+   */
+  public final static int LOCAL_SOURCE_ID = -1;
   /*
    * The header, guid, key and lnsId are called the Question section because
    * they are all that is necessary for a query.
@@ -42,9 +51,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   private final NameRecordKey key;
   /**
-   * This is used by the Nameservers so they know where to send the packet back to. *
+   * This is the Id of the source of the request, -1 means the client is the intercessor of the LNS handling the request. 
    */
-  private int senderId = -1;
+  private int sourceId;
+  /**
+   * This is used by the Nameservers so they know which LNS to send the packet back to. *
+   */
+  private int lnsId = -1; // will be -1 until set at the LNS
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
    */
@@ -70,20 +83,22 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    * Constructs a packet for querying a name server for name information.
    *
+   * @param sourceId - the id of the server sending the request, equal to LOCAL_SOURCE_ID means the intercessor of the LNS (the usual case)
    * @param id
    * @param qname
    * @param key
-   * @param sender
+   * @param lnsId
    * @param accessor
    * @param signature
    * @param message
    */
-  public DNSPacket(int id, String qname, NameRecordKey key, int sender, String accessor, String signature, String message) {
+  public DNSPacket(int sourceId, int id, String qname, NameRecordKey key, String accessor, String signature, String message) {
     super(accessor, signature, message);
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
     this.guid = qname;
     this.key = key;
-    this.senderId = sender;
+    this.sourceId = sourceId;
+    this.lnsId = -1; // this will be -1 until it is set by the handling LNS before sending to an NS
     this.responder = -1;
   }
 
@@ -101,7 +116,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(json.getJSONObject(HEADER));
     this.guid = json.getString(GUID);
     this.key = NameRecordKey.valueOf(json.getString(KEY));
-    this.senderId = json.getInt(SENDER_ID);
+    this.sourceId = json.getInt(SOURCE_ID);
+    this.lnsId = json.getInt(LNS_ID);
     // read the optional responder if it is there
     this.responder = json.optInt(RESPONDER, -1);
 
@@ -126,8 +142,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param fieldValue
    * @param TTL
    */
-  public DNSPacket(int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
-    this(id, name, key, new ValuesMap(), TTL, activeNameServers);
+  public DNSPacket(int sourceId, int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
+    this(sourceId, id, name, key, new ValuesMap(), TTL, activeNameServers);
     // slide that baby in...
     this.recordValue.put(key.getName(), fieldValue);
   }
@@ -136,22 +152,21 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * Creates a DNS packet for when you want to return all of a NameRecord.
    * This packet has both a query and response section.
    *
+   * @param sourceId
    * @param id
    * @param name
    * @param key
    * @param entireRecord
    * @param TTL
    * @param activeNameServers
-   * @param accessor
-   * @param signature
-   * @param message
    */
-  public DNSPacket(int id, String name, NameRecordKey key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
+  public DNSPacket(int sourceId, int id, String name, NameRecordKey key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
     super(); // no sigs for this baby
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
-    this.senderId = -1;
+    this.lnsId = -1; // we don't care about this once it's heading back to the LNS
+    this.sourceId = sourceId;
     this.recordValue = entireRecord;
     this.ttl = TTL;
     this.activeNameServers = activeNameServers;
@@ -216,7 +231,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     json.put(HEADER, getHeader().toJSONObject());
     json.put(KEY, getKey().getName());
     json.put(GUID, getGuid());
-    json.put(SENDER_ID, senderId);
+    json.put(SOURCE_ID, sourceId);
+    json.put(LNS_ID, lnsId);
     // this goes in with query (if it's not empty -1) in case it's an error response and we want to know the reponder
     if (responder != -1) {
       json.put(RESPONDER, responder);
@@ -345,14 +361,22 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.recordValue.put(key.getName(), data);
   }
 
-  public int getSenderId() {
-    return senderId;
+  public int getLnsId() {
+    return lnsId;
   }
 
-  public void setSenderId(int lnsId) {
-    this.senderId = lnsId;
+  public void setLnsId(int lnsId) {
+    this.lnsId = lnsId;
   }
 
+  public int getSourceId() {
+    return sourceId;
+  }
+
+  public void setSourceId(int sourceId) {
+    this.sourceId = sourceId;
+  }
+  
   /**
    * @return the activeNameServers
    */

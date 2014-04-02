@@ -61,7 +61,7 @@ public class Lookup {
 
   public static void handlePacketLookupRequest(JSONObject json, DNSPacket dnsPacket)
           throws JSONException, UnknownHostException {
-
+    GNS.getLogger().fine("LNS DNS Request" + json);
     LocalNameServer.incrementLookupRequest(dnsPacket.getGuid()); // important: used to count votes for names.
     DNSRequestTask queryTaskObject = new DNSRequestTask(
             dnsPacket,
@@ -79,7 +79,7 @@ public class Lookup {
   }
 
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket) throws JSONException {
-    GNS.getLogger().fine("LNS-RecvdPkt\t" + json);
+     GNS.getLogger().fine("LNS DNS Response" + json);
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
       //Match response to the query sent
@@ -116,7 +116,7 @@ public class Lookup {
 
   public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket dnsPacket) throws JSONException {
 
-    GNS.getLogger().fine("Recvd Lookup Error Response\t" + jsonObject);
+    GNS.getLogger().fine("Recvd Lookup Error Response" + jsonObject);
     DNSRequestInfo query = LocalNameServer.removeDNSRequestInfo(dnsPacket.getQueryId());
 
     if (query == null) {
@@ -149,7 +149,8 @@ public class Lookup {
               ": " + dnsPacket.toJSONObject());
       // set the correct id for the client
       dnsPacket.getHeader().setId(query.getIncomingPacket().getQueryId());
-      Intercessor.handleIncomingPackets(dnsPacket.toJSONObject());
+      sendDNSResponseBackToSource(dnsPacket);
+      //Intercessor.handleIncomingPackets(dnsPacket.toJSONObject());
       // this might need updating... not sure how it's used though so we'll punt
       GNS.getStatLogger().fine(DNSRequestInfo.getFailureLogMessage(0, dnsPacket.getKey(), dnsPacket.getGuid(),
               0, query.getLookupRecvdTime(), query.numInvalidActiveError, -1, new HashSet<Integer>()));
@@ -165,14 +166,31 @@ public class Lookup {
   private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, int responder) {
 
     try {
-      DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getHeader().getId(), query.getIncomingPacket().getGuid(),
+      DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getSourceId(), query.getIncomingPacket().getHeader().getId(), query.getIncomingPacket().getGuid(),
               query.getIncomingPacket().getKey(), returnValue, TTL, new HashSet<Integer>());
       outgoingPacket.setResponder(responder);
-      Intercessor.handleIncomingPackets(outgoingPacket.toJSONObject());
+      sendDNSResponseBackToSource(outgoingPacket);
+      //Intercessor.handleIncomingPackets(outgoingPacket.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }
   }
+  
+  /**
+   * Handles the returning of packets back to the appropriate source (local intercessor or another NameServer).
+   * 
+   * @param packet
+   * @throws JSONException 
+   */
+  public static void sendDNSResponseBackToSource(DNSPacket packet) throws JSONException {
+    GNS.getLogger().fine("Sending back to :" + packet.getSourceId());
+    if (packet.getSourceId() == DNSPacket.LOCAL_SOURCE_ID) {
+      Intercessor.handleIncomingPackets(packet.toJSONObject());
+    } else {
+      LocalNameServer.sendToNS(packet.toJSONObject(), packet.getSourceId());
+    }
+  }
+  
 
   // why does this totally ignore the error code that exists in the incoming packet?
   public static JSONObject getErrorPacket(DNSPacket dnsPacketIn) {

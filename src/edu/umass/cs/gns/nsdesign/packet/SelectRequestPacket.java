@@ -19,10 +19,12 @@ public class SelectRequestPacket extends BasicPacket {
 
   public enum SelectOperation {
 
-    EQUALS,
-    NEAR,
-    WITHIN,
-    QUERY;
+    EQUALS, // special case query for field with value
+    NEAR, // special case query for location field near point
+    WITHIN, // special case query for location field within bounding box
+    QUERY, // general purpose query
+    GROUP_SETUP, // set up a group guid that satisfies general purpose query
+    GROUP_LOOKUP; // lookup value of group guid previoulsy set up to satisfy general purpose query
   }
   //
   private final static String ID = "id";
@@ -83,12 +85,43 @@ public class SelectRequestPacket extends BasicPacket {
     this.guid = guid;
   }
 
+  /**
+   * Creates a request to search all name servers for GUIDs that match the given query.
+   * 
+   * @param id
+   * @param lns
+   * @param query
+   * @return 
+   */
   public static SelectRequestPacket MakeQueryRequest(int id, int lns, String query) {
     return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query, null);
   }
 
-  public static SelectRequestPacket MakeGroupQueryRequest(int id, int lns, String query, String guid) {
-    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query, guid);
+  /**
+   * Just like a MakeQueryRequest except we're creating a new group guid to maintain results.
+   * Creates a request to search all name servers for GUIDs that match the given query.
+   * 
+   * @param id
+   * @param lns
+   * @param query
+   * @param guid
+   * @return 
+   */
+  public static SelectRequestPacket MakeGroupSetupRequest(int id, int lns, String query, String guid) {
+    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_SETUP, query, guid);
+  }
+  
+  /**
+   * Just like a MakeQueryRequest except we're potentially updating the group guid to maintain results.
+   * Creates a request to search all name servers for GUIDs that match the given query.
+   * 
+   * @param id
+   * @param lns
+   * @param guid
+   * @return 
+   */
+  public static SelectRequestPacket MakeGroupLookupRequest(int id, int lns, String guid) {
+    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_LOOKUP, null, guid);
   }
 
   /**

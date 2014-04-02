@@ -10,7 +10,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,31 +20,41 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This class handles sending DNS queries from one NS to another. 
+ * This class handles sending DNS queries from a NameServer back to an Local Name Server. 
+ * 
  * Currently it is used by the code that does ACL checks in the NS to look up GUID info.
  * 
- * Note: Will be reimplmenting this as a new class that sends requests to an LNS instead.
- *
  * 
  * @author westy
  */
-public class SiteToSiteQueryHandler {
+public class LNSQueryHandler {
 
   private static final Object monitor = new Object();
   private static ConcurrentMap<Integer, QueryResult> queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
   private static ConcurrentMap<Integer, Integer> outStandingQueries = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
+  /**
+   * Sends a DNS query from this Name Server to a Local Name Server
+   * 
+   * @param name
+   * @param key
+   * @param activeReplica
+   * @return 
+   */
   public static QueryResult sendQuery(String name, String key, GnsReconfigurable activeReplica) {
     GNS.getLogger().fine("Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
-    // send a bunch out
-    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
-      sendQueryInternal(id, server, name, key, activeReplica);
-    }
-    // now we wait until the first correct packet comes back
+    // ConfigFileInfo.getNumberOfNameServers() is a hack to get the first LNS
+    // We need a means to find the closes LNS
+    GNS.getLogger().warning("FIXME!! Using stupid mechanism for picking LNS #" + activeReplica.getGNSNodeConfig().getNumberOfNameServers());
+    sendQueryInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(), name, key,  activeReplica);
+//    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
+//      sendQueryInternal(id, server, name, key, activeReplica);
+//    }
+    // now we wait until the packet comes back
     waitForResponsePacket(id);
     QueryResult result = queryResultMap.get(id);
     queryResultMap.remove(id);
@@ -52,11 +62,11 @@ public class SiteToSiteQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurable activeReplica) {
-    GNS.getLogger().fine("Sending query " + queryId + " to " + recipientId + " for " + name + " / " + key);
-    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, new NameRecordKey(key), null, null, null);
+    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, new NameRecordKey(key),  null, null, null);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
+      GNS.getLogger().info("Sending query " + queryId + " to " + recipientId + " for " + name + " / " + key + ": " + json);
       activeReplica.getNioServer().sendToID(recipientId, json);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
@@ -65,26 +75,32 @@ public class SiteToSiteQueryHandler {
     }
   }
 
+  /**
+   * Handles a DNS query response coming back to this NameServer from a Local Name Server
+   * 
+   * @param dnsResponsePacket
+   * @param activeReplica 
+   */
   public static void handleDNSResponsePacket(DNSPacket dnsResponsePacket, GnsReconfigurable activeReplica) {
     int id = dnsResponsePacket.getQueryId();
     if (!dnsResponsePacket.containsAnyError()) {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().finer("First STS Response (" + id + "): "
+          GNS.getLogger().info("First STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().finer("Later STS Response (" + id + "): "
+          GNS.getLogger().info("Later STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
         }
       }
     } else {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().finer("First STS Response (" + id + "): "
+          GNS.getLogger().info("First STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), activeReplica.getNodeID()));
@@ -104,7 +120,7 @@ public class SiteToSiteQueryHandler {
         while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
-        GNS.getLogger().fine("Query id response received: " + id);
+        GNS.getLogger().info("Query id response received: " + id);
       }
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);

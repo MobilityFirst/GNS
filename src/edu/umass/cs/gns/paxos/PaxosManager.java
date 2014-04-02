@@ -262,7 +262,7 @@ public class PaxosManager extends AbstractPaxosManager {
       PaxosReplicaInterface replica = paxosInstances.get(getPaxosKeyFromPaxosID(paxosID));
       if (replica == null) return null;
       try {
-        GNS.getLogger().info(" Proposing to  " + replica.getPaxosID());
+        GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
         replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
       } catch (JSONException e) {
         e.printStackTrace();  

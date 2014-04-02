@@ -140,7 +140,7 @@ public class Intercessor {
     int id = nextQueryRequestID();
 
 
-    DNSPacket queryrecord = new DNSPacket(id, name, new NameRecordKey(key), LocalNameServer.getNodeID(), reader, signature, message);
+    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), reader, signature, message);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
@@ -212,7 +212,7 @@ public class Intercessor {
 
   public static NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
-    GNS.getLogger().info("Sending remove: " + name);
+    GNS.getLogger().fine("Sending remove: " + name);
     RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
@@ -223,7 +223,7 @@ public class Intercessor {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().info("Remove (" + id + "): " + name + "\n  Returning: " + result);
+    GNS.getLogger().fine("Remove (" + id + "): " + name + "\n  Returning: " + result);
     return result;
   }
 

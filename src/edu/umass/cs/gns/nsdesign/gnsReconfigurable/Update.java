@@ -48,7 +48,7 @@ public class Update {
 
   public static GNSMessagingTask executeUpdateLocal(UpdateAddressPacket updatePacket, GnsReconfigurable replica)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
-    GNS.getLogger().info(" Processing UPDATE: " + updatePacket);
+    GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
 
 //    UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
 

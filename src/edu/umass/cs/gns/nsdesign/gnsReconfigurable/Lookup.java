@@ -11,8 +11,8 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
-import edu.umass.cs.gns.nsdesign.clientsupport.SiteToSiteQueryHandler;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
+import edu.umass.cs.gns.nsdesign.clientsupport.SiteToSiteQueryHandler;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -45,10 +45,12 @@ public class Lookup {
 
     GNSMessagingTask msgTask;
 
-    // the only dns reponses we should see are coming in respone to SiteToSiteQueryHandler requests
+    // the only dns reponses we should see are coming in respone to LNSQueryHandler requests
     if (!dnsPacket.isQuery()) {
-      // handle the special case of queries that were sent between name servers
+      // handle the special case of queries that were from this NS back to an LNS
       SiteToSiteQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
+      // new and not working
+      //LNSQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
       return null;
       // todo handle this
     }
@@ -68,10 +70,9 @@ public class Lookup {
     if (errorCode.isAnError()) {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.getHeader().setResponseCode(errorCode);
-      // PUT THE ID OF THE NAME SERVER IN THE RESPONSE
-      //dnsPacket.setResponder(NameServer.getNodeID());
-      GNS.getLogger().fine("Sending to " + dnsPacket.getSenderId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
-      msgTask = new GNSMessagingTask(dnsPacket.getSenderId(), dnsPacket.toJSONObjectForErrorResponse());
+      dnsPacket.setResponder(activeReplica.getNodeID());
+      GNS.getLogger().fine("Sending to " + dnsPacket.getLnsId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+      msgTask = new GNSMessagingTask(dnsPacket.getLnsId(), dnsPacket.toJSONObjectForErrorResponse());
 //      NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getSenderId());
     } else {
       // All signature and ACL checks passed see if we can find the field to return;
@@ -91,7 +92,7 @@ public class Lookup {
       // Now we either have a name record with stuff it in or a null one
       // Time to send something back to the client
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, activeReplica);
-      msgTask = new GNSMessagingTask(dnsPacket.getSenderId(), dnsPacket.toJSONObject());
+      msgTask = new GNSMessagingTask(dnsPacket.getLnsId(), dnsPacket.toJSONObject());
     }
     return msgTask;
   }
@@ -113,6 +114,7 @@ public class Lookup {
     }
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
+      // Lookup the guid of the reader. This could potentiall not be on this NS.
     } else if ((readerGuidInfo = NSAccountAccess.lookupGuidInfo(reader, true, activeReplica)) == null) {
       GNS.getLogger().fine("Name " + guid + " key = " + field + ": BAD_ACCESOR_ERROR");
       return NSResponseCode.BAD_ACCESOR_ERROR;
@@ -146,9 +148,7 @@ public class Lookup {
    */
   private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsReconfigurable activeReplica) {
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
-    // PUT THE ID OF THE NAME SERVER IN THE RESPONSE
-    GNS.getLogger().warning("****PUT THE ID OF THE NAME SERVER IN THE RESPONSE");
-    //dnsPacket.setResponder(NameServer.getNodeID());
+    dnsPacket.setResponder(activeReplica.getNodeID());
     // change it to a response packet
     String guid = dnsPacket.getGuid();
     String key = dnsPacket.getKey().getName();

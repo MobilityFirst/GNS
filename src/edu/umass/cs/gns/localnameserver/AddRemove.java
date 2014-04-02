@@ -141,7 +141,7 @@ public class AddRemove {
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       // send it back to the orginator of the request
       JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
-      GNS.getLogger().info(" CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
+      GNS.getLogger().fine(" CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
               + " : " + jsonConfirm.toString());
       Intercessor.handleIncomingPackets(json);
       // update our cache
