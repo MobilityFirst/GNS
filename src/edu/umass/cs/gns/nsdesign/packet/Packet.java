@@ -1,11 +1,9 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
-//import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -14,7 +12,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 
 /**
  * So we have these packets see and we convert them back and forth to and from JSON Objects.
@@ -26,6 +29,9 @@ import java.util.*;
  * 
  * This is our basic way of transmitting data.
  * It's a bit of a hodgepodge at this point due to multiple authors, but it works.
+ * 
+ * One issue is that a lot of the functions that take a GNSNodeConfig object as args
+ * should probably accept some interface instead.
  * 
  * @author westy
  */

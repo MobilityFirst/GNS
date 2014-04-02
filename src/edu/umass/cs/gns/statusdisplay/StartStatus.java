@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.HostInfo;
@@ -23,6 +24,7 @@ import org.apache.commons.cli.ParseException;
 public class StartStatus {
 
   private static Options commandLineOptions;
+  private static GNSNodeConfig nodeConfig;
 
   private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option nsFile = OptionBuilder.withArgName("file").hasArg().withDescription("Name server file").create("nsfile");
@@ -44,14 +46,14 @@ public class StartStatus {
       CommandLine parser = initializeOptions(args);
       String nsFile = parser.getOptionValue("nsfile");
       //lnsid = Integer.parseInt(parser.getOptionValue("lnsid"));
-      ConfigFileInfo.readHostInfo(nsFile, 0);
+      nodeConfig = new GNSNodeConfig(nsFile, 0);
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);
     }
     //
     //Set<String> hosts = new HashSet<String>();
-    for (int id : ConfigFileInfo.getAllHostIDs()) {
+    for (int id : nodeConfig.getAllHostIDs()) {
       StatusModel.getInstance().queueAddEntry(id);
     }
     //
@@ -63,7 +65,7 @@ public class StartStatus {
       System.exit(1);
     }
     //
-    StatusListener.sendOutServerInitPackets(ConfigFileInfo.getAllHostIDs());
+    StatusListener.sendOutServerInitPackets(nodeConfig, nodeConfig.getAllHostIDs());
     //
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override

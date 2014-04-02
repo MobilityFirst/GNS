@@ -4,7 +4,7 @@
  */
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.Colors;
 import java.awt.BasicStroke;
 import java.awt.Color;

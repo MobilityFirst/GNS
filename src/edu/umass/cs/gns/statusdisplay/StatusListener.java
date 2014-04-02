@@ -5,10 +5,12 @@
 package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.admin.StatusInitPacket;
-import edu.umass.cs.gns.packet.admin.StatusPacket;
-import edu.umass.cs.gns.packet.admin.TrafficStatusPacket;
+import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.admin.StatusInitPacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.StatusPacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -90,7 +92,7 @@ public class StatusListener extends Thread {
    * Tells the remote hosts where to send their status packets. This should be called after all the remote hosts are
    * running.
    */
-  public static void sendOutServerInitPackets(Set<Integer> ids) {
+  public static void sendOutServerInitPackets(GNSNodeConfig nodeConfig, Set<Integer> ids) {
     JSONObject json;
     System.out.println("Sending status server init to all servers");
     // First we tell them all where we are
@@ -107,14 +109,14 @@ public class StatusListener extends Thread {
       // send out the StatusInit packet to all local name servers
       System.out.println("Sending status server init to LNS " + id);
       try {
-        Packet.sendTCPPacket(json, id, GNS.PortType.LNS_ADMIN_PORT);
+        Packet.sendTCPPacket(nodeConfig, json, id, GNS.PortType.LNS_ADMIN_PORT);
       } catch (IOException e) {
          System.out.println("Error sending status init to LNS " + id + " : " + e);
       }
       // send out the StatusInit packet to all name servers
       System.out.println("Sending status server init to NS " + id);
       try {
-        Packet.sendTCPPacket(json, id, GNS.PortType.NS_ADMIN_PORT);
+        Packet.sendTCPPacket(nodeConfig, json, id, GNS.PortType.NS_ADMIN_PORT);
       } catch (IOException e) {
          System.out.println("Error sending status init to NS " + id + " : " + e);
       }

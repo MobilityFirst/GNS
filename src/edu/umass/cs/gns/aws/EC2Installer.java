@@ -14,12 +14,12 @@ import edu.umass.cs.amazontools.RegionRecord;
 import edu.umass.cs.amazontools.SSHClient;
 import edu.umass.cs.gns.main.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.statusdisplay.MapFrame;
 import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusFrame;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import edu.umass.cs.gns.statusdisplay.StatusModel;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.ScreenUtils;
@@ -215,17 +215,18 @@ public class EC2Installer {
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
     System.out.println("Finished creation of Run Set " + runSetName);
 
+    GNSNodeConfig nodeConfig = new GNSNodeConfig();
     // update the config info so know where to send stuff
     try {
       for (InstanceInfo info : idTable.values()) {
         InetAddress ipAddress = InetAddress.getByName(info.getHostname());
-        ConfigFileInfo.addHostInfo(info.getId(), ipAddress, GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
+        nodeConfig.addHostInfo(info.getId(), ipAddress, GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
       }
     } catch (UnknownHostException e) {
       System.err.println("Problem parsing IP address " + e);
     }
     // now we send out packets telling all the hosts where to send their status updates
-    StatusListener.sendOutServerInitPackets(idTable.keySet());
+    StatusListener.sendOutServerInitPackets(nodeConfig, idTable.keySet());
   }
   private static final String keyName = "aws";
   private static final String GNSJarFileLocation = DIST_FOLDER_LOCATION + "/GNS.jar";

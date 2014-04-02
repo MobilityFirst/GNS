@@ -2,14 +2,12 @@ package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.admin.TrafficStatusPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import edu.umass.cs.gns.statusdisplay.StatusEntry.State;
-import edu.umass.cs.gns.util.Format;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;

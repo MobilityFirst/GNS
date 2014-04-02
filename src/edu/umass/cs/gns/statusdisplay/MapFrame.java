@@ -3,8 +3,8 @@ package edu.umass.cs.gns.statusdisplay;
 //License: GPL. Copyright 2008 by Jan Peter Stotz
 //Modified by Westy October 2012
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.admin.TrafficStatusPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import edu.umass.cs.gns.statusdisplay.StatusModel.SendNotation;
 import edu.umass.cs.gns.util.Colors;
 import edu.umass.cs.gns.util.Format;
@@ -174,8 +174,8 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
     packetGraphics.put(Packet.PacketType.DNS_RESPONSE, new PacketGraphic(Colors.Blue, 1.1));
     packetGraphics.put(Packet.PacketType.DNS_ERROR_RESPONSE, new PacketGraphic(Colors.Red, 1.2));
     packetGraphics.put(Packet.PacketType.ADD_RECORD_LNS, new PacketGraphic(Colors.Green, 1.3));
-    packetGraphics.put(Packet.PacketType.REPLICATE_RECORD, new PacketGraphic(Colors.Cyan, 1.4));
-    packetGraphics.put(Packet.PacketType.REMOVE_REPLICATION_RECORD, new PacketGraphic(Colors.DarkSalmon, 1.0));
+   // packetGraphics.put(Packet.PacketType.REPLICATE_RECORD, new PacketGraphic(Colors.Cyan, 1.4));
+    //packetGraphics.put(Packet.PacketType.REMOVE_REPLICATION_RECORD, new PacketGraphic(Colors.DarkSalmon, 1.0));
     packetGraphics.put(Packet.PacketType.NAME_RECORD_STATS_REQUEST, new PacketGraphic(Colors.Grey, 1.0));
     packetGraphics.put(Packet.PacketType.NAME_RECORD_STATS_RESPONSE, new PacketGraphic(Colors.BlueViolet, 1.0));
 
@@ -184,7 +184,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
 
     packetGraphics.put(Packet.PacketType.NAMESERVER_SELECTION, new PacketGraphic(Colors.MediumSeaGreen, 1.0));
     packetGraphics.put(Packet.PacketType.UPDATE_ADDRESS_LNS, new PacketGraphic(Colors.MediumPurple, 1.0));
-    packetGraphics.put(Packet.PacketType.UPDATE_ADDRESS_NS, new PacketGraphic(Colors.Magenta, 1.0));
+    //packetGraphics.put(Packet.PacketType.UPDATE_ADDRESS_NS, new PacketGraphic(Colors.Magenta, 1.0));
     packetGraphics.put(Packet.PacketType.CONFIRM_UPDATE_LNS, new PacketGraphic(Colors.MediumGreen, 1.0));
 
 
@@ -451,7 +451,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
       int to = rand.nextInt(50) + 1;
       switch (rand.nextInt(7)) {
         case 0:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.REPLICATE_RECORD, null, null));
+          //StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.REPLICATE_RECORD, null, null));
           break;
         case 1:
           StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
@@ -462,7 +462,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
           StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE, null, null));
           break;
         case 3:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.UPDATE_ADDRESS_NS, null, null));
+          //StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.UPDATE_ADDRESS_NS, null, null));
           break;
         case 4:
           StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.NAME_RECORD_STATS_RESPONSE, null, null));

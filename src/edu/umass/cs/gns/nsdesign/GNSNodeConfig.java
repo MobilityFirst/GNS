@@ -46,51 +46,40 @@ public class GNSNodeConfig implements NodeConfig {
   private ConcurrentMap<Integer, Integer> nameServerMapping =
           new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
   /**
-   * Number of name server in the system *
+   * Number of name server in the system 
    */
   private int numberOfNameServers;
   /**
-   * Id of the closestNameServer to this node *
+   * Id of the closestNameServer to this node. This is dumb because it is set at init time.
    */
   private int closestNameServer;
 
   /**
-   * @return the numberOfNameServer
+   * Creates an empty GNSNodeConfig
    */
-  public int getNumberOfNameServers() {
-    return numberOfNameServers;
-  }
-
-  public int getNumberOfHosts() {
-    return hostInfoMapping.size();
+  public GNSNodeConfig() {
+    // this doesn't set numberOfNameServers or closestNameServer
   }
 
   /**
-   * @return the closestNameServer
+   * Creates a GNSNodeConfig and initializes it from a file
+   * 
+   * @param nodeInfoFile
+   * @param nameServerID 
    */
-  public int getClosestNameServer() {
-    return closestNameServer;
+  public GNSNodeConfig(String nodeInfoFile, int nameServerID) {
+    initFromFile(nodeInfoFile, nameServerID);
   }
-
-  /**
-   * ONLY TO BE USED FOR TESTING PURPOSES!!
-   *
-   * @param numberOfNameServers
-   */
-  public void setNumberOfNameServers(int numberOfNameServers) {
-    this.numberOfNameServers = numberOfNameServers;
-  }
-
+  
   /**
    * **
    * Parse the host's information file to create a mapping of node information for name servers and local name severs
    *
    * @param nodeInfoFile Format: HostID IsNS? IPAddress StartingPort Ping-Latency Latitude Longitude
-   * @throws java.net.UnknownHostException
+   * @param nameServerID
    * @throws NumberFormatException
-   * @throws java.io.IOException *
    */
-  public GNSNodeConfig(String nodeInfoFile, int nameServerID) {
+  public final void initFromFile(String nodeInfoFile, int nameServerID) {
     // Reads in data from a text file containing information about each name server
     // in the system.
     BufferedReader br = null;
@@ -184,6 +173,35 @@ public class GNSNodeConfig implements NodeConfig {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
+  }
+  
+  /**
+   * @return the numberOfNameServer
+   */
+  public int getNumberOfNameServers() {
+    return numberOfNameServers;
+  }
+
+  public int getNumberOfHosts() {
+    return hostInfoMapping.size();
+  }
+
+  /**
+   * This is dumb because it is set at init time.
+   * 
+   * @return the closestNameServer
+   */
+  public int getClosestNameServer() {
+    return closestNameServer;
+  }
+
+  /**
+   * ONLY TO BE USED FOR TESTING PURPOSES!!
+   *
+   * @param numberOfNameServers
+   */
+  public void setNumberOfNameServers(int numberOfNameServers) {
+    this.numberOfNameServers = numberOfNameServers;
   }
 
   public Set<Integer> getAllHostIDs() {
