@@ -111,7 +111,10 @@ public class NameServer implements NameServerInterface {
     activeReplica = gnsReconfigurable.getActiveReplica();
     GNS.getLogger().fine("Active replica initialized. ");
     replicaController = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor, mongoRecords);
+    // start the NSListenerAdmin thread
+    new NSListenerAdmin(gnsReconfigurable, replicaController, gnsNodeConfig).start();
   }
+  
 
   @Override
   public GnsReconfigurable getGnsReconfigurable() {

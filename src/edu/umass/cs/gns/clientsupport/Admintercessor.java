@@ -8,26 +8,29 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.SentinalPacket;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.text.ParseException;
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-
 import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -75,8 +78,8 @@ public class Admintercessor {
     Admintercessor.localServerID = localServerID;
 
     GNS.getLogger().info("Local server id: " + localServerID
-            + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
-            + " Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
+            + " Address: " + LocalNameServer.getGnsNodeConfig().getIPAddress(localServerID)
+            + " Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
   }
 
   /**
@@ -229,9 +232,10 @@ public class Admintercessor {
     GNS.getLogger().finer("Waiting for responses dump");
     ServerSocket adminSocket;
     try {
-      adminSocket = new ServerSocket(ConfigFileInfo.getLNSAdminResponsePort(localServerID));
+      adminSocket = new ServerSocket(LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID));
     } catch (Exception e) {
-      GNS.getLogger().severe("Error creating admin response socket on port " + ConfigFileInfo.getLNSAdminResponsePort(localServerID) + " : " + e);
+      GNS.getLogger().severe("Error creating admin response socket on port " + 
+              LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID) + " : " + e);
       return null;
     }
     return adminSocket;
@@ -283,7 +287,7 @@ public class Admintercessor {
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<Integer> missingIDs = new HashSet(ConfigFileInfo.getAllNameServerIDs());
+    Set<Integer> missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getAllNameServerIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + missingIDs.toString());
@@ -291,7 +295,7 @@ public class Admintercessor {
     }
     // process all the entries into a nice string
     for (Map.Entry<Integer, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
-      result.append("Nameserver: " + entry.getKey() + " (" + ConfigFileInfo.getIPAddress(entry.getKey()).getHostName() + ")");
+      result.append("Nameserver: " + entry.getKey() + " (" + LocalNameServer.getGnsNodeConfig().getIPAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
         try {
@@ -392,9 +396,10 @@ public class Admintercessor {
     GNS.getLogger().finer("Waiting for responses dump");
     ServerSocket adminSocket;
     try {
-      adminSocket = new ServerSocket(ConfigFileInfo.getLNSAdminDumpReponsePort(localServerID));
+      adminSocket = new ServerSocket(LocalNameServer.getGnsNodeConfig().getLNSAdminDumpReponsePort(localServerID));
     } catch (Exception e) {
-      GNS.getLogger().severe("Error creating admin socket on port " + ConfigFileInfo.getLNSAdminDumpReponsePort(localServerID) + " : " + e);
+      GNS.getLogger().severe("Error creating admin socket on port " + 
+              LocalNameServer.getGnsNodeConfig().getLNSAdminDumpReponsePort(localServerID) + " : " + e);
       return null;
     }
     return adminSocket;

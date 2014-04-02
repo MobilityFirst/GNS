@@ -46,6 +46,6 @@ public class PingValue extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.";
+    return "[ONLY IN ADMIN MODE] Returns the ping latency value for the link between N and N2.";
   }
 }

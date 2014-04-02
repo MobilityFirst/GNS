@@ -8,20 +8,22 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.*;
+import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.Transport;
+import edu.umass.cs.gns.nsdesign.packet.UpdateAddressPacket;
 
 /**
  * One of a number of class that implement client support in the GNS server. 
@@ -66,8 +68,8 @@ public class Intercessor {
     Intercessor.localServerID = localServerID;
 
     GNS.getLogger().info("Local server id: " + localServerID
-            + " Address: " + ConfigFileInfo.getIPAddress(localServerID)
-            + " LNS TCP Port: " + ConfigFileInfo.getLNSTcpPort(localServerID));
+            + " Address: " +  LocalNameServer.getGnsNodeConfig().getIPAddress(localServerID)
+            + " LNS TCP Port: " +  LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
   }
 
   static {
@@ -310,7 +312,7 @@ public class Intercessor {
           String writer, String signature, String message) {
 
     GNS.getLogger().finer("Sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
-    UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
+    UpdateAddressPacket pkt = new UpdateAddressPacket(PacketType.UPDATE_ADDRESS_LNS,
             id,
             name, new NameRecordKey(key),
             newValue,

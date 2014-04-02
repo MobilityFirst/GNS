@@ -1,12 +1,10 @@
 package edu.umass.cs.gns.nsdesign;
 
-
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-//import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket;
@@ -29,11 +27,8 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- * *************************************************************
- * This class implements a thread that returns a list of active name servers for a name. The thread waits for request packet over a
- * UDP socket and sends a response containing the current active nameserver for a name record.
- *
- * @author Hardeep Uppal ************************************************************
+ * A separate thread that runs in the NameServer that handles administrative (AKA non-data related, non-user)
+ * type operations. All of the things in here are for server administration and debugging.
  */
 public class NSListenerAdmin extends Thread {
 
@@ -49,10 +44,9 @@ public class NSListenerAdmin extends Thread {
   private GNSNodeConfig gnsNodeConfig;
 
   /**
-   * *************************************************************
    * Creates a new listener thread for handling response packet
    *
-   * @throws IOException ************************************************************
+   * @throws IOException
    */
   public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ReplicaController replicaController, GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
@@ -67,8 +61,7 @@ public class NSListenerAdmin extends Thread {
   }
 
   /**
-   * *************************************************************
-   * Start executing the thread. ************************************************************
+   * Start executing the thread.
    */
   @Override
   public void run() {
@@ -103,36 +96,6 @@ public class NSListenerAdmin extends Thread {
               GNS.getLogger().severe("Field not found exception. " + e.getMessage());
               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-//            if (!NameServer.containsName(activeNSInfoPacket.getName()//, activeNSInfoPacket.getRecordKey()
-//                    )) {
-            // This name server does not contain the name
-            // If this is not a primary name server for this name we ignore the request
-//                            Set<Integer> primaryNameServers = ConsistentHashing.getReplicaControllerSet(activeNSInfoPacket.getName());
-//                            if (!primaryNameServers.contains(NameServer.nodeID)) {
-//                                socket.close();
-//                                continue;
-//                            }
-//                            if (GNS.USELEGACYDNS) {
-//                                // Abhigyan: Commenting this out for now. We do not use ReplicateRecordPacket anymore
-//                                // Gin up a record using the legacy DNS
-////                NameRecord record = new NameRecord(activeNSInfoPacket.getName()//, activeNSInfoPacket.getRecordKey()
-////                        );
-////                NameServer.addNameRecord(record);
-////                //Send the response packet with the current active name server
-////                sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest);
-////                //Inform the primaries about this record
-////                ReplicateRecordPacket replicatePacket = new ReplicateRecordPacket(record, NameServer.nodeID);
-////                Packet.multicastTCP(primaryNameServers, replicatePacket.toJSONObject(),
-////                        2, GNS.PortType.REPLICATION_PORT, NameServer.nodeID);
-////                StatusClient.sendTrafficStatus(NameServer.nodeID, primaryNameServers,
-////                        NameServer.nodeID, GNS.PortType.REPLICATION_PORT, replicatePacket.getType(), activeNSInfoPacket.getName()//, activeNSInfoPacket.getRecordKey()
-////                        );
-//                            }
-//                        } else if (NameServer.isPrimaryNameServer(activeNSInfoPacket.getName()//, activeNSInfoPacket.getRecordKey()
-//                        )) {
-//                            //Send the response packet with the current active name server
-//                            sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest);
-//                        }
             break;
 
           case DUMP_REQUEST:
@@ -276,17 +239,16 @@ public class NSListenerAdmin extends Thread {
   }
 
   /**
-   * *************************************************************
    * Sends active name server information to the sender
    *
    * @param activeNSInfoPacket
    * @param socket
    * @param numRequest
    * @throws IOException
-   * @throws JSONException ************************************************************
+   * @throws JSONException
    */
   private void sendactiveNameServerInfo(ActiveNameServerInfoPacket activeNSInfoPacket,
-                                        Socket socket, int numRequest, Set<Integer> activeNameServers) throws IOException, JSONException {
+          Socket socket, int numRequest, Set<Integer> activeNameServers) throws IOException, JSONException {
     activeNSInfoPacket.setActiveNameServers(activeNameServers);
     activeNSInfoPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
     Packet.sendTCPPacket(activeNSInfoPacket.toJSONObject(), socket);
