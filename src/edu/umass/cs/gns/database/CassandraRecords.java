@@ -12,10 +12,9 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.recordmap.NameRecord;
-import edu.umass.cs.gns.nameserver.NameServer;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.nameserver.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,14 +35,14 @@ public class CassandraRecords implements NoSQLRecords {
   private Session session;
   private static Map<String, CassandraRecords.CollectionSpec> collectionSpecMap = new HashMap<String, CassandraRecords.CollectionSpec>();
 
-  public static CassandraRecords getInstance() {
-    return CassandraRecordCollectionHolder.INSTANCE;
-  }
-  
-  private static class CassandraRecordCollectionHolder {
-
-    private static final CassandraRecords INSTANCE = new CassandraRecords();
-  }
+//  public static CassandraRecords getInstance() {
+//    return CassandraRecordCollectionHolder.INSTANCE;
+//  }
+//
+//  private static class CassandraRecordCollectionHolder {
+//
+//    private static final CassandraRecords INSTANCE = new CassandraRecords();
+//  }
 
   public CassandraRecords.CollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
@@ -76,8 +75,8 @@ public class CassandraRecords implements NoSQLRecords {
           new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName()),
           new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName()));
 
-  public CassandraRecords() {
-    dbName = DBROOTNAME + NameServer.getNodeID();
+  public CassandraRecords(int nodeID) {
+    dbName = DBROOTNAME + nodeID;
     GNS.getLogger().info("CASSANDRA: " + dbName + " INIT");
     this.connect("localhost");
     this.createKeyspace();

@@ -174,7 +174,7 @@ public class LocalNameServer {
 
   private void startTransport() throws IOException {
 
-//    new LNSListenerUDP().start();
+    new LNSListenerUDP(gnsNodeConfig).start();
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("LNS listener started.");
@@ -183,10 +183,10 @@ public class LocalNameServer {
     if (StartLocalNameServer.useGNSNIOTransport) {
       // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
       tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageWorker(new LNSPacketDemultiplexer()));
-      if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(StartLocalNameServer.variation);
+      if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
     } else {
       NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), gnsNodeConfig);
-      if (StartLocalNameServer.emulatePingLatencies) nioServer.emulateConfigFileDelays(StartLocalNameServer.variation);
+      if (StartLocalNameServer.emulatePingLatencies) nioServer.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
       tcpTransport = nioServer;
     }
     new Thread(tcpTransport).start();

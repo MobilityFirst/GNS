@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
-import edu.umass.cs.gns.util.ConfigFileInfo;
+//import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.Util;
 
 import java.io.File;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class BeehiveReplication {
-	
+	private static int numNodes;
 	private static double M;
 	private static double base;
 	
@@ -70,7 +70,7 @@ public class BeehiveReplication {
 				break;
 		}
 		
-		int numActives = Util.roundToInt( ConfigFileInfo.getNumberOfNameServers() / Math.pow( base, level ) );
+		int numActives = Util.roundToInt( numNodes / Math.pow( base, level ) );
 		if( numActives < 1 )
 			numActives = 1;
 		
@@ -84,7 +84,7 @@ public class BeehiveReplication {
 		double hopCount = 0.54;
 		double zipfAlpha = 0.63;
 
-    ConfigFileInfo.setNumberOfNameServers(nameServerCount);
+    BeehiveReplication.numNodes = nameServerCount;
 
     HashMap<Double,Integer> loadAuspiceReplicaCount = new HashMap<Double, Integer>();
     loadAuspiceReplicaCount.put(1.0,213332);
@@ -132,8 +132,8 @@ public class BeehiveReplication {
 
         Set<Integer> newActiveNameServerSet = new HashSet<Integer>();
 
-        if(numReplica == ConfigFileInfo.getNumberOfNameServers()) {
-          for( int j = 0; j < ConfigFileInfo.getNumberOfNameServers(); j++ ) {
+        if(numReplica == numNodes) {
+          for( int j = 0; j < numNodes; j++ ) {
             newActiveNameServerSet.add(j);
           }
         }
@@ -144,7 +144,7 @@ public class BeehiveReplication {
             int numTries = 0;
             do {
               numTries += 1;
-              int newActiveNameServerId = random.nextInt(ConfigFileInfo.getNumberOfNameServers());
+              int newActiveNameServerId = random.nextInt(numNodes);
               added = newActiveNameServerSet.add(newActiveNameServerId);
             } while(!added && numTries < NUM_RETRY);
           }

@@ -947,7 +947,7 @@ public class ReplicaControllerRecord {
 //    record.updateMovingAvgAggregateLookupFrequency(50);
     System.out.println("MOVING AG READ: " + record.getMovingAvgAggregateLookupFrequency());
 
-    MongoRecords instance = MongoRecords.getInstance();
+    MongoRecords instance = new MongoRecords(nodeID, -1);
     instance.printAllEntries(MongoRecords.DBREPLICACONTROLLER);
 
     try {

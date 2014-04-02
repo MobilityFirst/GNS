@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.database;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -10,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
-import static edu.umass.cs.gns.main.StartNameServer.debugMode;
 /**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
  * FIXME Make changes to that file until we include this package again.. **/
 /**
@@ -27,11 +24,9 @@ public class MYSQLRecordTable {
   private static final String TableCreate = "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), " + GUID + " CHAR(40), " + JSON + " TEXT)";
   private String tableName;
 
-  public MYSQLRecordTable() {
-    tableName = TableNameRoot + NameServer.getNodeID();
-    if (debugMode) {
-      MySQLUtils.dropTable(tableName);
-    }
+  public MYSQLRecordTable(int nodeID) {
+    tableName = TableNameRoot + nodeID;
+    MySQLUtils.dropTable(tableName);
     MySQLUtils.maybeCreateTable(tableName, TableCreate);
   }
 
@@ -41,15 +36,15 @@ public class MYSQLRecordTable {
   }
 
   // make it a singleton class
-  public static MYSQLRecordTable getInstance() {
+//  public static MYSQLRecordTable getInstance() {
+//
+//    return RecordTableHolder.INSTANCE;
+//  }
 
-    return RecordTableHolder.INSTANCE;
-  }
-
-  private static class RecordTableHolder {
-
-    private static final MYSQLRecordTable INSTANCE = new MYSQLRecordTable();
-  }
+//  private static class RecordTableHolder {
+//
+//    private static final MYSQLRecordTable INSTANCE = new MYSQLRecordTable();
+//  }
 
   private String tableStandardQuery() {
     return "SELECT id, " + GUID + ", " + JSON + " FROM " + tableName;

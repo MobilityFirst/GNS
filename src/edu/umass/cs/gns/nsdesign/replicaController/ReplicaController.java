@@ -12,7 +12,7 @@ import edu.umass.cs.gns.nsdesign.NSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.MongoRecords;
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.paxos.PaxosConfig;

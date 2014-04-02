@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.recordmap;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
-//import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -14,6 +14,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+
+//import edu.umass.cs.gns.database.MongoRecords;
 
 public class MongoRecordMap extends BasicRecordMap {
 

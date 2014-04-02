@@ -10,7 +10,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 

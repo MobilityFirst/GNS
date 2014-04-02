@@ -1,5 +1,14 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
@@ -9,16 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.packet.PaxosPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
 
 /**
 @author V. Arun

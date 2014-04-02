@@ -7,8 +7,10 @@ import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import java.util.HashMap;
 
 /**
- * Configuration parameters for name servers. This class contains static members which can be accessed from anywhere
- * in code.
+ * Should only contain config that is common across all name servers. Any name server specific configuration,
+ * e.g.., nodeID, should be in gnsReconfigurable package or replicaController package.
+ * Parameters are initialized once when name server is started, and thereafter accessed statically.
+ *
  * Created by abhigyan on 3/27/14.
  */
 public class Config {

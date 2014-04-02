@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nio;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -103,7 +102,7 @@ import java.util.List;
 
 
         recvdMessageCount++;
-        if (StartNameServer.debugMode) GNS.getLogger().finer(new String(dataEvent.data) + " Received message count = "
+        GNS.getLogger().finer(new String(dataEvent.data) + " Received message count = "
                 + recvdMessageCount);
       }
 
@@ -114,14 +113,14 @@ import java.util.List;
 
   public static String getJSONs(String data, int startIndex, ArrayList allJSONs) {
     if (startIndex < 0) {
-      if (StartNameServer.debugMode) GNS.getLogger().severe("Start Index cant be negative");
+      GNS.getLogger().severe("Start Index cant be negative");
       System.exit(2);
     }
     if (data == null || data.length() == 0) {
       return data;
     }
     if (allJSONs == null) {
-      if (StartNameServer.debugMode) GNS.getLogger().severe("Can't return parsed json string. allJSONs ArrayList is null.");
+      GNS.getLogger().severe("Can't return parsed json string. allJSONs ArrayList is null.");
       System.exit(2);
     }
 
@@ -144,7 +143,7 @@ import java.util.List;
         allJSONs.add(json);
       } catch (JSONException e)
       {
-        if (StartNameServer.debugMode) GNS.getLogger().fine("JSON Exception here. Move on.");
+        GNS.getLogger().fine("JSON Exception here. Move on.");
         e.printStackTrace();
       }
       // recursive call

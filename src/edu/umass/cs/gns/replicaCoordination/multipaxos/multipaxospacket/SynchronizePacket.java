@@ -1,11 +1,9 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.PaxosPacket;
-import edu.umass.cs.gns.packet.Packet.PacketType;
 
 /**
  * Created with IntelliJ IDEA.

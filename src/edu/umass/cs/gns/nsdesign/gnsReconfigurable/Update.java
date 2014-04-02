@@ -5,13 +5,13 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
-import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -85,7 +85,7 @@ public class Update {
     }
 
     // Apply update
-    if (StartNameServer.debugMode) {
+    if (Config.debugMode) {
       GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
     }
     boolean result;
@@ -94,13 +94,13 @@ public class Update {
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
               updatePacket.getOperation());
 
-      if (StartNameServer.debugMode) {
+      if (Config.debugMode) {
         GNS.getLogger().fine("Update operation result = " + result + "\t"
                 + updatePacket.getUpdateValue());
       }
 
       if (!result) { // update failed
-        if (StartNameServer.debugMode) {
+        if (Config.debugMode) {
           GNS.getLogger().fine("Update operation failed " + updatePacket);
         }
         if (updatePacket.getNameServerId() == replica.getNodeID()) { //if this node proposed this update
@@ -108,7 +108,7 @@ public class Update {
           ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
 
-          if (StartNameServer.debugMode) {
+          if (Config.debugMode) {
             GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
           }
           return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());
@@ -116,7 +116,7 @@ public class Update {
         return null;
       }
 
-      if (StartNameServer.debugMode) {
+      if (Config.debugMode) {
         GNS.getLogger().fine("Update applied" + updatePacket);
       }
 
@@ -126,7 +126,7 @@ public class Update {
       if (updatePacket.getNameServerId() == replica.getNodeID()) {
         ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
                 updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-        if (StartNameServer.debugMode) {
+        if (Config.debugMode) {
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
         }
 

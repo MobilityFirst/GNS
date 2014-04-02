@@ -2,7 +2,7 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import java.util.ArrayList;
 
-import edu.umass.cs.gns.packet.PaxosPacket;
+import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 
 /**
 @author V. Arun

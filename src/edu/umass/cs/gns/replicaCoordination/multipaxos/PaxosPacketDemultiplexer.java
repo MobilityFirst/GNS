@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
-import edu.umass.cs.gns.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 

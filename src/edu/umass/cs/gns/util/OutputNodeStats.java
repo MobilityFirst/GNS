@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
 
 import java.util.TimerTask;
 
@@ -18,8 +17,8 @@ public class OutputNodeStats extends TimerTask {
     outputMemoryUse(Integer.toString(count) + "sec ");
 
 //    GNS.getStatLogger().info(new NIOInstrumenter().toString());
-    GNS.getStatLogger().info("\tTasksSubmitted\t" + NameServer.getExecutorService().getTaskCount() + "\tTasksCompleted\t"
-            + NameServer.getExecutorService().getCompletedTaskCount());
+//    GNS.getStatLogger().info("\tTasksSubmitted\t" + NameServer.getExecutorService().getTaskCount() + "\tTasksCompleted\t"
+//            + NameServer.getExecutorService().getCompletedTaskCount());
 
   }
 

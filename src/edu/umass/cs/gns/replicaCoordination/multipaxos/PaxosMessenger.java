@@ -7,7 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.packet.PaxosPacket;
+import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 
 /**
 @author V. Arun

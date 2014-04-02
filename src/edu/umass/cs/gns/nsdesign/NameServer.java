@@ -5,7 +5,7 @@ import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageWorker;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.nsdesign.recordmap.MongoRecords;
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.util.ConsistentHashing;
 

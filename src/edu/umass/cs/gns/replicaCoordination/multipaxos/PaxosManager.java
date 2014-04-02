@@ -1,9 +1,9 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import edu.umass.cs.gns.nio.*;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.packet.PaxosPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;

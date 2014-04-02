@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.util.ConfigFileInfo;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -12,12 +11,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-//import latencygenerator.LatencyGeneratorPlanetlab;
-//import requestgenerator.Request;
-//import requestgenerator.RequestStat;
-//import util.Config;
-//import util.ConsistentHashing;
-//import util.Util;
 
 public class BeehiveDHTRouting {
 	
@@ -37,9 +30,9 @@ public class BeehiveDHTRouting {
 	public static int beehive_DHTleafsetsize = 24;
 //	double beehive_ZIPFalpha = 1.9;
 	
-	public BeehiveDHTRouting(){
+	public BeehiveDHTRouting(int numNodes){
 		
-		numns = ConfigFileInfo.getNumberOfNameServers();
+		numns = numNodes;
 		numnames = StartLocalNameServer.regularWorkloadSize + StartLocalNameServer.mobileWorkloadSize;
 		
 		random = new Random(System.currentTimeMillis());
@@ -62,8 +55,8 @@ public class BeehiveDHTRouting {
 //		Util.findNearestNsPerLns();
 		
 		String[] nsname = new String[numns];
-		for(int i = 0; i < ConfigFileInfo.getNumberOfNameServers(); i++) {
-			nsname[i] = ConfigFileInfo.getIPAddress(i + 1).getHostName();
+		for(int i = 0; i < numNodes; i++) {
+			nsname[i] = Integer.toString(i);
 		}
 		getIDInformation(nsname);
 //		getActives(); // add actives according to replication level

@@ -12,7 +12,7 @@ package edu.umass.cs.gns.nio;
 /* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   private boolean emulateDelay = false;
   private double variation = 0.1;
-
+  private GNSNodeConfig gnsNodeConfig = null;
 
   public NioServer(int ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
     connectedIDs = new SocketChannel[nodeConfig.getNodeCount()];
@@ -95,9 +95,10 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   /**
    * After this method is called, we emulate an additional delay in packets sent to all nodes.
    */
-  public void emulateConfigFileDelays(double variation) {
+  public void emulateConfigFileDelays(GNSNodeConfig gnsNodeConfig, double variation) {
     this.emulateDelay = true;
     this.variation = variation;
+    this.gnsNodeConfig = gnsNodeConfig;
   }
 
   void wakeupSelector() {
@@ -268,11 +269,11 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   private Random random = new Random();
   public int sendToID(int destID, JSONObject json) throws IOException {
     if (emulateDelay) {
-      long delay = ConfigFileInfo.getPingLatency(destID);
+      long delay = gnsNodeConfig.getPingLatency(destID)/2; // divide by 2 for one-way delay
       delay = (long) ((1.0  + this.variation * random.nextDouble()) * delay);
       //    GNS.getLogger().severe("Delaying packet by " + delay + "ms");
       SendQueryWithDelay2 timerObject = new SendQueryWithDelay2(this, destID, json);
-      t.schedule(timerObject, delay/2);
+      t.schedule(timerObject, delay);
       return 0;
     } else {
       sendToIDActual(destID,json);

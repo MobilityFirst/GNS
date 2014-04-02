@@ -18,6 +18,13 @@ import java.util.Set;
 public class CassandraRecordMap extends BasicRecordMap {
 
   private String collectionName;
+  
+  private CassandraRecords cassandraRecords;
+  
+  public CassandraRecordMap(CassandraRecords cassandraRecords, String collectionName) {
+    this.collectionName = collectionName;
+    this.cassandraRecords = cassandraRecords;
+  }
 
   public CassandraRecordMap(String collectionName) {
     this.collectionName = collectionName;
@@ -25,7 +32,7 @@ public class CassandraRecordMap extends BasicRecordMap {
 
   @Override
   public Set<String> getAllRowKeys() {
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecords records = this.cassandraRecords;
     return records.keySet(collectionName);
   }
 
@@ -33,7 +40,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   public Set<String> getAllColumnKeys(String name) {
     if (!containsName(name)) {
       try {
-        CassandraRecords records = CassandraRecords.getInstance();
+        CassandraRecords records = this.cassandraRecords;
         JSONObject json = records.lookup(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
@@ -105,7 +112,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public NameRecord getNameRecord(String name) {
     try {
-      JSONObject json = CassandraRecords.getInstance().lookup(collectionName, name);
+      JSONObject json = this.cassandraRecords.lookup(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -123,7 +130,7 @@ public class CassandraRecordMap extends BasicRecordMap {
 
     try {
       addNameRecord(recordEntry.toJSONObject());
-      //CassandraRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+      //this.cassandraRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();
       GNS.getLogger().severe("Error adding name record: " + e);
@@ -133,7 +140,7 @@ public class CassandraRecordMap extends BasicRecordMap {
 
   @Override
   public void addNameRecord(JSONObject json) {
-    CassandraRecords records = CassandraRecords.getInstance();
+    CassandraRecords records = this.cassandraRecords;
     try {
       String name = json.getString(NameRecord.NAME.getName());
       records.insert(collectionName, name, json);
@@ -152,7 +159,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecord(NameRecord recordEntry) {
     try {
-      CassandraRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+      this.cassandraRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     } catch (FieldNotFoundException e) {
@@ -163,23 +170,23 @@ public class CassandraRecordMap extends BasicRecordMap {
 
   @Override
   public void removeNameRecord(String name) {
-    CassandraRecords.getInstance().remove(collectionName, name);
+    this.cassandraRecords.remove(collectionName, name);
   }
 
   @Override
   public boolean containsName(String name) {
-    return CassandraRecords.getInstance().contains(collectionName, name);
+    return this.cassandraRecords.contains(collectionName, name);
   }
 
   @Override
   public void reset() {
-    CassandraRecords.getInstance().reset(collectionName);
+    this.cassandraRecords.reset(collectionName);
   }
 
   @Override
   public ReplicaControllerRecord getNameRecordPrimary(String name) {
     try {
-      JSONObject json = CassandraRecords.getInstance().lookup(collectionName, name);
+      JSONObject json = this.cassandraRecords.lookup(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -194,7 +201,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
     try {
-      CassandraRecords.getInstance().insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+      this.cassandraRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
       return;
@@ -207,7 +214,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
     try {
-      CassandraRecords.getInstance().update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+      this.cassandraRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     } catch (FieldNotFoundException e) {

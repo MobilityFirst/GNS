@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.util.ConfigFileInfo;
+//import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.HostInfo;
 import edu.umass.cs.gns.util.ScreenUtils;
@@ -42,6 +42,7 @@ public class StartStatus {
    * @param args the command line arguments
    */
   public static void main(String[] args) {
+    nodeConfig = null;
     try {
       CommandLine parser = initializeOptions(args);
       String nsFile = parser.getOptionValue("nsfile");
@@ -103,9 +104,8 @@ public class StartStatus {
     cities.add("Riyadh, Saudi Arabia");
     cities.add("Morocco");
     
-    
-    for (int id : ConfigFileInfo.getAllHostIDs()) {
-      HostInfo info = ConfigFileInfo.getHostInfo(id);
+    for (int id : nodeConfig.getAllHostIDs()) {
+      HostInfo info = nodeConfig.getHostInfo(id);
       InetAddress ipAddress = info.getIpAddress();
       StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING);
 //      Random rand = new Random();

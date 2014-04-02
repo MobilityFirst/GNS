@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nio;
 
-import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class GNSDelayEmulator {
   private static double VARIATION = 0.1; // 10% variation in latency
   private static boolean USE_CONFIG_FILE_INFO = false; // Enable this after figuring out how to use config file
   private static long DEFAULT_DELAY = 100; // 100ms
-
+  private static GNSNodeConfig gnsNodeConfig = null; // node config object to get ping latencies for emulation.
   private static class DelayerTask extends TimerTask {
 
     JSONObject json;
@@ -56,17 +56,17 @@ public class GNSDelayEmulator {
     GNSDelayEmulator.EMULATE_DELAYS = true;
   }
 
-  public static void emulateConfigFileDelays(double variation) {
-    GNSDelayEmulator.EMULATE_DELAYS = true;
+  public static void emulateConfigFileDelays(GNSNodeConfig gnsNodeConfig, double variation) {
     GNSDelayEmulator.VARIATION = variation;
     GNSDelayEmulator.USE_CONFIG_FILE_INFO = true;
+    GNSDelayEmulator.gnsNodeConfig = gnsNodeConfig;
   }
 
   private static long getDelay(int id) {
     long delay = 0;
     if (GNSDelayEmulator.EMULATE_DELAYS) {
       if (GNSDelayEmulator.USE_CONFIG_FILE_INFO) {
-        delay = (ConfigFileInfo.getPingLatency(id) / 2); // getPingLatency returns RTT, divide by 2 for one-way delay
+        delay = gnsNodeConfig.getPingLatency(id)/2;// divide by 2 for one-way delay
       } else {
         delay = GNSDelayEmulator.DEFAULT_DELAY;
       }

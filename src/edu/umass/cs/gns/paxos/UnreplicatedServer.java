@@ -1,10 +1,11 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
+//import edu.umass.cs.gns.main.StartNameServer;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nsdesign.Config;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -65,7 +66,7 @@ public class UnreplicatedServer {
     // start TCP transport thread
     try {
       tcpTransport = new NioServer(nodeID, worker, new PaxosNodeConfig(nodeConfigFile));
-      if (StartNameServer.debugMode) {
+      if (Config.debugMode) {
         GNS.getLogger().fine(" TRANSPORT OBJECT CREATED ... ");
       }
       new Thread(tcpTransport).start();
@@ -94,7 +95,7 @@ public class UnreplicatedServer {
 
   public static void main(String[] args) {
 
-    StartNameServer.debugMode = false;
+    Config.debugMode = false;
     String nodeConfigFile = args[0];
     String serverLogFileName = args[1];
     int nodeID = Integer.parseInt(args[2]);

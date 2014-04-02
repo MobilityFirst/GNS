@@ -1,9 +1,12 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartNameServer;
+import edu.umass.cs.gns.nsdesign.Config;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -43,7 +46,7 @@ public class TestConfig {
   private  void readTestConfigFile(String testConfig) {
     File f = new File(testConfig);
     if (!f.exists()) {
-      if (StartNameServer.debugMode) GNS.getLogger().fine(" testConfig file does not exist. Quit. " +
+      if (Config.debugMode) GNS.getLogger().fine(" testConfig file does not exist. Quit. " +
               "Filename =  " + testConfig);
       System.exit(2);
     }
@@ -57,7 +60,7 @@ public class TestConfig {
 
       if (prop.containsKey("NumberOfReplicas"))  numPaxosReplicas = Integer.parseInt(prop.getProperty("NumberOfReplicas"));
 
-      if (prop.containsKey("EnableLogging")) StartNameServer.debugMode = Boolean.parseBoolean(prop.getProperty("EnableLogging"));
+      if (prop.containsKey("EnableLogging")) Config.debugMode = Boolean.parseBoolean(prop.getProperty("EnableLogging"));
 
       if (prop.containsKey("MaxThreads")) maxThreads = Integer.parseInt(prop.getProperty("MaxThreads"));
 

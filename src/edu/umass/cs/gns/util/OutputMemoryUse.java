@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nameserver.NameServer;
 
 import java.util.TimerTask;
 
@@ -18,8 +17,8 @@ public class OutputMemoryUse extends TimerTask {
     count++;
     outputMemoryUse(Integer.toString(count) + "sec ");
 
-    GNS.getLogger().info("\tTasksSubmitted\t" + NameServer.getExecutorService().getTaskCount() + "\tTasksCompleted\t"
-            + NameServer.getExecutorService().getCompletedTaskCount());
+//    GNS.getLogger().info("\tTasksSubmitted\t" + NameServer.getExecutorService().getTaskCount() + "\tTasksCompleted\t"
+//            + NameServer.getExecutorService().getCompletedTaskCount());
 
     // this code was used
   }

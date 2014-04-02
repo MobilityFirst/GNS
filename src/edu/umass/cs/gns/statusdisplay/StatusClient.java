@@ -5,9 +5,9 @@
 package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.packet.Packet;
-import edu.umass.cs.gns.packet.admin.StatusPacket;
-import edu.umass.cs.gns.packet.admin.TrafficStatusPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.admin.StatusPacket;
+import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
