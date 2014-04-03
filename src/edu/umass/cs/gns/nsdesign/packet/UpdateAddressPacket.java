@@ -83,7 +83,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    */
   private ResultValue oldValue;
   /**
-   * Currently this is used in as the index in the get and set operations.
+   * Currently this is used in as the index in the set operation.
    * When used with set the value in updateValue will be the one to set the element to.
    */
   private int argument;

@@ -4,10 +4,7 @@ import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-//import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import org.apache.commons.cli.*;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -16,9 +13,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
-
-import static edu.umass.cs.gns.util.Util.println;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  * ************************************************************
@@ -605,28 +609,27 @@ public class StartLocalNameServer {
 
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     Date date = new Date();
-    println("Date: " + dateFormat.format(date), debugMode);
-    println("Id: " + id, debugMode);
-    println("NS File: " + nsFile, debugMode);
-    println("Regular Workload Size: " + regularWorkloadSize, debugMode);
-    println("Mobile Workload Size: " + mobileWorkloadSize, debugMode);
-    println("Workload File: " + workloadFile, debugMode);
-    println("Lookup Trace File: " + lookupTraceFile, debugMode);
-    println("Update Trace File: " + updateTraceFile, debugMode);
-    println("Primary: " + GNS.numPrimaryReplicas, debugMode);
-    println("Alpha: " + alpha, debugMode);
-    println("Lookups: " + numQuery, debugMode);
-    println("Updates: " + numUpdate, debugMode);
-    println("Lookup Rate: " + lookupRate + "ms", debugMode);
-    println("Update Rate Mobile: " + updateRateMobile + "ms", debugMode);
-    println("Update Rate Regular: " + updateRateRegular + "ms", debugMode);
-    println("Zipf Workload: " + isSyntheticWorkload, debugMode);
-//    println("Name: " + name, debugMode);
-    println("Replication: " + replicationFramework.toString(), debugMode);
-    println("Vote Interval: " + voteIntervalMillis + "ms", debugMode);
-    println("Cache Size: " + cacheSize, debugMode);
-    println("Experiment Mode: " + experimentMode, debugMode);
-    println("Debug Mode: " + debugMode, debugMode);
+    GNS.getLogger().fine("Date: " + dateFormat.format(date));
+    GNS.getLogger().fine("Id: " + id);
+    GNS.getLogger().fine("NS File: " + nsFile);
+    GNS.getLogger().fine("Regular Workload Size: " + regularWorkloadSize);
+    GNS.getLogger().fine("Mobile Workload Size: " + mobileWorkloadSize);
+    GNS.getLogger().fine("Workload File: " + workloadFile);
+    GNS.getLogger().fine("Lookup Trace File: " + lookupTraceFile);
+    GNS.getLogger().fine("Update Trace File: " + updateTraceFile);
+    GNS.getLogger().fine("Primary: " + GNS.numPrimaryReplicas);
+    GNS.getLogger().fine("Alpha: " + alpha);
+    GNS.getLogger().fine("Lookups: " + numQuery);
+    GNS.getLogger().fine("Updates: " + numUpdate);
+    GNS.getLogger().fine("Lookup Rate: " + lookupRate + "ms");
+    GNS.getLogger().fine("Update Rate Mobile: " + updateRateMobile + "ms");
+    GNS.getLogger().fine("Update Rate Regular: " + updateRateRegular + "ms");
+    GNS.getLogger().fine("Zipf Workload: " + isSyntheticWorkload);
+    GNS.getLogger().fine("Replication: " + replicationFramework.toString());
+    GNS.getLogger().fine("Vote Interval: " + voteIntervalMillis + "ms");
+    GNS.getLogger().fine("Cache Size: " + cacheSize);
+    GNS.getLogger().fine("Experiment Mode: " + experimentMode);
+    GNS.getLogger().fine("Debug Mode: " + debugMode);
 
     try {
 //      ConfigFileInfo.readHostInfo(nsFile, id);

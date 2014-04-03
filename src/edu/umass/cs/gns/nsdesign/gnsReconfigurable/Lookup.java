@@ -43,8 +43,8 @@ public class Lookup {
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
 
+    GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; DNS Packet: " + dnsPacket.toString());
     GNSMessagingTask msgTask;
-
     // the only dns reponses we should see are coming in respone to LNSQueryHandler requests
     if (!dnsPacket.isQuery()) {
       // handle the special case of queries that were from this NS back to an LNS

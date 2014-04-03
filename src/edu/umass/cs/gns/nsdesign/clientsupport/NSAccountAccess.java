@@ -143,6 +143,7 @@ public class NSAccountAccess {
   }
 
   private static ResultValue lookupGuidOnAnotherNameServer(String guid, GnsReconfigurable activeReplica) {
+    // not sure why this works...
     QueryResult queryResult = SiteToSiteQueryHandler.sendQuery(guid, AccountAccess.GUID_INFO, activeReplica);
     // new and not working
     //QueryResult queryResult = LNSQueryHandler.sendQuery(guid, AccountAccess.GUID_INFO, activeReplica);

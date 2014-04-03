@@ -10,6 +10,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,11 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This class handles sending DNS queries from a NameServer back to an Local Name Server. 
- * 
+ * This class handles sending DNS queries from a NameServer back to an Local Name Server.
+ *
  * Currently it is used by the code that does ACL checks in the NS to look up GUID info.
- * 
- * 
+ *
+ *
  * @author westy
  */
 public class LNSQueryHandler {
@@ -35,21 +36,21 @@ public class LNSQueryHandler {
 
   /**
    * Sends a DNS query from this Name Server to a Local Name Server
-   * 
+   *
    * @param name
    * @param key
    * @param activeReplica
-   * @return 
+   * @return
    */
   public static QueryResult sendQuery(String name, String key, GnsReconfigurable activeReplica) {
-    GNS.getLogger().fine("Sending query: " + name + " " + key);
+    GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
-    // ConfigFileInfo.getNumberOfNameServers() is a hack to get the first LNS
+    // activeReplica.getGNSNodeConfig() is a hack to get the first LNS
     // We need a means to find the closes LNS
-    GNS.getLogger().warning("FIXME!! Using stupid mechanism for picking LNS #" + activeReplica.getGNSNodeConfig().getNumberOfNameServers());
-    sendQueryInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(), name, key,  activeReplica);
+    GNS.getLogger().warning("#######FIXME!! Using stupid mechanism for picking LNS #" + activeReplica.getGNSNodeConfig().getNumberOfNameServers());
+    sendQueryInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(), name, key, activeReplica);
 //    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
 //      sendQueryInternal(id, server, name, key, activeReplica);
 //    }
@@ -61,12 +62,16 @@ public class LNSQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurable activeReplica) {
-    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, new NameRecordKey(key),  null, null, null);
+    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, new NameRecordKey(key), null, null, null);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      GNS.getLogger().info("Sending query " + queryId + " to " + recipientId + " for " + name + " / " + key + ": " + json);
-      activeReplica.getNioServer().sendToID(recipientId, json);
+      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + recipientId
+              + "(" + activeReplica.getGNSNodeConfig().getNodeAddress(recipientId)
+              + ":" + activeReplica.getGNSNodeConfig().getNodePort(recipientId) + ")"
+              + " for " + name + " / " + key + ": " + json);
+      //activeReplica.getNioServer().sendToID(recipientId, json);
+      Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), json, recipientId, GNS.PortType.LNS_TCP_PORT);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {
@@ -76,9 +81,9 @@ public class LNSQueryHandler {
 
   /**
    * Handles a DNS query response coming back to this NameServer from a Local Name Server
-   * 
+   *
    * @param dnsResponsePacket
-   * @param activeReplica 
+   * @param activeReplica
    */
   public static void handleDNSResponsePacket(DNSPacket dnsResponsePacket, GnsReconfigurable activeReplica) {
     int id = dnsResponsePacket.getQueryId();
@@ -105,7 +110,7 @@ public class LNSQueryHandler {
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().finer("Later STS Response (" + id + "): "
+          GNS.getLogger().info("Later STS Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
         }

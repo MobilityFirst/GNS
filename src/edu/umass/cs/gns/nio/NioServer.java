@@ -7,10 +7,7 @@ package edu.umass.cs.gns.nio;
  * Time: 6:34 PM
  * To change this template use File | Settings | File Templates.
  */
-
-
 /* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
-
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import org.json.JSONObject;
@@ -31,9 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   public static String Version = "$Revision$";
-  
-  // The host:port combination to listen on
 
+  // The host:port combination to listen on
   private int ID;
   private InetAddress myAddress;
   private int myPort;
@@ -67,8 +63,9 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   public NioServer(int ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
     connectedIDs = new SocketChannel[nodeConfig.getNodeCount()];
     pendingChangeByNode = new boolean[nodeConfig.getNodeCount()];
-    for (int i = 0; i < pendingChangeByNode.length; i++)
+    for (int i = 0; i < pendingChangeByNode.length; i++) {
       pendingChangeByNode[i] = false;
+    }
     this.ID = ID;
     this.myAddress = nodeConfig.getNodeAddress(ID);
     this.myPort = nodeConfig.getNodePort(ID);
@@ -76,12 +73,12 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
       try {
         this.selector = this.initSelector();
         break;
-      }catch (IOException e) {
+      } catch (IOException e) {
         int t = 1;
         e.printStackTrace();
         GNS.getLogger().severe("Socket bind failed ... trying again in " + t + " seconds .. ");
         try {
-          Thread.sleep(t*1000);
+          Thread.sleep(t * 1000);
         } catch (InterruptedException e1) {
           e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -89,7 +86,10 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
     }
     this.workerObject = worker;
     this.nodeConfig = nodeConfig;
-    t.schedule(new WakeupSelectorTask(this),1,1);
+    t.schedule(new WakeupSelectorTask(this), 1, 1);
+
+    GNS.getLogger().info("Node " + this.ID + " starting NioServer Listener on port " + nodeConfig.getNodePort(this.ID));
+
   }
 
   /**
@@ -109,7 +109,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
           wakeup = newPendingData;
           newPendingData = false;
 
-          for (int i = 0; i < pendingChangeByNode.length ; i++) {
+          for (int i = 0; i < pendingChangeByNode.length; i++) {
             if (pendingChangeByNode[i]) {
               this.pendingChanges.add(new ChangeRequest(connectedIDs[i], ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
               pendingChangeByNode[i] = false;
@@ -118,9 +118,10 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
         }
       }
     }
-    if (wakeup) selector.wakeup();
+    if (wakeup) {
+      selector.wakeup();
+    }
   }
-
 
 //    public void sendToAll(JSONObject json, Set<Integer> destIDs, Set<Integer> ports, Set<Integer> excludeNameServerIds) throws JSONException, IOException {
 //
@@ -152,7 +153,6 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 //            sendToID(destID, destPort, json);
 //        }
 //    }
-
   //    /**
 //     * Send to
 //     *
@@ -169,7 +169,6 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 //        int destPort = Packet.getPort(destID, portType);
 //        return sendToID(destID, destPort, json);
 //    }
-
   public int sendToIDs(Set<Integer> destIDs, JSONObject json) throws IOException {
     sendToIDs(destIDs, json, -1);
     return 0;
@@ -180,18 +179,17 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
     return 0;
   }
 
-  public int sendToIDs(short[]destIDs, JSONObject json, int excludeID) throws IOException {
+  public int sendToIDs(short[] destIDs, JSONObject json, int excludeID) throws IOException {
 //    if (destIDs.contains(ID) && (excludeID != ID)) { // to send to same node, directly call the demultiplexer
 //      ArrayList e = new ArrayList();
 //      e.add(json);
 //      workerObject.getPacketDemux().handleJSONObjects(e);
 //    }
 
-    for (int destID: destIDs) {
+    for (int destID : destIDs) {
       if (destID == excludeID) {
         continue;
-      }
-      else if (destID == ID) {
+      } else if (destID == ID) {
         workerObject.getPacketDemux().handleJSONObject(json);
         continue;
       }
@@ -206,8 +204,10 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
       workerObject.getPacketDemux().handleJSONObject(json);
     }
 
-    for (int destID:destIDs) {
-      if (destID == ID || destID == excludeID) continue;
+    for (int destID : destIDs) {
+      if (destID == ID || destID == excludeID) {
+        continue;
+      }
       sendToID(destID, json);
     }
     return 0;
@@ -263,20 +263,20 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 //        sendToID(destID, json);
 //      }
 //    }
-
   }
 
   private Random random = new Random();
+
   public int sendToID(int destID, JSONObject json) throws IOException {
     if (emulateDelay) {
-      long delay = gnsNodeConfig.getPingLatency(destID)/2; // divide by 2 for one-way delay
-      delay = (long) ((1.0  + this.variation * random.nextDouble()) * delay);
+      long delay = gnsNodeConfig.getPingLatency(destID) / 2; // divide by 2 for one-way delay
+      delay = (long) ((1.0 + this.variation * random.nextDouble()) * delay);
       //    GNS.getLogger().severe("Delaying packet by " + delay + "ms");
       SendQueryWithDelay2 timerObject = new SendQueryWithDelay2(this, destID, json);
       t.schedule(timerObject, delay);
       return 0;
     } else {
-      sendToIDActual(destID,json);
+      sendToIDActual(destID, json);
       return 0;
     }
   }
@@ -293,13 +293,13 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 //                    "not contain info on nodeID = " + destID);
 //            return false;
 //        }
-
     // append a packet length header to JSON object
-
     String s = json.toString();
     byte[] data = ("&" + s.length() + "&" + s).getBytes();
 
-    if (!nodeConfig.containsNodeInfo(destID)) return false;
+    if (!nodeConfig.containsNodeInfo(destID)) {
+      return false;
+    }
 
 //        SocketChannel socketChannel = null;
     // synchronized for thread safety
@@ -397,7 +397,6 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 //    }
 //    return socketChannel;
 //  }
-
   private void send(int x, SocketChannel socket, byte[] data) {
 
 //        synchronized (this.pendingChanges) {
@@ -406,7 +405,6 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 //                this.pendingChanges.add(new ChangeRequest(socket, ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
 //                this.pendingChangeByNode[x] = true;
 //            }
-
     // And queue the data we want written
     synchronized (this.pendingData) {
       List queue = (List) this.pendingData.get(socket);
@@ -490,7 +488,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   private void finishConnection(SelectionKey key) throws IOException {
     SocketChannel socketChannel = (SocketChannel) key.channel();
 
-    synchronized(this.connectedIDs) {
+    synchronized (this.connectedIDs) {
       // Finish the connection. If the connection operation failed
       // this will raise an IOException.
       try {
@@ -616,11 +614,11 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   }
 
   public static void main(String[] args) {
-    for (int i = 0; i < 100; i ++) {
-      long    delay = 100;
+    for (int i = 0; i < 100; i++) {
+      long delay = 100;
       Random r = new Random();
 
-      delay = (long) ((1.0  + r.nextDouble()/10.0) * delay);
+      delay = (long) ((1.0 + r.nextDouble() / 10.0) * delay);
 
       System.out.println(">>> " + delay);
     }
@@ -630,7 +628,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
     try {
       ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(null);
       new Thread(worker).start();
-      NioServer server = new NioServer(ID,  worker, null);
+      NioServer server = new NioServer(ID, worker, null);
       new Thread(server).start();
       try {
         Thread.sleep(10000);
@@ -662,10 +660,13 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 }
 
 class WakeupSelectorTask extends TimerTask {
+
   NioServer nioServer;
+
   public WakeupSelectorTask(NioServer nioServer) {
     this.nioServer = nioServer;
   }
+
   @Override
   public void run() {
     nioServer.wakeupSelector();
@@ -738,7 +739,6 @@ class WakeupSelectorTask extends TimerTask {
 //		}
 //	}
 //
-
 
 class SendQueryWithDelay2 extends TimerTask {
 

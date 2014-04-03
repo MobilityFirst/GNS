@@ -113,7 +113,7 @@ public class NIOTransport implements Runnable {
   private Logger log = Logger.getLogger(NIOTransport.class.getName()); //GNS.getLogger();
 
   public NIOTransport(int id, NodeConfig nc, DataProcessingWorker worker) throws IOException {
-		//this.hostAddress = hostAddress;
+    //this.hostAddress = hostAddress;
     //this.port = port;
     this.myID = id;
     this.nodeConfig = nc;
@@ -125,8 +125,7 @@ public class NIOTransport implements Runnable {
     this.SockAddrToSockChannel = new HashMap<InetSocketAddress, SocketChannel>();
     this.connAttempts = new HashMap<InetSocketAddress, Long>();
 
-    GNS.getLogger().info("NS Node " + this.myID + " starting NIO Listener on port " + this.nodeConfig.getNodePort(this.myID));
-
+    GNS.getLogger().info("Node " + this.myID + " starting NIOTransport Listener on port " + this.nodeConfig.getNodePort(this.myID));
   }
 
   /* send() methods are called by external application threads. They may
@@ -137,6 +136,8 @@ public class NIOTransport implements Runnable {
   public int send(int id, byte[] data) throws IOException {
     log.finest("Node " + myID + " invoked send (" + id + ", "
             + new String(data) + "), checking connection status..");
+//    GNS.getLogger().info("Send to (" + this.nodeConfig.getNodeAddress(id)
+//            + ":" + this.nodeConfig.getNodePort(id) + ") " + new String(data));
     return send(new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
             this.nodeConfig.getNodePort(id)), data);
   }
@@ -220,13 +221,13 @@ public class NIOTransport implements Runnable {
 
     // Accept the connection and make it non-blocking
     SocketChannel socketChannel = serverSocketChannel.accept();
-                // This causes a "cannot find symbol" error
+    // This causes a "cannot find symbol" error
     //log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
     NIOInstrumenter.incrAccepted();
     socketChannel.configureBlocking(false);
     socketChannel.socket().setKeepAlive(true);
 
-		// Register the new SocketChannel with our Selector, indicating
+    // Register the new SocketChannel with our Selector, indicating
     // we'd like to be notified when there's data waiting to be read
     socketChannel.register(this.selector, SelectionKey.OP_READ);
   }
@@ -248,7 +249,7 @@ public class NIOTransport implements Runnable {
     try {
       numRead = socketChannel.read(this.readBuffer);
     } finally {
-			// The remote forcibly or cleanly closed the connection.
+      // The remote forcibly or cleanly closed the connection.
       // cancel the selection key and close the channel.
       if (numRead == -1) {
         cleanup(key, socketChannel);
@@ -335,7 +336,7 @@ public class NIOTransport implements Runnable {
         }
         queue.remove(0);
       }
-			// We wrote away all data, so we're no longer interested in
+      // We wrote away all data, so we're no longer interested in
       // writing on this socket. Switch back to waiting for data.
       if (queue.isEmpty()) {
         return true;
@@ -569,7 +570,7 @@ public class NIOTransport implements Runnable {
             this.nodeConfig.getNodePort(this.myID));
     serverChannel.socket().bind(isa);
 
-		// Register the server socket channel, indicating an interest in 
+    // Register the server socket channel, indicating an interest in 
     // accepting new connections
     serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
 
@@ -596,7 +597,7 @@ public class NIOTransport implements Runnable {
     NIOInstrumenter.incrInitiated();
     putSockAddrToSockChannel(isa, socketChannel); // synchronized
 
-		// Queue a channel registration since the caller is not the 
+    // Queue a channel registration since the caller is not the 
     // selecting thread. As part of the registration we'll register
     // an interest in connection events. These are raised when a channel
     // is ready to complete connection establishment.
@@ -614,7 +615,7 @@ public class NIOTransport implements Runnable {
     SocketChannel socketChannel = (SocketChannel) key.channel();
     boolean connected = false;
 
-		// Finish the connection. If the connection operation failed
+    // Finish the connection. If the connection operation failed
     // this will raise an IOException.
     try {
       connected = socketChannel.finishConnect();

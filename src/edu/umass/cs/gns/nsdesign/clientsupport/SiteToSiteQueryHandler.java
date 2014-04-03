@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
  * Currently it is used by the code that does ACL checks in the NS to look up GUID info.
  * 
  * Note: Will be reimplmenting this as a new class that sends requests to an LNS instead.
+ * This will be replaced by LNSQueryHandler when we get that one working.
  *
  * 
  * @author westy

@@ -122,7 +122,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
       GNSMessagingTask msgTask = null;
       switch (type) {
         /** Packets sent from LNS **/
-        case DNS:     // lookup sent by lns
+        case DNS:     // lookup sent by lns (NEW: could also be a response from LNS)
           if (activeCoordinator == null) {
             msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this);
           } else {
@@ -211,7 +211,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
       JSONObject json = new JSONObject(value);
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
-        case DNS:
+        case DNS: 
           msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this);
           break;
         case UPDATE_ADDRESS_LNS:
@@ -299,9 +299,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
       // also inform
       activeReplica.stopProcessed(name, activeVersion, true);
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().info("Record not found exception. Message = " + e.getMessage());
+      GNS.getLogger().warning("Record not found exception. Message = " + e.getMessage());
     }catch (FieldNotFoundException e) {
-      GNS.getLogger().info("FieldNotFoundException. " + e.getMessage());
+      GNS.getLogger().warning("FieldNotFoundException. " + e.getMessage());
       e.printStackTrace();
     }
   }

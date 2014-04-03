@@ -10,9 +10,11 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
+import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,7 +22,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * Class contains a few static methods for handling lookup requests from clients as well responses to lookups from
@@ -58,7 +59,6 @@ public class Lookup {
 
   private static Random random = new Random();
 
-
   public static void handlePacketLookupRequest(JSONObject json, DNSPacket dnsPacket)
           throws JSONException, UnknownHostException {
     GNS.getLogger().fine("LNS DNS Request" + json);
@@ -79,7 +79,7 @@ public class Lookup {
   }
 
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket) throws JSONException {
-     GNS.getLogger().fine("LNS DNS Response" + json);
+    GNS.getLogger().fine("LNS DNS Response" + json);
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
       //Match response to the query sent
@@ -138,15 +138,14 @@ public class Lookup {
       String failureMsg = DNSRequestInfo.getFailureLogMessage(0, dnsPacket.getKey(), dnsPacket.getGuid(),
               0, query.getLookupRecvdTime(), query.numInvalidActiveError + 1, -1, new HashSet<Integer>());
 
-
       PendingTasks.addToPendingRequests(query.getqName(), queryTaskObject, StartLocalNameServer.queryTimeout,
               getErrorPacket(query.getIncomingPacket()), failureMsg, firstInvalidActiveError);
 
       GNS.getLogger().fine(" Scheduled lookup task.");
 
     } else { // other types of errors, forward error response to client
-      GNS.getLogger().fine("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId() +
-              ": " + dnsPacket.toJSONObject());
+      GNS.getLogger().fine("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId()
+              + ": " + dnsPacket.toJSONObject());
       // set the correct id for the client
       dnsPacket.getHeader().setId(query.getIncomingPacket().getQueryId());
       sendDNSResponseBackToSource(dnsPacket);
@@ -175,24 +174,32 @@ public class Lookup {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }
   }
-  
+
   /**
    * Handles the returning of packets back to the appropriate source (local intercessor or another NameServer).
-   * 
+   *
    * @param packet
-   * @throws JSONException 
+   * @throws JSONException
    */
   public static void sendDNSResponseBackToSource(DNSPacket packet) throws JSONException {
-    GNS.getLogger().fine("Sending back to :" + packet.getSourceId());
     if (packet.getSourceId() == DNSPacket.LOCAL_SOURCE_ID) {
+      GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
-      LocalNameServer.sendToNS(packet.toJSONObject(), packet.getSourceId());
+      GNS.getLogger().fine("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
+      try {
+        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
+                packet.getSourceId(), GNS.PortType.NS_TCP_PORT);
+      } catch (IOException e) {
+        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+      }
+      //LocalNameServer.sendToNS(packet.toJSONObject(), packet.getSourceId());
     }
   }
-  
 
-  // why does this totally ignore the error code that exists in the incoming packet?
+  // why did this totally ignore the error code that exists in the incoming packet?
   public static JSONObject getErrorPacket(DNSPacket dnsPacketIn) {
     try {
       DNSPacket dnsPacketOut = new DNSPacket(dnsPacketIn.toJSONObjectQuestion());

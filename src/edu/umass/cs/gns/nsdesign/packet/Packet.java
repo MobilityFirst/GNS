@@ -18,21 +18,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * So we have these packets see and we convert them back and forth to and from JSON Objects.
  * And send them over UDP and TCP connections. And we have an enum called PacketType that we
  * use to keep track of the type of packet that it is.
- * 
+ *
  * And it appears that there are two separate but equal mechanisms to keep track of packet sizes
- * during transmission (one in here and one elsewhere ...  multiple authors again).
- * 
+ * during transmission (one in here and one elsewhere ... multiple authors again).
+ *
  * This is our basic way of transmitting data.
  * It's a bit of a hodgepodge at this point due to multiple authors, but it works.
- * 
+ *
  * One issue is that a lot of the functions that take a GNSNodeConfig object as args
  * should probably accept some interface instead.
- * 
+ *
  * @author westy
  */
 public class Packet {
@@ -50,7 +49,6 @@ public class Packet {
     DNS(-1),
     DNS_RESPONSE(-2),
     DNS_ERROR_RESPONSE(-3),
-
     // Add
     ADD_RECORD_LNS(1),
     CONFIRM_ADD_LNS(3),
@@ -63,14 +61,11 @@ public class Packet {
     ACTIVE_REMOVE(12), // on a remove request, replica controller sends to active replica
     ACTIVE_REMOVE_CONFIRM(13), // after removing name, active replica confirms to replica controller
     RC_REMOVE(14),
-
     // Update
     UPDATE_ADDRESS_LNS(20), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
     CONFIRM_UPDATE_LNS(21),
-
     // Lookup actives
     REQUEST_ACTIVES(30),
-
     // Admin:
     DUMP_REQUEST(40),
     SENTINAL(41),
@@ -80,20 +75,16 @@ public class Packet {
     STATUS(50),
     TRAFFIC_STATUS(51),
     STATUS_INIT(52),
-
     // select
     SELECT_REQUEST(70),
     SELECT_RESPONSE(71),
-
     // stats collection for names
     NAMESERVER_SELECTION(80),
     NAME_RECORD_STATS_REQUEST(81),
     NAME_RECORD_STATS_RESPONSE(82),
     ACTIVE_NAMESERVER_INFO(83),
-
     // paxos
     PAXOS_PACKET(90),
-
     // group change
     NEW_ACTIVE_PROPOSE(100),
     OLD_ACTIVE_STOP(101),
@@ -106,16 +97,14 @@ public class Packet {
     NEW_ACTIVE_START_PREV_VALUE_REQUEST(108),
     NEW_ACTIVE_START_PREV_VALUE_RESPONSE(109),
     GROUP_CHANGE_COMPLETE(110),
-
     // coordination
     ACTIVE_COORDINATION(120), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
-    REPLICA_CONTROLLER_COORDINATION(121),  // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+    REPLICA_CONTROLLER_COORDINATION(121), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
 
     // deprecated packet types:
     UPDATE_NAMESERVER(201),
     ACTIVE_NAMESERVER_UPDATE(202),
     NAME_SERVER_LOAD(203);
-
 
     private int number;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
@@ -178,7 +167,9 @@ public class Packet {
   /**
    * Delimiter that separates size from data in each frame transmitted *
    */
-  public final static String DELIMITER = ":";
+  //public final static String DELIMITER = ":";
+
+  public static final String HEADER_PATTERN = "&";
 
   /**
    * **
@@ -189,24 +180,34 @@ public class Packet {
    */
   public static int getDataSize(InputStream inStream) {
 
-    String delimiter = " ";
+    String input = " ";
     String vectorSizeStr = "";
     byte[] tempBuffer = new byte[1];
 
     try {
-      //Keep reading from input stream until we see ":". The bytes 
-      //before ":" represents the size of the frame. The bytes after
-      //":" is the actual frame.
-      while (delimiter.compareTo(DELIMITER) != 0) {
+      //NOTE THAT HEADER_PATTERN size could be greater than 1 in which case this code doesn't work
+      // find first instance of HEADER_PATTERN (should be first char)
+      do {
+        if (inStream.read(tempBuffer, 0, 1) == -1) {
+          return -1;
+        }
+        input = new String(tempBuffer);
+      } while (input.compareTo(HEADER_PATTERN) != 0);
+
+      //Keep reading from input stream until we see HEADER_PATTERN again. The bytes 
+      //before second HEADER_PATTERN represents the size of the frame. The bytes after
+      //second HEADER_PATTERN is the actual frame.
+      do {
         if (inStream.read(tempBuffer, 0, 1) == -1) {
           return -1;
         }
 
-        delimiter = new String(tempBuffer);
-        if (delimiter.compareTo(DELIMITER) != 0) {
-          vectorSizeStr += delimiter;
+        input = new String(tempBuffer);
+        if (input.compareTo(HEADER_PATTERN) != 0) {
+          vectorSizeStr += input;
         }
-      }
+      } while (input.compareTo(HEADER_PATTERN) != 0);
+
     } catch (Exception e) {
       return -1;
     }
@@ -239,53 +240,50 @@ public class Packet {
     return json;
   }
 
-  public static int getDataSize(ByteBuffer buffer) {
-    String delimiter = " ";
-    String vectorSizeStr = "";
-    byte[] tempBuffer = new byte[1];
-
-    //Keep reading from input stream until we see ":". The bytes
-    //before ":" represents the size of the frame. The bytes after
-    //":" is the actual frame.
-    while (delimiter.compareTo(DELIMITER) != 0) {
-      if (!buffer.hasRemaining()) {
-        return -1;
-      }
-      buffer.get(tempBuffer);
-
-      delimiter = new String(tempBuffer);
-      if (delimiter.compareTo(DELIMITER) != 0) {
-        vectorSizeStr += delimiter;
-      }
-    }
-    return Integer.parseInt(vectorSizeStr.trim());
-  }
-
-  private static JSONObject getJSONObjectFrame(ByteBuffer buffer, int sizeOfFrame)
-          throws IOException, JSONException {
-    if (sizeOfFrame > buffer.remaining()) {
-      return null;
-    }
-    byte[] jsonByte = new byte[sizeOfFrame];
-    buffer.get(jsonByte);
-    //System.out.println(new String(jsonByte));
-    JSONObject json = new JSONObject(new String(jsonByte));
-    return json;
-  }
-
-  public static JSONObject getJSONObjectFrame(ByteBuffer buffer)
-          throws IOException, JSONException {
-
-    int sizeOfPacket = Packet.getDataSize(buffer);
-
-    if (sizeOfPacket == -1) {
-      return null;
-    }
-
-    //Read the packet from the input stream
-    return Packet.getJSONObjectFrame(buffer, sizeOfPacket);
-  }
-
+//  public static int getDataSize(ByteBuffer buffer) {
+//    String delimiter = " ";
+//    String vectorSizeStr = "";
+//    byte[] tempBuffer = new byte[1];
+//
+//    //Keep reading from input stream until we see ":". The bytes
+//    //before ":" represents the size of the frame. The bytes after
+//    //":" is the actual frame.
+//    while (delimiter.compareTo(DELIMITER) != 0) {
+//      if (!buffer.hasRemaining()) {
+//        return -1;
+//      }
+//      buffer.get(tempBuffer);
+//
+//      delimiter = new String(tempBuffer);
+//      if (delimiter.compareTo(DELIMITER) != 0) {
+//        vectorSizeStr += delimiter;
+//      }
+//    }
+//    return Integer.parseInt(vectorSizeStr.trim());
+//  }
+//  private static JSONObject getJSONObjectFrame(ByteBuffer buffer, int sizeOfFrame)
+//          throws IOException, JSONException {
+//    if (sizeOfFrame > buffer.remaining()) {
+//      return null;
+//    }
+//    byte[] jsonByte = new byte[sizeOfFrame];
+//    buffer.get(jsonByte);
+//    //System.out.println(new String(jsonByte));
+//    JSONObject json = new JSONObject(new String(jsonByte));
+//    return json;
+//  }
+//  public static JSONObject getJSONObjectFrame(ByteBuffer buffer)
+//          throws IOException, JSONException {
+//
+//    int sizeOfPacket = Packet.getDataSize(buffer);
+//
+//    if (sizeOfPacket == -1) {
+//      return null;
+//    }
+//
+//    //Read the packet from the input stream
+//    return Packet.getJSONObjectFrame(buffer, sizeOfPacket);
+//  }
   /**
    * **
    * Reads bytes from the input stream until we have read bytes equal the size of a frame (packet) and returns a JSONObject that
@@ -334,9 +332,7 @@ public class Packet {
       return;
     }
 
-
-      GNS.getLogger().finer("sendUDPPacket:: to: " + id + " (" + address.getHostName() + ":" + port + ")" + " json: " + json.toString());
-
+    GNS.getLogger().finer("sendUDPPacket:: to: " + id + " (" + address.getHostName() + ":" + port + ")" + " json: " + json.toString());
 
     sendUDPPacket(socket, json, address, port);
 
@@ -364,7 +360,6 @@ public class Packet {
     }
 
 //    GNRS.getLogger().finer("sendUDPPacket:: address: " + address.getHostName() + " port: " + port + " json: " + json.toString());
-
     byte[] buffer = json.toString().getBytes();
     DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
     socket.send(packet);
@@ -463,7 +458,7 @@ public class Packet {
     }
     String packet = json.toString();
     Integer jsonSize = packet.getBytes().length;
-    String msg = jsonSize.toString() + ":" + packet;
+    String msg = Packet.HEADER_PATTERN + jsonSize.toString() + Packet.HEADER_PATTERN + packet;
 
     GNS.getLogger().finer("sendTCPPacket:: to: " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + " json: " + json.toString());
     PrintWriter output = new PrintWriter(socket.getOutputStream(), true);

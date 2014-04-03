@@ -14,12 +14,6 @@ import java.util.Random;
  */
 public class Util {
 
-  public static void println(String string, boolean print) {
-    if (print) {
-      GNS.getLogger().fine(string);
-    }
-  }
-
   public static int roundToInt(double d) {
     return (int) Math.round(d);
   }
@@ -59,8 +53,6 @@ public class Util {
     }
     return result;
   }
-
-
 
   static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   static Random rnd = new Random(System.currentTimeMillis());

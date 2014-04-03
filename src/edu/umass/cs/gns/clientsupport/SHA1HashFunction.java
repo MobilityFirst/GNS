@@ -8,10 +8,6 @@ import edu.umass.cs.gns.httpserver.BasicHashFunction;
 import edu.umass.cs.gns.main.GNS;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import static edu.umass.cs.gns.main.StartLocalNameServer.debugMode;
-import static edu.umass.cs.gns.util.Util.println;
-
 /**
  *
  * @author westy
