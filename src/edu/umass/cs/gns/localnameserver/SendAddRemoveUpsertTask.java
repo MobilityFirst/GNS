@@ -97,7 +97,8 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       ConfirmUpdatePacket confirmPkt = getConfirmFailurePacket(getPacket());
       try {
         if (confirmPkt != null) {
-          Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
+          Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+          //Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
         } else {
           GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
         }

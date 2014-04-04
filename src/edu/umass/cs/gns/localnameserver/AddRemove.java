@@ -116,12 +116,13 @@ public class AddRemove {
     } else {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
-      // send it back to the orginator of the request
-      addInfo.getID();
-      JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
-      GNS.getLogger().fine(" CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
-              + " : " + jsonConfirm.toString());
-      Intercessor.handleIncomingPackets(json);
+//      addInfo.getID();
+//      JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
+//      GNS.getLogger().fine(" CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
+//              + " : " + jsonConfirm.toString());
+       // send it back to the orginator of the request
+      Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket);
+      //Intercessor.handleIncomingPackets(json);
     }
   }
 
@@ -140,10 +141,11 @@ public class AddRemove {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       // send it back to the orginator of the request
-      JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
-      GNS.getLogger().fine(" CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
-              + " : " + jsonConfirm.toString());
-      Intercessor.handleIncomingPackets(json);
+//      JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
+//      GNS.getLogger().fine(" CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
+//              + " : " + jsonConfirm.toString());
+      Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket);
+      //Intercessor.handleIncomingPackets(json);
       // update our cache
 
     }

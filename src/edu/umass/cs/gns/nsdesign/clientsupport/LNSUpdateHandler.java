@@ -58,9 +58,6 @@ public class LNSUpdateHandler {
     GNS.getLogger().warning("#######FIXME!! Using stupid mechanism for picking LNS #" + activeReplica.getGNSNodeConfig().getNumberOfNameServers());
     sendUpdateInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(), 
             name, key, newValue, oldValue, argument, operation, activeReplica);
-//    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
-//      sendQueryInternal(id, server, name, key, activeReplica);
-//    }
     // now we wait until the packet comes back
     waitForResponsePacket(id);
     NSResponseCode result = updateResultMap.get(id);
@@ -84,12 +81,12 @@ public class LNSUpdateHandler {
   }
 
   /**
-   * Handles a DNS query response coming back to this NameServer from a Local Name Server
+   * Handles a ConfirmUpdatePacket coming back to this NameServer from a Local Name Server
    *
    * @param packet
    * @param activeReplica
    */
-  public static void handleDNSResponsePacket(ConfirmUpdatePacket packet, GnsReconfigurable activeReplica) {
+  public static void handleConfirmUpdatePacket(ConfirmUpdatePacket packet, GnsReconfigurable activeReplica) {
     int id = packet.getRequestID();
     if (packet.isSuccess()) {
       //Packet is a response and does not have a response error

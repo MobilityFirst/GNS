@@ -10,6 +10,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
+import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 public class Update {
 
   private static Random r = new Random();
-
 
   public static void handlePacketUpdateAddressLNS(JSONObject json)
           throws JSONException, UnknownHostException {
@@ -72,20 +72,21 @@ public class Update {
     }
 
     if (confirmPkt.isSuccess()) {
-        // update the cache BEFORE we send back the confirmation
-        LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
-        // send the confirmation back to the originator of the update
-        GNS.getLogger().fine("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.getNodeID() + ") to "
-                + " : " + json.toString());
-        Intercessor.handleIncomingPackets(json);
-        // instrumentation?
-        if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
-          GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt, updateInfo.getName()));
-        }
+      // update the cache BEFORE we send back the confirmation
+      LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
+      // send the confirmation back to the originator of the update
+      GNS.getLogger().fine("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.getNodeID() + ") to "
+              + " : " + json.toString());
+      Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+      //Intercessor.handleIncomingPackets(json);
+      // instrumentation?
+      if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
+        GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt, updateInfo.getName()));
+      }
     } else if (confirmPkt.getResponseCode().isAccessOrSignatureError()) {
       // if it's an access or signature failure just return it to the client support
-        Intercessor.handleIncomingPackets(json);
-
+      Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+      //Intercessor.handleIncomingPackets(json);
     } else {
       // current active replica set invalid, so obtain the current set of actives for a name by contacting
       // replica controllers.
@@ -96,10 +97,11 @@ public class Update {
 
   /**
    * Update request reached invalid active replica, so obtain a new set of actives and send request again.
+   *
    * @param updateInfo
    * @throws JSONException
    */
-  private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException{
+  private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException {
     GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
 
     UpdatePacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
@@ -114,12 +116,27 @@ public class Update {
             LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), updateInfo.getSendTime(), updateInfo.getNumInvalidActiveError() + 1, -1);
     ConfirmUpdatePacket confirmFailPacket = ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
 
-
     boolean firstInvalidActiveError = (updateInfo.getNumInvalidActiveError() == 0);
 
     PendingTasks.addToPendingRequests(updateInfo.getName(), task, StartLocalNameServer.queryTimeout,
             confirmFailPacket.toJSONObject(), failedStats, firstInvalidActiveError);
+  }
 
-
+  public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet) throws JSONException {
+    if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
+      GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      Intercessor.handleIncomingPackets(packet.toJSONObject());
+    } else {
+      GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
+      LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
+//      try {
+//        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
+//                packet.getReturnTo(), GNS.PortType.NS_TCP_PORT);
+//      } catch (IOException e) {
+//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+//      } catch (JSONException e) {
+//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+//      }
+    }
   }
 }

@@ -214,7 +214,8 @@ public class SendUpdatesTask extends TimerTask {
     // create a failure packet and send it back to client support
     ConfirmUpdatePacket confirmPkt = ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
     try {
-      Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
+      Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+      //Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }

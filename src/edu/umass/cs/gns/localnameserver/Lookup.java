@@ -187,15 +187,15 @@ public class Lookup {
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
       GNS.getLogger().fine("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
-      try {
-        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
-                packet.getSourceId(), GNS.PortType.NS_TCP_PORT);
-      } catch (IOException e) {
-        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
-      }
-      //LocalNameServer.sendToNS(packet.toJSONObject(), packet.getSourceId());
+      LocalNameServer.sendToNS(packet.toJSONObject(), packet.getSourceId());
+//      try {
+//        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
+//                packet.getSourceId(), GNS.PortType.NS_TCP_PORT);
+//      } catch (IOException e) {
+//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+//      } catch (JSONException e) {
+//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+//      }
     }
   }
 
