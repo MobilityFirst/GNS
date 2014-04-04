@@ -36,7 +36,21 @@ public class LNSUpdateHandler {
   private static Random randomID = new Random();
 
   /**
-   * Sends a DNS query from this Name Server to a Local Name Server
+   * Sends an update request from this Name Server to a Local Name Server
+   * 
+   * @param name
+   * @param key
+   * @param newValue
+   * @param operation
+   * @param activeReplica
+   * @return 
+   */
+  public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue, UpdateOperation operation, GnsReconfigurable activeReplica) {
+    return sendUpdate(name, key, newValue, null, -1, operation, activeReplica);
+  }
+          
+  /**
+   * Sends an update request from this Name Server to a Local Name Server
    *
    * @param name
    * @param key

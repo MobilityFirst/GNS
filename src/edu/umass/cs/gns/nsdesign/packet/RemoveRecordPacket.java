@@ -73,7 +73,7 @@ public class RemoveRecordPacket extends BasicPacket {
    * **********************************************************
    */
   public RemoveRecordPacket(int sourceId, int requestId, String name, int localNameServerID) {
-    this.type = Packet.PacketType.REMOVE_RECORD_LNS;
+    this.type = Packet.PacketType.REMOVE_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestId;
     this.name = name;
@@ -89,8 +89,7 @@ public class RemoveRecordPacket extends BasicPacket {
    * @throws org.json.JSONException **********************************************************
    */
   public RemoveRecordPacket(JSONObject json) throws JSONException {
-    if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD_LNS &&
-            Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
+    if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
     }

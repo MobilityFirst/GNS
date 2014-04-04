@@ -45,7 +45,7 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  static void handlePacketAddRecordLNS(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketAddRecord(JSONObject json) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
 
@@ -81,7 +81,7 @@ public class AddRemove {
    * @throws NoSuchAlgorithmException
    * @throws UnsupportedEncodingException
    */
-  static void handlePacketRemoveRecordLNS(JSONObject json)
+  static void handlePacketRemoveRecord(JSONObject json)
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
@@ -107,7 +107,7 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  static void handlePacketConfirmAddLNS(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketConfirmAdd(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
     UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
 
@@ -132,7 +132,7 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  static void handlePacketConfirmRemoveLNS(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketConfirmRemove(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
     UpdateInfo removeInfo = LocalNameServer.removeUpdateInfo(confirmRemovePacket.getLNSRequestID());
     if (removeInfo == null) {

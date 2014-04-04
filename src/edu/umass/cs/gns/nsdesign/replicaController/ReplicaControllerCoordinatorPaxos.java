@@ -55,11 +55,11 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
           case REPLICA_CONTROLLER_COORDINATION:
             paxosManager.handleIncomingPacket(request);
             break;
-          case ADD_RECORD_LNS:
+          case ADD_RECORD:
             AddRecordPacket recordPacket = new AddRecordPacket(request);
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), request.toString(), false);
             break;
-          case REMOVE_RECORD_LNS:
+          case REMOVE_RECORD:
             RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), request.toString(), false);
             break;

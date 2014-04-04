@@ -93,8 +93,8 @@ public class Intercessor {
     try {
       switch (getPacketType(json)) {
         case CONFIRM_UPDATE:
-        case CONFIRM_ADD_LNS:
-        case CONFIRM_REMOVE_LNS:
+        case CONFIRM_ADD:
+        case CONFIRM_REMOVE:
           ConfirmUpdatePacket packet = new ConfirmUpdatePacket(json);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error

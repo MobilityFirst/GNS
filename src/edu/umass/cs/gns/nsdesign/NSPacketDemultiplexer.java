@@ -66,9 +66,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
           break;
 
         // Packets sent from LNS
-        case ADD_RECORD_LNS:
+        case ADD_RECORD:
         case REQUEST_ACTIVES:
-        case REMOVE_RECORD_LNS:
+        case REMOVE_RECORD:
         case NAMESERVER_SELECTION:
         case NAME_RECORD_STATS_RESPONSE:
           // Packets sent from active replica

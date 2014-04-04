@@ -40,7 +40,7 @@ public class Update {
 
   private static Random r = new Random();
 
-  public static void handlePacketUpdateAddressLNS(JSONObject json)
+  public static void handlePacketUpdateAddress(JSONObject json)
           throws JSONException, UnknownHostException {
 
     UpdatePacket updateAddressPacket = new UpdatePacket(json);
@@ -57,7 +57,7 @@ public class Update {
     }
   }
 
-  public static void handlePacketConfirmUpdateLNS(JSONObject json) throws UnknownHostException, JSONException {
+  public static void handlePacketConfirmUpdate(JSONObject json) throws UnknownHostException, JSONException {
     ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json);
 
     if (StartLocalNameServer.debugMode) {

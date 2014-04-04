@@ -84,12 +84,12 @@ public class ConfirmUpdatePacket extends BasicPacket {
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_ADD_LNS, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
+    this(Packet.PacketType.CONFIRM_ADD, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
 
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_REMOVE_LNS, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
+    this(Packet.PacketType.CONFIRM_REMOVE, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
   }
 
   /**

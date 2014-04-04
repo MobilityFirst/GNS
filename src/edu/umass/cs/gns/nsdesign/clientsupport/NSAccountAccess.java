@@ -143,18 +143,9 @@ public class NSAccountAccess {
   }
 
   private static ResultValue lookupGuidOnAnotherNameServer(String guid, GnsReconfigurable activeReplica) {
-    // not sure why this works...
-    //QueryResult queryResult = SiteToSiteQueryHandler.sendQuery(guid, AccountAccess.GUID_INFO, activeReplica);
-    // new and not working
-    QueryResult queryResult = LNSQueryHandler.sendQuery(guid, AccountAccess.GUID_INFO, activeReplica);
-    if (!queryResult.isError()) {
-      return queryResult.get(AccountAccess.GUID_INFO);
-    } else {
-      return null;
-    }
-
+    return LNSQueryHandler.lookupField(guid, AccountAccess.GUID_INFO, activeReplica);
   }
-
+ 
   /**
    * Obtains the account info record from the database for the account whose HRN is name.
    * <p>

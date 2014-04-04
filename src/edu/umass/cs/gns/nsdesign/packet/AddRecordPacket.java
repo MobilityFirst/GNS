@@ -105,7 +105,7 @@ public class AddRecordPacket extends BasicPacket {
    * @param ttl TTL of name record.
    */
   public AddRecordPacket(int sourceId, int requestID, String name, NameRecordKey recordKey, ResultValue value, int localNameServerID, int ttl) {
-    this.type = Packet.PacketType.ADD_RECORD_LNS;
+    this.type = Packet.PacketType.ADD_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestID;
     this.recordKey = recordKey;
@@ -123,8 +123,7 @@ public class AddRecordPacket extends BasicPacket {
    * @throws org.json.JSONException
    */
   public AddRecordPacket(JSONObject json) throws JSONException {
-    if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD_LNS
-            && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
+    if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();

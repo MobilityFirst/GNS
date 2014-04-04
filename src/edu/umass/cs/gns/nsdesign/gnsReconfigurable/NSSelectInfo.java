@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -7,49 +8,70 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**************************************************************
+/**
  * This class represents a data structure to store information
- * about queries (SELECT like lookup) transmitted by the local name
- * server.
- *************************************************************/
+ * about Select operations performed on the GNS.
+ */
 public class NSSelectInfo {
-
   private int id;
-  private Set<Integer> serverIds;
+  private Set<Integer> serversToBeProcessed; // the list of servers that have yet to be processed
   private ConcurrentHashMap<String, JSONObject> responses;
+  private SelectOperation operation;
+  private String guid; // the group GUID we are maintaning or null for simple select
 
-  /**************************************************************
-   * Constructs a SelectInfo object with the following parameters
-   * @param id Query id
-   * @param name Host/Domain name
-   * @param time System time when query was transmitted
-   * @param nameserverID Response name server ID
-   * @param queryStatus Query Status
-   **************************************************************/
-  public NSSelectInfo(int id, Set<Integer> serverIds) {
+  /**
+   * 
+   * @param id
+   * @param serverIds 
+   */
+  public NSSelectInfo(int id, Set<Integer> serverIds, SelectOperation operation, String guid) {
     this.id = id;
-    this.serverIds = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-    this.serverIds.addAll(serverIds);
-    this.responses =  new ConcurrentHashMap<String, JSONObject>(10, 0.75f, 3);
+    this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+    this.serversToBeProcessed.addAll(serverIds);
+    this.responses = new ConcurrentHashMap<String, JSONObject>(10, 0.75f, 3);
+    this.operation = operation;
+    this.guid = guid;
   }
 
+  /**
+   * 
+   * @return 
+   */
   public int getId() {
     return id;
   }
 
+  /**
+   * Removes the server if from the list of servers that have yet to be processed.
+   * @param id 
+   */
   public void removeServerID(int id) {
-    serverIds.remove(id);
+    serversToBeProcessed.remove(id);
   }
-  
+  /**
+   * 
+   * @return 
+   */
   public Set<Integer> serversYetToRespond() {
-    return serverIds;
+    return serversToBeProcessed;
   }
-  
+  /**
+   * Returns true if all the names servers have responded.
+   * 
+   * @return 
+   */
   public boolean allServersResponded() {
-    return serverIds.isEmpty();
+    return serversToBeProcessed.isEmpty();
   }
-  
-  public boolean addNewResponse(String name, JSONObject json) {
+
+  /**
+   * Adds the result of a query for a particular guid if the guid has not been seen yet.
+   * 
+   * @param name
+   * @param json
+   * @return 
+   */
+  public boolean addResponseIfNotSeenYet(String name, JSONObject json) {
     if (!responses.containsKey(name)) {
       responses.put(name, json);
       return true;
@@ -58,7 +80,20 @@ public class NSSelectInfo {
     }
   }
 
+  /**
+   * Returns that responses that have been see for this query.
+   * @return 
+   */
   public Set<JSONObject> getResponses() {
     return new HashSet<JSONObject>(responses.values());
   }
+
+  public SelectOperation getOperation() {
+    return operation;
+  }
+
+  public String getGuid() {
+    return guid;
+  }
+
 }

@@ -54,26 +54,26 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           break;
         // Update
         case UPDATE:
-          Update.handlePacketUpdateAddressLNS(json);
+          Update.handlePacketUpdateAddress(json);
           break;
         case CONFIRM_UPDATE:
-          Update.handlePacketConfirmUpdateLNS(json);
+          Update.handlePacketConfirmUpdate(json);
           break;
         case NAME_SERVER_LOAD:
           LocalNameServer.handleNameServerLoadPacket(json);
           break;
         // Add/remove
-        case ADD_RECORD_LNS:
-          AddRemove.handlePacketAddRecordLNS(json);
+        case ADD_RECORD:
+          AddRemove.handlePacketAddRecord(json);
           break;
-        case REMOVE_RECORD_LNS:
-          AddRemove.handlePacketRemoveRecordLNS(json);
+        case REMOVE_RECORD:
+          AddRemove.handlePacketRemoveRecord(json);
           break;
-        case CONFIRM_ADD_LNS:
-          AddRemove.handlePacketConfirmAddLNS(json);
+        case CONFIRM_ADD:
+          AddRemove.handlePacketConfirmAdd(json);
           break;
-        case CONFIRM_REMOVE_LNS:
-          AddRemove.handlePacketConfirmRemoveLNS(json);
+        case CONFIRM_REMOVE:
+          AddRemove.handlePacketConfirmRemove(json);
           break;
         // Others
         case REQUEST_ACTIVES:

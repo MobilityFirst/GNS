@@ -37,7 +37,8 @@ public class SelectRequestPacket extends BasicPacket {
   private final static String NSID = "nsid";
   private final static String NSQUERYID = "nsQueryId";
   private final static String OPERATION = "operation";
-  private final static String GUID = "guid"; // for auto group guid this is the guid to be maintained
+  private final static String GUID = "guid";
+  private final static String REFRESH = "refresh";
   //
   private int id;
   private NameRecordKey key;
@@ -49,7 +50,9 @@ public class SelectRequestPacket extends BasicPacket {
   private int nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
   private int nsQueryId = -1; // used by the name server to maintain state
   private SelectOperation operation;
+  // for group guid
   private String guid; // the group GUID we are maintaning or null for simple select
+  private int refreshInterval; // minimum time between allowed refreshs of the guid
 
   /**
    * Constructs a new QueryResponsePacket
@@ -72,7 +75,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.guid = null;
   }
 
-  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query, String guid) {
+  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query, String guid, int refreshInterval) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
@@ -83,6 +86,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.value = null;
     this.otherValue = null;
     this.guid = guid;
+    this.refreshInterval = refreshInterval;
   }
 
   /**
@@ -94,7 +98,7 @@ public class SelectRequestPacket extends BasicPacket {
    * @return 
    */
   public static SelectRequestPacket MakeQueryRequest(int id, int lns, String query) {
-    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query, null);
+    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query, null, -1);
   }
 
   /**
@@ -107,8 +111,8 @@ public class SelectRequestPacket extends BasicPacket {
    * @param guid
    * @return 
    */
-  public static SelectRequestPacket MakeGroupSetupRequest(int id, int lns, String query, String guid) {
-    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_SETUP, query, guid);
+  public static SelectRequestPacket MakeGroupSetupRequest(int id, int lns, String query, String guid, int refreshInterval) {
+    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_SETUP, query, guid, refreshInterval);
   }
   
   /**
@@ -121,7 +125,7 @@ public class SelectRequestPacket extends BasicPacket {
    * @return 
    */
   public static SelectRequestPacket MakeGroupLookupRequest(int id, int lns, String guid) {
-    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_LOOKUP, null, guid);
+    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_LOOKUP, null, guid, -1);
   }
 
   /**
@@ -146,6 +150,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.nsQueryId = json.getInt(NSQUERYID);
     this.operation = SelectOperation.valueOf(json.getString(OPERATION));
     this.guid = json.optString(GUID, null);
+    this.refreshInterval = json.optInt(REFRESH, -1);
   }
 
   /**
@@ -183,6 +188,9 @@ public class SelectRequestPacket extends BasicPacket {
     json.put(OPERATION, operation.name());
     if (guid != null) {
       json.put(GUID, guid);
+    }
+    if (refreshInterval != -1) {
+      json.put(REFRESH, refreshInterval);
     }
   }
 
@@ -241,5 +249,9 @@ public class SelectRequestPacket extends BasicPacket {
   public String getGuid() {
     return guid;
   }
-  
+
+  public int getRefreshInterval() {
+    return refreshInterval;
+  }
+ 
 }

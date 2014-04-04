@@ -159,10 +159,10 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   private ConfirmUpdatePacket getConfirmFailurePacket(BasicPacket packet) {
     ConfirmUpdatePacket confirm;
     switch (packet.getType()) {
-      case ADD_RECORD_LNS:
+      case ADD_RECORD:
         confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (AddRecordPacket) packet);
         return confirm;
-      case REMOVE_RECORD_LNS:
+      case REMOVE_RECORD:
         confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (RemoveRecordPacket) packet);
         return confirm;
       case UPDATE:
@@ -176,12 +176,12 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   private void updatePacketWithRequestID(BasicPacket packet, int requestID) {
 
     switch (packet.getType()) {
-      case ADD_RECORD_LNS:
+      case ADD_RECORD:
         AddRecordPacket addRecordPacket = (AddRecordPacket) packet;
         addRecordPacket.setLNSRequestID(requestID);
         addRecordPacket.setLocalNameServerID(LocalNameServer.getNodeID());
         break;
-      case REMOVE_RECORD_LNS:
+      case REMOVE_RECORD:
         RemoveRecordPacket removeRecordPacket = (RemoveRecordPacket) packet;
         removeRecordPacket.setLNSRequestID(requestID);
         removeRecordPacket.setLocalNameServerID(LocalNameServer.getNodeID());

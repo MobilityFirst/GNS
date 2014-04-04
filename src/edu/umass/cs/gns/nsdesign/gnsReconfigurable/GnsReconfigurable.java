@@ -13,6 +13,7 @@ import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosInterface;
@@ -132,6 +133,12 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
         case UPDATE: // update sent by lns.
           msgTask = Update.handleUpdate(json, this);
           break;
+        // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
+        // coming back from the LNS is handled.
+        case CONFIRM_UPDATE:
+        case CONFIRM_ADD:
+        case CONFIRM_REMOVE:
+            LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket(json), this);
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
           break;
@@ -141,9 +148,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
 
         /** Packets sent from replica controller **/
         case ACTIVE_ADD: // sent when new name is added to GNS
-          AddRecordPacket addRecordPacket = new AddRecordPacket(json);
-          msgTask = Add.handleActiveAdd(addRecordPacket, this);
-
+          msgTask = Add.handleActiveAdd(new AddRecordPacket(json), this);
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
           msgTask = Remove.handleActiveRemovePacket(new OldActiveSetStopPacket(json), this);

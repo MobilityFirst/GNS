@@ -26,10 +26,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-
-
-/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
+/**
+ * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
+ */
 /**
  * Work in progress. Inactive code.
  *
@@ -39,45 +38,54 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class ReplicaController extends PacketDemultiplexer implements PaxosInterface {
 
-	public static final int RC_TIMEOUT_MILLIS = 3000;
+  public static final int RC_TIMEOUT_MILLIS = 3000;
 
-	/** object handles coordination among replicas on a request, if necessary */
-	private ReplicaControllerCoordinator rcCoordinator = null;
+  /**
+   * object handles coordination among replicas on a request, if necessary
+   */
+  private ReplicaControllerCoordinator rcCoordinator = null;
 
-	/**ID of this node*/
-	private final int nodeID;
+  /**
+   * ID of this node
+   */
+  private final int nodeID;
 
-	/** nio server*/
-	private final GNSNIOTransportInterface nioServer;
+  /**
+   * nio server
+   */
+  private final GNSNIOTransportInterface nioServer;
 
-	/** executor service for handling timer tasks*/
-	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+  /**
+   * executor service for handling timer tasks
+   */
+  private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
-	/** Object provides interface to the database table storing replica controller records */
-	private final BasicRecordMap replicaControllerDB;
+  /**
+   * Object provides interface to the database table storing replica controller records
+   */
+  private final BasicRecordMap replicaControllerDB;
 
-	private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig gnsNodeConfig;
 
-	private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap();
+  private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap();
 
-	private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
+  private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
 
+  private ReplicationFrameworkInterface replicationFramework;
 
-	private ReplicationFrameworkInterface replicationFramework;
+  /**
+   * constructor object
+   */
+  public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
+          GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+          MongoRecords mongoRecords) {
+    Config.initialize(configParameters);
+    this.nodeID = nodeID;
+    this.gnsNodeConfig = gnsNodeConfig;
+    this.nioServer = nioServer;
+    this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
 
-	/**
-	 * constructor object
-	 */
-	public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-			GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
-      MongoRecords mongoRecords) {
-		Config.initialize(configParameters);
-		this.nodeID = nodeID;
-		this.gnsNodeConfig = gnsNodeConfig;
-		this.nioServer = nioServer;
-		this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
-
-    this.replicaControllerDB =  new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
+    this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
     if (!Config.singleNS) {
       // create the activeCoordinator object.
@@ -90,161 +98,168 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
 //		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);
 
-	}
+  }
 
+  /**
+   * Entry point for all packets sent to replica controller.
+   *
+   * We are currently implementing a single name server which wont use coordination at all.
+   * Only those packet types are handled that will be used by a single name server.
+   *
+   * @param json json object received at name server
+   */
+  public boolean handleJSONObject(JSONObject json) {
 
-	/**
-	 * Entry point for all packets sent to replica controller.
-	 *
-	 * We are currently implementing a single name server which wont use coordination at all.
-	 * Only those packet types are handled that will be used by a single name server.
-	 * @param json json object received at name server
-	 */
-	public boolean handleJSONObject(JSONObject json){
+    boolean handled = true;
 
-		boolean handled = true;
+    try {
+      Packet.PacketType type = Packet.getPacketType(json);
+      GNSMessagingTask msgTask = null;
+      switch (type) {
 
-		try {
-			Packet.PacketType type = Packet.getPacketType(json);
-			GNSMessagingTask msgTask = null;
-			switch (type) {
+        /**
+         * Packets sent from LNS *
+         */
+        case ADD_RECORD:  // add name to GNS
+          msgTask = Add.handleAddRecordLNS(new AddRecordPacket(json), this);
+          break;
+        case UPDATE:  // add name to GNS
+          msgTask = Upsert.handleUpsert(new UpdatePacket(json), this);
+          break;
+        case REQUEST_ACTIVES:  // lookup actives for name
+          if (rcCoordinator == null) {
+            msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
+          } else {
+            rcCoordinator.coordinateRequest(json);
+          }
+          break;
+        case REMOVE_RECORD: // remove name from GNS
+          msgTask = Remove.handleRemoveRecordLNS(new RemoveRecordPacket(json), this);
+          break;
+        case NAMESERVER_SELECTION: // stats reported from local name servers
+          // we don't expect to use coordination for this packet
+          // in future also, we don't expect to use coordination for this packet
+          break;
 
-			/** Packets sent from LNS **/
-			case ADD_RECORD_LNS:  // add name to GNS
-        msgTask = Add.handleAddRecordLNS(new AddRecordPacket(json), this);
-				break;
-			case UPDATE:  // add name to GNS
-				msgTask = Upsert.handleUpsert(new UpdatePacket(json), this);
-				break;
-			case REQUEST_ACTIVES:  // lookup actives for name
-				if(rcCoordinator == null) {
-					msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
-				} else {
-					rcCoordinator.coordinateRequest(json);
-				}
-				break;
-			case REMOVE_RECORD_LNS: // remove name from GNS
-				msgTask = Remove.handleRemoveRecordLNS(new RemoveRecordPacket(json), this);
-				break;
-			case NAMESERVER_SELECTION: // stats reported from local name servers
-				// we don't expect to use coordination for this packet
-				// in future also, we don't expect to use coordination for this packet
-				break;
+        /**
+         * Packets sent from active replica *
+         */
+        case ACTIVE_ADD_CONFIRM:   // confirmation received from active replica that name is added
+          msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
+          break;
+        case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
+          msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this);
+          break;
+        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
+          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
+          break;
+        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
+          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
+          break;
+        case NAME_RECORD_STATS_RESPONSE: // stats reported from active replicas
+          // not implemented yet
+          // in future, we don't expect to use coordination for this packet
+          break;
 
-				/**  Packets sent from active replica **/
-			case ACTIVE_ADD_CONFIRM:   // confirmation received from active replica that name is added
-				msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
-				break;
-			case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-				msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this);
-				break;
-			case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
-				GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
-				break;
-			case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
-				GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
-				break;
-			case NAME_RECORD_STATS_RESPONSE: // stats reported from active replicas
-				// not implemented yet
-				// in future, we don't expect to use coordination for this packet
-				break;
+        /**
+         * packets from coordination modules at replica controller *
+         */
+        case REPLICA_CONTROLLER_COORDINATION:
+          rcCoordinator.coordinateRequest(json);
+          break;
+        default:
+          GNS.getLogger().warning("No handler for packet type: " + type.toString());
+          handled = false;
+          break;
+      }
 
-				/** packets from coordination modules at replica controller **/
-			case REPLICA_CONTROLLER_COORDINATION:
-				rcCoordinator.coordinateRequest(json);
-				break;
-			default:
-				GNS.getLogger().warning("No handler for packet type: " + type.toString());
-				handled = false;
-				break;
-			}
+      if (msgTask != null) {
+        GNSMessagingTask.send(msgTask, nioServer);
+      }
+    } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
-			if (msgTask != null) {
-				GNSMessagingTask.send(msgTask, nioServer);
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    // FIXME: check that handled has correct return value
+    return handled;
 
-		// FIXME: check that handled has correct return value
-		return handled;
+  }
 
-	}
+  /**
+   * ****BEGIN: getter methods for ReplicaController elements ***
+   */
+  public int getNodeID() {
+    return nodeID;
+  }
 
+  public BasicRecordMap getDB() {
+    return replicaControllerDB;
+  }
 
-	/******BEGIN: getter methods for ReplicaController elements ****/
+  public GNSNIOTransportInterface getNioServer() {
+    return nioServer;
+  }
 
-	public int getNodeID() {
-		return nodeID;
-	}
+  public ReplicaControllerCoordinator getRcCoordinator() {
+    return rcCoordinator;
+  }
 
-	public BasicRecordMap getDB() {
-		return replicaControllerDB;
-	}
+  public UniqueIDHashMap getOngoingStopActiveRequests() {
+    return ongoingStopActiveRequests;
+  }
 
-	public GNSNIOTransportInterface getNioServer() {
-		return nioServer;
-	}
+  public UniqueIDHashMap getOngoingStartActiveRequests() {
+    return ongoingStartActiveRequests;
+  }
 
-	public ReplicaControllerCoordinator getRcCoordinator() {
-		return rcCoordinator;
-	}
+  public GNSNodeConfig getGnsNodeConfig() {
+    return gnsNodeConfig;
+  }
 
-	public UniqueIDHashMap getOngoingStopActiveRequests() {
-		return ongoingStopActiveRequests;
-	}
+  public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+    return scheduledThreadPoolExecutor;
+  }
 
-	public UniqueIDHashMap getOngoingStartActiveRequests() {
-		return ongoingStartActiveRequests;
-	}
+  public ReplicationFrameworkInterface getReplicationFramework() {
+    return replicationFramework;
+  }
 
-	public GNSNodeConfig getGnsNodeConfig() {
-		return gnsNodeConfig;
-	}
+  public void setReplicationFramework(ReplicationFrameworkInterface replicationFramework) {
+    this.replicationFramework = replicationFramework;
+  }
 
-	public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
-		return scheduledThreadPoolExecutor;
-	}
+  /**
+   * ****END: getter methods for ReplicaController elements ***
+   */
+  /**
+   * ****BEGIN: miscellaneous methods needed by replica controller module ***
+   */
+  public boolean isSmallestNodeRunning(String name, Set<Integer> nameServers) {
+    Random r = new Random(name.hashCode());
+    ArrayList<Integer> x1 = new ArrayList<Integer>(nameServers);
+    Collections.sort(x1);
+    Collections.shuffle(x1, r);
+    for (int x : x1) {
+      // todo do failure detection check here
+      return x == nodeID;
+    }
+    return false;
 
-	public ReplicationFrameworkInterface getReplicationFramework() {
-		return replicationFramework;
-	}
+  }
 
-	public void setReplicationFramework(ReplicationFrameworkInterface replicationFramework) {
-		this.replicationFramework = replicationFramework;
-	}
-
-	/******END: getter methods for ReplicaController elements ****/
-
-
-	/******BEGIN: miscellaneous methods needed by replica controller module ****/
-
-	public  boolean isSmallestNodeRunning(String name, Set<Integer> nameServers) {
-		Random r = new Random(name.hashCode());
-		ArrayList<Integer> x1 = new ArrayList<Integer>(nameServers);
-		Collections.sort(x1);
-		Collections.shuffle(x1, r);
-		for (int x : x1) {
-			// todo do failure detection check here
-			return x == nodeID;
-		}
-		return false;
-
-	}
-
-	/**
-	 * Returns the version number of next group of active replicas, whose current version number is 'activeVersion'.
-	 */
-	public int getNewActiveVersion(int activeVersion) {
-		return activeVersion + 1;
-	}
+  /**
+   * Returns the version number of next group of active replicas, whose current version number is 'activeVersion'.
+   */
+  public int getNewActiveVersion(int activeVersion) {
+    return activeVersion + 1;
+  }
 
   @Override
   public void stop(String name, String value) {
     // we do not expect stop to be executed at replica controllers
-    throw  new UnsupportedOperationException();
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -272,7 +287,7 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
    */
   @Override
   public void updateState(String paxosID, String state) {
-    if  (state.length() == 0) {
+    if (state.length() == 0) {
       return;
     }
     GNS.getLogger().info("Here: " + paxosID);
@@ -282,7 +297,9 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
     try {
       while (true) {
         int endIndex = state.indexOf('\n', startIndex);
-        if (endIndex == -1) break;
+        if (endIndex == -1) {
+          break;
+        }
         String x = state.substring(startIndex, endIndex);
         if (x.length() > 0) {
           recordCount += 1;
@@ -314,50 +331,48 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
   @Override
   public void handleDecision(String name, String value, boolean recovery) {
     try {
-    GNSMessagingTask msgTask = null;
-    try {
-      JSONObject json = new JSONObject(value);
-      Packet.PacketType packetType = Packet.getPacketType(json);
-      switch (packetType) {
-        case ADD_RECORD_LNS:
-          msgTask = Add.executeAddRecord(new AddRecordPacket(json), this);
-          break;
-        case ACTIVE_ADD_CONFIRM:
-          msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
-          break;
-
-        case REQUEST_ACTIVES:  // lookup actives for name
-          msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
-          break;
-
-        case REMOVE_RECORD_LNS:
-          msgTask = Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this);
-          break;
-        case RC_REMOVE:
-          msgTask = Remove.executeRemoveRecord(new RemoveRecordPacket(json), this);
-          break;
-        case NAMESERVER_SELECTION:
-        case NAME_RECORD_STATS_RESPONSE:
-          // todo these packets related to stats reporting are not handled yet.
-          break;
-        case GROUP_CHANGE_COMPLETE:
-          GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this);
-          break;
-        case NEW_ACTIVE_PROPOSE:
-          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this);
-        default:
-          break;
+      GNSMessagingTask msgTask = null;
+      try {
+        JSONObject json = new JSONObject(value);
+        Packet.PacketType packetType = Packet.getPacketType(json);
+        switch (packetType) {
+          case ADD_RECORD:
+            msgTask = Add.executeAddRecord(new AddRecordPacket(json), this);
+            break;
+          case ACTIVE_ADD_CONFIRM:
+            msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
+            break;
+          case REQUEST_ACTIVES:  // lookup actives for name
+            msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
+            break;
+          case REMOVE_RECORD:
+            msgTask = Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this);
+            break;
+          case RC_REMOVE:
+            msgTask = Remove.executeRemoveRecord(new RemoveRecordPacket(json), this);
+            break;
+          case NAMESERVER_SELECTION:
+          case NAME_RECORD_STATS_RESPONSE:
+            // todo these packets related to stats reporting are not handled yet.
+            break;
+          case GROUP_CHANGE_COMPLETE:
+            GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this);
+            break;
+          case NEW_ACTIVE_PROPOSE:
+            GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this);
+          default:
+            break;
+        }
+        // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
+        if (msgTask != null && !recovery) {
+          GNSMessagingTask.send(msgTask, nioServer);
+        }
+      } catch (JSONException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
       }
-      // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
-      if (msgTask != null && !recovery) {
-        GNSMessagingTask.send(msgTask, nioServer);
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    }catch (Exception e) {
+    } catch (Exception e) {
       GNS.getLogger().severe("Exception in handling decisions: " + e.getMessage());
       e.printStackTrace();
     }
@@ -371,6 +386,7 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
     replicaControllerDB.reset();
   }
 
-  /******END: miscellaneous methods needed by replica controller module ****/
-
+  /**
+   * ****END: miscellaneous methods needed by replica controller module ***
+   */
 }

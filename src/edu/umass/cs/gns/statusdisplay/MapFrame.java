@@ -173,7 +173,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
     packetGraphics.put(Packet.PacketType.DNS, new PacketGraphic(Colors.Black, 1.0));
     packetGraphics.put(Packet.PacketType.DNS_RESPONSE, new PacketGraphic(Colors.Blue, 1.1));
     packetGraphics.put(Packet.PacketType.DNS_ERROR_RESPONSE, new PacketGraphic(Colors.Red, 1.2));
-    packetGraphics.put(Packet.PacketType.ADD_RECORD_LNS, new PacketGraphic(Colors.Green, 1.3));
+    packetGraphics.put(Packet.PacketType.ADD_RECORD, new PacketGraphic(Colors.Green, 1.3));
    // packetGraphics.put(Packet.PacketType.REPLICATE_RECORD, new PacketGraphic(Colors.Cyan, 1.4));
     //packetGraphics.put(Packet.PacketType.REMOVE_REPLICATION_RECORD, new PacketGraphic(Colors.DarkSalmon, 1.0));
     packetGraphics.put(Packet.PacketType.NAME_RECORD_STATS_REQUEST, new PacketGraphic(Colors.Grey, 1.0));
@@ -468,7 +468,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
           StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.NAME_RECORD_STATS_RESPONSE, null, null));
           break;
         case 5:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.ADD_RECORD_LNS, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.ADD_RECORD, null, null));
           break;
         case 6:
           StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE, null, null));

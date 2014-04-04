@@ -11,6 +11,7 @@ import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,6 +35,14 @@ public class LNSQueryHandler {
   private static ConcurrentMap<Integer, Integer> outStandingQueries = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
+  public static ResultValue lookupField(String guid, String field, GnsReconfigurable activeReplica) {
+    QueryResult queryResult = sendQuery(guid, field, activeReplica);
+    if (!queryResult.isError()) {
+      return queryResult.get(field);
+    } else {
+      return null;
+    }
+  }
   /**
    * Sends a DNS query from this Name Server to a Local Name Server
    *

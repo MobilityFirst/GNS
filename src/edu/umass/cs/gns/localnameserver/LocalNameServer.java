@@ -435,10 +435,10 @@ public class LocalNameServer {
 
   public static void updateCacheEntry(ConfirmUpdatePacket packet, String name, NameRecordKey key) {
     switch (packet.getType()) {
-      case CONFIRM_ADD_LNS:
+      case CONFIRM_ADD:
         // screw it.. let the next query generate the cache
         break;
-      case CONFIRM_REMOVE_LNS:
+      case CONFIRM_REMOVE:
         cache.invalidate(name);
         break;
       case CONFIRM_UPDATE:
