@@ -12,7 +12,7 @@ import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.nsdesign.clientsupport.SiteToSiteQueryHandler;
+import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -48,9 +48,9 @@ public class Lookup {
     // the only dns reponses we should see are coming in respone to LNSQueryHandler requests
     if (!dnsPacket.isQuery()) {
       // handle the special case of queries that were from this NS back to an LNS
-      SiteToSiteQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
+      //SiteToSiteQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
       // new and not working
-      //LNSQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
+      LNSQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
       return null;
       // todo handle this
     }

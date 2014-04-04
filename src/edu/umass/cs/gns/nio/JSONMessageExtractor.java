@@ -10,6 +10,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author V. Arun
@@ -42,20 +44,22 @@ import edu.umass.cs.gns.main.GNS;
  * 
  * The third option above is therefore the way to go.
  */
-public class JSONMessageWorker implements DataProcessingWorker {
-  
+public class JSONMessageExtractor implements DataProcessingWorker {
+
+  private static final int SIZE_OF_THREAD_POOL = 100;
   public static final String HEADER_PATTERN = "&"; // Could be an arbitrary string
   private HashMap<SocketChannel, String> sockStreams = null;
-  //private PacketDemultiplexer packetDemux=null;
   private ArrayList<PacketDemultiplexer> packetDemuxes = null;
-  
+  private ExecutorService executor = null; // we use a thread pool to execute message handlers
+
   Logger log = GNS.getLogger();
-  
-  public JSONMessageWorker(PacketDemultiplexer pd) {
+
+  public JSONMessageExtractor(PacketDemultiplexer pd) {
     packetDemuxes = new ArrayList<PacketDemultiplexer>();
     packetDemuxes.add(pd);
     //packetDemux = pd;
     sockStreams = new HashMap<SocketChannel, String>();
+    executor = Executors.newFixedThreadPool(SIZE_OF_THREAD_POOL);
   }
 
   /* Note: Use with care. This will change demultiplexing behavior
@@ -84,7 +88,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
    * also means a huge of amount of buffering in SockStreams. 
    */
   public static String prependHeader(String str) {
-    return (JSONMessageWorker.HEADER_PATTERN + str.length() + JSONMessageWorker.HEADER_PATTERN + str);
+    return (JSONMessageExtractor.HEADER_PATTERN + str.length() + JSONMessageExtractor.HEADER_PATTERN + str);
   }
 
   /* Incoming data has to be associated with a socket channel, not a nodeID, 
@@ -116,16 +120,36 @@ public class JSONMessageWorker implements DataProcessingWorker {
       }
     }
   }
-  /* FIXME: Need handleJSONObject to return a boolean value 
-   * so that we can stop at the first demultiplexer that 
-   * successfully handles the packet.
-   */
+  
+  
 
-  private synchronized void processJSONMessage(JSONObject jsonMsg) {
+  private synchronized void processJSONMessage(final JSONObject jsonMsg) {
     NIOInstrumenter.incrJSONRcvd();
-    //this.packetDemux.handleJSONObject(jsonMsg);
-    for (PacketDemultiplexer pd : this.packetDemuxes) {
-      pd.handleJSONObject(jsonMsg);
+    // run these in a separate thread. One good thing about this is that it allows
+    // message handlers to waitfor the receipt of other messages which would not be possible
+    // if this were single-threaded. The bad things... time will tell.
+    JsonMessageWorker worker = new JsonMessageWorker(jsonMsg, packetDemuxes);
+    executor.execute(worker);
+  }
+
+  private class JsonMessageWorker implements Runnable {
+
+    private JSONObject json;
+    private ArrayList<PacketDemultiplexer> pedemuxs;
+
+    public JsonMessageWorker(JSONObject json, ArrayList<PacketDemultiplexer> pedemuxs) {
+      this.json = json;
+      this.pedemuxs = pedemuxs;
+    }
+
+    @Override
+    public void run() {
+      for (final PacketDemultiplexer pd : pedemuxs) {
+        // the handler turns true if it handled the message
+        if (pd.handleJSONObject(json)) {
+          return;
+        }
+      }
     }
   }
 
@@ -165,21 +189,21 @@ public class JSONMessageWorker implements DataProcessingWorker {
   private String extractMessage(String str, ArrayList<JSONObject> jsonArray) {
     //GNS.getLogger().info("STR: " + str);
     String retval = str;
-    if (str.length() > 2 * JSONMessageWorker.HEADER_PATTERN.length()) {      
-      int firstIndex = str.indexOf(JSONMessageWorker.HEADER_PATTERN);
-      int secondIndex = str.indexOf(JSONMessageWorker.HEADER_PATTERN, firstIndex + JSONMessageWorker.HEADER_PATTERN.length());
+    if (str.length() > 2 * JSONMessageExtractor.HEADER_PATTERN.length()) {
+      int firstIndex = str.indexOf(JSONMessageExtractor.HEADER_PATTERN);
+      int secondIndex = str.indexOf(JSONMessageExtractor.HEADER_PATTERN, firstIndex + JSONMessageExtractor.HEADER_PATTERN.length());
       if (firstIndex > -1 && secondIndex > firstIndex) { // found two occurrences of the special pattern
         int size = 0;
         try {
-          size = Integer.parseInt(str.substring(firstIndex + JSONMessageWorker.HEADER_PATTERN.length(), secondIndex));
+          size = Integer.parseInt(str.substring(firstIndex + JSONMessageExtractor.HEADER_PATTERN.length(), secondIndex));
         } catch (NumberFormatException e) {
           log.severe(e.toString());
         }
         /* Note: If the size is 0 because of an exception above, we 
          * still need to process it as a 0 size message in order to
          * remove the two special header patterns.*/
-        int beginMsg = secondIndex + JSONMessageWorker.HEADER_PATTERN.length();
-        int endMsg = secondIndex + JSONMessageWorker.HEADER_PATTERN.length() + size;
+        int beginMsg = secondIndex + JSONMessageExtractor.HEADER_PATTERN.length();
+        int endMsg = secondIndex + JSONMessageExtractor.HEADER_PATTERN.length() + size;
         if (str.length() >= endMsg) {
           String leftover = str.substring(endMsg);
           String extractedMsg = str.substring(beginMsg, endMsg);
@@ -221,7 +245,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
     String oldStr = sockStreams.get(sock);
     String newStr = (oldStr != null ? oldStr + data : data);
     ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
-    
+
     newStr = this.extractMultipleMessages(newStr, jsonArray);
     this.sockStreams.put(sock, newStr);
     log.finest("Parsed : [" + JSONArrayToString(jsonArray) + "], leftover = [" + newStr + "]");
@@ -241,9 +265,9 @@ public class JSONMessageWorker implements DataProcessingWorker {
    * @param args
    */
   public static void main(String[] args) {
-    JSONMessageWorker jmw = new JSONMessageWorker(new DefaultPacketDemultiplexer());
+    JSONMessageExtractor jmw = new JSONMessageExtractor(new DefaultPacketDemultiplexer());
     String msg = "{\"msg\" : \"Hello  world\"}"; //JSON formatted
-    String hMsg = JSONMessageWorker.prependHeader(msg);
+    String hMsg = JSONMessageExtractor.prependHeader(msg);
     try {
       SocketChannel sock = SocketChannel.open();
 
@@ -253,7 +277,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
       Thread.sleep(1000);
 
       // Single badly formatted message.
-      String bad = JSONMessageWorker.HEADER_PATTERN + "32qw" + JSONMessageWorker.HEADER_PATTERN;
+      String bad = JSONMessageExtractor.HEADER_PATTERN + "32qw" + JSONMessageExtractor.HEADER_PATTERN;
       assert (jmw.processData(sock, bad) == 0);
       System.out.println("Expected = " + 0 + ", found = " + 0 + " (success)");
       Thread.sleep(1000);
@@ -275,7 +299,7 @@ public class JSONMessageWorker implements DataProcessingWorker {
       assert (jmw.processData(sock, "random noise" + hMsg + hMsg) == 2);
       System.out.println("Expected = " + 2 + ", found = " + 2 + " (success)");
       Thread.sleep(1000);
-      
+
       int testParam = 1000;
       int msgCount = 0;
       int foundCount = 0;
@@ -294,16 +318,16 @@ public class JSONMessageWorker implements DataProcessingWorker {
       }
       assert (foundCount == msgCount);
       System.out.println("Expected = " + msgCount + ", found = " + foundCount + " (success)");
-      
+
       System.out.println("Success: If this is printed, all tests are successful."
               + " Note that NumberFormatExceptions are expected above.");
-      
+
     } catch (IOException e) {
       e.printStackTrace();
     } catch (Exception e) {
       e.printStackTrace();
     }
-    
+
   }
-  
+
 }

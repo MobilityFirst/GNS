@@ -36,11 +36,11 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	
 	Timer timer = new Timer();
 	
-	public GNSNIOTransport(int id, NodeConfig nodeConfig, JSONMessageWorker worker) throws IOException {
+	public GNSNIOTransport(int id, NodeConfig nodeConfig, JSONMessageExtractor worker) throws IOException {
 		super(id, nodeConfig, worker); // Switched order of the latter two arguments
 	}
 	public void addPacketDemultiplexer(PacketDemultiplexer pd) {
-		((JSONMessageWorker)this.worker).addPacketDemultiplexer(pd);
+		((JSONMessageExtractor)this.worker).addPacketDemultiplexer(pd);
 	}
 	
 	/********************Start of send methods*****************************************/
@@ -97,11 +97,11 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 			jsonArray.add(jsonData);
 			NIOInstrumenter.incrSent(); // instrumentation
-			((JSONMessageWorker)worker).processJSONMessages(jsonArray);
+			((JSONMessageExtractor)worker).processJSONMessages(jsonArray);
 			written = jsonData.length();
 		}
 		else {
-			String headeredMsg = JSONMessageWorker.prependHeader(jsonData.toString());
+			String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
 			written = this.sendUnderlying(destID, headeredMsg.getBytes());
 		}
 		return written;
@@ -130,8 +130,8 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 		int nNodes=100;
 		SampleNodeConfig snc = new SampleNodeConfig(port);
 		snc.localSetup(nNodes+2);
-		JSONMessageWorker[] workers = new JSONMessageWorker[nNodes+1];
-		for(int i=0; i<nNodes+1; i++) workers[i] = new JSONMessageWorker(new DefaultPacketDemultiplexer());
+		JSONMessageExtractor[] workers = new JSONMessageExtractor[nNodes+1];
+		for(int i=0; i<nNodes+1; i++) workers[i] = new JSONMessageExtractor(new DefaultPacketDemultiplexer());
 		GNSNIOTransport[] niots = new GNSNIOTransport[nNodes];
 		
 		try {

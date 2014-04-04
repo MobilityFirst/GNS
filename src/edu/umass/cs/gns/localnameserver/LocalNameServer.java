@@ -182,7 +182,7 @@ public class LocalNameServer {
 
     if (StartLocalNameServer.useGNSNIOTransport) {
       // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageWorker(new LNSPacketDemultiplexer()));
+      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer()));
       if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
     } else {
       NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), gnsNodeConfig);

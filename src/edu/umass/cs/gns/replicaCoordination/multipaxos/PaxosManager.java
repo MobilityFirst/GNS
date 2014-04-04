@@ -160,7 +160,7 @@ public class PaxosManager {
 
 		SampleNodeConfig snc = new SampleNodeConfig(2000);
 		snc.localSetup(gms);
-		JSONMessageWorker[] jmws = new JSONMessageWorker[nNodes];
+		JSONMessageExtractor[] jmws = new JSONMessageExtractor[nNodes];
 		GNSNIOTransport[] niots = new GNSNIOTransport[nNodes];
 		PaxosManager[] pms = new PaxosManager[nNodes];
 
@@ -168,7 +168,7 @@ public class PaxosManager {
 		try {
 			for(int i=0; i<nNodes; i++) {
 				System.out.println("Initiating node " + i);
-				jmws[i] = new JSONMessageWorker(new DefaultPacketDemultiplexer());
+				jmws[i] = new JSONMessageExtractor(new DefaultPacketDemultiplexer());
 				niots[i] = new GNSNIOTransport(members[i], snc, jmws[i]);
 				new Thread(niots[i]).start();
 				pms[i] = new PaxosManager(members[i], snc, niots[i]);
