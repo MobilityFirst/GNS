@@ -220,7 +220,7 @@ public class LocalNameServer {
   }
 
   public static int addUpdateInfo(String name, int nameserverID, long time,
-                                  int numRestarts, UpdateAddressPacket updateAddressPacket) {
+                                  int numRestarts, UpdatePacket updateAddressPacket) {
     int id;
     //Generate unique id for the query
     do {
@@ -433,7 +433,7 @@ public class LocalNameServer {
     entry.updateCacheEntry(packet);
   }
 
-  public static void updateCacheEntry(ConfirmUpdateLNSPacket packet, String name, NameRecordKey key) {
+  public static void updateCacheEntry(ConfirmUpdatePacket packet, String name, NameRecordKey key) {
     switch (packet.getType()) {
       case CONFIRM_ADD_LNS:
         // screw it.. let the next query generate the cache
@@ -441,7 +441,7 @@ public class LocalNameServer {
       case CONFIRM_REMOVE_LNS:
         cache.invalidate(name);
         break;
-      case CONFIRM_UPDATE_LNS:
+      case CONFIRM_UPDATE:
         CacheEntry entry = cache.getIfPresent(name);
         if (entry != null) {
           entry.updateCacheEntry(packet);

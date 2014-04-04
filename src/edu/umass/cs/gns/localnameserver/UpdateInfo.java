@@ -28,13 +28,13 @@ public class UpdateInfo {
    */
   private int nameserverID;
 
-  private UpdateAddressPacket updateAddressPacket;
+  private UpdatePacket updateAddressPacket;
 
   /** number of times this request has received invalid active error */
   private int numInvalidActiveError;
 
   public UpdateInfo(int id, String name, long sendTime, int nameserverId,
-                    UpdateAddressPacket updateAddressPacket1, int numInvalidActiveError) {
+                    UpdatePacket updateAddressPacket1, int numInvalidActiveError) {
     this.id = id;
     this.name = name;
     this.sendTime = sendTime;
@@ -64,7 +64,7 @@ public class UpdateInfo {
     return name;
   }
 
-  public synchronized String getUpdateStats(ConfirmUpdateLNSPacket confirmPkt, String name) {
+  public synchronized String getUpdateStats(ConfirmUpdatePacket confirmPkt, String name) {
     long latency = System.currentTimeMillis() - sendTime;
     int numTransmissions = 0;
     String msg = "Success-UpdateRequest\t" + name + "\t" + latency
@@ -118,7 +118,7 @@ public class UpdateInfo {
   /**
    * @return the updateAddressPacket
    */
-  public UpdateAddressPacket getUpdateAddressPacket() {
+  public UpdatePacket getUpdateAddressPacket() {
     return updateAddressPacket;
   }
 

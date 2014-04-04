@@ -5,7 +5,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
@@ -64,7 +64,7 @@ public class Add {
 
     } catch (RecordExistsException e) {
       // send error to client
-      ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, addRecordPacket);
+      ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
       gnsMessagingTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
     }
     return gnsMessagingTask;
@@ -79,7 +79,7 @@ public class Add {
     GNSMessagingTask msgTask = null;
     if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
       GNS.getLogger().fine("Add complete informing client. " + addRecordPacket + " Local name server ID = " + addRecordPacket.getLocalNameServerID());
-      ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, addRecordPacket);
+      ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
       msgTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
     }
     return msgTask;

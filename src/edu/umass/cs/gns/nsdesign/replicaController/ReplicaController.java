@@ -113,8 +113,8 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
 			case ADD_RECORD_LNS:  // add name to GNS
         msgTask = Add.handleAddRecordLNS(new AddRecordPacket(json), this);
 				break;
-			case UPDATE_ADDRESS_LNS:  // add name to GNS
-				msgTask = Upsert.handleUpsert(new UpdateAddressPacket(json), this);
+			case UPDATE:  // add name to GNS
+				msgTask = Upsert.handleUpsert(new UpdatePacket(json), this);
 				break;
 			case REQUEST_ACTIVES:  // lookup actives for name
 				if(rcCoordinator == null) {

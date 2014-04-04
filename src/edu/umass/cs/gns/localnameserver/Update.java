@@ -43,7 +43,7 @@ public class Update {
   public static void handlePacketUpdateAddressLNS(JSONObject json)
           throws JSONException, UnknownHostException {
 
-    UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(json);
+    UpdatePacket updateAddressPacket = new UpdatePacket(json);
 
     GNS.getLogger().fine(" UPDATE PACKET RECVD. Operation: " + updateAddressPacket.getOperation());
 
@@ -58,7 +58,7 @@ public class Update {
   }
 
   public static void handlePacketConfirmUpdateLNS(JSONObject json) throws UnknownHostException, JSONException {
-    ConfirmUpdateLNSPacket confirmPkt = new ConfirmUpdateLNSPacket(json);
+    ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json);
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("ConfirmUpdateLNS recvd: ResponseNum: " + " --> " + confirmPkt.toString());
@@ -102,7 +102,7 @@ public class Update {
   private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException{
     GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
 
-    UpdateAddressPacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
+    UpdatePacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
 
     // clear out current cache
     LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
@@ -112,7 +112,7 @@ public class Update {
             updateInfo.getNumInvalidActiveError() + 1);
     String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(),
             LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), updateInfo.getSendTime(), updateInfo.getNumInvalidActiveError() + 1, -1);
-    ConfirmUpdateLNSPacket confirmFailPacket = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
+    ConfirmUpdatePacket confirmFailPacket = ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
 
 
     boolean firstInvalidActiveError = (updateInfo.getNumInvalidActiveError() == 0);

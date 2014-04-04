@@ -7,9 +7,9 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.nsdesign.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.util.Set;
 public class Upsert {
 
 
-  public static GNSMessagingTask handleUpsert(UpdateAddressPacket updatePacket, ReplicaController replicaController) throws JSONException, IOException {
+  public static GNSMessagingTask handleUpsert(UpdatePacket updatePacket, ReplicaController replicaController) throws JSONException, IOException {
     // this must be primary
     //
     GNS.getLogger().fine("<>>>>>>>>>>>>>>>>>> Handling upsert case ....... ");
@@ -36,7 +36,7 @@ public class Upsert {
       nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(replicaController.getDB(), updatePacket.getName(),
               ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       if (nameRecordPrimary.isMarkedForRemoval()) {
-        ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
+        ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         msgTask = new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
         if (Config.debugMode) {
           GNS.getLogger().fine(" UPSERT-FAILED because name record deleted already\t" + updatePacket.getName()
@@ -65,8 +65,8 @@ public class Upsert {
           // could not find activeNS for this name
         } else {
           // send error to LNS
-          ConfirmUpdateLNSPacket failConfirmPacket =
-                  ConfirmUpdateLNSPacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
+          ConfirmUpdatePacket failConfirmPacket =
+                  ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
           msgTask = new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
           if (Config.debugMode) {
             GNS.getLogger().fine(" UPSERT-FAILED\t" + updatePacket.getName() + "\t" + replicaController.getNodeID() +
@@ -76,7 +76,8 @@ public class Upsert {
       }
     } catch (RecordNotFoundException e) {
       // do an INSERT (AKA ADD) operation
-      AddRecordPacket addRecordPacket = new AddRecordPacket(updatePacket.getRequestID(), updatePacket.getName(),
+      AddRecordPacket addRecordPacket = new AddRecordPacket(updatePacket.getSourceId(),
+              updatePacket.getRequestID(), updatePacket.getName(),
               updatePacket.getRecordKey(), updatePacket.getUpdateValue(), updatePacket.getLocalNameServerId(),
               updatePacket.getTTL()); //  getTTL() is used only with upsert.
       addRecordPacket.setLNSRequestID(updatePacket.getLNSRequestID());

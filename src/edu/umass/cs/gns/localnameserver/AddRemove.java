@@ -61,7 +61,7 @@ public class AddRemove {
    * @param updateAddressPacket
    * @throws JSONException
    */
-  static void handleUpsert(UpdateAddressPacket updateAddressPacket) throws JSONException {
+  static void handleUpsert(UpdatePacket updateAddressPacket) throws JSONException {
 
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
             System.currentTimeMillis(), new HashSet<Integer>());
@@ -108,7 +108,7 @@ public class AddRemove {
    * @throws UnknownHostException
    */
   static void handlePacketConfirmAddLNS(JSONObject json) throws JSONException, UnknownHostException {
-    ConfirmUpdateLNSPacket confirmAddPacket = new ConfirmUpdateLNSPacket(json);
+    ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
     UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
 
     if (addInfo == null) {
@@ -132,7 +132,7 @@ public class AddRemove {
    * @throws UnknownHostException
    */
   static void handlePacketConfirmRemoveLNS(JSONObject json) throws JSONException, UnknownHostException {
-    ConfirmUpdateLNSPacket confirmRemovePacket = new ConfirmUpdateLNSPacket(json);
+    ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
     UpdateInfo removeInfo = LocalNameServer.removeUpdateInfo(confirmRemovePacket.getLNSRequestID());
     if (removeInfo == null) {
       GNS.getLogger().warning("Remove confirmation return info not found.");

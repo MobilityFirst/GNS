@@ -94,7 +94,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         return true;
       }
       GNS.getLogger().fine("Request FAILED no response until MAX-wait time: " + getUpdateRequestID() + " name = " + getName());
-      ConfirmUpdateLNSPacket confirmPkt = getConfirmFailurePacket(getPacket());
+      ConfirmUpdatePacket confirmPkt = getConfirmFailurePacket(getPacket());
       try {
         if (confirmPkt != null) {
           Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
@@ -155,17 +155,17 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
   }
   // This code screams for using a super class other than BasicPacket
-  private ConfirmUpdateLNSPacket getConfirmFailurePacket(BasicPacket packet) {
-    ConfirmUpdateLNSPacket confirm;
+  private ConfirmUpdatePacket getConfirmFailurePacket(BasicPacket packet) {
+    ConfirmUpdatePacket confirm;
     switch (packet.getType()) {
       case ADD_RECORD_LNS:
-        confirm = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, (AddRecordPacket) packet);
+        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (AddRecordPacket) packet);
         return confirm;
       case REMOVE_RECORD_LNS:
-        confirm = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, (RemoveRecordPacket) packet);
+        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (RemoveRecordPacket) packet);
         return confirm;
-      case UPDATE_ADDRESS_LNS:
-        confirm = ConfirmUpdateLNSPacket.createFailPacket((UpdateAddressPacket) packet, NSResponseCode.ERROR);
+      case UPDATE:
+        confirm = ConfirmUpdatePacket.createFailPacket((UpdatePacket) packet, NSResponseCode.ERROR);
         return confirm;
     }
     return null;
@@ -185,8 +185,8 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         removeRecordPacket.setLNSRequestID(requestID);
         removeRecordPacket.setLocalNameServerID(LocalNameServer.getNodeID());
         break;
-      case UPDATE_ADDRESS_LNS:
-        UpdateAddressPacket updateAddressPacket = (UpdateAddressPacket) packet;
+      case UPDATE:
+        UpdatePacket updateAddressPacket = (UpdatePacket) packet;
         updateAddressPacket.setLNSRequestID(requestID);
         updateAddressPacket.setLocalNameServerId(LocalNameServer.getNodeID());
         break;

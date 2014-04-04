@@ -46,6 +46,12 @@ public class Packet {
 
     // SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
     // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
+// SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
+    // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
+// SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
+    // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
+// SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
+    // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
     DNS(-1),
     DNS_RESPONSE(-2),
     DNS_ERROR_RESPONSE(-3),
@@ -62,8 +68,8 @@ public class Packet {
     ACTIVE_REMOVE_CONFIRM(13), // after removing name, active replica confirms to replica controller
     RC_REMOVE(14),
     // Update
-    UPDATE_ADDRESS_LNS(20), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
-    CONFIRM_UPDATE_LNS(21),
+    UPDATE(20), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
+    CONFIRM_UPDATE(21),
     // Lookup actives
     REQUEST_ACTIVES(30),
     // Admin:

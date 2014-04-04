@@ -34,7 +34,13 @@ public class AddRecordPacket extends BasicPacket {
   private final static String VALUE = "value";
   private final static String LOCALNAMESERVERID = "localID";
   private final static String NAMESERVER_ID = "ns_ID";
+  private final static String SOURCE_ID = "sourceId"; 
   private final static String TIME_TO_LIVE = "ttlAddress";
+  /**
+   * This is the source ID of a packet that should be returned to the intercessor of the LNS.
+   * Otherwise the sourceId field contains the number of the NS who made the request.
+   */
+  public final static int LOCAL_SOURCE_ID = -1;
 
   /** 
    * Unique identifier used by the entity making the initial request to confirm
@@ -75,6 +81,11 @@ public class AddRecordPacket extends BasicPacket {
    * ID of name server receiving the message.
    */
   private int nameServerID;
+  /**
+   * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
+   * it came from another server.
+   */
+  private int sourceId;
 
   
 
@@ -93,8 +104,9 @@ public class AddRecordPacket extends BasicPacket {
    * @param localNameServerID Id of local nameserver sending this request.
    * @param ttl TTL of name record.
    */
-  public AddRecordPacket(int requestID, String name, NameRecordKey recordKey, ResultValue value, int localNameServerID, int ttl) {
+  public AddRecordPacket(int sourceId, int requestID, String name, NameRecordKey recordKey, ResultValue value, int localNameServerID, int ttl) {
     this.type = Packet.PacketType.ADD_RECORD_LNS;
+    this.sourceId = sourceId;
     this.requestID = requestID;
     this.recordKey = recordKey;
     this.name = name;
@@ -119,6 +131,7 @@ public class AddRecordPacket extends BasicPacket {
     }
 
     this.type = Packet.getPacketType(json);
+    this.sourceId = json.getInt(SOURCE_ID);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
@@ -140,6 +153,7 @@ public class AddRecordPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    json.put(SOURCE_ID, getSourceId());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(RECORDKEY, getRecordKey().getName());
@@ -213,4 +227,10 @@ public class AddRecordPacket extends BasicPacket {
   public void setNameServerID(int nameServerID) {
     this.nameServerID = nameServerID;
   }
+
+  public int getSourceId() {
+    return sourceId;
+  }
+  
+  
 }

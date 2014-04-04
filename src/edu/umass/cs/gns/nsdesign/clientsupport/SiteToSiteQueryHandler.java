@@ -23,12 +23,13 @@ import java.util.concurrent.ConcurrentMap;
  * This class handles sending DNS queries from one NS to another. 
  * Currently it is used by the code that does ACL checks in the NS to look up GUID info.
  * 
- * Note: Will be reimplmenting this as a new class that sends requests to an LNS instead.
+ * Note: Will be reimplementing this as a new class that sends requests to an LNS instead.
  * This will be replaced by LNSQueryHandler when we get that one working.
  *
  * 
  * @author westy
  */
+@Deprecated
 public class SiteToSiteQueryHandler {
 
   private static final Object monitor = new Object();
@@ -72,26 +73,26 @@ public class SiteToSiteQueryHandler {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().finer("First STS Response (" + id + "): "
+          GNS.getLogger().finer("First Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().finer("Later STS Response (" + id + "): "
+          GNS.getLogger().finer("Later Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
         }
       }
     } else {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().finer("First STS Response (" + id + "): "
+          GNS.getLogger().finer("First Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().finer("Later STS Response (" + id + "): "
+          GNS.getLogger().finer("Later Response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
         }

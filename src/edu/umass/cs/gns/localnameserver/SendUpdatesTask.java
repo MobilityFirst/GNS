@@ -37,7 +37,7 @@ import java.util.TimerTask;
 public class SendUpdatesTask extends TimerTask {
 
   private String name;
-  private UpdateAddressPacket updateAddressPacket;
+  private UpdatePacket updateAddressPacket;
   private int updateRequestID;
   private HashSet<Integer> activesQueried;
   private int timeoutCount = -1;
@@ -45,7 +45,7 @@ public class SendUpdatesTask extends TimerTask {
   private int numRestarts;
   private int coordinatorID = -1;
 
-  public SendUpdatesTask(UpdateAddressPacket updateAddressPacket,
+  public SendUpdatesTask(UpdatePacket updateAddressPacket,
                          long requestRecvdTime, HashSet<Integer> activesQueried, int numRestarts) {
     this.name = updateAddressPacket.getName();
     this.updateAddressPacket = updateAddressPacket;
@@ -124,7 +124,7 @@ public class SendUpdatesTask extends TimerTask {
               new SendUpdatesTask(updateAddressPacket, requestRecvdTime,
                       new HashSet<Integer>(), numRestarts + 1),
               StartLocalNameServer.queryTimeout,
-              ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR).toJSONObject(),
+              ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR).toJSONObject(),
               UpdateInfo.getUpdateFailedStats(name, new HashSet<Integer>(), LocalNameServer.getNodeID(),
                       updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts + 1, -1), numRestarts == 0);
 
@@ -174,7 +174,7 @@ public class SendUpdatesTask extends TimerTask {
       }
     }
     // create the packet that we'll send to the primary
-    UpdateAddressPacket pkt = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
+    UpdatePacket pkt = new UpdatePacket(-1,
             updateAddressPacket.getRequestID(),
             updateRequestID, // the id use by the LNS (that would be us here)
             name, updateAddressPacket.getRecordKey(),
@@ -212,7 +212,7 @@ public class SendUpdatesTask extends TimerTask {
 
   private void handleFailure() {
     // create a failure packet and send it back to client support
-    ConfirmUpdateLNSPacket confirmPkt = ConfirmUpdateLNSPacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
+    ConfirmUpdatePacket confirmPkt = ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
     try {
       Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
     } catch (JSONException e) {
@@ -240,7 +240,7 @@ public class SendUpdatesTask extends TimerTask {
   /**
    * @return the updateAddressPacket
    */
-  public UpdateAddressPacket getUpdateAddressPacket() {
+  public UpdatePacket getUpdateAddressPacket() {
     return updateAddressPacket;
   }
 

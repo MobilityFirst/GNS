@@ -37,7 +37,7 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
+public class UpdatePacket extends BasicPacketWithSignatureInfo {
 
   private final static String REQUESTID = "reqID";
   private final static String LocalNSREQUESTID = "LNSreqID";
@@ -47,9 +47,15 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
   private final static String OLDVALUE = "oldvalue";
   private final static String NAMESERVER_ID = "nsID";
   private final static String LOCAL_NAMESERVER_ID = "lnsID";
+  private final static String SOURCE_ID = "sourceId";
   private final static String TTL = "ttl";
   private final static String OPERATION = "operation";
   private final static String ARGUMENT = "argument";
+  /**
+   * This is the source ID of a packet that should be returned to the intercessor of the LNS.
+   * Otherwise the sourceId field contains the number of the NS who made the request.
+   */
+  public final static int LOCAL_SOURCE_ID = -1;
   //
   // We have two ids in here. First one (requestID) is used by the entity making the initial request (often the intercessor).
   // Second (LNSRequestID) is used by the LNS to keep track of it's update records.
@@ -100,6 +106,11 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    */
   private int nameServerId;
   /**
+   * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
+   * it came from another server.
+   */
+  private int sourceId;
+  /**
    * Time to live
    */
   private int ttl;
@@ -130,10 +141,10 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    * @param signature
    * @param message
    */
-  public UpdateAddressPacket(Packet.PacketType type, int requestID, String name, NameRecordKey recordKey,
+  public UpdatePacket(int sourceId, int requestID, String name, NameRecordKey recordKey,
           ResultValue newValue, ResultValue oldValue, int argument, UpdateOperation operation, int localNameServerId, int ttl,
           String writer, String signature, String message) {
-    this(type, requestID, -1, name, recordKey, newValue, oldValue, argument, operation, localNameServerId, -1, ttl,
+    this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, operation, localNameServerId, -1, ttl,
             writer, signature, message);
   }
 
@@ -156,7 +167,8 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    * @param signature
    * @param message
    */
-  public UpdateAddressPacket(Packet.PacketType type,
+  public UpdatePacket(
+          int sourceId,
           int requestID, int LNSRequestID,
           String name, NameRecordKey recordKey,
           ResultValue newValue,
@@ -168,7 +180,8 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
           String writer, String signature, String message) {
     // include the signature info
     super(writer, signature, message);
-    this.type = type;
+    this.type = Packet.PacketType.UPDATE;
+    this.sourceId = sourceId;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
 //    this.NSRequestID = NSRequestID;
@@ -189,10 +202,11 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
    * @param json JSONObject that represents UpdatedAddressPacket.
    * @throws org.json.JSONException
    */
-  public UpdateAddressPacket(JSONObject json) throws JSONException {
+  public UpdatePacket(JSONObject json) throws JSONException {
     // include the signature info
     super(json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
+    this.sourceId = json.getInt(SOURCE_ID);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
 //    this.NSRequestID = json.getInt(NameServerREQUESTID);
@@ -232,6 +246,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     super.addToJSONObject(json); // include the signature info
     Packet.putPacketType(json, getType());
     json.put(REQUESTID, getRequestID());
+    json.put(SOURCE_ID, getSourceId());
     json.put(LocalNSREQUESTID, getLNSRequestID());
 //    json.put(NameServerREQUESTID, getNSRequestID());
     json.put(NAME, getName());
@@ -323,6 +338,10 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     this.nameServerId = nameServerId;
   }
 
+  public int getSourceId() {
+    return sourceId;
+  }
+
   /**
    * @return the ttl
    */
@@ -351,7 +370,7 @@ public class UpdateAddressPacket extends BasicPacketWithSignatureInfo {
     ResultValue x = new ResultValue();
     x.add("12345678");
     //
-    UpdateAddressPacket up = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS, 32234234, 123, "12322323",
+    UpdatePacket up = new UpdatePacket(-1, 32234234, 123, "12322323",
             NameRecordKey.EdgeRecord, x, null, -1, UpdateOperation.APPEND_WITH_DUPLICATION, 123, 123,
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
 

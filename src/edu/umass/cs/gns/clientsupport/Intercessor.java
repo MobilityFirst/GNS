@@ -9,7 +9,7 @@ import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
@@ -23,22 +23,22 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.*;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.Transport;
-import edu.umass.cs.gns.nsdesign.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 
 /**
- * One of a number of class that implement client support in the GNS server. 
- * 
+ * One of a number of class that implement client support in the GNS server.
+ *
  * The intercessor is the primary liason class between the servers (HTTP and new
  * TCP) and the Command Module which handles incoming requests from the servers
  * and the the Local Name Server.
  * It provides support for the AccountAccess, Field Access,
  * FieldMetaData, GroupAccess, and SelectHandler classes.
- * 
- * Provides basic methods for reading and writing fields in the GNS. Used 
- * by the various classes in the client package to implement writing of fields 
+ *
+ * Provides basic methods for reading and writing fields in the GNS. Used
+ * by the various classes in the client package to implement writing of fields
  * (for both user data and system data), meta data, groups and perform more
  * sophisticated queries (the select queries).
- * 
+ *
  * @author westy
  */
 public class Intercessor {
@@ -68,8 +68,8 @@ public class Intercessor {
     Intercessor.localServerID = localServerID;
 
     GNS.getLogger().info("Local server id: " + localServerID
-            + " Address: " +  LocalNameServer.getGnsNodeConfig().getIPAddress(localServerID)
-            + " LNS TCP Port: " +  LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
+            + " Address: " + LocalNameServer.getGnsNodeConfig().getIPAddress(localServerID)
+            + " LNS TCP Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
   }
 
   static {
@@ -84,18 +84,18 @@ public class Intercessor {
 
   /**
    * This is invoked to receive packets. It updates the appropriate map
-   * for the id and notifies the  appropriate monitor to wake the 
-   * original caller. 
-   * 
-   * @param json 
+   * for the id and notifies the appropriate monitor to wake the
+   * original caller.
+   *
+   * @param json
    */
   public static void handleIncomingPackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
-        case CONFIRM_UPDATE_LNS:
+        case CONFIRM_UPDATE:
         case CONFIRM_ADD_LNS:
         case CONFIRM_REMOVE_LNS:
-          ConfirmUpdateLNSPacket packet = new ConfirmUpdateLNSPacket(json);
+          ConfirmUpdatePacket packet = new ConfirmUpdatePacket(json);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");
@@ -140,7 +140,6 @@ public class Intercessor {
   public static QueryResult sendQuery(String name, String key, String reader, String signature, String message) {
     GNS.getLogger().fine("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
-
 
     DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), reader, signature, message);
     JSONObject json;
@@ -188,16 +187,16 @@ public class Intercessor {
 
   /**
    * Sends an AddRecord packet to the Local Name Server with an initial value.
-   * 
+   *
    * @param name
    * @param key
    * @param value
-   * @return 
+   * @return
    */
   public static NSResponseCode sendAddRecord(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
     GNS.getLogger().finer("Sending add: " + name + "->" + value);
-    AddRecordPacket pkt = new AddRecordPacket(id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -215,7 +214,7 @@ public class Intercessor {
   public static NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     GNS.getLogger().fine("Sending remove: " + name);
-    RemoveRecordPacket pkt = new RemoveRecordPacket(id, name, localServerID);
+    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -231,16 +230,16 @@ public class Intercessor {
 
   /**
    * Sends an update request for a single value.
-   * 
+   *
    * @param name
    * @param key
    * @param newValue - the new value to update with
    * @param oldValue - the old value to update with for substitute
    * @param argument - the index for the set operation
    * @param operation
-   * @return 
+   * @return
    */
-  public static NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue, 
+  public static NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     return sendUpdateRecord(name, key,
@@ -253,16 +252,16 @@ public class Intercessor {
 
   /**
    * Sends an update request for a list.
-   * 
+   *
    * @param name
    * @param key
    * @param newValue - the new value to update with
    * @param oldValue - the old value to update with for substitute
    * @param argument - the index for the set operation
    * @param operation
-   * @return 
+   * @return
    */
-  public static NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue, 
+  public static NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
@@ -277,13 +276,13 @@ public class Intercessor {
 
   /**
    * Used internally by the system to send update requests for lists. Ignores signatures and access.
-   * 
+   *
    * @param name
    * @param key
    * @param newValue
    * @param oldValue
    * @param operation
-   * @return 
+   * @return
    */
   public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
@@ -293,13 +292,13 @@ public class Intercessor {
 
   /**
    * Used internally by the system to send update requests. Ignores signatures and access.
-   * 
+   *
    * @param name
    * @param key
    * @param newValue
    * @param oldValue
    * @param operation
-   * @return 
+   * @return
    */
   public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
@@ -312,7 +311,8 @@ public class Intercessor {
           String writer, String signature, String message) {
 
     GNS.getLogger().finer("Sending update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
-    UpdateAddressPacket pkt = new UpdateAddressPacket(PacketType.UPDATE_ADDRESS_LNS,
+    UpdatePacket pkt = new UpdatePacket(
+            UpdatePacket.LOCAL_SOURCE_ID, // means it came from Intercessor
             id,
             name, new NameRecordKey(key),
             newValue,
@@ -357,13 +357,12 @@ public class Intercessor {
     }
   }
 
-
   /**
-   * Helper function for sending JSON packets to the Local Name Server. 
+   * Helper function for sending JSON packets to the Local Name Server.
    * This does not require a socket based send (just a dispatch)
    * as the LNS runs in the same process as the HTTP server.
-   * 
-   * @param jsonObject 
+   *
+   * @param jsonObject
    */
   public static void injectPacketIntoLNSQueue(JSONObject jsonObject) {
     boolean isPacketTypeFound = lnsPacketDemultiplexer.handleJSONObject(jsonObject);

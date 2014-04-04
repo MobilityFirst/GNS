@@ -105,7 +105,7 @@ public class RequestGenerator {
       ResultValue newValue = new ResultValue();
       newValue.add(RequestGenerator.getRandomString());
 
-      UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(Packet.PacketType.UPDATE_ADDRESS_LNS,
+      UpdatePacket updateAddressPacket = new UpdatePacket(-1,
               updateCount, updateCount,
               name, NameRecordKey.EdgeRecord, newValue, null, -1,
               UpdateOperation.REPLACE_ALL, -1, -1, GNS.DEFAULT_TTL_SECONDS,
@@ -137,7 +137,7 @@ public class RequestGenerator {
 
       ResultValue newValue = new ResultValue();
       newValue.add(RequestGenerator.getRandomString());
-      AddRecordPacket packet = new AddRecordPacket(requestCount, name, NameRecordKey.EdgeRecord, newValue,
+      AddRecordPacket packet = new AddRecordPacket(-1, requestCount, name, NameRecordKey.EdgeRecord, newValue,
               -1, GNS.DEFAULT_TTL_SECONDS);
 
       try {
@@ -166,7 +166,7 @@ public class RequestGenerator {
     @Override
     public void run() {
 
-      RemoveRecordPacket packet = new RemoveRecordPacket(requestCount, name, -1);
+      RemoveRecordPacket packet = new RemoveRecordPacket(-1, requestCount, name, -1);
 
       try {
         packetDemultiplexer.handleJSONObject(packet.toJSONObject());

@@ -44,8 +44,8 @@ public class ActiveReplicaCoordinatorPaxos extends ActiveReplicaCoordinator{
         case ACTIVE_COORDINATION: // coordination type packets
           paxosManager.handleIncomingPacket(request);
           break;
-        case UPDATE_ADDRESS_LNS:
-          String paxosID = paxosManager.propose(new UpdateAddressPacket(request).getName(), request.toString(), false);
+        case UPDATE:
+          String paxosID = paxosManager.propose(new UpdatePacket(request).getName(), request.toString(), false);
           if (paxosID == null) {
             return -1;
           }

@@ -129,7 +129,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
             activeCoordinator.coordinateRequest(json);
           }
           break;
-        case UPDATE_ADDRESS_LNS: // update sent by lns.
+        case UPDATE: // update sent by lns.
           msgTask = Update.handleUpdate(json, this);
           break;
         case SELECT_REQUEST:
@@ -214,8 +214,8 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
         case DNS: 
           msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this);
           break;
-        case UPDATE_ADDRESS_LNS:
-          msgTask = Update.executeUpdateLocal(new UpdateAddressPacket(json), this);
+        case UPDATE:
+          msgTask = Update.executeUpdateLocal(new UpdatePacket(json), this);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);

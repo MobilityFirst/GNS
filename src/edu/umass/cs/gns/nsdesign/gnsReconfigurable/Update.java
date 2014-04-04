@@ -7,9 +7,9 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdateLNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
@@ -34,7 +34,7 @@ public class Update {
   public static GNSMessagingTask handleUpdate(JSONObject json, GnsReconfigurable replica)
           throws JSONException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 
-    UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(json);
+    UpdatePacket updateAddressPacket = new UpdatePacket(json);
     updateAddressPacket.setNameServerId(replica.getNodeID());
     if (replica.getActiveCoordinator() == null) {
       return Update.executeUpdateLocal(updateAddressPacket, replica);
@@ -46,7 +46,7 @@ public class Update {
   }
 
 
-  public static GNSMessagingTask executeUpdateLocal(UpdateAddressPacket updatePacket, GnsReconfigurable replica)
+  public static GNSMessagingTask executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
     GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
 
@@ -64,7 +64,7 @@ public class Update {
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
-      ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, errorCode);
+      ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
 //      NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
       return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
     }
@@ -79,7 +79,7 @@ public class Update {
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + updatePacket.getName());
         e.printStackTrace();
-        ConfirmUpdateLNSPacket failConfirmPacket = ConfirmUpdateLNSPacket.createFailPacket(updatePacket, errorCode);
+        ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
         return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
       }
     }
@@ -105,7 +105,8 @@ public class Update {
         }
         if (updatePacket.getNameServerId() == replica.getNodeID()) { //if this node proposed this update
           // send error message to client
-          ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
+          ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
+                  updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
 
           if (Config.debugMode) {
@@ -124,7 +125,8 @@ public class Update {
       // this should be uncommented once active replica starts to send read/write statistics for name.
 //        nameRecord.incrementUpdateRequest();
       if (updatePacket.getNameServerId() == replica.getNodeID()) {
-        ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
+        ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
+                updatePacket.getSourceId(),
                 updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
         if (Config.debugMode) {
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());

@@ -15,11 +15,12 @@ import org.json.JSONObject;
  * client.
  *
  */
-public class ConfirmUpdateLNSPacket extends BasicPacket {
+public class ConfirmUpdatePacket extends BasicPacket {
 
   private final static String REQUESTID = "reqid";
   private final static String LNSREQUESTID = "lnreqsid";
   private final static String RESPONSECODE = "code";
+  private final static String RETURNTO = "returnTo";
   /**
    * Unique identifier used by the entity making the initial request to confirm
    */
@@ -32,15 +33,20 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
    * indicates success or failure of operation
    */
   private NSResponseCode responseCode;
-
+  /**
+   * Indicates if this is supposed to go back to an Intercessor or another server.
+   */
+  private int returnTo;
+  
   /**
    * Constructs a new ConfirmUpdatePacket with the given parameters.
    *
    * @param type Type of this packet
    * @param requestID Id of local or name server
    */
-  public ConfirmUpdateLNSPacket(Packet.PacketType type, int requestID, int LNSRequestID, NSResponseCode responseCode) {
+  public ConfirmUpdatePacket(Packet.PacketType type, int returnTo, int requestID, int LNSRequestID, NSResponseCode responseCode) {
     this.type = type;
+    this.returnTo = returnTo;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
     this.responseCode = responseCode;
@@ -53,9 +59,9 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
    * @param updatePacket
    * @return
    */
-  public static ConfirmUpdateLNSPacket createFailPacket(UpdateAddressPacket updatePacket, NSResponseCode code) {
+  public static ConfirmUpdatePacket createFailPacket(UpdatePacket updatePacket, NSResponseCode code) {
     assert code != NSResponseCode.NO_ERROR; // that would be stupid
-    return new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
+    return new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE, updatePacket.getSourceId(),
             updatePacket.getRequestID(), updatePacket.getLNSRequestID(), code);
   }
 
@@ -66,8 +72,8 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
    * @param updatePacket  <code>UpdateAddressPacket</code> received by name server.
    * @return <code>ConfirmUpdateLNSPacket</code> indicating request failure.
    */
-  public static ConfirmUpdateLNSPacket createSuccessPacket(UpdateAddressPacket updatePacket) {
-    return new ConfirmUpdateLNSPacket(Packet.PacketType.CONFIRM_UPDATE_LNS,
+  public static ConfirmUpdatePacket createSuccessPacket(UpdatePacket updatePacket) {
+    return new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE, updatePacket.getSourceId(),
             updatePacket.getRequestID(), updatePacket.getLNSRequestID(), //updatePacket.getName(), updatePacket.getRecordKey(),
             NSResponseCode.NO_ERROR);
   }
@@ -77,13 +83,13 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
     this.responseCode = code;
   }
 
-  public ConfirmUpdateLNSPacket(NSResponseCode code, AddRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_ADD_LNS, packet.getRequestID(), packet.getLNSRequestID(), code);
+  public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket packet) {
+    this(Packet.PacketType.CONFIRM_ADD_LNS, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
 
   }
 
-  public ConfirmUpdateLNSPacket(NSResponseCode code, RemoveRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_REMOVE_LNS, packet.getRequestID(), packet.getLNSRequestID(), code);
+  public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket packet) {
+    this(Packet.PacketType.CONFIRM_REMOVE_LNS, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
   }
 
   /**
@@ -92,8 +98,9 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
    * @param json JSONObject that represents ConfirmUpdatePacket.
    * @throws org.json.JSONException
    */
-  public ConfirmUpdateLNSPacket(JSONObject json) throws JSONException {
+  public ConfirmUpdatePacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
+    this.returnTo = json.getInt(RETURNTO);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy
@@ -110,12 +117,17 @@ public class ConfirmUpdateLNSPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    json.put(RETURNTO, returnTo);
     json.put(REQUESTID, requestID);
     json.put(LNSREQUESTID, LNSRequestID);
     // store it as an int in the JSON to keep the byte counting folks happy
     json.put(RESPONSECODE, responseCode.getCodeValue());
 
     return json;
+  }
+
+  public int getReturnTo() {
+    return returnTo;
   }
 
   public int getRequestID() {

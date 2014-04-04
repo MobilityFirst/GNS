@@ -22,8 +22,13 @@ public class RemoveRecordPacket extends BasicPacket {
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
   private final static String LOCALNAMESERVERID = "local";
-
   private final static String NAME_SERVER_ID = "nsID";
+  private final static String SOURCE_ID = "sourceId";
+   /**
+   * This is the source ID of a packet that should be returned to the intercessor of the LNS.
+   * Otherwise the sourceId field contains the number of the NS who made the request.
+   */
+  public final static int LOCAL_SOURCE_ID = -1;
 
   /**
    * Unique identifier used by the entity making the initial request to confirm
@@ -50,20 +55,27 @@ public class RemoveRecordPacket extends BasicPacket {
    * Id of name server who received this request from client
    */
   private int nameServerID;
+   /**
+   * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
+   * it came from another server.
+   */
+  private int sourceId;
 
 
   /**
    * ***********************************************************
    * Constructs a new RemoveRecordPacket with the given name and value.
    *
-   * @param requestID  Unique identifier used by the entity making the initial request to confirm
+   * @param sourceId the originator of this packet (either a server Id or -1 to indicate The intercessor)
+   * @param requestId  Unique identifier used by the entity making the initial request to confirm
    * @param name Host/domain/device name
    * @param localNameServerID Id of local nameserver sending this request.
    * **********************************************************
    */
-  public RemoveRecordPacket(int requestID, String name, int localNameServerID) {
+  public RemoveRecordPacket(int sourceId, int requestId, String name, int localNameServerID) {
     this.type = Packet.PacketType.REMOVE_RECORD_LNS;
-    this.requestID = requestID;
+    this.sourceId = sourceId;
+    this.requestID = requestId;
     this.name = name;
     this.localNameServerID = localNameServerID;
     this.nameServerID = -1; // this field will be set by name server after it received the packet
@@ -84,6 +96,7 @@ public class RemoveRecordPacket extends BasicPacket {
     }
 
     this.type = Packet.getPacketType(json);
+    this.sourceId = json.getInt(SOURCE_ID);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
@@ -102,6 +115,7 @@ public class RemoveRecordPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    json.put(SOURCE_ID, getSourceId());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(NAME, getName());
@@ -149,6 +163,10 @@ public class RemoveRecordPacket extends BasicPacket {
 
   public void setNameServerID(int nameServerID) {
     this.nameServerID = nameServerID;
+  }
+
+  public int getSourceId() {
+    return sourceId;
   }
 
   public void changePacketTypeToRcRemove() {

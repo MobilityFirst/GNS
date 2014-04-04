@@ -6,7 +6,7 @@ import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.UpdateAddressPacket;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,10 +39,10 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
       Packet.PacketType type = Packet.getPacketType(json);
 
       switch (type) {
-        case UPDATE_ADDRESS_LNS:
+        case UPDATE:
           GNS.getLogger().fine(">>>>>>>>>>>>>>>UPDATE ADDRESS PACKET: " + json);
           // TODO define a different packet type for upserts
-          UpdateAddressPacket updateAddressPacket = new UpdateAddressPacket(json);
+          UpdatePacket updateAddressPacket = new UpdatePacket(json);
           if (updateAddressPacket.getOperation().isUpsert()) {
             ReplicaController replicaController = nameServerInterface.getReplicaController();
             if (replicaController != null)  replicaController.handleJSONObject(json);

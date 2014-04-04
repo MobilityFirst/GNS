@@ -183,9 +183,9 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
     packetGraphics.put(Packet.PacketType.ACTIVE_NAMESERVER_UPDATE, new PacketGraphic(Colors.OliveDrab, 1.0));
 
     packetGraphics.put(Packet.PacketType.NAMESERVER_SELECTION, new PacketGraphic(Colors.MediumSeaGreen, 1.0));
-    packetGraphics.put(Packet.PacketType.UPDATE_ADDRESS_LNS, new PacketGraphic(Colors.MediumPurple, 1.0));
+    packetGraphics.put(Packet.PacketType.UPDATE, new PacketGraphic(Colors.MediumPurple, 1.0));
     //packetGraphics.put(Packet.PacketType.UPDATE_ADDRESS_NS, new PacketGraphic(Colors.Magenta, 1.0));
-    packetGraphics.put(Packet.PacketType.CONFIRM_UPDATE_LNS, new PacketGraphic(Colors.MediumGreen, 1.0));
+    packetGraphics.put(Packet.PacketType.CONFIRM_UPDATE, new PacketGraphic(Colors.MediumGreen, 1.0));
 
 
 

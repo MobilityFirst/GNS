@@ -109,7 +109,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     activeNameServer = packet.getActiveNameServers();
   }
 
-  public synchronized void updateCacheEntry(ConfirmUpdateLNSPacket packet) {
+  public synchronized void updateCacheEntry(ConfirmUpdatePacket packet) {
     // invalidate the valuesMap part of the cache... best we can do since the packet has no info
     // it will be refreshed on next read
     valuesMap = null;

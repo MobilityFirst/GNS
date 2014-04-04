@@ -53,10 +53,10 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           }
           break;
         // Update
-        case UPDATE_ADDRESS_LNS:
+        case UPDATE:
           Update.handlePacketUpdateAddressLNS(json);
           break;
-        case CONFIRM_UPDATE_LNS:
+        case CONFIRM_UPDATE:
           Update.handlePacketConfirmUpdateLNS(json);
           break;
         case NAME_SERVER_LOAD:

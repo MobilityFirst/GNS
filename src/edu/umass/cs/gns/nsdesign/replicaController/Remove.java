@@ -67,7 +67,7 @@ public class Remove {
 
     } catch (RecordNotFoundException e) {
       // return failure, because record was not even found
-      ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, removeRecord);
+      ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
       GNS.getLogger().severe("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
       msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
     }
@@ -122,7 +122,7 @@ public class Remove {
       e.printStackTrace();
     }
     if (sendError) {
-      ConfirmUpdateLNSPacket failPacket = new ConfirmUpdateLNSPacket(NSResponseCode.ERROR, removeRecord);
+      ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
       msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
     }
     return msgTask;
@@ -165,7 +165,7 @@ public class Remove {
 
     if (removeRecordPacket.getNameServerID() == rc.getNodeID()) { // this will be true at the replica controller who
                                                                   // first received the client's request
-      ConfirmUpdateLNSPacket confirmPacket = new ConfirmUpdateLNSPacket(NSResponseCode.NO_ERROR, removeRecordPacket);
+      ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
       msgTask = new GNSMessagingTask(removeRecordPacket.getLocalNameServerID(), confirmPacket.toJSONObject());
       GNS.getLogger().fine("Remove record response sent to LNS: " + removeRecordPacket.getName() + " lns " +
               removeRecordPacket.getLocalNameServerID());
