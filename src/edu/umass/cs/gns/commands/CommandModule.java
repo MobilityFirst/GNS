@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;
@@ -19,6 +18,10 @@ import java.util.TreeSet;
 
 import static edu.umass.cs.gns.clientsupport.Defs.COMMANDNAME;
 import static edu.umass.cs.gns.clientsupport.Defs.NEWLINE;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  *
@@ -43,9 +46,9 @@ public class CommandModule {
   /**
    * Add commands to this module. Commands instances are created by reflection
    * based on the command class names passed in parameter
-   * 
+   *
    * @param commandClasses a String[] containing the class names of the command
-   *          to instantiate
+   * to instantiate
    * @param commands Set where the commands are added
    */
   protected void addCommands(String[] commandClasses, Set<GnsCommand> commands) {
@@ -77,7 +80,7 @@ public class CommandModule {
       GNS.getLogger().warning("Unable find " + COMMANDNAME + " key in JSON command: " + e);
       return null;
     }
-     GNS.getLogger().fine("Searching " + commands.size() + " commands:");
+    GNS.getLogger().fine("Searching " + commands.size() + " commands:");
     // for now a linear search is fine
     for (GnsCommand command : commands) {
       //GNS.getLogger().info("Search: " + command.toString());
@@ -97,7 +100,12 @@ public class CommandModule {
     StringBuffer result = new StringBuffer();
     String prefix = "";
     int cnt = 1;
-    for (GnsCommand command : commands) {
+    List<GnsCommand> commandList = new ArrayList(commands);
+    // First sort by name
+    Collections.sort(commandList, CommandNameComparator);
+    // The sort them by package
+    Collections.sort(commandList, CommandPackageComparator);
+    for (GnsCommand command :  commandList) {
       result.append(prefix);
       result.append(cnt++ + ": ");
       result.append(command.getUsage());
@@ -131,4 +139,40 @@ public class CommandModule {
   public void setAdminMode(boolean adminMode) {
     this.adminMode = adminMode;
   }
+
+  public static Comparator<GnsCommand> CommandPackageComparator
+          = new Comparator<GnsCommand>() {
+
+            @Override
+            public int compare(GnsCommand command1, GnsCommand command2) {
+
+              String packageName1 = command1.getClass().getPackage().getName();
+              String packageName2 = command2.getClass().getPackage().getName();
+
+              //ascending order
+              return packageName1.compareTo(packageName2);
+
+	      //descending order
+              //return fruitName2.compareTo(fruitName1);
+            }
+
+          };
+  
+  public static Comparator<GnsCommand> CommandNameComparator
+          = new Comparator<GnsCommand>() {
+
+            @Override
+            public int compare(GnsCommand command1, GnsCommand command2) {
+
+              String commandName1 = command1.getCommandName();
+              String commandName2 = command2.getCommandName();
+
+              //ascending order
+              return commandName1.compareTo(commandName2);
+
+	      //descending order
+              //return fruitName2.compareTo(fruitName1);
+            }
+
+          };
 }

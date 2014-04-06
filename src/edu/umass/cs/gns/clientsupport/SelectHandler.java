@@ -42,6 +42,18 @@ public class SelectHandler {
     return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, LocalNameServer.getNodeID(), query));
   }
   
+  private static int MIN_REFRESH_INTERVAL = 60; //seconds
+  
+  public static String sendGroupGuidSetupSelectQuery(String query, String guid) {
+    int id = nextRequestID();
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, LocalNameServer.getNodeID(), query, guid, MIN_REFRESH_INTERVAL));
+  }
+  
+  public static String sendGroupGuidLookupSelectQuery(String guid) {
+    int id = nextRequestID();
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, LocalNameServer.getNodeID(), guid));
+  }
+  
   public static String sendSelectHelper(int id, SelectRequestPacket sendPacket) {
     try {
       Intercessor.injectPacketIntoLNSQueue(sendPacket.toJSONObject());

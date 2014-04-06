@@ -40,12 +40,12 @@ public class Update {
 
   private static Random r = new Random();
 
-  public static void handlePacketUpdateAddress(JSONObject json)
+  public static void handlePacketUpdate(JSONObject json)
           throws JSONException, UnknownHostException {
 
     UpdatePacket updateAddressPacket = new UpdatePacket(json);
 
-    GNS.getLogger().fine(" UPDATE PACKET RECVD. Operation: " + updateAddressPacket.getOperation());
+    GNS.getLogger().fine("UPDATE PACKET RECVD: Operation: " + updateAddressPacket.getOperation());
 
     if (updateAddressPacket.getOperation().isUpsert()) {
       AddRemove.handleUpsert(updateAddressPacket);
@@ -61,7 +61,7 @@ public class Update {
     ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json);
 
     if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("ConfirmUpdateLNS recvd: ResponseNum: " + " --> " + confirmPkt.toString());
+      GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt.toString());
     }
 
     // if update info isnt available, we cant do anything.
@@ -75,8 +75,6 @@ public class Update {
       // update the cache BEFORE we send back the confirmation
       LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
       // send the confirmation back to the originator of the update
-      GNS.getLogger().fine("LNSListenerUpdate CONFIRM UPDATE (ns " + LocalNameServer.getNodeID() + ") to "
-              + " : " + json.toString());
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
       //Intercessor.handleIncomingPackets(json);
       // instrumentation?
@@ -127,16 +125,16 @@ public class Update {
       GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
-      GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
-      LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
-//      try {
-//        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
-//                packet.getReturnTo(), GNS.PortType.NS_TCP_PORT);
-//      } catch (IOException e) {
-//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
-//      } catch (JSONException e) {
-//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
-//      }
+      GNS.getLogger().info("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
+      //LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
+      try {
+        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
+                packet.getReturnTo(), GNS.PortType.NS_TCP_PORT);
+      } catch (IOException e) {
+        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+      }
     }
   }
 }

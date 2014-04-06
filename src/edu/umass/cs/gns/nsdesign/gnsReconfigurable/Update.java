@@ -20,11 +20,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
-/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
+/**
+ * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
+ */
 /**
  *
  * Contains code for executing an address update locally at each active replica. If name servers are replicated,
- * then methods in this class will be executed after  the coordination among active replicas at name servers
+ * then methods in this class will be executed after the coordination among active replicas at name servers
  * is complete.
  *
  * Created by abhigyan on 2/27/14.
@@ -45,13 +47,11 @@ public class Update {
 
   }
 
-
   public static GNSMessagingTask executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
     GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
 
 //    UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
-
     // First we do signature and ACL checks
     String guid = updatePacket.getName();
     String field = updatePacket.getRecordKey().getName();
@@ -85,41 +85,29 @@ public class Update {
     }
 
     // Apply update
-    if (Config.debugMode) {
-      GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
-    }
+    GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
     boolean result;
     try {
       result = nameRecord.updateKey(updatePacket.getRecordKey().getName(),
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
               updatePacket.getOperation());
-
-      if (Config.debugMode) {
-        GNS.getLogger().fine("Update operation result = " + result + "\t"
-                + updatePacket.getUpdateValue());
-      }
+      GNS.getLogger().fine("Update operation result = " + result + "\t"
+              + updatePacket.getUpdateValue());
 
       if (!result) { // update failed
-        if (Config.debugMode) {
-          GNS.getLogger().fine("Update operation failed " + updatePacket);
-        }
+        GNS.getLogger().fine("Update operation failed " + updatePacket);
         if (updatePacket.getNameServerId() == replica.getNodeID()) { //if this node proposed this update
           // send error message to client
           ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
 
-          if (Config.debugMode) {
-            GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
-          }
+          GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
           return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());
         }
         return null;
       }
-
-      if (Config.debugMode) {
-        GNS.getLogger().fine("Update applied" + updatePacket);
-      }
+      GNS.getLogger().fine("Update applied" + updatePacket);
 
       // Abhigyan: commented this because we are using lns votes for this calculation.
       // this should be uncommented once active replica starts to send read/write statistics for name.
@@ -128,10 +116,7 @@ public class Update {
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                 updatePacket.getSourceId(),
                 updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-        if (Config.debugMode) {
-          GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
-        }
-
+        GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
         return new GNSMessagingTask(updatePacket.getLocalNameServerId(), confirmPacket.toJSONObject());
 
       }
@@ -139,9 +124,8 @@ public class Update {
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. Exception = " + e.getMessage());
       e.printStackTrace();
-      return  null;
+      return null;
     }
   }
-
 
 }

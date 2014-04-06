@@ -54,7 +54,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           break;
         // Update
         case UPDATE:
-          Update.handlePacketUpdateAddress(json);
+          Update.handlePacketUpdate(json);
           break;
         case CONFIRM_UPDATE:
           Update.handlePacketConfirmUpdate(json);

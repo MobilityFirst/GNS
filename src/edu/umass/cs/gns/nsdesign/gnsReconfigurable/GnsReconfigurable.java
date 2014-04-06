@@ -34,8 +34,9 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
+/**
+ * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
+ */
 /**
  * Work in progress. Inactive code.
  *
@@ -45,25 +46,36 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
 
-  /** object handles coordination among replicas on a request, if necessary */
+  /**
+   * object handles coordination among replicas on a request, if necessary
+   */
   private ActiveReplicaCoordinator activeCoordinator = null;
 
   private ActiveReplica activeReplica;
 
-
-  /**ID of this node*/
+  /**
+   * ID of this node
+   */
   private int nodeID;
 
-  /** nio server*/
+  /**
+   * nio server
+   */
   private GNSNIOTransport nioServer;
 
-  /** executor service for handling tasks */
+  /**
+   * executor service for handling tasks
+   */
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
-  /** Object provides interface to the database table storing name records */
+  /**
+   * Object provides interface to the database table storing name records
+   */
   private BasicRecordMap nameRecordDB;
 
-  /** Configuration for all nodes in GNS **/
+  /**
+   * Configuration for all nodes in GNS *
+   */
   private GNSNodeConfig gnsNodeConfig;
 
   private PingManager pingManager;
@@ -72,8 +84,8 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
    * constructor object
    */
   public GnsReconfigurable(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-                           GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
-                           MongoRecords mongoRecords) {
+          GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+          MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
     this.gnsNodeConfig = gnsNodeConfig;
@@ -105,9 +117,10 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
    *
    * Currently, we are implementing a single unreplicated active replica and replica controller.
    * So, we do not take any action on some packet types.
+   *
    * @param json json object received at name server
    */
-  public void handleIncomingPacket(JSONObject json){
+  public void handleIncomingPacket(JSONObject json) {
     // Types of packets:
     // (1) Lookup (from LNS)
     // (2) Update (from LNS)
@@ -122,7 +135,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
 
       GNSMessagingTask msgTask = null;
       switch (type) {
-        /** Packets sent from LNS **/
+        /**
+         * Packets sent from LNS *
+         */
         case DNS:     // lookup sent by lns (NEW: could also be a response from LNS)
           if (activeCoordinator == null) {
             msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this);
@@ -138,7 +153,8 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:
-            LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket(json), this);
+          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket(json), this);
+          break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
           break;
@@ -146,7 +162,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
           Select.handleSelectResponse(json, this);
           break;
 
-        /** Packets sent from replica controller **/
+        /**
+         * Packets sent from replica controller *
+         */
         case ACTIVE_ADD: // sent when new name is added to GNS
           msgTask = Add.handleActiveAdd(new AddRecordPacket(json), this);
           break;
@@ -154,7 +172,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
           msgTask = Remove.handleActiveRemovePacket(new OldActiveSetStopPacket(json), this);
           break;
 
-        /** Packets from coordination modules at active replica **/
+        /**
+         * Packets from coordination modules at active replica *
+         */
         case ACTIVE_COORDINATION:
           activeCoordinator.coordinateRequest(json);
           break;
@@ -181,19 +201,19 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     }
   }
 
-  public int getNodeID(){
+  public int getNodeID() {
     return nodeID;
   }
 
-  public BasicRecordMap getDB(){
+  public BasicRecordMap getDB() {
     return nameRecordDB;
   }
 
-  public GNSNodeConfig getGNSNodeConfig(){
+  public GNSNodeConfig getGNSNodeConfig() {
     return gnsNodeConfig;
   }
 
-  public GNSNIOTransport getNioServer(){
+  public GNSNIOTransport getNioServer() {
     return nioServer;
   }
 
@@ -216,7 +236,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
       JSONObject json = new JSONObject(value);
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
-        case DNS: 
+        case DNS:
           msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this);
           break;
         case UPDATE:
@@ -229,7 +249,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
           Select.handleSelectResponse(json, this);
           break;
 
-        /** Packets sent from replica controller **/
+        /**
+         * Packets sent from replica controller *
+         */
         case ACTIVE_ADD: // sent when new name is added to GNS
           AddRecordPacket addRecordPacket = new AddRecordPacket(json);
           msgTask = Add.executeSendConfirmation(addRecordPacket, this);
@@ -261,8 +283,8 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
   private static ArrayList<ColumnField> activeStopFields = new ArrayList<ColumnField>();
 
   static {
-      activeStopFields.add(NameRecord.ACTIVE_VERSION);
-      activeStopFields.add(NameRecord.VALUES_MAP);
+    activeStopFields.add(NameRecord.ACTIVE_VERSION);
+    activeStopFields.add(NameRecord.VALUES_MAP);
   }
 
   @Override
@@ -305,19 +327,18 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
       activeReplica.stopProcessed(name, activeVersion, true);
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("Record not found exception. Message = " + e.getMessage());
-    }catch (FieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       GNS.getLogger().warning("FieldNotFoundException. " + e.getMessage());
       e.printStackTrace();
     }
   }
 
-
   private static ArrayList<ColumnField> prevValueRequestFields = new ArrayList<ColumnField>();
 
   static {
-      prevValueRequestFields.add(NameRecord.OLD_ACTIVE_VERSION);
-      prevValueRequestFields.add(NameRecord.OLD_VALUES_MAP);
-      prevValueRequestFields.add(NameRecord.TIME_TO_LIVE);
+    prevValueRequestFields.add(NameRecord.OLD_ACTIVE_VERSION);
+    prevValueRequestFields.add(NameRecord.OLD_VALUES_MAP);
+    prevValueRequestFields.add(NameRecord.TIME_TO_LIVE);
   }
 
   @Override
@@ -327,7 +348,6 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     // 1. propose stop to coordinator
     // 2. confirm to activeReplica that version stopped successfully
     // 3. confirm to activeReplica that there is an error in handling stop message.
-
     Boolean success = null; // is this is non-null at the end of method we will send response to active replica.
     int[] versions = getCurrentOldVersions(name);
     if (versions != null) {
@@ -350,7 +370,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
           }
         } else if (curVersion > version) {
           success = true;
-          if (curVersion != version + 1) printWarning = true;
+          if (curVersion != version + 1) {
+            printWarning = true;
+          }
 
         } else {
           success = false;
@@ -360,25 +382,27 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
       } else if (oldVersion != NameRecord.NULL_VALUE_ACTIVE_VERSION) {
         if (oldVersion >= version) {
           success = true;
-          if (oldVersion != version) printWarning = true;
+          if (oldVersion != version) {
+            printWarning = true;
+          }
         } else {
           success = false;
           printWarning = true;
         }
       }
       if (printWarning) {
-        GNS.getLogger().warning("Unexpected version found. Expected version " + version +
-                " Found current version = " + curVersion + " Old version = " + oldVersion + " Name: " + name);
+        GNS.getLogger().warning("Unexpected version found. Expected version " + version
+                + " Found current version = " + curVersion + " Old version = " + oldVersion + " Name: " + name);
       }
 
-    }  else {
+    } else {
       GNS.getLogger().severe("Neither current nor old version found. Name =  " + name + " Version = " + version);
       success = false;
 
     }
 
     if (success != null) {
-        activeReplica.stopProcessed(name, version, success);
+      activeReplica.stopProcessed(name, version, success);
     }
   }
 
@@ -389,17 +413,18 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, prevValueRequestFields);
 
-        value = nameRecord.getOldValuesOnVersionMatch(version);
-        ttl = nameRecord.getTimeToLive();
-      } catch (FieldNotFoundException e) {
-        GNS.getLogger().severe("Field not found exception.");
-      } catch (RecordNotFoundException e) {
-        GNS.getLogger().severe("Record not found exception. name = " + name + " version = " + version);
-      }
-      if (value == null) return null;
-      else {
-        return new TransferableNameRecordState(value, ttl).toString();
-      }
+      value = nameRecord.getOldValuesOnVersionMatch(version);
+      ttl = nameRecord.getTimeToLive();
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found exception.");
+    } catch (RecordNotFoundException e) {
+      GNS.getLogger().severe("Record not found exception. name = " + name + " version = " + version);
+    }
+    if (value == null) {
+      return null;
+    } else {
+      return new TransferableNameRecordState(value, ttl).toString();
+    }
   }
 
   @Override
@@ -408,7 +433,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     try {
       state1 = new TransferableNameRecordState(state);
     } catch (JSONException e) {
-      GNS.getLogger().severe("JSON Exception in transferred state: " + state   + "name " + name + " version " + version);
+      GNS.getLogger().severe("JSON Exception in transferred state: " + state + "name " + name + " version " + version);
       e.printStackTrace();
       return;
     }
@@ -418,7 +443,9 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
 
       NameRecord nameRecord = new NameRecord(nameRecordDB, name, activeNameServers, version, state1.valuesMap, state1.ttl);
       NameRecord.addNameRecord(nameRecordDB, nameRecord);
-      if (Config.debugMode) GNS.getLogger().info(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
+      if (Config.debugMode) {
+        GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
+      }
 
     } catch (RecordExistsException e) {
       NameRecord nameRecord = null;
@@ -428,16 +455,17 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
       } catch (FieldNotFoundException e1) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
         e1.printStackTrace();
-      }
-      catch (RecordNotFoundException e1) {
+      } catch (RecordNotFoundException e1) {
         GNS.getLogger().severe("Not possible because record just existed.");
         e1.printStackTrace();
       }
-      if (Config.debugMode) GNS.getLogger().info(" NAME RECORD UPDATED AT ACTIVE  NODE. Name record = " + nameRecord);
+      if (Config.debugMode) {
+        GNS.getLogger().fine(" NAME RECORD UPDATED AT ACTIVE  NODE. Name record = " + nameRecord);
+      }
     }
     if (getActiveCoordinator() != null) {
       try {
-        getActiveCoordinator().coordinateRequest(new JSONObject(new NewActiveSetStartupPacket(name, 0, nodeID, activeNameServers, null, 0,version, Packet.PacketType.NEW_ACTIVE_START, state, true).toJSONObject()));
+        getActiveCoordinator().coordinateRequest(new JSONObject(new NewActiveSetStartupPacket(name, 0, nodeID, activeNameServers, null, 0, version, Packet.PacketType.NEW_ACTIVE_START, state, true).toJSONObject()));
       } catch (JSONException e) {
         e.printStackTrace();
       }
@@ -448,7 +476,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
   @Override
   public int deleteFinalState(String name, int version) {
 
-    int [] versions = getCurrentOldVersions(name);
+    int[] versions = getCurrentOldVersions(name);
     if (versions != null) {
       int curVersion = versions[0];
       int oldVersion = versions[1];
@@ -461,7 +489,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
             NameRecord nameRecord = new NameRecord(nameRecordDB, name);
             nameRecord.deleteOldState(version);
           } catch (FieldNotFoundException e) {
-            GNS.getLogger().severe("FieldNotFoundException: " + name + "\t " + version  + "\t " + e.getMessage());
+            GNS.getLogger().severe("FieldNotFoundException: " + name + "\t " + version + "\t " + e.getMessage());
             e.printStackTrace();
           }
         }
@@ -497,7 +525,7 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
   @Override
   public void updateState(String name, String state) {
     try {
-      TransferableNameRecordState state1  = new TransferableNameRecordState(state);
+      TransferableNameRecordState state1 = new TransferableNameRecordState(state);
       NameRecord nameRecord = new NameRecord(nameRecordDB, name);
       nameRecord.updateState(state1.valuesMap, state1.ttl);
       // todo handle the case if record does not exist. for this update state should return record not found exception.
@@ -530,12 +558,11 @@ public class GnsReconfigurable implements PaxosInterface, Reconfigurable {
     readVersions.add(NameRecord.OLD_ACTIVE_VERSION);
   }
 
-
 //  @Override
   private int[] getCurrentOldVersions(String name) {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, readVersions);
-      int [] versions =  {nameRecord.getActiveVersion(), nameRecord.getOldActiveVersion()};
+      int[] versions = {nameRecord.getActiveVersion(), nameRecord.getOldActiveVersion()};
       return versions;
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found for name: " + name);

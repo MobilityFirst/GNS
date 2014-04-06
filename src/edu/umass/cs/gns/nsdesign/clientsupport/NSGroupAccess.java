@@ -28,8 +28,8 @@ import org.json.JSONObject;
 public class NSGroupAccess {
 
   public static final String GROUP_RECORDS = InternalField.makeInternalFieldString("groupRecords");
-  public static final String GROUP_MIN_REFRESH_INTERVAL = InternalField.makeInternalFieldString("minRefresh");
-  public static final String GROUP_LAST_UPDATE = InternalField.makeInternalFieldString("lastUpdate");
+  public static final String GROUP_MIN_REFRESH_INTERVAL = InternalField.makeInternalFieldString("groupMinRefresh");
+  public static final String GROUP_LAST_UPDATE = InternalField.makeInternalFieldString("groupLastUpdate");
 
   public static ResultValue lookup(String guid, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
     NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, GroupAccess.GROUP);
@@ -41,8 +41,9 @@ public class NSGroupAccess {
             UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
   }
 
-  public static void updateRecords(String guid, Set<JSONObject> members, GnsReconfigurable activeReplica) {
-    LNSUpdateHandler.sendUpdate(guid, GROUP_RECORDS, new ResultValue(members),
+  // NOT SURE HOW TO DO THIS YET
+  public static void updateRecords(String guid, Set<JSONObject> records, GnsReconfigurable activeReplica) {
+    LNSUpdateHandler.sendUpdate(guid, GROUP_RECORDS, new ResultValue(records),
             UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
   }
 

@@ -35,6 +35,15 @@ public class LNSQueryHandler {
   private static ConcurrentMap<Integer, Integer> outStandingQueries = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
+  /**
+   * Sends a DNS query from this Name Server to a Local Name Server. 
+   * Returns the value of a field in a GUID as a ResultValue.
+   * 
+   * @param guid
+   * @param field
+   * @param activeReplica
+   * @return ResultValue containing the value of the field
+   */
   public static ResultValue lookupField(String guid, String field, GnsReconfigurable activeReplica) {
     QueryResult queryResult = sendQuery(guid, field, activeReplica);
     if (!queryResult.isError()) {
@@ -45,11 +54,12 @@ public class LNSQueryHandler {
   }
   /**
    * Sends a DNS query from this Name Server to a Local Name Server
+   * Returns the entire guid record in a QueryResult.
    *
    * @param name
    * @param key
    * @param activeReplica
-   * @return
+   * @return the entire guid record in a QueryResult.
    */
   public static QueryResult sendQuery(String name, String key, GnsReconfigurable activeReplica) {
     GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);

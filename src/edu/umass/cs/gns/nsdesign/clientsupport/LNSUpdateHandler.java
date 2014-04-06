@@ -37,18 +37,18 @@ public class LNSUpdateHandler {
 
   /**
    * Sends an update request from this Name Server to a Local Name Server
-   * 
+   *
    * @param name
    * @param key
    * @param newValue
    * @param operation
    * @param activeReplica
-   * @return 
+   * @return
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue, UpdateOperation operation, GnsReconfigurable activeReplica) {
     return sendUpdate(name, key, newValue, null, -1, operation, activeReplica);
   }
-          
+
   /**
    * Sends an update request from this Name Server to a Local Name Server
    *
@@ -70,7 +70,7 @@ public class LNSUpdateHandler {
     // activeReplica.getGNSNodeConfig() is a hack to get the first LNS
     // We need a means to find the closes LNS
     GNS.getLogger().warning("#######FIXME!! Using stupid mechanism for picking LNS #" + activeReplica.getGNSNodeConfig().getNumberOfNameServers());
-    sendUpdateInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(), 
+    sendUpdateInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(),
             name, key, newValue, oldValue, argument, operation, activeReplica);
     // now we wait until the packet comes back
     waitForResponsePacket(id);
@@ -79,14 +79,19 @@ public class LNSUpdateHandler {
     return result;
   }
 
-  private static void sendUpdateInternal(int queryId, int recipientId, String name, String key, ResultValue newValue,
+  private static void sendUpdateInternal(int updateId, int recipientId, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurable activeReplica) {
-    UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), queryId,
+    UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), updateId,
             name, new NameRecordKey(key), newValue, oldValue, argument, operation,
             -1, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
     try {
-    Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), packet.toJSONObject(), recipientId, GNS.PortType.LNS_TCP_PORT);
+      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending update " + updateId + " to " + recipientId
+              + "(" + activeReplica.getGNSNodeConfig().getNodeAddress(recipientId)
+              + ":" + activeReplica.getGNSNodeConfig().getNodePort(recipientId) + ")"
+              + " for " + name + " / " + key + ": " + packet.toJSONObject());
+      activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
+      //Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), packet.toJSONObject(), recipientId, GNS.PortType.LNS_TCP_PORT);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {

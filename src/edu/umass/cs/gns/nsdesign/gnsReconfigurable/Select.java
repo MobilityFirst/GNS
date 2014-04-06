@@ -86,7 +86,7 @@ public class Select {
   }
 
   public static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException {
-    GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
+    GNS.getLogger().info("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
       // grab the records
@@ -111,7 +111,7 @@ public class Select {
 
   public static void handleSelectResponse(JSONObject json, GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());
+    GNS.getLogger().info("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
     if (info == null) {
       GNS.getLogger().warning("NS" + replica.getNodeID() + " unabled to located query info:" + packet.getNsQueryId());
@@ -126,7 +126,7 @@ public class Select {
     }
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServer());
-    GNS.getLogger().fine("NS" + replica.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
+    GNS.getLogger().info("NS" + replica.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
     if (info.allServersResponded()) {
       handledAllServersResponded(packet, info, replica);
     }
@@ -150,7 +150,8 @@ public class Select {
       String guid = info.getGuid();
       // since we can't decide we do both
       NSGroupAccess.updateMembers(guid, extractGuidsFromRecords(info.getResponses()), replica);
-      NSGroupAccess.updateRecords(guid, info.getResponses(), replica); 
+      // FIGURE OUT HOW TO DO THIS CORRECTLY
+      //NSGroupAccess.updateRecords(guid, info.getResponses(), replica); 
       NSGroupAccess.updateLastUpdate(guid, new Date(), replica);
     }
   }

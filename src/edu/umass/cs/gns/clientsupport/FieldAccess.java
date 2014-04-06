@@ -138,5 +138,21 @@ public class FieldAccess {
       return emptyJSONArrayString;
     }
   }
+  public static String selectGroupSetupQuery(String query, String guid) {
+    String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid);
+    if (result != null) {
+      return result;
+    } else {
+      return emptyJSONArrayString;
+    }
+  }
+  public static String selectGroupLookupQuery(String guid) {
+    String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid);
+    if (result != null) {
+      return result;
+    } else {
+      return emptyJSONArrayString;
+    }
+  }
   public static String Version = "$Revision$";
 }

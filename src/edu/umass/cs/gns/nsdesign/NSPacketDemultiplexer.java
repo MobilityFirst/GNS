@@ -10,8 +10,9 @@ import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/*** DONT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
+/**
+ * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
+ */
 /**
  * Work in progress. Inactive code.
  *
@@ -19,7 +20,7 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 2/26/14.
  */
-public class NSPacketDemultiplexer extends PacketDemultiplexer{
+public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
   private NameServerInterface nameServerInterface;
 
@@ -31,9 +32,10 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
    * Entry point for all packets received at name server.
    *
    * Based on the packet type it forwards to active replica or replica controller.
+   *
    * @param json JSON object received by NIO package.
    */
-  public boolean handleJSONObject(JSONObject json){
+  public boolean handleJSONObject(JSONObject json) {
     boolean isPacketTypeFound = true;
     try {
       Packet.PacketType type = Packet.getPacketType(json);
@@ -45,10 +47,14 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
           UpdatePacket updateAddressPacket = new UpdatePacket(json);
           if (updateAddressPacket.getOperation().isUpsert()) {
             ReplicaController replicaController = nameServerInterface.getReplicaController();
-            if (replicaController != null)  replicaController.handleJSONObject(json);
+            if (replicaController != null) {
+              replicaController.handleJSONObject(json);
+            }
           } else {
             GnsReconfigurable gnsReconfigurable = nameServerInterface.getGnsReconfigurable();
-            if (gnsReconfigurable != null)  gnsReconfigurable.handleIncomingPacket(json);
+            if (gnsReconfigurable != null) {
+              gnsReconfigurable.handleIncomingPacket(json);
+            }
           }
           break;
 
@@ -57,12 +63,19 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case NAME_SERVER_LOAD:
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
-          // Packets sent from replica controller
+        // Packets sent from replica controller
         case ACTIVE_ADD:
         case ACTIVE_REMOVE:
         case ACTIVE_COORDINATION:
+        // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
+        // coming back from the LNS is handled.
+        case CONFIRM_UPDATE:
+        case CONFIRM_ADD:
+        case CONFIRM_REMOVE:
           GnsReconfigurable gnsReconfigurable = nameServerInterface.getGnsReconfigurable();
-          if (gnsReconfigurable != null)  gnsReconfigurable.handleIncomingPacket(json);
+          if (gnsReconfigurable != null) {
+            gnsReconfigurable.handleIncomingPacket(json);
+          }
           break;
 
         // Packets sent from LNS
@@ -71,15 +84,17 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case REMOVE_RECORD:
         case NAMESERVER_SELECTION:
         case NAME_RECORD_STATS_RESPONSE:
-          // Packets sent from active replica
+        // Packets sent from active replica
         case ACTIVE_ADD_CONFIRM:
         case ACTIVE_REMOVE_CONFIRM:
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
-          // packets from coordination modules at replica controller
+        // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:
           ReplicaController replicaController = nameServerInterface.getReplicaController();
-          if (replicaController != null)  replicaController.handleJSONObject(json);
+          if (replicaController != null) {
+            replicaController.handleJSONObject(json);
+          }
           break;
 
         case NEW_ACTIVE_START:
@@ -89,7 +104,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer{
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
         case OLD_ACTIVE_STOP:
           ActiveReplica activeReplica = nameServerInterface.getActiveReplica();
-          if (activeReplica != null) activeReplica.handleIncomingPacket(json);
+          if (activeReplica != null) {
+            activeReplica.handleIncomingPacket(json);
+          }
           break;
         default:
           isPacketTypeFound = false;

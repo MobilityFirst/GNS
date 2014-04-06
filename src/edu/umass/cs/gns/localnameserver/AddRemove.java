@@ -20,21 +20,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *  Class contains a few static methods for handling ADD, REMOVE, and UPSERT (update + insert) requests from clients
- *  as well responses to these requests from name servers. Most functionality for handling request sent by clients
- *  is implemented in <code>SendAddRemoveUpsertTask</code>. So also refer to its documentation.
- *  <p>
- *  The addition and removal of a name in GNS is handled by replica controllers, therefore we send ADD and REMOVE
- *  to a replica controller. The replica controllers for a name are fixed and a local name server can compute the set of
- *  replica controllers locally (see method {@link edu.umass.cs.gns.util.ConsistentHashing#getReplicaControllerSet(String)}).
- *  Like other requests, add/removes are also retransmitted to a different name server if no confirmation is received
- *  until a timeout value.
- *  <p>
- *  An upsert request may create a new name record, unlike an update which modifies an existing name record.
- *  Becasue addition of a name is done by replica controllers, we send an upsert to replica controllers.
- *  If upsert request is for an already existing name, it is handled like an update. To this end, replica controllers
- *  will forward the request to active replicas.
- *  <p>
+ * Class contains a few static methods for handling ADD, REMOVE, and UPSERT (update + insert) requests from clients
+ * as well responses to these requests from name servers. Most functionality for handling request sent by clients
+ * is implemented in <code>SendAddRemoveUpsertTask</code>. So also refer to its documentation.
+ * <p>
+ * The addition and removal of a name in GNS is handled by replica controllers, therefore we send ADD and REMOVE
+ * to a replica controller. The replica controllers for a name are fixed and a local name server can compute the set of
+ * replica controllers locally (see method {@link edu.umass.cs.gns.util.ConsistentHashing#getReplicaControllerSet(String)}).
+ * Like other requests, add/removes are also retransmitted to a different name server if no confirmation is received
+ * until a timeout value.
+ * <p>
+ * An upsert request may create a new name record, unlike an update which modifies an existing name record.
+ * Becasue addition of a name is done by replica controllers, we send an upsert to replica controllers.
+ * If upsert request is for an already existing name, it is handled like an update. To this end, replica controllers
+ * will forward the request to active replicas.
+ * <p>
  *
  */
 public class AddRemove {
@@ -66,12 +66,8 @@ public class AddRemove {
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
             System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine(" Upsert Task Scheduled. "
-              + "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
-    }
-
+    GNS.getLogger().fine("Upsert Task Scheduled: "
+            + "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
   }
 
   /**
@@ -120,7 +116,7 @@ public class AddRemove {
 //      JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
 //      GNS.getLogger().fine(" CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
 //              + " : " + jsonConfirm.toString());
-       // send it back to the orginator of the request
+      // send it back to the orginator of the request
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket);
       //Intercessor.handleIncomingPackets(json);
     }
