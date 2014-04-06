@@ -160,7 +160,7 @@ def usage():
     
 """ Executes an instance of Name Server with the give parameters """
 def run_name_server():
-    command = 'nohup java -cp ' + name_server_jar + ' edu.umass.cs.gns.main.StartNameServer'
+    command = 'nohup java -cp ' + name_server_jar + ' edu.umass.cs.gns.nsdesign.StartNameServer'
     if is_local:
         command += ' ' + LOCAL_EXP
     #else:

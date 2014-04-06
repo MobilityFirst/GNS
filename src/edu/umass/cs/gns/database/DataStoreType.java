@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.main;
+package edu.umass.cs.gns.database;
 
 /**
  *

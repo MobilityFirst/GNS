@@ -9,7 +9,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
-
+/**
+ * Contains config parameters common to name servers and local name servers, and logging functionality.
+ */
 public class GNS {
 
   public static final int DEFAULT_TTL_SECONDS = 0;

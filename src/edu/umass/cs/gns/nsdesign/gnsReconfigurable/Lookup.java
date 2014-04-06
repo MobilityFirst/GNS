@@ -62,7 +62,7 @@ public class Lookup {
     String signature = dnsPacket.getSignature();
     String message = dnsPacket.getMessage();
     // Check the signature and access
-    NSResponseCode errorCode = NSResponseCode.NO_ERROR;
+   NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     if (reader != null) { // reader will be null for internal system reads
       errorCode = signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST, activeReplica);
     }

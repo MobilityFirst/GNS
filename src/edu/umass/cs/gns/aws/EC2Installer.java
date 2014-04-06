@@ -12,7 +12,7 @@ import edu.umass.cs.amazontools.AWSEC2;
 import edu.umass.cs.amazontools.InstanceStateRecord;
 import edu.umass.cs.amazontools.RegionRecord;
 import edu.umass.cs.amazontools.SSHClient;
-import edu.umass.cs.gns.main.DataStoreType;
+import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.statusdisplay.MapFrame;
@@ -390,7 +390,7 @@ public class EC2Installer {
             + "java -cp " + GNSFileName + " " + MongoRecordsClass + " -clear");
   }
   private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
-  private static final String StartNSClass = "edu.umass.cs.gns.nsdesign.StartNameServer";
+  private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
   // unused
   //private static final String StartHTTPServerClass = "edu.umass.cs.gns.httpserver.GnsHttpServer";
 

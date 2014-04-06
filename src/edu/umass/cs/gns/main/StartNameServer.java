@@ -1,5 +1,9 @@
-package edu.umass.cs.gns.nsdesign;
+package edu.umass.cs.gns.main;
 
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.NSParameterNames;
+import edu.umass.cs.gns.nsdesign.NameServer;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -9,7 +13,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Properties;
 
-/*** DONT USE ANY CLASS IN PACKAGE: edu.umass.cs.gns.nsdesign ***/
 
 
 /**

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.main.DataStoreType;
+import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 
@@ -26,7 +26,7 @@ public class Config {
 
   public static boolean singleNS = false;
 
-  public static int numReplicaControllers = 3;
+//  public static int numReplicaControllers = 3;
 
 
 
@@ -61,8 +61,8 @@ public class Config {
 
 
     if (allValues.containsKey(NSParameterNames.PRIMARY_REPLICAS)) {
-      Config.numReplicaControllers = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));
-      GNS.numPrimaryReplicas = numReplicaControllers;
+      GNS.numPrimaryReplicas = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));
+//      GNS.numPrimaryReplicas = numReplicaControllers;
      }
 
     if (allValues.containsKey(NSParameterNames.FILE_LOGGING_LEVEL)) {
@@ -85,7 +85,7 @@ public class Config {
     }
 
     if (allValues.containsKey(NSParameterNames.SINGLE_NS)) {
-      numReplicaControllers = 1;
+      GNS.numPrimaryReplicas = 1;
       singleNS = true;
     }
 

@@ -7,8 +7,8 @@ package edu.umass.cs.gns.aws;
 
 import edu.umass.cs.amazontools.AMIRecordType;
 import edu.umass.cs.amazontools.RegionRecord;
-import edu.umass.cs.gns.main.DataStoreType;
-import java.io.File;
+import edu.umass.cs.gns.database.DataStoreType;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
