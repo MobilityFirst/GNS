@@ -9,14 +9,12 @@ import java.util.Set;
  */
 public interface Reconfigurable extends Application {
 
-	public void stopVersion(String name, int version);
+	public boolean stopVersion(String name, short version); // getFinalState should return non-null value after this call
 
-	public String getFinalState(String name, int version);
+	public String getFinalState(String name, short version);
 
-	public void putInitialState(String name, int version, String state, Set<Integer> activeReplicas);
+	public void putInitialState(String name, short version, String state);
 
-	public int deleteFinalState(String name, int version);
-
- //	public int[] getCurrentOldVersions(String name);
+	public int deleteFinalState(String name, short version);
 
 }

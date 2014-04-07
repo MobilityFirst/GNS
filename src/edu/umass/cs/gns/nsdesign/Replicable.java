@@ -13,7 +13,5 @@ public interface Replicable extends Application {
 
   public String getState(String name);
 
-  public void updateState(String name, String state);
-
-  public void deleteStateBeforeRecovery();
+  public boolean updateState(String name, String state);
 }
