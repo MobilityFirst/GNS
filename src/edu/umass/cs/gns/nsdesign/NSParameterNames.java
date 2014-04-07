@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign;
 
 import org.apache.commons.cli.*;
 
-/*** DONT USE ANY CLASS IN PACKAGE: edu.umass.cs.gns.nsdesign ***/
 
 /**
  * List of configuration parameters for a name servers. Config file and command line arguments

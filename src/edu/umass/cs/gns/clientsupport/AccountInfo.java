@@ -78,9 +78,6 @@ public class AccountInfo {
     this.updated = new Date();
     this.password = password;
     this.verified = false;
-    if (StartLocalNameServer.noEmail) {
-      verified = true;
-    }
     this.verificationCode = null;
   }
 

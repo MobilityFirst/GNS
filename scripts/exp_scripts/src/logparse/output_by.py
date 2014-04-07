@@ -69,10 +69,10 @@ def output_stats_by_name(filename):
     get_cdf_and_plot(filenames, schemes, [col_no]*len(schemes), pdf_filename, folder, template_file)
     
     # output key stats
-    read_median_list = [ t[4] for t in output_tuples3]
-    read_mean_list = [ t[5] for t in output_tuples3]
-    write_median_list = [ t[4] for t in output_tuples2]
-    write_mean_list = [ t[5] for t in output_tuples2]
+    read_median_list = [t[4] for t in output_tuples3]
+    read_mean_list = [t[5] for t in output_tuples3]
+    write_median_list = [t[4] for t in output_tuples2]
+    write_mean_list = [t[5] for t in output_tuples2]
 
     # delete this.
     #read_median_list2 = []

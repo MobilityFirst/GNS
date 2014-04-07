@@ -68,7 +68,10 @@ def get_cdf_and_plot(filenames, schemes, col_nos, pdf_filename, output_dir, temp
     #print gpt_code
     output_gpt = 'temp.gpt'
     substitute_macro('INSERTPLOTCODE', gpt_code, template_file, output_gpt)
-    os.system('gnuplot ' + output_gpt)
+    try:
+        os.system('gnuplot ' + output_gpt)
+    except:
+        print 'ERROR: Gnuplot error'
     print 'PDF File:', os.path.join(output_dir, pdf_filename)
 
     

@@ -13,15 +13,15 @@ public class HostInfo {
   /**
    * Id of the name server *
    */
-  private int id;
+  private final int id;
   /**
    * IP address of the name server *
    */
-  private InetAddress ipAddress;
+  private final InetAddress ipAddress;
   /**
    * Starting port number *
    */
-  private int startingPortNumber;
+  private final int startingPortNumber;
   /**
    * RTT latency between the local nameserver and this nameserver *
    */
@@ -29,11 +29,11 @@ public class HostInfo {
   /**
    * Latitude of this nameserver *
    */
-  private double latitude;
+  private final double latitude;
   /**
    * Longitude of this nameserver *
    */
-  private double longitude;
+  private final double longitude;
 
   /**
    * ***********************************************************
@@ -70,10 +70,10 @@ public class HostInfo {
   }
   /**
    * Returns ping latency in milleseconds
-   * 
+   * Ping latency is a
    * @return pingLatency (ms)
    */
-  public long getPingLatency() {
+  public synchronized long getPingLatency() {
     return pingLatency;
   }
 

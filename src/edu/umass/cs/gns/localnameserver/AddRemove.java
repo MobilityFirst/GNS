@@ -6,18 +6,18 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Class contains a few static methods for handling ADD, REMOVE, and UPSERT (update + insert) requests from clients
@@ -112,6 +112,9 @@ public class AddRemove {
     } else {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
+
+      String stats = addInfo.getUpdateStats(confirmAddPacket);
+      GNS.getStatLogger().info(stats);
 //      addInfo.getID();
 //      JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
 //      GNS.getLogger().fine(" CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
@@ -136,6 +139,8 @@ public class AddRemove {
     } else {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
+      String stats = removeInfo.getUpdateStats(confirmRemovePacket);
+      GNS.getStatLogger().info(stats);
       // send it back to the orginator of the request
 //      JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
 //      GNS.getLogger().fine(" CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "

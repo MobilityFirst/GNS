@@ -2,7 +2,7 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.workloads.ExponentialDistribution;
+import edu.umass.cs.gns.workloads.Constant;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -39,18 +39,15 @@ public class TraceRequestGenerator {
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Scheduling all lookups.");
     }
-    new RequestGenerator().generateRequests(lookupTrace, new ExponentialDistribution(lookupRate), executorService);
+    new RequestGenerator().generateRequests(lookupTrace, new Constant(lookupRate), executorService);
 
     if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Scheduling all updates via intercessor.");
+      GNS.getLogger().fine("Scheduling all updates.");
     }
-
-    new RequestGenerator().generateRequests(updateTrace, new ExponentialDistribution(updateRate), executorService);
+    new RequestGenerator().generateRequests(updateTrace, new Constant(updateRate), executorService);
   }
 
-
   /**
-   **
    * Reads a file containing the workload for this local name server. The method returns a Set containing names that can
    * be queried by this local name server.
    *
@@ -109,11 +106,9 @@ public class TraceRequestGenerator {
       String[] tokens = line.split("\\s+");
       if (tokens.length == 2) {
         trace.add(new TestRequest(tokens[0], new Integer(tokens[1])));
-        continue;
       } else {
         trace.add(new TestRequest(tokens[0], TestRequest.UPDATE));
       }
-
     }
     br.close();
     return trace;

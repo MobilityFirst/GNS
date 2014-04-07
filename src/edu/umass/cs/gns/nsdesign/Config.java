@@ -51,14 +51,13 @@ public class Config {
 
   // testing related parameters
   public static boolean emulatePingLatencies = false;
+  public static double latencyVariation = 0.1;
 
 
   public static synchronized void initialize(HashMap<String, String> allValues) {
     if (initialized) return;
 
     initialized = true;
-
-
 
     if (allValues.containsKey(NSParameterNames.PRIMARY_REPLICAS)) {
       GNS.numPrimaryReplicas = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));
@@ -89,6 +88,14 @@ public class Config {
       singleNS = true;
     }
 
+    if (allValues.containsKey(NSParameterNames.EMULATE_PING_LATENCIES)) {
+      emulatePingLatencies = Boolean.parseBoolean(allValues.get(NSParameterNames.EMULATE_PING_LATENCIES));
+      if (allValues.containsKey(NSParameterNames.VARIATION)) {
+        latencyVariation = Double.parseDouble(allValues.get(NSParameterNames.VARIATION));
+      }
+
+    }
+    GNS.getLogger().severe("Emulating ping latency at name server: emulatePingLatencies = " + emulatePingLatencies);
   }
 
 }

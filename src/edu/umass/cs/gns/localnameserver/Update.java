@@ -8,12 +8,15 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
-import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Random;
@@ -79,7 +82,7 @@ public class Update {
       //Intercessor.handleIncomingPackets(json);
       // instrumentation?
       if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
-        GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt, updateInfo.getName()));
+        GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt));
       }
     } else if (confirmPkt.getResponseCode().isAccessOrSignatureError()) {
       // if it's an access or signature failure just return it to the client support
@@ -102,22 +105,23 @@ public class Update {
   private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException {
     GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
 
-    UpdatePacket updateAddressPacket = updateInfo.getUpdateAddressPacket();
+    UpdatePacket updatePacket = (UpdatePacket) updateInfo.getUpdatePacket();
 
     // clear out current cache
     LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
 
     // create objects that must be passed to PendingTasks
-    SendUpdatesTask task = new SendUpdatesTask(updateAddressPacket, updateInfo.getSendTime(), new HashSet<Integer>(),
+    SendUpdatesTask task = new SendUpdatesTask(updatePacket, updateInfo.getSendTime(), new HashSet<Integer>(),
             updateInfo.getNumInvalidActiveError() + 1);
     String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(),
-            LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), updateInfo.getSendTime(), updateInfo.getNumInvalidActiveError() + 1, -1);
-    ConfirmUpdatePacket confirmFailPacket = ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
+            LocalNameServer.getNodeID(), updatePacket.getRequestID(), updateInfo.getSendTime(),
+            updateInfo.getNumInvalidActiveError() + 1, -1, updatePacket.getType());
+    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
 
     boolean firstInvalidActiveError = (updateInfo.getNumInvalidActiveError() == 0);
 
     PendingTasks.addToPendingRequests(updateInfo.getName(), task, StartLocalNameServer.queryTimeout,
-            confirmFailPacket.toJSONObject(), failedStats, firstInvalidActiveError);
+            failPacket.toJSONObject(), failedStats, firstInvalidActiveError);
   }
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet) throws JSONException {

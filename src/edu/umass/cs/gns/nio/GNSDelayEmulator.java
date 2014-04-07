@@ -57,6 +57,7 @@ public class GNSDelayEmulator {
   }
 
   public static void emulateConfigFileDelays(GNSNodeConfig gnsNodeConfig, double variation) {
+    GNSDelayEmulator.EMULATE_DELAYS = true;
     GNSDelayEmulator.VARIATION = variation;
     GNSDelayEmulator.USE_CONFIG_FILE_INFO = true;
     GNSDelayEmulator.gnsNodeConfig = gnsNodeConfig;

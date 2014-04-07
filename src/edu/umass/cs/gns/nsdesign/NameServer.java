@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.GNSDelayEmulator;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
@@ -97,9 +98,13 @@ public class NameServer implements NameServerInterface {
 
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
 
+    if (Config.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
+
     JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
     GNSNIOTransport tcpTransport = new GNSNIOTransport(nodeID, gnsNodeConfig, worker);
     new Thread(tcpTransport).start();
+
+
 
     int numThreads = 5;
     ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(numThreads);

@@ -6,15 +6,15 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
+import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.ResultValue;
+import org.json.JSONException;
+
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
-
-import org.json.JSONException;
 
 /**
  * Provides the basic interface to GNS accounts.

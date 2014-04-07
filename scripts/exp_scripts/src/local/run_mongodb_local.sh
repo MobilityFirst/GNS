@@ -1,13 +1,11 @@
+#!/bin/sh
 echo "Running mongo db on ..."
-dbFolder=/Users/abhigyan/Documents/gnrs-db/
-mongobinFolder=/opt/local/bin/
-#mongobinFolder=/Users/abhigyan/Documents/software/mongodb-osx-x86_64-2.4.5/bin
-port=27017  # if 
+mongobinFolder=$1
+dbFolder=$2
+port=27017  # if
 
-#/Users/abhigyan/Documents/mongodb-linux-x86_64-2.2.2/bin/
-#mongodb-osx-x86_64-2.4.5/bin/
 mkdir -p $dbFolder
-nohup $mongobinFolder/mongod --smallfiles --dbpath $dbFolder --port $port &
+nohup $mongobinFolder/mongod --smallfiles --dbpath $dbFolder --port $port > /tmp/mongo.out 2> /tmp/mongo.err &
 # no journal option for mongod
 #cat hosts_ns.txt | parallel ssh {}  "nohup /home/abhigyan/mongodb/bin/mongod --nojournal --dbpath /home/abhigyan/gnrs-db-mongodb/{} >/dev/null 2>/dev/null < /dev/null &"
 

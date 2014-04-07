@@ -1,15 +1,11 @@
 import os
-import sys
-import exp_config
 
 
-config_file = 'local_config'
-
-
-def write_local_config_file(filename, num_ns, num_lns):
+def write_local_config_file(filename, num_ns, num_lns, latency=100):
     parent_folder = os.path.split(filename)[0]
+    if parent_folder != '' and parent_folder != '.':
+        os.system('mkdir -p ' + parent_folder)
 
-    latency = 0
     port = 35000
 
     fw = open(filename, 'w')

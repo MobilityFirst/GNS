@@ -68,7 +68,7 @@ public class LocalNameServer {
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
-  private static long initialExpDelayMillis = 30000;
+  private static long initialExpDelayMillis = 100;
 
   /**
    * GNS node config object used by LNS to get node information, such as IP, Port, ping latency.
@@ -182,8 +182,9 @@ public class LocalNameServer {
 
     if (StartLocalNameServer.useGNSNIOTransport) {
       // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer()));
       if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
+      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer()));
+
     } else {
       NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), gnsNodeConfig);
       if (StartLocalNameServer.emulatePingLatencies) nioServer.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
@@ -220,7 +221,7 @@ public class LocalNameServer {
   }
 
   public static int addUpdateInfo(String name, int nameserverID, long time,
-                                  int numRestarts, UpdatePacket updateAddressPacket) {
+                                  int numRestarts, BasicPacket updateAddressPacket) {
     int id;
     //Generate unique id for the query
     do {
@@ -624,15 +625,19 @@ public class LocalNameServer {
    * @param ns
    */
   public static void sendToNS(JSONObject json, int ns) {
-
-    if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
-      // packets from LNS to NS will be delayed by twice the one-way latency because we do not have data to emulate
-      // latency on the reverse path from NS to LNS.
-      long timerDelay  = (long) (gnsNodeConfig.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation))/2;
-      LocalNameServer.executorService.schedule(new SendMessageWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
-    } else {
-      sendToNSActual(json, ns);
+    try {
+      tcpTransport.sendToID(ns, json);
+    } catch (IOException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
+//    if (StartLocalNameServer.emulatePingLatencies) { // during testing, this option is used to simulate artificial latency between lns and ns
+//      // packets from LNS to NS will be delayed by twice the one-way latency because we do not have data to emulate
+//      // latency on the reverse path from NS to LNS.
+//      long timerDelay  = (long) (gnsNodeConfig.getPingLatency(ns) * (1 + random.nextDouble() * StartLocalNameServer.variation))/2;
+//      LocalNameServer.executorService.schedule(new SendMessageWithDelay(json, ns), timerDelay, TimeUnit.MILLISECONDS);
+//    } else {
+//      sendToNSActual(json, ns);
+//    }
   }
 
   static void sendToNSActual(JSONObject json, int ns) {

@@ -40,8 +40,10 @@ def latency_over_time(tuples_file):
     from write_array_to_file import write_array
     filename = os.path.join(folder,'latency-over-time.txt')
     write_array(select_lines, filename, p = True)
-    
-    os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_latency)
+    try:
+        os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_latency)
+    except:
+        print 'ERROR: gnuplot error'
 
 
 def failed_over_time(tuples_file):
@@ -73,8 +75,11 @@ def failed_over_time(tuples_file):
     write_tuple_array(reads, filename, p = True)
     
 #    os.system('cp ' + gnuplot_file + ' ' + folder)
-    os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_write)
-    os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_read)
+    try:
+        os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_write)
+        os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_read)
+    except:
+        print 'ERROR: gnuplot error'
     
 
 def get_name_ns_mapping():

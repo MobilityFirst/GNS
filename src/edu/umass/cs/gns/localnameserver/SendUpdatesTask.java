@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.replicationframework.RandomReplication;
@@ -31,13 +30,13 @@ import java.util.TimerTask;
  *
  * @see edu.umass.cs.gns.localnameserver.Update
  * @see edu.umass.cs.gns.localnameserver.UpdateInfo
- * @see edu.umass.cs.gns.packet.UpdateAddressPacket
+ * @see edu.umass.cs.gns.nsdesign.packet.UpdatePacket
  *
  */
 public class SendUpdatesTask extends TimerTask {
 
   private String name;
-  private UpdatePacket updateAddressPacket;
+  private UpdatePacket updatePacket;
   private int updateRequestID;
   private HashSet<Integer> activesQueried;
   private int timeoutCount = -1;
@@ -45,10 +44,10 @@ public class SendUpdatesTask extends TimerTask {
   private int numRestarts;
   private int coordinatorID = -1;
 
-  public SendUpdatesTask(UpdatePacket updateAddressPacket,
+  public SendUpdatesTask(UpdatePacket updatePacket,
                          long requestRecvdTime, HashSet<Integer> activesQueried, int numRestarts) {
-    this.name = updateAddressPacket.getName();
-    this.updateAddressPacket = updateAddressPacket;
+    this.name = updatePacket.getName();
+    this.updatePacket = updatePacket;
     this.activesQueried = activesQueried;
     this.requestRecvdTime = requestRecvdTime;
     this.numRestarts = numRestarts;
@@ -120,13 +119,12 @@ public class SendUpdatesTask extends TimerTask {
 
     // add to pending requests task
     try {
-      PendingTasks.addToPendingRequests(name,
-              new SendUpdatesTask(updateAddressPacket, requestRecvdTime,
-                      new HashSet<Integer>(), numRestarts + 1),
-              StartLocalNameServer.queryTimeout,
-              ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR).toJSONObject(),
-              UpdateInfo.getUpdateFailedStats(name, new HashSet<Integer>(), LocalNameServer.getNodeID(),
-                      updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts + 1, -1), numRestarts == 0);
+      SendUpdatesTask newTask = new SendUpdatesTask(updatePacket, requestRecvdTime, new HashSet<Integer>(), numRestarts + 1);
+      String failureLogMsg = UpdateInfo.getUpdateFailedStats(name, new HashSet<Integer>(), LocalNameServer.getNodeID(),
+              updatePacket.getRequestID(), requestRecvdTime, numRestarts + 1, -1, updatePacket.getType());
+      PendingTasks.addToPendingRequests(name, newTask, StartLocalNameServer.queryTimeout,
+              ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR).toJSONObject(),
+              failureLogMsg, numRestarts == 0);
 
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem creating a JSON object: " + e);
@@ -167,25 +165,24 @@ public class SendUpdatesTask extends TimerTask {
 
     if (timeoutCount == 0) {
 
-      updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID,
-              requestRecvdTime, numRestarts, updateAddressPacket);
+      updateRequestID = LocalNameServer.addUpdateInfo(name, nameServerID, requestRecvdTime, numRestarts, updatePacket);
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Update Info Added: Id = " + updateRequestID);
       }
     }
     // create the packet that we'll send to the primary
     UpdatePacket pkt = new UpdatePacket(-1,
-            updateAddressPacket.getRequestID(),
+            updatePacket.getRequestID(),
             updateRequestID, // the id use by the LNS (that would be us here)
-            name, updateAddressPacket.getRecordKey(),
-            updateAddressPacket.getUpdateValue(),
-            updateAddressPacket.getOldValue(),
-            updateAddressPacket.getArgument(),
-            updateAddressPacket.getOperation(), LocalNameServer.getNodeID(), nameServerID, updateAddressPacket.getTTL(),
+            name, updatePacket.getRecordKey(),
+            updatePacket.getUpdateValue(),
+            updatePacket.getOldValue(),
+            updatePacket.getArgument(),
+            updatePacket.getOperation(), LocalNameServer.getNodeID(), nameServerID, updatePacket.getTTL(),
             //signature info
-            updateAddressPacket.getAccessor(),
-            updateAddressPacket.getSignature(),
-            updateAddressPacket.getMessage());
+            updatePacket.getAccessor(),
+            updatePacket.getSignature(),
+            updatePacket.getMessage());
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
@@ -212,7 +209,7 @@ public class SendUpdatesTask extends TimerTask {
 
   private void handleFailure() {
     // create a failure packet and send it back to client support
-    ConfirmUpdatePacket confirmPkt = ConfirmUpdatePacket.createFailPacket(updateAddressPacket, NSResponseCode.ERROR);
+    ConfirmUpdatePacket confirmPkt = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
     try {
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
       //Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
@@ -223,10 +220,12 @@ public class SendUpdatesTask extends TimerTask {
     UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(updateRequestID);
     if (updateInfo == null) {
       if (timeoutCount == 0) {
-        GNS.getStatLogger().fine(UpdateInfo.getUpdateFailedStats(name, activesQueried, LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), requestRecvdTime, numRestarts, coordinatorID));
+        GNS.getStatLogger().fine(UpdateInfo.getUpdateFailedStats(name, activesQueried, LocalNameServer.getNodeID(),
+                updatePacket.getRequestID(), requestRecvdTime, numRestarts, coordinatorID, updatePacket.getType()));
       }
     } else {
-      GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.getNodeID(), updateAddressPacket.getRequestID(), coordinatorID));
+      GNS.getStatLogger().fine(updateInfo.getUpdateFailedStats(activesQueried, LocalNameServer.getNodeID(),
+              updatePacket.getRequestID(), coordinatorID));
 
     }
   }
@@ -239,10 +238,10 @@ public class SendUpdatesTask extends TimerTask {
   }
 
   /**
-   * @return the updateAddressPacket
+   * @return the updatePacket
    */
-  public UpdatePacket getUpdateAddressPacket() {
-    return updateAddressPacket;
+  public UpdatePacket getUpdatePacket() {
+    return updatePacket;
   }
 
   /**

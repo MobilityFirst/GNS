@@ -25,8 +25,11 @@ def plot_groupchange_latency(folder):
         from write_array_to_file import write_tuple_array
         write_tuple_array(cdf_values, cdf_file, p = True)
         os.system('cp ' + cdf_file + ' .')
-    os.system('gnuplot ' + gnuplot_file)
-    os.system('cp groupchange_cdf.pdf ' + stats_folder)
+    try:
+        os.system('gnuplot ' + gnuplot_file)
+        os.system('cp groupchange_cdf.pdf ' + stats_folder)
+    except:
+        print 'ERROR: gnuplot error'
     
 
 def get_stats_folder(output_folder):

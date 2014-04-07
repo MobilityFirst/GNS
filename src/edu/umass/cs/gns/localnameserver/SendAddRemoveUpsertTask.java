@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -135,7 +134,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
     primariesQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {
-      updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, null);
+      updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, packet);
       GNS.getLogger().fine("Update Info Added: Id = " + getUpdateRequestID());
       updatePacketWithRequestID(getPacket(), getUpdateRequestID());
     }
@@ -153,8 +152,8 @@ public class SendAddRemoveUpsertTask extends TimerTask {
     } catch (JSONException e) {
       e.printStackTrace();
     }
-
   }
+
   // This code screams for using a super class other than BasicPacket
   private ConfirmUpdatePacket getConfirmFailurePacket(BasicPacket packet) {
     ConfirmUpdatePacket confirm;
