@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.replicaCoordination.multipaxos;
+package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 /**
 @author V. Arun
  */
@@ -12,10 +12,11 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos;
 public class WaitForUtility {
 
 	private final int[] members;
-	private boolean[] responded=null;
+	private final boolean[] responded;
 	private int heardCount=0;
+	private int initTime=0; // to calculate how long we have been waiting
 	
-	WaitForUtility(int[] m) {
+	public WaitForUtility(int[] m) {
 		this.members = m;
 		responded = new boolean[m.length];
 		for(int i=0; i< m.length; i++) {
@@ -47,12 +48,14 @@ public class WaitForUtility {
 		}
 		return false;
 	}
-
 	public boolean contains(int node) {
 		return getIndex(node) >= 0;
 	}
 	public int[] getMembers() {
 		return this.members;
+	}
+	public long totalWaitTime() {
+		return System.currentTimeMillis() - this.initTime;
 	}
 	private int getIndex(int node) {
 		int index = -1;

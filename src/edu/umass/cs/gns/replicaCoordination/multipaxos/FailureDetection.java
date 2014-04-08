@@ -1,14 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
@@ -19,19 +10,37 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.paxos.PaxosConfig;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
+
 /**
 @author V. Arun
  */
 
-/* There is one failure detection instance per machine. This class could 
+/* FailureDetection provides failure detection for all nodes specified
+ * by its monitor(.) interface. It really doesn't have much to do 
+ * with paxos coz it is just a node monitoring utility. It allows
+ * the failure detection overhead across all paxos instances on a
+ * node to be amortized so that the overhead is no greater than
+ * all nodes monitoring all other nodes.
+ * 
+ * There is one failure detection instance per machine. This class could 
  * be static, but it is not so that we can test emulations involving
  * multiple "machines" within a JVM.
+ * 
  */
 public class FailureDetection {
 	// final static
-	private final static long DETECTION_TIMEOUT_MILLIS = 5000;
-	private final static long INTER_PING_PERIOD_MILLIS = 3000;
-	private final static long LONGER_COORDINATOR_FAILURE_TIMEOUT = 10000;  
+	private static long NODE_DETECTION_TIMEOUT_MILLIS = 5000;
+	private static long INTER_PING_PERIOD_MILLIS = 3000;
+	private static long COORDINATOR_FAILURE_DETECTION_TIMEOUT_MILLIS = 3*NODE_DETECTION_TIMEOUT_MILLIS; // Triggers a run for coordinator even if not next in line
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
@@ -45,13 +54,20 @@ public class FailureDetection {
 
 	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
 	
-	
-	FailureDetection(int id, NodeConfig nc, GNSNIOTransport niot) {
+	FailureDetection(int id, NodeConfig nc, GNSNIOTransport niot, PaxosConfig pc) {
 		nioTransport = niot;
 		myID = id;
 		lastHeardFrom = new HashMap<Integer,Long>();
 		monitoredNodes = new TreeSet<Integer>();
 		futures = new HashMap<Integer,ScheduledFuture<PingTask>>();
+		initialize(pc);  // this line needs to be commented for paxos tests to make sense
+	}
+	// FIXME: Need to fix PaxosConfig first
+	private void initialize(PaxosConfig pc) {
+		if(pc==null) return;
+		NODE_DETECTION_TIMEOUT_MILLIS = pc.getFailureDetectionTimeoutMillis();
+		INTER_PING_PERIOD_MILLIS = pc.getFailureDetectionPingMillis();
+		COORDINATOR_FAILURE_DETECTION_TIMEOUT_MILLIS = 2*NODE_DETECTION_TIMEOUT_MILLIS;
 	}
 	
 	/* Synchronized because we don't want monitoredNodes 
@@ -87,7 +103,8 @@ public class FailureDetection {
 				/* Not sure how to remove the warning below. The compiler doesn't seem to like 
 				 * ScheduledFuture<PingTask> and spews a cryptic message.
 				 */
-				ScheduledFuture future = execpool.scheduleAtFixedRate(pingTask, 2000, FailureDetection.INTER_PING_PERIOD_MILLIS, TimeUnit.MILLISECONDS);
+				ScheduledFuture future = execpool.scheduleAtFixedRate(pingTask, 2000, 
+						FailureDetection.INTER_PING_PERIOD_MILLIS, TimeUnit.MILLISECONDS);
 				futures.put(id, future);
 			}
 		} catch(JSONException e) {
@@ -104,7 +121,7 @@ public class FailureDetection {
 	protected boolean isNodeUp(int id) {
 		Long lastHeard = 0L;
 		if((lastHeard = this.lastHeardFrom.get(id))!=null) {
-			if(System.currentTimeMillis() - lastHeard < DETECTION_TIMEOUT_MILLIS)
+			if(System.currentTimeMillis() - lastHeard < NODE_DETECTION_TIMEOUT_MILLIS)
 				return true;
 		}
 		return false;
@@ -113,15 +130,14 @@ public class FailureDetection {
 		Long lastHeard = 0L;
 		long now = System.currentTimeMillis();
 		if((lastHeard = this.lastHeardFrom.get(id))!=null) {
-			return (now - lastHeard) > FailureDetection.LONGER_COORDINATOR_FAILURE_TIMEOUT;
+			return (now - lastHeard) > FailureDetection.COORDINATOR_FAILURE_DETECTION_TIMEOUT_MILLIS;
 		}
 		return true;
 	}
 
 	private JSONObject getPingPacket(int id) throws JSONException {
-		FailureDetectionPacket fdp = new FailureDetectionPacket(myID, id, true, PaxosPacket.FAILURE_DETECT);
+		FailureDetectionPacket fdp = new FailureDetectionPacket(myID, id, true);
 		JSONObject fdpJson = fdp.toJSONObject();
-		Packet.putPacketType(fdpJson, PacketType.PAXOS_PACKET);
 		return fdpJson;
 	}
 	

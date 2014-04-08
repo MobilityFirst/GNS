@@ -1,8 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,71 +8,52 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * Created with IntelliJ IDEA.
- * User: abhigyan
- * Date: 7/5/13
- * Time: 7:45 PM
- * To change this template use File | Settings | File Templates.
+/* A sync reply packet contains commits missing at the
+ * sending node (nodeID). The receiver is expected to 
+ * send to the sender the commits it is reporting as
+ * missing in this sync reply.
  */
-public class SynchronizeReplyPacket extends PaxosPacket{
+public final class SynchronizeReplyPacket extends PaxosPacket{
 
-    /**
-     * node ID of sending node
-     */
-    public int nodeID;
+	public final int nodeID; // sending node
+	public final int maxDecisionSlot; 	// max decided slot at nodeID
+	public final ArrayList<Integer> missingSlotNumbers;
+	public final boolean missingTooMuch; // can be computed from missingSlotNumbers, but can also be specified explicitly by sender
 
-    /**
-     * maximum slot for which nodeID has received decision
-     */
-    public int maxDecisionSlot;
+	private final static String NODE = "NODE_ID";
+	private final static String MAX_SLOT = "MAX_SLOT";
+	private final static String MISSING = "MISSING";
+	private final static String FLAG = "MISSING_TOO_MUCH";
 
-    /**
-     * slot numbers less than max slot which are missing
-     */
-    public ArrayList<Integer> missingSlotNumbers;
-    String NODE = "x1";
-    String MAX_SLOT = "x2";
-    String MISSING = "x3";
-    String FLAG = "x4";
+	public SynchronizeReplyPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
+		super((PaxosPacket)null);
+		this.missingTooMuch = flag;
+		this.packetType = (missingTooMuch ? PaxosPacketType.CHECKPOINT_REQUEST : PaxosPacketType.SYNC_REPLY); // missingTooMuch => checkpoint transfer
+		this.nodeID = nodeID;
+		this.maxDecisionSlot = maxDecisionSlot;
+		this.missingSlotNumbers = missingSlotNumbers;
+	}
 
-    public boolean flag;
+	public SynchronizeReplyPacket(JSONObject json) throws JSONException{
+		super(json);
+		this.nodeID = json.getInt(NODE);
+		this.maxDecisionSlot = json.getInt(MAX_SLOT);
+		if (json.has(MISSING))
+			missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
+		else missingSlotNumbers = null;
+		this.missingTooMuch = json.getBoolean(FLAG);
+		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.SYNC_REPLY || PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_REQUEST); // coz class is final
+		this.packetType = PaxosPacketType.SYNC_REPLY;
+	}
 
-    public SynchronizeReplyPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag1) {
-        this.packetType = PaxosPacketType.SYNC_REPLY;
-        this.nodeID = nodeID;
-        this.maxDecisionSlot = maxDecisionSlot;
-        this.missingSlotNumbers = missingSlotNumbers;
-        this.flag = flag1;
-    }
-
-    public SynchronizeReplyPacket(JSONObject json) throws JSONException{
-
-        this.nodeID = json.getInt(NODE);
-        this.maxDecisionSlot = json.getInt(MAX_SLOT);
-        if (json.has(MISSING))
-            missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
-        else missingSlotNumbers = null;
-        this.packetType = PaxosPacketType.SYNC_REPLY;
-        this.flag = json.getBoolean(FLAG);
-    }
-    
-    public int getType() {
-  	  return this.packetType;
-    }
-
-    @Override
-    public JSONObject toJSONObject() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put(PaxosPacketType.ptype, this.packetType);
-        Packet.putPacketType(json, PacketType.PAXOS_PACKET); json.put(PaxosPacket.paxosIDKey, this.paxosID);
-
-        json.put(NODE, nodeID);
-        json.put(MAX_SLOT, maxDecisionSlot);
-        json.put(FLAG,flag);
-        if (missingSlotNumbers!= null && missingSlotNumbers.size()>0)
-            json.put(MISSING, new JSONArray(missingSlotNumbers));
-        return json;
-
-    }
+	@Override
+	public JSONObject toJSONObjectImpl() throws JSONException {
+		JSONObject json = new JSONObject();
+		json.put(NODE, nodeID);
+		json.put(MAX_SLOT, maxDecisionSlot);
+		json.put(FLAG,missingTooMuch);
+		if (missingSlotNumbers!= null && missingSlotNumbers.size()>0)
+			json.put(MISSING, new JSONArray(missingSlotNumbers));
+		return json;
+	}
 }

@@ -1,47 +1,40 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Created with IntelliJ IDEA.
- * User: abhigyan
- * Date: 7/5/13
- * Time: 7:28 PM
- * To change this template use File | Settings | File Templates.
+/* A sync packet is simply a request by the sender
+ * (nodeID) to the receiver asking which commits are
+ * missing at the receiver. The receiver of a sync
+ * packet is expected to respond with missing commits.
  */
-public class SynchronizePacket extends PaxosPacket{
 
-    public int nodeID;
+public final class SynchronizePacket extends PaxosPacket{
+	private final static String NODE = "nodeID";
 
-    public  SynchronizePacket(int nodeID) {
-        this.packetType = PaxosPacketType.SYNC_REQUEST;
-        this.nodeID = nodeID;
+	public final int nodeID;
 
-    }
+	public SynchronizePacket(int nodeID) {
+		super((PaxosPacket)null);
+		this.packetType = PaxosPacketType.SYNC_REQUEST;
+		this.nodeID = nodeID;
 
-    String NODE = "x1";
-    public  SynchronizePacket(JSONObject jsonObject) throws JSONException{
+	}
 
-        this.packetType = PaxosPacketType.SYNC_REQUEST;
-        this.nodeID = jsonObject.getInt(NODE);
-
-    }
-    
-	public int getType() {
-		return this.packetType;
+	public  SynchronizePacket(JSONObject jsonObject) throws JSONException{
+		super(jsonObject);
+		assert(PaxosPacket.getPaxosPacketType(jsonObject)==PaxosPacketType.SYNC_REQUEST);
+		this.packetType = PaxosPacketType.SYNC_REQUEST;
+		this.nodeID = jsonObject.getInt(NODE);
+		this.paxosID = jsonObject.getString(PaxosPacket.PAXOS_ID);
 	}
 
 
-    @Override
-    public JSONObject toJSONObject() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put(PaxosPacketType.ptype, this.packetType);
-        Packet.putPacketType(json, PacketType.PAXOS_PACKET); json.put(PaxosPacket.paxosIDKey, this.paxosID);
-
-        json.put(NODE, nodeID);
-        return json;
-    }
+	@Override
+	public JSONObject toJSONObjectImpl() throws JSONException {
+		JSONObject json = new JSONObject();
+		json.put(NODE, nodeID);
+		return json;
+	}
 }

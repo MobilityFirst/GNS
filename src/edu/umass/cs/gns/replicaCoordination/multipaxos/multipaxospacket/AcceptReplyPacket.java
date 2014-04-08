@@ -1,74 +1,55 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.Ballot;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
+
 /**
- * Created with IntelliJ IDEA.
- * User: abhigyan
- * Date: 7/25/13
- * Time: 8:49 AM
- * To change this template use File | Settings | File Templates.
+ * 
+ * @author V. Arun
+ *
  */
-public class AcceptReplyPacket extends PaxosPacket {
-    /**
-     * nodeID of the node that sent the message
-     */
-    public int nodeID;
+public final class AcceptReplyPacket extends PaxosPacket {
+    public final int nodeID; // sender nodeID
+    public final Ballot ballot;
+    public final int slotNumber;
 
-    /**
-     * ballot number
-     */
-    public Ballot ballot;
+    public final int committedSlot;
 
-    /**
-     * slot number
-     */
-    public int slotNumber;
-
-//    /**
-//     * slot number
-//     */
-//    public int commitSlot;
-
-    private static final  String NODE_ID = "node";
+    protected static final  String NODE_ID = "node";
     private static final  String BALLOT_NUMBER = "ballot";
     private static final  String SLOT_NUMBER = "slot";
-//    private static final  String COMMIT_SLOT = "ar4";
+    private static final  String COMMITTED_SLOT = "committed_slot";
 
-    public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
+    public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber, int committedSlot) {
+    	super((PaxosPacket)null);
         this.packetType = PaxosPacketType.ACCEPT_REPLY;
         this.nodeID = nodeID;
         this.ballot = ballot;
         this.slotNumber = slotNumber;
-//        this.commitSlot = commitSlot;
+        this.committedSlot = committedSlot;
     }
-    public int getType() {
-  	  return this.packetType;
-    }
-
+ 
     public AcceptReplyPacket(JSONObject jsonObject) throws  JSONException{
+    	super(jsonObject);
+    	assert(PaxosPacket.getPaxosPacketType(jsonObject)==PaxosPacketType.ACCEPT_REPLY); // coz class is final
         this.packetType = PaxosPacketType.ACCEPT_REPLY;
         this.nodeID = jsonObject.getInt(NODE_ID);
         this.ballot = new Ballot(jsonObject.getString(BALLOT_NUMBER));
         this.slotNumber = jsonObject.getInt(SLOT_NUMBER);
-//        this.commitSlot = jsonObject.getInt(COMMIT_SLOT);
+        this.committedSlot = jsonObject.getInt(COMMITTED_SLOT);
     }
 
 
     @Override
-    public JSONObject toJSONObject() throws JSONException {
+    public JSONObject toJSONObjectImpl() throws JSONException {
         JSONObject json= new JSONObject();
-        json.put(PaxosPacketType.ptype, PaxosPacketType.ACCEPT_REPLY);
-        Packet.putPacketType(json, PacketType.PAXOS_PACKET); json.put(PaxosPacket.paxosIDKey, this.paxosID);
-        
         json.put(NODE_ID, nodeID);
         json.put(BALLOT_NUMBER, ballot.toString());
         json.put(SLOT_NUMBER, slotNumber);
-//        jsonObject.put(COMMIT_SLOT, slotNumber);
+        json.put(COMMITTED_SLOT, this.committedSlot);
         return json;
     }
 

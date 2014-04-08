@@ -3,47 +3,77 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.Ballot;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 
-public class PValuePacket extends PaxosPacket {
+/* A <slot, ballot, request> three-tuple. The slot and request are
+ * within the proposal here. A pvalue is used internally by paxos
+ * acceptors and coordinators. It also acts as a DECISION packet
+ * as every committed request must be associated with some slot,
+ * and ballot.
+ */
 
+public class PValuePacket extends ProposalPacket {
+	protected static final String BALLOT = "ballot";
+	private static final String MCSLOT = "slotCommitted@Majority";
 
-	public Ballot ballot;
-	public ProposalPacket proposal;
-
+	public final Ballot ballot;
+	public final int majorityCommittedSlot; // for garbage collection, similar to that in AcceptPacket
+	public final boolean recovery;
+	
 	public PValuePacket(Ballot b, ProposalPacket p) {
+    	super(p);
 		this.ballot = b;
-		this.proposal = p;
+		this.majorityCommittedSlot=-1;
+		// packetType inherited, not assigned until DECISION or PREEMPTED
+		this.recovery = false;
+	}
+	// Meant for super calling by inheritors
+	protected PValuePacket(PValuePacket pvalue) {
+		super(pvalue);
+		this.ballot = pvalue.ballot;
+		this.majorityCommittedSlot = pvalue.majorityCommittedSlot;
+		this.recovery = pvalue.recovery;
 	}
 
-	static String BALLOT = "ballot";
+	// Private constructor called by getDecisionPacket
+	private PValuePacket(PValuePacket pvalue, int mcSlot) {
+		super(pvalue);
+		this.ballot = pvalue.ballot;
+		this.majorityCommittedSlot=mcSlot;
+		// packetType inherited, not assigned
+		this.recovery = pvalue.recovery;
+	}
+	public PValuePacket getDecisionPacket(int mcSlot) {
+		PValuePacket decision = new PValuePacket(this, mcSlot);
+		decision.packetType = PaxosPacketType.DECISION;
+		return decision;
+	}
+	public PValuePacket preempt() {
+		this.packetType = PaxosPacketType.PREEMPTED; // preemption does not change final fields, unlike getDecisionPacket
+		return this;
+	}
+	/* A convenience method for when we really need a RequestPacket, not a deeper
+	 * inherited PaxosPacket, e.g., when forwarding a preempted pvalue to the
+	 * current, new coordinator to re-propose. Else, we would need to explicitly
+	 * handle the PREEMPTED type in PaxosInstanceStateMachine.handlePaxosMessage.
+	 */
+	public RequestPacket getRequestPacket() {return new RequestPacket(this);}
 
 	public PValuePacket(JSONObject json) throws JSONException{
-		this.proposal = new ProposalPacket(json);
-		//        try{
-		//
-		//        } catch (Exception e) {
-		//            this.proposal = null;
-		//        }
-		//		this.packetType = json.getInt(PaxosPacketType.ptype);
+		super(json);
 		this.ballot = new Ballot(json.getString(BALLOT));
-	}
-	public int getType() {
-		return this.packetType;
-	}
-	public void setType(int type) {
-		this.packetType = type;
+		this.majorityCommittedSlot = json.getInt(MCSLOT);
+		this.recovery = json.getBoolean(RECOVERY);
+		this.packetType = PaxosPacket.getPaxosPacketType(json);
 	}
 
 	@Override
-	public JSONObject toJSONObject() throws JSONException {
-		JSONObject json = this.proposal.toJSONObject();
-	    Packet.putPacketType(json, PacketType.PAXOS_PACKET); json.put(PaxosPacket.paxosIDKey, this.paxosID);
-
+	public JSONObject toJSONObjectImpl() throws JSONException {
+		JSONObject json = super.toJSONObjectImpl();
 		json.put(BALLOT, ballot.toString());
-		json.put(PaxosPacketType.ptype, packetType);
+		json.put(MCSLOT, this.majorityCommittedSlot);
+		json.put(RECOVERY, recovery);
 		return json;
 	}
 

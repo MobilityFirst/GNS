@@ -6,9 +6,10 @@ import java.util.logging.Logger;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PreparePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PrepareReplyPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 
 /**
 @author V. Arun
@@ -40,28 +41,33 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestP
  * is internally synchronized.
  */
 public class PaxosCoordinator {
+	public static final boolean DEBUG=PaxosManager.DEBUG;
 	private PaxosCoordinatorState pcs=null; // This gets recreated for each ballot.
 	
 	private static Logger log = Logger.getLogger(PaxosCoordinator.class.getName()); // GNS.getLogger();
 	
-	/* Come to exist if nonexistent.
+	/* Come to exist if nonexistent. Called by PaxosInstanceStateMachine
 	 */
-	protected synchronized Ballot makeCoordinator(Ballot b, int[] members) {
+	protected synchronized Ballot makeCoordinator(int bnum, int coord, int[] members, int slot, boolean recovery) {
 		boolean sendPrepare=false;
-		if(pcs==null || (b.compareTo(pcs.getBallot())>0)) {
-			pcs = new PaxosCoordinatorState(b);
-			if(b.ballotNumber==0) pcs.setCoordinatorActive(); // Initial coordinator status assumed, not explicitly prepared.
+		if(pcs==null || (pcs.getBallot().compareTo(bnum, coord))<0) {
+			pcs = new PaxosCoordinatorState(bnum, coord, slot, members);
+			if(bnum==0 || recovery) pcs.setCoordinatorActive(); // Initial coordinator status assumed, not explicitly prepared.
 			else sendPrepare=true;
-		}
+		} else if(pcs!=null && (pcs.getBallot().compareTo(bnum, coord))==0 && !pcs.isActive()) sendPrepare = true; // resend prepare 
 		return sendPrepare ? pcs.prepare(members) : null; // For ballotnum>0, must explicitly prepare
 	}
-	/* Cease to exist.
+	protected synchronized Ballot remakeCoordinator(int[] members) {
+		return (this.isActive() ? pcs.prepare(members): null);
+	}
+	/* Cease to exist. Internally called when preempted. 
 	 */
-	protected synchronized ArrayList<ProposalPacket> resignAsCoordinator() {
+	private synchronized ArrayList<ProposalPacket> resignAsCoordinator() {
 		ArrayList<ProposalPacket> preActiveProposals=null;
-		if(!pcs.isActive()) {
+		if(this.exists() && !pcs.isActive()) {
 			preActiveProposals = pcs.getPreActiveProposals();
-			log.info("PreActives while resigning: " + this.pcs.getPreActiveProposals());
+			log.info("Node "+this.pcs.getBallot().coordinatorID + " resigning as coordinator, " +
+					"preActive proposals = " + this.pcs.getPreActiveProposals());
 		}
 		
 		pcs = null; // The main point of this method.
@@ -77,6 +83,11 @@ public class PaxosCoordinator {
 	protected synchronized boolean exists(Ballot b) {
 		return pcs!=null && pcs.getBallot().compareTo(b)>=0;
 	}
+	/* Allows PaxosInstanceStateMachine to forcibly call resignAsCoordinator().
+	 */
+	protected synchronized void forceStop() {
+		this.resignAsCoordinator();
+	}
 
 	/* Phase2a
 	 */
@@ -87,25 +98,28 @@ public class PaxosCoordinator {
 
 	/* Phase2b
 	 */
-	protected synchronized PValuePacket handleAcceptReply(AcceptReplyPacket acceptReply) {
-		if(this.pcs==null) return null;
+	protected synchronized PValuePacket handleAcceptReply(int[] members, AcceptReplyPacket acceptReply) {
+		if(!this.exists()) return null;
 		
-		PValuePacket committedPValue=null;
+		PValuePacket committedPValue=null; PValuePacket preemptedPValue=null;
 		if(this.pcs.isActive()) { 
 			if(acceptReply.ballot.compareTo(this.pcs.getBallot()) > 0) {
-				if((pcs.handleAcceptReplyHigherBallot(acceptReply))) {
+				if((preemptedPValue = pcs.handleAcceptReplyHigherBallot(acceptReply))!=null) {
 					/* Can ignore return value of preActiveProposals as handleAcceptReplyHigherBallot 
 					 * returns true only if there are no proposals at this coordinator.
 					 */
-					log.info("Node " + this.pcs.getBallot().coordinatorID + " resigning as coordinator");
-					resignAsCoordinator();
-				} else {log.info("Preempted request#: " + acceptReply.slotNumber);}
+					if(DEBUG) log.info("PREEMPTED request#: " + acceptReply.slotNumber);
+					if(pcs.preemptedFully()) {
+						log.info("Node " + this.pcs.getBallot().coordinatorID + " preempted fully, about to resign");
+						resignAsCoordinator();
+					}
+				}
 			}
 			else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
-				committedPValue = pcs.handleAcceptReplyMyBallot(acceptReply);
+				committedPValue = pcs.handleAcceptReplyMyBallot(members, acceptReply);
 			}
 		}
-		return committedPValue;
+		return committedPValue!=null ? committedPValue : preemptedPValue; // both could be null too
 	}
 	
 	/* Phase1a
@@ -114,22 +128,6 @@ public class PaxosCoordinator {
 	protected synchronized Ballot prepare(int[] members) {
 		return this.pcs.prepare(members);
 	}
-	/* Phase1b
-	 * Received prepare reply with higher ballot.
-	 */
-	protected synchronized ArrayList<ProposalPacket> getPreActivesIfPreempted(PreparePacket prepareReply, int[] members) {
-		if(!this.exists()) return null;
-		
-		// Used only for garbage collection. Unrelated to prepare reply handling really.
-		this.pcs.recordSlotNumber(members, prepareReply); 
-		
-		ArrayList<ProposalPacket> preActiveProposals = null;
-		if(this.pcs.isPreemptable(prepareReply)) {
-			preActiveProposals = resignAsCoordinator(); // pcs no longer valid
-		} 
-		return preActiveProposals;
-	}
-	
 	/* Phase1b
 	 * Event: Received a prepare reply message.
 	 * Action: Resign if reply contains higher ballot as we are
@@ -141,33 +139,54 @@ public class PaxosCoordinator {
 	 * Return: The set of accept messages (phase2a) to be sent out
 	 * corresponding to spawned commanders.
 	 */
-	protected synchronized ArrayList<AcceptPacket> handlePrepareMessageReply(PreparePacket prepareReply, int[] members) {
+	protected synchronized ArrayList<AcceptPacket> handlePrepareReply(PrepareReplyPacket prepareReply, int[] members) {
 		if(!this.exists()) return null; 
 		ArrayList<AcceptPacket> acceptPacketList = null;
 
-		if(this.pcs.isPrepareAcceptedByMajority(prepareReply)) { // pcs still valid
+		if(this.pcs.isPrepareAcceptedByMajority(prepareReply, members)) { // pcs still valid
 			assert(!this.pcs.isActive());   // ******ensures this else block is called exactly once
 			this.pcs.combinePValuesOntoProposals(members); // okay even for multiple threads to call in parallel
 			acceptPacketList = this.pcs.spawnCommandersForProposals(); // should be called only once, o/w conflicting conflicts possible
 			this.pcs.setCoordinatorActive(); // *****ensures this else block is called exactly once
-			log.info("Node " + prepareReply.coordinatorID + " PREPARE MAJORITY: About to propose across view change: " + acceptPacketList);
+			log.info("Node " + prepareReply.coordinatorID + " Acquired PREPARE MAJORITY: About to conduct view change.");
 		} // "synchronized" in the method definition ensures that this else block is called atomically 
 		
 		return (acceptPacketList);
 	}
-	
-	protected synchronized boolean resignIfActiveCoordinator(Ballot b) {
-		if(!this.exists()) return false;
-		if(this.pcs.isActive() && b.compareTo(pcs.getBallot())>0) {
-			log.info("Coordinator node " + pcs.getBallot().coordinatorID + " resigning upon receiving higher ballot " + b);
-			resignAsCoordinator(); // return value only relevant if preempted when pre-active
-			return true;
-		}
+
+	/* Phase1b
+	 * Received prepare reply with higher ballot.
+	 */
+	protected synchronized ArrayList<ProposalPacket> getPreActivesIfPreempted(PrepareReplyPacket prepareReply, int[] members) {
+		if(!this.exists()) return null;
+				
+		ArrayList<ProposalPacket> preActiveProposals = null;
+		if(this.pcs.isPreemptable(prepareReply)) {
+			preActiveProposals = resignAsCoordinator(); // pcs no longer valid
+		} 
+		return preActiveProposals;
+	}
+	protected synchronized boolean isOverloaded(int acceptorSlot) {
+		if(!this.isActive()) return false;
+		return this.pcs.isOverloaded(acceptorSlot);
+	}
+	protected synchronized boolean waitingTooLong() {
+		if(this.isActive() && this.pcs.waitingTooLong()) return true;
 		return false;
 	}
-	
-
+	protected synchronized boolean isCommandering(int slot) {
+		return (this.isActive() && this.pcs.isCommandering(slot)) ? true : false;
+	}
+	protected synchronized AcceptPacket reCommander(int slot) {
+		if(!this.isActive()) return null;
+		return this.pcs.reInitCommander(slot);
+	}
+		
 	// Testing methods
+	protected boolean isActive() {
+		return this.exists() && this.pcs.isActive();
+	}
+	public String toString() {return "{Coordinator=" + (pcs!=null ? this.pcs.toString() : null);}
 	protected void testingInitCoord(int load) {
 		if(pcs!=null) pcs.testingInitCoord(load);
 	}

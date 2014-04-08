@@ -1,38 +1,46 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.paxos.Ballot;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Represents the state of a paxos instance that is periodically logged to disk.
- * User: abhigyan
- * Date: 8/2/13
- * Time: 10:13 AM
- * To change this template use File | Settings | File Templates.
- */
-public class StatePacket extends PaxosPacket{
 
-  public Ballot b;
-  public int slotNumber;
-  public String state;
+public final class StatePacket extends PaxosPacket{
+	private final static String SLOT="SLOT";
+	private final static String BALLOT="BALLOT";
+	private final static String STATE="STATE";
 
-  public StatePacket(Ballot b, int slotNumber, String state) {
-    this.b = b;
-    this.slotNumber = slotNumber;
-    this.state = state;
-  }
+	public final Ballot ballot;
+	public final int slotNumber;
+	public final String state;
 
-	public int getType() {
-		return this.packetType;
+	public StatePacket(Ballot b, int slotNumber, String state) {
+		super((PaxosPacket)null);
+		this.ballot = b;
+		this.slotNumber = slotNumber;
+		this.state = state;
+		this.packetType = PaxosPacketType.CHECKPOINT_STATE;
 	}
 
 
-  @Override
-  public JSONObject toJSONObject() throws JSONException {
-    throw new UnsupportedOperationException();
+	public StatePacket(JSONObject json) throws JSONException{
+		super(json);
+		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_STATE); // coz class is final
+		this.packetType = PaxosPacketType.CHECKPOINT_STATE;
+		this.slotNumber = json.getInt(SLOT);
+		this.ballot = new Ballot(json.getString(BALLOT));
+		this.state = json.getString(STATE);
+	}
 
-  }
+	@Override
+	public JSONObject toJSONObjectImpl() throws JSONException {
+		JSONObject json = new JSONObject();
+		json.put(SLOT, this.slotNumber);
+		json.put(BALLOT, this.ballot.ballotNumber+":"+this.ballot.coordinatorID);
+		json.put(STATE, this.state);
+		return json;
+	}
 
 }

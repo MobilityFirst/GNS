@@ -1,59 +1,108 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
-import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 
 /**
 @author V. Arun
  */
-public class DefaultPaxosInterfaceApp implements PaxosInterface {
-	String myState = new String("Initial state");
-	HashMap<Integer,String> committed = new HashMap<Integer,String>();
-	int seqnum=0;
+public class DefaultPaxosInterfaceApp implements Replicable {
+	public static final int MAX_STORED_REQUESTS = 1000;
+	private static MessageDigest md ;
 
-	@Override
-	public synchronized void handlePaxosDecision(String paxosID,
-			RequestPacket requestPacket, boolean recovery) {
-		System.out.println("PaxosID " + paxosID + " executing request " + requestPacket.requestID + " by changing state to " + requestPacket.value);
-		myState = requestPacket.value;
-		committed.put(seqnum++, requestPacket.value);
+	private HashMap<String,PaxosState> allState = new HashMap<String,PaxosState>();
+	private class PaxosState {
+		protected int seqnum=-1;
+		protected String value = "Initial state";
+		protected int numExecuted=0;
+		protected HashMap<Integer,String> committed = new HashMap<Integer,String>();
 	}
-	public synchronized int getNumCommitted() {
-		return committed.size();
-	}
-	public synchronized String getRequest(int reqnum) {
-		return committed.get(reqnum);
-	}
+	private static Logger log = Logger.getLogger(DefaultPaxosInterfaceApp.class.getName()); // GNS.getLogger();
 
+	DefaultPaxosInterfaceApp() {
+		try {
+			this.md = MessageDigest.getInstance("SHA");
+		} catch(Exception e) {e.printStackTrace();}
+	}
 	@Override
-	public void handleFailureMessage(FailureDetectionPacket fdPacket) {
-		System.out.println("Ignoring notification about failure of node " + fdPacket.responderNodeID);
+	public synchronized boolean handleDecision(String paxosID, String req, boolean recovery) {
+		boolean executed = false;
+		try {
+			JSONObject reqJson = new JSONObject(req);
+			ProposalPacket requestPacket = new ProposalPacket(reqJson);
+			PaxosState state = this.allState.get(paxosID);
+			if(state==null) state = new PaxosState();
+			System.out.println("Testing: PaxosID " + paxosID + " executing request with slot " + 
+					requestPacket.slot + ", id = " + requestPacket.requestID + " with value " + 
+					requestPacket.requestValue +"; seqnum="+ state.seqnum+": prev_state_value="+state.value);
+			state.value = requestPacket.requestValue + (digest(state.value));
+			if(state.seqnum==-1) state.seqnum = requestPacket.slot;
+			assert(state.seqnum==requestPacket.slot); // asserts in-order invariant
+			state.committed.put(state.seqnum++, state.value);
+			state.committed.remove(state.seqnum-MAX_STORED_REQUESTS); // garbage collection
+			allState.put(paxosID, state);
+			executed=true;
+			state.numExecuted++;
+			TESTPaxosConfig.execute(requestPacket.requestID);
+			this.notify();
+		} catch(JSONException je) {je.printStackTrace();}
+		return executed;
+	}
+	public int digest(String s) {
+		md.update(s.getBytes());
+		byte[] digest = md.digest();
+		int dig=0;
+		for(int i=0; i<digest.length; i++) {
+			dig = (int)digest[i];
+		}
+		return dig;
 	}
 
 	@Override
 	public String getState(String paxosID) {
-		return myState;
-	}
-
-	@Override
-	public void updateState(String paxosID, String state) {
-		myState = state;
-	}
-
-	@Override
-	public String getPaxosKeyForPaxosID(String paxosID) {
-		assert(false) : "Method not implemented";
+		PaxosState state = this.allState.get(paxosID);
+		if(state!=null) return state.value;
 		return null;
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+	@Override
+	public boolean updateState(String paxosID, String value) {
+		PaxosState state = this.allState.get(paxosID);
+		if(state==null) state = new PaxosState();
+		state.value = value;
+		return true;
 	}
 
+	/* Testing methods below.
+	 */
+	public synchronized int getNumCommitted(String paxosID) {
+		PaxosState state = this.allState.get(paxosID);
+		if(state!=null) return state.seqnum;
+		return 0;
+	}
+	public synchronized int getNumExecuted(String paxosID) {
+		PaxosState state = this.allState.get(paxosID);
+		if(state!=null) return state.numExecuted;
+		return 0;
+	}
+	public synchronized String getRequest(String paxosID, int reqnum) {
+		PaxosState state = this.allState.get(paxosID);
+		if(state!=null) return state.committed.get(reqnum);
+		return null;
+	}
+	public synchronized int getHash(String paxosID) {
+		PaxosState state = this.allState.get(paxosID);
+		if(state!=null) return state.value.hashCode();
+		return 0;
+	}
+	public synchronized void waitToFinish() throws InterruptedException {
+		this.wait();
+	}
 }

@@ -1,109 +1,79 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.Ballot;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-public class PreparePacket extends PaxosPacket {
-
-  public int coordinatorID;
-
-  public Ballot ballot;
-
-  public int receiverID;
-
-  public int slotNumber;
-  public Map<Integer, PValuePacket> accepted;
-
-  public PreparePacket(int coordinatorID, int receiverID, Ballot b, int packetType) {
-    this.coordinatorID = coordinatorID;
-    this.receiverID = receiverID;
-    this.ballot = b;
-    this.packetType = packetType;
-    this.slotNumber = -1;
-
-  }
-
-  public int getType() {
-	  return this.packetType;
-  }
-  
-  public PreparePacket getPrepareReplyPacket(Ballot b, int receiverID, Map<Integer, PValuePacket> accepted, int slotNumber) {
-
-    if (b.equals(this.ballot)) {
-      PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,
-              this.ballot, PaxosPacketType.PREPARE_REPLY);
-      prep.accepted = accepted;
-      prep.slotNumber = slotNumber;
-      return prep;
-    }
-
-    PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,
-            b, PaxosPacketType.PREPARE_REPLY);
-    prep.accepted = accepted;
-    prep.slotNumber = slotNumber;
-    return prep;
-  }
-
-  public PreparePacket(JSONObject json) throws JSONException{
-    this.packetType = json.getInt(PaxosPacketType.ptype);
-    this.coordinatorID = json.getInt("coordinatorID");
-    this.receiverID = json.getInt("receiverID");
-    this.ballot = new Ballot(json.getString("ballot"));
-    this.slotNumber = json.getInt("slotNumber");
-    if (this.packetType == PaxosPacketType.PREPARE_REPLY) {
-      this.accepted = parseJsonForAccepted(json);
-    }
-  }
-
-  private ConcurrentHashMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json)
-          throws JSONException {
-    ConcurrentHashMap<Integer, PValuePacket> accepted = new ConcurrentHashMap<Integer, PValuePacket>();
-    if (json.has("accepted")) {
-      JSONArray jsonArray = json.getJSONArray("accepted");
-      for (int i = 0; i < jsonArray.length(); i++) {
-        JSONObject element = jsonArray.getJSONObject(i);
-        PValuePacket pval = new PValuePacket(element);
-        accepted.put(pval.proposal.slot, pval);
-      }
-    }
-    return accepted;
-  }
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 
 
-  @Override
-  public JSONObject toJSONObject() throws JSONException
-  {
-    JSONObject json = new JSONObject();
-    json.put(PaxosPacketType.ptype, this.packetType);
-    Packet.putPacketType(json, PacketType.PAXOS_PACKET); json.put(PaxosPacket.paxosIDKey, this.paxosID);
+public final class PreparePacket extends PaxosPacket {
+	protected final static String COORDINATOR="coordinatorID";
 
-    json.put("coordinatorID", coordinatorID);
-    json.put("receiverID", receiverID);
-    json.put("ballot", ballot.toString());
-    json.put("slotNumber", slotNumber);
-    if (this.packetType == PaxosPacketType.PREPARE_REPLY) {
-      addAcceptedToJSON(json);
-    }
-    return json;
-  }
+	public final int coordinatorID;
+	public final Ballot ballot;
+	public  final int firstUndecidedSlot;
+	public final int receiverID;
+	public final boolean recovery;
 
-  private void addAcceptedToJSON(JSONObject json) throws JSONException{
-    if (accepted != null ) {
-      JSONArray jsonArray  = new JSONArray();
-      for (PValuePacket pValues: accepted.values()) {
-        jsonArray.put(pValues.toJSONObject());
-      }
-      json.put("accepted", jsonArray);
-    }
-  }
+	public PreparePacket(int coordinatorID, int receiverID, Ballot b) {
+		super((PaxosPacket)null);
+		this.coordinatorID = coordinatorID;
+		this.receiverID = receiverID;
+		this.ballot = b;
+		this.packetType = PaxosPacketType.PREPARE;
+		this.firstUndecidedSlot = -1;
+		this.recovery = false;
+	}
 
+	public PreparePacket(int coordinatorID, int receiverID, Ballot ballot, int slotNumber) {
+		super((PaxosPacket)null);
+		this.coordinatorID = coordinatorID;
+		this.receiverID = receiverID;
+		this.ballot = ballot;
+		this.firstUndecidedSlot = slotNumber;
+		this.packetType = PaxosPacketType.PREPARE;
+		this.recovery = false;
+	}
+	
+	private PreparePacket(int rcvrID, PreparePacket prepare) {
+		super(prepare);
+		this.coordinatorID = prepare.coordinatorID;
+		this.receiverID = rcvrID;
+		this.ballot = prepare.ballot;
+		this.firstUndecidedSlot = prepare.firstUndecidedSlot;
+		this.packetType = PaxosPacketType.PREPARE;
+		this.recovery = prepare.recovery;
+	}
+
+	public PreparePacket fixPreparePacketReceiver(int rcvrID) {
+		PreparePacket prepare = (this.receiverID!=rcvrID ? new PreparePacket(rcvrID, this) : this);
+		//prepare.putPaxosID(this.getPaxosID(), this.version);
+		return prepare;
+	}
+
+	public PreparePacket(JSONObject json) throws JSONException{
+		super(json);
+		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE); // coz class is final
+		this.packetType = PaxosPacket.getPaxosPacketType(json);
+		this.coordinatorID = json.getInt(COORDINATOR);
+		this.receiverID = json.getInt("receiverID");
+		this.ballot = new Ballot(json.getString("ballot"));
+		this.firstUndecidedSlot = json.getInt("slotNumber");
+		this.recovery = json.getBoolean(RECOVERY);
+	}
+
+
+	@Override
+	public JSONObject toJSONObjectImpl() throws JSONException
+	{
+		JSONObject json = new JSONObject();
+		json.put(COORDINATOR, coordinatorID);
+		json.put("receiverID", receiverID);
+		json.put("ballot", ballot.toString());
+		json.put("slotNumber", firstUndecidedSlot);
+		json.put(RECOVERY, recovery);
+
+		return json;
+	}
 }
