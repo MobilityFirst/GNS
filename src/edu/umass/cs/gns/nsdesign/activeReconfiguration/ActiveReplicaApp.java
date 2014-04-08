@@ -7,7 +7,7 @@ import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.replicaController.Application;
+import edu.umass.cs.gns.nsdesign.Application;
 import org.json.JSONException;
 import org.json.JSONObject;
 

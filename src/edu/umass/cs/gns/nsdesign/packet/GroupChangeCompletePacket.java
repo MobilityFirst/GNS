@@ -34,7 +34,7 @@ public class GroupChangeCompletePacket extends BasicPacket {
 	 * @param version
 	 */
 	public GroupChangeCompletePacket(int version, String name) {
-		this.setType(PacketType.NEW_ACTIVE_START_CONFIRM_TO_PRIMARY);
+		this.setType(PacketType.GROUP_CHANGE_COMPLETE);
 		this.version = version;
 		this.name = name;
 	}

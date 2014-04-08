@@ -185,10 +185,7 @@ public class GroupChange {
       GNS.getLogger().severe("Field not found exception. " + e.getMessage());
       e.printStackTrace();
     }
-
   }
-
-
 
   /**
    * ReplicaController has received message from an active that a majority of new actives have been informed.
@@ -207,28 +204,20 @@ public class GroupChange {
               replicaController.getNodeID(), -1, packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
       replicaController.getNioServer().sendToIDs(packet.getOldActiveNameServers(), oldActiveSetStopPacket.toJSONObject());
       GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());
-      if (replicaController.getRcCoordinator() == null) {
-        // execute locally
-        executeActiveNameServersRunning(proposePacket, replicaController);
-      } else {
-        // write to replica controller record object after coordination that newActive is running
-        replicaController.getRcCoordinator().coordinateRequest(proposePacket.toJSONObject());
-        if (Config.debugMode) {
-          GNS.getLogger().info(" PROPOSAL: New Active Started for Name: " + packet.getName()
-                  + " Version = " + packet.getNewActiveNameServers());
-        }
-        // this task is created to check if replica controllers have updated database,
-        // if not, the request is re-proposed for coordination.
-        WriteActiveNameServersRunningTask task = new WriteActiveNameServersRunningTask(packet.getName(),
-                packet.getNewActiveVersion(), replicaController);
-        replicaController.getScheduledThreadPoolExecutor().scheduleAtFixedRate(task, ReplicaController.RC_TIMEOUT_MILLIS,
-                ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+      replicaController.getNioServer().sendToID(replicaController.getNodeID(), proposePacket.toJSONObject());
+      if (Config.debugMode) {
+        GNS.getLogger().info(" Propose group change complete message for coordination: " + packet.getName()
+                + " Version = " + packet.getNewActiveNameServers());
       }
-
+      // this task is created to check if replica controllers have updated database,
+      // if not, the request is re-proposed for coordination.
+      WriteActiveNameServersRunningTask task = new WriteActiveNameServersRunningTask(packet.getName(),
+              packet.getNewActiveVersion(), replicaController);
+      replicaController.getScheduledThreadPoolExecutor().scheduleAtFixedRate(task, ReplicaController.RC_TIMEOUT_MILLIS,
+              ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
     } else {
       GNS.getLogger().info("Confirmation is received previously or is excessively delayed. " + packet);
     }
-
   }
 
 

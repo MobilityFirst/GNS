@@ -16,6 +16,7 @@ import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,9 +41,11 @@ public class NSListenerAdmin extends Thread {
 
   private GnsReconfigurable gnsReconfigurable;
 
-  private ActiveReplicaCoordinator activeReplicaCoordinator;
+  private ActiveReplicaCoordinator appCoordinator;
 
   private ReplicaController replicaController;
+
+  private ReplicaControllerCoordinator rcCooordinator;
 
   private GNSNodeConfig gnsNodeConfig;
 
@@ -51,10 +54,12 @@ public class NSListenerAdmin extends Thread {
    *
    * @throws IOException
    */
-  public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ActiveReplicaCoordinator activeReplicaCoordinator, ReplicaController replicaController, GNSNodeConfig gnsNodeConfig) {
+  public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ActiveReplicaCoordinator appCoordinator,
+                         ReplicaController replicaController, ReplicaControllerCoordinator rcCooordinator,
+                         GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
     this.gnsReconfigurable = gnsReconfigurable;
-    this.activeReplicaCoordinator = activeReplicaCoordinator;
+    this.appCoordinator = appCoordinator;
     this.replicaController = replicaController;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
@@ -190,9 +195,11 @@ public class NSListenerAdmin extends Thread {
               // Clears the database and reinitializes all indices
               case RESETDB:
                 GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling RESETDB request");
-                replicaController.resetRC();
-                activeReplicaCoordinator.reset();
-                gnsReconfigurable.resetGNS();
+                replicaController.reset();
+                rcCooordinator.reset();
+                appCoordinator.reset();
+                gnsReconfigurable.reset();
+
                 break;
               case PINGTABLE:
                 int node = Integer.parseInt(adminRequestPacket.getArgument());

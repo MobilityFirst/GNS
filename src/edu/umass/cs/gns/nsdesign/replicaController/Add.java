@@ -28,16 +28,6 @@ import org.json.JSONException;
  */
 public class Add {
 
-  public static GNSMessagingTask handleAddRecordLNS(AddRecordPacket addRecordPacket, ReplicaController replicaController) throws JSONException {
-    GNSMessagingTask msgTask = null;
-    addRecordPacket.setNameServerID(replicaController.getNodeID());
-    if(replicaController.getRcCoordinator() == null) {
-      msgTask = executeAddRecord(addRecordPacket, replicaController);
-    } else {
-      replicaController.getRcCoordinator().coordinateRequest(addRecordPacket.toJSONObject());
-    }
-    return msgTask;
-  }
 
 
   /**

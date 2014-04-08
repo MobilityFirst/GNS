@@ -1,19 +1,19 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface;
-import edu.umass.cs.gns.paxos.PaxosConfig;
-import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,14 +32,14 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * We keep a single instance of this class for all names for whom this name server is a replica controller.
  * Created by abhigyan on 2/26/14.
  */
-public class ReplicaController extends PacketDemultiplexer implements Replicable {
+public class ReplicaController  implements Replicable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 
-  /**
-   * object handles coordination among replicas on a request, if necessary
-   */
-  private ReplicaControllerCoordinator rcCoordinator = null;
+//  /**
+//   * object handles coordination among replicas on a request, if necessary
+//   */
+//  private ReplicaControllerCoordinator rcCoordinator = null;
 
   /**
    * ID of this node
@@ -83,105 +83,13 @@ public class ReplicaController extends PacketDemultiplexer implements Replicable
 
     this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
-    if (!Config.singleNS) {
-      // create the activeCoordinator object.
-      PaxosConfig paxosConfig = new PaxosConfig();
-      paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
 
-      rcCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig), this, paxosConfig);
-    }
     // todo disabling group change functionality as it is not active now.
 //		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);
 
   }
 
-  /**
-   * Entry point for all packets sent to replica controller.
-   *
-   * We are currently implementing a single name server which wont use coordination at all.
-   * Only those packet types are handled that will be used by a single name server.
-   *
-   * @param json json object received at name server
-   */
-  public boolean handleJSONObject(JSONObject json) {
-
-    boolean handled = true;
-
-    try {
-      Packet.PacketType type = Packet.getPacketType(json);
-      GNSMessagingTask msgTask = null;
-      switch (type) {
-
-        /**
-         * Packets sent from LNS *
-         */
-        case ADD_RECORD:  // add name to GNS
-          msgTask = Add.handleAddRecordLNS(new AddRecordPacket(json), this);
-          break;
-        case UPDATE:  // add name to GNS
-          msgTask = Upsert.handleUpsert(new UpdatePacket(json), this);
-          break;
-        case REQUEST_ACTIVES:  // lookup actives for name
-          if (rcCoordinator == null) {
-            msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
-          } else {
-            rcCoordinator.coordinateRequest(json);
-          }
-          break;
-        case REMOVE_RECORD: // remove name from GNS
-          msgTask = Remove.handleRemoveRecordLNS(new RemoveRecordPacket(json), this);
-          break;
-        case NAMESERVER_SELECTION: // stats reported from local name servers
-          // we don't expect to use coordination for this packet
-          // in future also, we don't expect to use coordination for this packet
-          break;
-
-        /**
-         * Packets sent from active replica *
-         */
-        case ACTIVE_ADD_CONFIRM:   // confirmation received from active replica that name is added
-          msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
-          break;
-        case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-          msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this);
-          break;
-        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
-          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
-          break;
-        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
-          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
-          break;
-        case NAME_RECORD_STATS_RESPONSE: // stats reported from active replicas
-          // not implemented yet
-          // in future, we don't expect to use coordination for this packet
-          break;
-
-        /**
-         * packets from coordination modules at replica controller *
-         */
-        case REPLICA_CONTROLLER_COORDINATION:
-          rcCoordinator.coordinateRequest(json);
-          break;
-        default:
-          GNS.getLogger().warning("No handler for packet type: " + type.toString());
-          handled = false;
-          break;
-      }
-
-      if (msgTask != null) {
-        GNSMessagingTask.send(msgTask, nioServer);
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    // FIXME: check that handled has correct return value
-    return handled;
-
-  }
 
   /**
    * ****BEGIN: getter methods for ReplicaController elements ***
@@ -198,9 +106,9 @@ public class ReplicaController extends PacketDemultiplexer implements Replicable
     return nioServer;
   }
 
-  public ReplicaControllerCoordinator getRcCoordinator() {
-    return rcCoordinator;
-  }
+//  public ReplicaControllerCoordinator getRcCoordinator() {
+//    return rcCoordinator;
+//  }
 
   public UniqueIDHashMap getOngoingStopActiveRequests() {
     return ongoingStopActiveRequests;
@@ -222,9 +130,6 @@ public class ReplicaController extends PacketDemultiplexer implements Replicable
     return replicationFramework;
   }
 
-  public void setReplicationFramework(ReplicationFrameworkInterface replicationFramework) {
-    this.replicationFramework = replicationFramework;
-  }
 
   /**
    * ****END: getter methods for ReplicaController elements ***
@@ -327,30 +232,51 @@ public class ReplicaController extends PacketDemultiplexer implements Replicable
         JSONObject json = new JSONObject(value);
         Packet.PacketType packetType = Packet.getPacketType(json);
         switch (packetType) {
+
+          // add name to GNS
           case ADD_RECORD:
             msgTask = Add.executeAddRecord(new AddRecordPacket(json), this);
             break;
           case ACTIVE_ADD_CONFIRM:
             msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
             break;
-          case REQUEST_ACTIVES:  // lookup actives for name
+          case UPDATE: // this is a special update which adds a name if that does not exist.
+            msgTask = Upsert.handleUpsert(new UpdatePacket(json), this);
+            break;
+
+          // lookup actives for name
+          case REQUEST_ACTIVES:
             msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
             break;
+
+          // remove
           case REMOVE_RECORD:
             msgTask = Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this);
+            break;
+          case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
+            msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this);
             break;
           case RC_REMOVE:
             msgTask = Remove.executeRemoveRecord(new RemoveRecordPacket(json), this);
             break;
-          case NAMESERVER_SELECTION:
-          case NAME_RECORD_STATS_RESPONSE:
-            // todo these packets related to stats reporting are not handled yet.
+
+          // group change
+          case NEW_ACTIVE_PROPOSE:
+            GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this);
+            break;
+          case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
+            GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
+            break;
+          case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
+            GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
             break;
           case GROUP_CHANGE_COMPLETE:
             GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this);
             break;
-          case NEW_ACTIVE_PROPOSE:
-            GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this);
+          case NAMESERVER_SELECTION:
+          case NAME_RECORD_STATS_RESPONSE:
+            // todo these packets related to stats reporting are not handled yet.
+            throw new UnsupportedOperationException();
           default:
             break;
         }
@@ -373,8 +299,7 @@ public class ReplicaController extends PacketDemultiplexer implements Replicable
   /**
    * Nuclear option for clearing out all state at GNS.
    */
-  public void resetRC() {
-    rcCoordinator.reset();
+  public void reset() {
     replicaControllerDB.reset();
   }
 

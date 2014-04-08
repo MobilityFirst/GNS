@@ -8,7 +8,10 @@ import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
+import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerCoordinatorPaxos;
+import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
 
 import java.io.File;
@@ -38,7 +41,7 @@ public class NameServer implements NameServerInterface {
  
   private ActiveReplica activeReplica; // reconfiguration logic
  
-  private ReplicaController replicaController; // replica control logic
+  private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -124,21 +127,26 @@ public class NameServer implements NameServerInterface {
     appCoordinator  = activeReplica.getCoordinator();
     GNS.getLogger().info("App (GNS) coordinator initialized");
 
-    replicaController = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
+    PaxosConfig paxosConfig = new PaxosConfig();
+    paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
+
+    ReplicaController rc = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
             mongoRecords);
-
     GNS.getLogger().info("Replica controller initialized");
-    // start the NSListenerAdmin thread
+    replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
+            new NSNodeConfig(gnsNodeConfig), rc, paxosConfig);
+    GNS.getLogger().info("Replica controller coordinator initialized");
 
-    new NSListenerAdmin(gnsReconfigurable, appCoordinator, replicaController, gnsNodeConfig).start();
+    // start the NSListenerAdmin thread
+    new NSListenerAdmin(gnsReconfigurable, appCoordinator, rc, replicaControllerCoordinator, gnsNodeConfig).start();
     GNS.getLogger().info("Admin thread initialized");
   }
 
 
   public void reset() {
     throw new UnsupportedOperationException();
-//    gnsReconfigurable.resetGNS();
-//    replicaController.resetRC();
+//    gnsReconfigurable.reset();
+//    replicaController.reset();
   }
 
   @Override
@@ -152,7 +160,7 @@ public class NameServer implements NameServerInterface {
   }
 
   @Override
-  public ReplicaController getReplicaController() {
-    return replicaController;
+  public ReplicaControllerCoordinator getReplicaControllerCoordinator() {
+    return replicaControllerCoordinator;
   }
 }

@@ -5,8 +5,8 @@ import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
-import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,9 +46,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           // TODO define a different packet type for upserts
           UpdatePacket updateAddressPacket = new UpdatePacket(json);
           if (updateAddressPacket.getOperation().isUpsert()) {
-            ReplicaController replicaController = nameServerInterface.getReplicaController();
+            ReplicaControllerCoordinator replicaController = nameServerInterface.getReplicaControllerCoordinator();
             if (replicaController != null) {
-              replicaController.handleJSONObject(json);
+              replicaController.coordinateRequest(json);
             }
           } else {
             ActiveReplicaCoordinator gnsReconfigurable = nameServerInterface.getActiveReplicaCoordinator();
@@ -78,22 +78,28 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           }
           break;
 
-        // Packets sent from LNS
+        // Packets sent by client to replica controller
         case ADD_RECORD:
         case REQUEST_ACTIVES:
         case REMOVE_RECORD:
-        case NAMESERVER_SELECTION:
-        case NAME_RECORD_STATS_RESPONSE:
-        // Packets sent from active replica
+        case RC_REMOVE:
+
+        // Packets sent by active replica
         case ACTIVE_ADD_CONFIRM:
         case ACTIVE_REMOVE_CONFIRM:
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
+
+          // Packets sent by replica controller to itself (this will proposed for coordination)
+        case NEW_ACTIVE_PROPOSE:
+        case GROUP_CHANGE_COMPLETE:
+        case NAMESERVER_SELECTION:
+        case NAME_RECORD_STATS_RESPONSE:
         // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:
-          ReplicaController replicaController = nameServerInterface.getReplicaController();
+          ReplicaControllerCoordinator replicaController = nameServerInterface.getReplicaControllerCoordinator();
           if (replicaController != null) {
-            replicaController.handleJSONObject(json);
+            replicaController.coordinateRequest(json);
           }
           break;
 

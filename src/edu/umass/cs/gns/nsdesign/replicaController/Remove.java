@@ -10,6 +10,7 @@ import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -47,32 +48,32 @@ public class Remove {
     applyMarkedForRemovalFields.add(ReplicaControllerRecord.ACTIVE_VERSION);
   }
 
-  /**
-   * Handle a client request to remove a record. If record does not exist, an error message is sent to client.
-   * Otherwise, replica controller proceed to mark the record as removed, after coordinating with other replica
-   * controllers.
-   */
-  public static GNSMessagingTask handleRemoveRecordLNS(RemoveRecordPacket removeRecord, ReplicaController rc)
-          throws JSONException{
-    GNSMessagingTask msgTask = null;
-    try {
-      ReplicaControllerRecord.getNameRecordPrimaryMultiField(rc.getDB(), removeRecord.getName(), removeRecordLNSFields);
-      // record exists
-      removeRecord.setNameServerID(rc.getNodeID());
-      if (rc.getRcCoordinator() == null) {
-        msgTask = executeMarkRecordForRemoval(removeRecord, rc);
-      } else {
-        rc.getRcCoordinator().coordinateRequest(removeRecord.toJSONObject());
-      }
-
-    } catch (RecordNotFoundException e) {
-      // return failure, because record was not even found
-      ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
-      GNS.getLogger().severe("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
-      msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
-    }
-    return  msgTask;
-  }
+//  /**
+//   * Handle a client request to remove a record. If record does not exist, an error message is sent to client.
+//   * Otherwise, replica controller proceed to mark the record as removed, after coordinating with other replica
+//   * controllers.
+//   */
+//  public static GNSMessagingTask handleRemoveRecordLNS(RemoveRecordPacket removeRecord, ReplicaController rc)
+//          throws JSONException{
+//    GNSMessagingTask msgTask = null;
+//    try {
+//      ReplicaControllerRecord.getNameRecordPrimaryMultiField(rc.getDB(), removeRecord.getName(), removeRecordLNSFields);
+//      // record exists
+//      removeRecord.setNameServerID(rc.getNodeID());
+//      if (rc.getRcCoordinator() == null) {
+//        msgTask = executeMarkRecordForRemoval(removeRecord, rc);
+//      } else {
+//        rc.getRcCoordinator().coordinateRequest(removeRecord.toJSONObject());
+//      }
+//
+//    } catch (RecordNotFoundException e) {
+//      // return failure, because record was not even found
+//      ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
+//      GNS.getLogger().severe("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
+//      msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
+//    }
+//    return  msgTask;
+//  }
 
   /**
    * Executes the first phase of remove operation, which updates record to say it is going to be removed.
@@ -131,7 +132,8 @@ public class Remove {
   /**
    * Actives have removed the record, so remove the requestID from the list of ongoing stop active requests.
    */
-  public static GNSMessagingTask handleActiveRemoveRecord(OldActiveSetStopPacket activeStop, ReplicaController rc) throws JSONException{
+  public static GNSMessagingTask handleActiveRemoveRecord(OldActiveSetStopPacket activeStop, ReplicaController rc) throws JSONException,
+          IOException{
     GNS.getLogger().fine("RC handling active remove record ... " + activeStop);
     GNSMessagingTask msgTask = null;
     // response received for active stop request, so remove from set, which will cancel the OldActiveSetStopPacket task
@@ -139,11 +141,7 @@ public class Remove {
     GNS.getLogger().fine("RC remove packet fetched ... " + removePacket);
     if (removePacket != null) { // response has not been already received
         removePacket.changePacketTypeToRcRemove();
-        if (rc.getRcCoordinator() == null) {
-          msgTask = executeRemoveRecord(removePacket, rc);
-        } else {
-          rc.getRcCoordinator().coordinateRequest(removePacket.toJSONObject());
-        }
+        rc.getNioServer().sendToID(rc.getNodeID(), removePacket.toJSONObject());
     } else {
       GNS.getLogger().info("Duplicate or delayed response for old active stop: " + activeStop);
     }

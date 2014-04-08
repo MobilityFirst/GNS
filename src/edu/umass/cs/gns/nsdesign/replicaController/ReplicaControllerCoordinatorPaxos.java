@@ -57,30 +57,35 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
             break;
           case ADD_RECORD:
             AddRecordPacket recordPacket = new AddRecordPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), request.toString());
+            recordPacket.setNameServerID(nodeID);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), recordPacket.toString());
             break;
           case REMOVE_RECORD:
             RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), request.toString());
+            removePacket.setNameServerID(nodeID);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
             break;
             // Packets sent from active replica
           case RC_REMOVE:
             removePacket = new RemoveRecordPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), request.toString());
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
             break;
           case NEW_ACTIVE_PROPOSE:
             NewActiveProposalPacket activePropose = new NewActiveProposalPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), request.toString());
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), activePropose.toString());
             break;
           case GROUP_CHANGE_COMPLETE:
-            GroupChangeCompletePacket startupPacket = new GroupChangeCompletePacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(startupPacket.getName()), request.toString());
+            GroupChangeCompletePacket groupChangePkt = new GroupChangeCompletePacket(request);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(groupChangePkt.getName()), groupChangePkt.toString());
             break;
+          case UPDATE:
           case REQUEST_ACTIVES:
           case NAMESERVER_SELECTION:
           case NAME_RECORD_STATS_RESPONSE:
           case ACTIVE_ADD_CONFIRM:
+          case ACTIVE_REMOVE_CONFIRM:
           case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
+          case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
             // no coordination needed for these packet types.
             paxosInterface.handleDecision(null, request.toString(), false);
             break;

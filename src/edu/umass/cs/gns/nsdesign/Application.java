@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.replicaController;
+package edu.umass.cs.gns.nsdesign;
 /**
 @author V. Arun
  */

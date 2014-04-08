@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nsdesign.replicaController.Application;
-
 /**
 @author V. Arun
  */

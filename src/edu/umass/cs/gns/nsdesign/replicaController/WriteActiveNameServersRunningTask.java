@@ -92,7 +92,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
       GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(version, name);
 
       // write to replica controller record object using replica controller coordination that newActive is running
-      replicaController.getRcCoordinator().coordinateRequest(proposePacket.toJSONObject());
+      replicaController.getNioServer().sendToID(replicaController.getNodeID(), proposePacket.toJSONObject());
     } catch (Exception e) {
       if (e.getClass().equals(CancelExecutorTaskException.class)) {
         throw  new RuntimeException(); // this is the only way to terminate this task as a ExecutorService is

@@ -44,7 +44,7 @@ public class Upsert {
         }
       } else {
 
-        // record does not exist, so we can do an ADD
+
         int activeID = -1;
         Set<Integer> activeNS;
         activeNS = nameRecordPrimary.getActiveNameservers();
@@ -75,13 +75,15 @@ public class Upsert {
         }
       }
     } catch (RecordNotFoundException e) {
+      // record does not exist, so we can do an ADD
       // do an INSERT (AKA ADD) operation
       AddRecordPacket addRecordPacket = new AddRecordPacket(updatePacket.getSourceId(),
               updatePacket.getRequestID(), updatePacket.getName(),
               updatePacket.getRecordKey(), updatePacket.getUpdateValue(), updatePacket.getLocalNameServerId(),
               updatePacket.getTTL()); //  getTTL() is used only with upsert.
       addRecordPacket.setLNSRequestID(updatePacket.getLNSRequestID());
-      replicaController.handleJSONObject(addRecordPacket.toJSONObject());
+      replicaController.getNioServer().sendToID(replicaController.getNodeID(), addRecordPacket.toJSONObject());
+//      replicaController.handleJSONObject(addRecordPacket.toJSONObject());
 
       if (Config.debugMode) {
         GNS.getLogger().fine(" NS processing UPSERT changed to ADD: " + addRecordPacket.getName());

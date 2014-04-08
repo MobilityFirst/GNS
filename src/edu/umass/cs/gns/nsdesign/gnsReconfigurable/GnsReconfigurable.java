@@ -509,7 +509,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   /**
    * Nuclear option for clearing out all state at GNS.
    */
-  public void resetGNS() {
+  public void reset() {
     nameRecordDB.reset();
   }
 
