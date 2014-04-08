@@ -13,7 +13,7 @@ public interface Reconfigurable extends Application {
 
 	public String getFinalState(String name, short version);
 
-	public void putInitialState(String name, short version, String state, Set<Integer> activeServers);
+	public void putInitialState(String name, short version, String state);
 
 	public int deleteFinalState(String name, short version);
 
