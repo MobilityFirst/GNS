@@ -19,9 +19,10 @@ public class DefaultPacketDemultiplexer extends PacketDemultiplexer {
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
   public boolean handleJSONObject(JSONObject jsonObject) {
     incrPktsRcvd();
-    System.out.println("Received pkt: " + jsonObject);
+    //System.out.println("Received pkt: " + jsonObject);
     return true;
   }
 

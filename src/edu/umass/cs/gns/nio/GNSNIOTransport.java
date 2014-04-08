@@ -79,14 +79,23 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 		return written;
 	}
 
-    /* FIXME: This method returns a meaningless value. Need to get
-     * return value from task scheduled in the future, so we need
-     * to use Executor instead of Timer in GNSDelayEmulator.
+    /* WARNING: This method returns a meaningless value. Need to get
+     * return value from task scheduled in the future, which is 
+     * not possible while maintaining NIO semantics. So we can
+     * not have a meaningful return value while being non-blocking.
+     * Such is life.
+     * 
+     * Experiments using this method should plan for return values
+     * being meaningless.
      */
-	public int sendToID(int id, JSONObject jsonData) throws IOException {
-		GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
-		return jsonData.length();
-	}
+    public int sendToID(int id, JSONObject jsonData) throws IOException {
+    	int sent = 0;
+    	if(GNSDelayEmulator.isDelayEmulated()) { 
+    		GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
+    		sent = jsonData.length(); // cheating!
+    	} else sent = this.sendToIDActual(id, jsonData);
+    	return sent;
+    }
 
 	/* This method adds a header only if a socket channel is used to send to
 	 * a remote node, otherwise it hands over the message directly to the worker.

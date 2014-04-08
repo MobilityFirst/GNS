@@ -10,13 +10,14 @@ import java.util.Set;
  */
 public class SampleNodeConfig implements NodeConfig {
 
-	HashMap<Integer,InetAddress> nmap=null;
-	int defaultPort=0;
+	private boolean local = false;
+	HashMap<Integer,InetAddress> nmap=new HashMap<Integer,InetAddress>();;
+	int defaultPort=2000;
 	
 	public SampleNodeConfig(int dp) {
-		nmap = new HashMap<Integer,InetAddress>();
 		defaultPort = dp;
 	}
+	public SampleNodeConfig() {}
 
 	/* The caller can either specify the number of nodes, nNodes,
 	 * or specify a set of integer node IDs explicitly. In the former
@@ -24,22 +25,25 @@ public class SampleNodeConfig implements NodeConfig {
 	 * latter case, the explicit set of node IDs will be used.
 	 */
 	public void localSetup(int nNodes) {
+		local = true;
 		for(int i=0; i<nNodes; i++) {
-			try {
-				this.add(i, InetAddress.getByName("localhost"));
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			}
+			this.add(i, getLocalAddress());
 		}
 	}
 	public void localSetup(Set<Integer> members) {
+		local = true;
 		for(int i : members) {
-			try {
-				this.add(i, InetAddress.getByName("localhost"));
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			}
+			this.add(i, getLocalAddress());
 		}
+	}
+	private InetAddress getLocalAddress() {
+		InetAddress localAddr=null;
+		try {
+			localAddr = InetAddress.getByName("localhost");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		return localAddr;
 	}
 	
 	@Override
@@ -54,7 +58,8 @@ public class SampleNodeConfig implements NodeConfig {
 
 	@Override
 	public InetAddress getNodeAddress(int ID) {
-		return nmap.get(ID);
+		InetAddress addr = nmap.get(ID);
+		return addr!=null ? addr : (local ? getLocalAddress() : null);
 	}
 
 	@Override

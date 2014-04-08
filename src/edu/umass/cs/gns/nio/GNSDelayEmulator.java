@@ -62,7 +62,9 @@ public class GNSDelayEmulator {
     GNSDelayEmulator.USE_CONFIG_FILE_INFO = true;
     GNSDelayEmulator.gnsNodeConfig = gnsNodeConfig;
   }
-
+  public static boolean isDelayEmulated() {
+	  return EMULATE_DELAYS;
+  }
   private static long getDelay(int id) {
     long delay = 0;
     if (GNSDelayEmulator.EMULATE_DELAYS) {
