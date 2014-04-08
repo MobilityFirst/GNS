@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.clientsupport;
 
+import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.InternalField;
 import edu.umass.cs.gns.clientsupport.QueryResult;
@@ -31,9 +32,8 @@ public class NSGroupAccess {
   public static final String GROUP_MIN_REFRESH_INTERVAL = InternalField.makeInternalFieldString("groupMinRefresh");
   public static final String GROUP_LAST_UPDATE = InternalField.makeInternalFieldString("groupLastUpdate");
 
-  public static ResultValue lookup(String guid, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
-    NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, GroupAccess.GROUP);
-    return nameRecord.getKey(GroupAccess.GROUP);
+  public static ResultValue lookup(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+    return NSFieldAccess.lookupField(guid, GroupAccess.GROUP, allowQueryToOtherNSs, activeReplica);
   }
 
   public static void updateMembers(String guid, Set<String> members, GnsReconfigurable activeReplica) {
@@ -58,8 +58,8 @@ public class NSGroupAccess {
   }
 
   public static Date getLastUpdate(String guid, GnsReconfigurable activeReplica) {
-    ResultValue resultValue = LNSQueryHandler.lookupField(guid, GROUP_LAST_UPDATE, activeReplica);
-    if (resultValue != null && !resultValue.isEmpty()) {
+    ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_LAST_UPDATE, true, activeReplica);
+    if (!resultValue.isEmpty()) {
       return new Date(Long.parseLong((String) resultValue.get(0)));
     } else {
       return null;
@@ -67,8 +67,8 @@ public class NSGroupAccess {
   }
 
   public static int getMinRefresh(String guid, GnsReconfigurable activeReplica) {
-    ResultValue resultValue = LNSQueryHandler.lookupField(guid, GROUP_MIN_REFRESH_INTERVAL, activeReplica);
-    if (resultValue != null && !resultValue.isEmpty()) {
+    ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica);
+    if (!resultValue.isEmpty()) {
       return Integer.parseInt((String) resultValue.get(0));
     } else {
       return 0;

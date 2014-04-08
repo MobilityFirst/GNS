@@ -18,8 +18,6 @@ import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.util.HashSet;
 import java.util.Set;
 
-/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
 /**
  * Implements metadata on fields.
  *
@@ -35,8 +33,8 @@ public class NSFieldMetaData {
    * @param key
    * @return 
    */
-  public static Set<String> lookup(MetaDataTypeName type, GuidInfo guidInfo, String key, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
-    return lookup(type, guidInfo.getGuid(), key, activeReplica);
+  public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
+    return lookupOnThisNameServer(type, guidInfo.getGuid(), key, activeReplica);
   }
 
   /**
@@ -47,12 +45,12 @@ public class NSFieldMetaData {
    * @param key
    * @return 
    */
-  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
-    String metaDateFieldName = FieldMetaData.makeFieldMetaDataKey(type, key);
-    NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, metaDateFieldName);
-    GNS.getLogger().fine("LOOKUP:" + nameRecord.toString());
-    ResultValue result = nameRecord.getKey(metaDateFieldName);
-    return new HashSet(result);
-
+  public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
+    ResultValue result = NSFieldAccess.lookupFieldOnThisNameServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
+    if (result != null) {
+      return new HashSet(result);
+    } else {
+      return new HashSet();
+    }
   }
 }

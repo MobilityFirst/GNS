@@ -120,17 +120,8 @@ public class NSAccountAccess {
    * @return
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
-    ResultValue guidResult = null;
-    try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.GUID_INFO).getKey(AccountAccess.GUID_INFO);
-    } catch (FieldNotFoundException e) {
-    } catch (RecordNotFoundException e) {
-    }
-    // If we're allowed we go looking at other NameServers for the record in question.
-    if (guidResult == null && allowQueryToOtherNSs) {
-      guidResult = lookupGuidOnAnotherNameServer(guid, activeReplica);
-    }
-    if (guidResult != null) {
+    ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
+    if (!guidResult.isEmpty()) {
       try {
         return new GuidInfo(guidResult.toResultValueString());
       } catch (JSONException e) {
@@ -142,10 +133,6 @@ public class NSAccountAccess {
     return null;
   }
 
-  private static ResultValue lookupGuidOnAnotherNameServer(String guid, GnsReconfigurable activeReplica) {
-    return LNSQueryHandler.lookupField(guid, AccountAccess.GUID_INFO, activeReplica);
-  }
- 
   /**
    * Obtains the account info record from the database for the account whose HRN is name.
    * <p>

@@ -26,15 +26,16 @@ import java.util.Set;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 
-/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
+/**
+ * * DO NOT not use any class in package edu.umass.cs.gns.nsdesign **
+ */
 /**
  * Provides signing and ACL checks for commands.
- * 
+ *
  * @author westy
  */
 public class NSAccessSupport {
-  
+
   // try this for now
   private static final Set<String> WORLDREADABLEFIELDS = new HashSet<String>(Arrays.asList(GroupAccess.JOINREQUESTS, GroupAccess.LEAVEREQUESTS));
 
@@ -93,14 +94,14 @@ public class NSAccessSupport {
       return false;
     }
   }
-  
+
   private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
       return true;
     }
     try {
-      Set<String> allowedusers = NSFieldMetaData.lookup(access, guidInfo, field, activeReplica);
+      Set<String> allowedusers = NSFieldMetaData.lookupOnThisNameServer(access, guidInfo, field, activeReplica);
       GNS.getLogger().fine(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers, activeReplica)) {
         GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access "
@@ -119,26 +120,18 @@ public class NSAccessSupport {
   }
 
   private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers, GnsReconfigurable activeReplica) {
-    try {
-      if (allowedusers.contains(accesserGuid)) {
-        return true;
-      } else if (allowedusers.contains(EVERYONE)) {
-        return true;
-      } else {
-        // map over the allowedusers and see if any of them are groups that the user belongs to
-        for (String potentialGroupGuid : allowedusers) {
-          // fix this to use the reverse group lookup
-          if (NSGroupAccess.lookup(potentialGroupGuid, activeReplica).contains(accesserGuid)) {
-            return true;
-          }
+    if (allowedusers.contains(accesserGuid)) {
+      return true;
+    } else if (allowedusers.contains(EVERYONE)) {
+      return true;
+    } else {
+      // map over the allowedusers and see if any of them are groups that the user belongs to
+      for (String potentialGroupGuid : allowedusers) {
+        // Fix this to use the reverse group lookup because the info we want will be on this host then.
+        if (NSGroupAccess.lookup(potentialGroupGuid, true, activeReplica).contains(accesserGuid)) {
+          return true;
         }
-        return false;
       }
-    } catch (FieldNotFoundException e) {
-      // This is actuallty a normal result.. so no warning here.
-      return false;
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().warning("Guid " + accesserGuid + " problem retrieving group: " + e);
       return false;
     }
   }
@@ -152,8 +145,8 @@ public class NSAccessSupport {
 
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field, GnsReconfigurable activeReplica) {
     try {
-      return NSFieldMetaData.lookup(access, guid, field, activeReplica).contains(EVERYONE)
-              || NSFieldMetaData.lookup(access, guid, ALLFIELDS, activeReplica).contains(EVERYONE);
+      return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica).contains(EVERYONE)
+              || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALLFIELDS, activeReplica).contains(EVERYONE);
     } catch (FieldNotFoundException e) {
       // This is actuallty a normal result.. so no warning here.
       return false;
