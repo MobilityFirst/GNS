@@ -42,45 +42,81 @@ public class ActiveReplicaCoordinatorPaxos extends ActiveReplicaCoordinator{
   @Override
   public int coordinateRequest(JSONObject request) {
     if (this.paxosInterface == null) return -1; // replicable app not set
+    JSONObject callHandleDecision = null;
+    boolean noCoordinatorState = false;
     try {
       Packet.PacketType type = Packet.getPacketType(request);
       switch (type) {
-        case ACTIVE_COORDINATION: // coordination type packets
+        // coordination packets internal to paxos
+        case ACTIVE_COORDINATION:
           paxosManager.handleIncomingPacket(request);
           break;
-        case UPDATE:
+
+        // call propose
+        case UPDATE: // updates need coordination
           UpdatePacket update = new UpdatePacket(request);
           update.setNameServerId(nodeID);
-          paxosManager.propose(update.getName(), request.toString());
+          String paxosID = paxosManager.propose(update.getName(), update.toString());
+          if (paxosID == null) {
+            callHandleDecision = update.toJSONObject();
+            noCoordinatorState = true;
+          }
           break;
-        case ACTIVE_REMOVE:
+
+        // call proposeStop
+        case ACTIVE_REMOVE: // stop request for removing a name record
           OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket(request);
-          paxosManager.proposeStop(stopPacket1.getName(), request.toString(), stopPacket1.getVersion());
-        case OLD_ACTIVE_STOP:
-          OldActiveSetStopPacket stopPacket2 = new OldActiveSetStopPacket(request);
-          paxosManager.proposeStop(stopPacket2.getName(), request.toString(), stopPacket2.getVersion());
+          paxosID = paxosManager.proposeStop(stopPacket1.getName(), stopPacket1.toString(), stopPacket1.getVersion());
+          if (paxosID == null) {
+            callHandleDecision = stopPacket1.toJSONObject();
+            noCoordinatorState = true;
+          }
           break;
-        case ACTIVE_ADD:
-          paxosInterface.handleDecision(null, request.toString(), false, false);
+        case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
+          OldActiveSetStopPacket stopPacket2 = new OldActiveSetStopPacket(request);
+          paxosID = paxosManager.proposeStop(stopPacket2.getName(), stopPacket2.toString(), stopPacket2.getVersion());
+          if (paxosID == null) {
+            callHandleDecision = stopPacket2.toJSONObject();
+            noCoordinatorState = true;
+          }
+          break;
+
+        // call createPaxosInstance
+        case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
+          // calling handle decision before creating paxos instance to insert state for name in database.
+          paxosInterface.handleDecision(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
           paxosManager.createPaxosInstance(recordPacket.getName(), Config.FIRST_VERSION, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
           GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
           break;
-        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
+        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
+          // active replica has already put initial state for the name in DB. we only need to create paxos instance.
           NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request);
           paxosManager.createPaxosInstance(newActivePacket.getName(), newActivePacket.getNewActiveVersion(),
                   newActivePacket.getNewActiveNameServers(), paxosInterface);
           break;
-        case DNS:
+
+        // no coordination needed for these requests
+        case DNS: // todo send latest actives to client with this request.
         case NAME_SERVER_LOAD:
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
+        case CONFIRM_UPDATE:
+        case CONFIRM_ADD:
+        case CONFIRM_REMOVE:
           // Packets sent from replica controller
-          paxosInterface.handleDecision(null, request.toString(), false, false);
+          callHandleDecision = request;
+
           break;
         default:
           GNS.getLogger().severe("Packet type not found in coordination: " + type);
           break;
+      }
+      if (callHandleDecision != null) {
+        if (noCoordinatorState) {
+          callHandleDecision.put(Config.NO_COORDINATOR_STATE_MARKER, 0);
+        }
+        paxosInterface.handleDecision(null, callHandleDecision.toString(), false);
       }
     } catch (JSONException e) {
       e.printStackTrace();

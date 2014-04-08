@@ -2,8 +2,10 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.replicaController.Application;
 import org.json.JSONException;
@@ -31,33 +33,38 @@ public class ReconfigurableApp implements Reconfigurable, Replicable {
 
 	private boolean isStopRequest(String value) {
 		/* logic to determine if it is a stop request */
-    try {
-      JSONObject json = new JSONObject(value);
-      if (Packet.getPacketType(json).equals(Packet.PacketType.OLD_ACTIVE_STOP)) {
-        return true;
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
+
     return false;
   }
 
 	@Override
-	public boolean handleDecision(String name, String value, boolean recovery, boolean noCoordinatorState) {
-		boolean executed;
-		if(isStopRequest(value)) {
-      if (noCoordinatorState) {
-        // ignore
-        GNS.getLogger().severe("No coordinator state found for stop request: " + value);
-        executed = false;
-      } else {
-        executed = stopVersion(name, (short) -1);
-        if (executed) {
-          // send confirmation to primary
+	public boolean handleDecision(String name, String value, boolean recovery) {
+    boolean executed = false;
+    try {
+      JSONObject json = new JSONObject(value);
+      if (Packet.getPacketType(json).equals(Packet.PacketType.OLD_ACTIVE_STOP)) {
+        boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
+        if (noCoordinationState) {
+          executed = false;
+          // ignore
+          GNS.getLogger().severe("No coordinator state found for stop request: " + value);
+        }
+       else {
+          executed = stopVersion(name, (short) -1);
+          if (executed) {
+            try {
+              activeReplica.stopProcessed(new OldActiveSetStopPacket(new JSONObject(value)));
+            } catch (JSONException e) {
+              e.printStackTrace();
+            }
+          }
         }
       }
+      else executed = this.app.handleDecision(name, value, recovery);
+    } catch (JSONException e) {
+      e.printStackTrace();
     }
-    else executed = this.app.handleDecision(name, value, recovery, noCoordinatorState);
+
 		return executed;
 	}
 
@@ -74,9 +81,9 @@ public class ReconfigurableApp implements Reconfigurable, Replicable {
 	}
 
 	@Override
-	public void putInitialState(String name, short version, String state, Set<Integer> activeServers) {
+	public void putInitialState(String name, short version, String state) {
 		assertReconfigurable();
-		((Reconfigurable)this.app).putInitialState(name, version, state, activeServers);
+		((Reconfigurable)this.app).putInitialState(name, version, state);
 	}
 
 	@Override

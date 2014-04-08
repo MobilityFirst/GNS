@@ -8,6 +8,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -212,10 +213,11 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
    * Depending on request type, this method will call a private method to execute request.
    */
   @Override
-  public boolean handleDecision(String name, String value, boolean recovery, boolean noCoordinationState) {
+  public boolean handleDecision(String name, String value, boolean recovery) {
     GNSMessagingTask msgTask = null;
     try {
       JSONObject json = new JSONObject(value);
+      boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
         case DNS:
@@ -239,6 +241,11 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
           msgTask = Remove.executeActiveRemove(new OldActiveSetStopPacket(json), this, noCoordinationState);
+          break;
+        case CONFIRM_UPDATE:
+        case CONFIRM_ADD:
+        case CONFIRM_REMOVE:
+          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket(json), this);
           break;
 //        case OLD_ACTIVE_STOP:
 //          handleActiveStop(name, value);
@@ -388,7 +395,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   }
 
   @Override
-  public void putInitialState(String name, short version, String state, Set<Integer> activeNameServers) {
+  public void putInitialState(String name, short version, String state) {
     TransferableNameRecordState state1;
     try {
       state1 = new TransferableNameRecordState(state);
@@ -400,7 +407,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 
     try {
 
-      NameRecord nameRecord = new NameRecord(nameRecordDB, name, activeNameServers, version, state1.valuesMap, state1.ttl);
+      NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl);
       NameRecord.addNameRecord(nameRecordDB, nameRecord);
       if (Config.debugMode) {
         GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
@@ -410,7 +417,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
       NameRecord nameRecord = null;
       try {
         nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
-        nameRecord.handleNewActiveStart(activeNameServers, version, state1.valuesMap, state1.ttl);
+        nameRecord.handleNewActiveStart(version, state1.valuesMap, state1.ttl);
       } catch (FieldNotFoundException e1) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
         e1.printStackTrace();

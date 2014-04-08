@@ -57,24 +57,24 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
             break;
           case ADD_RECORD:
             AddRecordPacket recordPacket = new AddRecordPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), request.toString(), false);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), request.toString());
             break;
           case REMOVE_RECORD:
             RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), request.toString(), false);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), request.toString());
             break;
             // Packets sent from active replica
           case RC_REMOVE:
             removePacket = new RemoveRecordPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), request.toString(), false);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), request.toString());
             break;
           case NEW_ACTIVE_PROPOSE:
             NewActiveProposalPacket activePropose = new NewActiveProposalPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), request.toString(), false);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), request.toString());
             break;
           case GROUP_CHANGE_COMPLETE:
             GroupChangeCompletePacket startupPacket = new GroupChangeCompletePacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(startupPacket.getName()), request.toString(), false);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(startupPacket.getName()), request.toString());
             break;
           case REQUEST_ACTIVES:
           case NAMESERVER_SELECTION:

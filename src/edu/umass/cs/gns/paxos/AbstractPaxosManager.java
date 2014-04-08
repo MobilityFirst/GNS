@@ -31,7 +31,6 @@ public abstract class AbstractPaxosManager {
    * ReqeustPacket.clientID is used to distinguish which method proposed this value.
    * @param paxosIDNoVersion paxosID of the paxos group excluding version number
    * @param value request to be proposed
-   * @param stop true if this a stop request, false otherwise.
    * @return NULL if no paxos instance with given paxos ID was found, returns paxosIDNoVersion otherwise.
    */
   public abstract String propose(String paxosIDNoVersion, String value);

@@ -53,101 +53,31 @@ public class GroupChange {
     // do the check and propose to replica controller.
     return null;
   }
-//  public static GNSMessagingTask handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica replica)
-//          throws JSONException{
-//
-//    // need book-keeping for this request: store mapping from name,version --> oldActiveStopPacket
-//    GNS.getLogger().fine("Key put: " + stopPacket.getName() + "-" + stopPacket.getVersion());
-//
-//    replica.getOngoingStops().put(stopPacket.getName() + "-" + stopPacket.getVersion(), stopPacket);
-//    // todo need to delete state from hash map: or else app should guarantee a callback.
-//    // Call app to handle stop request, and wait for response.
-//    replica.getReconfigurableApp().stopVersion(stopPacket.getName(), stopPacket.getVersion());
-//    return null;
-//  }
-
-
-//  /**
-//   * Handles message from replica controller to stop active replica set.
-//   */
-//  public static GNSMessagingTask handleOldActiveStopFromReplicaController1(OldActiveSetStopPacket oldActiveStopPacket, ActiveReplica replica)
-//          throws JSONException{
-//    GNSMessagingTask msgTask = null;
-//
-//    int[] versions = replica.getReconfigurableApp().getCurrentOldVersions(oldActiveStopPacket.getName());
-//    if (versions != null) {
-//      boolean sendConfirmation = false;
-//      boolean printWarning = false;
-//      int curVersion = versions[0];
-//      int oldVersion = versions[1];
-//      if (curVersion != NameRecord.NULL_VALUE_ACTIVE_VERSION) {
-//        if (curVersion == oldActiveStopPacket.getVersion()) {
-//          if (replica.getActiveCoordinator() != null) {
-//            replica.getActiveCoordinator().coordinateRequest(oldActiveStopPacket.toJSONObject());
-//          } else {
-//            executeOldActiveStop(oldActiveStopPacket, replica);
-//          }
-//        } else if (curVersion > oldActiveStopPacket.getVersion()) {
-//          sendConfirmation = true;
-//          if (curVersion != oldActiveStopPacket.getVersion() + 1) printWarning = true;
-//        } else {
-//          printWarning = true;
-//        }
-//
-//      } else if (oldVersion != NameRecord.NULL_VALUE_ACTIVE_VERSION) {
-//        if (oldVersion >= oldActiveStopPacket.getVersion()) {
-//          sendConfirmation = true;
-//          if (oldVersion != oldActiveStopPacket.getVersion()) printWarning = true;
-//        } else {
-//          printWarning = true;
-//        }
-//      }
-//      if (printWarning) {
-//        GNS.getLogger().warning("Unexpected version found. Expected version " + oldActiveStopPacket.getVersion() +
-//        " Found current version = " + curVersion + " Old version = " + oldVersion + " Packet: " + oldActiveStopPacket);
-//      }
-//      if (sendConfirmation) {
-//        msgTask = getReplicaControllerConfirmMsg(oldActiveStopPacket, replica);
-//        GNS.getLogger().info("Sending confirmation to ReplicaCoordinator: " + oldActiveStopPacket);
-//      }
-//    }  else {
-//      GNS.getLogger().severe("Neither current nor old version found. Packet:  " + oldActiveStopPacket);
-//    }
-//    return msgTask;
-//  }
-
-//
-//  /**
-//   * Executes the decision to stop active replica set, by informing the Reconfigurable app object of the stop decision,
-//   * and sending confirmation back to replica controllers.
-//   */
-//  public static GNSMessagingTask executeOldActiveStop(OldActiveSetStopPacket oldActiveStopPacket, ActiveReplica replica)
-//          throws JSONException{
-//    GNS.getLogger().info("Active removed: Name = " + oldActiveStopPacket.getName() + "\t" + oldActiveStopPacket);
-//    replica.getReconfigurableApp().stop(oldActiveStopPacket.getName(), oldActiveStopPacket.getVersion());
-//    return getReplicaControllerConfirmMsg(oldActiveStopPacket, replica);
-//  }
 
   /**
-   * Generates the confirmation message that we will send to primaries.
+   * Send confirmation to replica controller that actives have stopped.
    */
-  public static GNSMessagingTask getReplicaControllerConfirmMsg(OldActiveSetStopPacket oldActiveStopPacket, ActiveReplica replica)
-          throws JSONException{
-
-    GNSMessagingTask msgTask = null;
-    // confirm to primary name server that this set of actives has stopped
-    if (oldActiveStopPacket.getActiveReceiver() == replica.getNodeID()) {
-      // the active node who received this node, sends confirmation to primary
-      // confirm to primary
-      oldActiveStopPacket.changePacketTypeToConfirm();
-      msgTask = new GNSMessagingTask(oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
-      GNS.getLogger().info("Active removed: Name Record updated. Sent confirmation to replica controller. Packet = " +
-              oldActiveStopPacket);
-    } else {
-      // other nodes do nothing.
-      GNS.getLogger().info("Active removed: Name Record updated. OldVersion = " + oldActiveStopPacket.getVersion());
+  public static void handleStopProcessed(OldActiveSetStopPacket stopPacket, ActiveReplica activeReplica) {
+    try {
+      GNSMessagingTask msgTask = null;
+      // confirm to primary name server that this set of actives has stopped
+      if (stopPacket.getActiveReceiver() == activeReplica.getNodeID()) {
+        // the active node who received this node, sends confirmation to primary
+        // confirm to primary
+        stopPacket.changePacketTypeToConfirm();
+        msgTask = new GNSMessagingTask(stopPacket.getPrimarySender(), stopPacket.toJSONObject());
+        GNS.getLogger().info("Active removed: Name Record updated. Sent confirmation to replica controller. Packet = " +
+                stopPacket);
+      } else {
+        // other nodes do nothing.
+        GNS.getLogger().info("Active removed: Name Record updated. OldVersion = " + stopPacket.getVersion());
+      }
+      GNSMessagingTask.send(msgTask, activeReplica.getNioServer());
+    } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    return msgTask;
   }
 
   /**
@@ -240,9 +170,9 @@ public class GroupChange {
     if (Config.debugMode) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + activeReplica.getNodeID());
     if (packet.getPreviousValueCorrect()) {
 
-      activeReplica.getReconfigurableApp().putInitialState(packet.getName(), (short) packet.getNewActiveVersion(), packet.getPreviousValue(),
-              packet.getNewActiveNameServers());
-      // we want to call create coordination state here
+      activeReplica.getReconfigurableApp().putInitialState(packet.getName(), (short) packet.getNewActiveVersion(),
+              packet.getPreviousValue());
+      //
       activeReplica.getCoordinator().coordinateRequest(packet.toJSONObject());
       NewActiveSetStartupPacket originalPacket = (NewActiveSetStartupPacket) activeReplica.getOngoingStateTransferRequests().remove(packet.getID());
       if (originalPacket != null) {
@@ -284,6 +214,7 @@ public class GroupChange {
     }
 
   }
+
 
   /********************   END: methods executed at new active replicas. *********************/
 }

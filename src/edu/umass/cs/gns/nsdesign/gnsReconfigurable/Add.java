@@ -4,12 +4,12 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ValuesMap;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 
 /**
@@ -26,9 +26,8 @@ public class Add {
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
 
-    NameRecord nameRecord = new NameRecord(activeReplica.getDB(), addRecordPacket.getName(),
-            ConsistentHashing.getReplicaControllerSet(addRecordPacket.getName()), 1, valuesMap,
-            addRecordPacket.getTTL());
+    NameRecord nameRecord = new NameRecord(activeReplica.getDB(), addRecordPacket.getName(), Config.FIRST_VERSION,
+            valuesMap, addRecordPacket.getTTL());
 
     try {
       NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);

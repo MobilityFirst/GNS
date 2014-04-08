@@ -66,7 +66,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    */
   public CacheEntry(DNSPacket packet) {
     this.name = packet.getGuid();
-    // this will depend on TTL sent by NS. 
+    // this will depend on TTL sent by NS.
     // UPDATE: NEVER LET IT BE -1 which means infinite
     this.timeToLiveInSeconds = packet.getTTL() == -1 ? GNS.DEFAULT_TTL_SECONDS : packet.getTTL();
     // pull all the keys and values out of the returned value and cache them
@@ -79,7 +79,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     }
     // Also update this
     this.primaryNameServer = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
-    this.activeNameServer = packet.getActiveNameServers();
+//    this.activeNameServer = packet.getActiveNameServers();
   }
 
   public CacheEntry(RequestActivesPacket packet) {
@@ -91,7 +91,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
 
-    activeNameServer = packet.getActiveNameServers();
+//    activeNameServer = packet.getActiveNameServers();
     if (valuesMap == null) {
       valuesMap = new ValuesMap();
     }

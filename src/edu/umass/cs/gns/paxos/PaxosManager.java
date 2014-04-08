@@ -175,15 +175,6 @@ public class PaxosManager extends AbstractPaxosManager {
     return createPaxosInstance(paxosIDNoVersion, version, nodeIDs, initialState);
   }
 
-  @Override
-  public String proposeStop(String paxosIDNoVersion, String value, int version) {
-    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, true));
-  }
-
-  @Override
-  public String propose(String paxosIDNoVersion, String value) {
-    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, false));
-  }
 
   /**
    * Adds a new Paxos instance to the set of actives.
@@ -257,44 +248,67 @@ public class PaxosManager extends AbstractPaxosManager {
     return new PaxosReplica(paxosID, nodeID, nodeIDs1, this);
   }
 
-  /**
-   * Propose requestPacket in the paxos instance with paxosID.
-   * ReqeustPacket.clientID is used to distinguish which method proposed this value.
-   * @param paxosID paxosID of the paxos group
-   * @param requestPacket request to be proposed
-   */
-  public  String propose(String paxosID, RequestPacket requestPacket) {
-
-    if (!debug) { // running with GNS
-      PaxosReplicaInterface replica = paxosInstances.get(getPaxosKeyFromPaxosID(paxosID));
-      if (replica == null) {
-        clientRequestHandler.handleDecision(paxosID, requestPacket.value, false, true);
-        return null;
-      }
-      try {
-        GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
-        replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
-      } catch (JSONException e) {
-        e.printStackTrace();  
-      }
-      return replica.getPaxosID();
+  @Override
+  public String proposeStop(String paxosIDNoVersion, String value, int version) {
+    PaxosReplicaInterface replica = paxosInstances.get(paxosIDNoVersion);
+    String paxosIDWithVersion = getPaxosIDWithVersionNumber(paxosIDNoVersion, version);
+    if (replica == null || !replica.getPaxosID().equals(paxosIDWithVersion)) {
+      return null;
     }
-
-    //  only in debug mode
-    try
-    {
-      JSONObject json = requestPacket.toJSONObject();
-      // put paxos ID for identification
-      json.put(PAXOS_ID, paxosID);
-      handleIncomingPacket(json);
-
-    } catch (JSONException e)
-    {
-      if (debugMode) GNS.getLogger().severe(" JSON Exception" + e.getMessage());
+    try {
+      GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
+      replica.handleIncomingMessage(new RequestPacket(0, value, PaxosPacketType.REQUEST, true).toJSONObject(), PaxosPacketType.REQUEST);
+    } catch (JSONException e) {
       e.printStackTrace();
     }
-    return paxosID;
+    return replica.getPaxosID();
   }
+
+  @Override
+  public String propose(String paxosIDNoVersion, String value) {
+    RequestPacket requestPacket = new RequestPacket(0, value, PaxosPacketType.REQUEST, false);
+//    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, false));
+    PaxosReplicaInterface replica = paxosInstances.get(paxosIDNoVersion);
+    if (replica == null) {
+      return null;
+    }
+    try {
+      GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
+      replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return replica.getPaxosID();
+  }
+
+
+//  /**
+//   * Propose requestPacket in the paxos instance with paxosID.
+//   * ReqeustPacket.clientID is used to distinguish which method proposed this value.
+//   * @param paxosID paxosID of the paxos group
+//   * @param requestPacket request to be proposed
+//   */
+//  public  String propose(String paxosID, RequestPacket requestPacket) {
+//
+//    if (!debug) { // running with GNS
+//
+//    }
+//
+//    //  only in debug mode
+//    try
+//    {
+//      JSONObject json = requestPacket.toJSONObject();
+//      // put paxos ID for identification
+//      json.put(PAXOS_ID, paxosID);
+//      handleIncomingPacket(json);
+//
+//    } catch (JSONException e)
+//    {
+//      if (debugMode) GNS.getLogger().severe(" JSON Exception" + e.getMessage());
+//      e.printStackTrace();
+//    }
+//    return paxosID;
+//  }
 
   /**
    * check if the failure detector has reported this node as up
@@ -347,7 +361,7 @@ public class PaxosManager extends AbstractPaxosManager {
    * @param req request that is to be executed
    */
   void handleDecision(String paxosID, RequestPacket req, boolean recovery) {
-    clientRequestHandler.handleDecision(getPaxosIDNoVersion(paxosID), req.value, recovery, false);
+    clientRequestHandler.handleDecision(getPaxosIDNoVersion(paxosID), req.value, recovery);
   }
 
   String getPaxosKeyFromPaxosID(String paxosID) {

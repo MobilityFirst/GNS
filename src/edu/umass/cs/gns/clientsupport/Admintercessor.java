@@ -7,30 +7,27 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.SentinalPacket;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.text.ParseException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
+
 import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -305,8 +302,8 @@ public class Admintercessor {
 //        result.append(record.getRecordKey().getName());
           result.append(" P: ");
           result.append(record.getPrimaryNameservers().toString());
-          result.append(" A: ");
-          result.append(record.getActiveNameServers().toString());
+//          result.append(" A: ");
+//          result.append(record.getActiveNameServers().toString());
           result.append(" TTL: ");
           result.append(record.getTimeToLive());
           result.append(LINE_SEPARATOR);

@@ -29,7 +29,7 @@ public class NameRecord implements Comparable<NameRecord> {
   public static final int NULL_VALUE_ACTIVE_VERSION = 0;
 
   public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
-  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("nr_active", ColumnFieldType.SET_INTEGER);
+//  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("nr_active", ColumnFieldType.SET_INTEGER);
   public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_INTEGER);
   public final static ColumnField ACTIVE_VERSION = new ColumnField("nr_version", ColumnFieldType.INTEGER);
   public final static ColumnField OLD_ACTIVE_VERSION = new ColumnField("nr_oldVersion", ColumnFieldType.INTEGER);
@@ -57,13 +57,13 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param values
    * @return
    */
-  public NameRecord(BasicRecordMap recordMap, String name, Set<Integer> activeNameServers, int activeVersion,
+  public NameRecord(BasicRecordMap recordMap, String name, int activeVersion,
           ValuesMap values, int ttl) {
     this.recordMap = recordMap;
 
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
-    hashMap.put(ACTIVE_NAMESERVERS, activeNameServers);
+//    hashMap.put(ACTIVE_NAMESERVERS, activeNameServers);
     hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     hashMap.put(ACTIVE_VERSION, activeVersion);
     hashMap.put(OLD_ACTIVE_VERSION, 0);
@@ -90,9 +90,9 @@ public class NameRecord implements Comparable<NameRecord> {
       hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
     }
 
-    if (jsonObject.has(ACTIVE_NAMESERVERS.getName())) {
-      hashMap.put(ACTIVE_NAMESERVERS, JSONUtils.getObject(ACTIVE_NAMESERVERS, jsonObject));
-    }
+//    if (jsonObject.has(ACTIVE_NAMESERVERS.getName())) {
+//      hashMap.put(ACTIVE_NAMESERVERS, JSONUtils.getObject(ACTIVE_NAMESERVERS, jsonObject));
+//    }
 
     if (jsonObject.has(PRIMARY_NAMESERVERS.getName())) {
       hashMap.put(PRIMARY_NAMESERVERS, JSONUtils.getObject(PRIMARY_NAMESERVERS, jsonObject));
@@ -174,12 +174,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(NAME);
   }
 
-  public Set<Integer> getActiveNameServers() throws FieldNotFoundException {
-    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
-      return (Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS);
-    }
-    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
-  }
+//  public Set<Integer> getActiveNameServers() throws FieldNotFoundException {
+//    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
+//      return (Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS);
+//    }
+//    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
+//  }
 
   public Set<Integer> getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
@@ -277,12 +277,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(VALUES_MAP);
   }
 
-  public boolean containsActiveNameServer(int id) throws FieldNotFoundException {
-    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
-      return ((Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS)).contains(id);
-    }
-    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
-  }
+//  public boolean containsActiveNameServer(int id) throws FieldNotFoundException {
+//    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
+//      return ((Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS)).contains(id);
+//    }
+//    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
+//  }
 
   /**
    * ACTIVE: checks whether version is current active version/oldactive version/neither. .
@@ -410,7 +410,7 @@ public class NameRecord implements Comparable<NameRecord> {
       }
       currentActiveStopFields.add(OLD_ACTIVE_VERSION);
       currentActiveStopFields.add(ACTIVE_VERSION);
-      currentActiveStopFields.add(ACTIVE_NAMESERVERS);
+//      currentActiveStopFields.add(ACTIVE_NAMESERVERS);
       currentActiveStopFields.add(OLD_VALUES_MAP);
       currentActiveStopFields.add(VALUES_MAP);
       return currentActiveStopFields;
@@ -430,7 +430,7 @@ public class NameRecord implements Comparable<NameRecord> {
       ArrayList<Object> updateValues = new ArrayList<Object>();
       updateValues.add(getActiveVersion());
       updateValues.add(NULL_VALUE_ACTIVE_VERSION);
-      updateValues.add(new HashSet<Integer>());
+//      updateValues.add(new HashSet<Integer>());
       updateValues.add(valuesMap);
       updateValues.add(new ValuesMap());
 
@@ -439,7 +439,7 @@ public class NameRecord implements Comparable<NameRecord> {
       // todo this is a conditional update: it may not be applied. therefore, fields below may not be valid.
       hashMap.put(OLD_ACTIVE_VERSION, getActiveVersion());
       hashMap.put(ACTIVE_VERSION, NULL_VALUE_ACTIVE_VERSION);
-      hashMap.put(ACTIVE_NAMESERVERS, new HashSet<Integer>());
+//      hashMap.put(ACTIVE_NAMESERVERS, new HashSet<Integer>());
       hashMap.put(OLD_VALUES_MAP, valuesMap);
       hashMap.put(VALUES_MAP, new ValuesMap());
 //    }
@@ -473,7 +473,7 @@ public class NameRecord implements Comparable<NameRecord> {
       if (newActiveStartFields.size() > 0) {
         return newActiveStartFields;
       }
-      newActiveStartFields.add(ACTIVE_NAMESERVERS);
+//      newActiveStartFields.add(ACTIVE_NAMESERVERS);
       newActiveStartFields.add(ACTIVE_VERSION);
       newActiveStartFields.add(VALUES_MAP);
       newActiveStartFields.add(TIME_TO_LIVE);
@@ -481,20 +481,20 @@ public class NameRecord implements Comparable<NameRecord> {
     }
   }
 
-  public void handleNewActiveStart(Set<Integer> actives, int version, ValuesMap currentValue, int ttl)
+  public void handleNewActiveStart(int version, ValuesMap currentValue, int ttl)
           throws FieldNotFoundException {
 
     ArrayList<ColumnField> updateFields = getNewActiveStartFields();
 
     ArrayList<Object> updateValues = new ArrayList<Object>();
-    updateValues.add(actives);
+//    updateValues.add(actives);
     updateValues.add(version);
     updateValues.add(currentValue);
     updateValues.add(ttl);
 
     recordMap.update(getName(), NAME, updateFields, updateValues);
 
-    hashMap.put(ACTIVE_NAMESERVERS, actives);
+//    hashMap.put(ACTIVE_NAMESERVERS, actives);
     hashMap.put(ACTIVE_VERSION, version);
     hashMap.put(VALUES_MAP, currentValue);
     hashMap.put(TIME_TO_LIVE, ttl);

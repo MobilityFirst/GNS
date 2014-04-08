@@ -50,7 +50,6 @@ public class Remove {
   static {
     versionFields.add(NameRecord.ACTIVE_VERSION);
     versionFields.add(NameRecord.OLD_ACTIVE_VERSION);
-    versionFields.add(NameRecord.ACTIVE_NAMESERVERS);
   }
 
   /**

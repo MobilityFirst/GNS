@@ -34,6 +34,14 @@ import java.util.ArrayList;
  */
 public class Lookup {
 
+  private static ArrayList<ColumnField> dnsFields = new ArrayList<ColumnField>();
+
+  static {
+    dnsFields.add(NameRecord.ACTIVE_VERSION);
+    dnsFields.add(NameRecord.TIME_TO_LIVE);
+  }
+
+
   /**
    *
    * @param dnsPacket
@@ -97,12 +105,6 @@ public class Lookup {
     return msgTask;
   }
 
-  private static ArrayList<ColumnField> dnsFields = new ArrayList<ColumnField>();
-
-  static {
-    dnsFields.add(NameRecord.ACTIVE_NAMESERVERS);
-    dnsFields.add(NameRecord.TIME_TO_LIVE);
-  }
 
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access,
                                                     GnsReconfigurable activeReplica)
@@ -155,10 +157,10 @@ public class Lookup {
     try {
       // Normative case... NameRecord was found and this server is one
       // of the active servers of the record
-      if (nameRecord != null && nameRecord.containsActiveNameServer(activeReplica.getNodeID())) {
+      if (nameRecord != null && nameRecord.getActiveVersion() != NameRecord.NULL_VALUE_ACTIVE_VERSION) {
         // how can we find a nameRecord if the guid is null?
         if (guid != null) {
-          dnsPacket.setActiveNameServers(nameRecord.getActiveNameServers());
+//          dnsPacket.setActiveNameServers(nameRecord.getActiveNameServers());
           //Generate the response packet
           // assume no error... change it below if there is an error
           dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
@@ -185,8 +187,6 @@ public class Lookup {
         dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
           GNS.getLogger().fine("Invalid actives. Name = " + guid);
-        } else {
-          GNS.getLogger().fine("Invalid actives. Name = " + guid + " Actives = " + nameRecord.getActiveNameServers());
         }
       }
     } catch (FieldNotFoundException e) {

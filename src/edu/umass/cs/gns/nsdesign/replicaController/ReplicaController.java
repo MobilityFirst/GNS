@@ -320,7 +320,7 @@ public class ReplicaController extends PacketDemultiplexer implements Replicable
 //  }
 
   @Override
-  public boolean handleDecision(String name, String value, boolean recovery, boolean noCoordinatorState) {
+  public boolean handleDecision(String name, String value, boolean recovery) {
     try {
       GNSMessagingTask msgTask = null;
       try {

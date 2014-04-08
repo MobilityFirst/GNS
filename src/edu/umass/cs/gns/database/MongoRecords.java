@@ -866,7 +866,7 @@ public class MongoRecords implements NoSQLRecords {
       }
     }
     System.out.println("***ALL RECORDS ACTIVE FIELD***");
-    cursor = instance.getAllRowsIterator(DBNAMERECORD, NameRecord.NAME, new ArrayList<ColumnField>(Arrays.asList(NameRecord.ACTIVE_NAMESERVERS)));
+    cursor = instance.getAllRowsIterator(DBNAMERECORD, NameRecord.NAME, new ArrayList<ColumnField>(Arrays.asList(NameRecord.PRIMARY_NAMESERVERS)));
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject().toString());
     }
