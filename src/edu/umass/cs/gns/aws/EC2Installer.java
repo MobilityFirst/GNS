@@ -444,7 +444,6 @@ public class EC2Installer {
     AWSEC2.executeBashScript(hostname, keyFile, "removelogs.sh", "#!/bin/bash\n"
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
-            + "rm RSlogfile*\n"
             + "rm -rf log\n"
             + "rm -rf paxoslog");
   }
@@ -656,7 +655,7 @@ public class EC2Installer {
     Option restart = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("restart a runset")
             .create("restart");
-    Option removeLogs = new Option("removeLogs", "remove log files (use with -restart or -update)");
+    Option removeLogs = new Option("removeLogs", "remove paxos and Logger log files (use with -restart or -update)");
     Option deleteDatabase = new Option("deleteDatabase", "delete the databases in a runset (use with -restart or -update)");
     Option describe = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("describe a runset")
