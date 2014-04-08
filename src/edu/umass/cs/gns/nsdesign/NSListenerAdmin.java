@@ -15,6 +15,7 @@ import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
+import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +40,8 @@ public class NSListenerAdmin extends Thread {
 
   private GnsReconfigurable gnsReconfigurable;
 
+  private ActiveReplicaCoordinator activeReplicaCoordinator;
+
   private ReplicaController replicaController;
 
   private GNSNodeConfig gnsNodeConfig;
@@ -48,9 +51,10 @@ public class NSListenerAdmin extends Thread {
    *
    * @throws IOException
    */
-  public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ReplicaController replicaController, GNSNodeConfig gnsNodeConfig) {
+  public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ActiveReplicaCoordinator activeReplicaCoordinator, ReplicaController replicaController, GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
     this.gnsReconfigurable = gnsReconfigurable;
+    this.activeReplicaCoordinator = activeReplicaCoordinator;
     this.replicaController = replicaController;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
@@ -187,6 +191,7 @@ public class NSListenerAdmin extends Thread {
               case RESETDB:
                 GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling RESETDB request");
                 replicaController.resetRC();
+                activeReplicaCoordinator.reset();
                 gnsReconfigurable.resetGNS();
                 break;
               case PINGTABLE:

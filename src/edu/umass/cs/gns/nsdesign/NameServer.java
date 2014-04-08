@@ -130,7 +130,7 @@ public class NameServer implements NameServerInterface {
     GNS.getLogger().info("Replica controller initialized");
     // start the NSListenerAdmin thread
 
-    new NSListenerAdmin(gnsReconfigurable, replicaController, gnsNodeConfig).start();
+    new NSListenerAdmin(gnsReconfigurable, appCoordinator, replicaController, gnsNodeConfig).start();
     GNS.getLogger().info("Admin thread initialized");
   }
 

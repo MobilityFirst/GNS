@@ -14,7 +14,7 @@ import exp_config
 
 # first we initialize parameter in exp_config before importing any local module.
 
-parser = argparse.ArgumentParser("Runs a GNS setup on local machine based on config file")
+parser = argparse.ArgumentParser("run_all_local", "Runs a GNS setup on local machine based on config file")
 parser.add_argument("config_file", help="config file describing all experiments")
 args = parser.parse_args()
 print "Config file:", args.config_file

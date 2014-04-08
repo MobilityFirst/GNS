@@ -48,7 +48,7 @@ mongodb_data_folder = None
 
 
 # parameters used only by scripts for running experiments
-experiment_run_time = None    # duration of experiment (seconds)
+experiment_run_time = -1    # duration of experiment (seconds)
 
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
@@ -57,8 +57,8 @@ extra_wait = 5   # extra wait time after LNS sends all requests
 
 failed_nodes = None   # NOT used
 
-num_ns = None    # must be more than 3
-num_lns = None  # must be set to 1
+num_ns = 3    # must be more than 3
+num_lns = 1  # must be set to 1
 
 #
 #
@@ -110,9 +110,9 @@ load_balancing = False  # Redirect to closest name server based on (RTT + server
 
 #
 # logging options
-nslog = 'SEVERE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'SEVERE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 

@@ -511,9 +511,6 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
    */
   public void resetGNS() {
     nameRecordDB.reset();
-    throw new UnsupportedOperationException();
-    // todo fixme
-//    activeCoordinator.reset();
   }
 
   private static ArrayList<ColumnField> readVersions = new ArrayList<ColumnField>();

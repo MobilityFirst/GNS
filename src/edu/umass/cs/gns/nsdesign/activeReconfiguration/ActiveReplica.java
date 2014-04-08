@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
 
-  private ReconfigurableApp reconfigurableApp;
+  private ActiveReplicaApp activeReplicaApp;
 
   private ActiveReplicaCoordinator coordinator;
 
@@ -62,9 +62,9 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
 
     PaxosConfig paxosConfig = new PaxosConfig();
     paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/gnsReconfigurable");
-    this.reconfigurableApp = new ReconfigurableApp(reconfigurableApp, this);
+    this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
     this.coordinator  = new ActiveReplicaCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
-            this.reconfigurableApp, paxosConfig);
+            this.activeReplicaApp, paxosConfig);
 
   }
 
@@ -111,8 +111,8 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   }
 
 
-  Reconfigurable getReconfigurableApp() {
-    return reconfigurableApp;
+  Reconfigurable getActiveReplicaApp() {
+    return activeReplicaApp;
   }
 
   int getNodeID() {

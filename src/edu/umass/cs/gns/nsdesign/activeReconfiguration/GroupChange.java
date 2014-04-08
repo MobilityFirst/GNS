@@ -88,7 +88,7 @@ public class GroupChange {
     if (Config.debugMode) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
             activeReplica.getNodeID());
     // obtain name record
-    String value = activeReplica.getReconfigurableApp().getFinalState(packet.getName(), (short) packet.getOldActiveVersion());
+    String value = activeReplica.getActiveReplicaApp().getFinalState(packet.getName(), (short) packet.getOldActiveVersion());
     if (value == null) {
       packet.changePreviousValueCorrect(false);
     } else {
@@ -110,7 +110,7 @@ public class GroupChange {
    * old active replicas.
    */
   public static void deleteOldActiveState(OldActiveSetStopPacket oldActiveSetStopPacket, ActiveReplica activeReplica) {
-    activeReplica.getReconfigurableApp().deleteFinalState(oldActiveSetStopPacket.getName(),
+    activeReplica.getActiveReplicaApp().deleteFinalState(oldActiveSetStopPacket.getName(),
             (short) oldActiveSetStopPacket.getVersion());
   }
 
@@ -170,7 +170,7 @@ public class GroupChange {
     if (Config.debugMode) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + activeReplica.getNodeID());
     if (packet.getPreviousValueCorrect()) {
 
-      activeReplica.getReconfigurableApp().putInitialState(packet.getName(), (short) packet.getNewActiveVersion(),
+      activeReplica.getActiveReplicaApp().putInitialState(packet.getName(), (short) packet.getNewActiveVersion(),
               packet.getPreviousValue());
       //
       activeReplica.getCoordinator().coordinateRequest(packet.toJSONObject());
