@@ -3,9 +3,12 @@ package edu.umass.cs.gns.util;
 import edu.umass.cs.gns.main.GNS;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Various generic static utility methods.
@@ -53,6 +56,13 @@ public class Util {
     }
     return result;
   }
+  
+  public static Set<Integer> arrayToSet(int[] array) {
+	  TreeSet<Integer> set = new TreeSet<Integer>();
+	  for(int i=0; i<array.length;i++) set.add(array[i]);
+	  return set;
+  }
+
 
   static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   static Random rnd = new Random(System.currentTimeMillis());
