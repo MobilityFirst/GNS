@@ -2,6 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
@@ -57,7 +58,7 @@ public class PaxosManager extends AbstractPaxosManager {
    */
   ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
 
-  PaxosInterface clientRequestHandler;
+  Replicable clientRequestHandler;
 
   ScheduledThreadPoolExecutor executorService;
 
@@ -107,7 +108,7 @@ public class PaxosManager extends AbstractPaxosManager {
   /********************BEGIN: public methods for paxos manager********************/
 
   public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransportInterface nioServer,
-                              PaxosInterface outputHandler, PaxosConfig paxosConfig) {
+                              Replicable outputHandler, PaxosConfig paxosConfig) {
 //    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
 
     this.N =  nodeConfig.getNodeCount();
@@ -117,7 +118,7 @@ public class PaxosManager extends AbstractPaxosManager {
     this.clientRequestHandler = outputHandler;
     this.debugMode = paxosConfig.isDebugMode();
     // recover previous state if exists using logger
-    this.clientRequestHandler.deleteStateBeforeRecovery();
+//    this.clientRequestHandler.deleteStateBeforeRecovery();
     paxosLogger = new PaxosLogger(paxosConfig.getPaxosLogFolder(), nodeID, this);
     long t0 = System.currentTimeMillis();
     ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.recoverPaxosLogs();
@@ -169,14 +170,19 @@ public class PaxosManager extends AbstractPaxosManager {
 
   }
 
-  public boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, PaxosInterface pi) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, Replicable pi) {
     String initialState = pi.getState(paxosIDNoVersion);
     return createPaxosInstance(paxosIDNoVersion, version, nodeIDs, initialState);
   }
 
   @Override
-  public String propose(String paxosIDNoVersion, String value, boolean stop) {
-    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, stop));
+  public String proposeStop(String paxosIDNoVersion, String value, int version) {
+    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, true));
+  }
+
+  @Override
+  public String propose(String paxosIDNoVersion, String value) {
+    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, false));
   }
 
   /**
@@ -261,7 +267,10 @@ public class PaxosManager extends AbstractPaxosManager {
 
     if (!debug) { // running with GNS
       PaxosReplicaInterface replica = paxosInstances.get(getPaxosKeyFromPaxosID(paxosID));
-      if (replica == null) return null;
+      if (replica == null) {
+        clientRequestHandler.handleDecision(paxosID, requestPacket.value, false, true);
+        return null;
+      }
       try {
         GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
         replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
@@ -338,11 +347,7 @@ public class PaxosManager extends AbstractPaxosManager {
    * @param req request that is to be executed
    */
   void handleDecision(String paxosID, RequestPacket req, boolean recovery) {
-    if (req.isStopRequest()) {
-      clientRequestHandler.stop(getPaxosIDNoVersion(paxosID), req.value);
-    } else {
-      clientRequestHandler.handleDecision(getPaxosIDNoVersion(paxosID), req.value, recovery);
-    }
+    clientRequestHandler.handleDecision(getPaxosIDNoVersion(paxosID), req.value, recovery, false);
   }
 
   String getPaxosKeyFromPaxosID(String paxosID) {
@@ -380,6 +385,7 @@ public class PaxosManager extends AbstractPaxosManager {
         }
       }
     }
+
     // inform output handler of node failure
     // FIXME: Not supported anymore in PaxosInterface.
     //clientRequestHandler.handleFailureMessage(fdPacket);

@@ -1,13 +1,14 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSDelayEmulator;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
+import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
 
 import java.io.File;
@@ -33,13 +34,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class NameServer implements NameServerInterface {
 
 
-  private GnsReconfigurable gnsReconfigurable; // app
+  private ActiveReplicaCoordinator  appCoordinator; // coordinates app's requests
  
   private ActiveReplica activeReplica; // reconfiguration logic
  
   private ReplicaController replicaController; // replica control logic
-
-
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -65,7 +64,6 @@ public class NameServer implements NameServerInterface {
     for (String propertyName: prop.stringPropertyNames()) {
       allValues.put(propertyName, prop.getProperty(propertyName));
     }
-
     init(nodeID, allValues, gnsNodeConfig);
   }
 
@@ -96,34 +94,56 @@ public class NameServer implements NameServerInterface {
 //    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNumberOfNameServers());
 
+    // init transport
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
-
     if (Config.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
-
     JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
     GNSNIOTransport tcpTransport = new GNSNIOTransport(nodeID, gnsNodeConfig, worker);
     new Thread(tcpTransport).start();
 
-
-
+    // init worker thread pool
     int numThreads = 5;
     ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(numThreads);
 
-    // be careful to give same 'nodeID' to gnsReconfigurable, active replica and replica controller!
+    // be careful to give same 'nodeID' to everyone
+
+    // init DB
     MongoRecords mongoRecords = new MongoRecords(nodeID, -1);
-    gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor, mongoRecords);
-    GNS.getLogger().fine("GNS initialized. ");
-    activeReplica = gnsReconfigurable.getActiveReplica();
-    GNS.getLogger().fine("Active replica initialized. ");
-    replicaController = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor, mongoRecords);
+
+
+    // initialize GNS
+    GnsReconfigurable gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport,
+            threadPoolExecutor, mongoRecords);
+    GNS.getLogger().info("GNS initialized. ");
+    // initialize active replica with the app
+    activeReplica  = new ActiveReplica(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
+            gnsReconfigurable);
+    GNS.getLogger().info("Active replica initialized");
+
+    // we create app coordinator inside constructor for activeReplica because of cyclic dependency between them
+    appCoordinator  = activeReplica.getCoordinator();
+    GNS.getLogger().info("App (GNS) coordinator initialized");
+
+    replicaController = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
+            mongoRecords);
+
+    GNS.getLogger().info("Replica controller initialized");
     // start the NSListenerAdmin thread
+
     new NSListenerAdmin(gnsReconfigurable, replicaController, gnsNodeConfig).start();
+    GNS.getLogger().info("Admin thread initialized");
   }
-  
+
+
+  public void reset() {
+    throw new UnsupportedOperationException();
+//    gnsReconfigurable.resetGNS();
+//    replicaController.resetRC();
+  }
 
   @Override
-  public GnsReconfigurable getGnsReconfigurable() {
-    return gnsReconfigurable;
+  public ActiveReplicaCoordinator getActiveReplicaCoordinator() {
+    return appCoordinator;
   }
 
   @Override
@@ -134,11 +154,5 @@ public class NameServer implements NameServerInterface {
   @Override
   public ReplicaController getReplicaController() {
     return replicaController;
-  }
-
-  public void reset() {
-
-    gnsReconfigurable.resetGNS();
-    replicaController.resetRC();
   }
 }

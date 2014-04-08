@@ -4,10 +4,10 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.NodeConfig;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
+import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
-import edu.umass.cs.gns.paxos.PaxosInterface;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -24,10 +24,10 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   private int nodeID;
   private AbstractPaxosManager paxosManager;
 
-  private PaxosInterface paxosInterface;
+  private Replicable paxosInterface;
 
   public ReplicaControllerCoordinatorPaxos(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
-                                           PaxosInterface paxosInterface, PaxosConfig paxosConfig) {
+                                           Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
     this.paxosManager = new PaxosManager(nodeID, nodeConfig,

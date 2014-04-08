@@ -5,10 +5,7 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.NSNodeConfig;
+import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -16,7 +13,6 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.paxos.PaxosConfig;
-import edu.umass.cs.gns.paxos.PaxosInterface;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
@@ -36,7 +32,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * We keep a single instance of this class for all names for whom this name server is a replica controller.
  * Created by abhigyan on 2/26/14.
  */
-public class ReplicaController extends PacketDemultiplexer implements PaxosInterface {
+public class ReplicaController extends PacketDemultiplexer implements Replicable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 
@@ -257,12 +253,6 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
   }
 
   @Override
-  public void stop(String name, String value) {
-    // we do not expect stop to be executed at replica controllers
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public String getState(String name) {
     BasicRecordCursor iterator = replicaControllerDB.getAllRowsIterator();
     StringBuilder sb = new StringBuilder();
@@ -286,9 +276,9 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
    * Depending on packet type, it call other methods in ReplicaController package to execute request.
    */
   @Override
-  public void updateState(String paxosID, String state) {
+  public boolean updateState(String paxosID, String state) {
     if (state.length() == 0) {
-      return;
+      return true;
     }
     GNS.getLogger().info("Here: " + paxosID);
     int recordCount = 0;
@@ -321,15 +311,16 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
       e.printStackTrace();
     }
     GNS.getLogger().info("Number of rc records updated in DB: " + recordCount);
+    return true;
   }
 
-  @Override
-  public void deleteStateBeforeRecovery() {
-    replicaControllerDB.reset();
-  }
+//  @Override
+//  public void deleteStateBeforeRecovery() {
+//    replicaControllerDB.reset();
+//  }
 
   @Override
-  public void handleDecision(String name, String value, boolean recovery) {
+  public boolean handleDecision(String name, String value, boolean recovery, boolean noCoordinatorState) {
     try {
       GNSMessagingTask msgTask = null;
       try {
@@ -376,6 +367,7 @@ public class ReplicaController extends PacketDemultiplexer implements PaxosInter
       GNS.getLogger().severe("Exception in handling decisions: " + e.getMessage());
       e.printStackTrace();
     }
+    return true;
   }
 
   /**

@@ -5,7 +5,6 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -13,7 +12,6 @@ import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -33,23 +31,30 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class Update {
 
-  public static GNSMessagingTask handleUpdate(JSONObject json, GnsReconfigurable replica)
-          throws JSONException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+//  public static GNSMessagingTask handleUpdate(JSONObject json, GnsReconfigurable replica)
+//          throws JSONException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+//
+//    UpdatePacket updateAddressPacket = new UpdatePacket(json);
+//    updateAddressPacket.setNameServerId(replica.getNodeID());
+//    if (replica.getActiveCoordinator() == null) {
+//      return Update.executeUpdateLocal(updateAddressPacket, replica);
+//    } else {
+//      replica.getActiveCoordinator().coordinateRequest(updateAddressPacket.toJSONObject());
+//      return null;
+//    }
+//
+//  }
 
-    UpdatePacket updateAddressPacket = new UpdatePacket(json);
-    updateAddressPacket.setNameServerId(replica.getNodeID());
-    if (replica.getActiveCoordinator() == null) {
-      return Update.executeUpdateLocal(updateAddressPacket, replica);
-    } else {
-      replica.getActiveCoordinator().coordinateRequest(updateAddressPacket.toJSONObject());
-      return null;
-    }
-
-  }
-
-  public static GNSMessagingTask executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica)
+  public static GNSMessagingTask executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
+                                                    boolean noCoordinatonState)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
     GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
+
+    if (noCoordinatonState) {
+      ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
+//      NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
+      return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+    }
 
 //    UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
     // First we do signature and ACL checks

@@ -49,16 +49,22 @@ public class GroupChange {
 
   public static GNSMessagingTask handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica replica)
           throws JSONException{
-
-    // need book-keeping for this request: store mapping from name,version --> oldActiveStopPacket
-    GNS.getLogger().fine("Key put: " + stopPacket.getName() + "-" + stopPacket.getVersion());
-
-    replica.getOngoingStops().put(stopPacket.getName() + "-" + stopPacket.getVersion(), stopPacket);
-    // todo need to delete state from hash map: or else app should guarantee a callback.
-    // Call app to handle stop request, and wait for response.
-    replica.getReconfigurableApp().stopVersion(stopPacket.getName(), stopPacket.getVersion());
+    replica.getCoordinator().coordinateRequest(stopPacket.toJSONObject());
+    // do the check and propose to replica controller.
     return null;
   }
+//  public static GNSMessagingTask handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica replica)
+//          throws JSONException{
+//
+//    // need book-keeping for this request: store mapping from name,version --> oldActiveStopPacket
+//    GNS.getLogger().fine("Key put: " + stopPacket.getName() + "-" + stopPacket.getVersion());
+//
+//    replica.getOngoingStops().put(stopPacket.getName() + "-" + stopPacket.getVersion(), stopPacket);
+//    // todo need to delete state from hash map: or else app should guarantee a callback.
+//    // Call app to handle stop request, and wait for response.
+//    replica.getReconfigurableApp().stopVersion(stopPacket.getName(), stopPacket.getVersion());
+//    return null;
+//  }
 
 
 //  /**
@@ -152,7 +158,7 @@ public class GroupChange {
     if (Config.debugMode) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
             activeReplica.getNodeID());
     // obtain name record
-    String value = activeReplica.getReconfigurableApp().getFinalState(packet.getName(), packet.getOldActiveVersion());
+    String value = activeReplica.getReconfigurableApp().getFinalState(packet.getName(), (short) packet.getOldActiveVersion());
     if (value == null) {
       packet.changePreviousValueCorrect(false);
     } else {
@@ -175,7 +181,7 @@ public class GroupChange {
    */
   public static void deleteOldActiveState(OldActiveSetStopPacket oldActiveSetStopPacket, ActiveReplica activeReplica) {
     activeReplica.getReconfigurableApp().deleteFinalState(oldActiveSetStopPacket.getName(),
-            oldActiveSetStopPacket.getVersion());
+            (short) oldActiveSetStopPacket.getVersion());
   }
 
   /********************   END: methods executed at old active replicas. *********************/
@@ -209,7 +215,8 @@ public class GroupChange {
     activeReplica.getNioServer().sendToIDs(packet.getNewActiveNameServers(), packet.toJSONObject(), activeReplica.getNodeID());
 
     CopyStateFromOldActiveTask copyTask = new CopyStateFromOldActiveTask(packet, activeReplica);
-    activeReplica.getScheduledThreadPoolExecutor().scheduleAtFixedRate(copyTask, 0, Config.NS_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    activeReplica.getScheduledThreadPoolExecutor().scheduleAtFixedRate(copyTask, 0, Config.NS_TIMEOUT_MILLIS,
+            TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -218,11 +225,9 @@ public class GroupChange {
    */
   public static void handleNewActiveStartForward(NewActiveSetStartupPacket packet, ActiveReplica activeReplica)
           throws JSONException{
-
     CopyStateFromOldActiveTask copyTask = new CopyStateFromOldActiveTask(packet, activeReplica);
     activeReplica.getScheduledThreadPoolExecutor().scheduleAtFixedRate(copyTask, 0, Config.NS_TIMEOUT_MILLIS,
             TimeUnit.MILLISECONDS);
-
   }
 
   /**
@@ -235,8 +240,10 @@ public class GroupChange {
     if (Config.debugMode) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + activeReplica.getNodeID());
     if (packet.getPreviousValueCorrect()) {
 
-      activeReplica.getReconfigurableApp().putInitialState(packet.getName(), packet.getNewActiveVersion(), packet.getPreviousValue(),
+      activeReplica.getReconfigurableApp().putInitialState(packet.getName(), (short) packet.getNewActiveVersion(), packet.getPreviousValue(),
               packet.getNewActiveNameServers());
+      // we want to call create coordination state here
+      activeReplica.getCoordinator().coordinateRequest(packet.toJSONObject());
       NewActiveSetStartupPacket originalPacket = (NewActiveSetStartupPacket) activeReplica.getOngoingStateTransferRequests().remove(packet.getID());
       if (originalPacket != null) {
         // send back response to the active who forwarded this packet to this node.

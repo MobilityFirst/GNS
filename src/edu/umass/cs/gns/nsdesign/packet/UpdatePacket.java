@@ -51,6 +51,8 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
   private final static String TTL = "ttl";
   private final static String OPERATION = "operation";
   private final static String ARGUMENT = "argument";
+
+
   /**
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.

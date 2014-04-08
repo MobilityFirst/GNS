@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import org.json.JSONException;
 
@@ -18,7 +19,7 @@ import java.io.IOException;
  * Date: 6/29/13
  * Time: 8:57 PM
  */
-public class DefaultPaxosInterface implements PaxosInterface {
+public class DefaultPaxosInterface implements Replicable {
 
   /**
    *
@@ -51,7 +52,8 @@ public class DefaultPaxosInterface implements PaxosInterface {
 
 
   @Override
-  public void handleDecision(String paxosID, String value, boolean recovery) {
+  public boolean handleDecision(String paxosID, String value, boolean recovery) {
+    return false;
     // check
     // TODO fixme
 //    if (nodeID == 0)
@@ -65,23 +67,14 @@ public class DefaultPaxosInterface implements PaxosInterface {
   }
 
   @Override
-  public void stop(String paxosID, String value) {
-    // todo fixme.
-  }
-
-  @Override
   public String getState(String paxosID) {
     return "ABCD\nEFGH\nIJKL\nMNOP\n";
   }
 
   @Override
-  public void updateState(String paxosID, String state) {
+  public boolean updateState(String paxosID, String state) {
     // empty method becasue this only for running paxos tests independently
-  }
-
-  @Override
-  public void deleteStateBeforeRecovery() {
-
+    return false;
   }
 
 }

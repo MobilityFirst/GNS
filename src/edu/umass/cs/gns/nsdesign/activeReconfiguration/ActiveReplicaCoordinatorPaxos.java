@@ -3,11 +3,12 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
+import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
-import edu.umass.cs.gns.paxos.PaxosInterface;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -19,13 +20,16 @@ import org.json.JSONObject;
  * Created by abhigyan on 3/28/14.
  */
 public class ActiveReplicaCoordinatorPaxos extends ActiveReplicaCoordinator{
+
+  private int nodeID;
   // this is the app object
-  private PaxosInterface paxosInterface;
+  private Replicable paxosInterface;
 
   private AbstractPaxosManager paxosManager;
 
   public ActiveReplicaCoordinatorPaxos(int nodeID, GNSNIOTransport nioServer, NodeConfig nodeConfig,
-                                       PaxosInterface paxosInterface, PaxosConfig paxosConfig) {
+                                       Replicable paxosInterface, PaxosConfig paxosConfig) {
+    this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
     this.paxosManager = new PaxosManager(nodeID, nodeConfig,
             new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
@@ -45,25 +49,24 @@ public class ActiveReplicaCoordinatorPaxos extends ActiveReplicaCoordinator{
           paxosManager.handleIncomingPacket(request);
           break;
         case UPDATE:
-          String paxosID = paxosManager.propose(new UpdatePacket(request).getName(), request.toString(), false);
-          if (paxosID == null) {
-            return -1;
-          }
+          UpdatePacket update = new UpdatePacket(request);
+          update.setNameServerId(nodeID);
+          paxosManager.propose(update.getName(), request.toString());
           break;
         case ACTIVE_REMOVE:
-          paxosID = paxosManager.propose(new OldActiveSetStopPacket(request).getName(), request.toString(), true);
-          if (paxosID == null) return -1;
+          OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket(request);
+          paxosManager.proposeStop(stopPacket1.getName(), request.toString(), stopPacket1.getVersion());
         case OLD_ACTIVE_STOP:
-          paxosID = paxosManager.propose(new OldActiveSetStopPacket(request).getName(), request.toString(), true);
-          if (paxosID == null) return -1;
+          OldActiveSetStopPacket stopPacket2 = new OldActiveSetStopPacket(request);
+          paxosManager.proposeStop(stopPacket2.getName(), request.toString(), stopPacket2.getVersion());
           break;
         case ACTIVE_ADD:
+          paxosInterface.handleDecision(null, request.toString(), false, false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
-          paxosManager.createPaxosInstance(recordPacket.getName(), 1, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
+          paxosManager.createPaxosInstance(recordPacket.getName(), Config.FIRST_VERSION, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
           GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
-          paxosInterface.handleDecision(null, request.toString(), false);
           break;
-        case NEW_ACTIVE_START:
+        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
           NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request);
           paxosManager.createPaxosInstance(newActivePacket.getName(), newActivePacket.getNewActiveVersion(),
                   newActivePacket.getNewActiveNameServers(), paxosInterface);
@@ -73,7 +76,7 @@ public class ActiveReplicaCoordinatorPaxos extends ActiveReplicaCoordinator{
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
           // Packets sent from replica controller
-          paxosInterface.handleDecision(null, request.toString(), false);
+          paxosInterface.handleDecision(null, request.toString(), false, false);
           break;
         default:
           GNS.getLogger().severe("Packet type not found in coordination: " + type);

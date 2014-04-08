@@ -3,10 +3,10 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
+import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
+import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,9 +51,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
               replicaController.handleJSONObject(json);
             }
           } else {
-            GnsReconfigurable gnsReconfigurable = nameServerInterface.getGnsReconfigurable();
+            ActiveReplicaCoordinator gnsReconfigurable = nameServerInterface.getActiveReplicaCoordinator();
             if (gnsReconfigurable != null) {
-              gnsReconfigurable.handleIncomingPacket(json);
+              gnsReconfigurable.coordinateRequest(json);
             }
           }
           break;
@@ -72,9 +72,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:
-          GnsReconfigurable gnsReconfigurable = nameServerInterface.getGnsReconfigurable();
+          ActiveReplicaCoordinator gnsReconfigurable = nameServerInterface.getActiveReplicaCoordinator();
           if (gnsReconfigurable != null) {
-            gnsReconfigurable.handleIncomingPacket(json);
+            gnsReconfigurable.coordinateRequest(json);
           }
           break;
 

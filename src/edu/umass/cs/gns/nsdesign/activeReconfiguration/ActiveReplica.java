@@ -1,20 +1,18 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.Reconfigurable;
+import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.paxos.PaxosConfig;
+import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
@@ -22,9 +20,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  *
  * Created by abhigyan on 3/27/14.
  */
-public class ActiveReplica {
+public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
 
-  private Reconfigurable reconfigurableApp;
+  private AppType reconfigurableApp;
+
+  private ActiveReplicaCoordinator coordinator;
 
   /**ID of this node*/
   private int nodeID;
@@ -39,23 +39,31 @@ public class ActiveReplica {
   private GNSNodeConfig gnsNodeConfig;
 
 
-  /** Ongoing stop requests proposed by this active replica. */
-  private ConcurrentHashMap<String, OldActiveSetStopPacket> ongoingStops =
-          new ConcurrentHashMap<String, OldActiveSetStopPacket>();
+//  /** Ongoing stop requests proposed by this active replica. */
+//  private ConcurrentHashMap<String, OldActiveSetStopPacket> ongoingStops =
+//          new ConcurrentHashMap<String, OldActiveSetStopPacket>();
 
   private UniqueIDHashMap ongoingStateTransferRequests = new UniqueIDHashMap();
 
   private UniqueIDHashMap activeStartupInProgress = new UniqueIDHashMap();
 
 
+  public ActiveReplicaCoordinator getCoordinator() {
+    return coordinator;
+  }
 
   public ActiveReplica(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
                        GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
-                       Reconfigurable reconfigurableApp) {
+                       AppType reconfigurableApp) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
     this.nioServer = nioServer;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
+
+    PaxosConfig paxosConfig = new PaxosConfig();
+    paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/gnsReconfigurable");
+    this.coordinator  = new ActiveReplicaCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
+            new ReconfigurableApp(reconfigurableApp, this), paxosConfig);
     this.reconfigurableApp = reconfigurableApp;
   }
 
@@ -94,32 +102,31 @@ public class ActiveReplica {
     }
   }
 
-  /**
-   * The app will call this method after it has executed stop decision
-   * @param name name for which stop is executed
-   * @param version stopped version number of replica
-   * @param noError true if stop request was successfully executed, false otherwise.
-   */
-  public void stopProcessed(String name, int version, boolean noError) {
-    try {
-      String key = name + "-" + version;
-      OldActiveSetStopPacket stopPacket = ongoingStops.remove(key);
-      if (stopPacket != null && noError) {
-        GNS.getLogger().severe("sent confirmation for name = " + name + " version = " + version + " node = " + nodeID);
-        GNSMessagingTask msgTask = GroupChange.getReplicaControllerConfirmMsg(stopPacket, this);
-        GNSMessagingTask.send(msgTask, nioServer);
-      } else {
-        // this should tell us why stop was not sent.
-        GNS.getLogger().info("No confirmation to replica controller: name = " + name + " version = " + version +
-        " noError = " + noError + " StopPacket = " + stopPacket + " Keys: " + ongoingStops.keySet() + "node = " + nodeID);
-
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
+//  /**
+//   * The app will call this method after it has executed stop decision
+//   * @param name name for which stop is executed
+//   * @param version stopped version number of replica
+//   * @param noError true if stop request was successfully executed, false otherwise.
+//   */
+//  private void stopProcessed(String name, int version, boolean noError) {
+//    try {
+//      String key = name + "-" + version;
+//      OldActiveSetStopPacket stopPacket = ongoingStops.remove(key);
+//      if (stopPacket != null && noError) {
+//        GNS.getLogger().severe("sent confirmation for name = " + name + " version = " + version + " node = " + nodeID);
+//        GNSMessagingTask msgTask = GroupChange.getReplicaControllerConfirmMsg(stopPacket, this);
+//        GNSMessagingTask.send(msgTask, nioServer);
+//      } else {
+//        // this should tell us why stop was not sent.
+//        GNS.getLogger().info("No confirmation to replica controller: name = " + name + " version = " + version +
+//        " noError = " + noError + " StopPacket = " + stopPacket + " Keys: " + ongoingStops.keySet() + "node = " + nodeID);
+//      }
+//    } catch (JSONException e) {
+//      e.printStackTrace();
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
+//  }
 
 
   Reconfigurable getReconfigurableApp() {
@@ -150,8 +157,5 @@ public class ActiveReplica {
     return activeStartupInProgress;
   }
 
-  ConcurrentHashMap<String, OldActiveSetStopPacket> getOngoingStops() {
-    return ongoingStops;
-  }
 
 }

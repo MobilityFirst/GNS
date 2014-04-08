@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
+import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 
 /**
  * A name server in GNS implement this interface.
@@ -16,7 +16,7 @@ import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
  */
 public interface NameServerInterface {
 
-  public GnsReconfigurable getGnsReconfigurable();
+  public ActiveReplicaCoordinator getActiveReplicaCoordinator();
 
   public ActiveReplica getActiveReplica();
 

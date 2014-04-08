@@ -36,14 +36,6 @@ import java.util.ArrayList;
  */
 public class Remove {
 
-  private static ArrayList<ColumnField> activeRemoveFields = new ArrayList<ColumnField>();
-
-  static {
-    activeRemoveFields.add(NameRecord.ACTIVE_VERSION);
-    activeRemoveFields.add(NameRecord.OLD_ACTIVE_VERSION);
-    activeRemoveFields.add(NameRecord.ACTIVE_NAMESERVERS);
-  }
-
 
   private static  ArrayList<ColumnField> activeStopFields = new ArrayList<ColumnField>();
 
@@ -53,77 +45,67 @@ public class Remove {
   }
 
 
+  private static ArrayList<ColumnField> versionFields = new ArrayList<ColumnField>();
+
+  static {
+    versionFields.add(NameRecord.ACTIVE_VERSION);
+    versionFields.add(NameRecord.OLD_ACTIVE_VERSION);
+    versionFields.add(NameRecord.ACTIVE_NAMESERVERS);
+  }
+
   /**
    * Handles a request from replica controller to remove the record. It reads the current name record from database
    * to check if version number of active replica in the database matches that in the incoming packet, in which case
    * it proceeds with the remove request. In case this remove request has already been executed, a response is
    * immediately sent back to the replica controller.
    * @throws JSONException
-   */
-  public static GNSMessagingTask handleActiveRemovePacket(OldActiveSetStopPacket oldActiveStopPacket,
-                                                          GnsReconfigurable replica) throws JSONException {
-    GNSMessagingTask msgTask = null;
-
-    GNS.getLogger().info("Received Old Active Stop Packet: " + oldActiveStopPacket);
-    int version = oldActiveStopPacket.getVersion();
-    // if this is current active:
-
-    NameRecord nameRecord1;
-    try {
-      nameRecord1 = NameRecord.getNameRecordMultiField(replica.getDB(), oldActiveStopPacket.getName(), activeRemoveFields);
-      GNS.getLogger().info("NAME RECORD NOW: " + nameRecord1);
-      int versionStatus = nameRecord1.getVersionStatus(version);
-      GNS.getLogger().info("Version to Be Stopped = " + version + " VersionStatus = " + versionStatus);
-      // todo make enum out of constants: 1, 2, 3
-      if (versionStatus == 1) { // this is the current active version
-        // propose STOP command for this version instance
-        // Change Packet Type in oldActiveStop: This will help active coordination identify that
-        // this is a stop packet.
-
-        if (replica.getActiveCoordinator() == null) {
-          msgTask = executeActiveRemove(oldActiveStopPacket, replica);
-        } else {
-          replica.getActiveCoordinator().coordinateRequest(oldActiveStopPacket.toJSONObject());
-          GNS.getLogger().info("PROPOSE: STOP Current Active Set. Version = " + version);
-        }
-
-      } else if (versionStatus == 2) { // this is the old version
-        // send confirmation to primary that this version is stopped.
-        msgTask = getActiveRemovedConfirmationMsg(oldActiveStopPacket, replica);
-      } else {
-        // if new active start packet comes before old active stop is committed, this situation might arise.
-        GNS.getLogger().info("Version Neither current nor old. Ignore msg = " + version);
-      }
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().info("Record not found exception. Name = " + oldActiveStopPacket.getName());
-      // we should send error message to replica-controller in this case. but we haven't defined it.
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().info("FieldNotFoundException: " + e.getMessage());
-      e.printStackTrace();
-    }
-    return msgTask;
-  }
-
-  /**
+   *
+   * TODO update this doc
    * Updates the database to indicate that this node is no longer an active replica, which effectively removes the
    * record from this active replica.
    */
-  public static GNSMessagingTask executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable replica) {
+  public static GNSMessagingTask executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable replica,
+                                                     boolean noCoordinationState) {
     GNSMessagingTask msgTask = null;
-    GNS.getLogger().info("Active removed: Name = " + oldActiveStopPacket.getName() + "\t" + oldActiveStopPacket);
-
-    NameRecord nameRecord;
-    try {
-      nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), oldActiveStopPacket.getName(), activeStopFields);
-      nameRecord.handleCurrentActiveStop();
-      msgTask = getActiveRemovedConfirmationMsg(oldActiveStopPacket, replica);
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe("Record not found exception. Message = " + e.getMessage());
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().info("FieldNotFoundException. " + e.getMessage());
-      e.printStackTrace();
-    } catch (JSONException e) {
-      e.printStackTrace();
+    if (noCoordinationState == false) { // normal case:
+      try {
+        NameRecord nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), oldActiveStopPacket.getName(), activeStopFields);
+        nameRecord.handleCurrentActiveStop();
+        msgTask = getActiveRemovedConfirmationMsg(oldActiveStopPacket, replica);
+      } catch (JSONException e) {
+        e.printStackTrace();
+      } catch (FieldNotFoundException e) {
+        e.printStackTrace();
+      } catch (RecordNotFoundException e) {
+        e.printStackTrace();
+      }
+    } else {  // exceptional case: either request is retransmitted by RC. or this replica never received any state for
+    // this name.
+      try {
+        int version = oldActiveStopPacket.getVersion();
+        NameRecord nameRecord1 = NameRecord.getNameRecordMultiField(replica.getDB(), oldActiveStopPacket.getName(), versionFields);
+        int versionStatus = nameRecord1.getVersionStatus(version);
+        GNS.getLogger().info("Version to Be Stopped = " + version + " VersionStatus = " + versionStatus + " name = "
+                + oldActiveStopPacket.getName());
+        // todo make enum out of constants: 1, 2, 3
+        if (versionStatus == 1) { // this is the current active version
+          GNS.getLogger().severe("Case cannot happen because coordinator state would have exist = " + oldActiveStopPacket);
+        } else if (versionStatus == 2) { // this is the old version
+          // send confirmation to primary that this version is stopped.
+          msgTask = getActiveRemovedConfirmationMsg(oldActiveStopPacket, replica);
+        } else {
+          // if new active start packet comes before old active stop is committed, this situation might arise.
+          GNS.getLogger().severe("Version Neither current nor old. Ignore msg = " + version);
+        }
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().info("Record not found exception. Name = " + oldActiveStopPacket.getName());
+        // we should send error message to replica-controller in this case. but we haven't defined it.
+      } catch (FieldNotFoundException e) {
+        GNS.getLogger().info("FieldNotFoundException: " + e.getMessage());
+        e.printStackTrace();
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
     }
     return msgTask;
   }
@@ -145,8 +127,7 @@ public class Remove {
               oldActiveStopPacket);
     } else {
       // other nodes do nothing.
-      GNS.getLogger().info("Active removed: Name Record updated. OldVersion = "
-              + oldActiveStopPacket.getVersion());
+      GNS.getLogger().info("Active removed: Name Record updated. OldVersion = " + oldActiveStopPacket.getVersion());
     }
     return msgTask;
   }

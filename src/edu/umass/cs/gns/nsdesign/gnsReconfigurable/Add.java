@@ -21,7 +21,6 @@ public class Add {
   public static GNSMessagingTask handleActiveAdd(AddRecordPacket addRecordPacket, GnsReconfigurable activeReplica)
           throws JSONException {
 
-    GNSMessagingTask msgTask = null;
     GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() + " node id: " +
             activeReplica.getNodeID());
     ValuesMap valuesMap = new ValuesMap();
@@ -42,6 +41,7 @@ public class Add {
       }
 
     } catch (RecordExistsException e) {
+      // todo this case should happen rarely if we actually delete record at the end of remove operation
       NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
       try {
         NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
@@ -51,13 +51,7 @@ public class Add {
       GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
     }
 
-    // this will create state needed for coordination
-    if (activeReplica.getActiveCoordinator() != null) {
-      activeReplica.getActiveCoordinator().coordinateRequest(addRecordPacket.toJSONObject());
-    } else {
-      msgTask = executeSendConfirmation(addRecordPacket, activeReplica);
-    }
-    return msgTask;
+    return getConfirmMsg(addRecordPacket, activeReplica);
   }
 
   /**
@@ -68,7 +62,7 @@ public class Add {
    * @return GNSMessagingTask to send to replica controller on same node.
    * @throws JSONException
    */
-  public static GNSMessagingTask executeSendConfirmation(AddRecordPacket addRecordPacket, GnsReconfigurable activeReplica)
+  private static GNSMessagingTask getConfirmMsg(AddRecordPacket addRecordPacket, GnsReconfigurable activeReplica)
           throws JSONException {
 
     addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD_CONFIRM);

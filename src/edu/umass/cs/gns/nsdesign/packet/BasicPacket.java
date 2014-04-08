@@ -42,4 +42,5 @@ public abstract class BasicPacket implements PacketInterface {
   public void setType(Packet.PacketType type) {
     this.type = type;
   }
+
 }
