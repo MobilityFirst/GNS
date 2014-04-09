@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.activeReconfiguration;
+package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
@@ -19,7 +19,7 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 3/28/14.
  */
-public class ActiveReplicaCoordinatorPaxos extends ActiveReplicaCoordinator{
+public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
   private int nodeID;
   // this is the app object
@@ -27,13 +27,14 @@ public class ActiveReplicaCoordinatorPaxos extends ActiveReplicaCoordinator{
 
   private AbstractPaxosManager paxosManager;
 
-  public ActiveReplicaCoordinatorPaxos(int nodeID, GNSNIOTransport nioServer, NodeConfig nodeConfig,
-                                       Replicable paxosInterface, PaxosConfig paxosConfig) {
+  public GnsCoordinatorPaxos(int nodeID, GNSNIOTransport nioServer, NodeConfig nodeConfig,
+                             Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
     this.paxosManager = new PaxosManager(nodeID, nodeConfig,
             new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
   }
+
 
   /**
    * Handles coordination among replicas for a request. Returns -1 in case of error, 0 otherwise.

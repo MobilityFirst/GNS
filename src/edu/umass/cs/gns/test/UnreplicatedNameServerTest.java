@@ -33,7 +33,7 @@ public class UnreplicatedNameServerTest {
 
       GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFile, nameserverID);
       NameServer nameServer = new NameServer(0, nsConfigFile, nodeConfig);
-      nameServer.reset();
+//      nameServer.reset();
       GNS.getLogger().info("Name server created ..");
 
       StartLocalNameServer.startLNSConfigFile(lnsID, nodeConfigFile, lnsConfigFile, null);

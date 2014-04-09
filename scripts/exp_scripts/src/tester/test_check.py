@@ -15,6 +15,10 @@ import local.exp_config
 
 
 class Test3NodeLocal(unittest.TestCase):
+    """
+    Tests a 3 name server and 1 local name server GNS; all records are replicated on all three name servers.
+    """
+    ns = 3
 
     def setUp(self):
         self.config_file = os.path.join(parent_folder, 'resources', 'local_test_env.ini')
@@ -22,12 +26,13 @@ class Test3NodeLocal(unittest.TestCase):
         self.config_parse.optionxform=str
         self.config_parse.read(self.config_file)
         self.gns_folder = self.config_parse.get(ConfigParser.DEFAULTSECT, 'gns_folder')
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_ns', 3)
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_ns', self.ns)
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_lns', 1)
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
         trace_folder = os.path.join(self.gns_folder, 'trace')
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'trace_folder', trace_folder)
-        self.trace_filename = get_trace_filename(trace_folder, 3)
+        self.trace_filename = get_trace_filename(trace_folder, self.ns)
 
     def test_a_1name(self):
         """Test add, remove, lookup, and delete operations for a single name"""
@@ -169,42 +174,12 @@ class Test3NodeLocal(unittest.TestCase):
         return FinalStats(stats_folder)
 
 
-    # def test_choice(self):
-    #     element = random.choice(self.seq)
-    #     self.assertTrue(element in self.seq)
-    #
-    # def test_sample(self):
-    #     with self.assertRaises(ValueError):
-    #         random.sample(self.seq, 20)
-    #     for element in random.sample(self.seq, 5):
-    #         self.assertTrue(element in self.seq)
-
-
-class TestSequenceFunctions2(unittest.TestCase):
+class Test1NodeLocal(Test3NodeLocal):
+    """
+    Tests a 1 name server and 1 local name server GNS.
+    """
+    ns = 1
 
     def setUp(self):
-        self.seq = range(10)
-
-    # def test_shuffle(self):
-    #     # make sure the shuffled sequence does not lose any elements
-    #     random.shuffle(self.seq)
-    #     self.seq.sort()
-    #     self.assertEqual(self.seq, range(10))
-    #
-    #     # should raise an exception for an immutable sequence
-    #     self.assertRaises(TypeError, random.shuffle, (1, 2, 3))
-    #
-    # def test_choice(self):
-    #     element = random.choice(self.seq)
-    #     self.assertTrue(element in self.seq)
-    #
-    # def test_sample(self):
-    #     with self.assertRaises(ValueError):
-    #         random.sample(self.seq, 20)
-    #     for element in random.sample(self.seq, 5):
-    #         self.assertTrue(element in self.seq)
-
-#suite = unittest.TestLoader().loadTestsFromTestCase(TestSequenceFunctions)
-#unittest.TextTestRunner(verbosity=2).run(suite)
-
-
+        Test3NodeLocal.setUp(self)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', 1)

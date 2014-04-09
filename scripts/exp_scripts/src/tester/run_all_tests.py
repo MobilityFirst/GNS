@@ -7,7 +7,8 @@ __author__ = 'abhigyan'
 import unittest
 
 # include all modules here
-test_modules = [test_check.Test3NodeLocal]
+test_modules = [test_check.Test1NodeLocal,
+                test_check.Test3NodeLocal]
 
 # this runs tests
 x = []
@@ -16,4 +17,4 @@ for test1 in test_modules:
 
 test_suite = unittest.TestSuite(x)
 
-unittest.TextTestRunner(verbosity=2, failfast=True).run(test_suite)
+unittest.TextTestRunner(verbosity=2).run(test_suite)

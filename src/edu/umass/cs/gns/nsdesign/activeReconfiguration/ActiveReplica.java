@@ -2,6 +2,8 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorPaxos;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -63,10 +65,15 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
     PaxosConfig paxosConfig = new PaxosConfig();
     paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/gnsReconfigurable");
     this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
-    this.coordinator  = new ActiveReplicaCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
-            this.activeReplicaApp, paxosConfig);
 
+    if (Config.singleNS) {
+      this.coordinator = new DefaultGnsCoordinator(nodeID, this.activeReplicaApp);
+    } else {
+      this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
+              this.activeReplicaApp, paxosConfig);
+    }
   }
+
 
 
   public void handleIncomingPacket(JSONObject json) {

@@ -43,7 +43,8 @@ public class ConsistentHashing {
    */
   public static void initialize(int numReplicaControllers, int numNameServers){
     if (numReplicaControllers > numNameServers) {
-      throw  new IllegalArgumentException("ERROR: Number of replica controllers <= numNameServers");
+      throw  new IllegalArgumentException("ERROR: Number of replica controllers " + numReplicaControllers +
+              " numNameServers = " + numNameServers);
     }
     synchronized (lock) {   // lock so that we do not initialize nsTreeMap multiple times.
       if (nsTreeMap != null) return;

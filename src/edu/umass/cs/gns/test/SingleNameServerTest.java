@@ -33,7 +33,7 @@ public class SingleNameServerTest {
 
       GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFile, nameServerID);
       NameServer nameServer = new NameServer(0, nsConfigFile, nodeConfig);
-      nameServer.reset();
+//      nameServer.reset();
       GNS.getLogger().info("Name server created ..");
 
       StartLocalNameServer.startLNSConfigFile(lnsID, nodeConfigFile, lnsConfigFile, null);

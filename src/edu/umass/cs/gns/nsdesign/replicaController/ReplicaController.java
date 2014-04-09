@@ -83,16 +83,14 @@ public class ReplicaController  implements Replicable {
 
     this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
-
     // todo disabling group change functionality as it is not active now.
 //		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);
 
   }
 
-
   /**
-   * ****BEGIN: getter methods for ReplicaController elements ***
+   * BEGIN: getter methods for ReplicaController elements ***
    */
   public int getNodeID() {
     return nodeID;
@@ -105,10 +103,6 @@ public class ReplicaController  implements Replicable {
   public GNSNIOTransportInterface getNioServer() {
     return nioServer;
   }
-
-//  public ReplicaControllerCoordinator getRcCoordinator() {
-//    return rcCoordinator;
-//  }
 
   public UniqueIDHashMap getOngoingStopActiveRequests() {
     return ongoingStopActiveRequests;
@@ -134,6 +128,7 @@ public class ReplicaController  implements Replicable {
   /**
    * ****END: getter methods for ReplicaController elements ***
    */
+
   /**
    * ****BEGIN: miscellaneous methods needed by replica controller module ***
    */
@@ -219,10 +214,6 @@ public class ReplicaController  implements Replicable {
     return true;
   }
 
-//  @Override
-//  public void deleteStateBeforeRecovery() {
-//    replicaControllerDB.reset();
-//  }
 
   @Override
   public boolean handleDecision(String name, String value, boolean recovery) {

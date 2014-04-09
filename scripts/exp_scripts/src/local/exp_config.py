@@ -168,6 +168,10 @@ def initialize(filename):
         global num_lns
         num_lns = int(parser.get(ConfigParser.DEFAULTSECT, 'num_lns'))
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server'):
+        global primary_name_server
+        primary_name_server = int(parser.get(ConfigParser.DEFAULTSECT, 'primary_name_server'))
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'is_experiment_mode'):
         global is_experiment_mode
         is_experiment_mode = bool(parser.get(ConfigParser.DEFAULTSECT, 'is_experiment_mode'))

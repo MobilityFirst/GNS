@@ -31,6 +31,9 @@ BEEHIVE_REPLICATION = '-beehive'
 C = '-C'
 ALPHA = '-alpha'
 BASE = '-base'
+
+SINGLE_NS = '-singleNS'
+
 DEBUG_MODE = '-debugMode'
 EXPERIMENT_MODE = '-experimentMode'
 HELP = '-help'
@@ -50,11 +53,12 @@ STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 
 #PERSISTENT_DATA_STORE = '-persistentDataStore'
 MONGO_PORT = '-mongoPort'
+
 PAXOS_LOG_FOLDER = '-paxosLogFolder'
-QUIT_AFTER_TIME = '-quitAfterTime'
-NAME_ACTIVES = '-nameActives'
 FAILURE_DETECTION_MSG_INTERVAL = '-failureDetectionMsgInterval'
 FAILURE_DETECTION_TIMEOUT_INTERVAL = '-failureDetectionTimeoutInterval'
+QUIT_AFTER_TIME = '-quitAfterTime'
+NAME_ACTIVES = '-nameActives'
 
 #Parameters: Update as required
 name_server_jar = exp_config.gnrs_jar
@@ -165,6 +169,8 @@ def run_name_server(node_id, work_dir):
     else:
         print 'Error: No replication model selected'
         sys.exit(2)
+    if primary_name_server == 1:
+        command += ' ' + SINGLE_NS
 
     command += ' ' + FILE_LOGGING_LEVEL + ' ' + file_logging_level
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level

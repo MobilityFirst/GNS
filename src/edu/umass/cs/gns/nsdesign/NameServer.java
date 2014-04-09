@@ -7,6 +7,7 @@ import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.replicaController.DefaultRcCoordinator;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerCoordinatorPaxos;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -111,8 +112,7 @@ public class NameServer implements NameServerInterface {
     // be careful to give same 'nodeID' to everyone
 
     // init DB
-    MongoRecords mongoRecords = new MongoRecords(nodeID, -1);
-
+    MongoRecords mongoRecords = new MongoRecords(nodeID);
 
     // initialize GNS
     GnsReconfigurable gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport,
@@ -127,26 +127,23 @@ public class NameServer implements NameServerInterface {
     appCoordinator  = activeReplica.getCoordinator();
     GNS.getLogger().info("App (GNS) coordinator initialized");
 
-    PaxosConfig paxosConfig = new PaxosConfig();
-    paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
-
     ReplicaController rc = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
             mongoRecords);
     GNS.getLogger().info("Replica controller initialized");
-    replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
-            new NSNodeConfig(gnsNodeConfig), rc, paxosConfig);
+
+    if (Config.singleNS) {
+      replicaControllerCoordinator = new DefaultRcCoordinator(nodeID, rc);
+    } else {
+      PaxosConfig paxosConfig = new PaxosConfig();
+      paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
+      replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
+              new NSNodeConfig(gnsNodeConfig), rc, paxosConfig);
+    }
     GNS.getLogger().info("Replica controller coordinator initialized");
 
     // start the NSListenerAdmin thread
     new NSListenerAdmin(gnsReconfigurable, appCoordinator, rc, replicaControllerCoordinator, gnsNodeConfig).start();
     GNS.getLogger().info("Admin thread initialized");
-  }
-
-
-  public void reset() {
-    throw new UnsupportedOperationException();
-//    gnsReconfigurable.reset();
-//    replicaController.reset();
   }
 
   @Override
