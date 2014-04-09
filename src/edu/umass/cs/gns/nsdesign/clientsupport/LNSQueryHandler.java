@@ -45,7 +45,7 @@ public class LNSQueryHandler {
    * @return the entire guid record in a QueryResult.
    */
   public static QueryResult sendQuery(String name, String key, GnsReconfigurable activeReplica) {
-    GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
+    GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
@@ -93,26 +93,26 @@ public class LNSQueryHandler {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("First STS Response (" + id + "): "
+          GNS.getLogger().info("First success response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().info("Later STS Response (" + id + "): "
+          GNS.getLogger().fine("Later success response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
         }
       }
     } else {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("First STS Response (" + id + "): "
+          GNS.getLogger().info("First error response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
-          GNS.getLogger().info("Later STS Response (" + id + "): "
+          GNS.getLogger().fine("Later error response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
         }

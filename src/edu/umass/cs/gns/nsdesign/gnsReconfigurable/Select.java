@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
+import edu.umass.cs.gns.util.ResultValue;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -33,13 +34,18 @@ import java.util.HashSet;
  * The SelectRequestPacket is sent to some NS (determining which one is done by the
  * LNS). This NS handles the broadcast to all of the NSs and the collection of results.
  *
- * Here's what the handling NS does:
+ * For all select operations the NS which receive the broadcasted select packet execute the
+ * appropriate query to collect all the guids that satisfy it. They then send the full records
+ * from all these queries back to the collecting NS. The collecting NS then extracts the GUIDS
+ * from all the results removing duplicates and then sends back JUST THE GUIDs, not the full
+ * records.
+ *
+ * Here's the special handling the NS does for guid GROUPs:
  *
  * On the request side when we get a GROUP_SETUP request we do the regular broadcast thing.
- * Also need to handle GROUP_SETUP for a group that already exists.
  *
  * On the response side for a GROUP_SETUP we do the regular collate thing and return the results,
- * plus we set the value of the group guid and the values of last_refreshed_time and the min_refresh_interval.
+ * plus we set the value of the group guid and the values of last_refreshed_time.
  * We need a GROUP info structure to hold these things.
  *
  * On the request side when we get a GROUP_LOOKUP request we need to
@@ -68,12 +74,41 @@ public class Select {
     }
   }
 
-  public static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException {
+  // handle a select request from an LNS
+  // this node is the broadcaster and selector
+  private static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
-
+    // special case handling of the GROUP_LOOK operation
+    // If sufficient time hasn't passed we just send the current value back
+    if (packet.getOperation().equals(SelectOperation.GROUP_LOOKUP)) {
+      // grab the timing parameters that we squirreled away from the SETUP
+      Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica);
+      int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica);
+      if (lastUpdate != null && minRefreshInterval != 0) {
+        GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
+        // if not enough time has passed we just return the current value of the group
+        if (new Date().getTime() - lastUpdate.getTime() <= minRefreshInterval) {
+          GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
+          ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica);
+          sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsID(), result.toStringSet(), replica);
+          return;
+        }
+      } else {
+        GNS.getLogger().info("GROUP_LOOKUP Request: No Last Update Info ");
+      }
+    }
+    // the code below executes for regualr selects and also for GROUP SETUP and GROUP LOOKUP but for lookup
+    // only if enough time has elapsed since last lookup (see above)
+    GNS.getLogger().info(packet.getOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
+    // If it's not a group lookup or is but enough time has passed we do the usual thing
+    // and send the request out to all the servers. We'll get a response sent  on the flipside.
     Set<Integer> serverIds = replica.getGNSNodeConfig().getAllNameServerIDs();
-    // store the into for later
-    int queryId = addQueryInfo(serverIds, packet.getOperation(), packet.getGuid());
+    // store the info for later
+    int queryId = addQueryInfo(serverIds, packet.getOperation(), packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
+    if (packet.getOperation().equals(SelectOperation.GROUP_LOOKUP)) {
+      // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
+      packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), replica));
+    }
     packet.setNsID(replica.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
@@ -85,13 +120,15 @@ public class Select {
     }
   }
 
-  public static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException {
-    GNS.getLogger().info("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
+  // handle a select request from the collecting NS
+  // this node looks up the records and returns them
+  private static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException {
+    GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, replica);
-      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacket(request.getId(), request.getLnsID(),
+      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsID(),
               request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
       GNS.getLogger().fine("NS" + replica.getNodeID() + " sending back " + jsonRecords.length() + " records");
       // and send them back to the originating NS
@@ -109,9 +146,10 @@ public class Select {
     }
   }
 
+  // this code runs in the collecing NS
   public static void handleSelectResponse(JSONObject json, GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().info("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());
+    GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
     if (info == null) {
       GNS.getLogger().warning("NS" + replica.getNodeID() + " unabled to located query info:" + packet.getNsQueryId());
@@ -120,38 +158,46 @@ public class Select {
     // if there is no error update our results list
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
       // stuff all the unique records into the info structure
-      processJSONRecords(packet.getJsonArray(), info, replica);
+      processJSONRecords(packet.getRecords(), info, replica);
     } else { // error response
       GNS.getLogger().fine("NS" + replica.getNodeID() + " processing error response: " + packet.getErrorMessage());
     }
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServer());
-    GNS.getLogger().info("NS" + replica.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
+    GNS.getLogger().fine("NS" + replica.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
     if (info.allServersResponded()) {
       handledAllServersResponded(packet, info, replica);
     }
   }
 
-  private static void handledAllServersResponded(SelectResponsePacket packet, NSSelectInfo info, GnsReconfigurable replica) throws JSONException {
-    // If all the servers have sent us a response we're done.
-    // Pull the records out of the info structure and send a response back to the LNS
-    SelectResponsePacket response = SelectResponsePacket.makeSuccessPacket(packet.getId(), -1, packet.getLnsQueryId(),
-            -1, -1, new JSONArray(info.getResponses()));
+  private static void sendReponsePacketToLNS(int id, int lnsQueryId, int lnsId, Set<String> guids, GnsReconfigurable replica) throws JSONException {
+
+    SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, -1, lnsQueryId,
+            -1, -1, new JSONArray(guids));
     try {
-      replica.getNioServer().sendToID(packet.getLnsID(), response.toJSONObject());
+      replica.getNioServer().sendToID(lnsId, response.toJSONObject());
     } catch (IOException f) {
       GNS.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
-      return;
     }
+  }
+
+  private static void handledAllServersResponded(SelectResponsePacket packet, NSSelectInfo info, GnsReconfigurable replica) throws JSONException {
+    // If all the servers have sent us a response we're done.
+    Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
+    // Pull the records out of the info structure and send a response back to the LNS
+    sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsID(), guids, replica);
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff
+    if (info.getOperation().equals(SelectOperation.GROUP_SETUP)) {
+      // for setup we need to squirrel away the query for later lookups
+      NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery(), replica);
+      NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval(), replica);
+    }
     if (info.getOperation().equals(SelectOperation.GROUP_SETUP) || info.getOperation().equals(SelectOperation.GROUP_LOOKUP)) {
       String guid = info.getGuid();
-      // since we can't decide we do both
-      NSGroupAccess.updateMembers(guid, extractGuidsFromRecords(info.getResponses()), replica);
-      // FIGURE OUT HOW TO DO THIS CORRECTLY
-      //NSGroupAccess.updateRecords(guid, info.getResponses(), replica); 
+      NSGroupAccess.updateMembers(guid, guids, replica);
+      //NSGroupAccess.updateRecords(guid, processResponsesIntoJSONArray(info.getResponsesAsMap()), replica); 
       NSGroupAccess.updateLastUpdate(guid, new Date(), replica);
     }
   }
@@ -167,13 +213,13 @@ public class Select {
     return result;
   }
 
-  private static int addQueryInfo(Set<Integer> serverIds, SelectOperation operation, String guid) {
+  private static int addQueryInfo(Set<Integer> serverIds, SelectOperation operation, String query, int minRefreshInterval, String guid) {
     int id;
     do {
       id = randomID.nextInt();
     } while (queriesInProgress.containsKey(id));
     //Add query info
-    NSSelectInfo info = new NSSelectInfo(id, serverIds, operation, guid);
+    NSSelectInfo info = new NSSelectInfo(id, serverIds, operation, query, minRefreshInterval, guid);
     queriesInProgress.put(id, info);
     return id;
   }
@@ -204,6 +250,7 @@ public class Select {
       case QUERY:
       case GROUP_SETUP: // just like a query except we're creating a new group guid to maintain results
       case GROUP_LOOKUP: // just like a query except we're potentially updating the group guid to maintain results
+        GNS.getLogger().info("NS" + ar.getNodeID() + " query: " + request.getQuery());
         cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
         break;
       default:
@@ -219,7 +266,7 @@ public class Select {
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info, GnsReconfigurable ar) throws JSONException {
     int length = jsonArray.length();
     GNS.getLogger().fine("NS" + ar.getNodeID() + " processing " + length + " records");
-    // org.json sucks... should have converted a long tine ago
+    // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
       JSONObject record = jsonArray.getJSONObject(i);
       String name = record.getString(NameRecord.NAME.getName());

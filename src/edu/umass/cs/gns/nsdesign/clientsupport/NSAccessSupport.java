@@ -128,7 +128,7 @@ public class NSAccessSupport {
       // map over the allowedusers and see if any of them are groups that the user belongs to
       for (String potentialGroupGuid : allowedusers) {
         // Fix this to use the reverse group lookup because the info we want will be on this host then.
-        if (NSGroupAccess.lookup(potentialGroupGuid, true, activeReplica).contains(accesserGuid)) {
+        if (NSGroupAccess.lookupMembers(potentialGroupGuid, true, activeReplica).contains(accesserGuid)) {
           return true;
         }
       }

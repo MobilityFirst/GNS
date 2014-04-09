@@ -178,7 +178,7 @@ public class GnsHttpServer {
 
         String serverLocalNameServerID = "\nLocal Name Server ID: " + localNameServerID + "\n";
         String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNumberOfNameServers() + "\n";
-        String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
+        //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 
         responseBody.write(buildVersionInfo.getBytes());
         responseBody.write(serverVersionInfo.getBytes());
@@ -193,7 +193,7 @@ public class GnsHttpServer {
         responseBody.write(paxosVersionInfo.getBytes());
         responseBody.write(serverLocalNameServerID.getBytes());
         responseBody.write(numberOfNameServers.getBytes());
-        responseBody.write(backingStoreClass.getBytes());
+        //responseBody.write(backingStoreClass.getBytes());
         while (iter.hasNext()) {
           String key = iter.next();
           List values = requestHeaders.get(key);

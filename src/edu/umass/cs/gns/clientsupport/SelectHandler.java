@@ -65,9 +65,9 @@ public class SelectHandler {
     waitForResponsePacket(id);
     SelectResponsePacket packet = resultsMap.get(id);
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
-      JSONArray json = packet.getJsonArray();
+      JSONArray json = packet.getGuids();
       if (json != null) {
-        return buildResultString(json);
+        return json.toString();
       } else {
         return null;
       }
@@ -92,7 +92,7 @@ public class SelectHandler {
     return result.toString();
   }
   
-  private static JSONObject extractFieldsIntoJSONObject(JSONObject record, JSONObject JSONresult) {
+  public static JSONObject extractFieldsIntoJSONObject(JSONObject record, JSONObject JSONresult) {
     Iterator<String> iter = record.keys();
     while (iter.hasNext()) {
       String key = iter.next();

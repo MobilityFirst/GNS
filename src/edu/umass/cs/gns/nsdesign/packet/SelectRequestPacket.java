@@ -24,7 +24,7 @@ public class SelectRequestPacket extends BasicPacket {
     WITHIN, // special case query for location field within bounding box
     QUERY, // general purpose query
     GROUP_SETUP, // set up a group guid that satisfies general purpose query
-    GROUP_LOOKUP; // lookup value of group guid previoulsy set up to satisfy general purpose query
+    GROUP_LOOKUP; // lookup value of group guid with an associated query
   }
   //
   private final static String ID = "id";
@@ -52,7 +52,7 @@ public class SelectRequestPacket extends BasicPacket {
   private SelectOperation operation;
   // for group guid
   private String guid; // the group GUID we are maintaning or null for simple select
-  private int refreshInterval; // minimum time between allowed refreshs of the guid
+  private int minRefreshInterval; // minimum time between allowed refreshs of the guid
 
   /**
    * Constructs a new QueryResponsePacket
@@ -75,7 +75,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.guid = null;
   }
 
-  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query, String guid, int refreshInterval) {
+  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query, String guid, int minRefreshInterval) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
@@ -86,7 +86,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.value = null;
     this.otherValue = null;
     this.guid = guid;
-    this.refreshInterval = refreshInterval;
+    this.minRefreshInterval = minRefreshInterval;
   }
 
   /**
@@ -150,7 +150,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.nsQueryId = json.getInt(NSQUERYID);
     this.operation = SelectOperation.valueOf(json.getString(OPERATION));
     this.guid = json.optString(GUID, null);
-    this.refreshInterval = json.optInt(REFRESH, -1);
+    this.minRefreshInterval = json.optInt(REFRESH, -1);
   }
 
   /**
@@ -189,8 +189,8 @@ public class SelectRequestPacket extends BasicPacket {
     if (guid != null) {
       json.put(GUID, guid);
     }
-    if (refreshInterval != -1) {
-      json.put(REFRESH, refreshInterval);
+    if (minRefreshInterval != -1) {
+      json.put(REFRESH, minRefreshInterval);
     }
   }
 
@@ -246,12 +246,16 @@ public class SelectRequestPacket extends BasicPacket {
     return query;
   }
 
+  public void setQuery(String query) {
+    this.query = query;
+  }
+  
   public String getGuid() {
     return guid;
   }
 
-  public int getRefreshInterval() {
-    return refreshInterval;
+  public int getMinRefreshInterval() {
+    return minRefreshInterval;
   }
  
 }

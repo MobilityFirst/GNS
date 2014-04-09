@@ -24,7 +24,8 @@ public class SelectResponsePacket extends BasicPacket {
   }
   //
   private final static String ID = "id";
-  private final static String JSON = "json";
+  private final static String RECORDS = "records";
+  private final static String GUIDS = "guids";
   private final static String LNSID = "lnsid";
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSQUERYID = "nsQueryId";
@@ -38,40 +39,72 @@ public class SelectResponsePacket extends BasicPacket {
   private int lnsQueryId;
   private int nsQueryId;
   private int nameServer;
-  private JSONArray jsonArray;
+  private JSONArray records;
+  private JSONArray guids;
   private ResponseCode responseCode;
   private String errorMessage;
-  private String guid; // the group GUID we are maintaning or null for simple select
 
   /**
    * Constructs a new SelectResponsePacket
    * @param id
    * @param jsonObject 
    */
-  private SelectResponsePacket(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray jsonArray, ResponseCode responseCode,
-          String errorMessage, String guid) {
+  private SelectResponsePacket(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray records, JSONArray guids, ResponseCode responseCode,
+          String errorMessage) {
     this.type = Packet.PacketType.SELECT_RESPONSE;
     this.id = id;
     this.lnsID = lns;
     this.lnsQueryId = lnsQueryId;
     this.nsQueryId = nsQueryId;
     this.nameServer = nameServer;
-    this.jsonArray = jsonArray;
+    this.records = records;
+    this.guids = guids;
     this.responseCode = responseCode;
     this.errorMessage = errorMessage;
-    this.guid = guid;
   }
 
-  public static SelectResponsePacket makeSuccessPacket(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray jsonArray) {
-    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, jsonArray, ResponseCode.NOERROR, null, null);
+  /**
+   * Used by a NameServer to a send response with full records back to the collecting NameServer
+   * 
+   * @param id
+   * @param lns
+   * @param lnsQueryId
+   * @param nsQueryId
+   * @param nameServer
+   * @param records
+   * @return 
+   */
+  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray records) {
+    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, records, null, ResponseCode.NOERROR, null);
+  }
+  
+  /**
+   * Used by a NameServer to a send response with only a list of guids back to the Local NameServer
+   * 
+   * @param id
+   * @param lns
+   * @param lnsQueryId
+   * @param nsQueryId
+   * @param nameServer
+   * @param guids
+   * @return 
+   */
+  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray guids) {
+    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, null, guids, ResponseCode.NOERROR, null);
   }
 
+  /**
+   * Used by a NameServer to a failure response to a NameServer or Local NameServer
+   * @param id
+   * @param lns
+   * @param lnsQueryId
+   * @param nsQueryId
+   * @param nameServer
+   * @param errorMessage
+   * @return 
+   */
   public static SelectResponsePacket makeFailPacket(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, String errorMessage) {
-    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, null, ResponseCode.ERROR, errorMessage, null);
-  }
-
-  public static SelectResponsePacket makeGuidSuccessResponse(int id, int lns, int lnsQueryId, int nsQueryId, int nameServer, JSONArray jsonArray, String guid) {
-    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, jsonArray, ResponseCode.NOERROR, null, guid);
+    return new SelectResponsePacket(id, lns, lnsQueryId, nsQueryId, nameServer, null, null, ResponseCode.ERROR, errorMessage);
   }
 
   /**
@@ -93,9 +126,10 @@ public class SelectResponsePacket extends BasicPacket {
     this.nameServer = json.getInt(NAMESERVER);
     this.responseCode = ResponseCode.valueOf(json.getString(RESPONSECODE));
     // either of these could be null
-    this.jsonArray = json.optJSONArray(JSON);
+    this.records = json.optJSONArray(RECORDS);
+    this.guids = json.optJSONArray(GUIDS);
     this.errorMessage = json.optString(ERRORSTRING, null);
-    this.guid = json.optString(GUID, null);
+    
   }
 
   /**
@@ -114,14 +148,14 @@ public class SelectResponsePacket extends BasicPacket {
     json.put(NSQUERYID, nsQueryId);
     json.put(NAMESERVER, nameServer);
     json.put(RESPONSECODE, responseCode.name());
-    if (jsonArray != null) {
-      json.put(JSON, jsonArray);
+    if (records != null) {
+      json.put(RECORDS, records);
+    }
+    if (guids != null) {
+      json.put(GUIDS, guids);
     }
     if (errorMessage != null) {
       json.put(ERRORSTRING, errorMessage);
-    }
-    if (guid != null) {
-      json.put(GUID, guid);
     }
     return json;
   }
@@ -134,8 +168,12 @@ public class SelectResponsePacket extends BasicPacket {
     return lnsID;
   }
 
-  public JSONArray getJsonArray() {
-    return jsonArray;
+  public JSONArray getRecords() {
+    return records;
+  }
+  
+  public JSONArray getGuids() {
+    return guids;
   }
 
   public int getLnsQueryId() {
@@ -158,8 +196,5 @@ public class SelectResponsePacket extends BasicPacket {
     return errorMessage;
   }
 
-  public String getGuid() {
-    return guid;
-  }
   
 }

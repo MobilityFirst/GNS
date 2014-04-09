@@ -63,7 +63,7 @@ public class LNSUpdateHandler {
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurable activeReplica) {
-    GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
+    GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
@@ -86,7 +86,7 @@ public class LNSUpdateHandler {
             -1, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
     try {
-      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending update " + updateId + " to " + recipientId
+      GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending update " + updateId + " to " + recipientId
               + "(" + activeReplica.getGNSNodeConfig().getNodeAddress(recipientId)
               + ":" + activeReplica.getGNSNodeConfig().getNodePort(recipientId) + ")"
               + " for " + name + " / " + key + ": " + packet.toJSONObject());

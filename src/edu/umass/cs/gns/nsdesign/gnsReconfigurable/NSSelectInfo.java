@@ -4,7 +4,9 @@ import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import org.json.JSONObject;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,19 +20,22 @@ public class NSSelectInfo {
   private ConcurrentHashMap<String, JSONObject> responses;
   private SelectOperation operation;
   private String guid; // the group GUID we are maintaning or null for simple select
-
+  private String query; // The string used to set up the query if applicable
+  private int minRefreshInterval; // in seconds
   /**
    * 
    * @param id
    * @param serverIds 
    */
-  public NSSelectInfo(int id, Set<Integer> serverIds, SelectOperation operation, String guid) {
+  public NSSelectInfo(int id, Set<Integer> serverIds, SelectOperation operation, String query, int minRefreshInterval, String guid) {
     this.id = id;
     this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
     this.responses = new ConcurrentHashMap<String, JSONObject>(10, 0.75f, 3);
     this.operation = operation;
+    this.query = query;
     this.guid = guid;
+    this.minRefreshInterval = minRefreshInterval;
   }
 
   /**
@@ -84,16 +89,28 @@ public class NSSelectInfo {
    * Returns that responses that have been see for this query.
    * @return 
    */
-  public Set<JSONObject> getResponses() {
+  public Set<JSONObject> getResponsesAsSet() {
     return new HashSet<JSONObject>(responses.values());
+  }
+
+  public Map<String, JSONObject> getResponsesAsMap() {
+    return new HashMap<String, JSONObject>(responses);
   }
 
   public SelectOperation getOperation() {
     return operation;
   }
 
+  public String getQuery() {
+    return query;
+  }
+  
   public String getGuid() {
     return guid;
   }
 
+  public int getMinRefreshInterval() {
+    return minRefreshInterval;
+  }
+  
 }
