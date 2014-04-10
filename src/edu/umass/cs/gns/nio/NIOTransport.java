@@ -218,7 +218,7 @@ public class NIOTransport implements Runnable {
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
-		if(DEBUG) log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
+		//if(DEBUG) log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
 		NIOInstrumenter.incrAccepted();
 		socketChannel.configureBlocking(false);
 		socketChannel.socket().setKeepAlive(true);

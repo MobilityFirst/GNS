@@ -38,7 +38,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   private String name;
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded (default to zero)
-   * Notice that we have ONE TTL for the entire cache entry which means one TTL for the whole name records.
+   * Notice that we have ONE TTL for the entire cache entry which means one TTL for the whole name record.
    * But we keep individual timestamps for each key / value mapping.
    */
   private int timeToLiveInSeconds = GNS.DEFAULT_TTL_SECONDS;
@@ -53,11 +53,11 @@ public class CacheEntry implements Comparable<CacheEntry> {
   /**
    * A list of primary name servers for the name
    */
-  private HashSet<Integer> primaryNameServer;
+  private HashSet<Integer> primaryNameServers;
   /**
    * A list of Active Nameservers for the name.
    */
-  private Set<Integer> activeNameServer;
+  private Set<Integer> activeNameServers;
 
   /**
    * Constructs a cache entry using data from a DNS packet
@@ -78,14 +78,14 @@ public class CacheEntry implements Comparable<CacheEntry> {
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }
     // Also update this
-    this.primaryNameServer = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
+    this.primaryNameServers = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
 //    this.activeNameServer = packet.getActiveNameServers();
   }
 
   public CacheEntry(RequestActivesPacket packet) {
     this.name = packet.getName();
-    this.primaryNameServer = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
-    this.activeNameServer = packet.getActiveNameServers();
+    this.primaryNameServers = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
+    this.activeNameServers = packet.getActiveNameServers();
   }
 
 
@@ -106,7 +106,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   }
 
   public synchronized void updateCacheEntry(RequestActivesPacket packet) {
-    activeNameServer = packet.getActiveNameServers();
+    activeNameServers = packet.getActiveNameServers();
   }
 
   public synchronized void updateCacheEntry(ConfirmUpdatePacket packet) {
@@ -127,7 +127,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @return the primaryNameServer
    */
   public synchronized HashSet<Integer> getPrimaryNameServer() {
-    return primaryNameServer;
+    return primaryNameServers;
   }
 
   /**
@@ -138,7 +138,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   }
 
   public synchronized Set<Integer> getActiveNameServers() {
-    return activeNameServer;
+    return activeNameServers;
   }
 
   public synchronized ResultValue getValue(NameRecordKey key) {
@@ -190,7 +190,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @return true if a non-empty set of active name servers is stored in cache
    */
   public synchronized boolean isValidNameserver() {
-    return activeNameServer != null && activeNameServer.size() != 0;
+    return activeNameServers != null && activeNameServers.size() != 0;
   }
 
   public synchronized int timeSinceAddressCached(NameRecordKey nameRecordKey) {
@@ -202,7 +202,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   }
 
   public synchronized void invalidateActiveNameServer() {
-    activeNameServer = null;
+    activeNameServers = null;
   }
 
 
@@ -232,9 +232,9 @@ public class CacheEntry implements Comparable<CacheEntry> {
     entry.append("]");
 
     entry.append("\n    ActiveNS:[");
-    if (activeNameServer != null) {
+    if (activeNameServers != null) {
       first = true;
-      for (int id : activeNameServer) {
+      for (int id : activeNameServers) {
         if (first) {
           entry.append(id);
           first = false;

@@ -211,7 +211,7 @@ public class DNSRequestTask extends TimerTask {
     } else {
       coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(incomingPacket.getGuid(),
               cacheEntry.getActiveNameServers());
-      ns = LocalNameServer.getGnsNodeConfig().getClosestNameServer(cacheEntry.getActiveNameServers(), nameserversQueried);
+      ns = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(), nameserversQueried);
     }
     return ns;
   }

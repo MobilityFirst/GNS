@@ -79,7 +79,7 @@ public class StopActiveSetTask extends TimerTask {
       GNS.getLogger().fine("Old active name servers stopped. Version: " + oldVersion + " Old Actives : "
               + oldActiveNameServers);
     } else {
-      int selectedOldActive = rc.getGnsNodeConfig().getClosestNameServer(oldActiveNameServers, oldActivesQueried);
+      int selectedOldActive = rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
       if (selectedOldActive == -1) {
         rc.getOngoingStopActiveRequests().remove(this.requestID);
         GNS.getLogger().severe("ERROR: Old Actives not stopped and no more old active left to query. "

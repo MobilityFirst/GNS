@@ -138,13 +138,13 @@ public class SendUpdatesTask extends TimerTask {
   private int selectNS(CacheEntry cacheEntry) {
     int nameServerID;
     if (StartLocalNameServer.loadDependentRedirection) {
-      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestNameServer(cacheEntry.getActiveNameServers(),
+      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
     } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
       nameServerID = RandomReplication.getBeehiveNameServer(LocalNameServer.getGnsNodeConfig(),
               cacheEntry.getActiveNameServers(), activesQueried);
     } else {
-      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestNameServer(cacheEntry.getActiveNameServers(),
+      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
       coordinatorID = LocalNameServer.getDefaultCoordinatorReplica(name, cacheEntry.getActiveNameServers());
     }

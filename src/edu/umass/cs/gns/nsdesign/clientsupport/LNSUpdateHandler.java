@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
@@ -63,22 +64,20 @@ public class LNSUpdateHandler {
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurable activeReplica) {
-    GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
+    GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
     // activeReplica.getGNSNodeConfig() is a hack to get the first LNS
     // We need a means to find the closes LNS
-    GNS.getLogger().warning("#######FIXME!! Using stupid mechanism for picking LNS #" + activeReplica.getGNSNodeConfig().getNumberOfNameServers());
-    sendUpdateInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(),
-            name, key, newValue, oldValue, argument, operation, activeReplica);
+    sendUpdateInternal(id, LNSQueryHandler.pickClosestLNServer(activeReplica), name, key, newValue, oldValue, argument, operation, activeReplica);
     // now we wait until the packet comes back
     waitForResponsePacket(id);
     NSResponseCode result = updateResultMap.get(id);
     updateResultMap.remove(id);
     return result;
   }
-
+ 
   private static void sendUpdateInternal(int updateId, int recipientId, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurable activeReplica) {
     UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), updateId,
@@ -111,22 +110,22 @@ public class LNSUpdateHandler {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("First STS Response (" + id + ") Successful Received");
+          GNS.getLogger().fine("First Update Response (" + id + ") Successful Received");
 
           updateResultMap.put(id, packet.getResponseCode());
           monitor.notifyAll();
         } else {
-          GNS.getLogger().info("Later STS Response (" + id + ") Successful Received");
+          GNS.getLogger().fine("Later Update Response (" + id + ") Successful Received");
         }
       }
     } else {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("First STS Response (" + id + ") Error Received: " + packet.getResponseCode().toString());
+          GNS.getLogger().fine("First Error Update Response (" + id + ") Error Received: " + packet.getResponseCode().toString());
           updateResultMap.put(id, packet.getResponseCode());
           monitor.notifyAll();
         } else {
-          GNS.getLogger().info("Later STS Response (" + id + ") Error Received: " + packet.getResponseCode().toString());
+          GNS.getLogger().fine("Later Error Update Response (" + id + ") Error Received: " + packet.getResponseCode().toString());
         }
       }
     }
@@ -138,7 +137,7 @@ public class LNSUpdateHandler {
         while (!updateResultMap.containsKey(id)) {
           monitor.wait();
         }
-        GNS.getLogger().info("Query id response received: " + id);
+        GNS.getLogger().fine("Query id response received: " + id);
       }
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);

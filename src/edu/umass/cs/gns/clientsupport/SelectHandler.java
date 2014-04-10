@@ -9,6 +9,8 @@ import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONArray;
@@ -32,9 +34,9 @@ public class SelectHandler {
   private static ConcurrentMap<Integer, SelectResponsePacket> resultsMap = new ConcurrentHashMap<Integer, SelectResponsePacket>(10, 0.75f, 3);
   private static Random randomID = new Random();
   
-  public static String sendSelectRequest(SelectRequestPacket.SelectOperation operation, NameRecordKey key, Object value, Object otherValue) {
+  public static String sendSelectRequest(SelectOperation operation, NameRecordKey key, Object value, Object otherValue) {
     int id = nextRequestID();
-    return sendSelectHelper(id, new SelectRequestPacket(id, LocalNameServer.getNodeID(), operation, key, value, otherValue)); 
+    return sendSelectHelper(id, new SelectRequestPacket(id, LocalNameServer.getNodeID(), operation, GroupBehavior.NONE, key, value, otherValue)); 
   }
   
   public static String sendSelectQuery(String query) {

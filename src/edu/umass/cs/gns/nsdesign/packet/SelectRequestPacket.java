@@ -23,6 +23,11 @@ public class SelectRequestPacket extends BasicPacket {
     NEAR, // special case query for location field near point
     WITHIN, // special case query for location field within bounding box
     QUERY, // general purpose query
+  }
+  
+  public enum GroupBehavior {
+
+    NONE,        // normal query, just returns results
     GROUP_SETUP, // set up a group guid that satisfies general purpose query
     GROUP_LOOKUP; // lookup value of group guid with an associated query
   }
@@ -36,7 +41,8 @@ public class SelectRequestPacket extends BasicPacket {
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSID = "nsid";
   private final static String NSQUERYID = "nsQueryId";
-  private final static String OPERATION = "operation";
+  private final static String SELECT_OPERATION = "operation";
+  private final static String GROUP_BEHAVIOR = "group";
   private final static String GUID = "guid";
   private final static String REFRESH = "refresh";
   //
@@ -49,7 +55,8 @@ public class SelectRequestPacket extends BasicPacket {
   private int lnsQueryId = -1; // used by the local name server to maintain state
   private int nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
   private int nsQueryId = -1; // used by the name server to maintain state
-  private SelectOperation operation;
+  private SelectOperation selectOperation;
+  private GroupBehavior groupBehavior;
   // for group guid
   private String guid; // the group GUID we are maintaning or null for simple select
   private int minRefreshInterval; // minimum time between allowed refreshs of the guid
@@ -62,7 +69,7 @@ public class SelectRequestPacket extends BasicPacket {
    * @param value
    * @param lns 
    */
-  public SelectRequestPacket(int id, int lns, SelectOperation operation, NameRecordKey key, Object value, Object otherValue) {
+  public SelectRequestPacket(int id, int lns, SelectOperation selectOperation, GroupBehavior groupBehavior, NameRecordKey key, Object value, Object otherValue) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
@@ -70,18 +77,20 @@ public class SelectRequestPacket extends BasicPacket {
     this.otherValue = otherValue;
     this.lnsID = lns;
     this.nsID = -1;
-    this.operation = operation;
+    this.selectOperation = selectOperation;
+    this.groupBehavior = groupBehavior;
     this.query = null;
     this.guid = null;
   }
 
-  private SelectRequestPacket(int id, int lns, SelectOperation operation, String query, String guid, int minRefreshInterval) {
+  private SelectRequestPacket(int id, int lns, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
     this.lnsID = lns;
     this.nsID = -1;
-    this.operation = operation;
+    this.selectOperation = selectOperation;
+    this.groupBehavior = groupOperation;
     this.key = null;
     this.value = null;
     this.otherValue = null;
@@ -98,7 +107,7 @@ public class SelectRequestPacket extends BasicPacket {
    * @return 
    */
   public static SelectRequestPacket MakeQueryRequest(int id, int lns, String query) {
-    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, query, null, -1);
+    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, GroupBehavior.NONE, query, null, -1);
   }
 
   /**
@@ -112,7 +121,7 @@ public class SelectRequestPacket extends BasicPacket {
    * @return 
    */
   public static SelectRequestPacket MakeGroupSetupRequest(int id, int lns, String query, String guid, int refreshInterval) {
-    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_SETUP, query, guid, refreshInterval);
+    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, GroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
   }
   
   /**
@@ -125,7 +134,7 @@ public class SelectRequestPacket extends BasicPacket {
    * @return 
    */
   public static SelectRequestPacket MakeGroupLookupRequest(int id, int lns, String guid) {
-    return new SelectRequestPacket(id, lns, SelectOperation.GROUP_LOOKUP, null, guid, -1);
+    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, GroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
   /**
@@ -148,7 +157,8 @@ public class SelectRequestPacket extends BasicPacket {
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.nsID = json.getInt(NSID);
     this.nsQueryId = json.getInt(NSQUERYID);
-    this.operation = SelectOperation.valueOf(json.getString(OPERATION));
+    this.selectOperation = SelectOperation.valueOf(json.getString(SELECT_OPERATION));
+    this.groupBehavior = GroupBehavior.valueOf(json.getString(GROUP_BEHAVIOR));
     this.guid = json.optString(GUID, null);
     this.minRefreshInterval = json.optInt(REFRESH, -1);
   }
@@ -185,7 +195,8 @@ public class SelectRequestPacket extends BasicPacket {
     json.put(LNSQUERYID, lnsQueryId);
     json.put(NSID, nsID);
     json.put(NSQUERYID, nsQueryId);
-    json.put(OPERATION, operation.name());
+    json.put(SELECT_OPERATION, selectOperation.name());
+    json.put(GROUP_BEHAVIOR, groupBehavior.name());
     if (guid != null) {
       json.put(GUID, guid);
     }
@@ -234,8 +245,12 @@ public class SelectRequestPacket extends BasicPacket {
     return nsQueryId;
   }
   
-  public SelectOperation getOperation() {
-    return operation;
+  public SelectOperation getSelectOperation() {
+    return selectOperation;
+  }
+
+  public GroupBehavior getGroupBehavior() {
+    return groupBehavior;
   }
 
   public Object getOtherValue() {

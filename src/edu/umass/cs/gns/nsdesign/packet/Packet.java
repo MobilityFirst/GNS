@@ -547,7 +547,7 @@ public class Packet {
 
     do {
       attempt++;
-      id = gnsNodeConfig.getClosestNameServer(nameServerIds, excludeNameServer);
+      id = gnsNodeConfig.getClosestServer(nameServerIds, excludeNameServer);
       excludeNameServer.add(id);
       try {
         return Packet.sendTCPPacket(gnsNodeConfig, json, id, portType);

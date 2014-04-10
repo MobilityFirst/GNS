@@ -10,6 +10,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
@@ -30,7 +31,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ResultValue
    */
-  public static ResultValue lookupFieldOnThisNameServer(String guid, String field, GnsReconfigurable activeReplica) {
+  public static ResultValue lookupFieldOnThisServer(String guid, String field, GnsReconfigurable activeReplica) {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, field);
@@ -67,10 +68,13 @@ public class NSFieldAccess {
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    */
   public static ResultValue lookupField(String guid, String field, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
-    ResultValue result = lookupFieldOnThisNameServer(guid, field, activeReplica);
+    ResultValue result = lookupFieldOnThisServer(guid, field, activeReplica);
     // and if we're allowed, send a query to the LNS
     if (result.isEmpty() && allowQueryToOtherNSs) {
       result = lookupFieldQueryLNS(guid, field, activeReplica);
+      if (!result.isEmpty()) {
+        GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru LNS query.");
+      }
     }
     return result;
   }

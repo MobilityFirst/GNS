@@ -49,7 +49,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
       }
 
       // select old active to send request to
-      int oldActive = activeReplica.getGnsNodeConfig().getClosestNameServer(packet.getOldActiveNameServers(), oldActivesQueried);
+      int oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(), oldActivesQueried);
 
       if (oldActive == -1) {
         // this will happen after all actives have been tried at least once.

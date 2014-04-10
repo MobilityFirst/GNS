@@ -525,7 +525,7 @@ public class LocalNameServer {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
       }
-      int x = gnsNodeConfig.getClosestNameServer(primary, nameServersQueried);
+      int x = gnsNodeConfig.getClosestServer(primary, nameServersQueried);
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
       }

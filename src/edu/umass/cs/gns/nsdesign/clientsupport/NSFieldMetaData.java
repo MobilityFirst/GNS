@@ -46,7 +46,7 @@ public class NSFieldMetaData {
    * @return 
    */
   public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key, GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
-    ResultValue result = NSFieldAccess.lookupFieldOnThisNameServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
+    ResultValue result = NSFieldAccess.lookupFieldOnThisServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
     if (result != null) {
       return new HashSet(result);
     } else {

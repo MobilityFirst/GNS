@@ -51,7 +51,7 @@ public class Lookup {
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
 
-    GNS.getLogger().info("Node " + activeReplica.getNodeID() + "; DNS Packet: " + dnsPacket.toString());
+    GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; DNS Packet: " + dnsPacket.toString());
     GNSMessagingTask msgTask;
     // the only dns reponses we should see are coming in respone to LNSQueryHandler requests
     if (!dnsPacket.isQuery()) {
@@ -79,7 +79,7 @@ public class Lookup {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.getHeader().setResponseCode(errorCode);
       dnsPacket.setResponder(activeReplica.getNodeID());
-      GNS.getLogger().info("Sending to " + dnsPacket.getLnsId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+      GNS.getLogger().fine("Sending to " + dnsPacket.getLnsId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
       msgTask = new GNSMessagingTask(dnsPacket.getLnsId(), dnsPacket.toJSONObjectForErrorResponse());
 //      NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getSenderId());
     } else {
@@ -95,7 +95,7 @@ public class Lookup {
           nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, dnsFields, field);
         }
       } catch (RecordNotFoundException e) {
-        GNS.getLogger().info("Record not found for name: " + guid + " Key = " + field);
+        GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
       }
       // Now we either have a name record with stuff it in or a null one
       // Time to send something back to the client
@@ -168,25 +168,25 @@ public class Lookup {
           // Either returing one value or a bunch
           if (nameRecord.containsKey(key)) {
             dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
-            GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid);
+            GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid);
           } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + guid);
             // or we don't actually have the field
           } else { // send error msg.
-            GNS.getLogger().info("Record doesn't contain field: " + key + " name  = " + guid + " :: RECORD: " + nameRecord.toString());
+            GNS.getLogger().fine("Record doesn't contain field: " + key + " name  = " + guid + " :: RECORD: " + nameRecord.toString());
             dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
           }
           // For some reason the Guid of the packet is null
         } else { // send error msg.
-          GNS.getLogger().info("GUID of query is NULL!");
+          GNS.getLogger().fine("GUID of query is NULL!");
           dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
         }
         // we're not the correct active name server so tell the client that
       } else { // send invalid error msg.
         dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
-          GNS.getLogger().info("Invalid actives. Name = " + guid);
+          GNS.getLogger().fine("Invalid actives. Name = " + guid);
         }
       }
     } catch (FieldNotFoundException e) {

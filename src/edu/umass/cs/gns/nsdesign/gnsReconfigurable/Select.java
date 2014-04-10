@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import edu.umass.cs.gns.util.ResultValue;
 import java.util.Date;
 import java.util.HashSet;
@@ -80,7 +81,7 @@ public class Select {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
-    if (packet.getOperation().equals(SelectOperation.GROUP_LOOKUP)) {
+    if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // grab the timing parameters that we squirreled away from the SETUP
       Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica);
       int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica);
@@ -99,13 +100,14 @@ public class Select {
     }
     // the code below executes for regualr selects and also for GROUP SETUP and GROUP LOOKUP but for lookup
     // only if enough time has elapsed since last lookup (see above)
-    GNS.getLogger().info(packet.getOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
+    GNS.getLogger().info(packet.getSelectOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
     // If it's not a group lookup or is but enough time has passed we do the usual thing
     // and send the request out to all the servers. We'll get a response sent  on the flipside.
     Set<Integer> serverIds = replica.getGNSNodeConfig().getAllNameServerIDs();
     // store the info for later
-    int queryId = addQueryInfo(serverIds, packet.getOperation(), packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
-    if (packet.getOperation().equals(SelectOperation.GROUP_LOOKUP)) {
+    int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
+            packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
+    if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
       packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), replica));
     }
@@ -189,12 +191,12 @@ public class Select {
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff
-    if (info.getOperation().equals(SelectOperation.GROUP_SETUP)) {
+    if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP)) {
       // for setup we need to squirrel away the query for later lookups
       NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery(), replica);
       NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval(), replica);
     }
-    if (info.getOperation().equals(SelectOperation.GROUP_SETUP) || info.getOperation().equals(SelectOperation.GROUP_LOOKUP)) {
+    if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
       NSGroupAccess.updateMembers(guid, guids, replica);
       //NSGroupAccess.updateRecords(guid, processResponsesIntoJSONArray(info.getResponsesAsMap()), replica); 
@@ -213,13 +215,13 @@ public class Select {
     return result;
   }
 
-  private static int addQueryInfo(Set<Integer> serverIds, SelectOperation operation, String query, int minRefreshInterval, String guid) {
+  private static int addQueryInfo(Set<Integer> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     int id;
     do {
       id = randomID.nextInt();
     } while (queriesInProgress.containsKey(id));
     //Add query info
-    NSSelectInfo info = new NSSelectInfo(id, serverIds, operation, query, minRefreshInterval, guid);
+    NSSelectInfo info = new NSSelectInfo(id, serverIds, selectOperation, groupBehavior, query, minRefreshInterval, guid);
     queriesInProgress.put(id, info);
     return id;
   }
@@ -228,7 +230,7 @@ public class Select {
     JSONArray jsonRecords = new JSONArray();
     // actually only need name and values map... fix this
     BasicRecordCursor cursor = null;
-    switch (request.getOperation()) {
+    switch (request.getSelectOperation()) {
       case EQUALS:
         cursor = NameRecord.selectRecords(ar.getDB(), request.getKey().getName(), request.getValue());
         break;
@@ -248,14 +250,14 @@ public class Select {
         }
         break;
       case QUERY:
-      case GROUP_SETUP: // just like a query except we're creating a new group guid to maintain results
-      case GROUP_LOOKUP: // just like a query except we're potentially updating the group guid to maintain results
-        GNS.getLogger().info("NS" + ar.getNodeID() + " query: " + request.getQuery());
+        GNS.getLogger().fine("NS" + ar.getNodeID() + " query: " + request.getQuery());
         cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
         break;
       default:
         break;
     }
+    // think about returning a cursor that has prefetched a limited (100 which is like mongo limit)
+    // number of records in it and the ability to fetch more
     while (cursor.hasNext()) {
       jsonRecords.put(cursor.next());
     }

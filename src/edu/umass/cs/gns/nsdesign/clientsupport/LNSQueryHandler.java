@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
@@ -45,14 +46,13 @@ public class LNSQueryHandler {
    * @return the entire guid record in a QueryResult.
    */
   public static QueryResult sendQuery(String name, String key, GnsReconfigurable activeReplica) {
-    GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
+    GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
     // activeReplica.getGNSNodeConfig() is a hack to get the first LNS
     // We need a means to find the closes LNS
-    GNS.getLogger().warning("#######FIXME!! Using stupid mechanism for picking LNS #" + activeReplica.getGNSNodeConfig().getNumberOfNameServers());
-    sendQueryInternal(id, activeReplica.getGNSNodeConfig().getNumberOfNameServers(), name, key, activeReplica);
+    sendQueryInternal(id, pickClosestLNServer(activeReplica), name, key, activeReplica);
 //    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
 //      sendQueryInternal(id, server, name, key, activeReplica);
 //    }
@@ -68,7 +68,7 @@ public class LNSQueryHandler {
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + recipientId
+      GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + recipientId
               + "(" + activeReplica.getGNSNodeConfig().getNodeAddress(recipientId)
               + ":" + activeReplica.getGNSNodeConfig().getNodePort(recipientId) + ")"
               + " for " + name + " / " + key + ": " + json);
@@ -93,7 +93,7 @@ public class LNSQueryHandler {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("First success response (" + id + "): "
+          GNS.getLogger().fine("First success response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), activeReplica.getNodeID()));
@@ -106,7 +106,7 @@ public class LNSQueryHandler {
     } else {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
-          GNS.getLogger().info("First error response (" + id + "): "
+          GNS.getLogger().fine("First error response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), activeReplica.getNodeID()));
@@ -126,7 +126,7 @@ public class LNSQueryHandler {
         while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
-        GNS.getLogger().info("Query id response received: " + id);
+        GNS.getLogger().fine("Query id response received: " + id);
       }
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);
@@ -140,5 +140,17 @@ public class LNSQueryHandler {
     } while (queryResultMap.containsKey(id));
     return id;
   }
+  
+   public static int pickClosestLNServer(GnsReconfigurable activeReplica) {
+    int result = activeReplica.getGNSNodeConfig().getClosestLocalNameServer();
+    if (result != GNSNodeConfig.INVALID_NAME_SERVER_ID) {
+      return result;
+    } else {
+      GNS.getLogger().warning("Using stupid mechanism for picking LNS.");
+      // this hack picks an element from the set
+      return activeReplica.getGNSNodeConfig().getAllLocalNameServerIDs().iterator().next();
+    }
+  }
+
   public static String Version = "$Revision: 481 $";
 }

@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -18,7 +20,8 @@ public class NSSelectInfo {
   private int id;
   private Set<Integer> serversToBeProcessed; // the list of servers that have yet to be processed
   private ConcurrentHashMap<String, JSONObject> responses;
-  private SelectOperation operation;
+  private SelectOperation selectOperation;
+  private GroupBehavior groupBehavior;
   private String guid; // the group GUID we are maintaning or null for simple select
   private String query; // The string used to set up the query if applicable
   private int minRefreshInterval; // in seconds
@@ -27,12 +30,13 @@ public class NSSelectInfo {
    * @param id
    * @param serverIds 
    */
-  public NSSelectInfo(int id, Set<Integer> serverIds, SelectOperation operation, String query, int minRefreshInterval, String guid) {
+  public NSSelectInfo(int id, Set<Integer> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     this.id = id;
     this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
     this.responses = new ConcurrentHashMap<String, JSONObject>(10, 0.75f, 3);
-    this.operation = operation;
+    this.selectOperation = selectOperation;
+    this.groupBehavior = groupBehavior;
     this.query = query;
     this.guid = guid;
     this.minRefreshInterval = minRefreshInterval;
@@ -97,10 +101,14 @@ public class NSSelectInfo {
     return new HashMap<String, JSONObject>(responses);
   }
 
-  public SelectOperation getOperation() {
-    return operation;
+  public SelectOperation getSelectOperation() {
+    return selectOperation;
   }
 
+  public GroupBehavior getGroupBehavior() {
+    return groupBehavior;
+  }
+  
   public String getQuery() {
     return query;
   }

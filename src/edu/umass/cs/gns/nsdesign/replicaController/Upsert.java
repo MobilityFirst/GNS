@@ -49,7 +49,7 @@ public class Upsert {
         Set<Integer> activeNS;
         activeNS = nameRecordPrimary.getActiveNameservers();
         if (activeNS != null) {
-          activeID = replicaController.getGnsNodeConfig().getClosestNameServer(activeNS, null);
+          activeID = replicaController.getGnsNodeConfig().getClosestServer(activeNS, null);
         }
 
         if (activeID != -1) {

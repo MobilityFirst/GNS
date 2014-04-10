@@ -84,7 +84,7 @@ public class StartActiveSetTask extends TimerTask {
           GNS.getLogger().info(" Actives got accepted and replaced by new actives. Quitting. ");
         } else {
           // send request to a new active replica
-          int selectedActive = replicaController.getGnsNodeConfig().getClosestNameServer(newActiveNameServers,
+          int selectedActive = replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
                   newActivesQueried);
           if (selectedActive == -1) {
             terminateTask = true;

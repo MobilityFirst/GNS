@@ -65,7 +65,7 @@ public class NSGroupAccess {
 
   public static Date getLastUpdate(String guid, GnsReconfigurable activeReplica) {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_LAST_UPDATE, true, activeReplica);
-    GNS.getLogger().info("++++ResultValue = " +resultValue);
+    GNS.getLogger().fine("++++ResultValue = " +resultValue);
     if (!resultValue.isEmpty()) {
       return new Date(Long.parseLong((String) resultValue.get(0)));
     } else {
@@ -75,7 +75,7 @@ public class NSGroupAccess {
 
   public static int getMinRefresh(String guid, GnsReconfigurable activeReplica) {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica);
-    GNS.getLogger().info("++++ResultValue = " +resultValue);
+    GNS.getLogger().fine("++++ResultValue = " +resultValue);
     if (!resultValue.isEmpty()) {
       return Integer.parseInt((String) resultValue.get(0));
     } else {
@@ -85,7 +85,7 @@ public class NSGroupAccess {
   
   public static String getQueryString(String guid, GnsReconfigurable activeReplica) {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_QUERY_STRING, true, activeReplica);
-    GNS.getLogger().info("++++ResultValue = " +resultValue);
+    GNS.getLogger().fine("++++ResultValue = " +resultValue);
     if (!resultValue.isEmpty()) {
       return (String) resultValue.get(0);
     } else {
