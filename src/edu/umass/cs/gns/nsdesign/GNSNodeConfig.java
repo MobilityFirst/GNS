@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentMap;
 public class GNSNodeConfig implements NodeConfig {
 
   public static final long INVALID_PING_LATENCY = -1L;
+  
+  public static final int INVALID_NAME_SERVER_ID = -1;
 
   /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
@@ -41,9 +43,14 @@ public class GNSNodeConfig implements NodeConfig {
   private ConcurrentMap<Integer, HostInfo> hostInfoMapping =
           new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
   /**
-   * A subset of the above with just the ids of the nameservers, not the LNSs
+   * A subset of hostInfoMapping with just the ids of the nameservers, not the LNSs
    */
   private ConcurrentMap<Integer, Integer> nameServerMapping =
+          new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
+  /**
+   * A subset hostInfoMapping with just the ids of the Local Name Server, not the NSs
+   */
+  private ConcurrentMap<Integer, Integer> localNameServerMapping =
           new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
   /**
    * Number of name server in the system 
@@ -87,7 +94,6 @@ public class GNSNodeConfig implements NodeConfig {
     }
 
     int nameServerCount = 0;
-    long smallestPingLatency = Long.MAX_VALUE;
 
     try {
       while (br.ready()) {
@@ -130,12 +136,9 @@ public class GNSNodeConfig implements NodeConfig {
                 || isNameServerString.startsWith("TRUE")) {
           nameServerMapping.put(id, id);
           nameServerCount++;
-          //Update the id closest name server
-          if (pingLatency >= 0 && pingLatency < smallestPingLatency) {
-            smallestPingLatency = pingLatency;
-//            closestNameServer = id;
-          }
-        } 
+        } else {
+          localNameServerMapping.put(id, id);
+        }
         InetAddress ipAddress = null;
         try {
           ipAddress = InetAddress.getByName(ipAddressString);
@@ -161,8 +164,6 @@ public class GNSNodeConfig implements NodeConfig {
 
     GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
     numberOfNameServers = nameServerCount;
-//    GNS.getLogger().fine("Closest name server is " + closestNameServer);
-    //    System.exit(2);
   }
 
   public void addHostInfo(int id, InetAddress ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
@@ -182,40 +183,16 @@ public class GNSNodeConfig implements NodeConfig {
     return hostInfoMapping.size();
   }
 
-  /**
-   * Returns the name server with lowest latency.
-   *
-   * @return the closestNameServer
-   */
-  public int getClosestNameServer() {
-    int minNS = -1;
-    long pingLatency = Long.MAX_VALUE;
-    for (int ns: getAllNameServerIDs()) {
-      if (getPingLatency(ns) != INVALID_PING_LATENCY && (minNS == -1 || getPingLatency(ns) < pingLatency)) {
-        minNS = ns;
-        pingLatency = getPingLatency(ns);
-      }
-    }
-    return minNS;
-  }
-
-  /**
-   * ONLY TO BE USED FOR TESTING PURPOSES!!
-   *
-   * @param numberOfNameServers
-   */
-  public void setNumberOfNameServers(int numberOfNameServers) {
-    this.numberOfNameServers = numberOfNameServers;
-  }
-
   public Set<Integer> getAllHostIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
 
   public Set<Integer> getAllNameServerIDs() {
-    //      HashSet<Integer> x  = new HashSet<Integer>();
-    //    x.add(1);x.add(2);return x;
     return ImmutableSet.copyOf(nameServerMapping.keySet());
+  }
+  
+  public Set<Integer> getAllLocalNameServerIDs() {
+    return ImmutableSet.copyOf(localNameServerMapping.keySet());
   }
 
   public boolean isNameServer(int id) {
@@ -351,8 +328,8 @@ public class GNSNodeConfig implements NodeConfig {
   /**
    * Returns the IP address of a name server.
    *
-   * @param id Nameserver id
-   * @return IP address of a nameserver
+   * @param id Server id
+   * @return IP address of a server
    */
   public InetAddress getIPAddress(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -360,9 +337,9 @@ public class GNSNodeConfig implements NodeConfig {
   }
 
   /**
-   * Returns the ping latency between a local namserver and a nameserver.
+   * Returns the ping latency between two servers
    *
-   * @param id Nameserver id
+   * @param id Server id
    */
   public long getPingLatency(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -398,43 +375,66 @@ public class GNSNodeConfig implements NodeConfig {
     }
     return this.getLNSTcpPort(ID);
   }
-
-  public int getClosestNameServer(Set<Integer> nameServers, Set<Integer> excludeNameServers) {
-    if (nameServers == null) {
-      return -1;
+  
+  /**
+   * Returns the Name Server (not including Local Name Servers) with lowest latency.
+   *
+   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
+   */
+  public int getClosestNameServer() {
+    return getClosestServer(getAllNameServerIDs());
+  }
+  
+  /**
+   * Returns the Local Name Server (not including Name Servers) with lowest latency.
+   * 
+   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
+   */
+  public int getClosestLocalNameServer() {
+    return getClosestServer(getAllLocalNameServerIDs());
+  }
+  
+  /**
+   * Selects the closest Name Server from a set of Name Servers.
+   * 
+   * @param servers
+   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
+   */
+  public int getClosestServer(Set<Integer> servers) {
+    return GNSNodeConfig.this.getClosestServer(servers, null);
+  }
+  
+  /**
+   * Selects the closest Name Server from a set of Name Servers.
+   * excludeNameServers is a set of Name Servers from the first list to not consider.
+   * 
+   * @param serverIds
+   * @param excludeServers
+   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
+   */
+  public int getClosestServer(Set<Integer> serverIds, Set<Integer> excludeServers) {
+    if (serverIds == null) {
+      return INVALID_NAME_SERVER_ID;
     }
-
-//    if (nameServers.contains(getClosestNameServer())
-//            && excludeNameServers != null && !excludeNameServers.contains(getClosestNameServer())
-//            && getPingLatency(getClosestNameServer()) >= 0) {
-//      return getClosestNameServer();
-//    }
     long lowestLatency = Long.MAX_VALUE;
-    int nameServerID = -1;
-    long pingLatency;
-    for (Integer nsID : nameServers) {
-      if (excludeNameServers != null && excludeNameServers.contains(nsID)) {
+    int nameServerID = INVALID_NAME_SERVER_ID;
+    for (Integer serverId : serverIds) {
+      if (excludeServers != null && excludeServers.contains(serverId)) {
         continue;
       }
-      pingLatency = getPingLatency(nsID);
+      long pingLatency = getPingLatency(serverId);
       if (pingLatency >= 0 && pingLatency < lowestLatency) {
         lowestLatency = pingLatency;
-        nameServerID = nsID;
+        nameServerID = serverId;
       }
     }
     return nameServerID;
   }
-
-
+  
   /**
    * Tests *
    */
   public void main(String[] args) throws Exception {
-    //		ConfigFileInfo.readNameServerInfoLocal( "/Users/hardeep/Desktop/Workspace/GNRS/ns1" );
-    //		System.out.println( ConfigFileInfo.nameServerInfoMapping.toString() );
-    //		System.out.println( ConfigFileInfo.numberOfNameServer );
-    //		System.out.println( ConfigFileInfo.closestNameServer );
-
     GNSNodeConfig GNSNodeConfig = new GNSNodeConfig("name-server-info", 44);
     System.out.println(GNSNodeConfig.hostInfoMapping.toString());
     System.out.println(GNSNodeConfig.getNumberOfNameServers());
@@ -448,7 +448,7 @@ public class GNSNodeConfig implements NodeConfig {
     nameservers.add(59);
     Set<Integer> nameserverQueried = new HashSet<Integer>();
     nameserverQueried.add(8);
-    System.out.println(getClosestNameServer(nameservers, null));
+    System.out.println(GNSNodeConfig.this.getClosestServer(nameservers, null));
   }
 
 
