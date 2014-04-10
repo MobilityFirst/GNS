@@ -240,6 +240,7 @@ public class EC2Installer {
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
           + "yum --quiet --assumeyes install emacs\n" // for debugging
+          + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
           + "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
           + "name=10gen Repository\n"
           + "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n"
