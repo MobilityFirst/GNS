@@ -5,16 +5,16 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.nsdesign.replicationframework.RandomReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
-import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -158,7 +158,7 @@ public class DNSRequestTask extends TimerTask {
             receivedTime, -1, "NA", lookupNumber, incomingPacket, numInvalidActiveError);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();
-    GNS.getStatLogger().info("Success-LookupRequest\t" + stats);
+    GNS.getStatLogger().info("Success-Lookup\t" + stats);
     if (GNS.getLogger().isLoggable(Level.FINER)) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().finer(LocalNameServer.cacheLogString("LNS CACHE: "));

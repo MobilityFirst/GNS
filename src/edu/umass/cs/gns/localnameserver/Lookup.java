@@ -10,11 +10,9 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
-import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -92,7 +90,8 @@ public class Lookup {
       if (random.nextDouble() < StartLocalNameServer.outputSampleRate) {
         query.setRecvTime(System.currentTimeMillis());
         String stats = query.getLookupStats();
-        GNS.getStatLogger().fine("Success-LookupRequest\t" + stats);;
+        GNS.getStatLogger().fine("Success-Lookup\t" + stats);
+        // todo make a single method for returning log message for a lookup request.
       }
 
       if (StartLocalNameServer.adaptiveTimeout) {

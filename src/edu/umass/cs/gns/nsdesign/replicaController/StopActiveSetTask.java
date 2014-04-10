@@ -41,9 +41,6 @@ public class StopActiveSetTask extends TimerTask {
 
   /**
    * Constructor object
-   *
-   * @param name
-   * @param oldActiveNameServers
    */
   public StopActiveSetTask(String name, Set<Integer> oldActiveNameServers, int oldVersion, PacketType packetType,
                            BasicPacket clientPacket, ReplicaController rc) {
@@ -89,13 +86,10 @@ public class StopActiveSetTask extends TimerTask {
                 + "Old Active name servers queried: " + oldActivesQueried + ". Old Version " + oldVersion);
       } else {
         oldActivesQueried.add(selectedOldActive);
-
         GNS.getLogger().fine(" Old Active Name Server Selected to Query: " + selectedOldActive);
-
-        OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, requestID, rc.getNodeID(),
-                selectedOldActive, oldVersion, packetType);
+        OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, requestID, rc.getNodeID(), selectedOldActive,
+                oldVersion, packetType);
         GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
-
         try {
           msgTask = new GNSMessagingTask(selectedOldActive, packet.toJSONObject());
         } catch (JSONException e) {

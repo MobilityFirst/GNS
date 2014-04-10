@@ -136,6 +136,8 @@ public class NameServer implements NameServerInterface {
     } else {
       PaxosConfig paxosConfig = new PaxosConfig();
       paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
+      paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
+      paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);
       replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
               new NSNodeConfig(gnsNodeConfig), rc, paxosConfig);
     }

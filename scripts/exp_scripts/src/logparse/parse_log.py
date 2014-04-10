@@ -543,8 +543,9 @@ def get_latencies(filecount, filename, hostname, filter=None):
             #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
             #        continue
             try:
-                ns = int(tokens[7])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
-                host_tuples.append([name, this_local_name_server, ns, 0, -1.0, 'rf', cur_time - first_start, 0, 0, 0])
+                ns = int(tokens[8])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
+                latency1 = int(tokens[5])
+                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'rf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -554,8 +555,9 @@ def get_latencies(filecount, filename, hostname, filter=None):
             #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
             #        continue
             try:
-                ns = int(tokens[8])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
-                host_tuples.append([name, this_local_name_server, ns, 0, -1.0, 'wf', cur_time - first_start, 0, 0, 0])
+                ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
+                latency1 = int(tokens[2])
+                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'wf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -565,8 +567,9 @@ def get_latencies(filecount, filename, hostname, filter=None):
             #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
             #        continue
             try:
-                ns = int(tokens[8])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
-                host_tuples.append([name, this_local_name_server, ns, 0, -1.0, 'af', cur_time - first_start, 0, 0, 0])
+                ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
+                latency1 = int(tokens[2])
+                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'af', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -576,8 +579,9 @@ def get_latencies(filecount, filename, hostname, filter=None):
             #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
             #        continue
             try:
-                ns = int(tokens[8])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
-                host_tuples.append([name, this_local_name_server, ns, 0, -1.0, 'df', cur_time - first_start, 0, 0, 0])
+                ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
+                latency1 = int(tokens[2])
+                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'df', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -664,8 +668,9 @@ def output_latency_stats(output_dir):
     #get_start_end_times(all_tuples, os.path.join(output_dir,'start_end_times.txt'))
 
     # output key stats : mean-latency, median-write-latency-etc.
-    latency_tuples = get_latency_stats_tuples(latencies, read_latencies, write_latencies, add_latencies,
-                                              remove_latencies, ping_latencies)
+    latency_tuples = get_latency_stats_tuples()
+    # latencies, read_latencies, write_latencies, add_latencies,
+    #                                           remove_latencies, ping_latencies
     write_tuple_array(latency_tuples, os.path.join(output_dir, 'latency_stats.txt'), p=True)
     os.system('cat ' + os.path.join(output_dir, 'latency_stats.txt'))
 
@@ -743,7 +748,7 @@ def write_tuple_array1(tuple_array, output_file, p=False):
         print "Output File:", output_file
 
 
-def get_latency_stats_tuples(latencies, read_latencies, write_latencies, add_latencies, remove_latencies, ping_latencies):
+def get_latency_stats_tuples():
     """returns key stats (mean, median etc) for read, write and (read + write)."""
     kv_tuples = []
 
@@ -754,6 +759,10 @@ def get_latency_stats_tuples(latencies, read_latencies, write_latencies, add_lat
     kv_tuples.extend(get_stat_in_tuples(get_all_values(remove_latencies), 'remove'))
     kv_tuples.extend(get_stat_in_tuples(ping_latencies, 'ping'))
     kv_tuples.extend(get_stat_in_tuples(closest_ns_latencies, 'closest_ns'))
+    kv_tuples.extend(get_stat_in_tuples(get_failed_read_latencies(), 'failed_read'))
+    kv_tuples.extend(get_stat_in_tuples(get_failed_write_latencies(), 'failed_write'))
+    kv_tuples.extend(get_stat_in_tuples(get_failed_add_latencies(), 'failed_add'))
+    kv_tuples.extend(get_stat_in_tuples(get_failed_remove_latencies(), 'failed_remove'))
 
     avg_processing_delay = 0
     if len(all_tuples) > 0:
@@ -867,6 +876,38 @@ def get_failed_remove_count():
         if t[5] == 'df':
             retrans += 1
     return retrans
+
+
+def get_failed_read_latencies():
+    latencies = []
+    for t in all_tuples:
+        if t[5] == 'rf':
+            latencies.append(t[4])
+    return latencies
+
+
+def get_failed_write_latencies():
+    latencies = []
+    for t in all_tuples:
+        if t[5] == 'wf':
+            latencies.append(t[4])
+    return latencies
+
+
+def get_failed_add_latencies():
+    latencies = []
+    for t in all_tuples:
+        if t[5] == 'af':
+            latencies.append(t[4])
+    return latencies
+
+
+def get_failed_remove_latencies():
+    latencies = []
+    for t in all_tuples:
+        if t[5] == 'df':
+            latencies.append(t[4])
+    return latencies
 
 
 def plot(output_dir):

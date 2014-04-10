@@ -21,23 +21,23 @@ import java.util.concurrent.TimeUnit;
 
 public class RequestGenerator {
 
-  public  void generateRequests(List<TestRequest> testRequest, ProbabilityDistribution probDistribution,
+  public  void generateRequests(List<TestRequest> requests, ProbabilityDistribution probDistribution,
                                 ScheduledThreadPoolExecutor executorService) {
-    if (testRequest == null) {
+    if (requests == null) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Request trace is null. Scheduler returning.");
       }
       return;
     }
     if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Number of requests:" + testRequest.size());
+      GNS.getLogger().fine("Number of requests:" + requests.size());
     }
 //    ExponentialDistribution exponentialDistribution = new ExponentialDistribution(requestRateMillis);
 
-    double expectedDurationSec = (testRequest.size() * probDistribution.getMean()) / 1000;
+    double expectedDurationSec = (requests.size() * probDistribution.getMean()) / 1000;
 
     String msg = "SendRequestStart Expected-Duration " + expectedDurationSec
-            + " Number-Requests " + testRequest.size();
+            + " Number-Requests " + requests.size();
     GNS.getStatLogger().fine(msg);
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine(msg);
@@ -49,22 +49,27 @@ public class RequestGenerator {
     List<Double> delays = new ArrayList<Double>();
     List<TimerTask> tasks = new ArrayList<TimerTask>();
     int count = 0;
-    for (TestRequest u : testRequest) {
+    for (TestRequest r : requests) {
+      if (r.type == TestRequest.DELAY) {     // delay
+        delay += Integer.parseInt(r.name);  // the name field conceals the delay that we want to introduce
+                                            // between the previous and next request.
+        continue;
+      }
       count++;
-      if (u.type == TestRequest.LOOKUP) {
-        tasks.add(new GenerateLookupRequest(u.name, count, lnsPacketDemultiplexer));
-      }else if (u.type == TestRequest.UPDATE) {
-        tasks.add(new GenerateUpdateRequest(u.name, count, lnsPacketDemultiplexer));
-      } else if (u.type == TestRequest.ADD) {
-        tasks.add(new GenerateAddRequest(u.name, count, lnsPacketDemultiplexer));
-      } else if (u.type == TestRequest.REMOVE) {
-        tasks.add(new GenerateRemoveRequest(u.name, count, lnsPacketDemultiplexer));
+      if (r.type == TestRequest.LOOKUP) {
+        tasks.add(new GenerateLookupRequest(r.name, count, lnsPacketDemultiplexer));
+      }else if (r.type == TestRequest.UPDATE) {
+        tasks.add(new GenerateUpdateRequest(r.name, count, lnsPacketDemultiplexer));
+      } else if (r.type == TestRequest.ADD) {
+        tasks.add(new GenerateAddRequest(r.name, count, lnsPacketDemultiplexer));
+      } else if (r.type == TestRequest.REMOVE) {
+        tasks.add(new GenerateRemoveRequest(r.name, count, lnsPacketDemultiplexer));
       }
       delays.add(delay);
       delay += probDistribution.getNextArrivalDelay();
     }
     long t0 = System.currentTimeMillis();
-    for (int i = 0; i < testRequest.size(); i++) {
+    for (int i = 0; i < requests.size(); i++) {
       executorService.schedule(tasks.get(i), (long) delays.get(i).intValue(), TimeUnit.MILLISECONDS);
     }
     long t1 = System.currentTimeMillis();

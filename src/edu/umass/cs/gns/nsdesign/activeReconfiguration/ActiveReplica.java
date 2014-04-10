@@ -63,6 +63,8 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
 
     PaxosConfig paxosConfig = new PaxosConfig();
+    paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
+    paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);
     paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/gnsReconfigurable");
     this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
 

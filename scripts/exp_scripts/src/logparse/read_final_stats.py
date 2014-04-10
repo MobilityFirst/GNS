@@ -36,6 +36,11 @@ class FinalStats:
     add_perc90 = None
     remove_perc90 = None
 
+    failed_read_perc90 = None
+    failed_write_perc90 = None
+    failed_add_perc90 = None
+    failed_remove_perc90 = None
+
     def __init__(self, stats_folder):
         summary_file = os.path.join(stats_folder, 'summary.txt')
         if os.path.exists(summary_file):
@@ -62,6 +67,15 @@ class FinalStats:
                 self.add_perc90 = float(keys_values['addperc90'])
             if 'removeeperc90' in keys_values:
                 self.remove_perc90 = float(keys_values['removeperc90'])
+
+            if 'failed_readperc90' in keys_values:
+                self.failed_read_perc90 = float(keys_values['failed_readperc90'])
+            if 'failed_writeperc90' in keys_values:
+                self.failed_write_perc90 = float(keys_values['failed_writeperc90'])
+            if 'failed_addeperc90' in keys_values:
+                self.failed_add_perc90 = float(keys_values['failed_addperc90'])
+            if 'failed_removeeperc90' in keys_values:
+                self.failed_remove_perc90 = float(keys_values['failed_removeperc90'])
 
 
 

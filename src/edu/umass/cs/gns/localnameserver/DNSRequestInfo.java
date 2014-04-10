@@ -67,6 +67,7 @@ public class DNSRequestInfo {
             + recordKey + "\t"
             + name + "\t"
             + transmissionCount + "\t"
+            + (System.currentTimeMillis() - receivedTime) + "\t"
             + receivedTime + "\t"
             + numRestarts + "\t"
             + coordinatorID + "\t"

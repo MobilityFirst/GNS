@@ -65,10 +65,9 @@ public class UpdateInfo {
   }
 
   public synchronized String getUpdateStats(ConfirmUpdatePacket confirmPkt) {
-    long latency = System.currentTimeMillis() - sendTime;
+    int latency = (int)(System.currentTimeMillis() - sendTime);
     int numTransmissions = 0;
-
-    String success = confirmPkt.isSuccess() ?"Success" : "Failed";
+    String success = confirmPkt.isSuccess() ? "Success" : "Failed";
     String requestType = null;
     if (confirmPkt.getType().equals(Packet.PacketType.CONFIRM_ADD))
       requestType = success + "-Add";
@@ -76,9 +75,41 @@ public class UpdateInfo {
       requestType = success + "-Remove";
     else if (confirmPkt.getType().equals(Packet.PacketType.CONFIRM_UPDATE))
       requestType = success + "-Update";
-    return requestType + "\t" + name + "\t" + latency
-            + "\t" + numTransmissions + "\t" + nameserverID
-            + "\t" + LocalNameServer.getNodeID() + "\t" + confirmPkt.getRequestID() + "\t" + numInvalidActiveError + "\t" + System.currentTimeMillis();
+    return getFinalString(requestType, name, latency, numTransmissions, nameserverID, LocalNameServer.getNodeID(),
+            confirmPkt.getRequestID(), numInvalidActiveError, System.currentTimeMillis());
+//    return requestType + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameserverID
+//            + "\t" + LocalNameServer.getNodeID() + "\t" + confirmPkt.getRequestID() + "\t" + numInvalidActiveError
+//            + "\t-1" + "\t" + System.currentTimeMillis();
+  }
+
+  public synchronized String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID,
+                                                  int coordinatorID) {
+    // todo fix three different methods here: also include coordinator ID if needed
+    String requestType = "Update";
+    if (basicPacket.getType().equals(Packet.PacketType.ADD_RECORD)) requestType = "Add";
+    else if (basicPacket.getType().equals(Packet.PacketType.REMOVE_RECORD)) requestType = "Remove";
+    int latency = (int) (System.currentTimeMillis() - sendTime);
+    return  getFinalString("Failed-"+ requestType + "NoActiveResponse", name, latency, activesQueried.size(), -1,
+            LocalNameServer.getNodeID(), requestID, numInvalidActiveError, System.currentTimeMillis());
+  }
+
+  public static String getUpdateFailedStats(String name, Set<Integer> activesQueried, int lnsID, int requestID,
+                                            long sendTime, int numRestarts, int coordinatorID, Packet.PacketType packetType) {
+    String requestType = "Update";
+    if (packetType.equals(Packet.PacketType.ADD_RECORD)) requestType = "Add";
+    else if (packetType.equals(Packet.PacketType.REMOVE_RECORD)) requestType = "Remove";
+    String queryStatus = "Failed-"+ requestType + "NoActiveResponse";
+    if (activesQueried.size() == 0) queryStatus = "Failed-"+ requestType + "NoPrimaryResponse";
+    int latency = (int)(System.currentTimeMillis() - sendTime);
+    return  getFinalString(queryStatus, name, latency, 0, -1, LocalNameServer.getNodeID(), requestID, numRestarts,
+            System.currentTimeMillis());
+  }
+
+  private static String getFinalString(String queryStatus, String name, int latency, int numTransmissions,
+                                       int nameServerID, int lnsID, int requestID, int numInvalidActiveError,
+                                       long curTime) {
+    return queryStatus + "\t" + name  + "\t" + latency  + "\t" + numTransmissions  + "\t" + nameServerID  + "\t" +
+            lnsID  + "\t" + requestID  + "\t" + numInvalidActiveError  + "\t" + curTime;
   }
 
 
@@ -98,32 +129,6 @@ public class UpdateInfo {
     return System.currentTimeMillis() - sendTime;
   }
 
-
-  public synchronized String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID,
-                                                  int coordinatorID) {
-    String requestType = "Update";
-    if (basicPacket.getType().equals(Packet.PacketType.ADD_RECORD)) requestType = "Add";
-    else if (basicPacket.getType().equals(Packet.PacketType.REMOVE_RECORD)) requestType = "Remove";
-    long latency = System.currentTimeMillis() - sendTime;
-    return  "Failed-"+ requestType + "NoActiveResponse\t" + name + "\t" + latency + "\t" + activesQueried.size() +
-            "\t" + activesQueried + "\t" + lnsID + "\t" + requestID + "\t" + numInvalidActiveError + "\t" +
-            coordinatorID + "\t" + System.currentTimeMillis();
-  }
-
-  public static String getUpdateFailedStats(String name, Set<Integer> activesQueried, int lnsID, int requestID,
-                                            long sendTime, int numRestarts, int coordinatorID, Packet.PacketType packetType) {
-    String requestType = "Update";
-    if (packetType.equals(Packet.PacketType.ADD_RECORD)) requestType = "Add";
-    else if (packetType.equals(Packet.PacketType.REMOVE_RECORD)) requestType = "Remove";
-    String queryStatus = "Failed-"+ requestType + "NoActiveResponse";
-    if (activesQueried.size() == 0) queryStatus = "Failed-"+ requestType + "NoPrimaryResponse";
-
-    long latency = System.currentTimeMillis() - sendTime;
-    return queryStatus + "\t" + name + "\t" + latency + "\t" + activesQueried.size() + "\t" + activesQueried +
-            "\t" + lnsID + "\t" + requestID + "\t" + numRestarts + "\t" + coordinatorID + "\t" +
-            System.currentTimeMillis();
-
-  }
 
   /**
    * @return the basicPacket

@@ -23,6 +23,6 @@ set xlabel "Latency (ms)"
 set ylabel "CDF"
 set yrange[0:1]
 set ytics 0.2
-set output "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/mean_by_name.pdf"
-plot  "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/cdf_5_all_by_name.txt" u 2:1 w l lw 6 t "ALL", "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/cdf_5_writes_by_name.txt" u 2:1 w l lw 6 t "WRITES", "/Users/abhigyan/Documents/workspace/GNSev/local/log_local_stats/cdf_5_reads_by_name.txt" u 2:1 w l lw 6 t "READS";
+set output "/Users/abhigyan/Documents/workspace/GNS/test_output/log_local_stats/mean_by_name.pdf"
+plot  "/Users/abhigyan/Documents/workspace/GNS/test_output/log_local_stats/cdf_5_all_by_name.txt" u 2:1 w l lw 6 t "ALL", "/Users/abhigyan/Documents/workspace/GNS/test_output/log_local_stats/cdf_5_writes_by_name.txt" u 2:1 w l lw 6 t "WRITES", "/Users/abhigyan/Documents/workspace/GNS/test_output/log_local_stats/cdf_5_reads_by_name.txt" u 2:1 w l lw 6 t "READS";
 

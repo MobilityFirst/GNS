@@ -53,7 +53,7 @@ experiment_run_time = -1    # duration of experiment (seconds)
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
 ns_sleep = 2      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
-extra_wait = 5   # extra wait time after LNS sends all requests
+extra_wait = 10   # extra wait time after LNS sends all requests
 
 failed_nodes = None   # NOT used
 
@@ -83,18 +83,22 @@ primary_name_server = 3  # number of primary name servers
 scheme = 'locality'         # 'locality' is for auspice
 schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_all': 4}
 
+
+
 #
 #
 # name server parameters
 replication_interval = 10000   # interval (in sec) at which group changes are done.
-
+failure_detection_msg_interval = 10
+failure_detection_timeout_interval = 30
 name_actives = ''  # NOT used
+
 
 #
 #
 # local name server parameters
-queryTimeout = 300   # ms    # timeout value for a query (lookup/update)
-maxQueryWaitTime = 2000  # ms  #  maximum wait time after which a query is declared failed
+queryTimeout = 1000   # ms    # timeout value for a query (lookup/update)
+maxQueryWaitTime = 5000  # ms  #  maximum wait time after which a query is declared failed
 
 #
 #
@@ -104,15 +108,13 @@ variation = 0.1
 emulation_type = CONSTANT_DELAY
 const_latency_value = DEFAULT_CONST_DELAY
 
-
 load_balancing = False  # Redirect to closest name server based on (RTT + server-load)
-
 
 #
 # logging options
-nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'SEVERE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'SEVERE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 
@@ -176,6 +178,23 @@ def initialize(filename):
         global is_experiment_mode
         is_experiment_mode = bool(parser.get(ConfigParser.DEFAULTSECT, 'is_experiment_mode'))
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'failed_nodes'):  # multiple failed nodes are concatenated by ':'
+        global failed_nodes
+        failed_nodes = parser.get(ConfigParser.DEFAULTSECT, 'failed_nodes').split(':')
+        failed_nodes = [int(x) for x in failed_nodes]
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'failure_detection_msg_interval'):
+        global failure_detection_msg_interval
+        failure_detection_msg_interval = int(parser.get(ConfigParser.DEFAULTSECT, 'failure_detection_msg_interval'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'failure_detection_timeout_interval'):
+        global failure_detection_timeout_interval
+        failure_detection_timeout_interval = int(parser.get(ConfigParser.DEFAULTSECT,
+                                                            'failure_detection_timeout_interval'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_sleep'):
+        global ns_sleep
+        ns_sleep = int(parser.get(ConfigParser.DEFAULTSECT, 'ns_sleep'))
 
 
 

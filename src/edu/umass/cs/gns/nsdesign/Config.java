@@ -36,8 +36,8 @@ public class Config {
 
 
   // paxos parameters
-  public static int failureDetectionTimeoutInterval = 30000;
-  public static int failureDetectionPingInterval = 10000;
+  public static int failureDetectionTimeoutSec = 30000;
+  public static int failureDetectionPingSec = 10000;
   public static String paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
 
   public static DataStoreType dataStore = DataStoreType.MONGO;
@@ -86,6 +86,14 @@ public class Config {
       paxosLogFolder = allValues.get(NSParameterNames.PAXOS_LOG_FOLDER);
     } else {
       paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
+    }
+
+    if (allValues.containsKey(NSParameterNames.FAILURE_DETECTION_MSG_INTERVAL)) {
+      failureDetectionPingSec = Integer.parseInt(allValues.get(NSParameterNames.FAILURE_DETECTION_MSG_INTERVAL));
+    }
+
+    if (allValues.containsKey(NSParameterNames.FAILURE_DETECTION_TIMEOUT_INTERVAL)) {
+      failureDetectionTimeoutSec = Integer.parseInt(allValues.get(NSParameterNames.FAILURE_DETECTION_TIMEOUT_INTERVAL));
     }
 
     if (allValues.containsKey(NSParameterNames.SINGLE_NS)) {

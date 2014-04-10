@@ -42,9 +42,9 @@ public class LocalNameServer {
    * Local Name Server ID *
    */
   private static int nodeID;
+
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
-   *
    */
   private static ConcurrentMap<Integer, DNSRequestInfo> requestTransmittedMap;
   private static ConcurrentMap<Integer, UpdateInfo> updateTransmittedMap;

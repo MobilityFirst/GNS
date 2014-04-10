@@ -44,7 +44,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
   public WriteActiveNameServersRunningTask(String name, int version, ReplicaController replicaController) {
     this.name = name;
     this.version = version;
-    int timeout = Config.failureDetectionTimeoutInterval;
+    int timeout = Config.failureDetectionTimeoutSec;
     if (timeout != -1) MAX_RETRY = (int)(timeout * 2.0 / ReplicaController.RC_TIMEOUT_MILLIS );
     this.replicaController = replicaController;
   }
