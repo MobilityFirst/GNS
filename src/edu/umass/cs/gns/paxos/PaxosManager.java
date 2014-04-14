@@ -31,7 +31,7 @@ public class PaxosManager extends AbstractPaxosManager {
   /**
    * Total number of nodes. node IDs = 0, 1, ..., N -1
    */
-  private  int N;
+//  private  int N;
 
   /**
    * nodeID of this node. Among node IDs = 0, 1, ..., (N - 1).
@@ -56,7 +56,7 @@ public class PaxosManager extends AbstractPaxosManager {
    * request would have needed an additional database lookup to find what the current X is for this name.
    *
    */
-  ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
+  final ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances;
 
   Replicable clientRequestHandler;
 
@@ -70,12 +70,12 @@ public class PaxosManager extends AbstractPaxosManager {
   /**
    * Paxos logs are garbage collected at this interval
    */
-  private static long PAXOS_LOG_STATE_INTERVAL_SEC = 100000;
+  static long PAXOS_LOG_STATE_INTERVAL_SEC = 100000;
 
   /**
    * Redundant paxos logs are checked and deleted at this interval.
    */
-  private static long PAXOS_LOG_DELETE_INTERVAL_SEC = 100000;
+  static long PAXOS_LOG_DELETE_INTERVAL_SEC = 100000;
 
   /**
    * Minimum interval (in milliseconds) between two garbage state collections of replicas.
@@ -111,7 +111,6 @@ public class PaxosManager extends AbstractPaxosManager {
                               Replicable outputHandler, PaxosConfig paxosConfig) {
 //    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
 
-    this.N =  nodeConfig.getNodeCount();
     this.executorService = new ScheduledThreadPoolExecutor(2);
     this.nodeID = nodeID;
     this.nioServer = nioServer;
@@ -126,13 +125,15 @@ public class PaxosManager extends AbstractPaxosManager {
     long t1 = System.currentTimeMillis();
     GNS.getLogger().info("Time to recover paxos logs ... " + (t1 - t0)/1000 + " seconds");
     if (myPaxosInstances != null) paxosInstances = myPaxosInstances;
+    else  paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
+
     paxosLogger.start();
     if (debugMode) GNS.getLogger().fine("Paxos instances: " + paxosInstances.size());
 
     GNS.getLogger().info("Paxos manager initialization complete");
 
-    failureDetection = new FailureDetection(N, nodeID, executorService, this, paxosConfig.getFailureDetectionPingMillis(),
-            paxosConfig.getFailureDetectionTimeoutMillis());
+    failureDetection = new FailureDetection(nodeConfig.getNodeIDs(), nodeID, executorService, this,
+            paxosConfig.getFailureDetectionPingMillis(), paxosConfig.getFailureDetectionTimeoutMillis());
     startAllPaxosReplicas();
     startPaxosMaintenanceActions();
     initialized = true;
@@ -147,15 +148,18 @@ public class PaxosManager extends AbstractPaxosManager {
 
 //    debug = true;
     TestConfig testConfig1 = new TestConfig(testConfigFile);
-    this.N = testConfig1.numPaxosReplicas;
+//    this.N = testConfig1.numPaxosReplicas;
+    Set<Integer> nodeIDs = new HashSet<Integer>();
+    for (int i = 0; i < testConfig1.numPaxosReplicas; i++)
+      nodeIDs.add(i);
     this.nodeID = nodeID;
 
     this.nioServer =  initTransport(testConfig1.numPaxosReplicas + 1,  testConfig1.startingPort);
 
     this.clientRequestHandler = new DefaultPaxosInterface(nodeID, nioServer);
-
+    this.paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
     this.executorService = new ScheduledThreadPoolExecutor(testConfig1.maxThreads);
-    failureDetection = new FailureDetection(N, nodeID, executorService, this, 1000000, 3000000);
+    failureDetection = new FailureDetection(nodeIDs, nodeID, executorService, this, 1000000, 3000000);
 
     String paxosLogFolder = testConfig1.testPaxosLogFolder + "/node" + nodeID;
     paxosLogger = new PaxosLogger(paxosLogFolder, nodeID, this);
@@ -164,7 +168,7 @@ public class PaxosManager extends AbstractPaxosManager {
 //    if (myPaxosInstances != null) paxosInstances = myPaxosInstances;
     paxosLogger.start();
 
-    createTestPaxosInstance(testConfig1.testPaxosID);
+    createTestPaxosInstance(testConfig1.testPaxosID, testConfig1.numPaxosReplicas);
 
     startPaxosMaintenanceActions();
 
@@ -228,23 +232,22 @@ public class PaxosManager extends AbstractPaxosManager {
   }
 
   public  void resetAll() {
-    // delete paxos instances
+    // delete all paxos instances
     paxosInstances.clear();
     // clear paxos logs
     paxosLogger.clearLogs();
-    // run java gc
   }
 
   /**
    *
    */
-  protected void startResendPendingMessages() {
+  void startResendPendingMessages() {
     ResendPendingMessagesTask task = new ResendPendingMessagesTask(this);
     // single time execution
     executorService.schedule(task, RESEND_PENDING_MSG_INTERVAL_MILLIS,TimeUnit.MILLISECONDS);
   }
 
-  protected PaxosReplicaInterface createPaxosReplicaObject(String paxosID, int nodeID, Set<Integer> nodeIDs1) {
+  PaxosReplicaInterface createPaxosReplicaObject(String paxosID, int nodeID, Set<Integer> nodeIDs1) {
     return new PaxosReplica(paxosID, nodeID, nodeIDs1, this);
   }
 
@@ -281,49 +284,19 @@ public class PaxosManager extends AbstractPaxosManager {
     return replica.getPaxosID();
   }
 
-
-//  /**
-//   * Propose requestPacket in the paxos instance with paxosID.
-//   * ReqeustPacket.clientID is used to distinguish which method proposed this value.
-//   * @param paxosID paxosID of the paxos group
-//   * @param requestPacket request to be proposed
-//   */
-//  public  String propose(String paxosID, RequestPacket requestPacket) {
-//
-//    if (!debug) { // running with GNS
-//
-//    }
-//
-//    //  only in debug mode
-//    try
-//    {
-//      JSONObject json = requestPacket.toJSONObject();
-//      // put paxos ID for identification
-//      json.put(PAXOS_ID, paxosID);
-//      handleIncomingPacket(json);
-//
-//    } catch (JSONException e)
-//    {
-//      if (debugMode) GNS.getLogger().severe(" JSON Exception" + e.getMessage());
-//      e.printStackTrace();
-//    }
-//    return paxosID;
-//  }
-
   /**
    * check if the failure detector has reported this node as up
    * @param nodeID  ID of node to be tested
    * @return <code>true</code> if failure detector tells node is up
    */
-  public boolean isNodeUp(int nodeID) {
-    if (failureDetection == null) return true;
-    return failureDetection.isNodeUp(nodeID);
+  boolean isNodeUp(int nodeID) {
+    return failureDetection == null || failureDetection.isNodeUp(nodeID);
   }
 
 
   /**
    * Handle incoming message, incoming message could be of any Paxos instance.
-   * @param json json obejct received
+   * @param json json object received
    */
   public  void handleIncomingPacket(JSONObject json) {
 
@@ -379,9 +352,8 @@ public class PaxosManager extends AbstractPaxosManager {
   }
 
   /**
-   * FIXME: clientRequestHandler.handleFailureMessage(fdPacket);
    * If a node fails, or comes up again, the respective Paxos instances are informed.
-   * Some of them may elect a new co-ordinator.
+   * Some of them may elect a new coordinator.
    */
   void informNodeStatus(FailureDetectionPacket fdPacket) {
     GNS.getLogger().severe("Handling node failure = " + fdPacket.responderNodeID);
@@ -400,9 +372,6 @@ public class PaxosManager extends AbstractPaxosManager {
       }
     }
 
-    // inform output handler of node failure
-    // FIXME: Not supported anymore in PaxosInterface.
-    //clientRequestHandler.handleFailureMessage(fdPacket);
   }
 
   void sendMessage(int destID, JSONObject json, String paxosID) {
@@ -494,19 +463,17 @@ public class PaxosManager extends AbstractPaxosManager {
    * with all nodes that have not failed, and all nodes have responded.
    */
   private  void startAllPaxosReplicas() {
-    if (paxosInstances!=null) {
       for (String x: paxosInstances.keySet()) {
         if (debugMode) GNS.getLogger().fine("Paxos Recovery: starting paxos replica .. " + x);
         paxosInstances.get(x).checkInitScout();
       }
-    }
   }
 
 
   /**
    * Create a paxos instance for testing/debugging.
    */
-  private  void createTestPaxosInstance(String testPaxosID) {
+  private  void createTestPaxosInstance(String testPaxosID, int N) {
     if (paxosInstances.containsKey(getPaxosKeyFromPaxosID(testPaxosID))) {
       if (debugMode) GNS.getLogger().fine("Paxos instance " + testPaxosID + " already exists.");
       return;
@@ -594,7 +561,7 @@ public class PaxosManager extends AbstractPaxosManager {
     }
   }
 
-  private  void sendMessage(short[] destIDs, JSONObject json, int excludeID) {
+  private void sendMessage(short[] destIDs, JSONObject json, int excludeID) {
     try {
       if (!debug) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
@@ -607,26 +574,6 @@ public class PaxosManager extends AbstractPaxosManager {
     {
       GNS.getLogger().severe("JSON Exception in sending to IDs. ");
     }
-  }
-
-  /**
-   * Main function to test the paxos manager code.
-   */
-  public static void main(String[] args) {
-//    if (args.length != 4) {
-//      System.out.println("QUIT. Incorrect arguments.\nUsage: PaxosManager <NumberOfPaoxsNodes> <ReplicaID> <NodeConfigFile>");
-//      System.exit(2);
-//    }
-    // node IDs (for paxos replicas) = 0, 1, ..., N - 1
-    String nodeConfigFile = "resources/testCodeResources/nodeConfig"; //args[0];
-    String testConfig = "resources/testCodeResources/testConfig";//args[1];
-    int myID = 0; //Integer.parseInt(args[2]);
-
-//    new PaxosManager(nodeConfigFile, testConfig, myID);
-
-    // TODO fix these
-//    PaxosManager.setPaxosLogFolder(paxosLogFolder + "/paxoslog_" + myID);
-//    initializePaxosManagerDebugMode(nodeConfigFile, testConfig, myID, new DefaultPaxosInterface());
   }
 
 }
@@ -691,8 +638,14 @@ class HandlePaxosMessageTask extends TimerTask {
       e.printStackTrace();
     }
     long t1 = System.currentTimeMillis();
-    if (t1 - t0 > 100)
-      GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + json);
+    if (t1 - t0 > 100) {
+      if (json.toString().length() < 1000) {
+        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + json);
+      }
+      else {
+        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms.");
+      }
+    }
   }
 }
 

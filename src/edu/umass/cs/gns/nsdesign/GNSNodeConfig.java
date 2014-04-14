@@ -106,7 +106,7 @@ public class GNSNodeConfig implements NodeConfig {
 
         // Check for file's format
         if (tokens.length != 7) {
-          System.err.println("Error: File " + nodeInfoFile + " formated incorrectly");
+          System.err.println("Error: File " + nodeInfoFile + " formatted incorrectly");
           System.err.println("HostId: " + nameServerID);
           System.err.println("Token Length: " + tokens.length + " ");
           for (String str : tokens) {
@@ -361,6 +361,11 @@ public class GNSNodeConfig implements NodeConfig {
   @Override
   public int getNodeCount() {
     return this.getNumberOfHosts();
+  }
+
+  @Override
+  public Set<Integer> getNodeIDs() {
+    return getAllHostIDs();
   }
 
   @Override

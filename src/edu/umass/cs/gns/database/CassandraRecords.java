@@ -19,8 +19,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
-/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
- * FIXME Make changes to that file until we include this package again.. **/
 /**
  *
  * @author westy

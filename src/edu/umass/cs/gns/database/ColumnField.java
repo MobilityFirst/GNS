@@ -7,8 +7,6 @@ package edu.umass.cs.gns.database;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
- * FIXME Make changes to that file until we include this package again.. **/
 public class ColumnField {
 
   private final String name;

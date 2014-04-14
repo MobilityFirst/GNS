@@ -16,6 +16,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * Module for coordinating among active replicas of a name using paxos protocol.
+ * This is the entry point for all messages into gnsReconfigurable module. Its main task
+ * is to decide whether coordination is needed for a request. If yes, it proposes requests
+ * to paxos for coordination. Otherwise, requests are forwarded to GNS for execution.
+ *
  *
  * Created by abhigyan on 3/28/14.
  */

@@ -24,9 +24,6 @@ public class NewActiveSetStartupPacket extends BasicPacket {
   private final static String PREVIOUS_VALUE = "previousValue";
   private final static String PREVIOUS_VALUE_CORRECT = "pvCorrect";
 
-  public void setUniqueID(int uniqueID) {
-    this.uniqueID = uniqueID;
-  }
 
   /**
    * A unique ID to distinguish this packet at active replica
@@ -93,6 +90,7 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     this.previousValue = previousValue;
     this.previousValueCorrect = previousValueCorrect;
   }
+
 
   public NewActiveSetStartupPacket(JSONObject json) throws JSONException {
 
@@ -178,7 +176,13 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     return sb.toString();
   }
 
-  public int getID() {
+
+  public void setUniqueID(int uniqueID) {
+    this.uniqueID = uniqueID;
+  }
+
+
+  public int getUniqueID() {
     return uniqueID;
   }
 

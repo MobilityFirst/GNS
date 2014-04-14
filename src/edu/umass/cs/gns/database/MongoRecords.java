@@ -111,6 +111,7 @@ public class MongoRecords implements NoSQLRecords {
     for (BasicDBObject index : spec.getOtherIndexes()) {
       db.getCollection(spec.getName()).ensureIndex(index);
     }
+    GNS.getLogger().info("Indexes initialized");
   }
 
   @Override
@@ -131,7 +132,6 @@ public class MongoRecords implements NoSQLRecords {
     } else {
       GNS.getLogger().severe("MONGO DB: No collection named: " + collectionName);
     }
-
   }
 
   @Override
@@ -139,7 +139,7 @@ public class MongoRecords implements NoSQLRecords {
     return lookup(collectionName, guid, false);
   }
 
-  private JSONObject lookup(String collectionName, String guid, boolean explain) {
+  private JSONObject lookup(String collectionName, String guid, boolean explain) throws RecordNotFoundException {
     db.requestStart();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -154,7 +154,7 @@ public class MongoRecords implements NoSQLRecords {
         DBObject obj = cursor.next();
         return new JSONObject(obj.toString());
       } else {
-        return null;
+        throw new RecordNotFoundException(guid);
       }
     } catch (JSONException e) {
       GNS.getLogger().warning("Unable to parse JSON: " + e);
@@ -825,7 +825,11 @@ public class MongoRecords implements NoSQLRecords {
 //  //test code
   private static void queryTest(int nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
-    ConsistentHashing.initialize(3, 3);
+    Set<Integer> nameServerIDs = new HashSet<Integer>();
+    nameServerIDs.add(0);
+    nameServerIDs.add(1);
+    nameServerIDs.add(2);
+    ConsistentHashing.initialize(3, nameServerIDs);
     MongoRecords instance = new MongoRecords(nodeID,  -1);
     System.out.println("***ALL RECORDS***");
     instance.printAllEntries(DBNAMERECORD);

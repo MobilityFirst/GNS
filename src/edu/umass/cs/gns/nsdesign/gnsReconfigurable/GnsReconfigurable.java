@@ -14,7 +14,6 @@ import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,10 +76,11 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
     this.nioServer = nioServer;
 
     if (!Config.emulatePingLatencies) {
-      // when emulating ping latencies we do not
-      PingServer.startServerThread(nodeID, gnsNodeConfig);
-      this.pingManager = new PingManager(nodeID, gnsNodeConfig);
-      this.pingManager.startPinging();
+      // TODO enable this after ping manager can handle a random set of IDs, instead of (0 to n)
+//      // when emulating ping latencies we do not
+//      PingServer.startServerThread(nodeID, gnsNodeConfig);
+//      this.pingManager = new PingManager(nodeID, gnsNodeConfig);
+//      this.pingManager.startPinging();
     }
 
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
@@ -255,7 +255,11 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
         e1.printStackTrace();
       }
       if (Config.debugMode) {
-        GNS.getLogger().fine(" NAME RECORD UPDATED AT ACTIVE  NODE. Name record = " + nameRecord);
+        try {
+          GNS.getLogger().fine(" NAME RECORD UPDATED AT ACTIVE  NODE. Name record = " + NameRecord.getNameRecord(nameRecordDB, name));
+        } catch (RecordNotFoundException e1) {
+          e1.printStackTrace();
+        }
       }
     }
   }
@@ -263,25 +267,25 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   @Override
   public int deleteFinalState(String name, short version) {
 
-    int[] versions = getCurrentOldVersions(name);
-    if (versions != null) {
-      int curVersion = versions[0];
-      int oldVersion = versions[1];
-      if (oldVersion == version) {
-        if (curVersion == NameRecord.NULL_VALUE_ACTIVE_VERSION) {
-          // todo test and remove record
-          NameRecord.removeNameRecord(nameRecordDB, name);
-        } else {
-          try {
-            NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-            nameRecord.deleteOldState(version);
-          } catch (FieldNotFoundException e) {
-            GNS.getLogger().severe("FieldNotFoundException: " + name + "\t " + version + "\t " + e.getMessage());
-            e.printStackTrace();
-          }
-        }
-      }
-    }
+//    int[] versions = getCurrentOldVersions(name);
+//    if (versions != null) {
+//      int curVersion = versions[0];
+//      int oldVersion = versions[1];
+//      if (oldVersion == version) {
+//        if (curVersion == NameRecord.NULL_VALUE_ACTIVE_VERSION) {
+//          // todo test and remove record
+//          NameRecord.removeNameRecord(nameRecordDB, name);
+//        } else {
+//          try {
+//            NameRecord nameRecord = new NameRecord(nameRecordDB, name);
+//            nameRecord.deleteOldState(version);
+//          } catch (FieldNotFoundException e) {
+//            GNS.getLogger().severe("FieldNotFoundException: " + name + "\t " + version + "\t " + e.getMessage());
+//            e.printStackTrace();
+//          }
+//        }
+//      }
+//    }
     return 0;
   }
 

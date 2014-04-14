@@ -94,7 +94,7 @@ import java.util.concurrent.ConcurrentMap;
  * The design of this class is similar to the design of {@link edu.umass.cs.gns.nsdesign.recordmap.NameRecord} class.
  *
  * @see edu.umass.cs.gns.nsdesign.recordmap.NameRecord
- * @see edu.umass.cs.gns.nameserver.NameServer
+ * @see edu.umass.cs.gns.nsdesign.replicaController.ReplicaController
  * @see edu.umass.cs.gns.nsdesign.recordmap.RecordMapInterface
  * @see edu.umass.cs.gns.exceptions.FieldNotFoundException
  */
@@ -909,7 +909,7 @@ public class ReplicaControllerRecord {
     Config.movingAverageWindowSize = 10;
     int nodeID = 4;
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNumberOfNameServers());
+    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getAllNameServerIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();

@@ -7,8 +7,8 @@ __author__ = 'abhigyan'
 import unittest
 
 # include all modules here
-test_modules = [test_check.Test1NodeLocal,
-                test_check.Test3NodeLocal]
+test_modules = [test_check.FeatureTestMultiNodeLocal]
+                # test_check.Test3NodeLocal]
 
 # this runs tests
 x = []

@@ -34,7 +34,7 @@ import java.util.logging.Level;
  *
  * @see edu.umass.cs.gns.localnameserver.Lookup
  * @see edu.umass.cs.gns.localnameserver.DNSRequestInfo
- * @see edu.umass.cs.gns.packet.DNSPacket
+ * @see edu.umass.cs.gns.nsdesign.packet.DNSPacket
  *
  * User: abhigyan
  * Date: 8/30/13
@@ -158,7 +158,7 @@ public class DNSRequestTask extends TimerTask {
             receivedTime, -1, "NA", lookupNumber, incomingPacket, numInvalidActiveError);
     tempQueryInfo.setRecvTime(System.currentTimeMillis());
     String stats = tempQueryInfo.getLookupStats();
-    GNS.getStatLogger().info("Success-Lookup\t" + stats);
+    GNS.getStatLogger().info("Success-Lookup-CacheHit\t" + stats);
     if (GNS.getLogger().isLoggable(Level.FINER)) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().finer(LocalNameServer.cacheLogString("LNS CACHE: "));

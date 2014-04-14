@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
- * FIXME Make changes to that file until we include this package again.. **/
 /**
  * A front end to the mySQL table which stores the fields and values
  *

@@ -28,17 +28,14 @@ public class Add {
 
     NameRecord nameRecord = new NameRecord(activeReplica.getDB(), addRecordPacket.getName(), Config.FIRST_VERSION,
             valuesMap, addRecordPacket.getTTL());
-
     try {
       NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
-
       try {
         String val = NameRecord.getNameRecord(activeReplica.getDB(), addRecordPacket.getName()).toString();
         GNS.getLogger().fine("Name record read: " + val);
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
       }
-
     } catch (RecordExistsException e) {
       // todo this case should happen rarely if we actually delete record at the end of remove operation
       NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());

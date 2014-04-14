@@ -41,10 +41,10 @@ public class ConsistentHashing {
    * called. If <code>initialize</code> method is called multiple times, the initialization is done based on the first
    * call; later calls make no difference.
    */
-  public static void initialize(int numReplicaControllers, int numNameServers){
-    if (numReplicaControllers > numNameServers) {
+  public static void initialize(int numReplicaControllers, Set<Integer> nameServerIDs){
+    if (numReplicaControllers > nameServerIDs.size()) {
       throw  new IllegalArgumentException("ERROR: Number of replica controllers " + numReplicaControllers +
-              " numNameServers = " + numNameServers);
+              " numNameServers = " + nameServerIDs.size());
     }
     synchronized (lock) {   // lock so that we do not initialize nsTreeMap multiple times.
       if (nsTreeMap != null) return;
@@ -52,8 +52,8 @@ public class ConsistentHashing {
       nsTreeMap = new TreeMap<String, Integer>();
       // Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
       nsTreeMap = new TreeMap<String, Integer>();
-      for (int i = 0; i < numNameServers; i++) {
-        nsTreeMap.put(getMD5Hash(Integer.toString(i)), i);
+      for (int nodeID: nameServerIDs) {
+        nsTreeMap.put(getMD5Hash(Integer.toString(nodeID)), nodeID);
       }
     }
   }
@@ -122,7 +122,6 @@ public class ConsistentHashing {
         groupIDsAndMembers.put(paxosID, nodes);
       }
     }
-
     return groupIDsAndMembers;
   }
 
@@ -201,8 +200,11 @@ public class ConsistentHashing {
       int nameServers = 10;
       int numPrimaryReplicas = 3;
       int names = 10;
-
-      ConsistentHashing.initialize(numPrimaryReplicas, nameServers);
+      Set<Integer> nameServerIDs = new HashSet<Integer>();
+      for (int i = 0; i < nameServers; i++) {
+        nameServerIDs.add(i);
+      }
+      ConsistentHashing.initialize(numPrimaryReplicas, nameServerIDs);
 
       HashMap<Integer, Integer> nodeNameCount = new HashMap<Integer, Integer>();
       for (int i = 0; i < names; i++) {

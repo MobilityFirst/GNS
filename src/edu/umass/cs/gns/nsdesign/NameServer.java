@@ -35,8 +35,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * <p>
  * Created by abhigyan on 2/26/14.
  */
-public class NameServer implements NameServerInterface {
+public class NameServer{
 
+  private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5); // worker thread pool
 
   private ActiveReplicaCoordinator  appCoordinator; // coordinates app's requests
  
@@ -96,7 +97,7 @@ public class NameServer implements NameServerInterface {
     // create nio server
 
 //    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNumberOfNameServers());
+    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getAllNameServerIDs());
 
     // init transport
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
@@ -148,18 +149,20 @@ public class NameServer implements NameServerInterface {
     GNS.getLogger().info("Admin thread initialized");
   }
 
-  @Override
   public ActiveReplicaCoordinator getActiveReplicaCoordinator() {
     return appCoordinator;
   }
 
-  @Override
   public ActiveReplica getActiveReplica() {
     return activeReplica;
   }
 
-  @Override
   public ReplicaControllerCoordinator getReplicaControllerCoordinator() {
     return replicaControllerCoordinator;
+  }
+
+
+  public ScheduledThreadPoolExecutor getExecutorService() {
+    return executorService;
   }
 }

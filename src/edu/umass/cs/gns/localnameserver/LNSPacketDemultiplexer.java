@@ -85,6 +85,11 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
         case SELECT_RESPONSE:
           Select.handlePacketSelectResponse(json);
           break;
+
+        // Requests sent only during testing
+        case NEW_ACTIVE_PROPOSE:
+          LNSTestRequests.sendGroupChangeRequest(json);
+          break;
         default:
           isPacketTypeFound = false;
           break;

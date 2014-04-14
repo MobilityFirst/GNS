@@ -87,13 +87,13 @@ is_static_replication = exp_config.is_static_replication                #Static3
 is_random_replication = exp_config.is_random_replication               #Uniform
 
 is_location_replication = exp_config.is_location_replication             #Locality
-name_server_selection_vote_size = 5         #top-k size. this parameter is not used anymore.
+name_server_selection_vote_size = 5         # top-k size. this parameter is not used anymore.
 
 is_beehive_replication = exp_config.is_beehive_replication
 c_hop = 0.3
 base = 16
 alpha = 0.91
-is_debug_mode = True
+is_debug_mode = exp_config.is_debug_mode
 is_experiment_mode = exp_config.is_experiment_mode                # Always set to True to run experiments
 emulate_ping_latencies = exp_config.emulate_ping_latencies
 variation = exp_config.variation

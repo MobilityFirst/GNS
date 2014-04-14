@@ -546,13 +546,14 @@ public class StartLocalNameServer {
       // lookup and update tace files
       lookupTraceFile = allValues.containsKey(LOOKUP_TRACE) ? allValues.get(LOOKUP_TRACE) : null;
       updateTraceFile = allValues.containsKey(UPDATE_TRACE) ? allValues.get(UPDATE_TRACE) : null;
+      workloadFile = allValues.containsKey(UPDATE_TRACE) ? allValues.get(WORKLOAD_FILE): null;
 
       // all parameters related to synthetic workload
       isSyntheticWorkload = allValues.containsKey(ZIPF) && Boolean.parseBoolean(allValues.get(ZIPF));
       alpha = (isSyntheticWorkload) ? Double.parseDouble(allValues.get(ALPHA)) : 0;
       regularWorkloadSize = (isSyntheticWorkload) ? Integer.parseInt(allValues.get(REGULAR_WORKLOAD)) : 0;
       mobileWorkloadSize = (isSyntheticWorkload) ? Integer.parseInt(allValues.get(MOBILE_WORKLOAD)) : 0;
-      workloadFile = (isSyntheticWorkload) ? allValues.get(WORKLOAD_FILE) : null;
+
       name = (isSyntheticWorkload) ?  allValues.get("name") : null;
       // made these optional for non-experimental use
       numQuery = allValues.containsKey(NUM_QUERY) ? Integer.parseInt(allValues.get(NUM_QUERY)) : 0;
@@ -566,6 +567,7 @@ public class StartLocalNameServer {
 
       outputSampleRate = allValues.containsKey(OUTPUT_SAMPLE_RATE) ?
               Double.parseDouble(allValues.get(OUTPUT_SAMPLE_RATE)) : 1.0;
+
 
       debugMode = allValues.containsKey(DEBUG_MODE) && Boolean.parseBoolean(allValues.get(DEBUG_MODE));
       experimentMode = allValues.containsKey(EXPERIMENT_MODE)  && Boolean.parseBoolean(allValues.get(EXPERIMENT_MODE));
@@ -584,8 +586,9 @@ public class StartLocalNameServer {
         GNS.statConsoleOutputLevel = allValues.get(STAT_CONSOLE_OUTPUT_LEVEL);
       }
 
-      useGNSNIOTransport =  allValues.containsKey(USE_GNS_NIO_TRANSPORT) &&
-              Boolean.parseBoolean(allValues.get(USE_GNS_NIO_TRANSPORT));
+      if (allValues.containsKey(USE_GNS_NIO_TRANSPORT)) {
+        useGNSNIOTransport = Boolean.parseBoolean(allValues.get(USE_GNS_NIO_TRANSPORT));
+      }
 
       emulatePingLatencies = allValues.containsKey(EMULATE_PING_LATENCIES) &&
               Boolean.parseBoolean(allValues.get(EMULATE_PING_LATENCIES));
@@ -627,7 +630,7 @@ public class StartLocalNameServer {
     try {
 //      ConfigFileInfo.readHostInfo(nsFile, id);
       GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nsFile, id);
-      ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNumberOfNameServers());
+      ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getAllNameServerIDs());
 
       //Start local name server
       new LocalNameServer(id, gnsNodeConfig);

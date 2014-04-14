@@ -73,6 +73,7 @@ def get_cdf_and_plot(filenames, schemes, col_nos, pdf_filename, output_dir, temp
     except:
         print 'ERROR: Gnuplot error'
     print 'PDF File:', os.path.join(output_dir, pdf_filename)
+    os.system('rm ' + output_gpt)
 
     
 def write_cdf(filename, col_no, output_dir, output_filename):

@@ -13,7 +13,6 @@ sys.path.append(parent_folder)
 
 from util.read_utils import read_keys_values
 
-
 __author__ = 'abhigyan'
 
 
@@ -26,6 +25,7 @@ class FinalStats:
     write = None
     add = None
     remove = None
+    read_cached = None
     read_failed = None
     write_failed = None
     add_failed = None
@@ -52,6 +52,7 @@ class FinalStats:
             self.write = int(keys_values['Write'])
             self.add = int(keys_values['Add'])
             self.remove = int(keys_values['Remove'])
+            self.read_cached = int(keys_values['CacheHit'])
             self.read_failed = int(keys_values['Failed-Read'])
             self.write_failed = int(keys_values['Failed-Write'])
             self.add_failed = int(keys_values['Failed-Add'])

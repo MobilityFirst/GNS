@@ -81,11 +81,12 @@ public class Remove {
    * The request is not forwarded in the special case that a group change for this name is in
    * progress at the same time. In this case, we wait for the group change to complete before proceeding to remove the
    * record at active replicas.
-   *
-   * @param removeRecord Packet sent by client
+   *  @param removeRecord Packet sent by client
    * @param rc ReplicaController calling this method
+   * @param recovery
    */
-  public static GNSMessagingTask executeMarkRecordForRemoval(RemoveRecordPacket removeRecord, ReplicaController rc)
+  public static GNSMessagingTask executeMarkRecordForRemoval(RemoveRecordPacket removeRecord, ReplicaController rc,
+                                                             boolean recovery)
           throws JSONException{
     GNSMessagingTask msgTask = null;
     boolean sendError = false;
@@ -94,26 +95,28 @@ public class Remove {
               removeRecord.getName(), applyMarkedForRemovalFields);
       // put (name, request)
       rcRecord.setMarkedForRemoval();
-      if (rcRecord.isMarkedForRemoval()) {  // check if record marked as removed, it may not be if a group change for
-        //  this name is in progress concurrently.
-        GNS.getLogger().info("Name Record marked for removal " + removeRecord);
+      if (!recovery) {
+        if (rcRecord.isMarkedForRemoval()) {  // check if record marked as removed, it may not be if a group change for
+          //  this name is in progress concurrently.
+          GNS.getLogger().info("Name Record marked for removal " + removeRecord);
 
-        if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
-                                                                // so it will inform actives
-          assert rcRecord.isActiveRunning(); // active must be running
-          StopActiveSetTask stopActiveSetTask = new StopActiveSetTask(removeRecord.getName(),
-                  rcRecord.getActiveNameservers(),rcRecord.getActiveVersion(), Packet.PacketType.ACTIVE_REMOVE,
-                  removeRecord, rc);
-          rc.getScheduledThreadPoolExecutor().scheduleAtFixedRate(stopActiveSetTask, 0,
-                  ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+          if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
+            // so it will inform actives
+            assert rcRecord.isActiveRunning(); // active must be running
+            StopActiveSetTask stopActiveSetTask = new StopActiveSetTask(removeRecord.getName(),
+                    rcRecord.getActiveNameservers(), rcRecord.getActiveVersion(), Packet.PacketType.ACTIVE_REMOVE,
+                    removeRecord, rc);
+            rc.getScheduledThreadPoolExecutor().scheduleAtFixedRate(stopActiveSetTask, 0,
+                    ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
+          } else {
+            GNS.getLogger().info("SKIP: remove record request does not not contain node ID " + rcRecord.getName());
+          }
         } else {
-          GNS.getLogger().info("SKIP: remove record request does not not contain " + rcRecord.getName());
+          GNS.getLogger().info("Remove record not executed because group change for the name is in progress "
+                  + removeRecord);
+          sendError = true;
         }
-      } else {
-        GNS.getLogger().info("Remove record not executed because group change for the name is in progress "
-                + removeRecord);
-        sendError = true;
       }
     } catch (RecordNotFoundException e) {
       sendError = true;
@@ -132,18 +135,22 @@ public class Remove {
   /**
    * Actives have removed the record, so remove the requestID from the list of ongoing stop active requests.
    */
-  public static GNSMessagingTask handleActiveRemoveRecord(OldActiveSetStopPacket activeStop, ReplicaController rc) throws JSONException,
+  public static GNSMessagingTask handleActiveRemoveRecord(OldActiveSetStopPacket activeStop, ReplicaController rc,
+                                                          boolean recovery) throws JSONException,
           IOException{
-    GNS.getLogger().fine("RC handling active remove record ... " + activeStop);
     GNSMessagingTask msgTask = null;
-    // response received for active stop request, so remove from set, which will cancel the OldActiveSetStopPacket task
-    RemoveRecordPacket removePacket = (RemoveRecordPacket) rc.getOngoingStopActiveRequests().remove(activeStop.getRequestID());
-    GNS.getLogger().fine("RC remove packet fetched ... " + removePacket);
-    if (removePacket != null) { // response has not been already received
+    if (!recovery) {
+      GNS.getLogger().fine("RC handling active remove record ... " + activeStop);
+
+      // response received for active stop request, so remove from set, which will cancel the OldActiveSetStopPacket task
+      RemoveRecordPacket removePacket = (RemoveRecordPacket) rc.getOngoingStopActiveRequests().remove(activeStop.getRequestID());
+      GNS.getLogger().fine("RC remove packet fetched ... " + removePacket);
+      if (removePacket != null) { // response has not been already received
         removePacket.changePacketTypeToRcRemove();
         rc.getNioServer().sendToID(rc.getNodeID(), removePacket.toJSONObject());
-    } else {
-      GNS.getLogger().info("Duplicate or delayed response for old active stop: " + activeStop);
+      } else {
+        GNS.getLogger().info("Duplicate or delayed response for old active stop: " + activeStop);
+      }
     }
     return msgTask;
   }
@@ -155,13 +162,14 @@ public class Remove {
    * @param removeRecordPacket Packet sent by client
    * @param rc ReplicaController calling this method
    */
-  public static GNSMessagingTask executeRemoveRecord(RemoveRecordPacket removeRecordPacket, ReplicaController rc) throws JSONException{
+  public static GNSMessagingTask executeRemoveRecord(RemoveRecordPacket removeRecordPacket, ReplicaController rc,
+                                                     boolean recovery) throws JSONException{
 
     GNSMessagingTask msgTask = null;
     GNS.getLogger().fine("DECISION executing remove record at RC: " + removeRecordPacket);
     rc.getDB().removeNameRecord(removeRecordPacket.getName());
 
-    if (removeRecordPacket.getNameServerID() == rc.getNodeID()) { // this will be true at the replica controller who
+    if (removeRecordPacket.getNameServerID() == rc.getNodeID() && !recovery) { // this will be true at the replica controller who
                                                                   // first received the client's request
       ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
       msgTask = new GNSMessagingTask(removeRecordPacket.getLocalNameServerID(), confirmPacket.toJSONObject());

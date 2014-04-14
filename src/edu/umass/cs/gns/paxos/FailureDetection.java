@@ -1,18 +1,20 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-//import edu.umass.cs.gns.nameserver.NameServer;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Random;
+import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+
+//import edu.umass.cs.gns.nameserver.NameServer;
 
 public class FailureDetection{
 	
@@ -26,10 +28,10 @@ public class FailureDetection{
    */
   private int timeoutIntervalMillis = 30000;
 
-	/**
-	 * number of nodes.
-	 */
-	 int N;
+//	/**
+//	 * number of nodes.
+//	 */
+//	 int N;
 	
 	/**
 	 * ID of this node.
@@ -71,13 +73,13 @@ public class FailureDetection{
 
   /**
 	 * initialize the failure detection module
-	 * @param N number of nodes
+	 * @param nodeIDs set of nodes to monitor
 	 * @param nodeID ID of this node 
 	 */
-	 public FailureDetection(int N, int nodeID, ScheduledThreadPoolExecutor executorService, PaxosManager paxosManager,
+	 public FailureDetection(Set<Integer> nodeIDs, int nodeID, ScheduledThreadPoolExecutor executorService, PaxosManager paxosManager,
                            int pingIntervalMillis, int timeoutIntervalMillis) {
 		 this.nodeID = nodeID;
-     this.N =  N;
+//     this.N =  N;
      this.startingTime = System.currentTimeMillis();
      this.executorService = executorService;
      this.paxosManager = paxosManager;
@@ -86,15 +88,15 @@ public class FailureDetection{
      assert this.pingIntervalMillis*3 >= this.timeoutIntervalMillis;
      GNS.getLogger().info("Failure Detector: Ping Interval: " + this.pingIntervalMillis +
              " Timeout: " + this.timeoutIntervalMillis);
-		for (int i = 0; i < N; i++) {
-			if (i == nodeID) {
+		for (int remoteNodeID: nodeIDs) {
+			if (remoteNodeID == nodeID) {
 				nodeStatus.put(nodeID, true);
         nodeInfo.put(nodeID, System.currentTimeMillis());
 				continue;
 			}
-			startNodeMonitoring(i);
+			startNodeMonitoring(remoteNodeID);
 		}
-		GNS.getLogger().info("Failure detection initialized for " + N + " nodes");
+		GNS.getLogger().info("Failure detection initialized for " + nodeIDs.size() + " nodes");
 	}
 	
 	/**

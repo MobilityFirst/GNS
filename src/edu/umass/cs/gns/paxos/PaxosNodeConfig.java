@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  *
@@ -20,7 +21,7 @@ import java.util.HashMap;
  */
 public class PaxosNodeConfig implements NodeConfig {
 
-  private  HashMap<Integer,NodeInfo> nodesInfo;
+  private  HashMap<Integer, NodeInfo> nodesInfo;
 
   /**
    * Stores list of nodes, their IP address, and port numbers
@@ -74,6 +75,11 @@ public class PaxosNodeConfig implements NodeConfig {
   @Override
   public int getNodeCount() {
     return nodesInfo.size();
+  }
+
+  @Override
+  public Set<Integer> getNodeIDs() {
+    return nodesInfo.keySet();
   }
 
   @Override

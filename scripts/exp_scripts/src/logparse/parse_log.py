@@ -41,7 +41,6 @@ local = False
 exclude_ns = []
 exclude_lns = []
 
-
 script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
 
 
@@ -78,7 +77,7 @@ def main():
 
 
 def myfilter(tokens):
-    latency, start_time, ping_latency, name, ns1, lns, num_transmissions = \
+    latency, start_time, ping_latency, name, ns1, lns, num_transmissions, is_cache_hit = \
         parse_line_query_success(tokens)
     if num_transmissions > 1:
         return False
@@ -148,7 +147,7 @@ def parse_log(log_files_dir, output_dir, local1, filter=None):
 def initialize_variables():
     global latencies, read_latencies, write_latencies, add_latencies, remove_latencies, all_tuples, \
         ping_latencies, closest_ns_latencies, closest_ns_latency_dict, lns_ids, \
-        success, failed, lns_cache_hit, retrans_count, total_processing_delay, total_reads, total_writes, total_adds,\
+        success, failed, lns_cache_hit, retrans_count, total_processing_delay, total_reads, total_writes, total_adds, \
         total_removes, contact_primary
 
     latencies = {}
@@ -185,7 +184,7 @@ def extract_data_from_log(log_files_dir, local, filter):
 
     host_files = get_all_files_local(log_files_dir)
     #if local == True:
-    #    
+    #
     #else:
     #    host_files = get_all_files(log_files_dir)
 
@@ -465,7 +464,7 @@ def get_latencies(filecount, filename, hostname, filter=None):
                 if filter is not None and filter(tokens) == False:
                     continue
 
-                latency, start_time, ping_latency, name, ns1, lns, num_transmissions, num_restarts = \
+                latency, start_time, ping_latency, name, ns1, lns, num_transmissions, num_restarts, is_cache_hit = \
                     parse_line_query_success(tokens)
                 #nameInt = int(name)
                 #if (nameInt < 500000 or (nameInt > 20000000 and nameInt < 25000000)) == False:
@@ -492,8 +491,8 @@ def get_latencies(filecount, filename, hostname, filter=None):
                 host_retrans += 1
             if num_restarts > 0:
                 contact_primary += 1
-            #if num_transmissions == 0:
-            #    lns_cache_hit +=1
+            if is_cache_hit:
+                lns_cache_hit += 1
             host_success += 1
         elif tokens[0].startswith('<message>Success-Update'):
             latency, name, name_server, local_name_server, start_time, num_restarts = \
@@ -545,7 +544,8 @@ def get_latencies(filecount, filename, hostname, filter=None):
             try:
                 ns = int(tokens[8])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[5])
-                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'rf', cur_time - first_start, 0, 0, 0])
+                host_tuples.append(
+                    [name, this_local_name_server, ns, 0, latency1, 'rf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -557,7 +557,8 @@ def get_latencies(filecount, filename, hostname, filter=None):
             try:
                 ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[2])
-                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'wf', cur_time - first_start, 0, 0, 0])
+                host_tuples.append(
+                    [name, this_local_name_server, ns, 0, latency1, 'wf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -569,7 +570,8 @@ def get_latencies(filecount, filename, hostname, filter=None):
             try:
                 ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[2])
-                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'af', cur_time - first_start, 0, 0, 0])
+                host_tuples.append(
+                    [name, this_local_name_server, ns, 0, latency1, 'af', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -581,7 +583,8 @@ def get_latencies(filecount, filename, hostname, filter=None):
             try:
                 ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[2])
-                host_tuples.append([name, this_local_name_server, ns, 0, latency1, 'df', cur_time - first_start, 0, 0, 0])
+                host_tuples.append(
+                    [name, this_local_name_server, ns, 0, latency1, 'df', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -598,6 +601,8 @@ def get_latencies(filecount, filename, hostname, filter=None):
 
 def parse_line_query_success(tokens):
     """Parses line which logs stats for a successful read/query request."""
+
+    is_cache_hit = tokens[0].endswith('CacheHit')
 
     latency = float(tokens[4])
     start_time = float(tokens[11])
@@ -617,7 +622,7 @@ def parse_line_query_success(tokens):
     lns = int(tokens[10])
     num_transmissions = int(tokens[8])
     num_restarts = int(tokens[12])
-    return latency, start_time, ping_latency, name, ns1, lns, num_transmissions, num_restarts
+    return latency, start_time, ping_latency, name, ns1, lns, num_transmissions, num_restarts, is_cache_hit
 
 
 def parse_line_update_success(tokens):
@@ -827,12 +832,13 @@ def get_summary_stats():
     summary_stats.append(['Write', total_writes])
     summary_stats.append(['Add', total_adds])
     summary_stats.append(['Remove', total_removes])
+    summary_stats.append(['CacheHit', lns_cache_hit])
     #summary_stats.append(['Success', success])
     summary_stats.append(['Failed-Read', get_failed_read_count()])
     summary_stats.append(['Failed-Write', get_failed_write_count()])
     summary_stats.append(['Failed-Add', get_failed_add_count()])
     summary_stats.append(['Failed-Remove', get_failed_remove_count()])
-    #summary_stats.append(['CacheHit', lns_cache_hit])
+
     summary_stats.append(['Retransmissions', get_retrans_count()])
 
     return summary_stats

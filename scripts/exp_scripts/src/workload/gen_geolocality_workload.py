@@ -151,6 +151,7 @@ def gen_mobile_trace(trace_folder, lns_geo_file):
     print 'Lookup trace folder', lookup_trace_folder
     print 'Update trace folder', update_trace_folder
 
+
 def write_to_file2(fw, val, count):
     """
     Writes 'val' to file 'fw', 'count' times (once per line).

@@ -21,7 +21,7 @@ import java.util.TimerTask;
 /**
  * Sends three types of messages (with retries): AddRecordPacket, RemoveRecordPacket, and
  * UpdateAddressPacket with upsert to replica controllers. These messages are sent one by one to all
- * primaries in order of their distance until
+ * replica controllers in order of their distance until
  * (1) local name server receives a response from one of the primary replicas.
  * (2) no response is received until {@code maxQueryWaitTime}. In this case, an error response is sent to client.
  *
@@ -112,11 +112,10 @@ public class SendAddRemoveUpsertTask extends TimerTask {
     return false;
   }
 
-
   private int selectNS() {
-    if (getPrimariesQueried().size() == GNS.numPrimaryReplicas) {
-      getPrimariesQueried().clear();
-    }
+//    if (getPrimariesQueried().size() == GNS.numPrimaryReplicas) {
+//      getPrimariesQueried().clear();
+//    }
     int nameServerID = LocalNameServer.getClosestPrimaryNameServer(getName(), getPrimariesQueried());
 
     if (nameServerID == -1) {
@@ -135,19 +134,19 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
     if (getTimeoutCount() == 0) {
       updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, packet);
-      GNS.getLogger().fine("Update Info Added: Id = " + getUpdateRequestID());
+      GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getUpdateRequestID());
       updatePacketWithRequestID(getPacket(), getUpdateRequestID());
     }
     // create the packet that we'll send to the primary
 
-    GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
+    GNS.getLogger().fine("Sending request to node: " + nameServerID);
 
     // and send it off
     try {
       JSONObject jsonToSend = getPacket().toJSONObject();
       LocalNameServer.sendToNS(jsonToSend, nameServerID);
 
-      GNS.getLogger().fine(" Send request to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
+      GNS.getLogger().fine(" Send add/remove/upsert to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
               " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
     } catch (JSONException e) {
       e.printStackTrace();

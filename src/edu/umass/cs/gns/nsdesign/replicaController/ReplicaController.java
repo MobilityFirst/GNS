@@ -83,7 +83,7 @@ public class ReplicaController  implements Replicable {
 
     this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
-    // todo disabling group change functionality as it is not active now.
+    // todo disabling group change functionality as it is not tested at all
 //		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);
 
@@ -226,7 +226,7 @@ public class ReplicaController  implements Replicable {
 
           // add name to GNS
           case ADD_RECORD:
-            msgTask = Add.executeAddRecord(new AddRecordPacket(json), this);
+            msgTask = Add.executeAddRecord(new AddRecordPacket(json), this, recovery);
             break;
           case ACTIVE_ADD_CONFIRM:
             msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
@@ -242,18 +242,18 @@ public class ReplicaController  implements Replicable {
 
           // remove
           case REMOVE_RECORD:
-            msgTask = Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this);
+            msgTask = Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this, recovery);
             break;
           case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-            msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this);
+            msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this, recovery);
             break;
           case RC_REMOVE:
-            msgTask = Remove.executeRemoveRecord(new RemoveRecordPacket(json), this);
+            msgTask = Remove.executeRemoveRecord(new RemoveRecordPacket(json), this, recovery);
             break;
 
           // group change
           case NEW_ACTIVE_PROPOSE:
-            GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this);
+            GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this, recovery);
             break;
           case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
             GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
@@ -262,11 +262,11 @@ public class ReplicaController  implements Replicable {
             GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
             break;
           case GROUP_CHANGE_COMPLETE:
-            GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this);
+            GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, recovery);
             break;
           case NAMESERVER_SELECTION:
           case NAME_RECORD_STATS_RESPONSE:
-            // todo these packets related to stats reporting are not handled yet.
+            // todo these packets related to stats reporting are not implemented yet.
             throw new UnsupportedOperationException();
           default:
             break;

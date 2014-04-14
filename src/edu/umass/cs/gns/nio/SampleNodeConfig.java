@@ -56,7 +56,12 @@ public class SampleNodeConfig implements NodeConfig {
 		return nmap.size();
 	}
 
-	@Override
+  @Override
+  public Set<Integer> getNodeIDs() {
+    throw  new UnsupportedOperationException();
+  }
+
+  @Override
 	public InetAddress getNodeAddress(int ID) {
 		InetAddress addr = nmap.get(ID);
 		return addr!=null ? addr : (local ? getLocalAddress() : null);

@@ -14,7 +14,6 @@ import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.NameRecordKey;
@@ -138,10 +137,11 @@ public class LocalNameServer {
     if (!StartLocalNameServer.emulatePingLatencies) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      PingServer.startServerThread(nodeID, gnsNodeConfig);
-      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + gnsNodeConfig.getPingPort(nodeID));
-      pingManager = new PingManager(nodeID, gnsNodeConfig);
-      pingManager.startPinging();
+      // TODO enable this after ping manager can handle a random set of IDs, instead of (0 to n)
+//      PingServer.startServerThread(nodeID, gnsNodeConfig);
+//      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + gnsNodeConfig.getPingPort(nodeID));
+//      pingManager = new PingManager(nodeID, gnsNodeConfig);
+//      pingManager.startPinging();
     }
 
     // moved lns listener admin after starting ping manager because it was accessing ping manager.
@@ -160,7 +160,8 @@ public class LocalNameServer {
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      TraceRequestGenerator.generateLookupsUpdates(StartLocalNameServer.lookupTraceFile,
+
+      TraceRequestGenerator.genRequests(StartLocalNameServer.workloadFile, StartLocalNameServer.lookupTraceFile,
               StartLocalNameServer.updateTraceFile, StartLocalNameServer.lookupRate,
               StartLocalNameServer.updateRateRegular, executorService);
 
@@ -169,7 +170,6 @@ public class LocalNameServer {
         initializeNameServerLoadMonitoring();
       }
     }
-
   }
 
   private void startTransport() throws IOException {
@@ -304,11 +304,7 @@ public class LocalNameServer {
 
   /********************** BEGIN: methods for read/write to the stats map *******************/
   public static NameRecordStats getStats(String name) {
-
-    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
-    return nameRecordStats;
-//    int vote = (nameRecordStats != null) ? nameRecordStats.getVotes() : 0;
-//    return vote;
+    return nameRecordStatsMap.get(name);
   }
 
   public static Set<String> getNameRecordStatsKeySet() {
@@ -337,11 +333,6 @@ public class LocalNameServer {
   }
 
   public static void incrementLookupResponse(String name) {
-//    NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
-//    NameRecordStats nameRecordStats = nameRecordStatsMap.get(nameAndType);
-//    if (nameRecordStats != null) {
-//      nameRecordStats.incrementLookupResponse();
-//    }
     NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
     if (nameRecordStats != null) {
       nameRecordStats.incrementLookupResponse();
@@ -349,11 +340,6 @@ public class LocalNameServer {
   }
 
   public static void incrementUpdateResponse(String name) {
-//    NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
-//    NameRecordStats nameRecordStats = nameRecordStatsMap.get(nameAndType);
-//    if (nameRecordStats != null) {
-//      nameRecordStats.incrementUpdateResponse();
-//    }
     NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
     if (nameRecordStats != null) {
       nameRecordStats.incrementUpdateResponse();

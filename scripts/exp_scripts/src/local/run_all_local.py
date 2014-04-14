@@ -51,7 +51,7 @@ def run_exp():
 
     # generate config file
     write_local_config_file(exp_config.node_config, exp_config.num_ns, exp_config.num_lns,
-                            exp_config.const_latency_value)
+                            exp_config.const_latency_value, exp_config.random_node_ids)
 
     # generate workloads
     generate_all_traces()

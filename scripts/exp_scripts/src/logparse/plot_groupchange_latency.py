@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import os,sys
+import os
+import sys
 import inspect
 
 
@@ -25,12 +26,14 @@ def plot_groupchange_latency(folder):
         from write_array_to_file import write_tuple_array
         write_tuple_array(cdf_values, cdf_file, p = True)
         os.system('cp ' + cdf_file + ' .')
+
     try:
         os.system('gnuplot ' + gnuplot_file)
-        os.system('cp groupchange_cdf.pdf ' + stats_folder)
+        os.system('mv groupchange_cdf.pdf ' + stats_folder)
     except:
         print 'ERROR: gnuplot error'
-    
+    os.system('rm GroupChangeDuration_cdf OldActiveStopDuration_cdf')
+
 
 def get_stats_folder(output_folder):
     if output_folder[-1] == '/':

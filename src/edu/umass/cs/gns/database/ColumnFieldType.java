@@ -10,8 +10,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
- * FIXME Make changes to that file until we include this package again.. **/
 /**
  * Created with IntelliJ IDEA.
  * User: abhigyan

@@ -71,8 +71,6 @@ public class MultiNameServerTest {
 
 //      testRequest.add(new TestRequest("abcddfad", TestRequest.LOOKUP));
 //
-
-//
 //      testRequest.add(new TestRequest("qwerty", TestRequest.UPDATE));
 //
 //      testRequest.add(new TestRequest(name, TestRequest.REMOVE));
@@ -85,8 +83,8 @@ public class MultiNameServerTest {
 
       double mean = 5000.0;
       Constant constantValue = new Constant(mean);
-      new RequestGenerator().generateRequests(testRequest, constantValue, LocalNameServer.getExecutorService());
-
+      new RequestGenerator().generateRequests(new WorkloadParams(null), testRequest, constantValue,
+              LocalNameServer.getExecutorService());
 
     } catch (IOException e) {
       GNS.getLogger().info("ERROR: Test unsuccessful due to exception.");

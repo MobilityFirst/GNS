@@ -53,7 +53,7 @@ public class Lookup {
 
     GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; DNS Packet: " + dnsPacket.toString());
     GNSMessagingTask msgTask;
-    // the only dns reponses we should see are coming in respone to LNSQueryHandler requests
+    // the only dns response we should see are coming in response to LNSQueryHandler requests
     if (!dnsPacket.isQuery()) {
       // handle the special case of queries that were from this NS back to an LNS
       //SiteToSiteQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
@@ -97,10 +97,12 @@ public class Lookup {
       } catch (RecordNotFoundException e) {
         GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
       }
+      GNS.getLogger().fine("Name record read is: " + nameRecord);
       // Now we either have a name record with stuff it in or a null one
       // Time to send something back to the client
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, activeReplica);
       msgTask = new GNSMessagingTask(dnsPacket.getLnsId(), dnsPacket.toJSONObject());
+
     }
     return msgTask;
   }

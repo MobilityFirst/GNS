@@ -52,8 +52,11 @@ experiment_run_time = -1    # duration of experiment (seconds)
 
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
-ns_sleep = 2      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
-extra_wait = 10   # extra wait time after LNS sends all requests
+ns_sleep = 1      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
+extra_wait = 7   # extra wait time after LNS sends all requests
+
+random_node_ids = None  # option to select nodeIDs randomly. If random_node_ids is not None, it takes an int value.
+                        # we select node IDs taking the given int as seed of random number generator
 
 failed_nodes = None   # NOT used
 
@@ -63,6 +66,8 @@ num_lns = 1  # must be set to 1
 #
 #
 # parameters for workload generator
+wfile = None
+
 regular_workload = 0     # number of names in the workload (GNS also read this parameter to load names into database)
 mobile_workload = 0         # NOT used
 
@@ -75,6 +80,7 @@ update_count = 10   # number of updates at local name server
 #
 # GNS parameters common to name server / local name servers
 is_experiment_mode = False  # set to True to run experiments, false otherwise.
+is_debug_mode = True   #
 primary_name_server = 3  # number of primary name servers
 
 #lookupTrace = 'lookupTrace10'
@@ -82,7 +88,6 @@ primary_name_server = 3  # number of primary name servers
 
 scheme = 'locality'         # 'locality' is for auspice
 schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_all': 4}
-
 
 
 #
@@ -178,6 +183,14 @@ def initialize(filename):
         global is_experiment_mode
         is_experiment_mode = bool(parser.get(ConfigParser.DEFAULTSECT, 'is_experiment_mode'))
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'is_debug_mode'):
+        global is_debug_mode
+        is_debug_mode = bool(parser.get(ConfigParser.DEFAULTSECT, 'is_debug_mode'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'wfile'):
+        global wfile
+        wfile = parser.get(ConfigParser.DEFAULTSECT, 'wfile')
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'failed_nodes'):  # multiple failed nodes are concatenated by ':'
         global failed_nodes
         failed_nodes = parser.get(ConfigParser.DEFAULTSECT, 'failed_nodes').split(':')
@@ -196,6 +209,9 @@ def initialize(filename):
         global ns_sleep
         ns_sleep = int(parser.get(ConfigParser.DEFAULTSECT, 'ns_sleep'))
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'random_node_ids'):
+        global random_node_ids
+        random_node_ids = int(parser.get(ConfigParser.DEFAULTSECT, 'random_node_ids'))
 
 
 def initialize_path_locations(parser):

@@ -71,12 +71,12 @@ primary_name_server = exp_config.primary_name_server                            
 cache_size = 10000                                    #Cache Size
 name = ''
 
-
+workload_file = exp_config.wfile
 
 
 ## NOT USED. was used for zipf workload
 is_zipf_workload = False                             #Use zipf distribution for generating lookup request
-workload_file = ''                         #List of names queried at this local name server
+                                                    #List of names queried at this local name server
 regular_workload = 0                              #Size of regular workload, seems not used for local name server if update is not sent
 mobile_workload = 0                                 #Size of mobile workload
 alpha = 0.91                                        #Alpha for Zipf distribution
@@ -98,7 +98,7 @@ load_monitor_interval = exp_config.replication_interval    # interval of monitor
 # Optimal Replication
 is_optimal_replication = False
 optimal_trace_file = ''
-replication_interval = 300                          #In seconds. Should be the same as replication interval in name-server.py
+replication_interval = 300                          # In seconds. Should be the same as replication interval in name-server.py
 
 # Beehive replication
 is_beehive_replication = exp_config.is_beehive_replication                       # Beehive replication
@@ -108,7 +108,7 @@ beehive_leaf_set = 4                                # Beehive Leaf set size
 
 # Experiment duration
 is_experiment_mode = exp_config.is_experiment_mode        # Always set to True to run experiments.
-is_debug_mode = True                                #Prints logs if True. Used for testing.
+is_debug_mode = exp_config.is_debug_mode                                # Prints logs if True. Used for testing.
 experiment_run_time  = exp_config.experiment_run_time    # in seconds
 
 emulate_ping_latencies = exp_config.emulate_ping_latencies
@@ -188,13 +188,15 @@ def run_local_name_server(node_id, work_dir, lookup_trace_file, update_trace_fil
         command += ' ' + ALPHA + ' ' + str(alpha)
         command += ' ' + REGULAR_WORLOAD + ' ' + str(regular_workload)
         command += ' ' + MOBILE_WORLOAD + ' ' + str(mobile_workload)
-        command += ' ' + WORKLOAD_FILE + ' ' + workload_file
 
     if lookup_trace_file is not None and lookup_trace_file != '':
         command += ' ' + LOOKUP_TRACE_FILE + ' ' + lookup_trace_file
         
     if update_trace_file is not None and update_trace_file != '':
         command += ' ' + UPDATE_TRACE_FILE + ' ' + update_trace_file
+
+    if workload_file is not None and workload_file != '':
+        command += ' ' + WORKLOAD_FILE + ' ' + workload_file
     #else:
     #    command += ' ' + NAME + ' ' + name
     

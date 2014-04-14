@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nio;
 
 import java.net.InetAddress;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,6 +20,8 @@ public interface NodeConfig {
     public abstract boolean containsNodeInfo(int ID);
 
     public abstract int getNodeCount();
+
+    public abstract Set<Integer> getNodeIDs();
 
     public abstract InetAddress getNodeAddress(int ID);
 

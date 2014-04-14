@@ -2,18 +2,19 @@
 import os
 import sys
 
+
 def kill_local_gnrs():
     #os.system('killall -9 java')
     #return
-    os.system('ps aux | grep GNS.jar > temp.txt ')
-    pids = get_pids('temp.txt')
-    if len(pids) <=2:
+    os.system('ps aux | grep GNS.jar > /tmp/temp.txt ')
+    pids = get_pids('/tmp/temp.txt')
+    if len(pids) <= 2:
         print('GNS: No processes killed')
         return
     #print (pids)
-    print('Killed',len(pids) - 2 ,'processes')
+    print('Killed', len(pids) - 2, 'processes')
     os.system('kill -9 ' + ' '.join(pids) + ' 2>/dev/null')
-    os.system('rm temp.txt')
+    os.system('rm /tmp/temp.txt')
 
 
 def get_pids(filename):
@@ -23,7 +24,7 @@ def get_pids(filename):
         try:
             pids.append(line.split()[1])
         except:
-            print('Excpetion:', line)
+            print('Exception:', line)
             continue
     return pids
 

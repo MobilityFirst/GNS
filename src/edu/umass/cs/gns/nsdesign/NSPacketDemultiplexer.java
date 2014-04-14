@@ -22,10 +22,10 @@ import org.json.JSONObject;
  */
 public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
-  private NameServerInterface nameServerInterface;
+  private NameServer nameServer;
 
-  public NSPacketDemultiplexer(NameServerInterface nameServerInterface) {
-    this.nameServerInterface = nameServerInterface;
+  public NSPacketDemultiplexer(NameServer nameServer) {
+    this.nameServer = nameServer;
   }
 
   /**
@@ -35,94 +35,102 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
    *
    * @param json JSON object received by NIO package.
    */
-  public boolean handleJSONObject(JSONObject json) {
-    boolean isPacketTypeFound = true;
-    try {
-      Packet.PacketType type = Packet.getPacketType(json);
+  public boolean handleJSONObject(final JSONObject json) {
+    nameServer.getExecutorService().submit(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Packet.PacketType type = Packet.getPacketType(json);
 
-      switch (type) {
-        case UPDATE:
-          GNS.getLogger().fine(">>>>>>>>>>>>>>>UPDATE ADDRESS PACKET: " + json);
-          // TODO define a different packet type for upserts
-          UpdatePacket updateAddressPacket = new UpdatePacket(json);
-          if (updateAddressPacket.getOperation().isUpsert()) {
-            ReplicaControllerCoordinator replicaController = nameServerInterface.getReplicaControllerCoordinator();
-            if (replicaController != null) {
-              replicaController.coordinateRequest(json);
-            }
-          } else {
-            ActiveReplicaCoordinator gnsReconfigurable = nameServerInterface.getActiveReplicaCoordinator();
-            if (gnsReconfigurable != null) {
-              gnsReconfigurable.coordinateRequest(json);
-            }
+          switch (type) {
+            case UPDATE:
+              // TODO define a different packet type for upserts
+              UpdatePacket updateAddressPacket = new UpdatePacket(json);
+              if (updateAddressPacket.getOperation().isUpsert()) {
+                ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
+                if (replicaController != null) {
+                  replicaController.coordinateRequest(json);
+                }
+              } else {
+                ActiveReplicaCoordinator gnsReconfigurable = nameServer.getActiveReplicaCoordinator();
+                if (gnsReconfigurable != null) {
+                  gnsReconfigurable.coordinateRequest(json);
+                }
+              }
+              break;
+
+            // Packets sent from LNS
+            case DNS:
+            case NAME_SERVER_LOAD:
+            case SELECT_REQUEST:
+            case SELECT_RESPONSE:
+              // Packets sent from replica controller
+            case ACTIVE_ADD:
+            case ACTIVE_REMOVE:
+            case ACTIVE_COORDINATION:
+              // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
+              // coming back from the LNS is handled.
+            case CONFIRM_UPDATE:
+            case CONFIRM_ADD:
+            case CONFIRM_REMOVE:
+              ActiveReplicaCoordinator gnsReconfigurable = nameServer.getActiveReplicaCoordinator();
+              if (gnsReconfigurable != null) {
+                gnsReconfigurable.coordinateRequest(json);
+              }
+              break;
+
+            // Packets sent by client to replica controller
+            case ADD_RECORD:
+            case REQUEST_ACTIVES:
+            case REMOVE_RECORD:
+            case RC_REMOVE:
+
+              // Packets sent by active replica
+            case ACTIVE_ADD_CONFIRM:
+            case ACTIVE_REMOVE_CONFIRM:
+            case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
+            case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
+
+              // Packets sent by replica controller to itself (this will proposed for coordination)
+            case NEW_ACTIVE_PROPOSE:
+            case GROUP_CHANGE_COMPLETE:
+            case NAMESERVER_SELECTION:
+            case NAME_RECORD_STATS_RESPONSE:
+              // packets from coordination modules at replica controller
+            case REPLICA_CONTROLLER_COORDINATION:
+              ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
+              if (replicaController != null) {
+                replicaController.coordinateRequest(json);
+              }
+              break;
+
+            case NEW_ACTIVE_START:
+            case NEW_ACTIVE_START_FORWARD:
+            case NEW_ACTIVE_START_RESPONSE:
+            case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
+            case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
+            case OLD_ACTIVE_STOP:
+            case DELETE_OLD_ACTIVE_STATE:
+              ActiveReplica activeReplica = nameServer.getActiveReplica();
+              if (activeReplica != null) {
+                activeReplica.handleIncomingPacket(json);
+              }
+              break;
+            default:
+              GNS.getLogger().severe("Packet type not found: " + json);
+              break;
           }
-          break;
-
-        // Packets sent from LNS
-        case DNS:
-        case NAME_SERVER_LOAD:
-        case SELECT_REQUEST:
-        case SELECT_RESPONSE:
-        // Packets sent from replica controller
-        case ACTIVE_ADD:
-        case ACTIVE_REMOVE:
-        case ACTIVE_COORDINATION:
-        // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
-        // coming back from the LNS is handled.
-        case CONFIRM_UPDATE:
-        case CONFIRM_ADD:
-        case CONFIRM_REMOVE:
-          ActiveReplicaCoordinator gnsReconfigurable = nameServerInterface.getActiveReplicaCoordinator();
-          if (gnsReconfigurable != null) {
-            gnsReconfigurable.coordinateRequest(json);
-          }
-          break;
-
-        // Packets sent by client to replica controller
-        case ADD_RECORD:
-        case REQUEST_ACTIVES:
-        case REMOVE_RECORD:
-        case RC_REMOVE:
-
-        // Packets sent by active replica
-        case ACTIVE_ADD_CONFIRM:
-        case ACTIVE_REMOVE_CONFIRM:
-        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
-        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
-
-          // Packets sent by replica controller to itself (this will proposed for coordination)
-        case NEW_ACTIVE_PROPOSE:
-        case GROUP_CHANGE_COMPLETE:
-        case NAMESERVER_SELECTION:
-        case NAME_RECORD_STATS_RESPONSE:
-        // packets from coordination modules at replica controller
-        case REPLICA_CONTROLLER_COORDINATION:
-          ReplicaControllerCoordinator replicaController = nameServerInterface.getReplicaControllerCoordinator();
-          if (replicaController != null) {
-            replicaController.coordinateRequest(json);
-          }
-          break;
-
-        case NEW_ACTIVE_START:
-        case NEW_ACTIVE_START_FORWARD:
-        case NEW_ACTIVE_START_RESPONSE:
-        case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
-        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-        case OLD_ACTIVE_STOP:
-          ActiveReplica activeReplica = nameServerInterface.getActiveReplica();
-          if (activeReplica != null) {
-            activeReplica.handleIncomingPacket(json);
-          }
-          break;
-        default:
-          isPacketTypeFound = false;
-          break;
+        } catch (JSONException e) {
+          GNS.getLogger().severe("JSON Exception here: " + json + " Exception: " + e.getCause());
+          e.printStackTrace();
+        } catch (Exception e) {
+          GNS.getLogger().severe("Caught exception with message: " + json + " Exception: " + e.getCause());
+          e.printStackTrace();
+        }
       }
-    } catch (JSONException e) {
-      GNS.getLogger().severe("JSON Exception here: " + json + " Exception: " + e.getCause());
-      e.printStackTrace();
-    }
-    return isPacketTypeFound;
+    }) ;
+
+    return true;
   }
 
 }

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
-/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
 
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -82,12 +81,12 @@ public class GroupChange {
    * @param activeProposalPacket Actives proposed to primary replicas
    */
   public static void executeNewActivesProposed(NewActiveProposalPacket activeProposalPacket,
-                                               ReplicaController replicaController) {
+                                               ReplicaController replicaController, boolean recovery) {
 
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
               replicaController.getDB(), activeProposalPacket.getName(), executeNewActivesProposedFields);
-
+      GNS.getLogger().fine("Record Read: " + rcRecord);
       if (rcRecord == null) {
         // this is protective NULL check as we don't expect this method to return a null value.
         // if record does not exist, it throws null pointer exception.
@@ -117,19 +116,20 @@ public class GroupChange {
               activeProposalPacket.getVersion());
 
       GNS.getLogger().fine("Name Record Now: = " + rcRecord.toString());
-
-      // Next step: stop old actives
-      if (activeProposalPacket.getProposingNode() == replicaController.getNodeID()) {// if I have proposed this change, I will start actives group change process
-        // todo could use failure detector here NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
-        // todo else if proposing node has failed, then also I will start group change
-        if (Config.debugMode) {
-          GNS.getLogger().fine(" : Stop oldActiveSet now: Name = " + activeProposalPacket.getName());
+      if (!recovery) {
+        // Next step: stop old actives
+        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID()) {// if I have proposed this change, I will start actives group change process
+          // todo could use failure detector here NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
+          // todo else if proposing node has failed, then also I will start group change
+          if (Config.debugMode) {
+            GNS.getLogger().fine(" : Stop oldActiveSet now: Name = " + activeProposalPacket.getName());
+          }
+          StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
+                  rcRecord.getOldActiveNameservers(), rcRecord.getOldActiveVersion(),
+                  Packet.PacketType.OLD_ACTIVE_STOP, activeProposalPacket, replicaController);
+          replicaController.getScheduledThreadPoolExecutor().scheduleAtFixedRate(stopTask, 0,
+                  ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
         }
-        StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
-                rcRecord.getOldActiveNameservers(), rcRecord.getOldActiveVersion(),
-                Packet.PacketType.OLD_ACTIVE_STOP, activeProposalPacket, replicaController);
-        replicaController.getScheduledThreadPoolExecutor().scheduleAtFixedRate(stopTask, 0,
-                ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
       }
 
     } catch (FieldNotFoundException e) {
@@ -197,7 +197,7 @@ public class GroupChange {
     if (Config.debugMode) {
       GNS.getLogger().info("NEW_ACTIVE_START: Received confirmation at primary. " + packet.getName());
     }
-    Object o = replicaController.getOngoingStartActiveRequests().remove(packet.getID());
+    Object o = replicaController.getOngoingStartActiveRequests().remove(packet.getUniqueID());
     if (o != null) {
       // inform old actives to delete state
       OldActiveSetStopPacket oldActiveSetStopPacket = new OldActiveSetStopPacket(packet.getName(), 0,
@@ -226,7 +226,8 @@ public class GroupChange {
    * Executes the result of update proposed by <code>handleNewActiveStartConfirmMessage</code>.
    */
   public static void executeActiveNameServersRunning(GroupChangeCompletePacket packet,
-                                                     ReplicaController replicaController) throws JSONException {
+                                                     ReplicaController replicaController, boolean recovery)
+          throws JSONException {
     if (Config.debugMode) {
       GNS.getLogger().info("Execute: New active started. write to database: "+ packet);
     }
@@ -244,7 +245,7 @@ public class GroupChange {
         GNS.getLogger().info("IGNORE MSG: NEW Active Version NOT FOUND while setting "
                 + "it to inactive. Already received msg before. Version = " + packet.getVersion());
       }
-      // if a remove record is in progress, restart remove operations.
+
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record does not exist !! Should not happen. " + packet.getName());
       e.printStackTrace();

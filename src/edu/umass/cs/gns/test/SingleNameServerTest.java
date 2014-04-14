@@ -10,7 +10,9 @@ import edu.umass.cs.gns.workloads.Constant;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Runs tests for a single name server without coordination among multiple replicas.
@@ -28,8 +30,9 @@ public class SingleNameServerTest {
       String lnsConfigFile = "conf/singleNStest/gns-lns.conf";
       int nameServerID = 0;
       int lnsID = 1;
-
-      ConsistentHashing.initialize(1, 1);
+      Set<Integer> nameServerIDs = new HashSet<Integer>();
+      nameServerIDs.add(nameServerID);
+      ConsistentHashing.initialize(1, nameServerIDs);
 
       GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFile, nameServerID);
       NameServer nameServer = new NameServer(0, nsConfigFile, nodeConfig);
@@ -61,7 +64,7 @@ public class SingleNameServerTest {
 
       double mean = 5000.0;
       Constant constantValue = new Constant(mean);
-      new RequestGenerator().generateRequests(testRequest, constantValue, LocalNameServer.getExecutorService());
+      new RequestGenerator().generateRequests(new WorkloadParams(null), testRequest, constantValue, LocalNameServer.getExecutorService());
 
 
     } catch (IOException e) {

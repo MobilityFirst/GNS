@@ -96,6 +96,7 @@ public class StartActiveSetTask extends TimerTask {
             NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(name, replicaController.getNodeID(),
                     selectedActive, newActiveNameServers, oldActiveNameServers,
                     oldActiveVersion, newActiveVersion, PacketType.NEW_ACTIVE_START, initialValue, false);
+            packet.setUniqueID(requestID);
             replicaController.getNioServer().sendToID(selectedActive, packet.toJSONObject());
             if (Config.debugMode) {
               GNS.getLogger().fine(" NEW ACTIVE STARTUP PACKET SENT Name: "+ name + "\t" + packet.toString());

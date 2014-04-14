@@ -768,6 +768,7 @@ public class PaxosLogger extends Thread {
     for (File f1 : files) {
       try {
         PaxosStateFileName fName = new PaxosStateFileName(f1.getName());
+        GNS.getLogger().fine("File name: " + fName);
         if (!paxosInstances.containsKey(getPaxosKey(fName.paxosID)) ||
                 !fName.paxosID.equals(paxosInstances.get(getPaxosKey(fName.paxosID)).getPaxosID())) {
           continue;
@@ -790,6 +791,7 @@ public class PaxosLogger extends Thread {
         }
       } catch (Exception e) {
         GNS.getLogger().fine(" ERROR Parsing log state file name: " + f1.getName());
+        e.printStackTrace();
       }
     }
 
@@ -897,36 +899,39 @@ public class PaxosLogger extends Thread {
    * This method updates the <code>ConcurrentHashMap</code> containing list of paxos instances,
    * based on a single log message.
    * @param paxosInstances <<code>ConcurrentHashMap</code> with list of paxos instances.
-   * @param logMessage log message to be processed
+   * @param log log message to be processed
    * @throws JSONException
    */
   private  void updatePaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
-                                           PaxosLogMessage logMessage) throws JSONException {
-    if (paxosInstances == null || logMessage == null) {
+                                           PaxosLogMessage log) throws JSONException {
+    if (paxosInstances == null || log == null) {
       if (debugMode) {
-        GNS.getLogger().fine("Ignored log msg:" + logMessage);
+        GNS.getLogger().fine("Ignored log msg:" + log);
       }
       return;
     }
+    boolean isPaxosIDMatched = paxosInstances.containsKey(getPaxosKey(log.getPaxosID())) &&
+            paxosInstances.get(getPaxosKey(log.getPaxosID())).getPaxosID().equals(log.getPaxosID());
 
-    switch (logMessage.getLogMessageType()) {
+    switch (log.getLogMessageType()) {
       case PaxosPacketType.START:
-        parsePaxosStart(paxosInstances, logMessage.getPaxosID(), logMessage.getMessage());
+        parsePaxosStart(paxosInstances, log.getPaxosID(), log.getMessage());
         break;
       case PaxosPacketType.STOP:
-        parsePaxosStop(paxosInstances, logMessage.getPaxosID(), logMessage.getMessage());
+        if (isPaxosIDMatched) parsePaxosStop(paxosInstances, log.getPaxosID(), log.getMessage());
         break;
       case PaxosPacketType.DECISION:
-        parseDecision(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
-                logMessage.getMessage());
+
+        if (isPaxosIDMatched) parseDecision(paxosInstances.get(getPaxosKey(log.getPaxosID())),
+                log.getMessage());
         break;
       case PaxosPacketType.ACCEPT:
-        parseAccept(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
-                logMessage.getMessage());
+        if (isPaxosIDMatched) parseAccept(paxosInstances.get(getPaxosKey(log.getPaxosID())),
+                log.getMessage());
         break;
       case PaxosPacketType.PREPARE:
-        parsePrepare(paxosInstances.get(getPaxosKey(logMessage.getPaxosID())),
-                logMessage.getMessage());
+        if (isPaxosIDMatched) parsePrepare(paxosInstances.get(getPaxosKey(log.getPaxosID())),
+                log.getMessage());
         break;
       // Abhigyan: I am not deleting these because we may be adding some of these log messages
 //      case BALLOT:
@@ -1483,14 +1488,18 @@ class PaxosStateFileName implements Comparable {
   String state;
 
   public PaxosStateFileName(String name) throws Exception {
+    // what is the name itself has '_' in it.
     this.filename = name;
     String[] tokens = name.split("_");
-    if (tokens.length != 3) {
+    if (tokens.length < 3) {
       return;
     }
-    paxosID = tokens[0];
-    ballot = new Ballot(tokens[1]);
-    slotNumber = Integer.parseInt(tokens[2]);
+
+    ballot = new Ballot(tokens[tokens.length - 2]);
+    slotNumber = Integer.parseInt(tokens[tokens.length - 1]);
+    int len = name.length() - tokens[tokens.length - 2].length() - 1 - tokens[tokens.length - 1].length() - 1;
+    paxosID = name.substring(0, len);
+
   }
 
   public void updateState(String state) {
@@ -1508,6 +1517,17 @@ class PaxosStateFileName implements Comparable {
       return 0;
     }
     return slotNumber - p.slotNumber;
+  }
+
+  public String toString() {
+    return paxosID + "\t" + ballot + "\t" + slotNumber;
+  }
+
+  public static void main(String[] args) throws Exception{
+    String name = "test_name:1_0:7_0";
+    PaxosStateFileName fname = new PaxosStateFileName(name);
+    System.out.println(fname);
+
   }
 }
 

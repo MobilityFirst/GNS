@@ -106,9 +106,10 @@ public class Config {
       if (allValues.containsKey(NSParameterNames.VARIATION)) {
         latencyVariation = Double.parseDouble(allValues.get(NSParameterNames.VARIATION));
       }
-
+      GNS.getLogger().info("Emulating ping latency at name server: emulatePingLatencies = " + emulatePingLatencies);
     }
-    GNS.getLogger().severe("Emulating ping latency at name server: emulatePingLatencies = " + emulatePingLatencies);
+
+
   }
 
 }

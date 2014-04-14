@@ -8,6 +8,7 @@ import edu.umass.cs.gns.util.ConsistentHashing;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 // fixme delete this class
@@ -28,8 +29,9 @@ public class UnreplicatedNameServerTest {
       String lnsConfigFile = "conf/singleNStest/gns-lns.conf";
       int nameserverID = 0;
       int lnsID = 1;
-
-      ConsistentHashing.initialize(1, 1);
+      HashSet<Integer> nameServerIDs = new HashSet<Integer>();
+      nameServerIDs.add(nameserverID);
+      ConsistentHashing.initialize(1, nameServerIDs);
 
       GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFile, nameserverID);
       NameServer nameServer = new NameServer(0, nsConfigFile, nodeConfig);

@@ -13,8 +13,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
- * FIXME Make changes to that file until we include this package again.. **/
 /**
  * Provides an interface for insert, update, remove and lookup operations in a nosql database
  *

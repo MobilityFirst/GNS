@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
-/**************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
- * FIXME Make changes to that file until we include this package again.. **/
 /**
  * Provides a cursor that can be used to iterate through rows of a collection.
  * Currently can generate rows as HashMaps or JSONObjects (which are really the same structure anyway)

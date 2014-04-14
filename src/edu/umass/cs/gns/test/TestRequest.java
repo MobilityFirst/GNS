@@ -9,8 +9,9 @@ public class TestRequest {
   public static final int UPDATE = 2;
   public static final int ADD = 3;
   public static final int REMOVE = 4;
+  public static final int GROUP_CHANGE = 5;
 
-  public static final int DELAY = 5; // this is not a request. it introduces delay between the preceding and the next
+  public static final int DELAY = 6; // this is not a request. it introduces delay between the preceding and the next
                                       // request. the name field for DELAY entry is an integer that specifies the delay.
 
   public final int type;
@@ -18,7 +19,8 @@ public class TestRequest {
 
   public TestRequest(String name, int type) {
     this.name = name;
-    if (type == LOOKUP || type == UPDATE || type == ADD || type == REMOVE || type == DELAY)
+    if (type == LOOKUP || type == UPDATE || type == ADD || type == REMOVE || type == DELAY
+            || type == GROUP_CHANGE)
       this.type = type;
     else
       throw new IllegalArgumentException("Request type not found: " + type);
