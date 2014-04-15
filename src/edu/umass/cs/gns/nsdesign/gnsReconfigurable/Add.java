@@ -43,7 +43,6 @@ public class Add {
       // todo this case should happen rarely if we actually delete record at the end of remove operation
       try {
         NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
-        NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
         NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
       } catch (FailedUpdateException e1) {
         GNS.getLogger().severe("Failed update exception:" + e.getMessage());
