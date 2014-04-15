@@ -624,7 +624,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param record
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
-  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedUpdateException {
+  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedUpdateException, RecordExistsException {
     recordMap.addNameRecord(record);
   }
 

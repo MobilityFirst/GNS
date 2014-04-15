@@ -5,6 +5,7 @@ import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -148,7 +149,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(NameRecord recordEntry) throws FailedUpdateException {
+  public void addNameRecord(NameRecord recordEntry) throws FailedUpdateException, RecordExistsException {
     try {
       addNameRecord(recordEntry.toJSONObject());
     } catch (JSONException e) {
@@ -159,7 +160,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(JSONObject json) throws FailedUpdateException {
+  public void addNameRecord(JSONObject json) throws FailedUpdateException, RecordExistsException {
     MongoRecords records = mongoRecords;
     try {
       String name = json.getString(NameRecord.NAME.getName());
@@ -171,7 +172,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException {
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException, RecordExistsException {
     MongoRecords records = mongoRecords;
     records.bulkInsert(collectionName, jsons);
     GNS.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
@@ -221,7 +222,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException {
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException, RecordExistsException {
     try {
       mongoRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {

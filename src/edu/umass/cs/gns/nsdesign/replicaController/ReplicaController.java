@@ -209,6 +209,9 @@ public class ReplicaController implements Replicable {
     } catch (FailedUpdateException e) {
       GNS.getLogger().severe("Failed update exception: " + e.getMessage());
       e.printStackTrace();
+    } catch (RecordExistsException e) {
+      GNS.getLogger().severe("Record exists exception: " + e.getMessage());
+      e.printStackTrace();
     }
     GNS.getLogger().info("Number of rc records updated in DB: " + recordCount);
     return true;

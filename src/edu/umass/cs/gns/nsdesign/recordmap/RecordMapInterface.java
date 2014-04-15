@@ -21,15 +21,15 @@ import java.util.Set;
  */
 public interface RecordMapInterface {
 
-  public void addNameRecord(NameRecord recordEntry) throws FailedUpdateException;
+  public void addNameRecord(NameRecord recordEntry) throws FailedUpdateException, RecordExistsException;
 
   public NameRecord getNameRecord(String name) throws RecordNotFoundException;
 
   public void updateNameRecord(NameRecord recordEntry) throws FailedUpdateException;
 
-  public void addNameRecord(JSONObject json) throws FailedUpdateException;
+  public void addNameRecord(JSONObject json) throws FailedUpdateException, RecordExistsException;
 
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException;
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException, RecordExistsException;
 
   public void removeNameRecord(String name) throws FailedUpdateException;
 
@@ -126,7 +126,7 @@ public interface RecordMapInterface {
   // Replica Controller
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;
 
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException;
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException, RecordExistsException;
 
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException;
 }

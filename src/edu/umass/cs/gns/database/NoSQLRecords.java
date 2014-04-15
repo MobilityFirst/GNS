@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.database;
 
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONObject;
@@ -63,7 +64,7 @@ public interface NoSQLRecords {
    * @param value
    * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
    */
-  public void insert(String collection, String name, JSONObject value) throws FailedUpdateException;
+  public void insert(String collection, String name, JSONObject value) throws FailedUpdateException, RecordExistsException;
 
   /**
    * Do a bulk insert of all documents into the database.
@@ -72,7 +73,7 @@ public interface NoSQLRecords {
    * @param values list of records to be inserted
    * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
    */
-  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException;
+  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException, RecordExistsException;
 
   /**
    * Update the record (row) with the given name using the JSONObject.
@@ -178,6 +179,21 @@ public interface NoSQLRecords {
           ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedUpdateException;
 
+  /**
+   * NEEDS SOME DOCUMENTATION!!!
+   * 
+   * @param collectionName
+   * @param guid
+   * @param nameField
+   * @param conditionField
+   * @param conditionValue
+   * @param fields
+   * @param values
+   * @param valuesMapField
+   * @param valuesMapKeys
+   * @param valuesMapValues
+   * @throws FailedUpdateException 
+   */
   public abstract void updateConditional(String collectionName, String guid, ColumnField nameField,
           ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,

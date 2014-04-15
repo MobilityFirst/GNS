@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
@@ -36,6 +37,9 @@ public class Add {
         e.printStackTrace();
       }
     } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Failed update exception:" + e.getMessage());
+      e.printStackTrace();
+    } catch (RecordExistsException e) {
       // todo this case should happen rarely if we actually delete record at the end of remove operation
       try {
         NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
@@ -43,6 +47,9 @@ public class Add {
         NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
       } catch (FailedUpdateException e1) {
         GNS.getLogger().severe("Failed update exception:" + e.getMessage());
+        e1.printStackTrace();
+      } catch (RecordExistsException e1) {
+        GNS.getLogger().severe("Name record exists when we just deleted it!!! - " + e.getMessage());
         e1.printStackTrace();
       }
       GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");

@@ -4,6 +4,7 @@ import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
@@ -240,8 +241,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
       if (Config.debugMode) {
         GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
       }
-
-    } catch (FailedUpdateException e) {
+    } catch (RecordExistsException e) {
       NameRecord nameRecord = null;
       try {
         nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
@@ -263,6 +263,9 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
           e1.printStackTrace();
         }
       }
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Failed update execption: " + e.getMessage());
+      e.printStackTrace();
     }
   }
 

@@ -863,7 +863,7 @@ public class ReplicaControllerRecord {
    * @param record
    */
   public static void addNameRecordPrimary(BasicRecordMap replicaControllerDB, ReplicaControllerRecord record)
-          throws FailedUpdateException {
+          throws FailedUpdateException, RecordExistsException {
     replicaControllerDB.addNameRecordPrimary(record);
   }
 
