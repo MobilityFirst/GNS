@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -36,7 +37,7 @@ public class Add {
    * @param replicaController ReplicaController object calling this method.
    */
   public static GNSMessagingTask executeAddRecord(AddRecordPacket addRecordPacket, ReplicaController replicaController,
-                                                  boolean recovery) throws JSONException {
+                                                  boolean recovery) throws JSONException, FailedUpdateException {
 
     GNSMessagingTask gnsMessagingTask;
     GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket + " Local name server ID = " +
@@ -51,7 +52,7 @@ public class Add {
       addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
       gnsMessagingTask = new GNSMessagingTask(replicaController.getNodeID(), addRecordPacket.toJSONObject());
 
-    } catch (RecordExistsException e) {
+    } catch (FailedUpdateException e) {
       // send error to client
       ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
       gnsMessagingTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());

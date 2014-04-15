@@ -13,7 +13,7 @@ public class GnsException extends Exception
   private static final long serialVersionUID = 6627620787610127842L;
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>GnsException</code> object
    */
   public GnsException()
   {
@@ -21,7 +21,7 @@ public class GnsException extends Exception
   }
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>GnsException</code> object
    * 
    * @param message
    * @param cause
@@ -32,7 +32,7 @@ public class GnsException extends Exception
   }
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>GnsException</code> object
    * 
    * @param message
    */
@@ -42,7 +42,7 @@ public class GnsException extends Exception
   }
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>GnsException</code> object
    * 
    * @param throwable
    */

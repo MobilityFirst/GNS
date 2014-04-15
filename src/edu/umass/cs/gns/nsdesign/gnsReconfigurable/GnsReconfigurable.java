@@ -2,8 +2,8 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
@@ -174,7 +174,6 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
     activeStopFields.add(NameRecord.VALUES_MAP);
   }
 
-
   public boolean stopVersion(String name, short version) {
     NameRecord nameRecord;
     try {
@@ -185,6 +184,8 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
       nameRecord.handleCurrentActiveStop();
       // also inform
 //      activeReplica.stopProcessed(name, activeVersion, true);
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().warning("Field update exception. Message = " + e.getMessage());
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("Record not found exception. Message = " + e.getMessage());
     } catch (FieldNotFoundException e) {
@@ -233,20 +234,21 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
       e.printStackTrace();
       return;
     }
-
     try {
-
       NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl);
       NameRecord.addNameRecord(nameRecordDB, nameRecord);
       if (Config.debugMode) {
         GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
       }
 
-    } catch (RecordExistsException e) {
+    } catch (FailedUpdateException e) {
       NameRecord nameRecord = null;
       try {
         nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
         nameRecord.handleNewActiveStart(version, state1.valuesMap, state1.ttl);
+      } catch (FailedUpdateException e1) {
+        GNS.getLogger().severe("Failed update execption: " + e.getMessage());
+        e1.printStackTrace();
       } catch (FieldNotFoundException e1) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
         e1.printStackTrace();
@@ -266,7 +268,34 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 
   @Override
   public int deleteFinalState(String name, short version) {
-
+    int[] versions = getCurrentOldVersions(name);
+    if (versions != null) {
+      int curVersion = versions[0];
+      int oldVersion = versions[1];
+      if (oldVersion == version) {
+        if (curVersion == NameRecord.NULL_VALUE_ACTIVE_VERSION) {
+          // todo test and remove record
+          try {
+            NameRecord.removeNameRecord(nameRecordDB, name);
+          } catch (FailedUpdateException e) {
+            GNS.getLogger().severe("FailedUpdateException: " + name + "\t " + version + "\t " + e.getMessage());
+            e.printStackTrace();
+          }
+        } else {
+          try {
+            NameRecord nameRecord = new NameRecord(nameRecordDB, name);
+            nameRecord.deleteOldState(version);
+          } catch (FailedUpdateException e) {
+            GNS.getLogger().severe("FailedUpdateException: " + name + "\t " + version + "\t " + e.getMessage());
+            e.printStackTrace();
+          } catch (FieldNotFoundException e) {
+            GNS.getLogger().severe("FieldNotFoundException: " + name + "\t " + version + "\t " + e.getMessage());
+            e.printStackTrace();
+          }
+        }
+      }
+    }
+    return 0;
 //    int[] versions = getCurrentOldVersions(name);
 //    if (versions != null) {
 //      int curVersion = versions[0];
@@ -286,7 +315,6 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 //        }
 //      }
 //    }
-    return 0;
   }
 
   private static ArrayList<ColumnField> curValueRequestFields = new ArrayList<ColumnField>();
@@ -325,10 +353,12 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       e.printStackTrace();
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
+      e.printStackTrace();
     }
     return true;
   }
-
 
   /**
    * Nuclear option for clearing out all state at GNS.

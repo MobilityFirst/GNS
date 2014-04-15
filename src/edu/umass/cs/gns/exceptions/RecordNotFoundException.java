@@ -4,8 +4,6 @@
  * All Rights Reserved 
  */
 package edu.umass.cs.gns.exceptions;
-
-import edu.umass.cs.gns.exceptions.GnsException;
 /*
  * Copyright (C) 2013
  * University of Massachusetts

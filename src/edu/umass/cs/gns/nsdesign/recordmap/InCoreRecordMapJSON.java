@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.recordmap;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -39,7 +40,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws RecordExistsException {
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException {
 
   }
 

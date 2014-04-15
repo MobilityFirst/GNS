@@ -4,6 +4,7 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -320,7 +321,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /********************************************
    * WRITE methods, these methods change one or more fields in database.
    * ******************************************/
-  public void incrementLookupRequest() throws FieldNotFoundException {
+  public void incrementLookupRequest() throws FieldNotFoundException, FailedUpdateException {
     ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
     incrementFields.add(TOTAL_LOOKUP_REQUEST);
 
@@ -331,7 +332,7 @@ public class NameRecord implements Comparable<NameRecord> {
     // TODO implement batching
   }
 
-  public void incrementUpdateRequest() throws FieldNotFoundException {
+  public void incrementUpdateRequest() throws FieldNotFoundException, FailedUpdateException {
     ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
     incrementFields.add(TOTAL_UPDATE_REQUEST);
 
@@ -352,7 +353,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
   public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues, int argument,
-          UpdateOperation operation) throws FieldNotFoundException {
+          UpdateOperation operation) throws FieldNotFoundException, FailedUpdateException {
 
     // handle special case for REMOVE_FIELD operation
     
@@ -420,7 +421,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * @throws FieldNotFoundException
    */
-  public void handleCurrentActiveStop() throws FieldNotFoundException {
+  public void handleCurrentActiveStop() throws FieldNotFoundException, FailedUpdateException {
 
     ValuesMap valuesMap = getValuesMap();
 
@@ -449,7 +450,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * @throws FieldNotFoundException
    */
-  public void deleteOldState(int oldVersion) throws FieldNotFoundException {
+  public void deleteOldState(int oldVersion) throws FieldNotFoundException, FailedUpdateException {
 
     ArrayList<ColumnField> updateFields  = new ArrayList<ColumnField>();
     updateFields.add(OLD_ACTIVE_VERSION);
@@ -482,7 +483,7 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   public void handleNewActiveStart(int version, ValuesMap currentValue, int ttl)
-          throws FieldNotFoundException {
+          throws FieldNotFoundException, FailedUpdateException {
 
     ArrayList<ColumnField> updateFields = getNewActiveStartFields();
 
@@ -501,7 +502,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
   }
 
-  public void updateState(ValuesMap currentValue, int ttl) throws FieldNotFoundException {
+  public void updateState(ValuesMap currentValue, int ttl) throws FieldNotFoundException, FailedUpdateException {
 
     ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
     updateFields.add(VALUES_MAP);
@@ -623,7 +624,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param record
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
-  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws RecordExistsException {
+  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedUpdateException {
     recordMap.addNameRecord(record);
   }
 
@@ -631,7 +632,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Replace the name record in DB with this copy of name record
    * @param record
    */
-  public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) {
+  public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedUpdateException {
     recordMap.updateNameRecord(record);
   }
 
@@ -639,7 +640,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Remove name record from DB
    * @param name
    */
-  public static void removeNameRecord(BasicRecordMap recordMap, String name) {
+  public static void removeNameRecord(BasicRecordMap recordMap, String name) throws FailedUpdateException {
     recordMap.removeNameRecord(name);
   }
 

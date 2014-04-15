@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
-
-import edu.umass.cs.gns.exceptions.RecordExistsException;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
@@ -21,8 +20,8 @@ public class Add {
   public static GNSMessagingTask handleActiveAdd(AddRecordPacket addRecordPacket, GnsReconfigurable activeReplica)
           throws JSONException {
 
-    GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() + " node id: " +
-            activeReplica.getNodeID());
+    GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() + " node id: "
+            + activeReplica.getNodeID());
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
 
@@ -36,12 +35,14 @@ public class Add {
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
       }
-    } catch (RecordExistsException e) {
+    } catch (FailedUpdateException e) {
       // todo this case should happen rarely if we actually delete record at the end of remove operation
-      NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
       try {
+        NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
+        NameRecord.removeNameRecord(activeReplica.getDB(), addRecordPacket.getName());
         NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
-      } catch (RecordExistsException e1) {
+      } catch (FailedUpdateException e1) {
+        GNS.getLogger().severe("Failed update exception:" + e.getMessage());
         e1.printStackTrace();
       }
       GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
@@ -53,6 +54,7 @@ public class Add {
   /**
    * Adds a new <code>NameRecord</code> to database, and replies to <code>ReplicaController</code> on the same node
    * that the record is added.
+   *
    * @param addRecordPacket <code>AddRecordPacket</code> sent by <code>ReplicaController</code>
    * @param activeReplica <code>GnsReconfigurable</code> calling this method
    * @return GNSMessagingTask to send to replica controller on same node.
@@ -64,6 +66,5 @@ public class Add {
     addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD_CONFIRM);
     return new GNSMessagingTask(activeReplica.getNodeID(), addRecordPacket.toJSONObject());
   }
-
 
 }

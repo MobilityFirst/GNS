@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
@@ -32,7 +33,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * We keep a single instance of this class for all names for whom this name server is a replica controller.
  * Created by abhigyan on 2/26/14.
  */
-public class ReplicaController  implements Replicable {
+public class ReplicaController implements Replicable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 
@@ -40,7 +41,6 @@ public class ReplicaController  implements Replicable {
 //   * object handles coordination among replicas on a request, if necessary
 //   */
 //  private ReplicaControllerCoordinator rcCoordinator = null;
-
   /**
    * ID of this node
    */
@@ -86,7 +86,6 @@ public class ReplicaController  implements Replicable {
     // todo disabling group change functionality as it is not tested at all
 //		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);
-
   }
 
   /**
@@ -124,11 +123,9 @@ public class ReplicaController  implements Replicable {
     return replicationFramework;
   }
 
-
   /**
    * ****END: getter methods for ReplicaController elements ***
    */
-
   /**
    * ****BEGIN: miscellaneous methods needed by replica controller module ***
    */
@@ -199,7 +196,7 @@ public class ReplicaController  implements Replicable {
           GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
           try {
             ReplicaControllerRecord.addNameRecordPrimary(replicaControllerDB, rcr);
-          } catch (RecordExistsException e) {
+          } catch (FailedUpdateException e) {
             ReplicaControllerRecord.updateNameRecordPrimary(replicaControllerDB, rcr);
           }
           startIndex = endIndex;
@@ -209,11 +206,13 @@ public class ReplicaController  implements Replicable {
       }
     } catch (JSONException e) {
       e.printStackTrace();
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
+      e.printStackTrace();
     }
     GNS.getLogger().info("Number of rc records updated in DB: " + recordCount);
     return true;
   }
-
 
   @Override
   public boolean handleDecision(String name, String value, boolean recovery) {

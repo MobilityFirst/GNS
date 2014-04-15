@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -76,6 +77,9 @@ public class Remove {
       } catch (FieldNotFoundException e) {
         e.printStackTrace();
       } catch (RecordNotFoundException e) {
+        e.printStackTrace();
+      } catch (FailedUpdateException e) {
+        GNS.getLogger().severe("Failed update exception: " + e.getMessage());
         e.printStackTrace();
       }
     } else {  // exceptional case: either request is retransmitted by RC. or this replica never received any state for

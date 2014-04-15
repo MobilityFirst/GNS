@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -44,9 +45,8 @@ public class Update {
 //    }
 //
 //  }
-
   public static GNSMessagingTask executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
-                                                    boolean noCoordinatonState)
+          boolean noCoordinatonState)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
     GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
 
@@ -128,6 +128,10 @@ public class Update {
       return null;
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. Exception = " + e.getMessage());
+      e.printStackTrace();
+      return null;
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Failed update exception. Exception = " + e.getMessage());
       e.printStackTrace();
       return null;
     }

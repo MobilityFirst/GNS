@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.exceptions;
 
-import edu.umass.cs.gns.exceptions.GnsException;
 import edu.umass.cs.gns.database.ColumnField;
 
 public class FieldNotFoundException extends GnsException{

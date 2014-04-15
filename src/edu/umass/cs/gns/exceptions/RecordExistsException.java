@@ -5,8 +5,6 @@
  */
 package edu.umass.cs.gns.exceptions;
 
-import edu.umass.cs.gns.exceptions.GnsException;
-
 public class RecordExistsException extends GnsException {
   String collection;
   String guid;
@@ -16,6 +14,7 @@ public class RecordExistsException extends GnsException {
     this.guid = guid;
   }
 
+  @Override
   public String getMessage() {
     return "RecordExistsException: " + " Collection = " + collection + " Guid = " + guid;
   }

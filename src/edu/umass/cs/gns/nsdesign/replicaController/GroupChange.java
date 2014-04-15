@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 
 import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -25,26 +26,30 @@ import java.util.concurrent.TimeUnit;
  * (7) Last step is to clean up state at old active replicas, for which manage informs all old active replicas to clean
  * up state for this name record.
  *
- * <p>We ensure that there is only one group change for a name at any time. To this end, when replica controllers
+ * <p>
+ * We ensure that there is only one group change for a name at any time. To this end, when replica controllers
  * agree on a group change, they update a variable indicating that group change is progress; replica controllers
  * do not agree to any other group change unless this group change is marked as completed. After group change is
  * completed, they again update this variable to indicate that group change has completed. This second update is important
  * because the next group change cannot start unless this update is done.</p>
  *
- * <p>If a manager does get a response from either old or new active replicas, it retries sending those messages.
+ * <p>
+ * If a manager does get a response from either old or new active replicas, it retries sending those messages.
  * We expect that the request are successful on a few retries. Otherwise, the manager gives up, and group change is left
  * incomplete at that stage.</p>
  *
- * <p>Also refer to documentation in activeReconfiguration/GroupChange on how active replicas implement group change.</p>
+ * <p>
+ * Also refer to documentation in activeReconfiguration/GroupChange on how active replicas implement group change.</p>
  *
  *
  * Created by abhigyan on 2/27/14.
  */
 public class GroupChange {
 
-  /** These are set of fields that different methods will read from database. We try to keep variable names
-   * similar to method names. If method name changes, update variable names accordingly. */
-
+  /**
+   * These are set of fields that different methods will read from database. We try to keep variable names
+   * similar to method names. If method name changes, update variable names accordingly.
+   */
   private static ArrayList<ColumnField> executeNewActivesProposedFields = new ArrayList<ColumnField>();
 
   static {
@@ -74,10 +79,10 @@ public class GroupChange {
     newActiveStartedFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
   }
 
-
   /**
    * After replica controllers agree on changing the set of active replicas, this method updates the database to
    * indicate a group change for this name is in progress.
+   *
    * @param activeProposalPacket Actives proposed to primary replicas
    */
   public static void executeNewActivesProposed(NewActiveProposalPacket activeProposalPacket,
@@ -109,8 +114,8 @@ public class GroupChange {
         GNS.getLogger().info(" DECISION NOT APPLIED. Old and new versions are same" + rcRecord.getActiveVersion());
         return;
       }
-      GNS.getLogger().fine(" DECISION: Name = " + activeProposalPacket.getName() + " Actives: " +
-              activeProposalPacket.getProposedActiveNameServers());
+      GNS.getLogger().fine(" DECISION: Name = " + activeProposalPacket.getName() + " Actives: "
+              + activeProposalPacket.getProposedActiveNameServers());
       // All primaries will apply this decision.
       rcRecord.updateActiveNameServers(activeProposalPacket.getProposedActiveNameServers(),
               activeProposalPacket.getVersion());
@@ -138,6 +143,9 @@ public class GroupChange {
     } catch (RecordNotFoundException e) {
       // this could happen in rare cases when remove request for a name arrives at the same time as a group change
       GNS.getLogger().warning("ERROR:  DECISION: BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Unexpected Error!" + e.getMessage());
+      e.printStackTrace();
     }
   }
 
@@ -165,8 +173,8 @@ public class GroupChange {
       }
       if (!rcRecord.isActiveRunning()) {
         if (Config.debugMode) {
-          GNS.getLogger().info("OLD Active  stopped. Name: " + rcRecord.getName() + " Old Version: " +
-                  packet.getVersion());
+          GNS.getLogger().info("OLD Active  stopped. Name: " + rcRecord.getName() + " Old Version: "
+                  + packet.getVersion());
         }
         StartActiveSetTask startupTask = new StartActiveSetTask(rcRecord.getName(),
                 rcRecord.getOldActiveNameservers(), rcRecord.getActiveNameservers(), rcRecord.getActiveVersion(),
@@ -193,7 +201,7 @@ public class GroupChange {
    * is complete.
    */
   public static void handleNewActiveStartConfirmMessage(NewActiveSetStartupPacket packet, ReplicaController replicaController)
-          throws JSONException, IOException{
+          throws JSONException, IOException {
     if (Config.debugMode) {
       GNS.getLogger().info("NEW_ACTIVE_START: Received confirmation at primary. " + packet.getName());
     }
@@ -220,7 +228,6 @@ public class GroupChange {
     }
   }
 
-
   /**
    * Updates <code>ReplicaControllerRecord</code> database to indicate group change has completed.
    * Executes the result of update proposed by <code>handleNewActiveStartConfirmMessage</code>.
@@ -229,14 +236,14 @@ public class GroupChange {
                                                      ReplicaController replicaController, boolean recovery)
           throws JSONException {
     if (Config.debugMode) {
-      GNS.getLogger().info("Execute: New active started. write to database: "+ packet);
+      GNS.getLogger().info("Execute: New active started. write to database: " + packet);
     }
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
               replicaController.getDB(), packet.getName(), newActiveStartedFields);
 
-      GNS.getLogger().info("Group change complete. name = " + rcRecord.getName() + " Version " +
-              rcRecord.getActiveVersion());
+      GNS.getLogger().info("Group change complete. name = " + rcRecord.getName() + " Version "
+              + rcRecord.getActiveVersion());
       if (rcRecord.setNewActiveRunning(packet.getVersion())) {
         if (Config.debugMode) {
           GNS.getLogger().info("New active running. Name: " + packet.getName() + " Version: " + packet.getVersion());
@@ -252,10 +259,11 @@ public class GroupChange {
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. " + e.getMessage() + "\tName\t" + packet.getName());
       e.printStackTrace();
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Failed update exception. " + e.getMessage() + "\tName\t" + packet.getName());
+      e.printStackTrace();
     }
 
   }
 
-
 }
-
