@@ -5,7 +5,14 @@ package edu.umass.cs.gns.database;
  * University of Massachusetts
  * All Rights Reserved
  */
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
@@ -22,15 +29,18 @@ import org.bson.BSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 
 /**
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
- * representation
- *
- * *** THIS CODE NEEDS SOME MORE WORK TO REMOVE REDUNDANT CODE AND CLEAN UP SOME OF THE EXCEPTION HANDLING ***
+ * representation.
  *
  * @author westy
  */
@@ -62,18 +72,6 @@ public class MongoRecords implements NoSQLRecords {
     init(nodeID, port);
   }
 
-//  public static MongoRecords getInstance() {
-//    return MongoRecordCollectionHolder.INSTANCE;
-//  }
-//
-//  private static class MongoRecordCollectionHolder {
-//
-//    private static final MongoRecords INSTANCE = new MongoRecords();
-//  }
-//
-//  private MongoRecords() {
-//    init();
-//  }
   private void init(int nodeID, int mongoPort) {
     MongoCollectionSpec.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     MongoCollectionSpec.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
