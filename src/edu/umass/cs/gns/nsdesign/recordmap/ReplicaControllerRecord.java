@@ -852,8 +852,7 @@ public class ReplicaControllerRecord {
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
   public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB, String name,
-          ArrayList<ColumnField> fields)
-          throws RecordNotFoundException {
+          ArrayList<ColumnField> fields) throws RecordNotFoundException {
     return new ReplicaControllerRecord(replicaControllerDB, replicaControllerDB.lookup(name, ReplicaControllerRecord.NAME, fields));
   }
 

@@ -15,15 +15,37 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * ************** FIXME All functionality of this package is provided currently by class nsdesign/recordMap/MongoRecords.java.
- * FIXME Make changes to that file until we include this package again.. *
- */
-/**
- * Provides an interface for insert, update, remove and lookup operations in a nosql database
+ * Provides an interface for insert, update, remove and lookup operations in a nosql database.
+ * 
+ * In some of the methods below we're going to make a distinction between *user* fields and *system* fields.
+ * User fields are all stored in a single system field which we call the valuesMapField. Some of the methods
+ * below let you read and write user fields just by specifying the short, unqualified name of the user field.
+ * You could always access the fully qualified field if you know the magic syntax.
+ * 
+ * And to make things more confusing some of the *user* fields are actually only used internally by the GNS.
  *
  * @author westy
  */
 public interface NoSQLRecords {
+  
+  /**
+   * Create a new record (row) with the given name using the JSONObject.
+   *
+   * @param collection
+   * @param name
+   * @param value
+   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   */
+  public void insert(String collection, String name, JSONObject value) throws FailedUpdateException, RecordExistsException;
+
+  /**
+   * Do a bulk insert of a bunch of documents into the database.
+   *
+   * @param collection collection to be inserted into.
+   * @param values list of records to be inserted
+   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   */
+  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException, RecordExistsException;
 
   /**
    * For the record with given name, return the entire record as a JSONObject.
@@ -52,28 +74,9 @@ public interface NoSQLRecords {
    * @param collection
    * @param name
    * @param key
-   * @return
+   * @return Returns a ResultValue which is basically a list of Objects.
    */
   public ResultValue lookup(String collection, String name, ArrayList<String> key);
-
-  /**
-   * Create a new record (row) with the given name using the JSONObject.
-   *
-   * @param collection
-   * @param name
-   * @param value
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
-   */
-  public void insert(String collection, String name, JSONObject value) throws FailedUpdateException, RecordExistsException;
-
-  /**
-   * Do a bulk insert of all documents into the database.
-   *
-   * @param collection collection to be inserted into.
-   * @param values list of records to be inserted
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
-   */
-  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException, RecordExistsException;
 
   /**
    * Update the record (row) with the given name using the JSONObject.
@@ -115,22 +118,15 @@ public interface NoSQLRecords {
   public void remove(String collection, String name) throws FailedUpdateException;
 
   /**
-   * Return a set of names of all the records.
-   *
-   * @param collection
-   * @return
-   */
-  public Set<String> keySet(String collection);
-
-  /**
-   * For the record with given name, return the values of given fields in form of HashMap.
+   * For the record with given name, return the values of given fields in form of a HashMap.
    *
    * @param name
    * @param nameField
    * @param fields
    * @return
    */
-  public abstract HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields) throws RecordNotFoundException;
+  public abstract HashMap<ColumnField, Object> lookup(String collection, String name, 
+          ColumnField nameField, ArrayList<ColumnField> fields) throws RecordNotFoundException;
 
   /**
    * For record with given name, return the values of given fields and from the values map field of the record,
@@ -163,7 +159,7 @@ public interface NoSQLRecords {
 
   /**
    * For the record with given name, replace the values of given fields to the given values,
-   * and the the values map field of the record, replace the values of given keys to the given values.
+   * and in the values map field of the record, replace the values of given keys to the given values.
    *
    * @param collection
    * @param name
@@ -180,7 +176,9 @@ public interface NoSQLRecords {
           ArrayList<Object> valuesMapValues) throws FailedUpdateException;
 
   /**
-   * NEEDS SOME DOCUMENTATION!!!
+   * Updates the record indexed by name conditionally. The condition specified by 
+   * conditionField whose value must be equal to conditionValue.
+   * Didn't write this so not sure about all the other arguments.
    * 
    * @param collectionName
    * @param guid
@@ -192,9 +190,10 @@ public interface NoSQLRecords {
    * @param valuesMapField
    * @param valuesMapKeys
    * @param valuesMapValues
+   * @return Returns true if the update happened, false otherwise.
    * @throws FailedUpdateException 
    */
-  public abstract void updateConditional(String collectionName, String guid, ColumnField nameField,
+  public abstract boolean updateConditional(String collectionName, String guid, ColumnField nameField,
           ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedUpdateException;

@@ -29,12 +29,6 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public Set<String> getAllRowKeys() {
-    MongoRecords records = mongoRecords;
-    return records.keySet(collectionName);
-  }
-
-  @Override
   public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException {
     if (!containsName(name)) {
       try {
@@ -76,11 +70,11 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
+  public boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
           ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField,
           ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedUpdateException {
-    mongoRecords.updateConditional(collectionName, name, nameField, conditionField, conditionValue,
+    return mongoRecords.updateConditional(collectionName, name, nameField, conditionField, conditionValue,
             fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 

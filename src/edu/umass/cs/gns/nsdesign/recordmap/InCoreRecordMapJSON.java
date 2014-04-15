@@ -60,11 +60,6 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public Set<String> getAllRowKeys() {
-    return recordMap.keySet();
-  }
-
-  @Override
   public Set<String> getAllColumnKeys(String name) {
     if (!containsName(name)) {
       try {
@@ -99,7 +94,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
   }
 
   @Override
-  public void updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

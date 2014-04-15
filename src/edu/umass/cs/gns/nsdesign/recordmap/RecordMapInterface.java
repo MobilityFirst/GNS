@@ -37,8 +37,6 @@ public interface RecordMapInterface {
 
   public Set<String> getAllColumnKeys(String key) throws RecordNotFoundException;
 
-  public Set<String> getAllRowKeys();
-
   /**
    * Clears the database and reinitializes all indices.
    */
@@ -56,7 +54,24 @@ public interface RecordMapInterface {
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedUpdateException;
 
-  public abstract void updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
+  /**
+   * Updates the record indexed by name conditionally. The condition specified by 
+   * conditionField whose value must be equal to conditionValue.
+   * Didn't write this so not sure about all the other arguments.
+   * 
+   * @param name
+   * @param nameField
+   * @param conditionField
+   * @param conditionValue
+   * @param fields1
+   * @param values1
+   * @param valuesMapField
+   * @param valuesMapKeys
+   * @param valuesMapValues
+   * @return Returns true if the update was applied false otherwise.
+   * @throws FailedUpdateException 
+   */
+  public abstract boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
           ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField,
           ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedUpdateException;

@@ -281,7 +281,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void updateConditional(String collectionName, String guid, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public boolean updateConditional(String collectionName, String guid, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -328,11 +328,6 @@ public class CassandraRecords implements NoSQLRecords {
   
   @Override
   public BasicRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public Set<String> keySet(String tableName) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
