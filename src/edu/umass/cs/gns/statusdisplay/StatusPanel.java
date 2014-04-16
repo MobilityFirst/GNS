@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.aws.EC2Installer;
+import edu.umass.cs.gns.installer.GNSInstaller;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -87,7 +87,7 @@ public class StatusPanel extends JPanel implements ActionListener {
               new Runnable() {
                 @Override
                 public void run() {
-                  EC2Installer.terminateRunSet(EC2Installer.currentRunSetName());
+                  //EC2Installer.terminateRunSet(EC2Installer.currentRunSetName());
                 }
               }).start();
 
