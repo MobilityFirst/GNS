@@ -5,8 +5,6 @@
  */
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.amazontools.AMIRecordType;
-import edu.umass.cs.amazontools.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
 
 import java.io.InputStream;
@@ -23,30 +21,30 @@ import org.w3c.dom.NodeList;
  *
  * @author westy
  */
-public class EC2ConfigParser {
+public class InstallConfigParser {
 
-  private String ec2username;
-  private AMIRecordType amiRecordType;
+  private String username;
+  private String hostType;
   private DataStoreType dataStoreType;
-  private List<EC2RegionSpec> regions = new ArrayList<EC2RegionSpec>();
+  private List<String> hosts = new ArrayList<String>();
 
   public String getEc2username() {
-    return ec2username;
+    return username;
   }
 
-  public AMIRecordType getAmiRecordType() {
-    return amiRecordType;
+  public String getHostType() {
+    return hostType;
   }
 
   public DataStoreType getDataStoreType() {
     return dataStoreType;
   }
 
-  public List<EC2RegionSpec> getRegions() {
-    return regions;
+  public List<String> getHosts() {
+    return hosts;
   }
 
-  public EC2ConfigParser(String filename) {
+  public InstallConfigParser(String filename) {
     parseFile(filename);
   }
 
@@ -62,7 +60,9 @@ public class EC2ConfigParser {
 //	//optional, but recommended
 //	//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
 //	doc.getDocumentElement().normalize();
+
       //System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
+
       NodeList nList = doc.getElementsByTagName("region");
 
       for (int temp = 0; temp < nList.getLength(); temp++) {
@@ -70,24 +70,19 @@ public class EC2ConfigParser {
         Node nNode = nList.item(temp);
 
         //System.out.println("\nCurrent Element: " + nNode.getNodeName());
+
         if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
           Element eElement = (Element) nNode;
 
-          String name = eElement.getAttribute("name");
-          String count = eElement.getAttribute("cnt");
-          String ip = eElement.getAttribute("ip");
-          EC2RegionSpec regionSpec = new EC2RegionSpec(RegionRecord.valueOf(name),
-                  "".equals(count) ? 1 : Integer.parseInt(count),
-                  "".equals(ip) ? null : ip);
-          regions.add(regionSpec);
+          hosts.add(eElement.getAttribute("ip"));
 
           //System.out.println("Region Spec: " + regionSpec.toString());
         }
       }
-
-      ec2username = ((Element) doc.getElementsByTagName("ec2username").item(0)).getAttribute("name");
-      amiRecordType = AMIRecordType.valueOf(((Element) doc.getElementsByTagName("ami").item(0)).getAttribute("name"));
+      
+      username = ((Element) doc.getElementsByTagName("ec2username").item(0)).getAttribute("name");
+      hostType = ((Element) doc.getElementsByTagName("hosttype").item(0)).getAttribute("name");
       dataStoreType = DataStoreType.valueOf(((Element) doc.getElementsByTagName("datastore").item(0)).getAttribute("name"));
 
     } catch (Exception e) {
