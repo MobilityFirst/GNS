@@ -149,7 +149,7 @@ public class LNSListenerAdmin extends Thread {
               break;
             case PINGTABLE:
               int node = Integer.parseInt(incomingPacket.getArgument());
-              if (node < LocalNameServer.getGnsNodeConfig().getNumberOfHosts()) {
+              if (LocalNameServer.getGnsNodeConfig().getAllHostIDs().contains(node)) {
                 if (node == LocalNameServer.getNodeID()) {
                   jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", LocalNameServer.getPingManager().tableToString(LocalNameServer.getNodeID()));
@@ -170,7 +170,8 @@ public class LNSListenerAdmin extends Thread {
             case PINGVALUE:
               int node1 = Integer.parseInt(incomingPacket.getArgument());
               int node2 = Integer.parseInt(incomingPacket.getArgument2());
-              if (node1 < LocalNameServer.getGnsNodeConfig().getNumberOfHosts() && node2 < LocalNameServer.getGnsNodeConfig().getNumberOfHosts()) {
+              if (LocalNameServer.getGnsNodeConfig().getAllHostIDs().contains(node1)
+                      && LocalNameServer.getGnsNodeConfig().getAllHostIDs().contains(node2)) {
                 if (node1 == LocalNameServer.getNodeID()) {
                   // handle it here
                   jsonResponse = new JSONObject();

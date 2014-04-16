@@ -25,7 +25,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
 /**
- * Work in progress. Inactive code.
  * <p>
  * This class represents a name server in GNS. It contains an GnsReconfigurable and a ReplicaController object
  * to handle functionality related to active replica and replica controller respectively.

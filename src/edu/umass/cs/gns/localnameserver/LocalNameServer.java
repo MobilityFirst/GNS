@@ -10,20 +10,40 @@ import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.GNSDelayEmulator;
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.JSONMessageExtractor;
+import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_ADD;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_REMOVE;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_UPDATE;
+import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -63,7 +83,6 @@ public class LocalNameServer {
   private static Random random;
 
   private static GNSNIOTransportInterface tcpTransport;
-
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
@@ -108,7 +127,6 @@ public class LocalNameServer {
     return gnsNodeConfig;
   }
 
-
   /**
    **
    * Constructs a local name server and assigns it a node id.
@@ -137,21 +155,19 @@ public class LocalNameServer {
     if (!StartLocalNameServer.emulatePingLatencies) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      // TODO enable this after ping manager can handle a random set of IDs, instead of (0 to n)
-//      PingServer.startServerThread(nodeID, gnsNodeConfig);
-//      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + gnsNodeConfig.getPingPort(nodeID));
-//      pingManager = new PingManager(nodeID, gnsNodeConfig);
-//      pingManager.startPinging();
+      PingServer.startServerThread(nodeID, gnsNodeConfig);
+      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + gnsNodeConfig.getPingPort(nodeID));
+      pingManager = new PingManager(nodeID, gnsNodeConfig);
+      pingManager.startPinging();
     }
 
-    // moved lns listener admin after starting ping manager because it was accessing ping manager.
+    // After starting PingManager because it accesses PingManager.
     new LNSListenerAdmin().start();
 
     // todo abhigyan: un-comment this after enabling group changes of active replicas at name server.
 //    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
 //      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
 //    }
-
     if (StartLocalNameServer.experimentMode) {
       try {
         Thread.sleep(initialExpDelayMillis); // Abhigyan: When multiple LNS are running on same machine, we wait for
@@ -166,7 +182,7 @@ public class LocalNameServer {
               StartLocalNameServer.updateRateRegular, executorService);
 
       // name server loads initialized.
-      if (StartLocalNameServer.loadDependentRedirection)  {
+      if (StartLocalNameServer.loadDependentRedirection) {
         initializeNameServerLoadMonitoring();
       }
     }
@@ -182,18 +198,24 @@ public class LocalNameServer {
 
     if (StartLocalNameServer.useGNSNIOTransport) {
       // Abhigyan: Keeping this code here as we are testing with GNSNIOTransport
-      if (StartLocalNameServer.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
+      if (StartLocalNameServer.emulatePingLatencies) {
+        GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
+      }
       tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer()));
 
     } else {
       NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), gnsNodeConfig);
-      if (StartLocalNameServer.emulatePingLatencies) nioServer.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
+      if (StartLocalNameServer.emulatePingLatencies) {
+        nioServer.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
+      }
       tcpTransport = nioServer;
     }
     new Thread(tcpTransport).start();
   }
 
-  /********************** BEGIN: methods for read/write to info about reads (queries) and updates ****************/
+  /**
+   * ******************** BEGIN: methods for read/write to info about reads (queries) and updates ***************
+   */
   /**
    **
    * Adds information of a transmitted query to a query transmitted map.
@@ -204,8 +226,8 @@ public class LocalNameServer {
    * @return A unique id for the query
    */
   public static int addDNSRequestInfo(String name, NameRecordKey recordKey,
-                                      int nameserverID, long time, String queryStatus, int lookupNumber,
-                                      DNSPacket incomingPacket, int numRestarts) {
+          int nameserverID, long time, String queryStatus, int lookupNumber,
+          DNSPacket incomingPacket, int numRestarts) {
     int id;
     //Generate unique id for the query
     do {
@@ -221,7 +243,7 @@ public class LocalNameServer {
   }
 
   public static int addUpdateInfo(String name, int nameserverID, long time,
-                                  int numRestarts, BasicPacket updateAddressPacket) {
+          int numRestarts, BasicPacket updateAddressPacket) {
     int id;
     //Generate unique id for the query
     do {
@@ -300,9 +322,12 @@ public class LocalNameServer {
     return preamble + queryTable.toString();
   }
 
-  /********************** END: methods for read/write to info about queries (read) and updates ****************/
-
-  /********************** BEGIN: methods for read/write to the stats map *******************/
+  /**
+   * ******************** END: methods for read/write to info about queries (read) and updates ***************
+   */
+  /**
+   * ******************** BEGIN: methods for read/write to the stats map ******************
+   */
   public static NameRecordStats getStats(String name) {
     return nameRecordStatsMap.get(name);
   }
@@ -362,8 +387,12 @@ public class LocalNameServer {
     return "***NameRecordStatsMap***" + str.toString();
   }
 
-  /********************** END: methods for read/write to the stats map *******************/
-  /********************** BEGIN: methods that read/write to the cache at the local name server ****************/
+  /**
+   * ******************** END: methods for read/write to the stats map ******************
+   */
+  /**
+   * ******************** BEGIN: methods that read/write to the cache at the local name server ***************
+   */
   public static void invalidateCache() {
     cache.invalidateAll();
   }
@@ -447,7 +476,7 @@ public class LocalNameServer {
   }
 
   /**
-   * Returns a Set containing name and CacheEntry 
+   * Returns a Set containing name and CacheEntry
    */
   public static Set<Map.Entry<String, CacheEntry>> getCacheEntrySet() {
     return cache.asMap().entrySet();
@@ -578,7 +607,6 @@ public class LocalNameServer {
 //		//		responseTime.add( stats );
 //		return stats;
 //	}
-
   /**
    **
    * Prints local name server cache (and sorts it for convenience)
@@ -602,11 +630,15 @@ public class LocalNameServer {
     }
   }
 
-  /********************** END: methods that read/write to the cache at the local name server ****************/
-
-  /*********************BEGIN: methods for sending packets to name servers. ********************************/
+  /**
+   * ******************** END: methods that read/write to the cache at the local name server ***************
+   */
+  /**
+   * *******************BEGIN: methods for sending packets to name servers. *******************************
+   */
   /**
    * Send packet to NS after all packet
+   *
    * @param json
    * @param ns
    */
@@ -642,9 +674,12 @@ public class LocalNameServer {
 //    }
   }
 
-  /*********************END: methods for sending packets to name servers. ********************************/
-
-  /*********************BEGIN: methods for monitoring load at name servers. ********************************/
+  /**
+   * *******************END: methods for sending packets to name servers. *******************************
+   */
+  /**
+   * *******************BEGIN: methods for monitoring load at name servers. *******************************
+   */
   private void initializeNameServerLoadMonitoring() {
     nameServerLoads = new ConcurrentHashMap<Integer, Double>();
     Set<Integer> nameServerIDs = gnsNodeConfig.getAllNameServerIDs();
@@ -667,9 +702,9 @@ public class LocalNameServer {
     LocalNameServer.nameServerLoads.put(nsLoad.getNsID(), nsLoad.getLoadValue());
   }
 
-  /*********************END: methods for monitoring load at name servers. ********************************/
-
-
+  /**
+   * *******************END: methods for monitoring load at name servers. *******************************
+   */
   /**
    * ************************************************************
    * Returns closest server including ping-latency and server-load.

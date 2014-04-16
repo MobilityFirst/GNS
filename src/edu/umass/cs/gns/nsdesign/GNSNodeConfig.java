@@ -355,7 +355,8 @@ public class GNSNodeConfig implements NodeConfig {
 
   @Override
   public boolean containsNodeInfo(int ID) {
-    return ID < this.getNumberOfHosts();
+    return getNodeIDs().contains(ID);
+    //return ID < this.getNumberOfHosts();
   }
 
   @Override

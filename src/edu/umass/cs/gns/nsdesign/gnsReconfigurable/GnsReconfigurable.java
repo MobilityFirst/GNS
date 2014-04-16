@@ -15,6 +15,7 @@ import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,11 +78,10 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
     this.nioServer = nioServer;
 
     if (!Config.emulatePingLatencies) {
-      // TODO enable this after ping manager can handle a random set of IDs, instead of (0 to n)
-//      // when emulating ping latencies we do not
-//      PingServer.startServerThread(nodeID, gnsNodeConfig);
-//      this.pingManager = new PingManager(nodeID, gnsNodeConfig);
-//      this.pingManager.startPinging();
+      // when emulating ping latencies we do not
+      PingServer.startServerThread(nodeID, gnsNodeConfig);
+      this.pingManager = new PingManager(nodeID, gnsNodeConfig);
+      this.pingManager.startPinging();
     }
 
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;

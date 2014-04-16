@@ -27,14 +27,18 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class PingClient {
 
+  /**
+   * Represents an invalid or unknown value for the ping interval.
+   */
+  public static final long INVALID_INTERVAL = -1L;
   private DatagramSocket clientSocket;
   private final Object monitor = new Object();
-  // Map between id a RTT time. Get will be null until the packet identified by id has come back.
-  private ConcurrentMap<Integer, Long> queryResultMap = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
+  // Map between id and RTT time. Get will be null until the packet identified by id has come back.
+  private final ConcurrentMap<Integer, Long> queryResultMap = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
   // Records the send time of each request
-  private ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
-  private Random randomID = new Random();
-  private GNSNodeConfig gnsNodeConfig;
+  private final ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
+  private final Random randomID = new Random();
+  private final GNSNodeConfig gnsNodeConfig;
   public PingClient(GNSNodeConfig gnsNodeConfig) {
     this.gnsNodeConfig = gnsNodeConfig;
     try {
@@ -49,7 +53,7 @@ public class PingClient {
    * Sends a ping request to the node.
    * 
    * @param nodeId
-   * @return the round trip time or -1L if the request times out
+   * @return the round trip time or INVALID_INTERVAL if the request times out
    * @throws IOException 
    */
   public long sendPing(int nodeId) throws IOException {
@@ -67,7 +71,7 @@ public class PingClient {
     //GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
     waitForResponsePacket(id);
     long result = queryResultMap.get(id);
-//    if (result == -1L) {
+//    if (result == INVALID_INTERVAL) {
 //      GNS.getLogger().fine("TIMEOUT for send to " + nodeId);
 //    }
     queryResultMap.remove(id);
