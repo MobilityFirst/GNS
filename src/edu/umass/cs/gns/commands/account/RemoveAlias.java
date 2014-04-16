@@ -54,6 +54,9 @@ public class RemoveAlias extends GnsCommand {
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      if (accountInfo == null) {
+        return BADRESPONSE + " " + BADACCOUNT + " " + guid;
+      }
       return AccountAccess.removeAlias(accountInfo, name);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
@@ -64,9 +67,6 @@ public class RemoveAlias extends GnsCommand {
   public String getCommandDescription() {
     return "Removes the alias from the account associated with the GUID. Must be signed by the guid. Returns "
             + BADGUID + " if the GUID has not been registered.";
-            
-
-
 
   }
 }

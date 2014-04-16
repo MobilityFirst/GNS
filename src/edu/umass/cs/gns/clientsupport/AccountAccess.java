@@ -5,6 +5,10 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import static edu.umass.cs.gns.clientsupport.Defs.BADACCOUNT;
+import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
+import static edu.umass.cs.gns.clientsupport.Defs.OKRESPONSE;
+import static edu.umass.cs.gns.clientsupport.Defs.VERIFICATIONERROR;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
@@ -193,10 +197,13 @@ public class AccountAccess {
 
   public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
     String response;
-    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(Defs.OKRESPONSE)) {
+    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
         String verifyCode = createVerificationCode(name);
         AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
+        if (accountInfo == null) {
+          return BADRESPONSE + " " + BADACCOUNT + " " + guid;
+        }
         accountInfo.setVerificationCode(verifyCode);
         accountInfo.noteUpdate();
         if (updateAccountInfo(accountInfo)) {
@@ -206,11 +213,11 @@ public class AccountAccess {
                   Email.ACCOUNT_CONTACT_EMAIL,
                   String.format(ADMIN_NOTICE, name, host, guid));
           if (emailOK) {
-            return Defs.OKRESPONSE;
+            return OKRESPONSE;
           } else {
             // if we can't send the confirmation back out of the account creation
             removeAccount(accountInfo);
-            return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to send email";
+            return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send email";
           }
         } else {
           // Account info could not be updated.

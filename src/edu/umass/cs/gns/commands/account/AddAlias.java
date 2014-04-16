@@ -55,6 +55,9 @@ public class AddAlias extends GnsCommand {
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      if (accountInfo == null) {
+        return BADRESPONSE + " " + BADACCOUNT + " " + guid;
+      }
       if (!accountInfo.isVerified()) {
         return BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified";
       } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
@@ -71,8 +74,6 @@ public class AddAlias extends GnsCommand {
   public String getCommandDescription() {
     return "Adds a additional human readble name to the account associated with the GUID. "
             + "Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered.";
-
-
 
   }
 }

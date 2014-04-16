@@ -40,7 +40,7 @@ public class LookupAccountRecord extends GnsCommand {
     String guid = json.getString(GUID);
     AccountInfo acccountInfo;
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
+      return BADRESPONSE + " " + BADACCOUNT + " " + guid;
     }
     if (acccountInfo != null) {
       try {
