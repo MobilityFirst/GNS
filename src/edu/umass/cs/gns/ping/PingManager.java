@@ -87,7 +87,7 @@ public class PingManager {
     int count = WINDOWSIZE; // tracks the number of good samples
     double total = 0;
     for (int j = 0; j < WINDOWSIZE; j++) {
-      System.out.println("PINGTABLE: Node: " + node + " Time: " + j + " = " + pingTable.get(node, j));
+      //System.out.println("PINGTABLE: Node: " + node + " Time: " + j + " = " + pingTable.get(node, j));
       if (pingTable.get(node, j) != PingClient.INVALID_INTERVAL) {
         total = total + pingTable.get(node, j);
       } else {
@@ -114,10 +114,10 @@ public class PingManager {
     result.append(NEWLINE);
     for (int i : gnsNodeConfig.getAllHostIDs()) {
     //for (int i = 0; i < hostCnt; i++) {
-      result.append(String.format("%2d", i));
+      result.append(String.format("%4d", i));
       if (i != node) {
         result.append(" = ");
-        result.append(String.format("%3d", nodeAverage(i)));
+        result.append(String.format("%d", nodeAverage(i)));
         result.append(" : ");
         // not print out all the samples... just do it in array order 
         // maybe do it in time order someday if we want to be cute

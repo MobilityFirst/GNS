@@ -98,18 +98,25 @@ public class CommandModule {
 
   public String allCommandDescriptionsForHTML() {
     StringBuffer result = new StringBuffer();
-    String prefix = "";
     int cnt = 1;
     List<GnsCommand> commandList = new ArrayList(commands);
     // First sort by name
     Collections.sort(commandList, CommandNameComparator);
     // The sort them by package
     Collections.sort(commandList, CommandPackageComparator);
-    for (GnsCommand command :  commandList) {
-      result.append(prefix);
+    String lastPackageName = null;
+    for (GnsCommand command : commandList) {
+      String packageName = command.getClass().getPackage().getName();
+      if (!packageName.equals(lastPackageName)) {
+        lastPackageName = packageName;
+        result.append(NEWLINE);
+        result.append("COMMAND PACKAGE: ");
+        result.append(lastPackageName);
+        result.append(NEWLINE);
+      }
+      result.append(NEWLINE);
       result.append(cnt++ + ": ");
       result.append(command.getUsage());
-      prefix = Defs.NEWLINE;
       result.append(NEWLINE);
     }
     return result.toString();
@@ -152,12 +159,12 @@ public class CommandModule {
               //ascending order
               return packageName1.compareTo(packageName2);
 
-	      //descending order
+              //descending order
               //return fruitName2.compareTo(fruitName1);
             }
 
           };
-  
+
   public static Comparator<GnsCommand> CommandNameComparator
           = new Comparator<GnsCommand>() {
 
@@ -170,7 +177,7 @@ public class CommandModule {
               //ascending order
               return commandName1.compareTo(commandName2);
 
-	      //descending order
+              //descending order
               //return fruitName2.compareTo(fruitName1);
             }
 
