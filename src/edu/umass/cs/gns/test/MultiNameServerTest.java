@@ -43,7 +43,7 @@ public class MultiNameServerTest {
       GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFile, 0);
 
       int count = 0;
-      for (int nsID: nodeConfig.getAllNameServerIDs()) {
+      for (int nsID: nodeConfig.getNameServerIDs()) {
         GNSNodeConfig myNodeConfig = new GNSNodeConfig(nodeConfigFile, nsID);
         NameServer ns = new NameServer(nsID, nsConfigFile, myNodeConfig);
 //        ns.reset();
@@ -55,7 +55,7 @@ public class MultiNameServerTest {
 //      nameServer.reset();
       GNS.getLogger().info("Name server created ..");
 
-      int lnsID = nodeConfig.getAllNameServerIDs().size();
+      int lnsID = nodeConfig.getNameServerIDs().size();
       StartLocalNameServer.startLNSConfigFile(lnsID, nodeConfigFile, lnsConfigFile, null);
 
       GNS.getLogger().info("Local name server started ...");

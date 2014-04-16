@@ -49,7 +49,7 @@ public class Select {
         }
       }
     }
-    return LocalNameServer.getGnsNodeConfig().getClosestServer(LocalNameServer.getGnsNodeConfig().getAllNameServerIDs());
+    return LocalNameServer.getGnsNodeConfig().getClosestServer(LocalNameServer.getGnsNodeConfig().getNameServerIDs());
   }
 
   public static void handlePacketSelectResponse(JSONObject json) throws JSONException {

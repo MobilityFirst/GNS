@@ -101,7 +101,7 @@ public class LNSListenerAdmin extends Thread {
             //dumpRequestPacket.setId(id);
             dumpRequestPacket.setLocalNameServer(LocalNameServer.getNodeID());
             JSONObject json = dumpRequestPacket.toJSONObject();
-            Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
+            Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getNameServerIDs();
             replicationMap.put(id, serverIds.size());
             Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
@@ -132,7 +132,7 @@ public class LNSListenerAdmin extends Thread {
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getNodeID() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
+              Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getNameServerIDs();
               Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               // clear the cache
               LocalNameServer.invalidateCache();
@@ -149,7 +149,7 @@ public class LNSListenerAdmin extends Thread {
               break;
             case PINGTABLE:
               int node = Integer.parseInt(incomingPacket.getArgument());
-              if (LocalNameServer.getGnsNodeConfig().getAllHostIDs().contains(node)) {
+              if (LocalNameServer.getGnsNodeConfig().getNodeIDs().contains(node)) {
                 if (node == LocalNameServer.getNodeID()) {
                   jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", LocalNameServer.getPingManager().tableToString(LocalNameServer.getNodeID()));
@@ -170,8 +170,8 @@ public class LNSListenerAdmin extends Thread {
             case PINGVALUE:
               int node1 = Integer.parseInt(incomingPacket.getArgument());
               int node2 = Integer.parseInt(incomingPacket.getArgument2());
-              if (LocalNameServer.getGnsNodeConfig().getAllHostIDs().contains(node1)
-                      && LocalNameServer.getGnsNodeConfig().getAllHostIDs().contains(node2)) {
+              if (LocalNameServer.getGnsNodeConfig().getNodeIDs().contains(node1)
+                      && LocalNameServer.getGnsNodeConfig().getNodeIDs().contains(node2)) {
                 if (node1 == LocalNameServer.getNodeID()) {
                   // handle it here
                   jsonResponse = new JSONObject();
@@ -198,7 +198,7 @@ public class LNSListenerAdmin extends Thread {
               // send it on to the NSs
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getNodeID() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              serverIds = LocalNameServer.getGnsNodeConfig().getAllNameServerIDs();
+              serverIds = LocalNameServer.getGnsNodeConfig().getNameServerIDs();
               Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               break;
             default:

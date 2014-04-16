@@ -57,7 +57,7 @@ public class PingClient {
    * @throws IOException 
    */
   public long sendPing(int nodeId) throws IOException {
-    InetAddress IPAddress = gnsNodeConfig.getIPAddress(nodeId);
+    InetAddress IPAddress = gnsNodeConfig.getNodeAddress(nodeId);
     int port = gnsNodeConfig.getPingPort(nodeId);
     byte[] sendData;
     // make an id and turn it into a string for sending out

@@ -103,7 +103,7 @@ public class Select {
     GNS.getLogger().info(packet.getSelectOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
     // If it's not a group lookup or is but enough time has passed we do the usual thing
     // and send the request out to all the servers. We'll get a response sent  on the flipside.
-    Set<Integer> serverIds = replica.getGNSNodeConfig().getAllNameServerIDs();
+    Set<Integer> serverIds = replica.getGNSNodeConfig().getNameServerIDs();
     // store the info for later
     int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());

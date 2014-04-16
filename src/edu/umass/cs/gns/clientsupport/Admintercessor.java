@@ -75,7 +75,7 @@ public class Admintercessor {
     Admintercessor.localServerID = localServerID;
 
     GNS.getLogger().info("Local server id: " + localServerID
-            + " Address: " + LocalNameServer.getGnsNodeConfig().getIPAddress(localServerID)
+            + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
             + " Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
   }
 
@@ -284,7 +284,7 @@ public class Admintercessor {
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<Integer> missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getAllNameServerIDs());
+    Set<Integer> missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getNameServerIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + missingIDs.toString());
@@ -292,7 +292,7 @@ public class Admintercessor {
     }
     // process all the entries into a nice string
     for (Map.Entry<Integer, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
-      result.append("Nameserver: " + entry.getKey() + " (" + LocalNameServer.getGnsNodeConfig().getIPAddress(entry.getKey()).getHostName() + ")");
+      result.append("Nameserver: " + entry.getKey() + " (" + LocalNameServer.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
         try {

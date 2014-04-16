@@ -324,7 +324,7 @@ public class Packet {
    */
   public static void sendUDPPacket(GNSNodeConfig gnsNodeConfig, int id, DatagramSocket socket, JSONObject json, GNS.PortType type)
           throws IOException {
-    InetAddress address = gnsNodeConfig.getIPAddress(id);
+    InetAddress address = gnsNodeConfig.getNodeAddress(id);
     int port = getPort(gnsNodeConfig, id, type);
 
     if (address == null || port == -1) {
@@ -372,7 +372,7 @@ public class Packet {
       }
       try {
         int port = getPort(gnsNodeConfig, id, portType);
-        InetAddress addr = gnsNodeConfig.getIPAddress(id);
+        InetAddress addr = gnsNodeConfig.getNodeAddress(id);
         sendUDPPacket(socket, json, addr, port);
       } catch (IOException e) {
         GNS.getLogger().severe("Exception: socket closed by nameserver " + id);
@@ -434,7 +434,7 @@ public class Packet {
       throw new IOException("Invalid port number " + port);
     }
 
-    InetAddress addr = gnsNodeConfig.getIPAddress(nameserverId);
+    InetAddress addr = gnsNodeConfig.getNodeAddress(nameserverId);
     if (addr == null) {
       GNS.getLogger().warning("sendTCPPacket:: FAIL, BAD ADDRESS! to: " + nameserverId + " port: " + port + " json: " + json.toString());
       return null;

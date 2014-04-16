@@ -176,7 +176,7 @@ public class GnsHttpServer {
                 + NioServer.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
         String serverLocalNameServerID = "\nLocal Name Server ID: " + localNameServerID + "\n";
-        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getAllNameServerIDs().size() + "\n";
+        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNameServerIDs().size() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 
         responseBody.write(buildVersionInfo.getBytes());

@@ -33,8 +33,8 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
   public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
 
 
-    if (numReplica >= rc.getGnsNodeConfig().getAllNameServerIDs().size()) {
-      return new HashSet<Integer>(rc.getGnsNodeConfig().getAllNameServerIDs());
+    if (numReplica >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
+      return new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs());
     }
     Set<Integer> newActiveNameServerSet;
     //		 Use top-K based on locality.
@@ -50,15 +50,15 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
       int difference = numReplica - newActiveNameServerSet.size();
       //Randomly select the other active name servers
       for (int i = 1; i <= difference; i++) {
-        if (newActiveNameServerSet.size() >= rc.getGnsNodeConfig().getAllNameServerIDs().size()) {
+        if (newActiveNameServerSet.size() >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
           break;
         }
         boolean added = false;
         // Ensures that random selection will still be deterministic for each name. 
         Random random = new Random(rcRecord.getName().hashCode());
         do {
-          int nsIndex = random.nextInt(rc.getGnsNodeConfig().getAllNameServerIDs().size());
-          int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getAllNameServerIDs(), nsIndex);
+          int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNameServerIDs().size());
+          int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNameServerIDs(),nsIndex);
           if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
             continue;
           }

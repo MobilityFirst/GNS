@@ -96,7 +96,7 @@ public class NameServer{
     // create nio server
 
 //    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getAllNameServerIDs());
+    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
 
     // init transport
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);

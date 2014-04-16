@@ -53,7 +53,7 @@ public class PingManager {
     int windowSlot = 0;
     while (true) {
       Util.sleep(TIME_BETWEEN_PINGS);
-      for (int id : gnsNodeConfig.getAllHostIDs()) {
+      for (int id : gnsNodeConfig.getNodeIDs()) {
         try {
           if (id != nodeId) {
             GNS.getLogger().fine("Send from " + nodeId + " to " + id);
@@ -112,8 +112,7 @@ public class PingManager {
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    L/NS Hostname");
     result.append(NEWLINE);
-    for (int i : gnsNodeConfig.getAllHostIDs()) {
-    //for (int i = 0; i < hostCnt; i++) {
+    for (int i : gnsNodeConfig.getNodeIDs()) {
       result.append(String.format("%4d", i));
       if (i != node) {
         result.append(" = ");
@@ -135,7 +134,7 @@ public class PingManager {
       }
       result.append(gnsNodeConfig.isNameServer(i) ? "  NS " : "  LNS");
       result.append("  ");
-      result.append(gnsNodeConfig.getIPAddress(i).getHostName());
+      result.append(gnsNodeConfig.getNodeAddress(i).getHostName());
       result.append(NEWLINE);
     }
 

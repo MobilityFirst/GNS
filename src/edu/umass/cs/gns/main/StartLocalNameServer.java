@@ -630,7 +630,7 @@ public class StartLocalNameServer {
     try {
 //      ConfigFileInfo.readHostInfo(nsFile, id);
       GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nsFile, id);
-      ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getAllNameServerIDs());
+      ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
 
       //Start local name server
       new LocalNameServer(id, gnsNodeConfig);

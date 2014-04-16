@@ -20,19 +20,19 @@ public class NSNodeConfig implements NodeConfig {
   }
   @Override
   public boolean containsNodeInfo(int nodeId) {
-    return gnsNodeConfig.getAllNameServerIDs().contains(nodeId);
+    return gnsNodeConfig.getNameServerIDs().contains(nodeId);
     //return nodeId < gnsNodeConfig.getNumberOfNameServers();
   }
 
 
   @Override
   public Set<Integer> getNodeIDs() {
-    return gnsNodeConfig.getAllNameServerIDs();
+    return gnsNodeConfig.getNameServerIDs();
   }
 
   @Override
   public InetAddress getNodeAddress(int ID) {
-    return gnsNodeConfig.getIPAddress(ID);
+    return gnsNodeConfig.getNodeAddress(ID);
   }
 
   @Override

@@ -68,7 +68,7 @@ public class Intercessor {
     Intercessor.localServerID = localServerID;
 
     GNS.getLogger().info("Local server id: " + localServerID
-            + " Address: " + LocalNameServer.getGnsNodeConfig().getIPAddress(localServerID)
+            + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
             + " LNS TCP Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
   }
 

@@ -148,7 +148,7 @@ public class LNSQueryHandler {
     } else {
       GNS.getLogger().warning("Using stupid mechanism for picking LNS.");
       // this hack picks an element from the set
-      return activeReplica.getGNSNodeConfig().getAllLocalNameServerIDs().iterator().next();
+      return activeReplica.getGNSNodeConfig().getLocalNameServerIDs().iterator().next();
     }
   }
 

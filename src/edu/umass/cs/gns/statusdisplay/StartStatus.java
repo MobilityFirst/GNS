@@ -54,7 +54,7 @@ public class StartStatus {
     }
     //
     //Set<String> hosts = new HashSet<String>();
-    for (int id : nodeConfig.getAllHostIDs()) {
+    for (int id : nodeConfig.getNodeIDs()) {
       StatusModel.getInstance().queueAddEntry(id);
     }
     //
@@ -66,7 +66,7 @@ public class StartStatus {
       System.exit(1);
     }
     //
-    StatusListener.sendOutServerInitPackets(nodeConfig, nodeConfig.getAllHostIDs());
+    StatusListener.sendOutServerInitPackets(nodeConfig, nodeConfig.getNodeIDs());
     //
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override
@@ -104,7 +104,7 @@ public class StartStatus {
     cities.add("Riyadh, Saudi Arabia");
     cities.add("Morocco");
     
-    for (int id : nodeConfig.getAllHostIDs()) {
+    for (int id : nodeConfig.getNodeIDs()) {
       HostInfo info = nodeConfig.getHostInfo(id);
       InetAddress ipAddress = info.getIpAddress();
       StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING);
