@@ -48,16 +48,19 @@ public class RemoveGuid extends GnsCommand {
     String guidToRemove = json.getString(GUID2);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    GuidInfo guidInfo, guid2Info;
-    if ((guid2Info = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
+    GuidInfo accountGuidInfo, guidInfoToRemove;
+    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
     }
-    if ((guidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
-    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+    if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
-      return AccountAccess.removeGuid(accountInfo, guid2Info);
+      if (accountInfo == null)  {
+        return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
+      }
+      return AccountAccess.removeGuid(accountInfo, guidInfoToRemove);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -68,8 +71,6 @@ public class RemoveGuid extends GnsCommand {
     return "Removes the second GUID from the account associated with the first GUID. "
             + "Must be signed by the guid. "
             + "Returns " + BADGUID + " if the GUID has not been registered.";
-
-
 
   }
 }
