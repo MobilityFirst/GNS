@@ -21,7 +21,7 @@ import java.util.Set;
  * Created by abhigyan on 3/30/14.
  */
 public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator{
-  private int nodeID;
+  private final int nodeID;
   private AbstractPaxosManager paxosManager;
 
   private Replicable paxosInterface;

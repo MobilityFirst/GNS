@@ -79,27 +79,22 @@ public class Update {
       LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
       // send the confirmation back to the originator of the update
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
-      //Intercessor.handleIncomingPackets(json);
       // instrumentation?
       if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
         GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt));
       }
-    } else if (confirmPkt.getResponseCode().isAccessOrSignatureError()) {
-      // if it's an access or signature failure just return it to the client support
-      Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
-      //Intercessor.handleIncomingPackets(json);
-    } else {
-      // current active replica set invalid, so obtain the current set of actives for a name by contacting
-      // replica controllers.
+    }  else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)){
+      // if error type is invalid active error, we fetch a fresh set of actives from replica controllers and try again
       handleInvalidActiveError(updateInfo);
+    } else { // In all other types of errors, we immediately send response to client.
+      Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
     }
-
   }
 
   /**
    * Update request reached invalid active replica, so obtain a new set of actives and send request again.
    *
-   * @param updateInfo
+   * @param updateInfo state for this request stored at local name server
    * @throws JSONException
    */
   private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException {
@@ -130,7 +125,7 @@ public class Update {
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
       GNS.getLogger().info("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
-      //LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
+      // FIXME: Why not use GNS nio transport for sending this packet ?
       try {
         Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
                 packet.getReturnTo(), GNS.PortType.NS_TCP_PORT);

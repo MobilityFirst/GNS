@@ -16,18 +16,15 @@ import java.util.*;
 public class RandomReplication implements ReplicationFrameworkInterface {
 
   @Override
-  public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord nameRecordPrimary, int numReplica, int count) throws FieldNotFoundException {
+  public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count)
+          throws FieldNotFoundException {
     // random replicas will be selected deterministically for each name.
 
-    if (numReplica == rc.getGnsNodeConfig().getNumberOfNameServers()) {
-      Set<Integer> activeNameServerSet = new HashSet<Integer>();
-      for (int i = 0; i < rc.getGnsNodeConfig().getNumberOfNameServers(); i++) {
-        activeNameServerSet.add(i);
-      }
-      return activeNameServerSet;
+    if (numReplica == rc.getGnsNodeConfig().getAllNameServerIDs().size()) {
+      return new HashSet<Integer>(rc.getGnsNodeConfig().getAllNameServerIDs());
     }
 
-    Set<Integer> activeNameServers = nameRecordPrimary.getActiveNameservers();
+    Set<Integer> activeNameServers = rcRecord.getActiveNameservers();
 
     int numActiveNameServers = activeNameServers.size();
 
@@ -38,12 +35,14 @@ public class RandomReplication implements ReplicationFrameworkInterface {
       //Randomly choose active name servers from a uniform distribution between
       //0 and N where N is 'add'
       for (int i = 1; i <= add; i++) {
-        Random random = new Random(new Integer(nameRecordPrimary.getName().hashCode()));
+        Random random = new Random(rcRecord.getName().hashCode());
+
         boolean added;
         int numTries = 0;
         do {
           numTries += 1;
-          int newActiveNameServerId = random.nextInt(rc.getGnsNodeConfig().getNumberOfNameServers());
+          int nsIndex = random.nextInt(rc.getGnsNodeConfig().getAllNameServerIDs().size());
+          int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getAllNameServerIDs(), nsIndex);
           added = newActiveNameServerSet.add(newActiveNameServerId)
                   && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != -1;
         } while (!added && numTries < NUM_RETRY);
@@ -66,12 +65,13 @@ public class RandomReplication implements ReplicationFrameworkInterface {
       if (count == 1) {
         Set<Integer> newActiveNameServerSet = new HashSet<Integer>();
         for (int i = 1; i <= numReplica; i++) {
-          Random random = new Random(new Integer(nameRecordPrimary.getName().hashCode()));
+          Random random = new Random(rcRecord.getName().hashCode());
           boolean added;
           int numTries = 0;
           do {
             numTries += 1;
-            int newActiveNameServerId = random.nextInt(rc.getGnsNodeConfig().getNumberOfNameServers());
+            int nsIndex = random.nextInt(rc.getGnsNodeConfig().getAllNameServerIDs().size());
+            int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getAllNameServerIDs(), nsIndex);
             added = newActiveNameServerSet.add(newActiveNameServerId)
                     && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != GNSNodeConfig.INVALID_PING_LATENCY;
           } while (!added && numTries < NUM_RETRY);
@@ -85,6 +85,16 @@ public class RandomReplication implements ReplicationFrameworkInterface {
     }
   }
 
+
+  private int getSetIndex(Set<Integer> nodeIds, int index) {
+    int count = 0;
+    for (int node: nodeIds) {
+      if  (count == index) return node;
+      count++;
+
+    }
+    return -1;
+  }
 
   /**
    * Putting this code here because it is related to the above random replication strategy.
@@ -116,7 +126,6 @@ public class RandomReplication implements ReplicationFrameworkInterface {
     return beehiveNSChoose(gnsNodeConfig.getClosestNameServer(), allServers, nameserverQueried);
 
   }
-
 
 
   private static int beehiveNSChoose(int closestNS, ArrayList<Integer> nameServers, Set<Integer> nameServersQueried) {

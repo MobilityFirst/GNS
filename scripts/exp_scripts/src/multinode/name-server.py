@@ -128,7 +128,7 @@ quit_after_time = exp_config.quit_after_time
 #exp_config.experiment_run_time + exp_config.ns_sleep + exp_config.extra_wait + 60 # if value >= 0, name server will quit after that time
 quit_node_id = exp_config.quit_node_id     # which node will quit
 
-is_debug_mode = exp_config.debug_mode
+is_debug_mode = exp_config.is_debug_mode
 is_experiment_mode = exp_config.is_experiment_mode                # Always set to True to run experiments
 
 tiny_update = False

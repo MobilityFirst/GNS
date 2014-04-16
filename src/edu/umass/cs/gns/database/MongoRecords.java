@@ -489,25 +489,16 @@ public class MongoRecords implements NoSQLRecords {
   public HashMap<ColumnField, Object> lookup(String collectionName, String guid, ColumnField nameField, 
           ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
     long t0 = System.currentTimeMillis();
-    long tA = 0;
-    long tB = 0;
-    long tC = 0;
-    long tD = 0;
-    long tE = 0;
-    long tF = 0;
-    long tG = 0;
     if (guid == null) {
       GNS.getLogger().fine("GUID is null: " + guid);
       throw new RecordNotFoundException(guid);
     }
     db.requestStart();
-    tA = System.currentTimeMillis();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
 
       DBCollection collection = db.getCollection(collectionName);
-      tB = System.currentTimeMillis();
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject projection = new BasicDBObject().append("_id", 0);
       if (fields1 != null) {
@@ -522,19 +513,14 @@ public class MongoRecords implements NoSQLRecords {
           projection.append(fieldName, 1);
         }
       }
-      tC = System.currentTimeMillis();
 
       DBObject dbObject = collection.findOne(query, projection);
       if (dbObject == null) {
         throw new RecordNotFoundException(guid);
       }
-
-      tD = System.currentTimeMillis();
       HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
       hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
-      tE = System.currentTimeMillis();
       ColumnFieldType.populateHashMap(hashMap, dbObject, fields1);
-      tF = System.currentTimeMillis();
       if (valuesMapField != null && valuesMapKeys != null) {
         BSONObject bson = (BSONObject) dbObject.get(valuesMapField.getName());
 
@@ -565,10 +551,9 @@ public class MongoRecords implements NoSQLRecords {
         }
         hashMap.put(valuesMapField, valuesMap);
       }
-      tG = System.currentTimeMillis();
       long t1 = System.currentTimeMillis();
       if (t1 - t0 > 20) {
-        GNS.getLogger().warning(" mongoLookup Long delay " + (t1 - t0) + "\tbreakdown\t" + (tA - t0) + "\t" + (tB - tA) + "\t" + (tC - tB) + "\t" + (tD - tC) + "\t" + (tE - tD) + "\t" + (tF - tE) + "\t" + (tG - tF) + "\t" + (t1 - tG));;
+        GNS.getLogger().warning(" mongoLookup Long delay " + (t1 - t0));
       }
       return hashMap;
     } finally {

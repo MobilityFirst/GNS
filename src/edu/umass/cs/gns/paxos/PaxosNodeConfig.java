@@ -72,10 +72,10 @@ public class PaxosNodeConfig implements NodeConfig {
     return  nodesInfo.containsKey(ID);
   }
 
-  @Override
-  public int getNodeCount() {
-    return nodesInfo.size();
-  }
+//  @Override
+//  public int getNodeCount() {
+//    return nodesInfo.size();
+//  }
 
   @Override
   public Set<Integer> getNodeIDs() {

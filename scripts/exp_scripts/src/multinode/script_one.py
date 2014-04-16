@@ -1,20 +1,29 @@
 #!/usr/bin/env python
+
 import os
 import sys
-import time
-
-import exp_config
-from generate_ec2_config_file import generate_ec2_config_file
-from run_all_lns import run_all_lns, run_all_ns
-
 import inspect
+import time
+import argparse
+
 script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
 parent_folder = os.path.split(script_folder)[0]
-
 sys.path.append(parent_folder)
+
+# first we initialize parameter in exp_config before importing any local module.
+parser = argparse.ArgumentParser("script_one", "Runs a GNS test on a set of remote machines based on config file")
+parser.add_argument("config_file", help="config file describing test")
+args = parser.parse_args()
+print "Config file:", args.config_file
+
+import exp_config
+#print "Output folder:", args.output_folder
+exp_config.initialize(args.config_file)
+
+
 from logparse.parse_log import parse_log  # added parent_folder to path to import parse_log module here
-
-
+from generate_ec2_config_file import generate_ec2_config_file
+from run_all_lns import run_all_lns, run_all_ns
 
 def main():
     """Runs this main file."""
@@ -26,10 +35,7 @@ def main():
     lookupTrace = exp_config.lookupTrace
     
     updateTrace = exp_config.updateTrace
-    
-    # write local-name-server.py, name-server.py    
-    #lns_py = 'local-name-server.py'
-    #ns_py = 'name-server.py'
+
     run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace)
 
 
@@ -47,7 +53,7 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     os.system('mkdir -p ' + output_folder)
     
     #os.system(generate_config_script + ' ' +  str(exp_config.load))
-    os.system('cp local-name-server.py name-server.py exp_config.py  ' + output_folder)
+    # os.system('cp local-name-server.py name-server.py exp_config.py  ' + output_folder)
 
     # used for workload generation
     generate_ec2_config_file(exp_config.load)
@@ -56,24 +62,12 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file)
     os.system('./rmLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' +  exp_config.paxos_log_folder + ' ' + exp_config.gns_output_logs)
 
-    if exp_config.download_name_actives:
-        downloadNameActives()
 
     # ./cpPl.sh
     os.system('./cpPl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' + exp_config.config_folder + ' ' + exp_config.gns_output_logs) #
 
     # ./cpWLU.sh
     os.system('./cpWLU.sh '+ exp_config.user + ' ' + exp_config.ssh_key + ' ' +  exp_config.lns_file + ' ' + exp_config.gns_output_logs + ' ' + lookupTrace + ' ' + updateTrace)
-
-    # ./cpNameActives.sh
-    #name_actives_local = exp_config.name_actives_local # should be uncompressed filename
-    #name_actives_remote = exp_config.name_actives_remote
-    #if os.path.exists(name_actives_local): # if uncompressed version exists: compress it
-    #    os.system('gzip -f ' + name_actives_local)
-    #name_actives_local = exp_config.name_actives_local + '.gz'
-    #if not os.path.exists(name_actives_local):
-    #    print 'Name actives does not exist:', name_actives_local
-    #    sys.exit(2)
 
     #os.system('./cpNameActives.sh ' + name_actives_local  + ' ' + name_actives_remote  + ' ')
 
@@ -98,10 +92,6 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
         os.system('./run_mongodb_pl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.mongo_bin + ' ' + exp_config.db_folder)
         os.system('sleep ' + str(exp_config.mongo_sleep)) # ensures mongo is fully running
 
-    #sys.exit(2)
-    # start cpu use monitoring
-    #os.system('./run_mpstat.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.hosts_ns_file + ' ' + exp_config.remote_cpu_folder)
-
     # ./name-server.sh
     #os.system('./name-server.sh')
 
@@ -115,7 +105,6 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
         print 'NS sleep interrupted. Starting LNS ...'
 
     # ./local-name-server.sh
-    #os.system('./local-name-server.sh')
     run_all_lns(exp_config.gns_output_logs)
 
     # this is the excess wait after given duration of experiment
@@ -137,9 +126,6 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file)
 
     os.system('./getLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' + output_folder + '  ' + exp_config.gns_output_logs)
-    
-    # stop cpu use monitoring and copy cpu use data
-    #os.system('./kill_mpstat.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.hosts_ns_file + ' ' + exp_config.remote_cpu_folder + ' ' + exp_config.local_cpu_folder)
 
     # ./parse_log.py output_folder
     #os.system('logparse/parse_log.py ' + output_folder)
@@ -148,8 +134,6 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
         stats_folder = output_folder[:-1] + '_stats'
     parse_log(output_folder, stats_folder, False)
 
-    #os.system(log_parse_script + ' ' + output_folder  + ' ' + output_folder + '_stats local')
-
     time2 = time.time()
     
     diff = time2 - time1
@@ -157,25 +141,7 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     sys.exit(2)
 
 
-def downloadNameActives():
-    """ """
-    nameActivesURL = exp_config.name_actives_url
-    nameActivesRemote = exp_config.name_actives_remote
-
-    nameActivesFile = nameActivesURL.split('/')[-1]
-    output_folder = os.path.split(nameActivesRemote)[0]
-    #nameActivesRemote = os.path.join(output_folder, nameActivesFile)
-
-    os.system('./download_file.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file + ' ' + nameActivesURL + ' ' + nameActivesFile + ' ' + output_folder)
-    os.system('./cpNameActives_S3.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file + ' ' +  nameActivesRemote)
-
-
-    os.system('./download_file.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.lns_file + ' ' + nameActivesURL + ' ' + nameActivesFile + ' ' + output_folder)
-    os.system('./cpNameActives_S3.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.lns_file + ' ' +  nameActivesRemote)
-
-
 def sleep_for_time(sleep_time):
-    
     if sleep_time < 10:
         time.sleep(sleep_time)
         return

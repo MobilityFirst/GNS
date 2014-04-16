@@ -11,7 +11,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-
+/**
+ *  Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
+ *
+ *  This was xiaozheng's implementation of beehive DHT routing.
+ */
 public class BeehiveDHTRouting {
 	
 	private Random random;

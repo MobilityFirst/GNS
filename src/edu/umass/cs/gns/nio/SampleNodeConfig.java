@@ -51,10 +51,6 @@ public class SampleNodeConfig implements NodeConfig {
 		return nmap.containsKey(ID);
 	}
 
-	@Override
-	public int getNodeCount() {
-		return nmap.size();
-	}
 
   @Override
   public Set<Integer> getNodeIDs() {

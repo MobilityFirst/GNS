@@ -19,7 +19,7 @@ public interface NodeConfig {
 
     public abstract boolean containsNodeInfo(int ID);
 
-    public abstract int getNodeCount();
+//    public abstract int getNodeCount();
 
     public abstract Set<Integer> getNodeIDs();
 

@@ -60,8 +60,6 @@ public class ComputeNewActivesTask extends TimerTask {
   }
 
 
-
-
   private static int replicationRound = 0;
 
   ReplicaController replicaController;
@@ -210,13 +208,13 @@ public class ComputeNewActivesTask extends TimerTask {
       replicaCount = Config.minReplica;
     } else if (update == 0) {
       // no updates, replicate everywhere.
-      replicaCount = replicaController.getGnsNodeConfig().getNumberOfNameServers();
+      replicaCount = replicaController.getGnsNodeConfig().getAllNameServerIDs().size();
     } else {
       replicaCount = StrictMath.round(StrictMath.round(
               (lookup / (update * Config.normalizingConstant) + Config.minReplica)));
 
-      if (replicaCount > replicaController.getGnsNodeConfig().getNumberOfNameServers()) {
-        replicaCount = replicaController.getGnsNodeConfig().getNumberOfNameServers();
+      if (replicaCount > replicaController.getGnsNodeConfig().getAllNameServerIDs().size()) {
+        replicaCount = replicaController.getGnsNodeConfig().getAllNameServerIDs().size();
       }
     }
 

@@ -122,7 +122,7 @@ regular_workload = 11000                              #Size of regular workload,
 # Experiment duration
 is_experiment_mode = exp_config.is_experiment_mode                           # Always set to True to run experiments.
 #restart=False
-is_debug_mode = exp_config.debug_mode                                # Prints logs if True. Used for testing.
+is_debug_mode = exp_config.is_debug_mode                                # Prints logs if True. Used for testing.
 experiment_run_time  = exp_config.experiment_run_time    # in seconds
 
 # retransmission parameters

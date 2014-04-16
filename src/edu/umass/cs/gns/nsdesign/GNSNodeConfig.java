@@ -175,13 +175,13 @@ public class GNSNodeConfig implements NodeConfig {
   /**
    * @return the numberOfNameServer
    */
-  public int getNumberOfNameServers() {
-    return numberOfNameServers;
-  }
-
-  public int getNumberOfHosts() {
-    return hostInfoMapping.size();
-  }
+//  public int getNumberOfNameServers() {
+//    return numberOfNameServers;
+//  }
+//
+//  public int getNumberOfHosts() {
+//    return hostInfoMapping.size();
+//  }
 
   public Set<Integer> getAllHostIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
@@ -359,10 +359,10 @@ public class GNSNodeConfig implements NodeConfig {
     //return ID < this.getNumberOfHosts();
   }
 
-  @Override
-  public int getNodeCount() {
-    return this.getNumberOfHosts();
-  }
+//  @Override
+//  public int getNodeCount() {
+//    return this.getNumberOfHosts();
+//  }
 
   @Override
   public Set<Integer> getNodeIDs() {
@@ -443,7 +443,7 @@ public class GNSNodeConfig implements NodeConfig {
   public void main(String[] args) throws Exception {
     GNSNodeConfig GNSNodeConfig = new GNSNodeConfig("name-server-info", 44);
     System.out.println(GNSNodeConfig.hostInfoMapping.toString());
-    System.out.println(GNSNodeConfig.getNumberOfNameServers());
+    System.out.println(GNSNodeConfig.getAllNameServerIDs().size());
 //    System.out.println(GNSNodeConfig.getClosestNameServer() + "\t" + getPingLatency(getClosestNameServer()));
 
     Set<Integer> nameservers = new HashSet<Integer>();

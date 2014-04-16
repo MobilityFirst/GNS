@@ -31,6 +31,7 @@ public enum ReplicationFrameworkType {
         framework = new RandomReplication();
         break;
       case BEEHIVE:
+        // Abhigyan: we will enable this if we again need to run experiments with it.
         throw new UnsupportedOperationException();
 //        BeehiveReplication.generateReplicationLevel(StartNameServer.C,
 //                StartNameServer.regularWorkloadSize + StartNameServer.mobileWorkloadSize,

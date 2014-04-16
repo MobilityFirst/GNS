@@ -14,7 +14,6 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.paxos.PaxosReplica;
 
 import java.io.IOException;
@@ -177,7 +176,7 @@ public class GnsHttpServer {
                 + NioServer.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
         String serverLocalNameServerID = "\nLocal Name Server ID: " + localNameServerID + "\n";
-        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNumberOfNameServers() + "\n";
+        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getAllNameServerIDs().size() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 
         responseBody.write(buildVersionInfo.getBytes());

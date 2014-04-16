@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-import test_check
+import local_tests
 
 __author__ = 'abhigyan'
 
@@ -7,7 +7,7 @@ __author__ = 'abhigyan'
 import unittest
 
 # include all modules here
-test_modules = [test_check.FeatureTestMultiNodeLocal]
+test_modules = [local_tests.FeatureTestMultiNodeLocal]
                 # test_check.Test3NodeLocal]
 
 # this runs tests

@@ -11,10 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
- */
-/**
- * Work in progress. Inactive code.
  *
  * Forwards incoming json objects to either active replica or replica controller at this node.
  *

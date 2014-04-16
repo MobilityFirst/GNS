@@ -123,7 +123,6 @@ public class Update {
                 updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
         GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
         return new GNSMessagingTask(updatePacket.getLocalNameServerId(), confirmPacket.toJSONObject());
-
       }
       return null;
     } catch (FieldNotFoundException e) {

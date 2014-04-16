@@ -61,8 +61,8 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
   private GNSNodeConfig gnsNodeConfig = null;
 
   public NioServer(int ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
-    connectedIDs = new SocketChannel[nodeConfig.getNodeCount()];
-    pendingChangeByNode = new boolean[nodeConfig.getNodeCount()];
+    connectedIDs = new SocketChannel[nodeConfig.getNodeIDs().size()];
+    pendingChangeByNode = new boolean[nodeConfig.getNodeIDs().size()];
     for (int i = 0; i < pendingChangeByNode.length; i++) {
       pendingChangeByNode[i] = false;
     }

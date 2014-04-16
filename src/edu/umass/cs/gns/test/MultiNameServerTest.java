@@ -55,7 +55,7 @@ public class MultiNameServerTest {
 //      nameServer.reset();
       GNS.getLogger().info("Name server created ..");
 
-      int lnsID = nodeConfig.getNumberOfNameServers();
+      int lnsID = nodeConfig.getAllNameServerIDs().size();
       StartLocalNameServer.startLNSConfigFile(lnsID, nodeConfigFile, lnsConfigFile, null);
 
       GNS.getLogger().info("Local name server started ...");

@@ -24,10 +24,6 @@ public class NSNodeConfig implements NodeConfig {
     //return nodeId < gnsNodeConfig.getNumberOfNameServers();
   }
 
-  @Override
-  public int getNodeCount() {
-    return gnsNodeConfig.getNumberOfNameServers();
-  }
 
   @Override
   public Set<Integer> getNodeIDs() {
