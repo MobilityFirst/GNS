@@ -5,7 +5,7 @@ import java.net.InetAddress;
 /**
  * ***********************************************************
  *
- * @author Hardeep Uppal
+ * @author Hardeep Uppal, Abhigyan
  ***********************************************************
  */
 public class HostInfo {
@@ -22,8 +22,12 @@ public class HostInfo {
    * Starting port number *
    */
   private final int startingPortNumber;
+
   /**
-   * RTT latency between the local nameserver and this nameserver *
+   * RTT latency between the this node and node with nodeID = id. This field in updated
+   * periodically by running pings during system deployment. During testing GNS, we emulate
+   * wide-area latencies between nodes, and in that case, this is the delay that we emulate
+   * between the nodes.
    */
   private long pingLatency;
   /**

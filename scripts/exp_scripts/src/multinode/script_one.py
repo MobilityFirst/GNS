@@ -14,16 +14,16 @@ sys.path.append(parent_folder)
 parser = argparse.ArgumentParser("script_one", "Runs a GNS test on a set of remote machines based on config file")
 parser.add_argument("config_file", help="config file describing test")
 args = parser.parse_args()
-print "Config file:", args.config_file
+print "Config file1:", args.config_file
 
 import exp_config
-#print "Output folder:", args.output_folder
 exp_config.initialize(args.config_file)
 
 
 from logparse.parse_log import parse_log  # added parent_folder to path to import parse_log module here
-from generate_ec2_config_file import generate_ec2_config_file
+from generate_multinode_config_file import generate_multinode_config_file
 from run_all_lns import run_all_lns, run_all_ns
+
 
 def main():
     """Runs this main file."""
@@ -43,9 +43,9 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     time1 = time.time()
     
     if os.path.exists(output_folder):
-        #os.system('rm -rf ' + output_folder)
-        print '***** QUITTING!!! Output folder already exists:', output_folder, '*******'
-        sys.exit(2)
+        os.system('rm -rf ' + output_folder)
+        # print '***** QUITTING!!! Output folder already exists:', output_folder, '*******'
+        # sys.exit(2)
     if output_folder.endswith('/'):
         output_folder = output_folder[:-1]
     # copy config files to record experiment configuration
@@ -56,7 +56,7 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     # os.system('cp local-name-server.py name-server.py exp_config.py  ' + output_folder)
 
     # used for workload generation
-    generate_ec2_config_file(exp_config.load)
+    generate_multinode_config_file(exp_config.load)
 
     os.system('date')
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file)
@@ -66,8 +66,8 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     # ./cpPl.sh
     os.system('./cpPl.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.ns_file  + ' ' + exp_config.lns_file + ' ' + exp_config.config_folder + ' ' + exp_config.gns_output_logs) #
 
-    # ./cpWLU.sh
-    os.system('./cpWLU.sh '+ exp_config.user + ' ' + exp_config.ssh_key + ' ' +  exp_config.lns_file + ' ' + exp_config.gns_output_logs + ' ' + lookupTrace + ' ' + updateTrace)
+    # ./cpWorkload.sh
+    os.system('./cpWorkload.sh '+ exp_config.user + ' ' + exp_config.ssh_key + ' ' +  exp_config.lns_file + ' ' + exp_config.gns_output_logs + ' ' + lookupTrace + ' ' + updateTrace)
 
     #os.system('./cpNameActives.sh ' + name_actives_local  + ' ' + name_actives_remote  + ' ')
 

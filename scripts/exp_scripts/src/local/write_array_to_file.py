@@ -13,8 +13,8 @@ def write_array(array,output_file, p = False):
     for val in array:
         fw.write(str(val)+'\n')
     fw.close()
-    if p : 
-        print "Output File:",output_file
+    if p:
+        print "Output File:", output_file
     
     
 def write_tuple_array(tuple_array,output_file, p = False):

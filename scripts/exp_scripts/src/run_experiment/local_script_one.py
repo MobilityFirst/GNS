@@ -15,7 +15,7 @@ def main():
     ns = exp_config.num_ns
     lns = exp_config.num_lns
     load = exp_config.load
-    output_folder = exp_config.output_folder
+    output_folder = exp_config.local_output_folder
     
     #'/home/abhigyan/gnrs/results/local_beehive_bugfix'
     exp_time_sec = exp_config.experiment_run_time

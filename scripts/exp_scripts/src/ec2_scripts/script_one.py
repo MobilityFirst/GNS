@@ -50,8 +50,8 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     # ./cpPl.sh
     os.system('./cpPl.sh ' + exp_config.config_folder)
     
-    # ./cpWLU.sh
-    os.system('./cpWLU.sh ' + lookupTrace + ' ' + updateTrace  + '&')
+    # ./cpWorkload.sh
+    os.system('./cpWorkload.sh ' + lookupTrace + ' ' + updateTrace  + '&')
     
     if exp_config.download_jar:
         os.system('./getJarS3.sh')

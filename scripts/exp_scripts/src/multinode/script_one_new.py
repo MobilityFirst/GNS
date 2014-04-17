@@ -4,7 +4,7 @@ import sys
 import time
 
 import exp_config
-from generate_ec2_config_file import generate_ec2_config_file
+from generate_multinode_config_file import generate_multinode_config_file
 from run_all_lns import run_all_lns, run_all_ns
 
 log_parse_script='/home/abhigyan/gnrs/logparse/parse_log.py'
@@ -54,8 +54,8 @@ def run_one_experiment(output_folder, exp_time_sec, lookupTrace, updateTrace):
     # ./cpPl.sh
     os.system('./cpPl.sh ' + exp_config.config_folder)
     
-    # ./cpWLU.sh
-    #os.system('./cpWLU.sh ' + lookupTrace + ' ' + updateTrace  + ' &')
+    # ./cpWorkload.sh
+    #os.system('./cpWorkload.sh ' + lookupTrace + ' ' + updateTrace  + ' &')
     
     # ./cpNameActives.sh
     #name_actives_local = exp_config.name_actives_local # should be uncompressed filename

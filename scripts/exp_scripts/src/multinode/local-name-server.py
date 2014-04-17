@@ -130,9 +130,9 @@ numberOfTransmissions = exp_config.numberOfTransmissions     # maximum number of
 maxQueryWaitTime = exp_config.maxQueryWaitTime                # maximum  Wait Time before query is  declared failed (milli-seconds)
 queryTimeout = exp_config.queryTimeout                       # query timeout interval
 adaptiveTimeout = exp_config.adaptiveTimeout
-delta = exp_config.delta;                                   # Weight assigned to latest sample in calculating moving average.
-mu = exp_config.mu;                                       # Co-efficient of estimated RTT in calculating timeout.
-phi = exp_config.phi;                                      # Co-efficient of deviation in calculating timeout.
+delta = exp_config.delta                                   # Weight assigned to latest sample in calculating moving average.
+mu = exp_config.mu                                       # Co-efficient of estimated RTT in calculating timeout.
+phi = exp_config.phi                                      # Co-efficient of deviation in calculating timeout.
 
 tinyQuery = False
 
@@ -147,7 +147,7 @@ console_output_level = exp_config.lnslog
 stat_file_logging_level = exp_config.lnslogstat
 stat_console_output_level = exp_config.lnslogstat
 
-java_bin = exp_config.java_bin
+remote_java_bin = exp_config.java_bin
 
 """ Prints Usage Message """
 def usage():
@@ -218,7 +218,7 @@ def num_events(trace_file):
     
 """ Executes an instance of the Local Name Server with the give parameters """
 def run_local_name_server():
-    command = 'nohup ' + java_bin +  '/java -Xmx3000m -cp ' + local_name_server_jar + ' ' + exp_config.lns_main
+    command = 'nohup ' + remote_java_bin +  '/java -Xmx3000m -cp ' + local_name_server_jar + ' ' + exp_config.lns_main
     
     if is_local:
         command += ' ' + LOCAL_EXP

@@ -18,7 +18,6 @@ import java.util.Set;
  ************************************************************/
 public class LocationBasedReplication implements ReplicationFrameworkInterface {
 
-  //  private Random random = new Random(System.currentTimeMillis());
   /*************************************************************
    * Returns a new set of active name servers based on votes 
    * received for replica selection for this record. NameServers
@@ -27,7 +26,7 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
    * @param rcRecord NameRecord whose active name server set is
    * generated.
    * @param numReplica Size of the new active name server set.
-   * @param count
+   * @param count  Number of times replicas have been computed
    ************************************************************/
   @Override
   public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {

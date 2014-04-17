@@ -36,7 +36,6 @@ lns_ids = {}  # mapping: k = LNS-hostname, v = node ID in experiment
 
 log_file_name = 'gns_stat.xml'  # suffix of log file storing all statistics
 exclude_hosts = []
-local = False
 
 exclude_ns = []
 exclude_lns = []
@@ -45,35 +44,15 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 
 
 def main():
-    global local, script_folder
+
     log_files_dir = sys.argv[1]
     if not os.path.isdir(log_files_dir):
         print 'Folder does not exist:', log_files_dir
         return
-
-    #
-    #if not log_files_dir.startswith('/home/abhigyan/gnrs'):
-    #    print 'alsdfjaskldjflkj'
-    #    log_files_dir = os.path.join('/home/abhigyan/gnrs/', log_files_dir)
-    print log_files_dir
-
-    if len(sys.argv) >= 3:
-        output_files_dir = sys.argv[2]
-    else:
-        log_files_dir, output_files_dir = get_indir_outdir(log_files_dir)
+    output_files_dir = sys.argv[2]
     os.system('mkdir -p ' + output_files_dir)
 
-    local = False
-    if len(sys.argv) >= 4 and sys.argv[3] == 'local':
-        local = True
-    #print log_files_dir
-    #print output_files_dir
-    #print local
-
-    filter1 = None
-    if filter1 is not None:
-        print '*************USING A FILTER*********'
-    parse_log(log_files_dir, output_files_dir, local, filter1)
+    parse_log(log_files_dir, output_files_dir)
 
 
 def myfilter(tokens):
@@ -104,14 +83,12 @@ def get_indir_outdir(dir):
     return prefix1, prefix2
 
 
-def parse_log(log_files_dir, output_dir, local1, filter=None):
+def parse_log(log_files_dir, output_dir, filter=None):
     """main function to read logs and generate output"""
 
-    global local
-    local = local1
     initialize_variables()
 
-    extract_data_from_log(log_files_dir, local, filter)
+    extract_data_from_log(log_files_dir, filter)
 
     output_latency_stats(output_dir)
     initialize_variables()
@@ -129,6 +106,8 @@ def parse_log(log_files_dir, output_dir, local1, filter=None):
     failed_over_time(os.path.join(output_dir, 'all_tuples.txt'))
 
     latency_over_time(os.path.join(output_dir, 'all_tuples.txt'))
+
+    # Abhigyan: might enable these stats in future
 
     #from latency_over_time import failed_over_time
     #failed_over_time(os.path.join(output_dir, 'all_tuples.txt'))
@@ -173,7 +152,7 @@ def initialize_variables():
     contact_primary = 0
 
 
-def extract_data_from_log(log_files_dir, local, filter):
+def extract_data_from_log(log_files_dir, filter):
     """parses log files in this dir."""
 
     global latencies, read_latencies, write_latencies, add_latencies, remove_latencies
@@ -182,15 +161,7 @@ def extract_data_from_log(log_files_dir, local, filter):
     # '/log_*/log/gns_stat* 1> /dev/null 2>/dev/null')
     os.system('gzip -d ' + log_files_dir + '/log_*/pl*gz')
 
-    host_files = get_all_files_local(log_files_dir)
-    #if local == True:
-    #
-    #else:
-    #    host_files = get_all_files(log_files_dir)
-
-    if not local:
-        fill_lns_ids(log_files_dir)
-        print lns_ids
+    host_files = get_all_files(log_files_dir)
 
     fill_closest_ns_latency_table(log_files_dir)
     #print 'Number of lns ids', len(lns_ids)
@@ -221,31 +192,6 @@ def fill_lns_ids(log_files_dir):
 def get_all_files(mydir):
     """Returns a dict such that key = hostname, value = list of log files."""
     host_files = {}
-    all_files = os.listdir(mydir)
-    for f in all_files:
-        if f.startswith('log_lns_') and os.path.isdir(mydir + '/' + f):
-            hostname = f[len('log_lns_'):]
-            cur_host_files = []
-            i = 10
-            while i >= 0:
-                filename = mydir + '/' + f + '/gns_stat.xml.' + str(i)
-                if os.path.exists(filename):
-                    cur_host_files.append(filename)
-                    print filename
-                i = i - 1
-
-            #            xml_files = os.listdir(mydir + '/' + f)
-            #            cur_host_files = []
-            #            for xml_file in xml_files:
-            #                if xml_file.startswith(log_file_name) and not xml_file.endswith('.lck'):
-            #                    cur_host_files.append(mydir + '/' + f + '/' + xml_file)
-            host_files[hostname] = cur_host_files
-    return host_files
-
-
-def get_all_files_local(mydir):
-    """Returns a dict such that key = hostname, value = list of log files."""
-    host_files = {}
 
     all_files = os.listdir(mydir)
     for f in all_files:
@@ -271,27 +217,6 @@ def get_all_files_local(mydir):
             #                    cur_host_files.append(mydir + '/' + f + '/' + xml_file)
             host_files[hostname] = cur_host_files
             print 'Host files are: ', cur_host_files, hostname
-
-    #print host_files
-    return host_files
-
-
-def get_all_files_local2(mydir):
-    """Returns a dict such that key = hostname, value = list of log files."""
-    host_files = {}
-    all_files = os.listdir(mydir)
-    for f in all_files:
-        log_folder = mydir + '/' + f + '/log'  # just /log/ is the difference in this method
-        if f.startswith('log_lns_') and os.path.isdir(mydir + '/' + f):
-            #os.system('mv ' + mydir + '/' + f + '/log/* ' + mydir + '/' + f)
-            #print mydir + '/' + f
-            xml_files = os.listdir(log_folder)
-            cur_host_files = []
-            for xml_file in xml_files:
-                if xml_file.startswith(log_file_name) and not xml_file.endswith('.lck'):
-                    cur_host_files.append(os.path.join(log_folder, xml_file))
-            hostname = f[len('log_lns_'):]
-            host_files[hostname] = cur_host_files
     return host_files
 
 
@@ -421,7 +346,7 @@ def get_host_latencies(filenames, hostname, filter):
     return read_l1, write_l1, add_l1, remove_l1, host_tuples1, ping_host1, closest_host1
 
 
-first_start = -1  ## first successful read at a LNS was recorded at this time, used to assign a time to other requests at that LNS.
+first_start = -1  # first successful request at a LNS was recorded at this time, used to assign a time to other requests at that LNS.
 
 
 def get_latencies(filecount, filename, hostname, filter=None):
@@ -441,19 +366,16 @@ def get_latencies(filecount, filename, hostname, filter=None):
     host_tuples = []
     host_retrans = 0
     f = open(filename)
-    if local:
-        this_local_name_server = hostname
-    else:
-        this_local_name_server = lns_ids[hostname]
 
     closest_ns_latency = 0
-    if not local:
-        closest_ns_latency = closest_ns_latency_dict[hostname]
+    # if not local:
+    #     closest_ns_latency = closest_ns_latency_dict[hostname]
     cur_time = 0
     if filecount == 0:
         first_start = -1
     #print filename
     #print '>>>>>>>>>>>>>>>>First start is ', first_start
+    local_name_server = -1
     lines = f.readlines()
     for line in lines:
         line = line.strip()
@@ -463,7 +385,6 @@ def get_latencies(filecount, filename, hostname, filter=None):
             try:
                 if filter is not None and filter(tokens) == False:
                     continue
-
                 latency, start_time, ping_latency, name, ns1, lns, num_transmissions, num_restarts, is_cache_hit = \
                     parse_line_query_success(tokens)
                 #nameInt = int(name)
@@ -545,7 +466,7 @@ def get_latencies(filecount, filename, hostname, filter=None):
                 ns = int(tokens[8])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[5])
                 host_tuples.append(
-                    [name, this_local_name_server, ns, 0, latency1, 'rf', cur_time - first_start, 0, 0, 0])
+                    [name, local_name_server, ns, 0, latency1, 'rf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -558,7 +479,7 @@ def get_latencies(filecount, filename, hostname, filter=None):
                 ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[2])
                 host_tuples.append(
-                    [name, this_local_name_server, ns, 0, latency1, 'wf', cur_time - first_start, 0, 0, 0])
+                    [name, local_name_server, ns, 0, latency1, 'wf', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -571,7 +492,7 @@ def get_latencies(filecount, filename, hostname, filter=None):
                 ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[2])
                 host_tuples.append(
-                    [name, this_local_name_server, ns, 0, latency1, 'af', cur_time - first_start, 0, 0, 0])
+                    [name, local_name_server, ns, 0, latency1, 'af', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
@@ -584,7 +505,7 @@ def get_latencies(filecount, filename, hostname, filter=None):
                 ns = int(tokens[4])  #int(tokens[7][1:-len('</message>') -1].split(',')[0])
                 latency1 = int(tokens[2])
                 host_tuples.append(
-                    [name, this_local_name_server, ns, 0, latency1, 'df', cur_time - first_start, 0, 0, 0])
+                    [name, local_name_server, ns, 0, latency1, 'df', cur_time - first_start, 0, 0, 0])
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1

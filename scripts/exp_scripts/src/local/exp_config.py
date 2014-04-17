@@ -32,7 +32,7 @@ gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 working_dir = gns_folder + '/' + DEFAULT_WORKING_DIR  # location of top-level folder checked out from SVN.
 
 # output folder: GNS logs for name servers, and local name servers are stored in this folder 
-output_folder = None
+local_output_folder = None
 
 # paxos log folder
 paxos_log_folder = None  # folder where paxos logs are stored
@@ -147,14 +147,11 @@ elif scheme == 'replicate_all':
 
 
 def initialize(filename):
-    """
-    Initializes the parameters above based on given config file
-    """
+    """Initializes the parameters above based on given config file"""
+
     parser = ConfigParser.ConfigParser()
     parser.read(filename)
-
     initialize_path_locations(parser)
-
     initialize_emulation_parameters(parser)
 
     import os
@@ -224,7 +221,7 @@ def initialize_path_locations(parser):
     6. mongoDB data folder
     7. mongoDB bin folder
     """
-    global gns_folder, gnrs_jar, working_dir, mongo_bin_folder, output_folder, paxos_log_folder, trace_folder,\
+    global gns_folder, gnrs_jar, working_dir, mongo_bin_folder, local_output_folder, paxos_log_folder, trace_folder,\
         mongodb_data_folder
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'mongo_bin_folder'):
@@ -262,7 +259,7 @@ def update_path_locations(working_dir1):
     """Updates locations of all files relative to working dir."""
 
     # output folder: GNS logs for name servers, and local name servers are stored in this folder
-    global output_folder
+    global local_output_folder
     output_folder = working_dir1 + '/log_local/'
 
     # paxos log folder

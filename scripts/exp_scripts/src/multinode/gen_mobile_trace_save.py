@@ -17,13 +17,13 @@ pl_lns_geo = exp_config.pl_lns_geo_workload
 
 num_lns = exp_config.num_lns
 #pl_lns_geo = '/home/abhigyan/gnrs/configs/validationTrace/pl_lns_geo'
-locality_parameter = 10    ## requests will be generated with locality parameter 1 to locality_parameter
+locality_parameter = 10    # requests will be generated with locality parameter 1 to locality_parameter
 first_mobile_name = exp_config.regular_workload
 number_mobiles = exp_config.mobile_workload 
-number_queries = 200000000  ## approx number of lookups generated for mobile names
-number_updates = 200000000  ## approx number of updates generated for mobile names
+number_queries = 200000000  # approx number of lookups generated for mobile names
+number_updates = 200000000  # approx number of updates generated for mobile names
 
-locality_percent =  0.75
+locality_percent = 0.75
 
 exp_duration = 300
 

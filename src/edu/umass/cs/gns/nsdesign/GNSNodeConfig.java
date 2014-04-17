@@ -16,10 +16,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-
 /**
- * **
- * This is a utility class that parses configuration files to gather information about each name server/local name
+ * This class parses configuration files to gather information about each name server/local name
  * server in the system.
  *
  * To use the nio package, GNS implements <code>NodeConfig</code> interface in this class.
