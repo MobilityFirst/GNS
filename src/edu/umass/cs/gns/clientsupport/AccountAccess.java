@@ -334,7 +334,7 @@ public class AccountAccess {
       for (String guid : accountInfo.getGuids()) {
         GuidInfo guidInfo = lookupGuidInfo(guid);
         if (guidInfo != null) { // should not be null, ignore if it is
-          removeGuid(accountInfo, guidInfo, true);
+          removeGuid(guidInfo, accountInfo, true);
         }
       }
 
@@ -392,27 +392,56 @@ public class AccountAccess {
   }
 
   /**
+   * Remove a GUID. Guid should not be an account GUID.
+   *
+   * @param guid
+   * @param accountInfo
+   * @return
+   */
+  public static String removeGuid(GuidInfo guid) {
+    return removeGuid(guid, null, false);
+  }
+
+  /**
    * Remove a GUID associated with an account.
    *
    * @param accountInfo
    * @param guid
    * @return status result
    */
-  public static String removeGuid(AccountInfo accountInfo, GuidInfo guid) {
-    return removeGuid(accountInfo, guid, false);
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo) {
+    return removeGuid(guid, accountInfo, false);
   }
 
   /**
    * Remove a GUID associated with an account.
-   * If dontWorryAboutAccountGuid is true we're deleting the account guid as well
-   * so we don't have to update that info.
+   * If ignoreAccountGuid is true we're deleting the account guid as well
+   * so we don't have to check or update that info. The accountInfo parameter
+   * can be null in which case we look it up using the guid.
    *
-   * @param accountInfo
    * @param guid
-   * @param dontWorryAboutAccountGuid
+   * @param accountInfo - can be null in which case we look it up
+   * @param ignoreAccountGuid
    * @return
    */
-  public static String removeGuid(AccountInfo accountInfo, GuidInfo guid, boolean dontWorryAboutAccountGuid) {
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid) {
+    // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
+    if (!ignoreAccountGuid) {
+      if (AccountAccess.lookupAccountInfoFromGuid(guid.getGuid()) != null) {
+        return Defs.BADRESPONSE + " " + Defs.BADGUID + " " + guid.getGuid() + " is an account guid";
+      }
+    }
+    // Fill in a missing account info
+    if (accountInfo == null) {
+      String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid());
+      // should not happen unless records got messed up in GNS
+      if (accountGuid == null) {
+        return Defs.BADRESPONSE + " " + Defs.BADACCOUNT + " " + guid.getGuid() + " does not have a primary account guid";
+      }
+      if ((accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid)) == null) {
+        return Defs.BADRESPONSE + " " + Defs.BADACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid;
+      }
+    }
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(guid.getGuid());
     // Then remove the guid record
@@ -421,7 +450,7 @@ public class AccountAccess {
       Intercessor.sendRemoveRecord(guid.getName());
       // Possibly update the account guid we are associated with to
       // tell them we are gone
-      if (dontWorryAboutAccountGuid) {
+      if (ignoreAccountGuid) {
         return Defs.OKRESPONSE;
       } else {
         // update the account guid to know that we deleted the guid

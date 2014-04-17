@@ -95,6 +95,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.account.RemoveAccount",
     "edu.umass.cs.gns.commands.account.RemoveAlias",
     "edu.umass.cs.gns.commands.account.RemoveGuid",
+    "edu.umass.cs.gns.commands.account.RemoveGuidNoAccount",
     "edu.umass.cs.gns.commands.account.RetrieveAliases",
     "edu.umass.cs.gns.commands.account.SetPassword",
     "edu.umass.cs.gns.commands.account.VerifyAccount",

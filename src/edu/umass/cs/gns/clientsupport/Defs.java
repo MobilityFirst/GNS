@@ -134,6 +134,7 @@ public class Defs {
   public final static String NAME = "name";
   public final static String GUID = "guid";
   public final static String GUID2 = "guid2";
+  public final static String ACCOUNT_GUID = "accountGuid";
   public final static String READER = "reader";
   public final static String WRITER = "writer";
   public final static String APPGUID = "appGuid";

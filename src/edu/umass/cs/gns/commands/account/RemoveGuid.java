@@ -33,7 +33,7 @@ public class RemoveGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, GUID2, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, ACCOUNT_GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -44,23 +44,29 @@ public class RemoveGuid extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String accountGuid = json.getString(GUID);
-    String guidToRemove = json.getString(GUID2);
+    String guidToRemove = json.getString(GUID);
+    String accountGuid = json.optString(ACCOUNT_GUID, null);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    GuidInfo accountGuidInfo, guidInfoToRemove;
+    GuidInfo accountGuidInfo = null;
+    GuidInfo guidInfoToRemove;
     if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
     }
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + accountGuid;
-    }
-    if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
-      if (accountInfo == null)  {
-        return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
+    if (accountGuid != null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
+        return BADRESPONSE + " " + BADGUID + " " + accountGuid;
       }
-      return AccountAccess.removeGuid(accountInfo, guidInfoToRemove);
+    }
+    if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
+      AccountInfo accountInfo = null;
+      if (accountGuid != null) {
+        accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+        if (accountInfo == null) {
+          return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
+        }
+      }
+      return AccountAccess.removeGuid(guidInfoToRemove, accountInfo);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }
@@ -68,8 +74,8 @@ public class RemoveGuid extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Removes the second GUID from the account associated with the first GUID. "
-            + "Must be signed by the guid. "
+    return "Removes the GUID from the account associated with the ACCOUNT_GUID. "
+            + "Must be signed by the account guid or the guid if account guid is not provided. "
             + "Returns " + BADGUID + " if the GUID has not been registered.";
 
   }
