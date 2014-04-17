@@ -69,7 +69,7 @@ public class EC2Installer {
   /**
    * Stores information about instances that have started.
    */
-  private static ConcurrentHashMap<Integer, InstanceInfo> idTable = new ConcurrentHashMap<Integer, InstanceInfo>();
+  private static ConcurrentHashMap<Integer, EC2InstanceInfo> idTable = new ConcurrentHashMap<Integer, EC2InstanceInfo>();
   //
   private static final int STARTINGNODENUMBER = 0;
   private static ConcurrentHashMap<Integer, Integer> hostsThatDidNotStart = new ConcurrentHashMap<Integer, Integer>();
@@ -245,7 +245,7 @@ public class EC2Installer {
         Point2D location = GEOLocator.lookupIPLocation(ip);
         StatusModel.getInstance().queueUpdate(id, hostname, ip, location);
         // update our table of instance information
-        idTable.put(id, new InstanceInfo(id, hostname, ip, location));
+        idTable.put(id, new EC2InstanceInfo(id, hostname, ip, location));
         // store the hostname on preferences so we can access it later
         //storeHostname(runSetName, id, hostname);
 
@@ -345,7 +345,7 @@ public class EC2Installer {
             String ip = getHostIPSafe(hostname);
             // and take a guess at the location (lat, long) of this host
             Point2D location = GEOLocator.lookupIPLocation(ip);
-            idTable.put(id, new InstanceInfo(id, hostname, ip, location));
+            idTable.put(id, new EC2InstanceInfo(id, hostname, ip, location));
           }
         }
       }
@@ -364,7 +364,7 @@ public class EC2Installer {
 
   public static void describeRunSet(final String name) {
     populateIDTableForRunset(name);
-    for (InstanceInfo info : idTable.values()) {
+    for (EC2InstanceInfo info : idTable.values()) {
       System.out.println(info);
     }
   }

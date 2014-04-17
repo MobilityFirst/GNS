@@ -13,13 +13,13 @@ import java.awt.geom.Point2D;
 /**
  * Information about instances that have started
  */
-class InstanceInfo {
+class EC2InstanceInfo {
   private final int id;
   private final String hostname;
   private final String ip;
   private final Point2D location;
 
-  public InstanceInfo(int id, String hostname, String ip, Point2D location) {
+  public EC2InstanceInfo(int id, String hostname, String ip, Point2D location) {
     this.id = id;
     this.hostname = hostname;
     this.ip = ip;

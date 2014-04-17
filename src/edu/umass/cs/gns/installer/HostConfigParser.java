@@ -21,12 +21,12 @@ import org.w3c.dom.NodeList;
  *
  * @author westy
  */
-public class InstallConfigParser {
+public class HostConfigParser {
 
   private String username;
   private String hostType;
   private DataStoreType dataStoreType;
-  private List<String> hosts = new ArrayList<String>();
+  private List<HostInfo> hosts = new ArrayList<HostInfo>();
 
   public String getEc2username() {
     return username;
@@ -40,11 +40,11 @@ public class InstallConfigParser {
     return dataStoreType;
   }
 
-  public List<String> getHosts() {
+  public List<HostInfo> getHosts() {
     return hosts;
   }
 
-  public InstallConfigParser(String filename) {
+  public HostConfigParser(String filename) {
     parseFile(filename);
   }
 
@@ -63,21 +63,17 @@ public class InstallConfigParser {
 
       //System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
 
-      NodeList nList = doc.getElementsByTagName("region");
+      NodeList nList = doc.getElementsByTagName("host");
 
       for (int temp = 0; temp < nList.getLength(); temp++) {
 
         Node nNode = nList.item(temp);
 
-        //System.out.println("\nCurrent Element: " + nNode.getNodeName());
-
         if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
           Element eElement = (Element) nNode;
 
-          hosts.add(eElement.getAttribute("ip"));
-
-          //System.out.println("Region Spec: " + regionSpec.toString());
+          hosts.add(new HostInfo(Integer.parseInt(eElement.getAttribute("id")), eElement.getAttribute("ip")));
         }
       }
       
