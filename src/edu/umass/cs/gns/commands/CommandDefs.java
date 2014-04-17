@@ -86,6 +86,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.account.AddGuid",
     "edu.umass.cs.gns.commands.account.LookupAccountRecord",
     "edu.umass.cs.gns.commands.account.LookupGuid",
+    "edu.umass.cs.gns.commands.account.LookupPrimaryGuid",
     "edu.umass.cs.gns.commands.account.LookupGuidRecord",
     "edu.umass.cs.gns.commands.account.RegisterAccount",
     "edu.umass.cs.gns.commands.account.RegisterAccountWithoutGuid",

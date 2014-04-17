@@ -24,6 +24,7 @@ public class Defs {
   public final static String LOOKUPGUID = "lookupGuid";
   public final static String LOOKUPGUIDRECORD = "lookupGuidRecord";
   public final static String LOOKUPACCOUNTRECORD = "lookupAccountRecord";
+  public final static String LOOKUPPRIMARYGUID = "lookupPrimaryGuid";
   //
   // new
   public final static String CREATE = "create";
