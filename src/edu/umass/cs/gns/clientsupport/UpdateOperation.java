@@ -24,7 +24,7 @@ import java.util.Set;
  * REPLACE_ALL_OR_CREATE - an upsert operation similar to REPLACE_ALL that creates the record if it does not exist<br>
  * APPEND_WITH_DUPLICATION - appends the given value onto the current values TREATING THE LIST AS A LIST - duplicates are not removed<br>
  * SUBSTITUTE - replaces all instances of the old value with the new value - if old and new are lists does a pairwise replacement<br>
- * 
+ *
  * REMOVE_FIELD - slightly different than the rest in that it actually removes the field
  * SET - sets the element of the list specified by the argument index
  */
@@ -41,7 +41,8 @@ public enum UpdateOperation {
   REPLACE_ALL_OR_CREATE(true, REPLACE_ALL),
   APPEND_WITH_DUPLICATION(false),
   SUBSTITUTE(false),
-  SET(false);
+  SET(false),
+  SETFIELDNULL(false);
   //
   boolean upsert;
   UpdateOperation nonUpsertEquivalent = null;
@@ -53,7 +54,7 @@ public enum UpdateOperation {
   public UpdateOperation getNonUpsertEquivalent() {
     return nonUpsertEquivalent;
   }
- 
+
   private UpdateOperation(boolean upsert) {
     this.upsert = upsert;
   }
@@ -62,8 +63,6 @@ public enum UpdateOperation {
     this.upsert = upsert;
     this.nonUpsertEquivalent = nonUpsertEquivalent;
   }
-  
-  
 
   /**
    * Updates a valuesMap object based on the parameters given.
@@ -78,7 +77,7 @@ public enum UpdateOperation {
    * @param operation
    * @return false if the value was not updated true otherwise
    */
-  public static boolean updateValuesMap(ValuesMap valuesMap, String key, 
+  public static boolean updateValuesMap(ValuesMap valuesMap, String key,
           ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) {
     ResultValue valuesList = valuesMap.get(key);
@@ -93,7 +92,7 @@ public enum UpdateOperation {
     }
   }
 
-  private static boolean updateValuesList(ResultValue valuesList, String key, 
+  private static boolean updateValuesList(ResultValue valuesList, String key,
           ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) {
     switch (operation) {
@@ -124,7 +123,7 @@ public enum UpdateOperation {
         valuesList.addAll(singles);
         return true;
       case REMOVE:
-        GNS.getLogger().fine("Remove " + newValues  + "\tValues list = " + valuesList);
+        GNS.getLogger().fine("Remove " + newValues + "\tValues list = " + valuesList);
         if (valuesList.removeAll(newValues)) {
           return true;
         } else {
@@ -154,6 +153,10 @@ public enum UpdateOperation {
           // ignoring anything more than the first element of the new values
           valuesList.set(argument, newValues.get(0));
         }
+        return true;
+      case SETFIELDNULL:
+        valuesList.clear();
+        valuesList.add(Defs.NULLRESPONSE);
         return true;
       default:
         return false;

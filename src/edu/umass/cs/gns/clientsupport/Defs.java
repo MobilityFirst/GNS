@@ -44,6 +44,7 @@ public class Defs {
   public final static String SUBSTITUTE = "substitute";
   public final static String SUBSTITUTELIST = "substituteList";
   public final static String SET = "set";
+  public final static String SETFIELDNULL = "setFieldNull";
   public final static String CLEAR = "clear";
   public final static String READ = "read";
   public final static String READONE = "readOne";
@@ -95,7 +96,7 @@ public class Defs {
   public final static String GUIDCNT = "guidCnt";
   //
   public final static String OKRESPONSE = "+OK+";
-  public final static String NULLRESPONSE = "+EMPTY+";
+  public final static String NULLRESPONSE = "+NULL+";
   public final static String BADRESPONSE = "+NO+";
   public final static String BADSIGNATURE = "+BADSIGNATURE+";
   public final static String ACCESSDENIED = "+ACCESSDENIED+";

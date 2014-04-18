@@ -49,7 +49,7 @@ public abstract class AbstractUpdate extends GnsCommand {
      NSResponseCode responseCode;
     if (!(responseCode = FieldAccess.update(guid, field,
             value != null ? new ResultValue(Arrays.asList(value)) 
-                    // special case for the removeField op which doesn't need a value
+                    // special case for the ops which doesn't need a value
                     : new ResultValue(),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             index,

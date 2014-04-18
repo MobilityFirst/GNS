@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ResultValueString;
 import edu.umass.cs.gns.util.Format;
