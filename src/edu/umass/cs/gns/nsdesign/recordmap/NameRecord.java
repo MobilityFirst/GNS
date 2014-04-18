@@ -378,7 +378,7 @@ public class NameRecord implements Comparable<NameRecord> {
      * and should be handled similar to REPLACE_ALL. In my experiments, I was using REPLACE_ALL so I have
      * included it as a special case for it.
      *
-     * Westy - I will be augmenting the UpdateOperation class with some notion of operations that don't require a read before
+     * We should augment the UpdateOperation class with some notion of operations that don't require a read before
      * the write and then use that to redo the "if (operation.equals(UpdateOperation.REPLACE_ALL))" clause.
      */
     ValuesMap valuesMap;

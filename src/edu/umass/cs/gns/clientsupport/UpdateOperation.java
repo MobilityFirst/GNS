@@ -92,6 +92,10 @@ public enum UpdateOperation {
     }
   }
 
+  private static boolean valuesListHasNullFirstElement(ResultValue valuesList) {
+    return !valuesList.isEmpty() && valuesList.get(0).equals(Defs.NULLRESPONSE);
+  }
+
   private static boolean updateValuesList(ResultValue valuesList, String key,
           ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) {
@@ -106,6 +110,10 @@ public enum UpdateOperation {
         valuesList.addAll(newValues);
         return true;
       case APPEND_WITH_DUPLICATION:
+        // check for a null list and clear it if it is
+        if (valuesListHasNullFirstElement(valuesList)) {
+          valuesList.clear();
+        }
         if (valuesList.addAll(newValues)) {
           return true;
         } else {
@@ -113,9 +121,13 @@ public enum UpdateOperation {
         }
       case APPEND_OR_CREATE:
       case APPEND:
-        // this is ugly
-        // make it a hash which removes duplicates
-        Set singles = new HashSet(valuesList);
+        Set singles; // use a hash to remove duplicates
+        // check for a null list don't use the current values if it is
+        if (valuesListHasNullFirstElement(valuesList)) {
+          singles = new HashSet();
+        } else {
+          singles = new HashSet(valuesList);
+        }
         singles.addAll(newValues);
         // clear the old values and
         valuesList.clear();
@@ -124,6 +136,12 @@ public enum UpdateOperation {
         return true;
       case REMOVE:
         GNS.getLogger().fine("Remove " + newValues + "\tValues list = " + valuesList);
+        // check for a null list reset it to empty and return false if it is
+        if (valuesListHasNullFirstElement(valuesList)) {
+          valuesList.clear();
+          return false;
+        }
+        // otherwise remove all the values if they exists
         if (valuesList.removeAll(newValues)) {
           return true;
         } else {
@@ -136,6 +154,12 @@ public enum UpdateOperation {
         }
         return true;
       case SUBSTITUTE:
+        // check for a null list reset it to empty and return false if it is
+        if (valuesListHasNullFirstElement(valuesList)) {
+          valuesList.clear();
+          return false;
+        }
+        // otherwise do the substitue thing
         boolean changed = false;
         if (oldValues != null) {
           for (Iterator<Object> oldIter = oldValues.iterator(), newIter = newValues.iterator();
@@ -149,12 +173,21 @@ public enum UpdateOperation {
         }
         return changed;
       case SET:
+        // check for a null list reset it to empty and return false if it is
+        if (valuesListHasNullFirstElement(valuesList)) {
+          valuesList.clear();
+          return false;
+        }
         if (!newValues.isEmpty() && argument < valuesList.size()) {
           // ignoring anything more than the first element of the new values
           valuesList.set(argument, newValues.get(0));
         }
         return true;
       case SETFIELDNULL:
+        // already null return false
+        if (valuesListHasNullFirstElement(valuesList)) {
+          return false;
+        }
         valuesList.clear();
         valuesList.add(Defs.NULLRESPONSE);
         return true;
