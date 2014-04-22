@@ -57,7 +57,6 @@ public class JSONMessageExtractor implements DataProcessingWorker {
   public JSONMessageExtractor(PacketDemultiplexer pd) {
     packetDemuxes = new ArrayList<PacketDemultiplexer>();
     packetDemuxes.add(pd);
-    //packetDemux = pd;
     sockStreams = new HashMap<SocketChannel, String>();
     executor = Executors.newFixedThreadPool(SIZE_OF_THREAD_POOL);
   }
@@ -70,15 +69,11 @@ public class JSONMessageExtractor implements DataProcessingWorker {
    * packetDemuxes in processJSONMessage(.).
    */
   public synchronized void addPacketDemultiplexer(PacketDemultiplexer pd) {
-    //packetDemux = pd; 
     packetDemuxes.add(pd);
   }
-  /* FIXME: To be deprecated. Exists only for backwards compatibility.
-   */
-
-  public synchronized void setPacketDemultiplexer(PacketDemultiplexer pd) {
-    this.addPacketDemultiplexer(pd);
-  }
+  public synchronized void removePacketDemultiplexer(PacketDemultiplexer pd) {
+	    packetDemuxes.remove(pd);
+	  }
 
   /* Header is of the form pattern<size>pattern. The pattern is 
    * changeable above. But there is no escape character support
@@ -130,6 +125,7 @@ public class JSONMessageExtractor implements DataProcessingWorker {
     // if this were single-threaded. The bad things... time will tell.
     JsonMessageWorker worker = new JsonMessageWorker(jsonMsg, packetDemuxes);
     executor.execute(worker);
+    //worker.run();
   }
 
   private class JsonMessageWorker implements Runnable {

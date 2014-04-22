@@ -20,6 +20,7 @@ public class PaxosPacketDemultiplexer extends PacketDemultiplexer {
 
 	public boolean handleJSONObject(JSONObject jsonMsg) {
     boolean isPacketTypeFound = true;
+
 		try {
 			Packet.PacketType type = Packet.getPacketType(jsonMsg);
 			switch (type) {

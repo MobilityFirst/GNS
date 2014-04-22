@@ -152,8 +152,10 @@ public abstract class PaxosPacket extends Packet {
 		return this.version;
 	}
 	
-	public static void setRecovery(JSONObject json) throws JSONException {
+	public static String setRecovery(PaxosPacket packet) throws JSONException {
+		JSONObject json = packet.toJSONObject();
 		json.put(RECOVERY, true);
+		return json.toString();
 	}
 	public static boolean isRecovery(JSONObject json) throws JSONException {
 		return json.has(RECOVERY) ? json.getBoolean(RECOVERY) : false;

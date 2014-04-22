@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nio;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -68,8 +69,16 @@ public class SampleNodeConfig implements NodeConfig {
 		return defaultPort + ID;
 	}
 	
+	public Set<Integer> getNodes() {
+		return nmap.keySet();
+	}
+	
 	public void add(int id, InetAddress IP) { 
 		nmap.put(id, IP);
+	}
+	public void addLocal(int id) {
+		local = true;
+		nmap.put(id, getLocalAddress());
 	}
 	
 	public String toString() {

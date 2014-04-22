@@ -4,7 +4,7 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
  */
 
 /* A waitfor utility for integer node identifiers that uses 
- * roughly 4(N+1) bytes when waiting for responses from N nodes.
+ * roughly 8(N+1) bytes when waiting for responses from N nodes.
  * Note that the final array members will not occupy space in 
  * each instance as it will simply be a pointer to the 
  * corresponding array in the paxos instance that created it.
@@ -18,6 +18,7 @@ public class WaitForUtility {
 	
 	public WaitForUtility(int[] m) {
 		this.members = m;
+		this.initTime = (int)System.currentTimeMillis(); // Warning: we have to cast to int throughout
 		responded = new boolean[m.length];
 		for(int i=0; i< m.length; i++) {
 			responded[i] = false;
@@ -55,7 +56,7 @@ public class WaitForUtility {
 		return this.members;
 	}
 	public long totalWaitTime() {
-		return System.currentTimeMillis() - this.initTime;
+		return (int)System.currentTimeMillis() - this.initTime;
 	}
 	private int getIndex(int node) {
 		int index = -1;

@@ -19,7 +19,9 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
 @author V. Arun
  */
 
-/* This class is a task to log either the checkpoint or a log message.
+/* FIXME: This class is not used anymore and will be removed soon.
+ * 
+ * This class is a task to log either the checkpoint or a log message.
  * It is somewhat wasteful as some fields are relevant to only one of 
  * the two, e.g., group and gcSlot only to checkpoint. 
  * 
@@ -42,9 +44,9 @@ public final class PaxosLogTask extends TimerTask {
 	private final LogMessagingTask logMsgTask;
 
 	private static int avgMsgLogTime=0;
-	private static int numMsgLogs=0;
+	private static int numMsgLogs=1;
 	private static int avgCPTime=0;
-	private static int numCPs=0;
+	private static int numCPs=1;
 
 	private static Logger log = Logger.getLogger(PaxosLogTask.class.getName()); // GNS.getLogger();	
 
@@ -96,21 +98,16 @@ public final class PaxosLogTask extends TimerTask {
 		long t1 = System.currentTimeMillis();
 		// switch for log task
 		switch(type) {
-		case CHECKPOINT_STATE:
-			paxosLogger.putCheckpointState(paxosID, version, group, slot, ballot, toLog.toString(), gcSlot);
-			avgCPTime += (System.currentTimeMillis()-t1); numCPs++;
-			break;
 		case PREPARE: case ACCEPT: case DECISION:
-			JSONObject toLogJson=null;
+			String toLogString = null;
 			try {
-				toLogJson = toLog.toJSONObject();
-				PaxosPacket.setRecovery(toLogJson);
+				toLogString = PaxosPacket.setRecovery(toLog);
 			} catch(JSONException je) {je.printStackTrace();}
 
-			paxosLogger.log(paxosID, version, slot, ballot.ballotNumber, ballot.coordinatorID, type, toLogJson.toString());
+			//paxosLogger.log(paxosID, version, slot, ballot.ballotNumber, ballot.coordinatorID, type, toLogString);
 			
-			if(type==PaxosPacketType.PREPARE) {log.info("Node "+((PreparePacket)toLog).receiverID+
-					" logging&replying to node "+((PreparePacket)toLog).coordinatorID+"'s PREPARE: "+this.logMsgTask);}
+			if(type==PaxosPacketType.PREPARE) {log.info("Node "+((PreparePacket)toLog).receiverID+ " logger " +
+					"logging&replying to node "+((PreparePacket)toLog).coordinatorID+"'s PREPARE: "+this.logMsgTask);}
 			avgMsgLogTime += (System.currentTimeMillis()-t1); numMsgLogs++;
 			break;
 		}
@@ -122,7 +119,9 @@ public final class PaxosLogTask extends TimerTask {
 				break;
 			case DECISION:
 				PValuePacket decision = (PValuePacket)(this.toLog);
-				paxosInstance.extractExecuteAndCheckpoint(decision);
+				// Can not use local messenger as that won't stamp the paxosID in missing decision requests
+				paxosInstance.sendMessagingTask(paxosInstance.extractExecuteAndCheckpoint(decision));
+				avgCPTime += (System.currentTimeMillis()-t1); numCPs++;
 				break;
 			}
 		} catch(IOException ioe) {
@@ -132,36 +131,9 @@ public final class PaxosLogTask extends TimerTask {
 		}
 	}
 
-	/**
-	 * Convenience method to get the slot and ballot from a PaxosPacket
-	 * of types PREPARE, ACCEPT, or DECISION.
-	 * @param packet
-	 * @return SlotBallot containing slot, ballotnum, coordinator
-	 */
-
-	public static int[] getSlotBallot(PaxosPacket packet) {
-		int slot=-1;
-		Ballot ballot=null;
-		PValuePacket pvalue = null;
-		switch(packet.getType()) {
-		case PREPARE:
-			PreparePacket prepare = (PreparePacket)packet;
-			ballot = prepare.ballot;
-			break;
-		case ACCEPT: case DECISION:
-			pvalue = (PValuePacket)packet;
-			slot = pvalue.slot;
-			ballot = pvalue.ballot;
-			break;
-		default:
-			assert(false);
-		}
-		assert(ballot!=null);
-		int[] slotBallot = {slot, ballot.ballotNumber, ballot.coordinatorID};
-		return slotBallot;
-	}
-	
 	public static double getAvgLogTime() {return avgMsgLogTime*1.0/numMsgLogs;}
 	public static double getAvgCheckpointTime() {return avgCPTime*1.0/numCPs;}
+	public static int getNumCheckpoints() {return numCPs;}
+
 
 }

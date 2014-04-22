@@ -10,6 +10,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PrepareR
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
 
 /**
 @author V. Arun
@@ -43,22 +44,31 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 public class PaxosCoordinator {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
 	private PaxosCoordinatorState pcs=null; // This gets recreated for each ballot.
-	
+
 	private static Logger log = Logger.getLogger(PaxosCoordinator.class.getName()); // GNS.getLogger();
-	
+
 	/* Come to exist if nonexistent. Called by PaxosInstanceStateMachine
 	 */
 	protected synchronized Ballot makeCoordinator(int bnum, int coord, int[] members, int slot, boolean recovery) {
 		boolean sendPrepare=false;
 		if(pcs==null || (pcs.getBallot().compareTo(bnum, coord))<0) {
-			pcs = new PaxosCoordinatorState(bnum, coord, slot, members);
+			pcs = new PaxosCoordinatorState(bnum, coord, slot, members, pcs);
 			if(bnum==0 || recovery) pcs.setCoordinatorActive(); // Initial coordinator status assumed, not explicitly prepared.
 			else sendPrepare=true;
 		} else if(pcs!=null && (pcs.getBallot().compareTo(bnum, coord))==0 && !pcs.isActive()) sendPrepare = true; // resend prepare 
+
 		return sendPrepare ? pcs.prepare(members) : null; // For ballotnum>0, must explicitly prepare
 	}
 	protected synchronized Ballot remakeCoordinator(int[] members) {
 		return (this.isActive() ? pcs.prepare(members): null);
+	}
+	protected synchronized Ballot hotRestore(HotRestoreInfo hri) {
+		if(hri.coordBallot==null) return null;
+		Ballot ballot = makeCoordinator(hri.coordBallot.ballotNumber, hri.coordBallot.coordinatorID, 
+				hri.members, hri.nextProposalSlot, true);
+		assert(this.isActive());
+		this.pcs.setNodeSlots(hri.nodeSlots);
+		return ballot;
 	}
 	/* Cease to exist. Internally called when preempted. 
 	 */
@@ -66,68 +76,60 @@ public class PaxosCoordinator {
 		ArrayList<ProposalPacket> preActiveProposals=null;
 		if(this.exists() && !pcs.isActive()) {
 			preActiveProposals = pcs.getPreActiveProposals();
-			log.info("Node "+this.pcs.getBallot().coordinatorID + " resigning as coordinator, " +
+			log.info("Coordinator "+this.pcs.getBallot() + " resigning, " +
 					"preActive proposals = " + this.pcs.getPreActiveProposals());
 		}
-		
+
 		pcs = null; // The main point of this method.
-		
+
 		return preActiveProposals; // Pass these to the coordinator to whom you deferred
 	}
 	/* Returns true if pcs!=null. Existence is different from 
 	 * the coordinator being active (=pcs.active==true).
 	 */
-	protected synchronized boolean exists() {
-		return pcs!=null;
-	}
-	protected synchronized boolean exists(Ballot b) {
-		return pcs!=null && pcs.getBallot().compareTo(b)>=0;
-	}
+	protected synchronized boolean exists() {return pcs!=null;}
+	protected synchronized boolean exists(Ballot b) {return pcs!=null && pcs.getBallot().compareTo(b)>=0;}
+
 	/* Allows PaxosInstanceStateMachine to forcibly call resignAsCoordinator().
+	 * We don't care about the return value (preActives) here.
 	 */
-	protected synchronized void forceStop() {
-		this.resignAsCoordinator();
-	}
+	protected synchronized void forceStop() {this.resignAsCoordinator();}
 
 	/* Phase2a
 	 */
 	protected synchronized AcceptPacket propose(int[] groupMembers, RequestPacket req) {
-		if(!this.exists()) return null;
-		return this.pcs.propose(groupMembers, req);
+		return this.exists() ? this.pcs.propose(groupMembers, req) : null;
 	}
 
 	/* Phase2b
 	 */
 	protected synchronized PValuePacket handleAcceptReply(int[] members, AcceptReplyPacket acceptReply) {
-		if(!this.exists()) return null;
-		
+		if(!this.exists() || !this.isActive()) return null;
+
 		PValuePacket committedPValue=null; PValuePacket preemptedPValue=null;
-		if(this.pcs.isActive()) { 
-			if(acceptReply.ballot.compareTo(this.pcs.getBallot()) > 0) {
-				if((preemptedPValue = pcs.handleAcceptReplyHigherBallot(acceptReply))!=null) {
-					/* Can ignore return value of preActiveProposals as handleAcceptReplyHigherBallot 
-					 * returns true only if there are no proposals at this coordinator.
-					 */
-					if(DEBUG) log.info("PREEMPTED request#: " + acceptReply.slotNumber);
-					if(pcs.preemptedFully()) {
-						log.info("Node " + this.pcs.getBallot().coordinatorID + " preempted fully, about to resign");
-						resignAsCoordinator();
-					}
+		if(acceptReply.ballot.compareTo(this.pcs.getBallot()) > 0) {
+			if((preemptedPValue = pcs.handleAcceptReplyHigherBallot(acceptReply))!=null) {
+				/* Can ignore return value of preActiveProposals as handleAcceptReplyHigherBallot 
+				 * returns true only if there are no proposals at this coordinator.
+				 */
+				//if(DEBUG) 
+				log.info("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + acceptReply.slotNumber);
+				if(pcs.preemptedFully()) {
+					log.info("Coordinator " + this.pcs.getBallot() + " preempted fully, about to resign");
+					resignAsCoordinator();
 				}
 			}
-			else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
-				committedPValue = pcs.handleAcceptReplyMyBallot(members, acceptReply);
-			}
+		}
+		else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
+			committedPValue = pcs.handleAcceptReplyMyBallot(members, acceptReply);
 		}
 		return committedPValue!=null ? committedPValue : preemptedPValue; // both could be null too
 	}
-	
+
 	/* Phase1a
 	 * Propose ballot.
 	 */
-	protected synchronized Ballot prepare(int[] members) {
-		return this.pcs.prepare(members);
-	}
+	protected synchronized Ballot prepare(int[] members) {return this.pcs.prepare(members);}
 	/* Phase1b
 	 * Event: Received a prepare reply message.
 	 * Action: Resign if reply contains higher ballot as we are
@@ -146,11 +148,11 @@ public class PaxosCoordinator {
 		if(this.pcs.isPrepareAcceptedByMajority(prepareReply, members)) { // pcs still valid
 			assert(!this.pcs.isActive());   // ******ensures this else block is called exactly once
 			this.pcs.combinePValuesOntoProposals(members); // okay even for multiple threads to call in parallel
-			acceptPacketList = this.pcs.spawnCommandersForProposals(); // should be called only once, o/w conflicting conflicts possible
+			acceptPacketList = this.pcs.spawnCommandersForProposals(); // should be called only once, o/w conflicts possible
 			this.pcs.setCoordinatorActive(); // *****ensures this else block is called exactly once
-			log.info("Node " + prepareReply.coordinatorID + " Acquired PREPARE MAJORITY: About to conduct view change.");
+			log.info("Coordinator " + pcs.getBallot() + " acquired PREPARE MAJORITY: About to conduct view change.");
 		} // "synchronized" in the method definition ensures that this else block is called atomically 
-		
+
 		return (acceptPacketList);
 	}
 
@@ -158,44 +160,44 @@ public class PaxosCoordinator {
 	 * Received prepare reply with higher ballot.
 	 */
 	protected synchronized ArrayList<ProposalPacket> getPreActivesIfPreempted(PrepareReplyPacket prepareReply, int[] members) {
-		if(!this.exists()) return null;
-				
-		ArrayList<ProposalPacket> preActiveProposals = null;
-		if(this.pcs.isPreemptable(prepareReply)) {
-			preActiveProposals = resignAsCoordinator(); // pcs no longer valid
-		} 
-		return preActiveProposals;
+		return (this.exists() && this.pcs.isPreemptable(prepareReply)) ? this.resignAsCoordinator() : null;
 	}
 	protected synchronized boolean isOverloaded(int acceptorSlot) {
-		if(!this.isActive()) return false;
-		return this.pcs.isOverloaded(acceptorSlot);
+		return this.isActive() ? this.pcs.isOverloaded(acceptorSlot) : false;
 	}
 	protected synchronized boolean waitingTooLong() {
-		if(this.isActive() && this.pcs.waitingTooLong()) return true;
-		return false;
+		return this.exists() && this.pcs.waitingTooLong() ? true : false;
+	}
+	protected synchronized boolean waitingTooLong(int slot) {
+		return (this.exists() && this.isCommandering(slot) && this.pcs.waitingTooLong(slot)) ? true : false;
 	}
 	protected synchronized boolean isCommandering(int slot) {
 		return (this.isActive() && this.pcs.isCommandering(slot)) ? true : false;
 	}
-	protected synchronized AcceptPacket reCommander(int slot) {
-		if(!this.isActive()) return null;
-		return this.pcs.reInitCommander(slot);
+	protected synchronized AcceptPacket reissueAcceptIfWaitingTooLong(int slot) {
+		return (this.isActive() && this.waitingTooLong(slot)) ? this.pcs.reInitCommander(slot) : null;
 	}
-		
+	protected synchronized boolean ranRecently() {
+		return (this.exists() && this.pcs.ranRecently());
+	}
+	protected synchronized Ballot getBallot() {return this.exists() ? this.pcs.getBallot() : null;} 
+	protected synchronized String getBallotStr() {return this.exists() ? this.pcs.getBallotStr() : null;} 
+	protected int getMajorityCommittedSlot() {return (this.isActive() ? this.pcs.getMajorityCommittedSlot():-1);}
+	protected synchronized boolean caughtUp() {return !this.exists() || this.pcs.caughtUp();}
+	protected synchronized int getNextProposalSlot() {return this.exists() ? this.pcs.getNextProposalSlot() : -1;}
+	protected synchronized int[] getNodeSlots() {return this.exists() ? this.pcs.getNodeSlots() : null;}
+
 	// Testing methods
-	protected boolean isActive() {
-		return this.exists() && this.pcs.isActive();
-	}
-	public String toString() {return "{Coordinator=" + (pcs!=null ? this.pcs.toString() : null);}
-	protected void testingInitCoord(int load) {
-		if(pcs!=null) pcs.testingInitCoord(load);
-	}
+	protected boolean isActive() {return this.exists() && this.pcs.isActive();}
+
+	public String toString() {return "{Coordinator=" + (pcs!=null ? this.pcs.toString() : null)+"}";}
+	protected void testingInitCoord(int load) {if(pcs!=null) pcs.testingInitCoord(load);}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println("FAILURE: I am not tested, so I am useless and should drown myself in a puddle.");
-		System.out.println("Try running PaxosManager's or PaxosAcceptorState's tests for now.");
+		System.out.println("FAILURE: This is an untested shell class for PaxosCoordinatorState that is tested.");
+		System.out.println("Try running PaxosManager's tests for now.");
 	}
 }

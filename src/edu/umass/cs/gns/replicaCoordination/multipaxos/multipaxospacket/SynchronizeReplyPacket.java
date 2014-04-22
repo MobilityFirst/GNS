@@ -28,7 +28,7 @@ public final class SynchronizeReplyPacket extends PaxosPacket{
 	public SynchronizeReplyPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
 		super((PaxosPacket)null);
 		this.missingTooMuch = flag;
-		this.packetType = (missingTooMuch ? PaxosPacketType.CHECKPOINT_REQUEST : PaxosPacketType.SYNC_REPLY); // missingTooMuch => checkpoint transfer
+		this.packetType = (missingTooMuch ? PaxosPacketType.SYNC_REPLY : PaxosPacketType.SYNC_REPLY); // missingTooMuch => checkpoint transfer
 		this.nodeID = nodeID;
 		this.maxDecisionSlot = maxDecisionSlot;
 		this.missingSlotNumbers = missingSlotNumbers;

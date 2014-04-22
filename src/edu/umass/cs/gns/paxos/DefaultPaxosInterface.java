@@ -51,9 +51,7 @@ public class DefaultPaxosInterface implements Replicable {
   }
 
 
-  @Override
   public boolean handleDecision(String paxosID, String value, boolean recovery) {
-    return false;
     // check
     // TODO fixme
 //    if (nodeID == 0)
@@ -64,6 +62,7 @@ public class DefaultPaxosInterface implements Replicable {
 //      } catch (IOException e) {
 //        e.printStackTrace();
 //      }
+	  return true;
   }
 
   @Override

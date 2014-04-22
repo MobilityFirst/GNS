@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nio;
 import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
@@ -12,6 +13,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -69,15 +71,15 @@ import java.util.logging.Logger;
  */
 public class NIOTransport implements Runnable {
 	public static final boolean DEBUG = false;
-	public static final boolean UNIT = true;
+	private static final double LOG_SAMPLING_FRACTION = 0.1;
 
 	/* number of sends that can be queued because the connection
 	 * was established but the remote end crashed before the 
 	 * send was complete.
 	 */
-	protected static final int MAX_QUEUED_SENDS = 1024;
+	protected static final int MAX_QUEUED_SENDS = 8192;
 
-	protected static final int MIN_INTER_CONNECT_TIME = 1000; // milliseconds before reconnection attempts
+	protected static final int MIN_INTER_CONNECT_TIME = 5000; // milliseconds before reconnection attempts
 
 	// The channel on which we'll accept connections
 	private ServerSocketChannel serverChannel;
@@ -104,15 +106,17 @@ public class NIOTransport implements Runnable {
 	private HashMap<InetSocketAddress, SocketChannel> SockAddrToSockChannel = null;
 
 	/* Map to optimize connection attempts by the selector thread. */
-	private HashMap<InetSocketAddress, Long> connAttempts = null;
+	private ConcurrentHashMap<InetSocketAddress, Long> connAttempts = null;
 
 	// Maps id to socket address
 	private NodeConfig nodeConfig = null;
 
 	/* An id corresponds to a socket address as specified in NodeConfig */
 	int myID = -1;
-
-	private Logger log = GNS.getLogger(); //Logger.getLogger(NIOTransport.class.getName()); 
+	
+	private boolean started = false;
+	
+	private Logger log =  Logger.getLogger(NIOTransport.class.getName()); // GNS.getLogger();
 
 	public NIOTransport(int id, NodeConfig nc, DataProcessingWorker worker) throws IOException {
 		this.myID = id;
@@ -123,8 +127,7 @@ public class NIOTransport implements Runnable {
 		this.pendingConnects = new LinkedList<ChangeRequest>();
 		this.pendingWrites = new HashMap<InetSocketAddress, ArrayList<ByteBuffer>>();
 		this.SockAddrToSockChannel = new HashMap<InetSocketAddress, SocketChannel>();
-		this.connAttempts = new HashMap<InetSocketAddress, Long>();
-
+		this.connAttempts = new ConcurrentHashMap<InetSocketAddress, Long>();
 	}
 
 	/* send() methods are called by external application threads. They may
@@ -149,6 +152,7 @@ public class NIOTransport implements Runnable {
 	}
 
 	public void run() {
+		this.started=true; 
 		while (true) {
 			try {
 				// Set ops to WRITE for pending write requests.
@@ -168,6 +172,7 @@ public class NIOTransport implements Runnable {
 			}
 		}
 	}
+	public boolean isStarted() {return this.started;}
 
 	/**
 	 * ********** Start of private methods ***************************
@@ -325,7 +330,7 @@ public class NIOTransport implements Runnable {
 				ByteBuffer buf = (ByteBuffer) queue.get(0);
 				socketChannel.write(buf);
 				// If the socket's buffer fills up, let the rest be in queue 
-				if(DEBUG) log.finest("Node " + this.myID + " wrote: " + new String(queue.get(0).array()));
+				if(DEBUG) log.finest("Node " + this.myID + " wrote: " + new String(queue.get(0).array())+" to "+isa);
 				if (buf.remaining() > 0) {
 					log.warning("Socket buffer congested because of high load..");
 					break;
@@ -358,13 +363,13 @@ public class NIOTransport implements Runnable {
 				queuedBytes = +data.length;
 				if(DEBUG) log.finest("Node " + this.myID + " queued: " + new String(data));
 			} else {
-				log.warning("Node " + this.myID + "'s queue for " + isa + " too full, dropping message: " + new String(data));
+				if(sampleLog()) log.warning("Node " + this.myID + "'s queue for " + isa + " too full, dropping message");
 				if(!this.isConnected(isa)) queuedBytes = -1; // could also drop queue here
-				//throw new IOException("Node " + this.myID + "'s queue too full ");
 			}
 			return queuedBytes;
 		}
 	}
+	public static boolean sampleLog() {return Math.random()>1-LOG_SAMPLING_FRACTION;}
 
 	/* Invoked only by the selector thread.
 	 * Register a write interest on all sockets that have at least one 
@@ -384,7 +389,7 @@ public class NIOTransport implements Runnable {
 					 * the isa to a socket channel. Hence, the assert.
 					 */
 					assert (sc != null);
-					SelectionKey key = (sc != null ? sc.keyFor(this.selector) : null);
+					SelectionKey key = (sc != null && (sc.isConnected() || canReconnect(isa)) ? sc.keyFor(this.selector) : null);
 					try {
 						if (key != null) {
 							key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);
@@ -424,15 +429,19 @@ public class NIOTransport implements Runnable {
 		}
 	}
 
+	private boolean canReconnect(InetSocketAddress isa) {
+		Long last = this.connAttempts.get(isa);
+		if (last == null) {last = 0L;}
+		long now = System.currentTimeMillis();
+		if (now - last > NIOTransport.MIN_INTER_CONNECT_TIME) 
+			return true;
+		return false;
+
+	}
 	private boolean checkAndReconnect(InetSocketAddress isa) {
 		boolean canReconnect = false;
-		Long last = this.connAttempts.get(isa);
-		if (last == null) {
-			last = 0L;
-		}
-		long now = System.currentTimeMillis();
-		if (now - last > NIOTransport.MIN_INTER_CONNECT_TIME) {
-			this.connAttempts.put(isa, now);
+		if(this.canReconnect(isa)) {
+			this.connAttempts.put(isa, System.currentTimeMillis()); 
 			canReconnect = true;
 		}
 		return canReconnect;
@@ -496,11 +505,11 @@ public class NIOTransport implements Runnable {
 			SocketChannel sock = null;
 			if (!this.isConnected(isa)) {
 				SocketChannel oldSock = this.getSockAddrToSockChannel(isa); // synchronized
-				if (oldSock != null) {
-					log.severe("SocketChannel " + oldSock + " found dead. "
-							+ "Could be because the remote end closed the connection");
+				if (oldSock != null && this.canReconnect(isa)) {
+					log.warning("Node "+this.myID+" finds channel to "+isa+" dead, probably " +
+							"because the remote end died or closed the connection"); 
 				}
-				sock = this.initiateConnection(isa);
+				if(checkAndReconnect(isa)) sock = this.initiateConnection(isa);
 			}
 			return sock;
 		}
@@ -574,7 +583,8 @@ public class NIOTransport implements Runnable {
 		return socketSelector;
 	}
 
-	private boolean isConnected(int id) {
+	// FIXME: Unused. Either use or remove.
+	protected boolean isConnected(int id) {
 		return isConnected(new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
 				this.nodeConfig.getNodePort(id)));
 	}
@@ -610,7 +620,9 @@ public class NIOTransport implements Runnable {
 	 */
 	private boolean finishConnection(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
-		boolean connected = false;
+		// For Java6, this line and the log.warning below can both be commented without affecting functionality
+		SocketAddress isa = socketChannel.getRemoteAddress(); 
+		boolean connected = false; 
 
 		// Finish the connection. If the connection operation failed
 		// this will raise an IOException.
@@ -618,7 +630,7 @@ public class NIOTransport implements Runnable {
 			connected = socketChannel.finishConnect();
 		} catch (IOException e) {
 			// Cancel the channel's registration with our selector
-			log.severe("Node" + this.myID + ": Connection exception on socket " + socketChannel);
+			log.warning("Node " + this.myID + " failed to connect to " + isa);
 			this.cleanup(key, socketChannel);
 		}
 

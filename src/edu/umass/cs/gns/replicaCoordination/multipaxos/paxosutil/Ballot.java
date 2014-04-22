@@ -43,7 +43,7 @@ public class Ballot implements Comparable<Ballot>{
 	}
 
 	@Override
-	public   String toString() {
-		return ballotNumber + ":" + coordinatorID;
-	}
+	public   String toString() {return ballotNumber + ":" + coordinatorID;}
+	public static String getBallotString(int bnum, int coord) {return bnum+":"+coord;}
+
 }

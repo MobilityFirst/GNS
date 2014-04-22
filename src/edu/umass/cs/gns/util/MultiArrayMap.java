@@ -68,11 +68,15 @@ public class MultiArrayMap<KeyType,ValueType extends Keyable<KeyType>> {
 
 		ValueType foundValue=null;
 		if(index >= 0) {
-			foundValue = (ValueType)array[index];
+			// Not sure if there is a way to avoid the warning here
+			foundValue = (ValueType)array[index]; 
 		} else {
 			foundValue = this.hMap.get(key);
 		}
 		return foundValue;
+	}
+	public synchronized boolean containsKey(KeyType key) {
+		return (get(key)!=null);
 	}
 	public synchronized ValueType remove(KeyType key) {
 		ValueType value = (ValueType)get(key);
@@ -90,11 +94,16 @@ public class MultiArrayMap<KeyType,ValueType extends Keyable<KeyType>> {
 		return value;
 	}
 
-	public int size() {
+	public synchronized int size() {
 		return this.count + this.hMap.size();
 	}
-	public int hashmapSize() {
+	public synchronized int hashmapSize() {
 		return this.hMap.size();
+	}
+	public synchronized void clear() {
+		this.aMap = null;
+		this.hMap = null;
+		this.count = 0;
 	}
 
 	private synchronized Object[] getArray(KeyType key) {

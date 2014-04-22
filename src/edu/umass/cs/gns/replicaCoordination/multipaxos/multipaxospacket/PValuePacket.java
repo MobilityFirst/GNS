@@ -53,6 +53,9 @@ public class PValuePacket extends ProposalPacket {
 		this.packetType = PaxosPacketType.PREEMPTED; // preemption does not change final fields, unlike getDecisionPacket
 		return this;
 	}
+	public boolean isRecovery() {
+		return this.recovery;
+	}
 	/* A convenience method for when we really need a RequestPacket, not a deeper
 	 * inherited PaxosPacket, e.g., when forwarding a preempted pvalue to the
 	 * current, new coordinator to re-propose. Else, we would need to explicitly

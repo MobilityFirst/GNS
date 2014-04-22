@@ -23,7 +23,7 @@ public class DefaultPacketDemultiplexer extends PacketDemultiplexer {
   public boolean handleJSONObject(JSONObject jsonObject) {
     incrPktsRcvd();
     //System.out.println("Received pkt: " + jsonObject);
-    return true;
+    return false; // WARNING: Do not change this to true. It could break the GNS by not trying any other PDs.
   }
 
 	/**

@@ -15,8 +15,6 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
 
@@ -37,23 +35,27 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureD
  * 
  */
 public class FailureDetection {
-	// final static
-	private static long NODE_DETECTION_TIMEOUT_MILLIS = 5000;
-	private static long INTER_PING_PERIOD_MILLIS = 3000;
-	private static long COORDINATOR_FAILURE_DETECTION_TIMEOUT_MILLIS = 3*NODE_DETECTION_TIMEOUT_MILLIS; // Triggers a run for coordinator even if not next in line
+	// final static 
+	private static final double MAX_FAILURE_DETECTION_TRAFFIC = 1/100.0; // 1 ping per 100ms total at each node
+	private static final double PING_PERTURBATION_FACTOR = 0.25; // pings randomly spaced within inter_ping_period_millis times this factor
+	
+	// static
+	private static long node_detection_timeout_millis = 6000; // ms
+	private static long inter_ping_period_millis = node_detection_timeout_millis/2;
+	private static long coordinator_failure_detection_timeout = 3*node_detection_timeout_millis; // run for coordinator even if not next-in-line 
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 	private final int myID;
 	private final GNSNIOTransport nioTransport;
-	
+
 	// non-final 
 	private Set<Integer> monitoredNodes;  // other nodes to which keepalives will be sent
 	private HashMap<Integer,Long> lastHeardFrom;
 	private HashMap<Integer,ScheduledFuture<PingTask>> futures;
 
 	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
-	
+
 	FailureDetection(int id, NodeConfig nc, GNSNIOTransport niot, PaxosConfig pc) {
 		nioTransport = niot;
 		myID = id;
@@ -62,14 +64,37 @@ public class FailureDetection {
 		futures = new HashMap<Integer,ScheduledFuture<PingTask>>();
 		initialize(pc);  // this line needs to be commented for paxos tests to make sense
 	}
-	// FIXME: Need to fix PaxosConfig first
+	// FIXME: Should really not be taking this from outside
 	private void initialize(PaxosConfig pc) {
 		if(pc==null) return;
-		NODE_DETECTION_TIMEOUT_MILLIS = pc.getFailureDetectionTimeoutMillis();
-		INTER_PING_PERIOD_MILLIS = pc.getFailureDetectionPingMillis();
-		COORDINATOR_FAILURE_DETECTION_TIMEOUT_MILLIS = 2*NODE_DETECTION_TIMEOUT_MILLIS;
+		log.severe("Configuring paxos with external failure detection parameters is a bad idea, doing it anyway.");
+		node_detection_timeout_millis = pc.getFailureDetectionTimeoutMillis();
+		inter_ping_period_millis = pc.getFailureDetectionPingMillis();
+		coordinator_failure_detection_timeout = 2*node_detection_timeout_millis;
 	}
-	
+	// makes sure that FD params are reasonable
+	private synchronized void adjustFDParams() {
+		boolean adjusted = false;
+		int numMonitored = this.monitoredNodes.size();
+		double load = ((double)numMonitored)/inter_ping_period_millis;
+		if(load > MAX_FAILURE_DETECTION_TRAFFIC) {
+			inter_ping_period_millis = (long)(numMonitored/MAX_FAILURE_DETECTION_TRAFFIC);
+			node_detection_timeout_millis = inter_ping_period_millis*2;
+			coordinator_failure_detection_timeout = node_detection_timeout_millis*3;
+			assert(inter_ping_period_millis>0); // just to make sure we didn't accidentally (int) cast it 0 above :)
+			adjusted = true;
+		}
+		/* If there was any adjustment above, we need to kill and restart periodic ping tasks
+		 * because there is no way to just change their period midway.
+		 */
+		if(adjusted) {
+			for(int id : this.monitoredNodes) {
+				unMonitor(id);
+				monitor(id);
+			}
+		}
+	}
+
 	/* Synchronized because we don't want monitoredNodes 
 	 * getting concurrently read by pingAll().
 	 */
@@ -92,19 +117,19 @@ public class FailureDetection {
 			futures.remove(id);
 		}
 	}
-	/* Synchronized in case we need to use cleanupFailedPingTask.
-	 * Both methods touch 
+	/* Synchronized as it touches monitoredNodes.
 	 */
 	public synchronized void monitor(int id)  {
 		if(!this.monitoredNodes.contains(id)) this.monitoredNodes.add(id);
 		try {
 			if(!this.futures.containsKey(id)) {
-				PingTask pingTask = new PingTask(id, getPingPacket(id), this.nioTransport, this);
-				/* Not sure how to remove the warning below. The compiler doesn't seem to like 
+				PingTask pingTask = new PingTask(id, getPingPacket(id), this.nioTransport);
+				/* Not sure how to remove the warnings below. The compiler doesn't seem to like 
 				 * ScheduledFuture<PingTask> and spews a cryptic message.
 				 */
-				ScheduledFuture future = execpool.scheduleAtFixedRate(pingTask, 2000, 
-						FailureDetection.INTER_PING_PERIOD_MILLIS, TimeUnit.MILLISECONDS);
+				ScheduledFuture future = execpool.scheduleAtFixedRate(pingTask, 
+						(long)(PING_PERTURBATION_FACTOR*node_detection_timeout_millis*Math.random()), 
+						FailureDetection.inter_ping_period_millis, TimeUnit.MILLISECONDS);
 				futures.put(id, future);
 			}
 		} catch(JSONException e) {
@@ -112,25 +137,32 @@ public class FailureDetection {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected void receive(FailureDetectionPacket fdp) {
 		log.finest("Node " + this.myID + " received ping from node " + fdp.senderNodeID);
-		this.lastHeardFrom.put(fdp.senderNodeID, System.currentTimeMillis());
+		this.heardFrom(fdp.senderNodeID);
+	}
+	/* protected in order to allow paxos instances to provide useful liveliness 
+	 * information through the paxos manager.
+	 */
+	protected synchronized void heardFrom(int id) {
+		this.lastHeardFrom.put(id, System.currentTimeMillis());
 	}
 
-	protected boolean isNodeUp(int id) {
+	protected synchronized boolean isNodeUp(int id) {
 		Long lastHeard = 0L;
-		if((lastHeard = this.lastHeardFrom.get(id))!=null) {
-			if(System.currentTimeMillis() - lastHeard < NODE_DETECTION_TIMEOUT_MILLIS)
+		if(id==this.myID) return true;
+		if((lastHeard = this.lastHeardFrom.get(id))!=null && 
+				((System.currentTimeMillis() - lastHeard) < node_detection_timeout_millis)) {
 				return true;
 		}
 		return false;
 	}
-	protected boolean lastCoordinatorLongDead(int id) {
+	protected synchronized boolean lastCoordinatorLongDead(int id) {
 		Long lastHeard = 0L;
 		long now = System.currentTimeMillis();
 		if((lastHeard = this.lastHeardFrom.get(id))!=null) {
-			return (now - lastHeard) > FailureDetection.COORDINATOR_FAILURE_DETECTION_TIMEOUT_MILLIS;
+			return (now - lastHeard) > FailureDetection.coordinator_failure_detection_timeout;
 		}
 		return true;
 	}
@@ -140,27 +172,26 @@ public class FailureDetection {
 		JSONObject fdpJson = fdp.toJSONObject();
 		return fdpJson;
 	}
-	
+
 	private class PingTask implements Runnable {
 		private final int destID;
 		private final JSONObject pingJson;
 		private final GNSNIOTransport nioTransport;
-		//private final FailureDetection FD; // Needed if cleanupFailedPing is used.
-		
-		PingTask(int id, JSONObject fdpJson, GNSNIOTransport niot, FailureDetection fd) {
+
+		PingTask(int id, JSONObject fdpJson, GNSNIOTransport niot) {
 			destID = id;
 			pingJson = fdpJson;
 			nioTransport = niot;
-			//FD = fd;
 		}
 		public void run() {
 			try {
-				nioTransport.sendToID(destID, pingJson);
+				if(!TESTPaxosConfig.isCrashed(myID)) // only to simulate crashes while testing
+					nioTransport.sendToID(destID, pingJson);
 			} catch(IOException e) {
 				try {
-				log.info("Encountered IOException while sending keepalive from node " + 
-				pingJson.getInt("sender") + " to node " + destID);
-				//FD.cleanupFailedPingTask(destID);
+					log.info("Encountered IOException while sending keepalive from node " + 
+							pingJson.getInt("sender") + " to node " + destID);
+					cleanupFailedPingTask(destID);
 				} catch(JSONException je) {
 					e.printStackTrace();
 				}
@@ -180,10 +211,13 @@ public class FailureDetection {
 		}
 	}
 
-		
+
 	/***************************************************************/
 	/* Unused. May be invoked by PaxosInstanceStateMachine via
-	 * PaxosManager later.
+	 * PaxosManager. We don't need this because a paxos instance
+	 * checks whether it needs to run for coordinator upon 
+	 * receipt of every packet. If it receives no packets, it
+	 * doesn't need to bother electing a coordinator right away.
 	 */
 	protected class RunForCoordinatorTask implements Runnable {
 		private final PaxosInstanceStateMachine pinstance;
@@ -200,6 +234,10 @@ public class FailureDetection {
 	}
 	/***************************************************************/
 
+	// Used only for testing
+	protected GNSNIOTransport getNIOTransport() {
+		return this.nioTransport;
+	}
 	/**
 	 * @param args
 	 */

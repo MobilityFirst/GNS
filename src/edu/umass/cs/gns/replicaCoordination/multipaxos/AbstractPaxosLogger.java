@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -11,9 +12,10 @@ import org.json.JSONException;
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PreparePacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.StatePacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
@@ -24,56 +26,66 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState
  * @author V. Arun
  */
 
-/* This quick-and-dirty logger is a memory-based logger, so it is fake. 
- * Not only is it fake, but it scales poorly as it uses up much more memory 
- * than the paxos instances themselves, so it will limit the number of instances
- * per machine. 
- * 
- * Use DerbyPaxosLogger that extends this class for a more scalable, efficient, 
- * and persistent logger.
- * 
- * Testing: Only shows that this logger barely scales to a few hundred 
- * thousand paxos instances.
+/* This abstract class exists to make the logger pluggable. An example is a quick
+ * and dirty, fake, memory-based logger DummyPaxosLogger that was implemented long
+ * back but it not maintained anymore. Use DerbyPaxosLogger that extends this class 
+ * for a more scalable, efficient, and persistent logger.
  */
 public abstract class AbstractPaxosLogger {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
 	protected final int myID;
 	protected final String logDirectory;
-	protected static final Timer timer = new Timer();
+
+	private final BatchLogger batchLogger;
+	private final Messenger messenger;
+	Timer timer = new Timer(); // for checkpointing, so single thread is fine
 
 	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class.getName()); // GNS.getLogger();
 
-	AbstractPaxosLogger(int id, String logDir) {
+	AbstractPaxosLogger(int id, String logDir, Messenger msgr) {
 		this.myID = id;
 		logDirectory = (logDir==null ? "." : logDir)+"/";
+		this.messenger=msgr;
+		this.batchLogger = new BatchLogger(this, this.messenger);
+		(new Thread(this.batchLogger)).start();
 	}
 
 	/************* Start of non-extensible methods **********************/
-	/* Logs a message before sending another message.
-	 */
-	public static final void logAndMessage(AbstractPaxosLogger logger, LogMessagingTask logMTask, Messenger messenger) throws JSONException, IOException {
+	// Logs a message **before** sending the reply message.
+	public static final void logAndMessage(AbstractPaxosLogger logger, LogMessagingTask logMTask, Messenger messenger) 
+			throws JSONException, IOException {
 		assert(logMTask!=null);
 		if(logMTask.logMsg!=null) {
-			// spawn a log and message task
-			if(DEBUG) log.info("Node " + logger.myID + " logging " + (logMTask.logMsg.getType().getLabel())+": " + logMTask.logMsg.toString());
+			// spawn a log-and-message task
+			if(DEBUG) log.info("Node " + logger.myID + " logging " + (logMTask.logMsg.getType().getLabel())+
+					": " + logMTask.logMsg.toString());
 			PaxosPacket packet = logMTask.logMsg;
 			assert(packet.getPaxosID()!=null) : ("Null paxosID in " + packet); 
 			assert(packet.getVersion()!=-1) : ("Null version in " + packet);
 
-			int[] sb = PaxosLogTask.getSlotBallot(packet); assert(sb.length==3);
-			PaxosLogTask task = new PaxosLogTask(logger, packet.getPaxosID(), packet.getVersion(), sb[0], new Ballot(sb[1], sb[2]), 
-					packet.getType(), packet, messenger, logMTask);
-			timer.schedule(task, 0);
+			logger.batchLogger.enqueue(logMTask); // batchLogger will also send
 		} else {
-			// no logging, send right away
-			messenger.send(logMTask);
+			messenger.send(logMTask); // no logging, send right away
+
 		}
 	}
+	// Will log and execute a decision. The former need not happen before the latter.
 	public static final void logAndExecute(AbstractPaxosLogger logger, PValuePacket decision, PaxosInstanceStateMachine pism) {
-		PaxosLogTask task = new PaxosLogTask(logger, pism.getPaxosID(), pism.getVersion(), decision.slot, decision.ballot, 
-				decision.getType(), decision, pism);
-		timer.schedule(task, 0);
+		logger.batchLogger.enqueue(new LogMessagingTask(decision));
+		
+		long t1=System.currentTimeMillis();
+		pism.sendMessagingTask(pism.extractExecuteAndCheckpoint(decision));
+		if(!decision.isRecovery()) updateExecTime(System.currentTimeMillis()-t1, 1);
 	}
+
+	// Designed to offload checkpointing to its own task so that the paxos instance can move on.
+	public static final void checkpoint(AbstractPaxosLogger logger, String paxosID, short version, 
+			int[] members, int slot, Ballot ballot, String state, int gcSlot) {
+		Checkpointer checkpointer = logger.new Checkpointer(logger, paxosID, version, members, 
+				slot, ballot, state, gcSlot);
+		logger.timer.schedule(checkpointer, 0);
+	}
+
 	/* Will replay logged messages from checkpoint onwards. Static
 	 * because logger could actually be any implementation, e.g.,
 	 * DerbyPaxosLogger. */
@@ -130,40 +142,146 @@ public abstract class AbstractPaxosLogger {
 	public abstract  StatePacket getStatePacket(String paxosID);
 	protected abstract boolean initiateReadCheckpoints();
 	protected abstract  RecoveryInfo readNextCheckpoint();
+	protected abstract RecoveryInfo getRecoveryInfo(String paxosID);
 
-	protected abstract void closeReadAll();
+	protected abstract void closeReadAll(); 
 	public abstract boolean remove(String paxosID);
+	public abstract boolean removeAll();
 
 	// message logging methods
 	public abstract boolean log(PaxosPacket packet);
 	public abstract boolean log(String paxosID, short version, int slot, int ballotnum, int coordinator, PaxosPacketType type, String message);
+	public abstract boolean logBatch(PaxosPacket[] packets);
 	public abstract ArrayList<PaxosPacket> getLoggedMessages(String paxosID); 
 	public abstract Map<Integer,PValuePacket> getLoggedAccepts(String paxosID, int firstSlot);
 	public abstract ArrayList<PValuePacket> getLoggedDecisions(String paxosID, int minSlot, int maxSlot) throws JSONException;
-	protected abstract boolean initiateReadLogMessages(String paxosID);
-	protected abstract PaxosPacket readNextLogMessage();
+	//protected abstract boolean initiateReadLogMessages(String paxosID);
+	//protected abstract PaxosPacket readNextLogMessage();
+	
+	// pausing methods
+	protected abstract boolean pause(String paxosID, String serialized);
+	protected abstract HotRestoreInfo unpause(String paxosID);
 
 	/**************** End of extensible methods ***********************/
 
-	public static void main(String[] args) {
-		int million = 1000000;
-		int nNodes = (int)(million*0.7);
-		int numPackets = 10;
-		AbstractPaxosLogger[] loggers = new AbstractPaxosLogger[nNodes];
-		for(int i=0; i<nNodes;i++) {
-			int[] group = {i, i+1, i+23, i+44};
-			Ballot ballot = new Ballot(i,i);
-			int slot = i;
-			String state = "state"+i;
-			loggers[i] = new DummyPaxosLogger(i,null);
-			PaxosPacket[] packets = new PaxosPacket[numPackets];
-			String paxosID = "paxos"+i;
-			for(int j=0; j<packets.length; j++) {
-				packets[j] = new RequestPacket(25,  "26", false);
-				packets[j].putPaxosID(paxosID, (short)0);
-				loggers[i].log(packets[j]);
+	private static long totalLogTime=0;
+	private static int numLogged=1;
+	private static long totalExecTime=0;
+	private static int numExecd=1;
+	public static long totalLockTime=0;
+	public static long numLocked=1;
+
+	private synchronized static void updateLogTime(long t, int n) {totalLogTime += t;numLogged+=n;}
+	protected synchronized static double getAvgLogTime() {return totalLogTime*1.0/numLogged;}
+	
+	private synchronized static void updateExecTime(long t, int n) {totalExecTime += t;numExecd+=n;}
+	protected synchronized static double getAvgExecTime() {return totalExecTime*1.0/numExecd;}
+	
+	// A utility method with seemingly no other place to put
+	public static int[] getSlotBallot(PaxosPacket packet) {
+		int slot=-1;
+		Ballot ballot=null;
+		PValuePacket pvalue = null;
+		switch(packet.getType()) {
+		case PREPARE:
+			PreparePacket prepare = (PreparePacket)packet;
+			ballot = prepare.ballot;
+			break;
+		case ACCEPT: case DECISION:
+			pvalue = (PValuePacket)packet;
+			slot = pvalue.slot;
+			ballot = pvalue.ballot;
+			break;
+		default:
+			assert(false);
+		}
+		assert(ballot!=null);
+		int[] slotBallot = {slot, ballot.ballotNumber, ballot.coordinatorID};
+		return slotBallot;
+	}
+	
+	/*********************************** Private utility classes below ****************************/
+	// Makes sure that message logging batches as much as possible.
+	private class BatchLogger implements Runnable {
+		private final AbstractPaxosLogger logger;
+		private final Messenger messenger;
+		private final ArrayList<LogMessagingTask> logMessages = new ArrayList<LogMessagingTask>();
+
+		BatchLogger(AbstractPaxosLogger lgr, Messenger msgr) {
+			this.logger = lgr;
+			this.messenger = msgr;
+		}
+		public void run() {
+			while(true) {
+				synchronized(this.logMessages) {
+					try {
+						while(this.logMessages.isEmpty()) this.logMessages.wait();
+
+					} catch(InterruptedException ie) {ie.printStackTrace();}
+				}
+				LogMessagingTask[] lmTasks = this.dequeueAll();
+				assert(lmTasks.length>0);
+				PaxosPacket[] packets = new PaxosPacket[lmTasks.length];
+				for(int i=0; i<lmTasks.length; i++) {
+					packets[i] = lmTasks[i].logMsg;
+				}
+
+				long t1=System.currentTimeMillis();
+				this.logger.logBatch(packets); // the main point of this class
+				updateLogTime(System.currentTimeMillis()-t1, packets.length);
+
+				for(LogMessagingTask lmTask : lmTasks) {
+					try {
+						this.messenger.send(lmTask);
+					} catch(JSONException je) {
+						log.severe("Logged message but could not send response: " + lmTask); 
+						je.printStackTrace();
+					}
+					catch(IOException ioe) {
+						log.severe("Logged message but could not send response: " + lmTask); 
+						ioe.printStackTrace();
+					}
+				}
 			}
-			loggers[i].putCheckpointState(paxosID, (short)0, group, slot, ballot, state, 0);
+		}
+		private void enqueue(LogMessagingTask lmTask) {
+			synchronized(this.logMessages) {
+				this.logMessages.add(lmTask);
+				this.logMessages.notify();
+			}
+
+		}
+		// There is no dequeue(), just dequeueAll()
+		private LogMessagingTask[] dequeueAll() {
+			synchronized(this.logMessages) {
+				LogMessagingTask[] lmTasks = new LogMessagingTask[this.logMessages.size()];
+				this.logMessages.toArray(lmTasks);
+				this.logMessages.clear();
+				return lmTasks;
+			}
 		}
 	}
+	
+	// Just spawns a task to do a single checkpoint
+	private class Checkpointer extends TimerTask {
+		final AbstractPaxosLogger logger; final String paxosID; 
+		final short version; final int[] members; final int slot; 
+		final Ballot ballot; final String state; final int gcSlot;
+		Checkpointer(AbstractPaxosLogger logger, String paxosID, short version, 
+				int[] members, int slot, Ballot ballot, String state, int gcSlot) {
+			this.logger=logger;
+			this.paxosID=paxosID;
+			this.version=version;
+			this.members=members;
+			this.slot=slot;
+			this.ballot=ballot;
+			this.state=state;
+			this.gcSlot=gcSlot;
+		}
+		public void run() {
+			logger.putCheckpointState(paxosID, version, members, slot, ballot, state, gcSlot);
+		}
+	}
+	/******************************** End of private utility classes ****************************/
+
 }

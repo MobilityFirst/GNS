@@ -17,6 +17,8 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePa
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.StatePacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState;
 
@@ -27,7 +29,8 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState
 /* This quick-and-dirty logger is a memory-based logger, so it is fake. 
  * Not only is it fake, but it scales poorly as it uses up much more memory 
  * than the paxos instances themselves, so it will limit the number of instances
- * per machine. 
+ * per machine. This class is no longer maintained but is lying around in 
+ * case we want to do some performance comparison of memory vs. disk operations.
  * 
  * Use DerbyDummyPaxosLogger that extends this class for a more scalable, efficient, 
  * and persistent logger.
@@ -62,8 +65,8 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 
 	private static Logger log = Logger.getLogger(DummyPaxosLogger.class.getName()); // GNS.getLogger();
 
-	DummyPaxosLogger(int id, String logDir) {
-		super(id, logDir);
+	DummyPaxosLogger(int id, String logDir, Messenger messenger) {
+		super(id, logDir, messenger);
 		checkpoints = new ConcurrentHashMap<String,PaxosCheckpoint>();
 		messages = new ConcurrentHashMap<String,ArrayList<PaxosPacket>>();
 		timer = new Timer();
@@ -195,17 +198,26 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 		assert(false) : "Method not implemented";
 		return null;
 	}
-	protected synchronized boolean initiateReadLogMessages(String paxosID) {
-		assert(false) : "Method not implemented";
-		return false;
-	}
-	protected synchronized PaxosPacket readNextLogMessage() {
-		assert(false) : "Method not implemented";
-		return null;
-	}
 	protected synchronized void closeReadAll() {
 		assert(false) : "Method not implemented";
 	}
+	public synchronized boolean removeAll() {
+		assert(false) : "Method not implemented";
+		return false;
+	}
+	protected synchronized RecoveryInfo getRecoveryInfo(String paxosID) {
+		assert(false) : "Method not implemented";
+		return null;
+	}
+	public boolean pause(String paxosID, String serializedState) {
+		assert(false) : "Method not implemented";
+		return true;
+	}
+	public HotRestoreInfo unpause(String paxosID) {
+		assert(false) : "Method not implemented";
+		return null;
+	}
+
 
 	/**************** End of extensible methods ***********************/
 
@@ -219,7 +231,7 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 			Ballot ballot = new Ballot(i,i);
 			int slot = i;
 			String state = "state"+i;
-			loggers[i] = new DummyPaxosLogger(i,null);
+			loggers[i] = new DummyPaxosLogger(i,null,null);
 			PaxosPacket[] packets = new PaxosPacket[numPackets];
 			String paxosID = "paxos"+i;
 			for(int j=0; j<packets.length; j++) {
@@ -229,5 +241,11 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 			}
 			loggers[i].putCheckpointState(paxosID, (short)0, group, slot, ballot, state, 0);
 		}
+	}
+
+	@Override
+	public boolean logBatch(PaxosPacket[] packets) {
+		assert(false) : "Method not implemented";
+		return false;
 	}
 }

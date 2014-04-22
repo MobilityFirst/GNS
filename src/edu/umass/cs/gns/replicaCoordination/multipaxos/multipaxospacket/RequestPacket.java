@@ -8,12 +8,19 @@ import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import java.util.Random;
 
 public class RequestPacket extends PaxosPacket {
+	public static final String NO_OP="NO_OP";
+	private static final long MAX_AGREEMENT_TIME = 30000;
 	private static final String CLIENT_INFO = "client_id";
+	private static final String CREATE_TIME = "create_time";
+	private static final String REPLY_TO_CLIENT = "reply_to_client";
 
 	public final int clientID;
 	public final int requestID;
 	public final String requestValue;
-	private final boolean stop; // could also be public, but private coz we might redefine isStopRequest later
+	public final boolean stop; 
+
+	private long createTime = System.currentTimeMillis(); // preserved across forwarding by nodes, so not final
+	private boolean replyToClient=false;
 
 	public RequestPacket(int clientID,  String value, boolean stop) {
     	super((PaxosPacket)null);
@@ -41,6 +48,10 @@ public class RequestPacket extends PaxosPacket {
 		this.stop = req.stop;
 		this.packetType = PaxosPacketType.REQUEST;
 	}
+	public RequestPacket makeNoop() {
+		return new RequestPacket(clientID, requestID, NO_OP, stop);
+	}
+	public boolean isNoop() {return this.requestValue.equals(NO_OP);}
 
 	public RequestPacket(JSONObject json) throws JSONException{
 		super(json);
@@ -52,6 +63,8 @@ public class RequestPacket extends PaxosPacket {
 
 		this.stop = tokens[2].equals("1") ? true : false;
 		this.requestValue = x.substring(tokens[0].length() + tokens[1].length() + tokens[2].length() + 3);
+		this.createTime = json.getLong(CREATE_TIME);
+		this.replyToClient = json.getBoolean(REPLY_TO_CLIENT);
 	}
 
 	@Override
@@ -62,17 +75,27 @@ public class RequestPacket extends PaxosPacket {
 		} else {
 			json.put(CLIENT_INFO, clientID + " " + requestID + " " + 0 + " " + requestValue);
 		}
+		json.put(CREATE_TIME, this.createTime);
+		json.put(REPLY_TO_CLIENT, replyToClient);
 		return json;
 	}
 
-	public boolean isStopRequest() {
-		return stop;
-	}
+	public boolean isStopRequest() {return stop;}
+	public boolean hasTakenTooLong() {return System.currentTimeMillis() - this.createTime > MAX_AGREEMENT_TIME;}
+	public void setReplyToClient(boolean b) {this.replyToClient=b;}
+	public boolean getReplyToClient() {return this.replyToClient;}
 	
 	/* For testing */
 	public static int getRequestID(String req) {
 		String[] pieces = req.split("\\s");
 		return (pieces!=null && pieces.length>=6 ? Integer.parseInt(pieces[5]) : -1);
+	}
+	/* Used only for testing database logging to check that the logged
+	 * packet is indeed logged across crashes. If this timestamp is
+	 * different each time, the test would needlessly fail.
+	 */
+	public void setCreateTime(long t) {
+		this.createTime = t;
 	}
 	
 	public static void main(String[] args) {

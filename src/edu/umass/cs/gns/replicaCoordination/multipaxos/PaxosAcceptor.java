@@ -21,6 +21,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PrepareR
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.util.MultiArrayMap;
 import edu.umass.cs.gns.util.NullIfEmptyMap;
 
@@ -54,10 +55,10 @@ public class PaxosAcceptor {
 	public static final boolean ACCEPTED_PROPOSALS_ON_DISK=true; // true = we don't maintain accepted proposals in memory, just disk
 
 	private int slot=0;
-	int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
-	int ballotCoord=-1;
+	private int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
+	private int ballotCoord=-1;
 	private boolean stopped=false;
-	private int minCommittedFrontierSlot=0; 
+	private int minCommittedFrontierSlot=-1; 
 
 	/* The two maps below are of type NullIfEmptyMap as testing shows that
 	 * storing null maps as opposed to empty maps yields an overall 
@@ -70,10 +71,19 @@ public class PaxosAcceptor {
 	// static, so does not count towards space.
 	private static Logger log = Logger.getLogger(PaxosAcceptor.class.getName()); // GNS.getLogger();	
 
-	PaxosAcceptor(int b, int c, int s) {
+
+	PaxosAcceptor(int b, int c, int s, HotRestoreInfo hri) {
 		this.ballotNum = b;
 		this.ballotCoord = c;
 		this.slot = s;
+		if(hri!=null) this.hotRestore(hri);
+	}
+	protected synchronized boolean hotRestore(HotRestoreInfo hri) {
+		this.ballotNum = hri.accBallot.ballotNumber;
+		this.ballotCoord = hri.accBallot.coordinatorID;
+		this.slot = hri.accSlot;
+		this.minCommittedFrontierSlot = hri.accGCSlot;
+		return true;
 	}
 
 	private synchronized void stop() {this.stopped = true;}
@@ -90,6 +100,11 @@ public class PaxosAcceptor {
 	protected synchronized int getGCSlot() {return this.minCommittedFrontierSlot;}
 	protected synchronized int getSlot() {return slot;}
 	protected synchronized Ballot getBallot() {return new Ballot(ballotNum, ballotCoord);}
+	protected synchronized String getBallotStr() {return Ballot.getBallotString(ballotNum, ballotCoord);}
+	protected synchronized String getBallotSlot() {return getBallot()+", "+getSlot();}
+	protected synchronized int getBallotNum() {return this.ballotNum;}
+	protected synchronized int getBallotCoord() {return this.ballotCoord;}
+
 	/* Note: We don't have public putSlot and putBallot methods as external 
 	 * entities have no business modifying paxos state directly. 
 	 */
@@ -109,14 +124,14 @@ public class PaxosAcceptor {
 
 		PrepareReplyPacket preply = null;
 		if(prepare.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) > 0) {
-			log.info("Node " + prepare.receiverID + " updating to higher ballot " + prepare.ballot);
+			log.info("Acceptor " + prepare.receiverID + " updating to higher ballot " + prepare.ballot);
 			this.ballotNum = prepare.ballot.ballotNumber; this.ballotCoord = prepare.ballot.coordinatorID;
 		}
 		/* Why return accepted values even though they were proposed in lower 
 		 * ballots? So that the preparer knows the set of accepted values to
 		 * carry over across a view change.
 		 */
-		preply = new PrepareReplyPacket(prepare.coordinatorID, prepare.receiverID, prepare.ballot, 
+		preply = new PrepareReplyPacket(prepare.coordinatorID, prepare.receiverID, this.getBallot(), //prepare.ballot, 
 				pruneAcceptedProposals(this.acceptedProposals.getMap(), prepare.firstUndecidedSlot), 
 				this.minCommittedFrontierSlot);
 		return preply;
@@ -155,20 +170,21 @@ public class PaxosAcceptor {
 	/* Phase 3: execute if next-in-line commit, else enqueue */
 	protected synchronized PValuePacket putAndRemoveNextExecutable(PValuePacket decision) {
 		if(this.isStopped()) return null;
+		if(decision==null && (decision=this.committedRequests.get(this.getSlot()))==null) return null;
 
 		this.garbageCollectAccepted(decision.majorityCommittedSlot);
 		this.acceptedProposals.remove(decision.slot); // corresponding accept must be disk-logged at a majority 
 
-		if(decision.slot>=this.slot) this.committedRequests.put(decision.slot, decision); 
+		if(decision.slot>=this.getSlot()) this.committedRequests.put(decision.slot, decision); 
 		PValuePacket nextExecutable=null;
-		if (this.committedRequests.containsKey(this.slot)) { // might be removing what got inserted just above
-			nextExecutable = this.committedRequests.remove(this.slot);
+		if (this.committedRequests.containsKey(this.getSlot())) { // might be removing what got inserted just above
+			nextExecutable = this.committedRequests.remove(this.getSlot());
 			this.executed(nextExecutable.slot, nextExecutable.isStopRequest());
 		}
 		// Note: by design, assertSlotInvariant() may not hold right here.
 		return nextExecutable;
 	}
-	protected void assertSlotInvariant() {assert(!this.committedRequests.containsKey(this.slot));}
+	protected synchronized void assertSlotInvariant() {assert(!this.committedRequests.containsKey(this.getSlot()));}
 
 	/* We are done! Only phase1a, phase2a, phase3 messages are received by acceptors. 
 	 * The corresponding 1b and 2b messages are received by a coordinator 
@@ -186,24 +202,27 @@ public class PaxosAcceptor {
 		ArrayList<Integer> missing=new ArrayList<Integer>();
 		int maxCommittedSlot = getMaxCommittedSlot();
 		for(int i=this.getSlot(); i < Math.min(maxCommittedSlot, this.getSlot()+sizeLimit); i++) missing.add(i);
-		return missing;
+		return missing; // in sorted order
 	}
 	protected synchronized int getMaxCommittedSlot() {
-		if(this.isStopped() || this.committedRequests.isEmpty()) return this.slot-1;
+		if(this.isStopped() || this.committedRequests.isEmpty()) return this.getSlot()-1;
 
-		int maxSlot=this.slot;
+		int maxSlot=this.getSlot()-1;
 		for(int i : this.committedRequests.keySet()) {
 			maxSlot = Math.max(i, maxSlot);
 		}
 		return maxSlot;
 	}
+	protected synchronized boolean caughtUp() {
+		return this.acceptedProposals.isEmpty() && this.committedRequests.isEmpty();
+	}
 
 	/********************** Start of private methods ***************************/
 	private synchronized void executed(int s, boolean stop) {
-		if(s==slot) {
-			slot++; 
+		if(s==this.getSlot()) {
+			this.slot++; 
 			if(stop) {this.stop();}
-		} else assert false : ("YIKES! Asked to execute " + s + " when expecting " + this.slot);
+		} else assert false : ("YIKES! Asked to execute " + s + " when expecting " + this.getSlot());
 	}
 	private synchronized void garbageCollectAccepted(int gcSlot) {
 		if(gcSlot > this.minCommittedFrontierSlot) {
@@ -219,7 +238,7 @@ public class PaxosAcceptor {
 
 	/***************** Start of testing methods *******************************/
 	public String toString() {
-		return "{Acceptor: [slot=" + this.slot + ", ballot="+this.ballotNum+":"+this.ballotCoord +", isStopped="+this.isStopped()+"]}";
+		return "{Acceptor: [slot=" + this.getSlot() + ", ballot="+this.ballotNum+":"+this.ballotCoord +", isStopped="+this.isStopped()+"]}";
 	}
 	protected void testingInitInstance(int load) {
 		this.acceptedProposals = new NullIfEmptyMap<Integer,PValuePacket>();
@@ -234,6 +253,17 @@ public class PaxosAcceptor {
 			this.committedRequests.put(43+i, new PValuePacket(new Ballot(0,0), new ProposalPacket(43+i,req)));
 		}
 	}
+	protected synchronized void jumpSlot(int slotNumber) {
+		assert(slotNumber>getSlot()); // otherwise we should never have gotten here
+		// doing it this way just to ensure executed(.) is the only way to increment slot
+		for(int i=getSlot(); i<slotNumber; i++) {
+			this.executed(i, false);
+			this.committedRequests.remove(i);
+			this.acceptedProposals.remove(i); // have to be logged on disk for correctness
+		}
+		assert(slotNumber==getSlot()); 
+	}
+
 
 	private static int testingCreateAcceptor(int size, int id, Set<Integer> group, String testMode) {
 		PaxosInstanceStateMachine[] pismarray = null;
@@ -248,13 +278,13 @@ public class PaxosAcceptor {
 			try {
 				if(testMode.equals("FULL_INSTANCE")) {
 					if(pismarray==null) pismarray = new PaxosInstanceStateMachine[size];
-					pismarray[i] = new PaxosInstanceStateMachine(ID+i, (short)i, (i%3==0 ? coord : id), group, null, null); 
+					pismarray[i] = new PaxosInstanceStateMachine(ID+i, (short)i, (i%3==0 ? coord : id), group, null, null, null); 
 					pismMap.put(pismarray[i].getKey(), pismarray[i]);
 					pismarray[i].testingInit(0);
 				} 
 				else if(testMode.equals("ACCEPTOR")) {
 					if(pasarray==null) pasarray = new PaxosAcceptor[size];
-					pasarray[i] = new PaxosAcceptor(1, 2,0);
+					pasarray[i] = new PaxosAcceptor(1, 2,0,null);
 					pasarray[i].testingInitInstance(0);
 				}
 				if(i%j==0 || (i+1)%million==0) {System.out.print(((i+1)>=million?(i+1)/million+"M":i)+" ");j*=2;}
@@ -269,6 +299,7 @@ public class PaxosAcceptor {
 		}
 		return size;
 	}
+	
 
 	/**
 	 * @param args
@@ -306,4 +337,5 @@ public class PaxosAcceptor {
 					" million *inactive* acceptor paxos instances with 1GB memory.");
 		} catch(Exception e) {e.printStackTrace();}
 	}
+
 }

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination;
 
-import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import org.json.JSONObject;
 
 /**
@@ -16,5 +15,5 @@ public abstract class ActiveReplicaCoordinator {
 	 */
 	public abstract int coordinateRequest(JSONObject request);
 
-  public abstract void reset();
+	public abstract void reset();
 }

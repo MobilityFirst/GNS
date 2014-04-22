@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 
@@ -56,7 +57,8 @@ public class Messenger {
 					if(PaxosManager.DEBUG) log.finest("Node "+this.myID+" sent " + PaxosPacket.getPaxosPacketType(jsonMsg) + 
 							" to node " + mtask.recipients[r] + ": " + jsonMsg);
 				} else if (sent < jsonMsg.length()) {
-					log.warning("Node "+this.myID+" messenger experiencing congestion, this is bad.");
+					if(NIOTransport.sampleLog())
+						log.warning("Node "+this.myID+" messenger experiencing congestion, this is bad but not disastrous (yet)");
 					Retransmitter rtxTask = new Retransmitter(mtask.recipients[r], jsonMsg, RTX_DELAY);
 					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
 				}

@@ -2,6 +2,8 @@ package edu.umass.cs.gns.util;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -54,11 +56,15 @@ public class NullIfEmptyMap<KeyType,ValueType> {
 		if(map==null) return new TreeSet<ValueType>();
 		return map.values();
 	}
+	// Make a copy and return, otherwise caller can modify map.
 	public synchronized HashMap<KeyType,ValueType> getMap() {
-		// Make a copy and return, otherwise caller can modify map.
 		if(map==null) return new HashMap<KeyType,ValueType>(NullIfEmptyMap.CAPACITY);
 		HashMap<KeyType,ValueType> copy = new HashMap<KeyType,ValueType>(map);
 		return copy;
+	}
+	public synchronized Set<Map.Entry<KeyType, ValueType>> entrySet() {
+		if(map==null) return new TreeSet<Map.Entry<KeyType, ValueType>>();
+		return map.entrySet(); 
 	}
 	public synchronized int size() {
 		if(map==null) return 0;
