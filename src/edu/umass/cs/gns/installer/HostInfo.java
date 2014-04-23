@@ -8,25 +8,30 @@
 
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.gns.util.GEOLocator;
 import java.awt.geom.Point2D;
 
 /**
- * Information about hosts we're running the GNS on.
+ * Information about instances that have started
  */
 class HostInfo {
-  private int id;
-  private String ip;
-  private Point2D location;
+  private final int id;
+  private final String hostname;
+  private final String ip;
+  private final Point2D location;
 
-   public HostInfo(int id, String ip) {
+  public HostInfo(int id, String hostname, String ip, Point2D location) {
     this.id = id;
+    this.hostname = hostname;
     this.ip = ip;
-    this.location =  GEOLocator.lookupIPLocation(ip);
+    this.location = location;
   }
- 
+
   public int getId() {
     return id;
+  }
+
+  public String getHostname() {
+    return hostname;
   }
 
   public String getIp() {
@@ -36,12 +41,10 @@ class HostInfo {
   public Point2D getLocation() {
     return location;
   }
-  
-  
 
   @Override
   public String toString() {
-    return "InstanceInfo{" + "id=" + id + ", ip=" + ip + ", location=" + location + '}';
+    return "InstanceInfo{" + "id=" + id + ", hostname=" + hostname + ", ip=" + ip + ", location=" + location + '}';
   }
   
 }

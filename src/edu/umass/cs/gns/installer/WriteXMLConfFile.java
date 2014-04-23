@@ -35,7 +35,7 @@ public class WriteXMLConfFile {
 //  <host id="2" ip="ec2-54-184-69-227.us-west-2.compute.amazonaws.com"/>
 // </root>
   public static void writeFile(String filename, String keyName, String ec2UserName, String hostType, String datastore,
-          ConcurrentHashMap<Integer, EC2InstanceInfo> idTable) {
+          ConcurrentHashMap<Integer, HostInfo> idTable) {
 
     try {
 
@@ -72,15 +72,28 @@ public class WriteXMLConfFile {
       attr.setValue(datastore);
       element.setAttributeNode(attr);
 
-      for (EC2InstanceInfo info : idTable.values()) {
+      for (HostInfo info : idTable.values()) {
         element = doc.createElement("host");
         rootElement.appendChild(element);
+        
         attr = doc.createAttribute("id");
         attr.setValue(Integer.toString(info.getId()));
-
         element.setAttributeNode(attr);
+        
+        attr = doc.createAttribute("hostname");
+        attr.setValue(Integer.toString(info.getId()));
+        element.setAttributeNode(attr);
+        
         attr = doc.createAttribute("ip");
         attr.setValue(info.getIp());
+        element.setAttributeNode(attr);
+        
+        attr = doc.createAttribute("lat");
+        attr.setValue(Double.toString(info.getLocation().getY()));
+        element.setAttributeNode(attr);
+        
+        attr = doc.createAttribute("lon");
+        attr.setValue(Double.toString(info.getLocation().getY()));
         element.setAttributeNode(attr);
       }
 
@@ -106,10 +119,10 @@ public class WriteXMLConfFile {
   }
   
   public static void main(String argv[]) {
-    ConcurrentHashMap<Integer, EC2InstanceInfo> idTable = new ConcurrentHashMap();
-    idTable.put(0, new EC2InstanceInfo(0, "host1", "127.0.0.1", null));
-    idTable.put(1, new EC2InstanceInfo(1, "host2", "127.0.0.2", null));
-    idTable.put(2, new EC2InstanceInfo(2, "host3", "127.0.0.3", null));
+    ConcurrentHashMap<Integer, HostInfo> idTable = new ConcurrentHashMap();
+    idTable.put(0, new HostInfo(0, "host1", "127.0.0.1", null));
+    idTable.put(1, new HostInfo(1, "host2", "127.0.0.2", null));
+    idTable.put(2, new HostInfo(2, "host3", "127.0.0.3", null));
     writeFile("frank", "aws", "ec2-user", "linux", "MONGO", idTable);
   }
   

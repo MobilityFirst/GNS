@@ -65,7 +65,7 @@ public class EC2Runner {
   /**
    * Stores information about instances that have started.
    */
-  private static ConcurrentHashMap<Integer, EC2InstanceInfo> idTable = new ConcurrentHashMap<Integer, EC2InstanceInfo>();
+  private static ConcurrentHashMap<Integer, HostInfo> hostTable = new ConcurrentHashMap<Integer, HostInfo>();
   //
   private static final int STARTINGNODENUMBER = 0;
   private static ConcurrentHashMap<Integer, Integer> hostsThatDidNotStart = new ConcurrentHashMap<Integer, Integer>();
@@ -134,7 +134,7 @@ public class EC2Runner {
     } while (!hostsThatDidNotStart.isEmpty());
 
     // got a complete set running... now on to step 2
-    System.out.println(idTable.toString());
+    System.out.println(hostTable.toString());
     // after we know all the hosts are we run the last part
 
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
@@ -257,7 +257,7 @@ public class EC2Runner {
         Point2D location = GEOLocator.lookupIPLocation(ip);
         StatusModel.getInstance().queueUpdate(id, hostname, ip, location);
         // update our table of instance information
-        idTable.put(id, new EC2InstanceInfo(id, hostname, ip, location));
+        hostTable.put(id, new HostInfo(id, hostname, ip, location));
         // store the hostname on preferences so we can access it later
         //storeHostname(runSetName, id, hostname);
 
@@ -333,7 +333,7 @@ public class EC2Runner {
             String ip = getHostIPSafe(hostname);
             // and take a guess at the location (lat, long) of this host
             Point2D location = GEOLocator.lookupIPLocation(ip);
-            idTable.put(id, new EC2InstanceInfo(id, hostname, ip, location));
+            hostTable.put(id, new HostInfo(id, hostname, ip, location));
           }
         }
       }
@@ -352,7 +352,7 @@ public class EC2Runner {
 
   public static void describeRunSet(final String name) {
     populateIDTableForRunset(name);
-    for (EC2InstanceInfo info : idTable.values()) {
+    for (HostInfo info : hostTable.values()) {
       System.out.println(info);
     }
   }
@@ -404,11 +404,7 @@ public class EC2Runner {
   private static void printUsage() {
     formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", commandLineOptions);
   }
-
-  private static void printUsage(String header) {
-    formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", header, commandLineOptions, "");
-  }
-
+  
   private static void startAllMonitoringAndGUIProcesses() {
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override
@@ -502,8 +498,8 @@ public class EC2Runner {
   private static void writeGNSINstallerConf(String configName) {
     File jarPath = getJarPath();
     System.out.println("Jar path: " + jarPath);
-    String confFileLocation = jarPath.getParent() + "/conf/gns_install_" + configName;
-    WriteXMLConfFile.writeFile(confFileLocation, keyName, ec2UserName, keyName, "linux", idTable);
+    String confFileLocation = jarPath.getParent() + "/conf/gns_install_" + configName + ".xml";
+    WriteXMLConfFile.writeFile(confFileLocation, keyName, ec2UserName, "linux", dataStoreType.toString(), hostTable);
     
   }
 

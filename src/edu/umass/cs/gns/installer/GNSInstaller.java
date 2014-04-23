@@ -93,7 +93,7 @@ public class GNSInstaller {
   public static void updateRunSet(String name, UpdateAction action) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     for (HostInfo info : hostTable.values()) {
-      threads.add(new UpdateThread(info.getId(), info.getIp(), action));
+      threads.add(new UpdateThread(info.getId(), info.getHostname(), action));
     }
     for (Thread thread : threads) {
       thread.start();
@@ -280,7 +280,7 @@ public class GNSInstaller {
     for (HostInfo info : hostTable.values()) {
       result.append(info.getId());
       result.append(" yes ");
-      result.append(info.getIp());
+      result.append(info.getHostname());
       result.append(" default ");
       result.append(" 0 ");
       result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getY()) : 0.0);
@@ -292,7 +292,7 @@ public class GNSInstaller {
     for (HostInfo info : hostTable.values()) {
       result.append(getLNSId(info.getId()));
       result.append(" no ");
-      result.append(info.getIp());
+      result.append(info.getHostname());
       result.append(" default ");
       result.append(" 0 ");
       result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getY()) : 0.0);
@@ -310,7 +310,7 @@ public class GNSInstaller {
     // update the config info so know where to send stuff
     try {
       for (HostInfo info : hostTable.values()) {
-        InetAddress ipAddress = InetAddress.getByName(info.getIp());
+        InetAddress ipAddress = InetAddress.getByName(info.getHostname());
         nodeConfig.addHostInfo(info.getId(), ipAddress, GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
       }
     } catch (UnknownHostException e) {
@@ -338,7 +338,7 @@ public class GNSInstaller {
       return false;
     }
     gnsFileName = new File(gnsJarFileLocation).getName();
-    nsConfFileName = new File(lnsConfFileLocation).getName();
+    lnsConfFileName = new File(lnsConfFileLocation).getName();
     nsConfFileName = new File(nsConfFileLocation).getName();
     return true;
   }

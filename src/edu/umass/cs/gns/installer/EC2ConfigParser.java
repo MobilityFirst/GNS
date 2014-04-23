@@ -9,7 +9,13 @@ import edu.umass.cs.amazontools.AMIRecordType;
 import edu.umass.cs.amazontools.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
 
+import static edu.umass.cs.gns.installer.HostConfigParser.getConfPath;
+import edu.umass.cs.gns.main.GNS;
+import java.io.File;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
@@ -51,8 +57,13 @@ public class EC2ConfigParser {
   }
 
   public void parseFile(String filename) {
-    InputStream is = ClassLoader.getSystemResourceAsStream(filename + ".xml");
+    String confPath = getConfPath();
+    if (confPath == null) {
+      return;
+    }
     try {
+      InputStream is = Files.newInputStream(Paths.get(confPath, filename + ".xml"));
+      //InputStream is = ClassLoader.getSystemResourceAsStream(filename + ".xml");
       //File fXmlFile = new File(filename);
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -92,6 +103,16 @@ public class EC2ConfigParser {
 
     } catch (Exception e) {
       e.printStackTrace();
+    }
+  }
+
+  public static String getConfPath() {
+    try {
+      File jarLoc = new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+      return jarLoc.getParentFile() + "/conf/";
+    } catch (URISyntaxException e) {
+      GNS.getLogger().info("Unable to get conf location: " + e);
+      return null;
     }
   }
 }
