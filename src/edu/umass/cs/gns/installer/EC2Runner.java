@@ -12,6 +12,7 @@ import edu.umass.cs.amazontools.AWSEC2;
 import edu.umass.cs.amazontools.InstanceStateRecord;
 import edu.umass.cs.amazontools.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.statusdisplay.MapFrame;
 import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusFrame;
@@ -23,6 +24,7 @@ import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,6 +72,7 @@ public class EC2Runner {
   private static DataStoreType dataStoreType = DEFAULT_DATA_STORE_TYPE;
   private static AMIRecordType amiRecordType = DEFAULT_AMI_RECORD_TYPE;
   private static String ec2UserName = DEFAULT_EC2_USERNAME;
+  private static String configName = null;
 
   private static void loadConfig(String configName) {
     EC2ConfigParser parser = new EC2ConfigParser(configName);
@@ -135,6 +138,8 @@ public class EC2Runner {
     // after we know all the hosts are we run the last part
 
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
+    // write out a config file that the GNS installer can use for this set of EC2 hosts
+    writeGNSINstallerConf(configName);
     System.out.println("Finished creation of Run Set " + runSetName);
   }
   private static final String keyName = "aws";
@@ -443,7 +448,7 @@ public class EC2Runner {
         }
       }
 
-      String configName = createRunsetName != null ? createRunsetName
+      configName = createRunsetName != null ? createRunsetName
               : terminateRunsetName != null ? terminateRunsetName
               : runsetDescribe != null ? runsetDescribe : null;
 
@@ -491,6 +496,23 @@ public class EC2Runner {
     @Override
     public void run() {
       EC2Runner.initAndUpdateEC2Host(region, runSetName, id, ip, timeout);
+    }
+  }
+  
+  private static void writeGNSINstallerConf(String configName) {
+    File jarPath = getJarPath();
+    System.out.println("Jar path: " + jarPath);
+    String confFileLocation = jarPath.getParent() + "/conf/gns_install_" + configName;
+    WriteXMLConfFile.writeFile(confFileLocation, keyName, ec2UserName, keyName, "linux", idTable);
+    
+  }
+
+  public static File getJarPath() {
+    try {
+      return new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    } catch (URISyntaxException e) {
+      GNS.getLogger().info("Unable to get jar location: " + e);
+      return null;
     }
   }
 

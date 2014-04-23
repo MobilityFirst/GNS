@@ -23,12 +23,17 @@ import org.w3c.dom.NodeList;
  */
 public class HostConfigParser {
 
+  private String keyname;
   private String username;
   private String hostType;
   private DataStoreType dataStoreType;
   private List<HostInfo> hosts = new ArrayList<HostInfo>();
 
-  public String getEc2username() {
+  public String getKeyname() {
+    return keyname;
+  }
+  
+  public String getUsername() {
     return username;
   }
 
@@ -77,6 +82,7 @@ public class HostConfigParser {
         }
       }
       
+      keyname = ((Element) doc.getElementsByTagName("keyname").item(0)).getAttribute("name");
       username = ((Element) doc.getElementsByTagName("ec2username").item(0)).getAttribute("name");
       hostType = ((Element) doc.getElementsByTagName("hosttype").item(0)).getAttribute("name");
       dataStoreType = DataStoreType.valueOf(((Element) doc.getElementsByTagName("datastore").item(0)).getAttribute("name"));
