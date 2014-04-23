@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="MacRoman"?>
+<!--
+Copyright (C) 2013
+University of Massachusetts
+All Rights Reserved 
+-->
+<root>
+  <ec2username name = "ec2-user"/>
+  <hosttype name="linux"/>
+  <datastore name = "MONGO"/>
+  <host id="0" ip="ec2-67-202-13-126.compute-1.amazonaws.com"/>
+  <host id="1" ip="ec2-184-169-217-139.us-west-1.compute.amazonaws.com"/>
+  <host id="2" ip="ec2-54-184-69-227.us-west-2.compute.amazonaws.com"/>
+</root>

@@ -38,22 +38,16 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * install n instances of the jars - create a runSet
- *
- * tag each instance with the runSet name
- *
- * exec commands on each of the instances in the runSet
- *
- *
+ * Runs a set of EC2 instances
  */
 /**
  * Typical use:
  *
- * java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer -config "release-config" -update "release"
+ * java -cp GNS.jar edu.umass.cs.gns.installer.EC2Runner -create dev
  *
  * @author westy
  */
-public class EC2Installer {
+public class EC2Runner {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String PRIVATEKEYFILEEXTENSION = ".pem";
@@ -108,7 +102,7 @@ public class EC2Installer {
       for (EC2RegionSpec regionSpec : regionsList) {
         int i;
         for (i = 0; i < regionSpec.getCount(); i++) {
-          threads.add(new InstallThread(runSetName, regionSpec.getRegion(), cnt, i == 0 ? regionSpec.getIp() : null, timeout));
+          threads.add(new EC2RunnerThread(runSetName, regionSpec.getRegion(), cnt, i == 0 ? regionSpec.getIp() : null, timeout));
           cnt = cnt + 1;
         }
       }
@@ -139,7 +133,7 @@ public class EC2Installer {
     // got a complete set running... now on to step 2
     System.out.println(idTable.toString());
     // after we know all the hosts are we run the last part
-    
+
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
     System.out.println("Finished creation of Run Set " + runSetName);
   }
@@ -150,14 +144,27 @@ public class EC2Installer {
           + "yum --quiet --assumeyes update\n"
           + "yum --quiet --assumeyes install emacs\n" // for debugging
           + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
-          + "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
-          + "name=10gen Repository\n"
+          + "echo \\\"[MongoDB]\n" // crazy double escaping for JAVA and BASH going on here!!
+          + "name=MongoDB Repository\n"
           + "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n"
           + "gpgcheck=0\n"
-          + "enabled=1\\\" > 10gen.repo\n" // crazy double escaping for JAVA and BASH going on here!!
-          + "mv 10gen.repo /etc/yum.repos.d/10gen.repo\n"
-          + "yum --quiet --assumeyes install mongo-10gen mongo-10gen-server\n"
+          + "enabled=1\\\" > mongodb.repo\n" // crazy double escaping for JAVA and BASH going on here!!
+          + "mv mongodb.repo /etc/yum.repos.d/mongodb.repo\n"
+          + "yum --quiet --assumeyes install mongo-10gen-server\n"
           + "service mongod start";
+//  private static final String mongoInstallScript = "#!/bin/bash\n"
+//          + "cd /home/ec2-user\n"
+//          + "yum --quiet --assumeyes update\n"
+//          + "yum --quiet --assumeyes install emacs\n" // for debugging
+//          + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
+//          + "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
+//          + "name=10gen Repository\n"
+//          + "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n"
+//          + "gpgcheck=0\n"
+//          + "enabled=1\\\" > 10gen.repo\n" // crazy double escaping for JAVA and BASH going on here!!
+//          + "mv 10gen.repo /etc/yum.repos.d/10gen.repo\n"
+//          + "yum --quiet --assumeyes install mongo-10gen mongo-10gen-server\n"
+//          + "service mongod start";
   private static final String mongoShortInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
@@ -286,30 +293,6 @@ public class EC2Installer {
               if (idString != null) {
                 StatusModel.getInstance().queueUpdate(Integer.parseInt(idString), StatusEntry.State.TERMINATED, "");
               }
-            }
-          }
-        }
-      }
-    } catch (IOException e) {
-      System.out.println("Problem terminating EC2 instances: " + e);
-      e.printStackTrace();
-    } catch (IllegalArgumentException e) {
-      System.out.println("Problem terminating EC2 instances: " + e);
-      e.printStackTrace();
-    }
-  }
-
-  private static void terminateAllRunSets() {
-    try {
-      AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
-      //Create Amazon Client object
-      AmazonEC2 ec2 = new AmazonEC2Client(credentials);
-      for (RegionRecord region : RegionRecord.values()) {
-        AWSEC2.setRegion(ec2, region);
-        for (Instance instance : AWSEC2.getInstances(ec2)) {
-          if (!instance.getState().getName().equals(InstanceStateRecord.TERMINATED.getName())) {
-            if (getTagValue(instance, "runset") != null) {
-              AWSEC2.terminateInstance(ec2, instance.getInstanceId());
             }
           }
         }
@@ -488,7 +471,7 @@ public class EC2Installer {
     System.exit(0);
   }
 
-  static class InstallThread extends Thread {
+  static class EC2RunnerThread extends Thread {
 
     String runSetName;
     RegionRecord region;
@@ -496,7 +479,7 @@ public class EC2Installer {
     String ip;
     int timeout;
 
-    public InstallThread(String runSetName, RegionRecord region, int id, String ip, int timeout) {
+    public EC2RunnerThread(String runSetName, RegionRecord region, int id, String ip, int timeout) {
       super("Install Start " + id);
       this.runSetName = runSetName;
       this.region = region;
@@ -507,7 +490,7 @@ public class EC2Installer {
 
     @Override
     public void run() {
-      EC2Installer.initAndUpdateEC2Host(region, runSetName, id, ip, timeout);
+      EC2Runner.initAndUpdateEC2Host(region, runSetName, id, ip, timeout);
     }
   }
 

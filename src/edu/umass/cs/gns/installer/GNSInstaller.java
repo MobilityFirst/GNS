@@ -35,7 +35,7 @@ import org.apache.commons.cli.ParseException;
 /**
  * Typical use:
  *
- * java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer -config "release-config" -update "release"
+ * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -create gns_dev
  *
  * @author westy
  */
@@ -131,12 +131,11 @@ public class GNSInstaller {
    * @param hostname
    */
   public static void installAndRunGNS(int id, String hostname) {
-    File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     // move the JAR files over
     copyJARAndConfFiles(id, hostname);
     // write the name-server-info
     StatusModel.getInstance().queueUpdate(id, "Creating name-server-info");
-    writeNSFile(hostname, keyFile);
+    writeNSFile(hostname);
     startServers(id, hostname);
   }
 
@@ -223,7 +222,8 @@ public class GNSInstaller {
    * @param hostname
    * @param keyFile
    */
-  private static void writeNSFile(String hostname, File keyFile) {
+  private static void writeNSFile(String hostname) {
+    File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
     StringBuilder result = new StringBuilder();
     //HostID IsNS? IPAddress [StartingPort | - ] Ping-Latency Latitude Longitude
     // WRITE OUT NSs
@@ -443,6 +443,8 @@ public class GNSInstaller {
           deleteDatabase(id, hostname);
           break;
       }
+      // write the name-server-info
+      writeNSFile(hostname);
       startServers(id, hostname);
       System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
     }
