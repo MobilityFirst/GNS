@@ -88,7 +88,7 @@ public class HostConfigParser {
           hosts.add(new HostInfo(Integer.parseInt(eElement.getAttribute("id")),
                   eElement.getAttribute("hostname"),
                   eElement.getAttribute("ip"),
-                  new Point2D.Double(Double.parseDouble(eElement.getAttribute("long")),
+                  new Point2D.Double(Double.parseDouble(eElement.getAttribute("lon")),
                           Double.parseDouble(eElement.getAttribute("lat")))));
         }
       }

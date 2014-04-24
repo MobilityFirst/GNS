@@ -81,7 +81,7 @@ public class WriteXMLConfFile {
         element.setAttributeNode(attr);
         
         attr = doc.createAttribute("hostname");
-        attr.setValue(Integer.toString(info.getId()));
+        attr.setValue(info.getHostname());
         element.setAttributeNode(attr);
         
         attr = doc.createAttribute("ip");
@@ -93,7 +93,7 @@ public class WriteXMLConfFile {
         element.setAttributeNode(attr);
         
         attr = doc.createAttribute("lon");
-        attr.setValue(Double.toString(info.getLocation().getY()));
+        attr.setValue(Double.toString(info.getLocation().getX()));
         element.setAttributeNode(attr);
       }
 

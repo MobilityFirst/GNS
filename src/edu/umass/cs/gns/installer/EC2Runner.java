@@ -147,7 +147,7 @@ public class EC2Runner {
   private static final String mongoInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
-          + "yum --quiet --assumeyes install emacs\n" // for debugging
+          //+ "yum --quiet --assumeyes install emacs\n" // for debugging
           + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
           + "echo \\\"[MongoDB]\n" // crazy double escaping for JAVA and BASH going on here!!
           + "name=MongoDB Repository\n"
@@ -156,7 +156,7 @@ public class EC2Runner {
           + "enabled=1\\\" > mongodb.repo\n" // crazy double escaping for JAVA and BASH going on here!!
           + "mv mongodb.repo /etc/yum.repos.d/mongodb.repo\n"
           + "yum --quiet --assumeyes install mongo-10gen-server\n"
-          + "service mongod start";
+          + "service mongod start\n";
 //  private static final String mongoInstallScript = "#!/bin/bash\n"
 //          + "cd /home/ec2-user\n"
 //          + "yum --quiet --assumeyes update\n"
@@ -174,7 +174,7 @@ public class EC2Runner {
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
           + "yum --quiet --assumeyes install emacs\n" // for debugging
-          + "service mongod start";
+          + "service mongod start\n";
   private static final String cassandraInstallScript = "#!/bin/bash\n"
           + "cd /home/ubuntu\n" //          + "echo \\\"[datastax]\n"
           //          + "name = DataStax Repo for Apache Cassandra\n"
@@ -190,7 +190,7 @@ public class EC2Runner {
           + "/etc/init.d/mysqld start\n"
           + "/usr/bin/mysql_install_db \n"
           + "/usr/bin/mysqladmin -u root password 'toorbar'\n"
-          + "mysqladmin -u root --password=toorbar -v create gns";
+          + "mysqladmin -u root --password=toorbar -v create gns\n";
 
   /**
    * This is called to initialize an EC2 host for use as A GNS server in a region. It starts the host, loads all the necessary
@@ -258,8 +258,6 @@ public class EC2Runner {
         StatusModel.getInstance().queueUpdate(id, hostname, ip, location);
         // update our table of instance information
         hostTable.put(id, new HostInfo(id, hostname, ip, location));
-        // store the hostname on preferences so we can access it later
-        //storeHostname(runSetName, id, hostname);
 
         // and we're done
         StatusModel.getInstance().queueUpdate(id, "Waiting for other servers");

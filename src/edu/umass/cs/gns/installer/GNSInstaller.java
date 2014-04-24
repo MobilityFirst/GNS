@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.amazontools.AWSEC2;
 import edu.umass.cs.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
@@ -9,6 +8,7 @@ import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import edu.umass.cs.gns.statusdisplay.StatusModel;
 import edu.umass.cs.gns.util.Format;
+import edu.umass.cs.networktools.ExecuteBash;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -181,7 +181,7 @@ public class GNSInstaller {
   private static void startServers(int id, String hostname) {
     StatusModel.getInstance().queueUpdate(id, "Starting local name servers");
     File keyFile = getKeyFile();
-    AWSEC2.executeBashScript(hostname, keyFile, "runLNS.sh",
+    ExecuteBash.executeBashScript(hostname, keyFile, "runLNS.sh",
             "#!/bin/bash\n"
             + "cd /home/ec2-user\n"
             + "if [ -f LNSlogfile ]; then\n"
@@ -193,7 +193,7 @@ public class GNSInstaller {
             + "> LNSlogfile 2>&1 &");
 
     StatusModel.getInstance().queueUpdate(id, "Starting name servers");
-    AWSEC2.executeBashScript(hostname, keyFile, "runNS.sh",
+    ExecuteBash.executeBashScript(hostname, keyFile, "runNS.sh",
             "#!/bin/bash\n"
             + "cd /home/ec2-user\n"
             + "if [ -f NSlogfile ]; then\n"
@@ -229,7 +229,7 @@ public class GNSInstaller {
    * @param hostname 
    */
   private static void deleteDatabase(int id, String hostname) {
-    AWSEC2.executeBashScript(hostname, getKeyFile(), "deleteDatabase.sh",
+    ExecuteBash.executeBashScript(hostname, getKeyFile(), "deleteDatabase.sh",
             "#!/bin/bash\n"
             + "java -cp " + gnsFileName + " " + MongoRecordsClass + " -clear");
   }
@@ -249,7 +249,7 @@ public class GNSInstaller {
    */
   private static void killAllServers(int id, String hostname) {
     StatusModel.getInstance().queueUpdate(id, "Killing servers");
-    AWSEC2.executeBashScript(hostname, getKeyFile(), "killAllServers.sh", "#!/bin/bash\nkillall java");
+    ExecuteBash.executeBashScript(hostname, getKeyFile(), "killAllServers.sh", "#!/bin/bash\nkillall java");
   }
 
   /**
@@ -260,7 +260,7 @@ public class GNSInstaller {
    */
   private static void removeLogFiles(int id, String hostname) {
     StatusModel.getInstance().queueUpdate(id, "Removing log files");
-    AWSEC2.executeBashScript(hostname, getKeyFile(), "removelogs.sh", "#!/bin/bash\n"
+    ExecuteBash.executeBashScript(hostname, getKeyFile(), "removelogs.sh", "#!/bin/bash\n"
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm -rf log\n"
@@ -434,6 +434,9 @@ public class GNSInstaller {
         System.out.println("Can't locate needed config files. LNS conf: " + lnsConfFileLocation + " NS conf: " + nsConfFileLocation);
         System.exit(1);
       }
+      
+      ExecuteBash.setEc2Username(ec2UserName);
+      SSHClient.setVerbose(true);
 
       if (runsetUpdate != null) {
         updateRunSet(runsetUpdate, (removeLogs
