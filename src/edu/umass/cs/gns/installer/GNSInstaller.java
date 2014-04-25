@@ -30,23 +30,24 @@ import org.apache.commons.cli.ParseException;
  * Typical use:
  *
  * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -create gns_dev
- * 
+ *
  * Where gns_dev is an xml formatted configuration file that looks something like this:
  * <code>
  * <root>
- *   <ec2username name="ec2-user"/>
- *   <keyname name="aws"/>
- *   <hosttype name="linux"/>
- *   <datastore name="MONGO"/>
- *   <host id="0" ip="127.0.0.1"/>
- *   <host id="1" ip="127.0.0.2"/>
- *   <host id="2" ip="127.0.0.3"/>
+ * <ec2username name="ec2-user"/>
+ * <keyname name="aws"/>
+ * <hosttype name="linux"/>
+ * <datastore name="MONGO"/>
+ * <host id="0" ip="127.0.0.1"/>
+ * <host id="1" ip="127.0.0.2"/>
+ * <host id="2" ip="127.0.0.3"/>
  * </root>
  * </code>
  *
  * @author westy
  */
 public class GNSInstaller {
+
   private static final String LNS_CONF_FILE = "/conf/lns.conf";
   private static final String NS_CONF_FILE = "/conf/ns.conf";
   private static final String NEWLINE = System.getProperty("line.separator");
@@ -65,7 +66,7 @@ public class GNSInstaller {
   private static String hostType = "linux";
   private static String ec2UserName = DEFAULT_EC2_USERNAME;
   private static String keyName = DEFAULT_KEYNAME;
- 
+
   private static String gnsJarFileLocation;
   private static String nsConfFileLocation;
   private static String lnsConfFileLocation;
@@ -90,10 +91,10 @@ public class GNSInstaller {
    * @param name
    * @param action
    */
-  public static void updateRunSet(String name, UpdateAction action) {
+  public static void updateRunSet(String name, UpdateAction action, boolean removeLogs, boolean deleteDatabase, boolean firstInstall) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     for (HostInfo info : hostTable.values()) {
-      threads.add(new UpdateThread(info.getId(), info.getHostname(), action));
+      threads.add(new UpdateThread(info.getHostname(), info.getId(), action, removeLogs, deleteDatabase, firstInstall));
     }
     for (Thread thread : threads) {
       thread.start();
@@ -112,62 +113,41 @@ public class GNSInstaller {
   public enum UpdateAction {
 
     UPDATE,
-    REMOVE_LOGS_AND_UPDATE,
-    REMOVE_LOGS_AND_DELETE_DATABASE_AND_UPDATE,
-    DELETE_DATABASE_AND_UPDATE,
     RESTART,
-    REMOVE_LOGS_AND_RESTART,
-    REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART,
-    DELETE_DATABASE_AND_RESTART
   };
 
   /**
-   * This is called to install and run the GNS on a single host. This is called concurrently in 
+   * This is called to install and run the GNS on a single host. This is called concurrently in
    * one thread per each host.
    * Copies the JAR and conf files and optionally resets some other stuff depending on the
    * update action given.
-   * The name-server-info file is created using all the IP address of all the hosts. 
+   * The name-server-info file is created using all the IP address of all the hosts.
    * Then the various servers are started on the host.
    *
    * @param id
    * @param hostname
    * @param action
    */
-  public static void updateAndRunGNS(int id, String hostname, UpdateAction action) {
+  public static void updateAndRunGNS(int id, String hostname, UpdateAction action, boolean removeLogs, boolean deleteDatabase, boolean firstInstall) {
     System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
     killAllServers(id, hostname);
+    if (removeLogs) {
+      removeLogFiles(id, hostname);
+    }
+    if (deleteDatabase) {
+      deleteDatabase(id, hostname);
+    }
     switch (action) {
       case UPDATE:
         copyJarAndConfFiles(id, hostname);
         break;
-      case REMOVE_LOGS_AND_UPDATE:
-        removeLogFiles(id, hostname);
-        copyJarAndConfFiles(id, hostname);
-        break;
-      case DELETE_DATABASE_AND_UPDATE:
-        deleteDatabase(id, hostname);
-        copyJarAndConfFiles(id, hostname);
-        break;
-      case REMOVE_LOGS_AND_DELETE_DATABASE_AND_UPDATE:
-        removeLogFiles(id, hostname);
-        deleteDatabase(id, hostname);
-        copyJarAndConfFiles(id, hostname);
-        break;
       case RESTART:
-        break;
-      case REMOVE_LOGS_AND_RESTART:
-        removeLogFiles(id, hostname);
-        break;
-      case DELETE_DATABASE_AND_RESTART:
-        deleteDatabase(id, hostname);
-        break;
-      case REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART:
-        removeLogFiles(id, hostname);
-        deleteDatabase(id, hostname);
         break;
     }
     // write the name-server-info
-    writeNSFile(hostname);
+    if (firstInstall) {
+      writeNSFile(hostname);
+    }
     startServers(id, hostname);
     System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
   }
@@ -208,9 +188,9 @@ public class GNSInstaller {
 
   /**
    * Copies the JAR and configuration files to the remote host.
-   * 
+   *
    * @param id
-   * @param hostname 
+   * @param hostname
    */
   private static void copyJarAndConfFiles(int id, String hostname) {
     File keyFile = getKeyFile();
@@ -224,9 +204,9 @@ public class GNSInstaller {
 
   /**
    * Deletes the database on the remote host.
-   * 
+   *
    * @param id
-   * @param hostname 
+   * @param hostname
    */
   private static void deleteDatabase(int id, String hostname) {
     ExecuteBash.executeBashScript(hostname, getKeyFile(), "deleteDatabase.sh",
@@ -243,9 +223,9 @@ public class GNSInstaller {
 
   /**
    * Kills all servers on the remote host.
-   * 
+   *
    * @param id
-   * @param hostname 
+   * @param hostname
    */
   private static void killAllServers(int id, String hostname) {
     StatusModel.getInstance().queueUpdate(id, "Killing servers");
@@ -254,9 +234,9 @@ public class GNSInstaller {
 
   /**
    * Removes log files on the remote host.
-   * 
+   *
    * @param id
-   * @param hostname 
+   * @param hostname
    */
   private static void removeLogFiles(int id, String hostname) {
     StatusModel.getInstance().queueUpdate(id, "Removing log files");
@@ -322,7 +302,7 @@ public class GNSInstaller {
 
   /**
    * Figures out the locations of the JAR and conf files.
-   * 
+   *
    * @return true if it found them
    */
   private static boolean setupJarAndConfFilePaths() {
@@ -345,7 +325,7 @@ public class GNSInstaller {
 
   /**
    * Returns the location of the JAR that is running.
-   * 
+   *
    * @return the path
    */
   private static File getJarPath() {
@@ -356,11 +336,11 @@ public class GNSInstaller {
       return null;
     }
   }
-  
+
   /**
    * Returns the location of the key file (probably in the users .ssh home).
-   * 
-   * @return 
+   *
+   * @return
    */
   private static File getKeyFile() {
     return new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
@@ -372,11 +352,14 @@ public class GNSInstaller {
 
   private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
+    Option install = OptionBuilder.withArgName("runSet name").hasArg()
+            .withDescription("installs GNS files and starts servers in a runset")
+            .create("install");
     Option update = OptionBuilder.withArgName("runSet name").hasArg()
-            .withDescription("update a runset")
+            .withDescription("updates GNS files and restarts servers in a runset")
             .create("update");
     Option restart = OptionBuilder.withArgName("runSet name").hasArg()
-            .withDescription("restart a runset")
+            .withDescription("restarts GNS servers in a runset")
             .create("restart");
     Option removeLogs = new Option("removeLogs", "remove paxos and Logger log files (use with -restart or -update)");
     Option deleteDatabase = new Option("deleteDatabase", "delete the databases in a runset (use with -restart or -update)");
@@ -385,6 +368,7 @@ public class GNSInstaller {
             .create("datastore");
 
     commandLineOptions = new Options();
+    commandLineOptions.addOption(install);
     commandLineOptions.addOption(update);
     commandLineOptions.addOption(restart);
     commandLineOptions.addOption(removeLogs);
@@ -407,6 +391,7 @@ public class GNSInstaller {
         printUsage();
         System.exit(1);
       }
+      String runsetInstall = parser.getOptionValue("install");
       String runsetUpdate = parser.getOptionValue("update");
       String runsetRestart = parser.getOptionValue("restart");
       String dataStoreName = parser.getOptionValue("datastore");
@@ -422,8 +407,10 @@ public class GNSInstaller {
         }
       }
 
-      String configName = runsetUpdate != null ? runsetUpdate
-              : runsetRestart != null ? runsetRestart : null;
+      String configName = runsetInstall != null ? runsetInstall
+              : runsetUpdate != null ? runsetUpdate
+              : runsetRestart != null ? runsetRestart
+              : null;
 
       System.out.println("Config name: " + configName);
       if (configName != null) {
@@ -434,18 +421,21 @@ public class GNSInstaller {
         System.out.println("Can't locate needed config files. LNS conf: " + lnsConfFileLocation + " NS conf: " + nsConfFileLocation);
         System.exit(1);
       }
-      
+
       ExecuteBash.setEc2Username(ec2UserName);
       SSHClient.setVerbose(true);
 
+      boolean isFirstInstall = false;
+      // install is the same as update except we don't have to do a few things
+      if (runsetInstall != null) {
+        runsetUpdate = runsetInstall;
+        isFirstInstall = true;
+      }
+
       if (runsetUpdate != null) {
-        updateRunSet(runsetUpdate, (removeLogs
-                ? (deleteDatabase ? UpdateAction.REMOVE_LOGS_AND_DELETE_DATABASE_AND_UPDATE : UpdateAction.REMOVE_LOGS_AND_UPDATE)
-                : (deleteDatabase ? UpdateAction.DELETE_DATABASE_AND_UPDATE : UpdateAction.UPDATE)));
+        updateRunSet(runsetUpdate, UpdateAction.UPDATE, removeLogs, deleteDatabase, isFirstInstall);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetRestart, (removeLogs
-                ? (deleteDatabase ? UpdateAction.REMOVE_LOGS_AND_DELETE_DATABASE_AND_RESTART : UpdateAction.REMOVE_LOGS_AND_RESTART)
-                : (deleteDatabase ? UpdateAction.DELETE_DATABASE_AND_RESTART : UpdateAction.RESTART)));
+        updateRunSet(runsetUpdate, UpdateAction.RESTART, removeLogs, deleteDatabase, false);
       } else {
         printUsage();
         System.exit(1);
@@ -464,20 +454,25 @@ public class GNSInstaller {
    */
   static class UpdateThread extends Thread {
 
-    String hostname;
-    int id;
-    UpdateAction action;
+    private String hostname;
+    private int id;
+    private UpdateAction action;
+    boolean removeLogs;
+    boolean deleteDatabase;
+    private boolean firstInstall;
 
-    public UpdateThread(int id, String hostname, UpdateAction action) {
-      super("Update " + id);
+    public UpdateThread(String hostname, int id, UpdateAction action, boolean removeLogs, boolean deleteDatabase, boolean firstInstall) {
       this.hostname = hostname;
       this.id = id;
       this.action = action;
+      this.removeLogs = removeLogs;
+      this.deleteDatabase = deleteDatabase;
+      this.firstInstall = firstInstall;
     }
 
     @Override
     public void run() {
-      GNSInstaller.updateAndRunGNS(id, hostname, action);
+      GNSInstaller.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, firstInstall);
     }
   }
 

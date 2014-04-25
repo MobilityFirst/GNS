@@ -30,6 +30,9 @@ import org.w3c.dom.NodeList;
  * @author westy
  */
 public class EC2ConfigParser {
+  
+  private static final String fileExtension = ".xml";
+  private static final String folder = "ec2Runner";
 
   private String ec2username;
   private AMIRecordType amiRecordType;
@@ -62,7 +65,7 @@ public class EC2ConfigParser {
       return;
     }
     try {
-      InputStream is = Files.newInputStream(Paths.get(confPath, filename + ".xml"));
+      InputStream is = Files.newInputStream(Paths.get(confPath, folder, filename + fileExtension));
       //InputStream is = ClassLoader.getSystemResourceAsStream(filename + ".xml");
       //File fXmlFile = new File(filename);
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

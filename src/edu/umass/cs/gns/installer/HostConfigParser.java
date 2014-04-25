@@ -28,6 +28,9 @@ import org.w3c.dom.NodeList;
  * @author westy
  */
 public class HostConfigParser {
+  
+  private static final String fileExtension = ".xml";
+  private static final String folder = "gnsInstaller";
 
   private String keyname;
   private String username;
@@ -65,7 +68,7 @@ public class HostConfigParser {
       return;
     }
     try {
-      InputStream is = Files.newInputStream(Paths.get(confPath, filename + ".xml"));
+      InputStream is = Files.newInputStream(Paths.get(confPath, folder, filename + fileExtension));
         //InputStream is = ClassLoader.getSystemResourceAsStream(filename + ".xml");
       //File fXmlFile = new File(filename);
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

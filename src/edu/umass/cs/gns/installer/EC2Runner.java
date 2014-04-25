@@ -355,6 +355,14 @@ public class EC2Runner {
     }
   }
 
+  public static void writeGNSINstallerConfForRunSet(final String name) {
+    populateIDTableForRunset(name);
+    for (HostInfo info : hostTable.values()) {
+      System.out.println(info);
+    }
+    writeGNSINstallerConf(configName);
+  }
+
   private static String getTagValue(Instance instance, String key) {
     for (Tag tag : instance.getTags()) {
       if (key.equals(tag.getKey())) {
@@ -381,9 +389,9 @@ public class EC2Runner {
     Option describe = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("describe a runset")
             .create("describe");
-//    Option configName = OptionBuilder.withArgName("config name").hasArg()
-//            .withDescription("configuration file name")
-//            .create("config");
+    Option writeConfig = OptionBuilder.withArgName("runSet name").hasArg()
+            .withDescription("write a GNS Installer config file for runset")
+            .create("writeConfig");
     Option dataStore = OptionBuilder.withArgName("data store type").hasArg()
             .withDescription("data store type")
             .create("datastore");
@@ -392,6 +400,7 @@ public class EC2Runner {
     commandLineOptions.addOption(terminate);
     commandLineOptions.addOption(create);
     commandLineOptions.addOption(describe);
+    commandLineOptions.addOption(writeConfig);
     commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(help);
 
@@ -402,7 +411,7 @@ public class EC2Runner {
   private static void printUsage() {
     formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", commandLineOptions);
   }
-  
+
   private static void startAllMonitoringAndGUIProcesses() {
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override
@@ -431,6 +440,7 @@ public class EC2Runner {
       String createRunsetName = parser.getOptionValue("create");
       String terminateRunsetName = parser.getOptionValue("terminate");
       String runsetDescribe = parser.getOptionValue("describe");
+      String runSetWriteConfig = parser.getOptionValue("writeConfig");
       String dataStoreName = parser.getOptionValue("datastore");
 
       if (dataStoreName != null) {
@@ -444,7 +454,9 @@ public class EC2Runner {
 
       configName = createRunsetName != null ? createRunsetName
               : terminateRunsetName != null ? terminateRunsetName
-              : runsetDescribe != null ? runsetDescribe : null;
+              : runsetDescribe != null ? runsetDescribe 
+              : runSetWriteConfig != null ? runSetWriteConfig 
+              : null;
 
       System.out.println("Config name: " + configName);
       if (configName != null) {
@@ -457,6 +469,8 @@ public class EC2Runner {
         terminateRunSet(terminateRunsetName);
       } else if (runsetDescribe != null) {
         describeRunSet(runsetDescribe);
+      } else if (runSetWriteConfig != null) {
+        writeGNSINstallerConfForRunSet(runSetWriteConfig);
       } else {
         printUsage();
         System.exit(1);
@@ -492,13 +506,13 @@ public class EC2Runner {
       EC2Runner.initAndUpdateEC2Host(region, runSetName, id, ip, timeout);
     }
   }
-  
+
   private static void writeGNSINstallerConf(String configName) {
     File jarPath = getJarPath();
     System.out.println("Jar path: " + jarPath);
-    String confFileLocation = jarPath.getParent() + "/conf/gns_install_" + configName + ".xml";
+    String confFileLocation = jarPath.getParent() + FILESEPARATOR + "conf" + FILESEPARATOR + "gnsInstaller" + FILESEPARATOR + configName + ".xml";
     WriteXMLConfFile.writeFile(confFileLocation, keyName, ec2UserName, "linux", dataStoreType.toString(), hostTable);
-    
+
   }
 
   public static File getJarPath() {
