@@ -30,6 +30,7 @@ class FinalStats:
     write_failed = None
     add_failed = None
     remove_failed = None
+    group_change = None
 
     read_perc90 = None
     write_perc90 = None
@@ -57,6 +58,8 @@ class FinalStats:
             self.write_failed = int(keys_values['Failed-Write'])
             self.add_failed = int(keys_values['Failed-Add'])
             self.remove_failed = int(keys_values['Failed-Remove'])
+            self.group_change = int(keys_values['GroupChange'])
+
         latency_file = os.path.join(stats_folder, 'latency_stats.txt')
         if os.path.exists(latency_file):
             keys_values = read_keys_values(latency_file)

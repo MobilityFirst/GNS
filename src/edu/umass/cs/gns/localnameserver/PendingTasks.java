@@ -156,7 +156,6 @@ public class PendingTasks {
     }
   }
 
-
   /*****************Start of synchronized methods*******************************************************/
 
   /**
@@ -182,7 +181,7 @@ public class PendingTasks {
    * Checks whether reply for this request ID is received
    */
   public static synchronized boolean isReplyReceived(int requestID) {
-    return requestActivesOngoing.contains(requestID) == false;
+    return !requestActivesOngoing.contains(requestID);
   }
 
 

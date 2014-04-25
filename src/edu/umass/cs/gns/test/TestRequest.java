@@ -14,13 +14,16 @@ public class TestRequest {
   public static final int DELAY = 6; // this is not a request. it introduces delay between the preceding and the next
                                       // request. the name field for DELAY entry is an integer that specifies the delay.
 
+  public static final int RATE = 7;  // sends subsequent requests at given rate/sec. rate can be specified multiple
+                                     // times during a trace to change the rate of later requests
+
   public final int type;
   public final String name;
 
   public TestRequest(String name, int type) {
     this.name = name;
     if (type == LOOKUP || type == UPDATE || type == ADD || type == REMOVE || type == DELAY
-            || type == GROUP_CHANGE)
+            || type == GROUP_CHANGE || type == RATE)
       this.type = type;
     else
       throw new IllegalArgumentException("Request type not found: " + type);

@@ -37,7 +37,31 @@ public class CopyStateFromOldActiveTask extends TimerTask {
     this.packet.changeSendingActive(activeReplica.getNodeID());
   }
 
-  @Override
+//  private static void makeFakeResponse(NewActiveSetStartupPacket packet) {
+//    packet.changePreviousValueCorrect(true);
+//    ValuesMap valuesMap = new ValuesMap();
+//    ResultValue rv = new ResultValue();
+//    rv.add("pqrst");
+//    valuesMap.put("abcd", rv);
+//    packet.changePacketTypeToPreviousValueResponse();
+//    packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
+//
+//  }
+//
+//  public void run1() {
+//    makeFakeResponse(packet);
+//    try {
+//      activeReplica.getNioServer().sendToID(activeReplica.getNodeID(), packet.toJSONObject());
+//      throw new CancelExecutorTaskException();
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    } catch (JSONException e) {
+//      e.printStackTrace();
+//    } catch (CancelExecutorTaskException e) {
+//      throw new RuntimeException();
+//    }
+//  }
+
   public void run() {
     try {
 
@@ -49,7 +73,8 @@ public class CopyStateFromOldActiveTask extends TimerTask {
       }
 
       // select old active to send request to
-      int oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(), oldActivesQueried);
+      int oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
+              oldActivesQueried);
 
       if (oldActive == -1) {
         // this will happen after all actives have been tried at least once.

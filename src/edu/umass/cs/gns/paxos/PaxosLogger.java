@@ -118,7 +118,7 @@ public class PaxosLogger extends Thread {
    * If {@code msgs} is empty (no new messages for logging), then the logging thread
    * will sleep for {@code SLEEP_INTERVAL_MS} before checking the {@code msgs} again.
    */
-  private static int SLEEP_INTERVAL_MS = 1;
+  private final static int SLEEP_INTERVAL_MS = 1;
 
   /**
    * Names of paxos log files start with following prefix.
@@ -145,7 +145,7 @@ public class PaxosLogger extends Thread {
   /**
    * After writing {@code MSG_MAX} messages to a file, a new log file is used.
    */
-  private int MSG_MAX = 10000;
+  private static final int MSG_MAX = 10000;
 
   /**
    * Name of file which stores the list of paxos instances at a node.
@@ -539,15 +539,12 @@ public class PaxosLogger extends Thread {
         }
       }
 
-      if (SLEEP_INTERVAL_MS > 0) {
+      if (logCmdCopy == null || logCmdCopy.size() == 0) {
         try {
           Thread.sleep(SLEEP_INTERVAL_MS);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
-      }
-
-      if (logCmdCopy == null) {
         continue;
       }
 
@@ -583,21 +580,23 @@ public class PaxosLogger extends Thread {
 
       // process each msg
       for (LoggingCommand cmd : logCmdCopy) {
-        if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_EXECUTE) {
-          try {
-            paxosManager.executorService.submit(new HandlePaxosMessageTask(cmd.getLogJson(),
-                    cmd.getLogJson().getInt(PaxosPacketType.ptype), paxosManager));
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
-        } else if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_SEND_MSG) {
+        if (cmd.getDest() != -1) {
           paxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
         }
-
+//        if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_EXECUTE) {
+//          try {
+//            paxosManager.executorService.submit(new HandlePaxosMessageTask(cmd.getLogJson(),
+//                    cmd.getLogJson().getInt(PaxosPacketType.ptype), paxosManager));
+//          } catch (JSONException e) {
+//            e.printStackTrace();
+//          }
+//        } else if (cmd.getActionAfterLog() == LoggingCommand.LOG_AND_SEND_MSG) {
+//          if (cmd.getDest() != -1) {
+//              paxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
+//          }
+//        }
       }
-
     }
-
   }
 
 

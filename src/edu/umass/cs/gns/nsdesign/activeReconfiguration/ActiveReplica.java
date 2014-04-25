@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorPaxos;
@@ -32,7 +32,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   private int nodeID;
 
   /** nio server*/
-  private GNSNIOTransport nioServer;
+  private GNSNIOTransportInterface nioServer;
 
   /** executor service for handling tasks */
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
@@ -55,7 +55,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   }
 
   public ActiveReplica(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-                       GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+                       GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                        AppType reconfigurableApp) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -72,7 +72,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
       this.coordinator = new DefaultGnsCoordinator(nodeID, this.activeReplicaApp);
     } else {
       this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
-              this.activeReplicaApp, paxosConfig);
+              this.activeReplicaApp, paxosConfig, Config.readCoordination);
     }
   }
 
@@ -128,7 +128,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
     return nodeID;
   }
 
-  GNSNIOTransport getNioServer() {
+  GNSNIOTransportInterface getNioServer() {
     return nioServer;
   }
 

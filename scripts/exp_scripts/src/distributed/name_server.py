@@ -35,6 +35,8 @@ HELP = '-help'
 TINY_UPDATE = '-tinyUpdate'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
+
+READ_COORDINATION = '-readCoordination'
 EVENTUAL_CONSISTENCY = '-eventualConsistency'
 NO_LOAD_DB = '-noLoadDB'
 #PRIMARY_PAXOS = '-primaryPaxos'
@@ -44,6 +46,7 @@ FAILURE_DETECTION_MSG_INTERVAL = '-failureDetectionMsgInterval'
 FAILURE_DETECTION_TIMEOUT_INTERVAL = '-failureDetectionTimeoutInterval'
 PAXOS_START_MIN_DELAY = '-paxosStartMinDelaySec'
 PAXOS_START_MAX_DELAY = '-paxosStartMaxDelaySec'
+MONGO_PORT = '-mongoPort'
 QUIT_AFTER_TIME = '-quitAfterTime'
 
 KMEDOIDS_REPLICATION = '-kmedoids'
@@ -106,6 +109,7 @@ def run_name_server(node_id, config_file, node_config_file):
     base = 16
     alpha = exp_config.alpha
 
+    read_coordination = exp_config.read_coordination
     paxos_log_folder = exp_config.paxos_log_folder  # folder does paxos store its state in
 
     # Interval (in sec) between two failure detection messages sent to a node
@@ -115,6 +119,8 @@ def run_name_server(node_id, config_file, node_config_file):
 
     paxos_start_min_delay_sec = 0
     paxos_start_max_delay_sec = 0
+
+    mongo_port = exp_config.mongo_port
 
     quit_after_time = exp_config.quit_after_time
     quit_node_id = exp_config.quit_node_id  # which node will quit
@@ -186,11 +192,16 @@ def run_name_server(node_id, config_file, node_config_file):
         command += ' ' + EMULATE_PING_LATENCIES
         command += ' ' + VARIATION + ' ' + str(variation)
 
+    if read_coordination is not False:
+        command += ' ' + READ_COORDINATION
+
     if paxos_log_folder != '':
         command += ' ' + PAXOS_LOG_FOLDER + ' ' + os.path.join(paxos_log_folder, 'log_' + str(node_id))
 
     command += ' ' + FAILURE_DETECTION_MSG_INTERVAL + ' ' + str(failure_detection_msg_interval)
     command += ' ' + FAILURE_DETECTION_TIMEOUT_INTERVAL + ' ' + str(failure_detection_timeout_interval)
+
+    command += ' ' + MONGO_PORT + ' ' + str(mongo_port)
 
     if quit_node_id == node_id and quit_after_time >= 0:
         command += ' ' + QUIT_AFTER_TIME + ' ' + str(quit_after_time)

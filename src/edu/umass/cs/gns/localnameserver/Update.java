@@ -48,7 +48,7 @@ public class Update {
 
     UpdatePacket updateAddressPacket = new UpdatePacket(json);
 
-    GNS.getLogger().fine("UPDATE PACKET RECVD: Operation: " + updateAddressPacket.getOperation());
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UPDATE PACKET RECVD: Operation: " + updateAddressPacket.getOperation());
 
     if (updateAddressPacket.getOperation().isUpsert()) {
       AddRemove.handleUpsert(updateAddressPacket);
@@ -98,7 +98,7 @@ public class Update {
    * @throws JSONException
    */
   private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException {
-    GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
 
     UpdatePacket updatePacket = (UpdatePacket) updateInfo.getUpdatePacket();
 
@@ -121,10 +121,10 @@ public class Update {
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet) throws JSONException {
     if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
-      GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
-      GNS.getLogger().info("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
       // FIXME: Why not use GNS nio transport for sending this packet ?
       try {
         Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),

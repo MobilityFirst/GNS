@@ -25,15 +25,15 @@ public class Config {
 
   private static boolean initialized = false;
 
-  public static boolean debugMode = true;
+  public static boolean debugMode = false;
 
   public static boolean experimentMode = false;
 
   public static boolean singleNS = false;
 
+  public static boolean readCoordination = false;
+
 //  public static int numReplicaControllers = 3;
-
-
 
   // paxos parameters
   public static int failureDetectionTimeoutSec = 30000;
@@ -53,11 +53,11 @@ public class Config {
   public static int nameServerVoteSize = 5;
   public static final int NS_TIMEOUT_MILLIS = 2000;
 
-
   // testing related parameters
+  public static boolean useGNSNIOTransport = false;
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
-
+  public static int mongoPort = 27017;
 
   public static synchronized void initialize(HashMap<String, String> allValues) {
     if (initialized) return;
@@ -101,6 +101,9 @@ public class Config {
       singleNS = true;
     }
 
+    if (allValues.containsKey(NSParameterNames.READ_COORDINATION)) {
+      readCoordination = Boolean.parseBoolean(allValues.get(NSParameterNames.READ_COORDINATION));
+    }
     if (allValues.containsKey(NSParameterNames.EMULATE_PING_LATENCIES)) {
       emulatePingLatencies = Boolean.parseBoolean(allValues.get(NSParameterNames.EMULATE_PING_LATENCIES));
       if (allValues.containsKey(NSParameterNames.VARIATION)) {
@@ -109,6 +112,13 @@ public class Config {
       GNS.getLogger().info("Emulating ping latency at name server: emulatePingLatencies = " + emulatePingLatencies);
     }
 
+    if (allValues.containsKey(NSParameterNames.MONGO_PORT)) {
+      mongoPort = Integer.parseInt(allValues.get(NSParameterNames.MONGO_PORT));
+    }
+
+    if (allValues.containsKey(NSParameterNames.DEBUG_MODE)) {
+      debugMode = Boolean.parseBoolean(allValues.get(NSParameterNames.DEBUG_MODE));
+    }
 
   }
 

@@ -32,7 +32,7 @@ gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 working_dir = gns_folder + '/' + DEFAULT_WORKING_DIR  # location of top-level folder checked out from SVN.
 
 # output folder: GNS logs for name servers, and local name servers are stored in this folder 
-local_output_folder = None
+output_folder = None
 
 # paxos log folder
 paxos_log_folder = None  # folder where paxos logs are stored
@@ -53,7 +53,7 @@ experiment_run_time = -1    # duration of experiment (seconds)
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
 ns_sleep = 1      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
-extra_wait = 7   # extra wait time after LNS sends all requests
+extra_wait = 10   # extra wait time after LNS sends all requests
 
 random_node_ids = None  # option to select nodeIDs randomly. If random_node_ids is not None, it takes an int value.
                         # we select node IDs taking the given int as seed of random number generator
@@ -80,7 +80,7 @@ update_count = 10   # number of updates at local name server
 #
 # GNS parameters common to name server / local name servers
 is_experiment_mode = False  # set to True to run experiments, false otherwise.
-is_debug_mode = True   #
+is_debug_mode = False   #
 primary_name_server = 3  # number of primary name servers
 
 #lookupTrace = 'lookupTrace10'
@@ -117,9 +117,9 @@ load_balancing = False  # Redirect to closest name server based on (RTT + server
 
 #
 # logging options
-nslog = 'SEVERE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'SEVERE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 
@@ -221,7 +221,7 @@ def initialize_path_locations(parser):
     6. mongoDB data folder
     7. mongoDB bin folder
     """
-    global gns_folder, gnrs_jar, working_dir, mongo_bin_folder, local_output_folder, paxos_log_folder, trace_folder,\
+    global gns_folder, gnrs_jar, working_dir, mongo_bin_folder, output_folder, paxos_log_folder, trace_folder,\
         mongodb_data_folder
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'mongo_bin_folder'):
@@ -259,7 +259,7 @@ def update_path_locations(working_dir1):
     """Updates locations of all files relative to working dir."""
 
     # output folder: GNS logs for name servers, and local name servers are stored in this folder
-    global local_output_folder
+    global output_folder
     output_folder = working_dir1 + '/log_local/'
 
     # paxos log folder

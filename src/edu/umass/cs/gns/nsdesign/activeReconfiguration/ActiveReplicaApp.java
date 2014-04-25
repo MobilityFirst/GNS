@@ -29,7 +29,6 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
 			throw new RuntimeException("Attempting to reconfigure an application that is not reconfigurable");
 	}
 
-
 	@Override
 	public boolean handleDecision(String name, String value, boolean recovery) {
     boolean executed = false;
@@ -38,18 +37,20 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
       if (Packet.getPacketType(json).equals(Packet.PacketType.OLD_ACTIVE_STOP)) {
         boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
         if (noCoordinationState) {
-          executed = false;
-          // ignore
-          GNS.getLogger().severe("No coordinator state found for stop request: " + value);
-        }
-       else {
+          // probably stop has already been executed, so send confirmation to replica controller
+          GNS.getLogger().warning("No coordinator state found for stop request: " + value);
+          executed = true;
+        } else {
           executed = stopVersion(name, (short) -1);
-          if (executed) {
-            try {
-              activeReplica.stopProcessed(new OldActiveSetStopPacket(new JSONObject(value)));
-            } catch (JSONException e) {
-              e.printStackTrace();
-            }
+          if (!executed) {
+            GNS.getLogger().severe("Stop request not executed: name = " + name + " request = " + value);
+          }
+        }
+        if (executed) {
+          try {
+            activeReplica.stopProcessed(new OldActiveSetStopPacket(new JSONObject(value)));
+          } catch (JSONException e) {
+            e.printStackTrace();
           }
         }
       }

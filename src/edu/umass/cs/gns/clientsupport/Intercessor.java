@@ -8,22 +8,20 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.*;
-import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.Transport;
-import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
+
+import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 
 /**
  * One of a number of class that implement client support in the GNS server.
@@ -98,7 +96,7 @@ public class Intercessor {
           ConfirmUpdatePacket packet = new ConfirmUpdatePacket(json);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
-          GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");
+          if (StartLocalNameServer.debugMode) GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.getResponseCode());
             monitorUpdate.notifyAll();
@@ -109,7 +107,7 @@ public class Intercessor {
           id = dnsResponsePacket.getQueryId();
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
-            GNS.getLogger().fine("Query (" + id + "): "
+            if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {
@@ -117,7 +115,7 @@ public class Intercessor {
               monitor.notifyAll();
             }
           } else {
-            GNS.getLogger().fine("Intercessor: Query (" + id + "): "
+            if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Intercessor: Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {

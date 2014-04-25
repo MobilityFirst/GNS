@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -29,6 +30,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author Abhigyan
  */
 public class GNSNodeConfig implements NodeConfig {
+
+  private int nodeID = -1;
 
   public static final long INVALID_PING_LATENCY = -1L;
   
@@ -50,12 +53,15 @@ public class GNSNodeConfig implements NodeConfig {
    */
   private ConcurrentMap<Integer, Integer> localNameServerMapping =
           new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
- 
+
+
+  private Random rand = new Random();
+
   /**
    * Creates an empty GNSNodeConfig
    */
   public GNSNodeConfig() {
-    // this doesn't set numberOfNameServers or closestNameServer
+    // this doesn't set numberOfNameServers
   }
 
   /**
@@ -77,6 +83,7 @@ public class GNSNodeConfig implements NodeConfig {
    * @throws NumberFormatException
    */
   public final void initFromFile(String nodeInfoFile, int nameServerID) {
+    this.nodeID = nameServerID;
     // Reads in data from a text file containing information about each name server
     // in the system.
     BufferedReader br = null;
@@ -425,6 +432,10 @@ public class GNSNodeConfig implements NodeConfig {
     if (serverIds == null) {
       return INVALID_NAME_SERVER_ID;
     }
+    if (serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
+      return nodeID;
+    }
+
     long lowestLatency = Long.MAX_VALUE;
     int nameServerID = INVALID_NAME_SERVER_ID;
     for (Integer serverId : serverIds) {
@@ -437,9 +448,26 @@ public class GNSNodeConfig implements NodeConfig {
         nameServerID = serverId;
       }
     }
+
+//    // if multiple name servers are nearly equidistant, select randomly among them for load-balancing
+//    if (nameServerID != INVALID_NAME_SERVER_ID) {
+//      ArrayList<Integer> closeNameServers = new ArrayList<Integer>();
+//      long tolerance = 5; // tolerate few extra ms delay
+//      for (Integer serverId: serverIds) {
+//        if (excludeServers != null && excludeServers.contains(serverId)) {
+//          continue;
+//        }
+//        long pingLatency = getPingLatency(serverId);
+//        if (pingLatency >= 0 && pingLatency < lowestLatency + tolerance) {
+//          closeNameServers.add(serverId);
+//        }
+//      }
+//
+//      nameServerID = closeNameServers.get(rand.nextInt(closeNameServers.size()));
+//    }
     return nameServerID;
   }
-  
+
   /**
    * Tests *
    */

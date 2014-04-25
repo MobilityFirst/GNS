@@ -27,6 +27,8 @@ public class NewActiveProposalPacket extends BasicPacket {
 
 	private final static String VERSION = "version";
 
+  private final static String LNS_ID = "lns_id"; // this field is used during testing only
+
 	/**
 	 * name for which the new actives are being proposed
 	 */
@@ -47,7 +49,9 @@ public class NewActiveProposalPacket extends BasicPacket {
 	 */
 	int version;
 
-	/**
+  private int lnsId = -1;
+
+  /**
 	 * Constructor method
 	 * @param name  name for which the new actives are being proposed
 	 * @param proposingNode  node which proposed this message.
@@ -81,6 +85,7 @@ public class NewActiveProposalPacket extends BasicPacket {
 		}
 
 		this.version = json.getInt(VERSION);
+    this.lnsId = json.getInt(LNS_ID);
 	}
 
 	/**
@@ -100,12 +105,16 @@ public class NewActiveProposalPacket extends BasicPacket {
 		for (Integer x: newActives) {
 			if (sb.length() == 0) 
 				sb.append(x);
-			else 
-				sb.append(":" + x);
+			else {
+        sb.append(":");
+        sb.append((x.toString()));
+      }
 		}
 		String actives = sb.toString();
 		json.put(NEW_ACTIVES, actives);
 		json.put(VERSION, version);
+    json.put(LNS_ID, lnsId);
+
 		return json;
 	}
 	
@@ -127,5 +136,12 @@ public class NewActiveProposalPacket extends BasicPacket {
 	public int getVersion() {
 		return version;
 	}
-	
+
+  public int getLnsId() {
+    return lnsId;
+  }
+
+  public void setLnsId(int lnsId) {
+    this.lnsId = lnsId;
+  }
 }

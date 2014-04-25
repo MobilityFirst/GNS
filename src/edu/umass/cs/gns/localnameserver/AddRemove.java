@@ -53,7 +53,7 @@ public class AddRemove {
             System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     addRecordPacket.getLocalNameServerID();
-    GNS.getLogger().fine(" Add  Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Add  Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
   }
 
   /**
@@ -66,7 +66,7 @@ public class AddRemove {
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
             System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-    GNS.getLogger().fine("Upsert Task Scheduled: "
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Upsert Task Scheduled: "
             + "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
   }
 
@@ -98,15 +98,12 @@ public class AddRemove {
   }
 
   /**
-   *
-   * @param json
-   * @throws JSONException
-   * @throws UnknownHostException
+   * Handles confirmation of add request from NS
    */
   static void handlePacketConfirmAdd(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
     UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
-
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Confirm update packet: " + confirmAddPacket + " json = " + json + " add info " + addInfo);
     if (addInfo == null) {
       GNS.getLogger().warning("Add confirmation return info not found.: lns request id = " + confirmAddPacket.getLNSRequestID());
     } else {
@@ -115,21 +112,12 @@ public class AddRemove {
 
       String stats = addInfo.getUpdateStats(confirmAddPacket);
       GNS.getStatLogger().info(stats);
-//      addInfo.getID();
-//      JSONObject jsonConfirm = confirmAddPacket.toJSONObject();
-//      GNS.getLogger().fine(" CONFIRM ADD (lns " + LocalNameServer.getNodeID() + ") to "
-//              + " : " + jsonConfirm.toString());
-      // send it back to the orginator of the request
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket);
-      //Intercessor.handleIncomingPackets(json);
     }
   }
 
   /**
-   *
-   * @param json
-   * @throws JSONException
-   * @throws UnknownHostException
+   * Handles confirmation of add request from NS
    */
   static void handlePacketConfirmRemove(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
@@ -141,14 +129,7 @@ public class AddRemove {
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       String stats = removeInfo.getUpdateStats(confirmRemovePacket);
       GNS.getStatLogger().info(stats);
-      // send it back to the orginator of the request
-//      JSONObject jsonConfirm = confirmRemovePacket.toJSONObject();
-//      GNS.getLogger().fine(" CONFIRM REMOVE (lns " + LocalNameServer.getNodeID() + ") to "
-//              + " : " + jsonConfirm.toString());
       Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket);
-      //Intercessor.handleIncomingPackets(json);
-      // update our cache
-
     }
   }
 }

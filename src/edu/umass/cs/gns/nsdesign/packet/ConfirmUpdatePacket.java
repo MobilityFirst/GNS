@@ -104,7 +104,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy
-    this.responseCode = NSResponseCode.getResponseCode(json.getInt(RESPONSECODE));;
+    this.responseCode = NSResponseCode.getResponseCode(json.getInt(RESPONSECODE));
   }
 
   /**

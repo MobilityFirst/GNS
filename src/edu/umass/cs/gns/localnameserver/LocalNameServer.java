@@ -10,22 +10,10 @@ import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.GNSDelayEmulator;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
-import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nio.NioServer;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_ADD;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_REMOVE;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_UPDATE;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
@@ -33,17 +21,11 @@ import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -452,7 +434,10 @@ public class LocalNameServer {
   public static void updateCacheEntry(ConfirmUpdatePacket packet, String name, NameRecordKey key) {
     switch (packet.getType()) {
       case CONFIRM_ADD:
-        // screw it.. let the next query generate the cache
+        // active name servers will be the same as replica controllers, so we update cache with active replica set
+        RequestActivesPacket reqActives = new RequestActivesPacket(name, nodeID, 0);
+        reqActives.setActiveNameServers(ConsistentHashing.getReplicaControllerSet(name));
+        cache.put(name, new CacheEntry(reqActives));
         break;
       case CONFIRM_REMOVE:
         cache.invalidate(name);

@@ -23,7 +23,7 @@ def latency_over_time(tuples_file):
 
     folder = os.path.split(tuples_file)[0]
     line_max = 20000
-    f = open (tuples_file)
+    f = open(tuples_file)
     lines = f.readlines()
     p_th = 1.0
     if line_max < len(lines):
@@ -38,7 +38,7 @@ def latency_over_time(tuples_file):
         select_lines.append(line)
     
     from write_array_to_file import write_array
-    filename = os.path.join(folder,'latency-over-time.txt')
+    filename = os.path.join(folder, 'latency-over-time.txt')
     write_array(select_lines, filename, p = True)
     try:
         os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_latency)

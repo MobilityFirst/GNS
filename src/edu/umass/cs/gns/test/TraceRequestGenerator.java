@@ -5,6 +5,7 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.workloads.Constant;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,11 +29,11 @@ public class TraceRequestGenerator {
     List<TestRequest> lookupTrace = null;
     List<TestRequest> updateTrace = null;
 
-    if (lookupTraceFile != null) {
+    if (lookupTraceFile != null && new File(lookupTraceFile).isFile()) {
       lookupTrace = readTrace(lookupTraceFile, TestRequest.LOOKUP);
     }
 
-    if (updateTraceFile != null) {
+    if (updateTraceFile != null && new File(updateTraceFile).isFile()) {
       updateTrace = readTrace(updateTraceFile, TestRequest.UPDATE);
     }
 

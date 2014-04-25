@@ -120,7 +120,7 @@ public class NSParameterNames {
 
   public static final String SINGLE_NS = "singleNS";
 
-//  public static final String USE_COORDINATION = "coordination";
+  public static final String READ_COORDINATION = "readCoordination";
 
 
   /**
@@ -259,6 +259,7 @@ public class NSParameterNames {
     Option nameActives = new Option(NAME_ACTIVES, false, "list of name actives provided to this file");
 
     Option singleNS = new Option(SINGLE_NS, false, "If true, run a single name server");
+    Option readCoordination = new Option(READ_COORDINATION, false, "If true, coordinate on read requests also");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -318,7 +319,7 @@ public class NSParameterNames {
     commandLineOptions.addOption(quitAfterTime);
     commandLineOptions.addOption(nameActives);
     commandLineOptions.addOption(singleNS);
-
+    commandLineOptions.addOption(readCoordination);
     return commandLineOptions;
   }
 }

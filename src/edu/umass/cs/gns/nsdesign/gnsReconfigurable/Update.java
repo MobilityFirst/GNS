@@ -6,6 +6,7 @@ import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -48,7 +49,7 @@ public class Update {
   public static GNSMessagingTask executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
           boolean noCoordinatonState)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
-    GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
+    if (Config.debugMode) GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
 
     if (noCoordinatonState) {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
@@ -88,31 +89,30 @@ public class Update {
         return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
       }
     }
-
     // Apply update
-    GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
+    if (Config.debugMode) GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
     boolean result;
     try {
       result = nameRecord.updateKey(updatePacket.getRecordKey().getName(),
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
               updatePacket.getOperation());
-      GNS.getLogger().fine("Update operation result = " + result + "\t"
+      if (Config.debugMode) GNS.getLogger().fine("Update operation result = " + result + "\t"
               + updatePacket.getUpdateValue());
 
       if (!result) { // update failed
-        GNS.getLogger().fine("Update operation failed " + updatePacket);
+        if (Config.debugMode) GNS.getLogger().fine("Update operation failed " + updatePacket);
         if (updatePacket.getNameServerId() == replica.getNodeID()) { //if this node proposed this update
           // send error message to client
           ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
 
-          GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
+          if (Config.debugMode) GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
           return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());
         }
         return null;
       }
-      GNS.getLogger().fine("Update applied" + updatePacket);
+      if (Config.debugMode) GNS.getLogger().fine("Update applied" + updatePacket);
 
       // Abhigyan: commented this because we are using lns votes for this calculation.
       // this should be uncommented once active replica starts to send read/write statistics for name.
@@ -121,7 +121,7 @@ public class Update {
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                 updatePacket.getSourceId(),
                 updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-        GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
+        if (Config.debugMode) GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
         return new GNSMessagingTask(updatePacket.getLocalNameServerId(), confirmPacket.toJSONObject());
       }
       return null;

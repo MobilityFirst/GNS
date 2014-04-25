@@ -67,6 +67,7 @@ public class ReplicaController implements Replicable {
 
   private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
 
+  /** Algorithm for replicating name records.*/
   private ReplicationFrameworkInterface replicationFramework;
 
   /**
@@ -83,7 +84,7 @@ public class ReplicaController implements Replicable {
 
     this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
-    // todo disabling group change functionality as it is not tested at all
+    // todo uncomment this after testing demand-based replication
 //		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);
   }
@@ -267,6 +268,8 @@ public class ReplicaController implements Replicable {
             GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, recovery);
             break;
           case NAMESERVER_SELECTION:
+            NameStats.handleLNSVotesPacket(json, this);
+            break;
           case NAME_RECORD_STATS_RESPONSE:
             // todo these packets related to stats reporting are not implemented yet.
             throw new UnsupportedOperationException();

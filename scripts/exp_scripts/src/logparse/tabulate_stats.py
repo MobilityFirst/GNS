@@ -2,10 +2,12 @@
 import os
 import sys
 
+
 def main():
     graph_format_file = sys.argv[1]
     tabulate_stats(graph_format_file)
-    
+
+
 def tabulate_stats(graph_format_file):
     # read params
     stat_names, output_file, columns,  folder_names = \
@@ -56,6 +58,7 @@ def read_table_values(folder_names, stat_names, columns):
         values.append(tuple1)
     return values
 
+
 def get_stat_from_folder(stat_name, folder):
     stat_files = ['summary.txt', 'latency_stats.txt','latency_stats_names.txt', 'ns-fairness.txt','avg_replica_count4.txt']
     files = []
@@ -71,6 +74,7 @@ def get_stat_from_folder(stat_name, folder):
         if tokens[0] == stat_name:
             return tokens[1]
     return -1
+
 
 def get_stat_from_file(stat_name, filename):
     if not os.path.exists(filename):

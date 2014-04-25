@@ -133,12 +133,12 @@ stat_file_logging_level = exp_config.lnslogstat
 stat_console_output_level = exp_config.lnslogstat
 
 
-def run_local_name_server(node_id, work_dir, lookup_trace_file, update_trace_file):
+def run_local_name_server(node_id, work_dir, update_trace_file):
     """ Executes an instance of the Local Name Server with the give parameters """
 
     check_file(local_name_server_jar)
     check_file(node_config)
-    print 'Lookup trace:', lookup_trace_file
+    # print 'Lookup trace:', lookup_trace_file
     print 'Update trace:', update_trace_file
     if node_id == -1 and not node_config == '':
         node_id = get_node_id()
@@ -148,13 +148,13 @@ def run_local_name_server(node_id, work_dir, lookup_trace_file, update_trace_fil
     os.system('rm -rf ' + work_dir + '; mkdir -p ' + work_dir)
 
     # check whether files are present or not.
-    if lookup_trace_file is not None and lookup_trace_file != '':
-        check_file(lookup_trace_file)
+    # if lookup_trace_file is not None and lookup_trace_file != '':
+    #     check_file(lookup_trace_file)
     if update_trace_file is not None and update_trace_file != '':
         check_file(update_trace_file)
 
-    lookup_rate = get_event_rate(experiment_run_time, lookup_trace_file)
-    print 'Lookup Rate:', lookup_rate
+    # lookup_rate = get_event_rate(experiment_run_time, lookup_trace_file)
+    # print 'Lookup Rate:', lookup_rate
     update_rate_regular = get_event_rate(experiment_run_time, update_trace_file)
     print 'Update Rate Regular:', update_rate_regular
     update_rate_mobile = 0      # in ms (NOT USED) Inter-Arrival Time (in ms) between update request for mobile names
@@ -189,11 +189,12 @@ def run_local_name_server(node_id, work_dir, lookup_trace_file, update_trace_fil
         command += ' ' + REGULAR_WORLOAD + ' ' + str(regular_workload)
         command += ' ' + MOBILE_WORLOAD + ' ' + str(mobile_workload)
 
-    if lookup_trace_file is not None and lookup_trace_file != '':
-        command += ' ' + LOOKUP_TRACE_FILE + ' ' + lookup_trace_file
+    # if lookup_trace_file is not None and lookup_trace_file != '':
+    #     command += ' ' + LOOKUP_TRACE_FILE + ' ' + lookup_trace_file
         
     if update_trace_file is not None and update_trace_file != '':
         command += ' ' + UPDATE_TRACE_FILE + ' ' + update_trace_file
+        command += ' ' + UPDATE_RATE_REGULAR + ' ' + str(update_rate_regular)
 
     if workload_file is not None and workload_file != '':
         command += ' ' + WORKLOAD_FILE + ' ' + workload_file
@@ -203,9 +204,8 @@ def run_local_name_server(node_id, work_dir, lookup_trace_file, update_trace_fil
     #command += ' ' + NUM_LOOKUP + ' ' + str(num_lookups)
     #command += ' ' + NUM_Update + ' ' + str(num_updates)
     
-    command += ' ' + LOOKUP_RATE + ' ' + str(lookup_rate)
-    command += ' ' + UPDATE_RATE_MOBILE + ' ' + str(update_rate_mobile)
-    command += ' ' + UPDATE_RATE_REGULAR + ' ' + str(update_rate_regular)
+    # command += ' ' + LOOKUP_RATE + ' ' + str(lookup_rate)
+    # command += ' ' + UPDATE_RATE_MOBILE + ' ' + str(update_rate_mobile)
 
     command += ' ' + NUMER_OF_TRANSMISSIONS + ' ' + str(numberOfTransmissions)
     command += ' ' + MAX_QUERY_WAIT_TIME + ' ' + str(maxQueryWaitTime)

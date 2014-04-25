@@ -69,9 +69,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
             case CONFIRM_UPDATE:
             case CONFIRM_ADD:
             case CONFIRM_REMOVE:
-              ActiveReplicaCoordinator gnsReconfigurable = nameServer.getActiveReplicaCoordinator();
-              if (gnsReconfigurable != null) {
-                gnsReconfigurable.coordinateRequest(json);
+              ActiveReplicaCoordinator appCoordinator = nameServer.getActiveReplicaCoordinator();
+              if (appCoordinator != null) {
+                appCoordinator.coordinateRequest(json);
               }
               break;
 

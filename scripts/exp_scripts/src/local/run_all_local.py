@@ -29,7 +29,6 @@ from logparse.parse_log import parse_log  # added parent_folder to path to impor
 
 
 def run_exp():
-
     from kill_local import kill_local_gnrs
     kill_local_gnrs()
     node_config = exp_config.node_config
@@ -54,7 +53,8 @@ def run_exp():
                             exp_config.const_latency_value, exp_config.random_node_ids)
 
     # generate workloads
-    generate_all_traces()
+    # todo move workload generation from here
+    # generate_all_traces()
 
     #os.system('sleep 100')
     #os.system('pssh -h hosts.txt "killall -9 java"')
@@ -73,8 +73,7 @@ def run_exp():
             if first_lns is False:
                 time.sleep(exp_config.ns_sleep)  # sleep so that name servers load name records into DB
                 first_lns = True
-            local_name_server.run_local_name_server(id, output_folder, get_lookup_trace(exp_config.trace_folder, id),
-                                                    get_update_trace(exp_config.trace_folder, id))
+            local_name_server.run_local_name_server(id, output_folder, get_update_trace(exp_config.trace_folder, id))
 
     # kill local
     if not exp_config.is_experiment_mode:
@@ -89,7 +88,7 @@ def run_exp():
     stats_folder = exp_config.output_folder + '_stats'
     if exp_config.output_folder.endswith('/'):
         stats_folder = exp_config.output_folder[:-1] + '_stats'
-    parse_log(exp_config.output_folder, stats_folder, True)
+    parse_log(exp_config.output_folder, stats_folder)
     # parse logs and generate output
 
     # not doing restart stuff right now
@@ -103,20 +102,9 @@ def run_exp():
         run_name_server(restart_node, output_folder, node_config)
         print 'Done'
 
-    #os.system('./kill_mongodb_local.sh')
-
-
-def get_lookup_trace(trace_folder, node_id):
-    lookup_trace = os.path.join(trace_folder, 'lookupTrace/' + node_id)
-    print lookup_trace
-    if os.path.exists(lookup_trace):
-        return lookup_trace
-    return None
-
 
 def get_update_trace(trace_folder, node_id):
-    update_trace = os.path.join(trace_folder, 'updateTrace/' + node_id)
-    print update_trace
+    update_trace = os.path.join(trace_folder, node_id)
     if os.path.exists(update_trace):
         return update_trace
     return None

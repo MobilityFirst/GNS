@@ -44,6 +44,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class GroupChange {
 
+
+
   /********************   BEGIN: methods executed at old active replicas. *********************/
 
   public static GNSMessagingTask handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica replica)
@@ -127,8 +129,7 @@ public class GroupChange {
 
     // sanity check: am I in set? otherwise quit.
     if (!packet.getNewActiveNameServers().contains(activeReplica.getNodeID())) {
-      GNS.getLogger().info("ERROR: NewActiveSetStartupPacket reached "
-              + "a non-active name server." + packet.toString());
+      GNS.getLogger().severe("ERROR: NewActiveSetStartupPacket reached a non-active name server." + packet.toString());
       return;
     }
     // create name server
@@ -146,6 +147,7 @@ public class GroupChange {
     activeReplica.getScheduledThreadPoolExecutor().scheduleAtFixedRate(copyTask, 0, Config.NS_TIMEOUT_MILLIS,
             TimeUnit.MILLISECONDS);
   }
+
 
   /**
    * This active replica learns that it one of the new active replica, upon which it creates a task to copy

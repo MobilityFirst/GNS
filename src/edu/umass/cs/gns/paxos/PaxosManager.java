@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
@@ -213,7 +212,9 @@ public class PaxosManager extends AbstractPaxosManager {
 
         assert initialState != null;
         r = createPaxosReplicaObject(paxosID, nodeID, nodeIDs);//new PaxosReplicaInterface(paxosID, nodeID, nodeIDs);
+
         paxosLogger.logPaxosStart(paxosID, nodeIDs, new StatePacket(r.getAcceptorBallot(), 0, initialState));
+
         if(debugMode) GNS.getLogger().info(paxosID + "\tBefore creating replica.");
         paxosInstances.put(getPaxosKeyFromPaxosID(paxosID), r);
       }
@@ -259,7 +260,7 @@ public class PaxosManager extends AbstractPaxosManager {
       return null;
     }
     try {
-      GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
+      if (debugMode) GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
       replica.handleIncomingMessage(new RequestPacket(0, value, PaxosPacketType.REQUEST, true).toJSONObject(), PaxosPacketType.REQUEST);
     } catch (JSONException e) {
       e.printStackTrace();
@@ -276,7 +277,7 @@ public class PaxosManager extends AbstractPaxosManager {
       return null;
     }
     try {
-      GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
+      if (debugMode) GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
       replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
     } catch (JSONException e) {
       e.printStackTrace();
@@ -309,21 +310,53 @@ public class PaxosManager extends AbstractPaxosManager {
     }
     switch (incomingPacketType){
 
-      case PaxosPacketType.DECISION:
-        try {
-          paxosLogger.logMessage(new LoggingCommand(json.getString(PAXOS_ID), json, LoggingCommand.LOG_AND_EXECUTE));
-        } catch (JSONException e) {
-          e.printStackTrace();  
-        }
-
-        break;
+//      case PaxosPacketType.DECISION:
+//        try {
+//          paxosLogger.logMessage(new LoggingCommand(json.getString(PAXOS_ID), json, LoggingCommand.LOG_AND_EXECUTE));
+//        } catch (JSONException e) {
+//          e.printStackTrace();
+//        }
+//
+//        break;
       case PaxosPacketType.FAILURE_DETECT:
       case PaxosPacketType.FAILURE_RESPONSE:
         processMessage(new HandleFailureDetectionPacketTask(json, failureDetection));
         break;
       default:
-        GNS.getLogger().fine("Received packet: " + json);
-        processMessage(new HandlePaxosMessageTask(json,incomingPacketType, this));
+
+        long t0 = System.currentTimeMillis();
+        try {
+          String paxosID;
+          try {
+            paxosID = json.getString(PaxosManager.PAXOS_ID);
+          } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+          }
+
+          PaxosReplicaInterface replica = paxosInstances.get(getPaxosKeyFromPaxosID(paxosID));
+          if (replica != null && replica.getPaxosID().equals(paxosID)) {
+            replica.handleIncomingMessage(json, incomingPacketType);
+          }
+          else {
+            // this case can arise just before (after) a paxos instance is created (stopped).
+            GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID);
+          }
+        } catch (Exception e) {
+          GNS.getLogger().severe(" PAXOS Exception EXCEPTION!!. Msg = " + json);
+          e.printStackTrace();
+        }
+        long t1 = System.currentTimeMillis();
+        if (t1 - t0 > 100) {
+          if (json.toString().length() < 1000) {
+            GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + json);
+          }
+          else {
+            GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms.");
+          }
+        }
+//        GNS.getLogger().fine("Received packet: " + json);
+//        processMessage(new HandlePaxosMessageTask(json,incomingPacketType, this));
         break;
     }
   }
@@ -520,6 +553,7 @@ public class PaxosManager extends AbstractPaxosManager {
   }
 
   private  void processMessage(Runnable runnable) {
+
     if (executorService!= null) executorService.submit(runnable);
   }
 
@@ -597,57 +631,57 @@ class PaxosPacketDemultiplexer extends PacketDemultiplexer {
   }
 }
 
-
-class HandlePaxosMessageTask extends TimerTask {
-
-  JSONObject json;
-
-  int packetType;
-
-  PaxosManager paxosManager;
-
-  HandlePaxosMessageTask(JSONObject json, int packetType, PaxosManager paxosManager){
-    this.json = json;
-    this.packetType = packetType;
-    this.paxosManager = paxosManager;
-  }
-
-  @Override
-  public void run() {
-
-    long t0 = System.currentTimeMillis();
-    try {
-      String paxosID;
-      try {
-        paxosID = json.getString(PaxosManager.PAXOS_ID);
-      } catch (JSONException e) {
-        e.printStackTrace();  
-        return;
-      }
-
-      PaxosReplicaInterface replica = paxosManager.paxosInstances.get(paxosManager.getPaxosKeyFromPaxosID(paxosID));
-      if (replica != null && replica.getPaxosID().equals(paxosID)) {
-        replica.handleIncomingMessage(json,packetType);
-      }
-      else {
-        // this case can arise just after a paxos instance is created or stopped.
-        GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID + " key set: " + paxosManager.paxosInstances.keySet());
-      }
-    } catch (Exception e) {
-      GNS.getLogger().severe(" PAXOS Exception EXCEPTION!!. Msg = " + json);
-      e.printStackTrace();
-    }
-    long t1 = System.currentTimeMillis();
-    if (t1 - t0 > 100) {
-      if (json.toString().length() < 1000) {
-        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + json);
-      }
-      else {
-        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms.");
-      }
-    }
-  }
-}
+//
+//class HandlePaxosMessageTask extends TimerTask {
+//
+//  JSONObject json;
+//
+//  int packetType;
+//
+//  PaxosManager paxosManager;
+//
+//  HandlePaxosMessageTask(JSONObject json, int packetType, PaxosManager paxosManager){
+//    this.json = json;
+//    this.packetType = packetType;
+//    this.paxosManager = paxosManager;
+//  }
+//
+//  @Override
+//  public void run() {
+//
+//    long t0 = System.currentTimeMillis();
+//    try {
+//      String paxosID;
+//      try {
+//        paxosID = json.getString(PaxosManager.PAXOS_ID);
+//      } catch (JSONException e) {
+//        e.printStackTrace();
+//        return;
+//      }
+//
+//      PaxosReplicaInterface replica = paxosManager.paxosInstances.get(paxosManager.getPaxosKeyFromPaxosID(paxosID));
+//      if (replica != null && replica.getPaxosID().equals(paxosID)) {
+//        replica.handleIncomingMessage(json,packetType);
+//      }
+//      else {
+//        // this case can arise just before (after) a paxos instance is created (stopped).
+//        GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID);
+//      }
+//    } catch (Exception e) {
+//      GNS.getLogger().severe(" PAXOS Exception EXCEPTION!!. Msg = " + json);
+//      e.printStackTrace();
+//    }
+//    long t1 = System.currentTimeMillis();
+//    if (t1 - t0 > 100) {
+//      if (json.toString().length() < 1000) {
+//        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + json);
+//      }
+//      else {
+//        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms.");
+//      }
+//    }
+//  }
+//}
 
 /**
  * Resend proposals (for all paxos instances) that have not yet been accepted by majority.

@@ -112,16 +112,10 @@ public class ComputeNewActivesTask extends TimerTask {
           int newActiveVersion = replicaController.getNewActiveVersion(rcRecord.getActiveVersion());
           NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(), replicaController.getNodeID(),
                   newActiveNameServers, newActiveVersion);
-          // to propose request for coordination we send it to ourselves, so that coordinator
+          // to propose request for coordination we send it to ourselves, so that coordinator receives the request
           replicaController.getNioServer().sendToID(replicaController.getNodeID(), activePropose.toJSONObject());
-//          if (replicaController.getRcCoordinator() != null) {
-//            GroupChange.executeNewActivesProposed(activePropose, replicaController);
-//          } else {
-//            int x = replicaController.getRcCoordinator().coordinateRequest(activePropose.toJSONObject());
-//            GNS.getLogger().fine("Coordination PROPOSAL: Proposal done. Response: " + x);
-//          }
           try {
-            Thread.sleep(5); // sleep between successive names so we do not start a large number of group changes
+            Thread.sleep(10); // sleep between successive names so we do not start a large number of group changes
             // at the same time and a large fraction of the system resources are used in just doing group changes.
           } catch (InterruptedException e) {
             e.printStackTrace();
@@ -218,7 +212,6 @@ public class ComputeNewActivesTask extends TimerTask {
       }
     }
 
-    // put in here for DNS experiments.
     if (replicaCount > Config.maxReplica) {
       replicaCount = Config.maxReplica;
     }

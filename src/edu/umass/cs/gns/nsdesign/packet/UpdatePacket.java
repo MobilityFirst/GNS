@@ -186,7 +186,6 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
     this.sourceId = sourceId;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
-//    this.NSRequestID = NSRequestID;
     this.name = name;
     this.recordKey = recordKey;
     this.operation = operation;
@@ -250,7 +249,6 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
     json.put(REQUESTID, getRequestID());
     json.put(SOURCE_ID, getSourceId());
     json.put(LocalNSREQUESTID, getLNSRequestID());
-//    json.put(NameServerREQUESTID, getNSRequestID());
     json.put(NAME, getName());
     json.put(RECORDKEY, getRecordKey().getName());
     json.put(OPERATION, getOperation().name());
@@ -386,11 +384,11 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
     } catch (JSONException e) {
       e.printStackTrace();
     }
-    System.out.println("Size = " + size);
+    System.out.println("Network Size: " + size + " bytes");
 
   }
 
   static void printSize(Object object) {
-    System.out.println("Size: " + SizeOf.deepSizeOf(object)); //this will print the object size in bytes
+    System.out.println("Java Size: " + SizeOf.deepSizeOf(object) + " bytes"); //this will print the object size in bytes
   }
 }

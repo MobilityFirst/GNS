@@ -39,10 +39,7 @@ public class GroupChangeCompletePacket extends BasicPacket {
 		this.name = name;
 	}
 
-
-
 	public GroupChangeCompletePacket(JSONObject json) throws JSONException {
-
 		this.type = Packet.getPacketType(json);
 		this.name = json.getString(NAME);
 		this.version = json.getInt(VERSION);

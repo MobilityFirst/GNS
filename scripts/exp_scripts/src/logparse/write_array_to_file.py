@@ -6,6 +6,7 @@ Created on Mar 5, 2012
 import os
 import sys
 
+
 def write_array(array,output_file, p = True):
     if os.path.dirname(output_file) != '' and not os.path.exists(os.path.dirname(output_file)):
         os.system('mkdir -p ' + os.path.dirname(output_file))

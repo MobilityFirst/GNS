@@ -25,7 +25,7 @@ paxos_log_folder = '/home/ec2-user/paxos_log/'  # remote folder where paxos logs
 db_folder = '/home/ec2-user/gnsdb/'  # remote folder where mongodb will store its logs
 
 mongo_sleep = 20
-ns_sleep = 20
+ns_sleep = 5
 experiment_run_time = 60  # duration for which requests are sent
 extra_wait = 30
 
@@ -124,13 +124,13 @@ replication_interval = 100000   # (in seconds). Intervals at which auspice compu
 
 
 # if True, more detailed log messages are printed
-is_debug_mode = True
+is_debug_mode = False
 
 # if True, local name servers starts sending requests as per given workload
 is_experiment_mode = True
 
 # if true, we emulate wide-area latency between packets sent between nodes
-emulate_ping_latencies = True
+emulate_ping_latencies = False
 
 # variation in latency emulation
 variation = 0.10
@@ -143,7 +143,7 @@ run_http_server = False
 load_balancing = False
 
 numberOfTransmissions = 3
-maxQueryWaitTime = 12100
+maxQueryWaitTime = 10100
 queryTimeout = 2000           # query timeout interval
 adaptiveTimeout = False
 delta = 0.05
@@ -156,10 +156,12 @@ cache_size = 1000000
 
 ################## NS parameters ######################
 
+
+mongo_port = 28123
+
 normalizing_constant = 1  # this value is used. set in name-server.py
 
 name_server_selection_vote_size = 5
-
 
 #paxos_log_folder = 'paxos_log/'
 
@@ -180,14 +182,16 @@ ns_main = 'edu.umass.cs.gns.main.StartNameServer'
 failure_detection_msg_interval = 10
 failure_detection_timeout_interval = 28
 
+read_coordination = False
+
 quit_after_time = -1
 quit_node_id = -1
 
 ##################### LOGGING #########################
 
-nslog = 'FINE'
+nslog = 'WARNING'
 nslogstat = 'FINE'  # records write propagation times
-lnslog = 'FINE'
+lnslog = 'WARNING'
 lnslogstat = 'FINE'
 
 ##################### SCHEMES #########################
@@ -229,6 +233,10 @@ def initialize(filename):
 
     initialize_gns_parameters(parser)
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'experiment_run_time'):
+        global experiment_run_time
+        experiment_run_time = parser.getint(ConfigParser.DEFAULTSECT, 'experiment_run_time')
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'clean_start'):
         global clean_start
         clean_start = parser.getboolean(ConfigParser.DEFAULTSECT, 'clean_start')
@@ -248,6 +256,10 @@ def initialize(filename):
 
 def initialize_gns_parameters(parser):
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server'):
+        global primary_name_server
+        primary_name_server = parser.getint(ConfigParser.DEFAULTSECT, 'primary_name_server')
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'is_experiment_mode'):
         global is_experiment_mode
         is_experiment_mode = bool(parser.get(ConfigParser.DEFAULTSECT, 'is_experiment_mode'))
@@ -259,6 +271,10 @@ def initialize_gns_parameters(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'wfile'):
         global wfile
         wfile = parser.get(ConfigParser.DEFAULTSECT, 'wfile')
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'read_coordination'):
+        global read_coordination
+        read_coordination = parser.getboolean(ConfigParser.DEFAULTSECT, 'read_coordination')
 
 
 def initialize_env_variables(parser):

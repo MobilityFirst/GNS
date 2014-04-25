@@ -4,7 +4,8 @@ import os
 import sys
 
 
-def run_all_lns(user, ssh_key, lns_ids, remote_gns_folder, config_file, node_config_file, update_trace_param, workload_config_file):
+def run_all_lns(user, ssh_key, lns_ids, remote_gns_folder, config_file, node_config_file, update_trace_param,
+                workload_config_file):
 
     tmp_cmd_file = '/tmp/local-name-server.sh'
 

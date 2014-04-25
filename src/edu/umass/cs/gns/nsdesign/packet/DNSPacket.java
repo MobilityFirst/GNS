@@ -26,7 +26,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   private final static String RECORD_VALUE = "recordValue";
 //  private final static String ACTIVE_NAME_SERVERS = "Active";
   private final static String LNS_ID = "lnsId";
-  private final static String SOURCE_ID = "sourceId"; 
+  private final static String SOURCE_ID = "sourceId";
   private final static String RESPONDER = "rspndr";
   /**
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
@@ -57,6 +57,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * This is used by the Nameservers so they know which LNS to send the packet back to. *
    */
   private int lnsId = -1; // will be -1 until set at the LNS
+
+
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
    */

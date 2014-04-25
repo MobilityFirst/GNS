@@ -35,6 +35,7 @@ sys.path.append(parent_folder)
 import exp_config
 from logparse.parse_log import parse_log  # added parent_folder to path to import parse_log module here
 from run_all_nodes import run_all_lns, run_all_ns
+import copy_workload
 
 
 def main():
@@ -84,7 +85,7 @@ def run_one_experiment(local_output_folder, local_config_file):
         os.system('./kill_mongodb.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file
                   + ' ' + exp_config.db_folder)
         os.system('./run_mongodb.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file
-                  + ' ' + exp_config.remote_mongo_bin + ' ' + exp_config.db_folder)
+                  + ' ' + exp_config.remote_mongo_bin + ' ' + exp_config.db_folder + ' ' + str(exp_config.mongo_port))
         print "Waiting for mongod process to start fully ..."
         os.system('sleep ' + str(exp_config.mongo_sleep))  # ensures mongo is fully running
 
@@ -95,8 +96,10 @@ def run_one_experiment(local_output_folder, local_config_file):
     os.system(cmd)  #
 
     # copy workload for local name servers ....
-    os.system('./cpWorkload.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_lns_file + ' '
-              + exp_config.remote_gns_logs + ' ' + exp_config.update_trace + ' ' + REMOTE_UPDATE_TRACE)
+    copy_workload.copy_workload(exp_config.user, exp_config.ssh_key, lns_ids, exp_config.update_trace,
+                                exp_config.remote_gns_logs, REMOTE_UPDATE_TRACE)
+    # os.system('./cpWorkload.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_lns_file + ' '
+    #           + exp_config.remote_gns_logs + ' ' + exp_config.update_trace + ' ' + REMOTE_UPDATE_TRACE)
 
     # copy GNS jar file ....
     if exp_config.copy_jar:
@@ -116,12 +119,12 @@ def run_one_experiment(local_output_folder, local_config_file):
     print 'Name servers running ...'
     try:
         #os.system('sleep ' + str(exp_config.ns_sleep))
-        print 'Waiting for NS to load all records for ' + str(exp_config.ns_sleep) + 'sec ..'
+        print 'Waiting for name servers to start ' + str(exp_config.ns_sleep) + 'sec ..'
         sleep_for_time(exp_config.ns_sleep)
     except:
         print 'NS sleep interrupted. Starting LNS ...'
 
-   # run local name servers ....
+    # run local name servers ....
     run_all_lns(exp_config.user, exp_config.ssh_key, lns_ids, exp_config.remote_gns_logs, remote_config_file,
                 REMOTE_NODE_CONFIG, REMOTE_UPDATE_TRACE, remote_workload_config)
 
@@ -144,12 +147,11 @@ def run_one_experiment(local_output_folder, local_config_file):
 
     os.system('./getLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' + exp_config.local_lns_file + ' ' + local_output_folder + '  ' + exp_config.remote_gns_logs)
 
-    # ./parse_log.py output_folder
-    #os.system('logparse/parse_log.py ' + output_folder)
+    print 'Output stats ...'
     stats_folder = local_output_folder + '_stats'
     if local_output_folder.endswith('/'):
         stats_folder = local_output_folder[:-1] + '_stats'
-    parse_log(local_output_folder, stats_folder, False)
+    parse_log(local_output_folder, stats_folder)
 
     time2 = time.time()
 

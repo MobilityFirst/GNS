@@ -6,13 +6,15 @@ import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.util.GroupChangeIdentifier;
 import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -80,6 +82,14 @@ public class GroupChange {
   }
 
   /**
+   * OBJECT USED ONLY DURING TESTING!
+   * Hash map stores info about group changes that are requested by local name server.
+   * This is used only for collecting statistics regarding group change.
+   */
+  private final static ConcurrentHashMap<GroupChangeIdentifier, Integer> trackGroupChange =
+          new ConcurrentHashMap<GroupChangeIdentifier, Integer>();
+
+  /**
    * After replica controllers agree on changing the set of active replicas, this method updates the database to
    * indicate a group change for this name is in progress.
    *
@@ -87,6 +97,7 @@ public class GroupChange {
    */
   public static void executeNewActivesProposed(NewActiveProposalPacket activeProposalPacket,
                                                ReplicaController replicaController, boolean recovery) {
+
 
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
@@ -122,6 +133,10 @@ public class GroupChange {
 
       GNS.getLogger().fine("Name Record Now: = " + rcRecord.toString());
       if (!recovery) {
+        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID() && activeProposalPacket.getLnsId() != -1) {
+          GNS.getLogger().info("Putting packet in hash map: " + activeProposalPacket);
+          trackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), activeProposalPacket.getVersion()), activeProposalPacket.getLnsId());
+        }
         // Next step: stop old actives
         if (activeProposalPacket.getProposingNode() == replicaController.getNodeID()) {// if I have proposed this change, I will start actives group change process
           // todo could use failure detector here NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
@@ -142,7 +157,7 @@ public class GroupChange {
       e.printStackTrace();
     } catch (RecordNotFoundException e) {
       // this could happen in rare cases when remove request for a name arrives at the same time as a group change
-      GNS.getLogger().warning("ERROR:  DECISION: BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
+      GNS.getLogger().warning("GROUP CHANGE DECISION: BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
     } catch (FailedUpdateException e) {
       GNS.getLogger().severe("Unexpected Error!" + e.getMessage());
       e.printStackTrace();
@@ -249,10 +264,19 @@ public class GroupChange {
           GNS.getLogger().info("New active running. Name: " + packet.getName() + " Version: " + packet.getVersion());
         }
       } else {
-        GNS.getLogger().info("IGNORE MSG: NEW Active Version NOT FOUND while setting "
-                + "it to inactive. Already received msg before. Version = " + packet.getVersion());
+        GNS.getLogger().info("IGNORE MSG: NEW Active Version NOT FOUND while setting it to inactive. Already " +
+                "received msg before. Version = " + packet.getVersion());
       }
 
+      if (!recovery && trackGroupChange.size() > 0) {
+        GroupChangeIdentifier gci = new GroupChangeIdentifier(packet.getName(), packet.getVersion());
+        Integer lnsID = trackGroupChange.remove(gci);
+        GNS.getLogger().info("After group change: Send confirmation to LNS  " + lnsID);
+        if (lnsID != null) {
+          GNS.getLogger().info("After group change: Send confirmation to LNS  " + lnsID);
+          replicaController.getNioServer().sendToID(lnsID, packet.toJSONObject());
+        }
+      }
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record does not exist !! Should not happen. " + packet.getName());
       e.printStackTrace();
@@ -262,8 +286,12 @@ public class GroupChange {
     } catch (FailedUpdateException e) {
       GNS.getLogger().severe("Failed update exception. " + e.getMessage() + "\tName\t" + packet.getName());
       e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
   }
 
 }
+
+

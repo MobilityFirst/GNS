@@ -547,7 +547,6 @@ public class ReplicaControllerRecord {
    */
   public void setMarkedForRemoval() throws FieldNotFoundException, FailedUpdateException {
     int markedForRemoval = getMarkedForRemoval();
-    GNS.getLogger().fine("Marked for removal value: " + markedForRemoval);
     if (markedForRemoval == 0) {
       ArrayList<ColumnField> fields = getSetMarkedForRemoval();
 

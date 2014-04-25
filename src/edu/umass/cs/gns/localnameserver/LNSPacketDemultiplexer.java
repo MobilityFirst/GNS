@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -32,7 +33,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
    */
   @Override
   public boolean handleJSONObject(JSONObject json) {
-    GNS.getLogger().fine("******* Handling: " + json);
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("******* Handling: " + json);
     boolean isPacketTypeFound = true;
     try {
       switch (Packet.getPacketType(json)) {
@@ -89,6 +90,9 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
         // Requests sent only during testing
         case NEW_ACTIVE_PROPOSE:
           LNSTestRequests.sendGroupChangeRequest(json);
+          break;
+        case GROUP_CHANGE_COMPLETE:
+          LNSTestRequests.handleGroupChangeComplete(json);
           break;
         default:
           isPacketTypeFound = false;

@@ -10,9 +10,9 @@ import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
+import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -109,7 +109,7 @@ public class Remove {
         GNS.getLogger().info("Record not found exception. Name = " + oldActiveStopPacket.getName());
         // we should send error message to replica-controller in this case. but we haven't defined it.
       } catch (FieldNotFoundException e) {
-        GNS.getLogger().info("FieldNotFoundException: " + e.getMessage());
+        GNS.getLogger().severe("FieldNotFoundException: " + e.getMessage());
         e.printStackTrace();
       } catch (JSONException e) {
         e.printStackTrace();

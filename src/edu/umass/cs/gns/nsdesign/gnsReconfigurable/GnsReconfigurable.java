@@ -7,7 +7,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -46,7 +46,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   /**
    * nio server
    */
-  private GNSNIOTransport nioServer;
+  private GNSNIOTransportInterface nioServer;
 
   /**
    * executor service for handling tasks
@@ -69,7 +69,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
    * constructor object
    */
   public GnsReconfigurable(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-          GNSNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+          GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
           MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
@@ -101,7 +101,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
     return gnsNodeConfig;
   }
 
-  public GNSNIOTransport getNioServer() {
+  public GNSNIOTransportInterface getNioServer() {
     return nioServer;
   }
 
@@ -118,7 +118,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
         case DNS:
-          msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this);
+          msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this, noCoordinationState);
           break;
         case UPDATE:
           msgTask = Update.executeUpdateLocal(new UpdatePacket(json), this, noCoordinationState);
@@ -242,10 +242,11 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
         GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
       }
     } catch (RecordExistsException e) {
-      NameRecord nameRecord = null;
+      NameRecord nameRecord;
       try {
         nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
         nameRecord.handleNewActiveStart(version, state1.valuesMap, state1.ttl);
+
       } catch (FailedUpdateException e1) {
         GNS.getLogger().severe("Failed update execption: " + e.getMessage());
         e1.printStackTrace();
@@ -264,53 +265,34 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
         }
       }
     } catch (FailedUpdateException e) {
-      GNS.getLogger().severe("Failed update execption: " + e.getMessage());
+      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
       e.printStackTrace();
     }
   }
 
   @Override
   public int deleteFinalState(String name, short version) {
-    int[] versions = getCurrentOldVersions(name);
-    if (versions != null) {
-      int curVersion = versions[0];
-      int oldVersion = versions[1];
-      if (oldVersion == version) {
-        if (curVersion == NameRecord.NULL_VALUE_ACTIVE_VERSION) {
-          // todo test and remove record
-          try {
-            NameRecord.removeNameRecord(nameRecordDB, name);
-          } catch (FailedUpdateException e) {
-            GNS.getLogger().severe("FailedUpdateException: " + name + "\t " + version + "\t " + e.getMessage());
-            e.printStackTrace();
-          }
-        } else {
-          try {
-            NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-            nameRecord.deleteOldState(version);
-          } catch (FailedUpdateException e) {
-            GNS.getLogger().severe("FailedUpdateException: " + name + "\t " + version + "\t " + e.getMessage());
-            e.printStackTrace();
-          } catch (FieldNotFoundException e) {
-            GNS.getLogger().severe("FieldNotFoundException: " + name + "\t " + version + "\t " + e.getMessage());
-            e.printStackTrace();
-          }
-        }
-      }
-    }
-    return 0;
+    // todo (test and remove record) should be an atomic operation otherwise this is wrong.
 //    int[] versions = getCurrentOldVersions(name);
 //    if (versions != null) {
 //      int curVersion = versions[0];
 //      int oldVersion = versions[1];
 //      if (oldVersion == version) {
 //        if (curVersion == NameRecord.NULL_VALUE_ACTIVE_VERSION) {
-//          // todo test and remove record
-//          NameRecord.removeNameRecord(nameRecordDB, name);
+//
+//          try {
+//            NameRecord.removeNameRecord(nameRecordDB, name);
+//          } catch (FailedUpdateException e) {
+//            GNS.getLogger().severe("FailedUpdateException: " + name + "\t " + version + "\t " + e.getMessage());
+//            e.printStackTrace();
+//          }
 //        } else {
 //          try {
 //            NameRecord nameRecord = new NameRecord(nameRecordDB, name);
 //            nameRecord.deleteOldState(version);
+//          } catch (FailedUpdateException e) {
+//            GNS.getLogger().severe("FailedUpdateException: " + name + "\t " + version + "\t " + e.getMessage());
+//            e.printStackTrace();
 //          } catch (FieldNotFoundException e) {
 //            GNS.getLogger().severe("FieldNotFoundException: " + name + "\t " + version + "\t " + e.getMessage());
 //            e.printStackTrace();
@@ -318,7 +300,31 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 //        }
 //      }
 //    }
+    return 0;
   }
+
+  //  @Override
+
+  /**
+   * Used by deleteFinalState method
+   * @param name
+   * @return
+   */
+  private int[] getCurrentOldVersions(String name) {
+    try {
+      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, readVersions);
+      int[] versions = {nameRecord.getActiveVersion(), nameRecord.getOldActiveVersion()};
+      return versions;
+    } catch (RecordNotFoundException e) {
+      GNS.getLogger().severe("Record not found for name: " + name);
+      e.printStackTrace();
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+      e.printStackTrace();
+    }
+    return null;
+  }
+
 
   private static ArrayList<ColumnField> curValueRequestFields = new ArrayList<ColumnField>();
 
@@ -332,7 +338,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-      GNS.getLogger().fine(nameRecord.toString());
+      if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
       return new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive()).toString();
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found for name: " + name);
@@ -375,22 +381,6 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   static {
     readVersions.add(NameRecord.ACTIVE_VERSION);
     readVersions.add(NameRecord.OLD_ACTIVE_VERSION);
-  }
-
-//  @Override
-  private int[] getCurrentOldVersions(String name) {
-    try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, readVersions);
-      int[] versions = {nameRecord.getActiveVersion(), nameRecord.getOldActiveVersion()};
-      return versions;
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe("Record not found for name: " + name);
-      e.printStackTrace();
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-      e.printStackTrace();
-    }
-    return null;
   }
 
   public PingManager getPingManager() {

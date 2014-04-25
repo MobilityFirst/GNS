@@ -2,6 +2,7 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.main.GNS;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -22,6 +23,10 @@ public class WorkloadParams {
 
   public WorkloadParams(String workloadConfFile) throws IOException {
     if (workloadConfFile == null) return;
+
+    File f = new File(workloadConfFile);
+    if (!f.isFile()) return;
+
     Properties prop = new Properties();
     prop.load(new FileReader(workloadConfFile));
 

@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 public class RequestGenerator {
 
-  public  void generateRequests(WorkloadParams workloadParams, List<TestRequest> requests, ProbabilityDistribution probDistribution,
-                                ScheduledThreadPoolExecutor executorService) {
+  public  void generateRequests(WorkloadParams workloadParams, List<TestRequest> requests,
+                                ProbabilityDistribution probDistribution1, ScheduledThreadPoolExecutor executorService) {
     if (requests == null) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Request trace is null. Scheduler returning.");
@@ -33,15 +33,16 @@ public class RequestGenerator {
     }
 //    ExponentialDistribution exponentialDistribution = new ExponentialDistribution(requestRateMillis);
 
-    double expectedDurationSec = (requests.size() * probDistribution.getMean()) / 1000;
+//    double expectedDurationSec = (requests.size() * probDistribution.getMean()) / 1000;
 
-    String msg = "SendRequestStart Expected-Duration " + expectedDurationSec
-            + " Number-Requests " + requests.size();
-    GNS.getStatLogger().fine(msg);
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine(msg);
-    }
-    double delay = probDistribution.getMean();
+//    String msg = "SendRequestStart Expected-Duration " + expectedDurationSec
+//            + " Number-Requests " + requests.size();
+//    GNS.getStatLogger().fine(msg);
+//    if (StartLocalNameServer.debugMode) {
+//      GNS.getLogger().fine(msg);
+//    }
+    double delay = 0;
+//            probDistribution.getMean();
     LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer();
     GNS.getLogger().info(" Initial update delay: " + delay);
 
@@ -49,13 +50,19 @@ public class RequestGenerator {
     List<TimerTask> tasks = new ArrayList<TimerTask>();
 
     int count = 0;
+
+    double ratePerSec = 100.0; // default rate is 100 req/sec
     for (TestRequest r: requests) {
+      if (r.type == TestRequest.RATE) {     // delay
+        ratePerSec = Double.parseDouble(r.name);
+        continue;
+      }
       if (r.type == TestRequest.DELAY) {     // delay
         delay += Integer.parseInt(r.name);  // the name field conceals the delay that we want to introduce
                                             // between the previous and next request.
         continue;
       }
-      count++;
+
       if (r.type == TestRequest.LOOKUP) {
         tasks.add(new GenerateLookupRequest(r.name, count, lnsPacketDemultiplexer));
       }else if (r.type == TestRequest.UPDATE) {
@@ -71,8 +78,9 @@ public class RequestGenerator {
         GNS.getLogger().severe("Unknown packet type found: " + r.toString());
         throw new UnsupportedOperationException();
       }
+      count++;
       delays.add(delay);
-      delay += probDistribution.getNextArrivalDelay();
+      delay += 1000.0/ratePerSec;
     }
     long t0 = System.currentTimeMillis();
     assert tasks.size() == delays.size();
@@ -80,10 +88,10 @@ public class RequestGenerator {
       executorService.schedule(tasks.get(i), (long) delays.get(i).intValue(), TimeUnit.MILLISECONDS);
     }
     long t1 = System.currentTimeMillis();
-    GNS.getLogger().info(" Time to submit all requests: " + (t1 - t0));
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("Final delay = " + delay / 1000 + " Expected-duration " + expectedDurationSec);
-    }
+    GNS.getLogger().severe(" Time to submit all requests: " + (t1 - t0) + " Delay = " + delay);
+
+    GNS.getLogger().info("Final delay = " + delay / 1000); //  + " Expected-duration " + expectedDurationSec
+
   }
 
   private static final String THOUSAND;
@@ -131,13 +139,9 @@ public class RequestGenerator {
 
       ResultValue newValue = new ResultValue();
       newValue.add(RequestGenerator.getRandomString(objectSizeKB));
-
-      UpdatePacket updateAddressPacket = new UpdatePacket(-1,
-              updateCount, updateCount,
-              name, NameRecordKey.EdgeRecord, newValue, null, -1,
-              UpdateOperation.REPLACE_ALL, -1, -1, GNS.DEFAULT_TTL_SECONDS,
-              //ignore signature info
-              null, null, null);
+      //ignore signature info
+      UpdatePacket updateAddressPacket = new UpdatePacket(-1, updateCount, updateCount, name, NameRecordKey.EdgeRecord,
+              newValue, null, -1, UpdateOperation.REPLACE_ALL, -1, -1, GNS.DEFAULT_TTL_SECONDS, null, null, null);
       try {
         packetDemultiplexer.handleJSONObject(updateAddressPacket.toJSONObject());
       } catch (JSONException e) {
@@ -154,12 +158,12 @@ public class RequestGenerator {
     private int objectSizeKB;
     private int ttl;
 
-    public GenerateAddRequest(String name, int count, int objectSizeKB, int ttl, LNSPacketDemultiplexer packetDemultiplexer) {
+    public GenerateAddRequest(String name, int count, int objectSizeKB, int ttl, LNSPacketDemultiplexer packetDemux) {
 
       this.requestCount = count;
       this.name = name;
-      this.packetDemultiplexer = packetDemultiplexer;
-      this.objectSizeKB = objectSizeKB;
+      this.packetDemultiplexer = packetDemux;
+      this.objectSizeKB = 0;
       this.ttl = ttl;
     }
 
@@ -238,6 +242,8 @@ public class RequestGenerator {
     private int selectReplicaController(String name) {
       Set<Integer> replicaControllers = ConsistentHashing.getReplicaControllerSet(name);
       return LocalNameServer.getGnsNodeConfig().getClosestServer(replicaControllers, null);
+//      ArrayList<Integer> replicaControllers = new ArrayList<Integer>(ConsistentHashing.getReplicaControllerSet(name));
+//      return replicaControllers.get(new Random().nextInt(replicaControllers.size()));
     }
   }
 

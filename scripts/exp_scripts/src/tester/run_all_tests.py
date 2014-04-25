@@ -17,4 +17,4 @@ for test1 in test_modules:
 
 test_suite = unittest.TestSuite(x)
 
-unittest.TextTestRunner(verbosity=2).run(test_suite)
+unittest.TextTestRunner(verbosity=2, failfast=True).run(test_suite)

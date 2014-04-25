@@ -20,6 +20,7 @@ total_reads = 0  # number of successful read requests
 total_writes = 0  # number of successful write requests
 total_adds = 0  # number of successful read requests
 total_removes = 0  # number of successful write requests
+total_group_changes = 0 # number of group changes sent by LNS
 contact_primary = 0
 
 latencies = {}
@@ -27,6 +28,7 @@ read_latencies = {}
 write_latencies = {}
 add_latencies = {}
 remove_latencies = {}
+group_change_latencies = {}
 all_tuples = []  # stats for all read and write requests
 ping_latencies = []  # ping latency to first NS contacted for each read
 closest_ns_latencies = []  # for each read, the closest NS to the LNS receiving this read query
@@ -54,15 +56,6 @@ def main():
 
     parse_log(log_files_dir, output_files_dir)
 
-
-def myfilter(tokens):
-    latency, start_time, ping_latency, name, ns1, lns, num_transmissions, is_cache_hit = \
-        parse_line_query_success(tokens)
-    if num_transmissions > 1:
-        return False
-    #if int(name) < 1000:
-    #    return False
-    return True
 
 
 def get_indir_outdir(dir):
@@ -124,16 +117,17 @@ def parse_log(log_files_dir, output_dir, filter=None):
 
 
 def initialize_variables():
-    global latencies, read_latencies, write_latencies, add_latencies, remove_latencies, all_tuples, \
+    global latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies, all_tuples, \
         ping_latencies, closest_ns_latencies, closest_ns_latency_dict, lns_ids, \
         success, failed, lns_cache_hit, retrans_count, total_processing_delay, total_reads, total_writes, total_adds, \
-        total_removes, contact_primary
+        total_removes, total_group_changes, contact_primary
 
     latencies = {}
     read_latencies = {}
     write_latencies = {}
     add_latencies = {}
     remove_latencies = {}
+    group_change_latencies = {}
     all_tuples = []  # stats for all read and write requests
     ping_latencies = []  # ping latency to first NS contacted for each read
     closest_ns_latencies = []  # for each read, the closest NS to the LNS receiving this read query
@@ -149,13 +143,14 @@ def initialize_variables():
     total_writes = 0  # number of successful write requests
     total_adds = 0  # number of successful add requests
     total_removes = 0  # number of successful remove requests
+    total_group_changes = 0 # number of successful group changes
     contact_primary = 0
 
 
 def extract_data_from_log(log_files_dir, filter):
     """parses log files in this dir."""
 
-    global latencies, read_latencies, write_latencies, add_latencies, remove_latencies
+    global latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies
 
     #os.system('gzip -d '+ log_files_dir + '/log_*/* '+ log_files_dir + '/log_*/gns_stat* ' + log_files_dir +
     # '/log_*/log/gns_stat* 1> /dev/null 2>/dev/null')
@@ -167,7 +162,8 @@ def extract_data_from_log(log_files_dir, filter):
     #print 'Number of lns ids', len(lns_ids)
     #print lns_ids
     # get all, read and write latencies
-    latencies, read_latencies, write_latencies, add_latencies, remove_latencies = get_all_latencies(host_files, filter)
+    latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies = \
+        get_all_latencies(host_files, filter)
 
 
 def fill_lns_ids(log_files_dir):
@@ -257,13 +253,14 @@ def get_closest_ns_latency_from_config_file(config_file):
 def get_all_latencies(host_files, filter):
     """Get latency from all hosts"""
     global success, failed, host_success, host_failed, lns_cache_hit, total_reads, total_writes, \
-        total_adds, total_removes, all_tuples
+        total_adds, total_removes, total_group_changes, all_tuples
 
     latencies = {}
     read_latencies = {}
     write_latencies = {}
     add_latencies = {}
     remove_latencies = {}
+    group_change_latencies = {}
 
     for hostname, files in host_files.items():
         if hostname in exclude_hosts:
@@ -272,17 +269,19 @@ def get_all_latencies(host_files, filter):
         host_success = 0
         host_failed = 0
 
-        read_l1, write_l1, add_l1, remove_l1, host_tuples1, ping_host1, closest_host1 = \
+        read_l1, write_l1, add_l1, remove_l1, group_change_l1, host_tuples1, ping_host1, closest_host1 = \
             get_host_latencies(files, hostname, filter)
         read_latencies[hostname] = read_l1
         write_latencies[hostname] = write_l1
         add_latencies[hostname] = add_l1
         remove_latencies[hostname] = remove_l1
+        group_change_latencies[hostname] = group_change_l1
         latencies[hostname] = []
         latencies[hostname].extend(read_l1)
         latencies[hostname].extend(write_l1)
         latencies[hostname].extend(add_l1)
         latencies[hostname].extend(remove_l1)
+        latencies[hostname].extend(group_change_l1)
         ping_latencies.extend(ping_host1)
         closest_ns_latencies.extend(closest_host1)
 
@@ -290,6 +289,7 @@ def get_all_latencies(host_files, filter):
         total_writes += len(write_latencies[hostname])
         total_adds += len(add_latencies[hostname])
         total_removes += len(remove_latencies[hostname])
+        total_group_changes += len(group_change_latencies[hostname])
         fail_perc = 0
         if host_failed + host_success > 0:
             fail_perc = (host_failed * 1.0 / (host_failed + host_success))
@@ -299,7 +299,7 @@ def get_all_latencies(host_files, filter):
         #print 'After: Success',success
         failed += host_failed
 
-    return latencies, read_latencies, write_latencies, add_latencies, remove_latencies
+    return latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies
 
 
 def get_host_latencies(filenames, hostname, filter):
@@ -309,6 +309,7 @@ def get_host_latencies(filenames, hostname, filter):
     write_l1 = []
     add_l1 = []
     remove_l1 = []
+    group_change_l1 = []
     host_tuples1 = []
     ping_host1 = []
     closest_host1 = []
@@ -322,13 +323,14 @@ def get_host_latencies(filenames, hostname, filter):
         if filename[-2:] == 'gz':
             filename = filename[:-3]  # remove .gz prefix #newchange
         # get tuples from this log file
-        read_l, write_l, add_l, remove_l, host_tuples, ping_host, closest_host = \
+        read_l, write_l, add_l, remove_l, group_change_l, host_tuples, ping_host, closest_host = \
             get_latencies(i, filename, hostname, filter)
         # append to main list
         read_l1.extend(read_l)
         write_l1.extend(write_l)
         add_l1.extend(add_l)
         remove_l1.extend(remove_l)
+        group_change_l1.extend(group_change_l)
         host_tuples1.extend(host_tuples)
         ping_host1.extend(ping_host)
         closest_host1.extend(closest_host)
@@ -339,11 +341,13 @@ def get_host_latencies(filenames, hostname, filter):
     write_l1 = exclude_queries(write_l1)
     add_l1 = exclude_queries(add_l1)
     remove_l1 = exclude_queries(remove_l1)
+
+    group_change_l1 = exclude_queries(group_change_l1)
     host_tuples1 = exclude_queries(host_tuples1)
     ping_host1 = exclude_queries(ping_host1)
     closest_host1 = exclude_queries(closest_host1)
 
-    return read_l1, write_l1, add_l1, remove_l1, host_tuples1, ping_host1, closest_host1
+    return read_l1, write_l1, add_l1, remove_l1, group_change_l1, host_tuples1, ping_host1, closest_host1
 
 
 first_start = -1  # first successful request at a LNS was recorded at this time, used to assign a time to other requests at that LNS.
@@ -362,6 +366,7 @@ def get_latencies(filecount, filename, hostname, filter=None):
     write_latencies = []
     add_latencies = []
     remove_latencies = []
+    group_change_latencies = []
 
     host_tuples = []
     host_retrans = 0
@@ -509,6 +514,16 @@ def get_latencies(filecount, filename, hostname, filter=None):
             except:
                 print 'EXCEPTION: in parsing failed msg:', line
             host_failed += 1
+        elif tokens[0].startswith('<message>Success-GroupChange'):
+            try:
+                name = tokens[1]
+                ns = -1
+                latency1 = int(tokens[3])
+                host_tuples.append([name, local_name_server, ns, 0, latency1, 'gc', 0, 0, 0, 0])
+                group_change_latencies.append(latency1)
+            except:
+                print 'Exception parsing message', line
+            host_success += 1
 
             # add failed - update case
     #print 'Host-Success',host_success
@@ -517,7 +532,8 @@ def get_latencies(filecount, filename, hostname, filter=None):
         retrans_percent = host_retrans / host_success
 
     #print '\tRetransmissions', host_retrans,
-    return read_latencies, write_latencies, add_latencies, remove_latencies, host_tuples, ping_latencies, closest_ns_latencies
+    return read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies, \
+           host_tuples, ping_latencies, closest_ns_latencies
 
 
 def parse_line_query_success(tokens):
@@ -577,6 +593,7 @@ def output_latency_stats(output_dir):
     output_stats(write_latencies, os.path.join(output_dir, 'write'))
     output_stats(add_latencies, os.path.join(output_dir, 'add'))
     output_stats(remove_latencies, os.path.join(output_dir, 'remove'))
+    output_stats(group_change_latencies, os.path.join(output_dir, 'group_change'))
 
     # output all tuples in a file, used in group-by-name, group-by-time script.
     write_tuple_array(all_tuples, os.path.join(output_dir, 'all_tuples.txt'), p=True)
@@ -683,6 +700,7 @@ def get_latency_stats_tuples():
     kv_tuples.extend(get_stat_in_tuples(get_all_values(write_latencies), 'write'))
     kv_tuples.extend(get_stat_in_tuples(get_all_values(add_latencies), 'add'))
     kv_tuples.extend(get_stat_in_tuples(get_all_values(remove_latencies), 'remove'))
+    kv_tuples.extend(get_stat_in_tuples(get_all_values(group_change_latencies), 'group_change'))
     kv_tuples.extend(get_stat_in_tuples(ping_latencies, 'ping'))
     kv_tuples.extend(get_stat_in_tuples(closest_ns_latencies, 'closest_ns'))
     kv_tuples.extend(get_stat_in_tuples(get_failed_read_latencies(), 'failed_read'))
@@ -759,6 +777,7 @@ def get_summary_stats():
     summary_stats.append(['Failed-Write', get_failed_write_count()])
     summary_stats.append(['Failed-Add', get_failed_add_count()])
     summary_stats.append(['Failed-Remove', get_failed_remove_count()])
+    summary_stats.append(['GroupChange', total_group_changes])
 
     summary_stats.append(['Retransmissions', get_retrans_count()])
 

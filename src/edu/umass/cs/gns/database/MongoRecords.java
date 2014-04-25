@@ -135,14 +135,21 @@ public class MongoRecords implements NoSQLRecords {
   
   @Override
   public void insert(String collectionName, String guid, JSONObject value) throws FailedUpdateException, RecordExistsException {
-    DBCollection collection = db.getCollection(collectionName);
-    DBObject dbObject = (DBObject) JSON.parse(value.toString());
+    db.requestStart();
     try {
-      collection.insert(dbObject);
-    } catch (DuplicateKeyException e) {
-      throw new RecordExistsException(collectionName, guid);
-    } catch (MongoException e) {
-      throw new FailedUpdateException(collectionName, dbObject.toString());
+      db.requestEnsureConnection();
+
+      DBCollection collection = db.getCollection(collectionName);
+      DBObject dbObject = (DBObject) JSON.parse(value.toString());
+      try {
+        collection.insert(dbObject);
+      } catch (DuplicateKeyException e) {
+        throw new RecordExistsException(collectionName, guid);
+      } catch (MongoException e) {
+        throw new FailedUpdateException(collectionName, dbObject.toString());
+      }
+    } finally {
+      db.requestDone();
     }
   }
 

@@ -186,7 +186,7 @@ public class DNSRequestTask extends TimerTask {
   }
 
   private void requestNewActives() {
-    GNS.getLogger().fine("Invalid name server for " + incomingPacket.getGuid());
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Invalid name server for " + incomingPacket.getGuid());
     if (transmissionCount > 1) {
       LocalNameServer.removeDNSRequestInfo(queryId);
     }
@@ -238,7 +238,7 @@ public class DNSRequestTask extends TimerTask {
       JSONObject json;
       try {
         json = incomingPacket.toJSONObjectQuestion();
-        GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns + "  DNS Request = " + json);
+        if (StartLocalNameServer.debugMode) GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns + "  DNS Request = " + json);
       } catch (JSONException e) {
         if (StartLocalNameServer.debugMode) {
           GNS.getLogger().fine("Error Converting Query to JSON Object.");
@@ -274,7 +274,7 @@ public class DNSRequestTask extends TimerTask {
     try {
       Lookup.sendDNSResponseBackToSource(dnsPacket);
       //Intercessor.handleIncomingPackets(dnsPacket.toJSONObject());
-      GNS.getLogger().fine("Error sent --> " + dnsPacket.toJSONObject().toString());
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Error sent --> " + dnsPacket.toJSONObject().toString());
 
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);

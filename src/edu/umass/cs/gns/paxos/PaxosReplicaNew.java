@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  * Implements a memory-efficient paxos. On a normal replica, a paxos instance consumes 250 bytes, a coordinator uses
  * 400 bytes.
  * Created by abhigyan on 1/9/14.
+ * TODO This class is probably broken.
  */
 public class PaxosReplicaNew extends PaxosReplicaInterface{
 

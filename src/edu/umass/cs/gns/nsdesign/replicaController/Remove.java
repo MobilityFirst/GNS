@@ -10,14 +10,16 @@ import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -105,7 +107,7 @@ public class Remove {
       if (!recovery) {
         if (rcRecord.isMarkedForRemoval()) {  // check if record marked as removed, it may not be if a group change for
           //  this name is in progress concurrently.
-          GNS.getLogger().info("Name Record marked for removal " + removeRecord);
+          if (Config.debugMode) GNS.getLogger().info("Name Record marked for removal " + removeRecord);
 
           if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
             // so it will inform actives
@@ -117,7 +119,7 @@ public class Remove {
                     ReplicaController.RC_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
           } else {
-            GNS.getLogger().info("SKIP: remove record request does not not contain node ID " + rcRecord.getName());
+            if (Config.debugMode) GNS.getLogger().info("SKIP: remove record request does not not contain node ID " + rcRecord.getName());
           }
         } else {
           GNS.getLogger().info("Remove record not executed because group change for the name is in progress "
@@ -132,7 +134,7 @@ public class Remove {
       sendError = true;
       GNS.getLogger().info("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
     } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field Not Found Exception. " + e.getMessage());
+      if (Config.debugMode) GNS.getLogger().severe("Field Not Found Exception. " + e.getMessage());
       e.printStackTrace();
     }
     if (sendError) {
@@ -149,10 +151,10 @@ public class Remove {
           boolean recovery) throws JSONException, IOException {
     GNSMessagingTask msgTask = null;
     if (!recovery) {
-      GNS.getLogger().fine("RC handling active remove record ... " + activeStop);
+      if (Config.debugMode) GNS.getLogger().fine("RC handling active remove record ... " + activeStop);
       // response received for active stop request, so remove from set, which will cancel the OldActiveSetStopPacket task
       RemoveRecordPacket removePacket = (RemoveRecordPacket) rc.getOngoingStopActiveRequests().remove(activeStop.getRequestID());
-      GNS.getLogger().fine("RC remove packet fetched ... " + removePacket);
+      if (Config.debugMode) GNS.getLogger().fine("RC remove packet fetched ... " + removePacket);
       if (removePacket != null) { // response has not been already received
         removePacket.changePacketTypeToRcRemove();
         rc.getNioServer().sendToID(rc.getNodeID(), removePacket.toJSONObject());
@@ -174,14 +176,14 @@ public class Remove {
   public static GNSMessagingTask executeRemoveRecord(RemoveRecordPacket removeRecordPacket, ReplicaController rc,
           boolean recovery) throws JSONException, FailedUpdateException {
     GNSMessagingTask msgTask = null;
-    GNS.getLogger().fine("DECISION executing remove record at RC: " + removeRecordPacket);
+    if (Config.debugMode) GNS.getLogger().fine("DECISION executing remove record at RC: " + removeRecordPacket);
     rc.getDB().removeNameRecord(removeRecordPacket.getName());
 
     if (removeRecordPacket.getNameServerID() == rc.getNodeID() && !recovery) { // this will be true at the replica controller who
       // first received the client's request
       ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
       msgTask = new GNSMessagingTask(removeRecordPacket.getLocalNameServerID(), confirmPacket.toJSONObject());
-      GNS.getLogger().fine("Remove record response sent to LNS: " + removeRecordPacket.getName() + " lns "
+      if (Config.debugMode) GNS.getLogger().fine("Remove record response sent to LNS: " + removeRecordPacket.getName() + " lns "
               + removeRecordPacket.getLocalNameServerID());
     }
     return msgTask;

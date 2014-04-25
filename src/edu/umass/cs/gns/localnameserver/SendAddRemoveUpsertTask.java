@@ -134,19 +134,19 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
     if (getTimeoutCount() == 0) {
       updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, packet);
-      GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getUpdateRequestID());
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getUpdateRequestID());
       updatePacketWithRequestID(getPacket(), getUpdateRequestID());
     }
     // create the packet that we'll send to the primary
 
-    GNS.getLogger().fine("Sending request to node: " + nameServerID);
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending request to node: " + nameServerID);
 
     // and send it off
     try {
       JSONObject jsonToSend = getPacket().toJSONObject();
       LocalNameServer.sendToNS(jsonToSend, nameServerID);
 
-      GNS.getLogger().fine(" Send add/remove/upsert to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send add/remove/upsert to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
               " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
     } catch (JSONException e) {
       e.printStackTrace();

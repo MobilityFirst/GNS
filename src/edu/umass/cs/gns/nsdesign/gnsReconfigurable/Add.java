@@ -21,7 +21,7 @@ public class Add {
   public static GNSMessagingTask handleActiveAdd(AddRecordPacket addRecordPacket, GnsReconfigurable activeReplica)
           throws JSONException {
 
-    GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() + " node id: "
+    if (Config.debugMode) GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() + " node id: "
             + activeReplica.getNodeID());
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.put(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
@@ -32,7 +32,7 @@ public class Add {
       NameRecord.addNameRecord(activeReplica.getDB(), nameRecord);
       try {
         String val = NameRecord.getNameRecord(activeReplica.getDB(), addRecordPacket.getName()).toString();
-        GNS.getLogger().fine("Name record read: " + val);
+        if (Config.debugMode) GNS.getLogger().fine("Name record read: " + val);
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
       }
@@ -51,7 +51,7 @@ public class Add {
         GNS.getLogger().severe("Name record exists when we just deleted it!!! - " + e.getMessage());
         e1.printStackTrace();
       }
-      GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
+      if (Config.debugMode) GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
     }
 
     return getConfirmMsg(addRecordPacket, activeReplica);

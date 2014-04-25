@@ -9,43 +9,60 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
 
-from workload.write_workload import get_trace_filename, RequestType, WorkloadParams
-from util.write_utils import write_tuple_array
+from workload.write_workload import get_trace_filename, RequestType, WorkloadParams, workload_writer
 from logparse.read_final_stats import FinalStats
 import local.exp_config
 import local.generate_config_file
+from test_utils import *
 
+class BasicSetup(unittest.TestCase):
+    """Base class for all unittests for gns. Describes the common parameters needed by all tests"""
 
-class TestSetupLocal(unittest.TestCase):
-    """ Performs common setup tasks for running local tests. Other tests use this as base class.
-    """
     # number of name servers
     ns = 3
     # number of local name servers
     lns = 1
-
-    special_char_set = '!@#$%^&*()-=_+{}|[]\\;\':",./<>?`~'
+    lns_id = None
 
     # include all workload parameters here
     workload_conf = ConfigParser.ConfigParser()
+    # include all other config parameters
+    config_parse = ConfigParser.ConfigParser()
+
+    # folder where workload trace is stored
+    trace_folder = ''
+
+    # folder where output is stored on local machine
+    local_output_folder = ''
+
+    # folder where output from a single experiment is stored. this is used if we want to save the output from
+    # some experiments in a given test. by default, exp_output_folder = local_output_folder
+    exp_output_folder = ''
+
+
+class TestSetupLocal(BasicSetup):
+    """ Performs common setup tasks for running local tests. Other tests use this as base class"""
 
     def setUp(self):
         self.config_file = os.path.join(parent_folder, 'resources', 'local_test_env.ini')
-        self.config_parse = ConfigParser.ConfigParser()
         self.config_parse.optionxform = str
         self.config_parse.read(self.config_file)
         self.gns_folder = self.config_parse.get(ConfigParser.DEFAULTSECT, 'gns_folder')
-
+        self.ns = 8
+        self.lns = 1
+        self.lns_id = self.ns
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_ns', self.ns)
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_lns', 1)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_lns', self.lns)
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
-        trace_folder = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR, 'trace')
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'trace_folder', trace_folder)
-        self.trace_filename = get_trace_filename(trace_folder, self.ns)
+        self.local_output_folder = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR)
+        self.trace_folder = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR, 'trace')
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'trace_folder', self.trace_folder)
 
     def run_exp(self, requests):
-        """Not a test. Run experiments given a set of requests."""
-        write_tuple_array(requests, self.trace_filename, p=False)
+        """Not a test. Run experiments given a set of requests"""
+
+        workload_writer({self.lns_id: requests}, self.trace_folder)
+        # write_tuple_array(requests, self.trace_filename, p=False)
         work_dir = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR)
         # write config
 
@@ -69,7 +86,11 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
     """This is the baseline test which GNS is expected to pass under local tests. It tests several features
     of GNS for a 3 name server and 1 local name server  setup. It does not measure throughput of GNS"""
 
-    ns = 8
+    # ns = 8
+
+    special_char_set = '!@#$%^&*()-=_+{}|[]\\;\':",.<>?`~'
+
+    unsupported_special_chars = '/'
 
     def test_a_1name(self):
         """Test add, remove, lookup, and delete operations for a single name"""
@@ -81,6 +102,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
                     [name, RequestType.UPDATE],
                     [name, RequestType.LOOKUP], [delay_ms, RequestType.DELAY],
                     [name, RequestType.REMOVE]]
+
         exp_duration_sec = 10 + 2 * delay_ms / 1000
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration_sec))
         output_stats = self.run_exp(requests)
@@ -158,8 +180,8 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.test_a_1name()
 
     def test_c2_name_special_characters(self):
-        """ Test if we can handle special characters in name field
-        """
+        """ Test if we can handle special characters in name field"""
+
         delay_ms = 2500
         requests = []
         for ch in self.special_char_set:
@@ -184,8 +206,8 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.assertEqual(output_stats.remove, len(self.special_char_set), "Successful removes mismatch")
 
     def test_c3_name_special_characters_restart(self):
-        """ Test if log recovery works correctly for special characters
-        """
+        """ Test if log recovery works correctly for special characters"""
+
         # add names with special characters and do some write operations for each name
         delay_ms = 2500
         requests = []
@@ -246,7 +268,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
     # @unittest.expectedFailure
     # def test_d2_large_objects_test(self):
     #     """Stress test to check if we can handle large object of several MBs. This test is expected to fail when the
-    #     response latency becomes greater than the max wait time for a request at local name server (usually 10 sec). """
+    #     response latency becomes greater than the max wait time for a request at LNS (usually 10 sec) """
     #     large_sizes_kb = [1000, 2000, 4000, 8000, 16000, 32000]  #
     #     for size in large_sizes_kb:
     #         print 'Testing object size: ', size/1000, 'MB'
@@ -316,7 +338,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         delay_ms = 2500
 
         initial_version = 1
-        group_size = 5
+        group_size = min(5, self.ns)
         assert group_size <= self.ns
         num_group_changes = 3
 
@@ -337,12 +359,13 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
 
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration_sec))
         output_stats = self.run_exp(requests)
-        self.assertEqual(output_stats.requests, 1 + 4 * num_group_changes, "Total number of requests mismatch")
-        self.assertEqual(output_stats.success, 1 + 4 * num_group_changes, "Successful requests mismatch")
+        self.assertEqual(output_stats.requests, 1 + 5 * num_group_changes, "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, 1 + 5 * num_group_changes, "Successful requests mismatch")
         self.assertEqual(output_stats.read, 2 * num_group_changes, "Successful reads mismatch")
         self.assertEqual(output_stats.write, 2 * num_group_changes, "Successful writes mismatch")
         self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
         self.assertEqual(output_stats.remove, 0, "Successful removes mismatch")
+        self.assertEqual(output_stats.group_change, num_group_changes, "Successful group change mismatch")
 
     def test_i_group_change_1name_with_restart(self):
         """ Do multiple group changes for a name, and restart the system. Are requests for that name successful?"""
@@ -405,7 +428,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         name = 'test_name'
         delay_ms = 2500
         initial_version = 1
-        group_size = 5
+        group_size = min(5, self.ns)
         requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY]]
         version = initial_version + 1
         grp_change_request = [name, RequestType.GROUP_CHANGE, version,
@@ -421,11 +444,12 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.workload_conf.set(ConfigParser.DEFAULTSECT, 'ttl', 0)
 
         output_stats = self.run_exp(requests)
-        self.assertEqual(output_stats.requests, num_lookups + 1, "Total number of requests mismatch")
-        self.assertEqual(output_stats.success, num_lookups + 1, "Successful requests mismatch")
+        self.assertEqual(output_stats.requests, num_lookups + 2, "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, num_lookups + 2, "Successful requests mismatch")
         self.assertEqual(output_stats.read, num_lookups, "Successful reads mismatch")
         self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
         self.assertEqual(output_stats.read_cached, 0, "Successful cached reads mismatch")
+        self.assertEqual(output_stats.group_change, 1, "Successful group change mismatch")
 
         # with TTL > test duration, almost all reads return a cached response.
         self.workload_conf.set(ConfigParser.DEFAULTSECT, 'ttl', 100)
@@ -439,8 +463,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.assertGreater(output_stats.read_cached, 0.9*num_lookups, "Successful cached reads mismatch")
 
     def test_j2_ttl_caching_restarts(self):
-        """ Are TTL values recovered correctly on restarting the system?
-        """
+        """ Are TTL values recovered correctly on restarting the system?"""
 
         name = 'test_name'
 
@@ -502,7 +525,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         delay_ms = 2500
 
         initial_version = 1
-        group_size = 5
+        group_size = min(5, self.ns)
         assert group_size <= self.ns
 
         requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY]]
@@ -569,159 +592,13 @@ class FeatureTest1NodeLocal(FeatureTestMultiNodeLocal):
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', 1)
 
 
-class ThroughputTest3NodeLocal(TestSetupLocal):
-    """ Tests throughput of basic operations: Add, remove, lookup, delete for a 3-node GNS.
-    For each operation, we run a series of tests doubling the request rate each time until
-    maximum throughput is reached. These tests take tens of minutes to complete due to multiple
-    tests with each operation. """
-
-    ns = 3
-
-    # what fraction of requests must be successful for a throughput test to pass.
-    success_threshold = 1.0
-
-    def test_f_read_write_throughput(self):
-        """For 1 name, measure read write throughput with equal number of reads and writes"""
-        request_rate = 400
-        duration = 100
-        throughput = 0
-        try:
-            while True:
-                print 'Testing throughput ', request_rate, 'req/sec'
-                self.run_exp_reads_writes(request_rate, duration)
-                throughput = request_rate
-                request_rate *= 2
-        except AssertionError:
-            pass
-        print 'Read throughput:', throughput, 'req/sec. Write throughput:', throughput, 'writes/sec'
-
-    def test_g_add_throughput(self):
-        """Measures throughput of add requests"""
-        request_rate = 400
-        duration = 100
-        throughput = 0
-        try:
-            while True:
-                print 'Testing throughput', request_rate, 'req/sec'
-                self.run_exp_add(request_rate, duration)
-                throughput = request_rate
-                request_rate *= 2
-        except AssertionError:
-            pass
-        print 'Add Throughput:', throughput, 'req/sec. '
-
-    def test_h_remove_throughput(self):
-        """Measures throughput of add requests"""
-        request_rate = 400
-        duration = 200
-        throughput = 0
-        try:
-            while True:
-                print 'Testing throughput', request_rate, 'req/sec'
-                self.run_exp_add_remove(request_rate, duration)
-                throughput = request_rate
-                request_rate *= 2
-        except AssertionError:
-            pass
-        print 'Remove throughput:', throughput, 'req/sec. '
-
-    def run_exp_reads_writes(self, request_rate, exp_duration):
-        """Runs an experiment with equal number of reads and writes for a name at a given request rate.
-        It also checks if all requests are successful."""
-
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
-        name = 'test_name'
-        n = int(request_rate * exp_duration)
-        requests = [[name, RequestType.ADD]]
-        delay = 2000  # ms
-        requests.append([delay, RequestType.DELAY])  # wait after an add request to ensure name is added
-        for i in range(n):
-            requests.append([name, RequestType.LOOKUP])
-            requests.append([name, RequestType.UPDATE])
-        # wait before sending remove to ensure all previous requests are complete
-        requests.append([delay, RequestType.DELAY])
-        requests.append([name, RequestType.REMOVE])
-
-        output_stats = self.run_exp(requests)
-
-        self.assertEqual(output_stats.requests, 2 + n * 2, "Total number of requests mismatch")
-        # some read and write can fail at start of test while name is being added
-        self.assertEqual(output_stats.success, 2 + n * 2, "Successful requests mismatch")
-        self.assertEqual(output_stats.read, n, "Successful reads mismatch")
-        self.assertEqual(output_stats.write, n, "Successful writes mismatch")
-        self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
-        self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
-        return output_stats
-
-    def run_exp_add(self, request_rate, exp_duration):
-        """Runs an experiment which adds random records at given rate for given duration.
-        It also checks if all requests are successful."""
-
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
-        # name = 'test_name'
-        n = int(request_rate * exp_duration)
-        requests = []
-        name_length = 10
-        for i in range(n):
-            requests.append([gen_random_string(name_length), RequestType.ADD])
-
-        output_stats = self.run_exp(requests)
-
-        self.assertEqual(output_stats.requests, n, "Total number of requests mismatch")
-        # some read and write can fail at start of test while name is being added
-        self.assertEqual(output_stats.success, n, "Successful requests mismatch")
-        self.assertEqual(output_stats.add, n, "Successful adds mismatch")
-        return output_stats
-
-    def run_exp_add_remove(self, request_rate, exp_duration):
-        """ Runs an experiment which first add a set of names to GNS and then removes them.
-        """
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
-        # name = 'test_name'
-        n = int(request_rate * exp_duration)
-        requests = []
-        name_length = 10
-        for i in range(n / 2):
-            requests.append([gen_random_string(name_length), RequestType.ADD])
-        for i in range(n / 2):
-            requests.append([gen_random_string(name_length), RequestType.REMOVE])
-        output_stats = self.run_exp(requests)
-
-        self.assertEqual(output_stats.requests, n, "Total number of requests mismatch")
-        # some read and write can fail at start of test while name is being added
-        self.assertEqual(output_stats.success, n, "Successful requests mismatch")
-        self.assertEqual(output_stats.add, n, "Successful adds mismatch")
-        return output_stats
-
-
-class ThroughputTest1NodeLocal(ThroughputTest3NodeLocal):
-    """ Tests throughput of basic operations: Add, remove, lookup, delete for a 1-node GNS."""
-
-    ns = 1
-
-    def setUp(self):
-        FeatureTestMultiNodeLocal.setUp(self)
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', 1)
-
-
-def gen_random_string(size):
-    chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    s = ''
-    while len(s) < size:
-        s += chars[random.randint(0, len(chars) - 1)]
-    return s
-
-
-def get_new_group_members_str(node_ids, group_size):
-    nodes_str = [str(node) for node in get_new_group_members(node_ids, group_size)]
-    return ':'.join(nodes_str)
-
-
-def get_new_group_members(node_ids, group_size):
-    assert 3 <= group_size <= len(node_ids)
-    import random
-    # hosts = range(num_ns)
-    from copy import copy
-    node_ids_copy = copy(node_ids)
-    random.shuffle(node_ids_copy)
-    return node_ids_copy[:group_size]
+#
+# class ThroughputTest1NodeLocal(ThroughputTest3NodeLocal):
+#     """ Tests throughput for a single node setup. NEVER TESTED.
+#     """
+#     ns = 1
+#
+#     def setUp(self):
+#         FeatureTestMultiNodeLocal.setUp(self)
+#         self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', 1)
+#

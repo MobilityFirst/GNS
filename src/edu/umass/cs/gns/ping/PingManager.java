@@ -28,6 +28,8 @@ public class PingManager {
   private SparseMatrix<Long> pingTable; // the place we store all the sampled rtt values
   private final GNSNodeConfig gnsNodeConfig;
 
+  private boolean debug = false;
+
   public PingManager(int nodeId, GNSNodeConfig gnsNodeConfig) {
     this.nodeId = nodeId;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -56,9 +58,9 @@ public class PingManager {
       for (int id : gnsNodeConfig.getNodeIDs()) {
         try {
           if (id != nodeId) {
-            GNS.getLogger().fine("Send from " + nodeId + " to " + id);
+            if (debug) GNS.getLogger().fine("Send from " + nodeId + " to " + id);
             long rtt = pingClient.sendPing(id);
-            GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
+            if (debug) GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
             pingTable.put(id, windowSlot, rtt);
             //pingTable[id][windowSlot] = rtt;
             // update the configuration file info with the current average... the reason we're here
@@ -70,7 +72,7 @@ public class PingManager {
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
         }
       }
-      GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
+      if (debug) GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
       windowSlot = (windowSlot + 1) % WINDOWSIZE;
     }
   }

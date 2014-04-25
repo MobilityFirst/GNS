@@ -2,9 +2,7 @@ package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSDelayEmulator;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageExtractor;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.replicaController.DefaultRcCoordinator;
@@ -101,8 +99,14 @@ public class NameServer{
     // init transport
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
     if (Config.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
-    JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
-    GNSNIOTransport tcpTransport = new GNSNIOTransport(nodeID, gnsNodeConfig, worker);
+    GNSNIOTransportInterface tcpTransport;
+    if (Config.useGNSNIOTransport) {
+      JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
+      tcpTransport = new GNSNIOTransport(nodeID, gnsNodeConfig, worker);
+    } else {
+      ByteStreamToJSONObjects byteToJson = new ByteStreamToJSONObjects(nsDemultiplexer);
+      tcpTransport = new NioServer(nodeID, byteToJson, gnsNodeConfig);
+    }
     new Thread(tcpTransport).start();
 
     // init worker thread pool
@@ -112,7 +116,7 @@ public class NameServer{
     // be careful to give same 'nodeID' to everyone
 
     // init DB
-    MongoRecords mongoRecords = new MongoRecords(nodeID);
+    MongoRecords mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
 
     // initialize GNS
     GnsReconfigurable gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport,
@@ -127,8 +131,8 @@ public class NameServer{
     appCoordinator  = activeReplica.getCoordinator();
     GNS.getLogger().info("App (GNS) coordinator initialized");
 
-    ReplicaController rc = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
-            mongoRecords);
+    ReplicaController rc = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport,
+            threadPoolExecutor, mongoRecords);
     GNS.getLogger().info("Replica controller initialized");
 
     if (Config.singleNS) {
