@@ -27,7 +27,20 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 
-//import edu.umass.cs.gns.main.StartNameServer;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.commands.CommandModule;
+import edu.umass.cs.gns.commands.GnsCommand;
+import static edu.umass.cs.gns.httpserver.Defs.KEYSEP;
+import static edu.umass.cs.gns.httpserver.Defs.QUERYPREFIX;
+import static edu.umass.cs.gns.httpserver.Defs.VALSEP;
+import edu.umass.cs.gns.util.Util;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Map;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -35,12 +48,14 @@ import java.util.regex.Matcher;
  * @author westy
  */
 public class GnsHttpServer {
-
-  private static Protocol protocol = new Protocol();
-  public static String GNSPATH = GNS.GNS_URL_PATH;
-  public static int port = 8080;
-  public static String hostName = "127.0.0.1";
+  
+  private static final String GNSPATH = GNS.GNS_URL_PATH;
+  private static final int port = 8080;
+  private static final String hostName = "127.0.0.1";
   private static int localNameServerID;
+  
+  // handles command processing
+  private static final CommandModule commandModule = new CommandModule();
 
   public static void runHttp(int localNameServerID) {
     GnsHttpServer.localNameServerID = localNameServerID;
@@ -99,7 +114,7 @@ public class GnsHttpServer {
           String response;
           if (!action.isEmpty()) {
             GNS.getLogger().fine("Action: " + action + " Query:" + query);
-            response = protocol.processQuery(host, action, query);
+            response = processQuery(host, action, query);
           } else {
             response = Defs.BADRESPONSE + " " + Defs.NOACTIONFOUND;
           }
@@ -122,7 +137,55 @@ public class GnsHttpServer {
     }
   }
 
-// EXAMPLE THAT JUST RETURNS HEADERS SENT
+  /**
+   * Process queries for the http service. Converts the URI of e the HTTP query into
+   * the JSON Object format that is used by the CommandModeule class, then finds
+   * executes the matching command.
+   */
+ private static String processQuery(String host, String action, String queryString) {
+   // Set the host field. Used by the help command. Find a better way to to do this?
+   commandModule.setHost(host);
+   // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
+   // the signature, and the message signed.
+    String fullString = action + QUERYPREFIX + queryString; // for signature check
+    Map<String, String> queryMap = Util.parseURIQueryString(queryString);
+    //new command processing
+    queryMap.put(COMMANDNAME, action);
+    if (queryMap.keySet().contains(SIGNATURE)) {
+      String signature = queryMap.get(SIGNATURE);
+      String message = AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
+      queryMap.put(SIGNATUREFULLMESSAGE, message);
+    }
+    JSONObject json = new JSONObject(queryMap);
+    
+    // Now we execute the command
+    GnsCommand command = commandModule.lookupCommand(json);
+    try {
+      if (command != null) {
+        GNS.getLogger().fine("Executing command: " + command.toString());
+        //GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
+        return command.execute(json);
+      } else {
+        return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
+      }
+    } catch (JSONException e) {
+      e.printStackTrace();
+      return BADRESPONSE + " " + JSONPARSEERROR + " " + e;
+    } catch (NoSuchAlgorithmException e) {
+      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+    } catch (InvalidKeySpecException e) {
+      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+    } catch (SignatureException e) {
+      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+    } catch (InvalidKeyException e) {
+      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+    }
+  }
+ 
+ 
+ /**
+  * Returns info about the server.
+  */
   private static class EchoHandler implements HttpHandler {
 
     @Override
@@ -147,9 +210,6 @@ public class GnsHttpServer {
         String serverVersionInfo =
                 "Server Version: "
                 + Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String protocolVersionInfo =
-                "Protocol Version: "
-                + Protocol.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
         String recordVersionInfo =
                 "Field Access Version: "
                 + FieldAccess.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
@@ -181,7 +241,6 @@ public class GnsHttpServer {
 
         responseBody.write(buildVersionInfo.getBytes());
         responseBody.write(serverVersionInfo.getBytes());
-        responseBody.write(protocolVersionInfo.getBytes());
         responseBody.write(recordVersionInfo.getBytes());
         responseBody.write(accountVersionInfo.getBytes());
         responseBody.write(fieldMetadataVersionInfo.getBytes());
@@ -203,25 +262,7 @@ public class GnsHttpServer {
       }
     }
   }
-  private static String GNRS_IP = "23.21.120.250";
-
-  private static class IPHandler implements HttpHandler {
-
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-      String requestMethod = exchange.getRequestMethod();
-      if (requestMethod.equalsIgnoreCase("GET")) {
-        Headers responseHeaders = exchange.getResponseHeaders();
-        responseHeaders.set("Content-Type", "text/plain");
-        exchange.sendResponseHeaders(200, 0);
-
-        OutputStream responseBody = exchange.getResponseBody();
-
-        responseBody.write(GNRS_IP.getBytes());
-        responseBody.close();
-      }
-    }
-  }
+  
 
   public static String Version = "$Revision$";
 }
