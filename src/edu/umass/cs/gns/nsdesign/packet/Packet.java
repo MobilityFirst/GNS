@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
@@ -66,6 +71,7 @@ public class Packet {
     CONFIRM_UPDATE(21),
     // Lookup actives
     REQUEST_ACTIVES(30),
+    COMMAND(35),
     // Admin:
     DUMP_REQUEST(40),
     SENTINAL(41),

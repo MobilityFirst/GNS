@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign.packet;
 
 

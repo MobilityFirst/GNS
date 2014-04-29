@@ -8,7 +8,6 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -19,14 +18,16 @@ import org.json.JSONException;
 
 import java.text.ParseException;
 
-/*** DO NOT not use any class in package edu.umass.cs.gns.nsdesign ***/
-
+/**
+ * * DO NOT not use any class in package edu.umass.cs.gns.nsdesign **
+ */
 public class NSAccountAccess {
 
   public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurable activeReplica) {
     ResultValue accountResult = null;
     try {
-      accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+      accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
+              AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -34,7 +35,8 @@ public class NSAccountAccess {
       try {
         guid = lookupPrimaryGuid(guid, activeReplica);
         if (guid != null) {
-          accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+          accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
+                  AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
         }
       } catch (FieldNotFoundException e) {
       } catch (RecordNotFoundException e) {
@@ -57,14 +59,15 @@ public class NSAccountAccess {
    * otherwise returns null.
    * <p>
    * GUID = Globally Unique Identifier
-   * 
+   *
    * @param guid
    * @return a GUID
    */
   public static String lookupPrimaryGuid(String guid, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, 
+              AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -80,14 +83,15 @@ public class NSAccountAccess {
    * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
-   * 
+   *
    * @param name
    * @return a GUID
    */
   public static String lookupGuid(String name, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), name, null, AccountAccess.GUID).getKey(AccountAccess.GUID);
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), name, null, 
+              AccountAccess.GUID).getKey(AccountAccess.GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }
@@ -102,7 +106,7 @@ public class NSAccountAccess {
    * Obtains the guid info record from the database for GUID given.
    * <p>
    * GUID = Globally Unique Identifier<br>
-   * 
+   *
    * @param guid
    * @return an {@link edu.umass.cs.gns.clientsupport.GuidInfo} instance
    */
@@ -120,7 +124,8 @@ public class NSAccountAccess {
    * @return
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
-    ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
+    ResultValue guidResult = NSFieldAccess.lookupField(guid, 
+            AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
     if (!guidResult.isEmpty()) {
       try {
         return new GuidInfo(guidResult.toResultValueString());

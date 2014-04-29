@@ -126,6 +126,9 @@ public class Intercessor {
           break;
         case SELECT_RESPONSE:
           SelectHandler.processSelectResponsePackets(json);
+          break;
+        case COMMAND:
+          CommandRequestHandler.processCommandResponsePackets(json);
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON error: " + e);
