@@ -68,14 +68,12 @@ public class RemoveRecordPacket extends BasicPacket {
 
 
   /**
-   * ***********************************************************
    * Constructs a new RemoveRecordPacket with the given name and value.
    *
    * @param sourceId the originator of this packet (either a server Id or -1 to indicate The intercessor)
    * @param requestId  Unique identifier used by the entity making the initial request to confirm
    * @param name Host/domain/device name
    * @param localNameServerID Id of local nameserver sending this request.
-   * **********************************************************
    */
   public RemoveRecordPacket(int sourceId, int requestId, String name, int localNameServerID) {
     this.type = Packet.PacketType.REMOVE_RECORD;
@@ -87,11 +85,10 @@ public class RemoveRecordPacket extends BasicPacket {
   }
 
   /**
-   * ***********************************************************
    * Constructs a new RemoveRecordPacket from a JSONObject
    *
    * @param json JSONObject that represents this packet
-   * @throws org.json.JSONException **********************************************************
+   * @throws org.json.JSONException
    */
   public RemoveRecordPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
@@ -109,11 +106,10 @@ public class RemoveRecordPacket extends BasicPacket {
   }
 
   /**
-   * ***********************************************************
    * Converts AddRecordPacket object to a JSONObject
    *
    * @return JSONObject that represents this packet
-   * @throws org.json.JSONException **********************************************************
+   * @throws org.json.JSONException
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
@@ -173,6 +169,9 @@ public class RemoveRecordPacket extends BasicPacket {
     return sourceId;
   }
 
+  /**
+   * This really should be documented.
+   */
   public void changePacketTypeToRcRemove() {
     type = Packet.PacketType.RC_REMOVE;
   }

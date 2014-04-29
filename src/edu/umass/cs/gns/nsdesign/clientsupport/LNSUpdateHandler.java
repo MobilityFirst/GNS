@@ -7,11 +7,11 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -33,7 +33,7 @@ public class LNSUpdateHandler {
 
   private static final Object monitor = new Object();
   private static ConcurrentMap<Integer, NSResponseCode> updateResultMap = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
-  private static ConcurrentMap<Integer, Integer> outStandingQueries = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
+  private static ConcurrentMap<Integer, Integer> outStandingUpdates = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
   /**
@@ -67,7 +67,7 @@ public class LNSUpdateHandler {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
-    outStandingQueries.put(id, id);
+    outStandingUpdates.put(id, id);
     // activeReplica.getGNSNodeConfig() is a hack to get the first LNS
     // We need a means to find the closes LNS
     sendUpdateInternal(id, LNSQueryHandler.pickClosestLNServer(activeReplica), name, key, newValue, oldValue, argument, operation, activeReplica);
@@ -77,7 +77,7 @@ public class LNSUpdateHandler {
     updateResultMap.remove(id);
     return result;
   }
- 
+
   private static void sendUpdateInternal(int updateId, int recipientId, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurable activeReplica) {
     UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), updateId,
@@ -98,6 +98,44 @@ public class LNSUpdateHandler {
     }
   }
 
+  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value, GnsReconfigurable activeReplica) {
+    int id = nextRequestID();
+    outStandingUpdates.put(id, id);
+    int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
+    GNS.getLogger().info("Sending add: " + name + "->" + value + " to LNS " + recipientId);
+    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, new NameRecordKey(key), value, -1, GNS.DEFAULT_TTL_SECONDS);
+    try {
+      activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
+    } catch (IOException e) {
+      GNS.getLogger().severe("Problem sending packet to NS " + recipientId + ": " + e);
+    }
+    waitForResponsePacket(id);
+    NSResponseCode result = updateResultMap.get(id);
+    updateResultMap.remove(id);
+    return result;
+  }
+
+  public static NSResponseCode sendRemoveRecord(String name, GnsReconfigurable activeReplica) {
+    int id = nextRequestID();
+    outStandingUpdates.put(id, id);
+    int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
+    GNS.getLogger().info("Sending add: " + name + " to LNS " + recipientId);
+    RemoveRecordPacket packet = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, id, name, -1);
+    try {
+      activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
+    } catch (IOException e) {
+      GNS.getLogger().severe("Problem sending packet to NS " + recipientId + ": " + e);
+    }
+    waitForResponsePacket(id);
+    NSResponseCode result = updateResultMap.get(id);
+    updateResultMap.remove(id);
+    return result;
+  }
+
   /**
    * Handles a ConfirmUpdatePacket coming back to this NameServer from a Local Name Server
    *
@@ -109,7 +147,7 @@ public class LNSUpdateHandler {
     if (packet.isSuccess()) {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
-        if (outStandingQueries.remove(id) != null) {
+        if (outStandingUpdates.remove(id) != null) {
           GNS.getLogger().fine("First Update Response (" + id + ") Successful Received");
 
           updateResultMap.put(id, packet.getResponseCode());
@@ -120,7 +158,7 @@ public class LNSUpdateHandler {
       }
     } else {
       synchronized (monitor) {
-        if (outStandingQueries.remove(id) != null) {
+        if (outStandingUpdates.remove(id) != null) {
           GNS.getLogger().fine("First Error Update Response (" + id + ") Error Received: " + packet.getResponseCode().toString());
           updateResultMap.put(id, packet.getResponseCode());
           monitor.notifyAll();

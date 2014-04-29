@@ -3,10 +3,8 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.commands;
+package edu.umass.cs.gns.nsdesign.commands;
 
-import static edu.umass.cs.gns.clientsupport.Defs.*;
-import static edu.umass.cs.gns.httpserver.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -18,22 +16,22 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class GnsCommand implements Comparable<GnsCommand> {
+public abstract class NSCommand implements Comparable<NSCommand> {
 
-  protected CommandModule module;
+  protected NSCommandModule module;
 
   /**
    * Creates a new <code>ConsoleCommand</code> object
    * 
    * @param module
    */
-  public GnsCommand(CommandModule module) {
+  public NSCommand(NSCommandModule module) {
     this.module = module;
   }
 
   // We need to sort the commands to put the longer ones with the same command name first.
   @Override
-  public int compareTo(GnsCommand c) {
+  public int compareTo(NSCommand c) {
     int alphaResult = getCommandName().compareTo(c.getCommandName());
     // sort by number of arguments putting the longer ones first because we need to do longest match first.
     if (alphaResult == 0) {
@@ -63,35 +61,6 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    * @return <code>String</code> of the command description
    */
   public abstract String getCommandDescription();
-
-  /**
-   * Get the usage of the command.
-   * 
-   * @return <code>String</code> of the command usage ()
-   */
-  public String getUsage() {
-    String usage = "HTML Form: " + getHTMLForm() + NEWLINE
-            + getCommandDescription();
-    return usage;
-  }
-
-  public String getHTMLForm() {
-    StringBuilder result = new StringBuilder();
-    result.append(getCommandName());
-    String[] parameters = getCommandParameters();
-    String prefix = QUERYPREFIX;
-    for (int i = 0; i < parameters.length; i++) {
-      // special case to remove SIGNATUREFULLMESSAGE which isn't for HTML form
-      if (!SIGNATUREFULLMESSAGE.equals(parameters[i])) {
-        result.append(prefix);
-        result.append(parameters[i]);
-        result.append(VALSEP);
-        result.append("<" + parameters[i] + ">");
-        prefix = KEYSEP;
-      }
-    }
-    return result.toString();
-  }
 
   public String getCommandParametersString() {
     StringBuilder result = new StringBuilder();

@@ -147,11 +147,10 @@ public class AddRecordPacket extends BasicPacket {
   }
 
   /**
-   * ***********************************************************
    * Converts AddRecordPacket object to a JSONObject
    *
    * @return JSONObject that represents this packet
-   * @throws org.json.JSONException **********************************************************
+   * @throws org.json.JSONException
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
