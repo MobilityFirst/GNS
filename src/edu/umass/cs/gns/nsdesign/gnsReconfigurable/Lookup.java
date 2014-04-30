@@ -46,6 +46,13 @@ public class Lookup {
    *
    * @param dnsPacket
    * @param activeReplica
+   * @param noCoordinatorState
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
+   * @throws java.security.InvalidKeyException
+   * @throws java.security.spec.InvalidKeySpecException
+   * @throws java.security.NoSuchAlgorithmException
+   * @throws java.security.SignatureException
    */
   public static GNSMessagingTask executeLookupLocal(DNSPacket dnsPacket, GnsReconfigurable activeReplica,
                                                     boolean noCoordinatorState)
@@ -56,12 +63,8 @@ public class Lookup {
     GNSMessagingTask msgTask;
     // the only dns response we should see are coming in response to LNSQueryHandler requests
     if (!dnsPacket.isQuery()) {
-      // handle the special case of queries that were from this NS back to an LNS
-      //SiteToSiteQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
-      // new and not working
       LNSQueryHandler.handleDNSResponsePacket(dnsPacket, activeReplica);
       return null;
-      // todo handle this
     }
     // if all replicas are coordinating on a read request, then check if this node should reply to client.
     // whether coordination is done or not, only the replica receiving client's request replies to the client.

@@ -13,8 +13,7 @@ public class CommandPacket extends BasicPacket {
 
   private final static String REQUESTID = "reqID";
   private final static String COMMAND = "command";
-  private final static String RESPONSECODE = "code";
-  private final static String ERRORSTRING = "error";
+  private final static String RETURNVALUE = "returnValue";
   private final static String LNSID = "lnsid";
 
   /**
@@ -26,8 +25,7 @@ public class CommandPacket extends BasicPacket {
    * ID of the group between new set of active replicas.
    */
   private final JSONObject command;
-  private final NSResponseCode responseCode;
-  private final String errorMessage;
+  private String returnValue;
   private final int lnsID; // the local name server handling this request
   
 
@@ -41,23 +39,8 @@ public class CommandPacket extends BasicPacket {
     this.requestId = requestId;
     this.lnsID = lns;
     this.command = command;
-    this.responseCode = null;
-    this.errorMessage = null;
+    this.returnValue = null; // only set when the packet is ready to send back
 
-  }
-
-  /**
-   *
-   * @param requestId
-   * @param command
-   */
-  public CommandPacket(int requestId, int lns, JSONObject command, NSResponseCode responseCode, String errorMessage) {
-    this.setType(PacketType.COMMAND);
-    this.requestId = requestId;
-    this.lnsID = lns;
-    this.command = command;
-    this.responseCode = responseCode;
-    this.errorMessage = errorMessage;
   }
 
   public CommandPacket(JSONObject json) throws JSONException {
@@ -65,8 +48,7 @@ public class CommandPacket extends BasicPacket {
     this.requestId = json.getInt(REQUESTID);
     this.lnsID = json.getInt(LNSID);
     this.command = json.getJSONObject(COMMAND);
-    this.responseCode = json.has(RESPONSECODE) ? NSResponseCode.getResponseCode(json.getInt(RESPONSECODE)) : null;
-    this.errorMessage = json.has(ERRORSTRING) ? json.optString(ERRORSTRING, null) : null;
+    this.returnValue = json.has(RETURNVALUE) ? json.optString(RETURNVALUE, null) : null;
   }
 
   /**
@@ -82,11 +64,8 @@ public class CommandPacket extends BasicPacket {
     json.put(REQUESTID, this.requestId);
     json.put(LNSID, lnsID);
     json.put(COMMAND, this.command);
-    if (responseCode != null) {
-      json.put(RESPONSECODE, responseCode.name());
-    }
-    if (errorMessage != null) {
-      json.put(ERRORSTRING, errorMessage);
+    if (returnValue != null) {
+      json.put(RETURNVALUE, returnValue);
     }
     return json;
   }
@@ -107,12 +86,12 @@ public class CommandPacket extends BasicPacket {
     return command;
   }
 
-  public NSResponseCode getResponseCode() {
-    return responseCode;
+  public String getReturnValue() {
+    return returnValue;
   }
 
-  public String getErrorMessage() {
-    return errorMessage;
+  public void setReturnValue(String returnValue) {
+    this.returnValue = returnValue;
   }
 
 }

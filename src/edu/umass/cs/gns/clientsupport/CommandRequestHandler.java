@@ -50,11 +50,7 @@ public class CommandRequestHandler {
     }
     waitForResponsePacket(id);
     CommandPacket packet = resultsMap.get(id);
-    if (!packet.getResponseCode().isAnError()) {
-      return Defs.OKRESPONSE;
-    } else {
-      return Defs.BADRESPONSE + " " + packet.getResponseCode().getProtocolCode() + " " + packet.getErrorMessage();
-    }
+    return packet.getReturnValue();
   }
   
   /**

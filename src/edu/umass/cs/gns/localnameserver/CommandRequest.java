@@ -22,8 +22,8 @@ public class CommandRequest {
   public static void handlePacketCommandRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
 
     CommandPacket packet = new CommandPacket(incomingJSON);
-    if (packet.getResponseCode() == null) {
-      // PACKET IS GONE OUT TO A NAME SERVER
+    if (packet.getReturnValue() == null) {
+      // PACKET IS GOING OUT TO A NAME SERVER
       // Pick one NS to send it to
       // This should pick a Nameserver using the same method as a query!!
       int serverID = LocalNameServer.getGnsNodeConfig().getClosestNameServer();

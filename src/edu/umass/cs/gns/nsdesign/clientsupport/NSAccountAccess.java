@@ -74,7 +74,7 @@ public class NSAccountAccess {
   public static String lookupPrimaryGuid(String guid, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, 
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
               AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
@@ -98,7 +98,7 @@ public class NSAccountAccess {
   public static String lookupGuid(String name, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), name, null, 
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), name, null,
               AccountAccess.GUID).getKey(AccountAccess.GUID);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
@@ -132,7 +132,7 @@ public class NSAccountAccess {
    * @return
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
-    ResultValue guidResult = NSFieldAccess.lookupField(guid, 
+    ResultValue guidResult = NSFieldAccess.lookupField(guid,
             AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
     if (!guidResult.isEmpty()) {
       try {
@@ -161,7 +161,7 @@ public class NSAccountAccess {
     }
     return null;
   }
-  
+
   private static final String VERIFY_COMMAND = "account_verify";
   private static final String EMAIL_BODY = "This is an automated message informing you that an account has been created for %s on the GNS server.\n"
           + "To verify this account you can enter this query into a browser:\n\n"
@@ -552,12 +552,9 @@ public class NSAccountAccess {
   }
 
   private static boolean updateAccountInfo(AccountInfo accountInfo, GnsReconfigurable activeReplica) {
-
     try {
-      ResultValue newvalue;
-      newvalue = accountInfo.toDBFormat();
       if (!LNSUpdateHandler.sendUpdate(accountInfo.getPrimaryGuid(), AccountAccess.ACCOUNT_INFO,
-              new ResultValue(Arrays.asList(newvalue)), UpdateOperation.REPLACE_ALL, activeReplica).isAnError()) {
+              accountInfo.toDBFormat(), UpdateOperation.REPLACE_ALL, activeReplica).isAnError()) {
         return true;
       }
     } catch (JSONException e) {
@@ -567,12 +564,9 @@ public class NSAccountAccess {
   }
 
   private static boolean updateGuidInfo(GuidInfo guidInfo, GnsReconfigurable activeReplica) {
-
     try {
-      ResultValue newvalue;
-      newvalue = guidInfo.toDBFormat();
       if (!LNSUpdateHandler.sendUpdate(guidInfo.getGuid(), AccountAccess.GUID_INFO,
-              new ResultValue(Arrays.asList(newvalue)), UpdateOperation.REPLACE_ALL, activeReplica).isAnError()) {
+              guidInfo.toDBFormat(), UpdateOperation.REPLACE_ALL, activeReplica).isAnError()) {
         return true;
       }
     } catch (JSONException e) {

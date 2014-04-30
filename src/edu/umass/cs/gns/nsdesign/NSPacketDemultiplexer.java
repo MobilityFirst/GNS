@@ -42,7 +42,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
           switch (type) {
             case COMMAND:
-              CommandProcessor.processCommand(new CommandPacket(json).getCommand(), nameServer.getGnsReconfigurable());
+              CommandProcessor.processCommandPacket(new CommandPacket(json), nameServer.getGnsReconfigurable());
               break;
             case UPDATE:
               // TODO define a different packet type for upserts

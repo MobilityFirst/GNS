@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import org.json.JSONException;
 import org.json.JSONObject;

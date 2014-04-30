@@ -10,8 +10,9 @@ package edu.umass.cs.gns.nsdesign.commands;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -26,6 +27,14 @@ import org.json.JSONObject;
 public class CommandProcessor {
   
   private static final NSCommandModule commandModule = new NSCommandModule();
+  
+  public static void processCommandPacket(CommandPacket packet, GnsReconfigurable gnsReconfigurable) throws IOException, JSONException{
+    String returnValue = processCommand(packet.getCommand(), gnsReconfigurable);
+    packet.setReturnValue(returnValue);
+     GNS.getLogger().info("NS" + gnsReconfigurable.getNodeID() + " sending back to LNS " + packet.getLnsID()
+             + " command result: " + returnValue );
+    gnsReconfigurable.getNioServer().sendToID(packet.getLnsID(), packet.toJSONObject());
+  }
   
   public static String processCommand(JSONObject json, GnsReconfigurable gnsReconfigurable) {
     // not sure if this is the best way to do this
