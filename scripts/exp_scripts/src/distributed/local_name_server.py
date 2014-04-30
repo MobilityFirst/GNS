@@ -152,7 +152,7 @@ def run_local_name_server(node_id, config_file, node_config_file, update_trace, 
     check_file(local_name_server_jar)
     check_file(node_config_file)
 
-    command = 'nohup ' + java_bin + '/java -Xmx3000m -cp ' + local_name_server_jar + ' ' + exp_config.lns_main
+    command = 'nohup ' + java_bin + '/java -cp ' + local_name_server_jar + ' ' + exp_config.lns_main
 
     command += ' ' + ID + ' ' + str(node_id)
     command += ' ' + NAMESERVER_FILE + ' ' + node_config_file

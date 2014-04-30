@@ -188,6 +188,10 @@ def initialize(filename):
         global wfile
         wfile = parser.get(ConfigParser.DEFAULTSECT, 'wfile')
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'replication_interval'):
+        global replication_interval
+        replication_interval = parser.getint(ConfigParser.DEFAULTSECT, 'replication_interval')
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'failed_nodes'):  # multiple failed nodes are concatenated by ':'
         global failed_nodes
         failed_nodes = parser.get(ConfigParser.DEFAULTSECT, 'failed_nodes').split(':')

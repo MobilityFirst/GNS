@@ -265,16 +265,16 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
             self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size)
             self.test_a_1name()
 
-    # @unittest.expectedFailure
-    # def test_d2_large_objects_test(self):
-    #     """Stress test to check if we can handle large object of several MBs. This test is expected to fail when the
-    #     response latency becomes greater than the max wait time for a request at LNS (usually 10 sec) """
-    #     large_sizes_kb = [1000, 2000, 4000, 8000, 16000, 32000]  #
-    #     for size in large_sizes_kb:
-    #         print 'Testing object size: ', size/1000, 'MB'
-    #         self.config_parse.set(ConfigParser.DEFAULTSECT, "is_debug_mode", False)
-    #         self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size)
-    #         self.test_a_1name()
+    @unittest.expectedFailure
+    def test_d2_large_objects_test(self):
+        """Stress test to check if we can handle large object of several MBs. This test is expected to fail when the
+        response latency becomes greater than the max wait time for a request at LNS (usually 10 sec) """
+        large_sizes_kb = [1000, 2000, 4000, 8000, 16000, 32000]  #
+        for size in large_sizes_kb:
+            print 'Testing object size: ', size/1000, 'MB'
+            self.config_parse.set(ConfigParser.DEFAULTSECT, "is_debug_mode", False)
+            self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size)
+            self.test_a_1name()
 
     def test_e_1name_read_write_emulated_latency(self):
         """For 1 name, measure read and write latencies while emulating wide-area latency between nodes"""
@@ -553,6 +553,21 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
         self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
 
+    def test_l_dynamic_replication(self):
+        """ Test dynamic replication in GNS based on read rate, write rate, and geo-distribution of LNS"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, "replication_interval", str(5))
+        request_rate = 50
+        duration = 50
+        self.run_exp_reads_writes(request_rate, duration)
+
+    @unittest.expectedFailure
+    def test_m_static_replication(self):
+        """ Tests if static replication works in GNS. In this case, replicas of a name are co-located with replica
+        controllers and never change their location"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, "scheme", "static")
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(self.ns))
+        self.test_a_1name()
+
     def run_exp_reads_writes(self, request_rate, exp_duration):
         """Runs an experiment with equal number of reads and writes for a name at a given request rate.
         It also checks if all requests are successful."""
@@ -563,6 +578,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         requests = [[name, RequestType.ADD]]
         delay = 2000  # ms
         requests.append([delay, RequestType.DELAY])  # wait after an add request to ensure name is added
+        requests.append([request_rate*2, RequestType.RATE])
         for i in range(n):
             requests.append([name, RequestType.LOOKUP])
             requests.append([name, RequestType.UPDATE])

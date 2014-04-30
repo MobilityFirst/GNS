@@ -12,19 +12,20 @@ __author__ = 'abhigyan'
 
 class RequestType:
 
-    LOOKUP = 1
-    UPDATE = 2
-    ADD = 3
-    REMOVE = 4
-    GROUP_CHANGE = 5
-    DELAY = 6  # this is not a request. it introduces delay between the preceding and the next
+    LOOKUP = '1'
+    UPDATE = '2'
+    ADD = '3'
+    REMOVE = '4'
+    GROUP_CHANGE = '5'
+    DELAY = '6'  # this is not a request. it introduces delay between the preceding and the next
             # request. the name field for DELAY entry is an integer that specifies the delay.
-    RATE = 7   # sends subsequent requests at given rate/sec. rate can be specified multiple
+    RATE = '7'   # sends subsequent requests at given rate/sec. rate can be specified multiple
                # times during a trace to change the rate of later requests
 
 class WorkloadParams:
     OBJECT_SIZE = 'object_size_kb'
     TTL = 'ttl'
+    DURATION = 'duration'
 
 
 def get_trace_filename(trace_folder, client_id):

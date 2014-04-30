@@ -25,14 +25,11 @@ paxos_log_folder = '/home/ec2-user/paxos_log/'  # remote folder where paxos logs
 db_folder = '/home/ec2-user/gnsdb/'  # remote folder where mongodb will store its logs
 
 mongo_sleep = 20
-ns_sleep = 5
+ns_sleep = 1
 experiment_run_time = 60  # duration for which requests are sent
-extra_wait = 30
+extra_wait = 20
 
 failed_nodes = None
-
-scheme = 'locality'
-schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_all': 4}
 
 # if True, all database and paxos state is cleared before running an experiment
 clean_start = True
@@ -58,14 +55,12 @@ update_trace = ''  # get_update_folder(output_folder) #'/home/abhigyan/gnrs/ec2_
 # folder where config files for each node are generated: this is not necessary anymore
 #config_folder = os.path.join(output_folder, 'configFolder') #'
 
-
 # def get_lookup_folder(output_folder):
 #     return os.path.join(output_folder, 'workload/lookupTrace')
 #
 #
 # def get_update_folder(output_folder):
 #     return os.path.join(output_folder, 'workload/updateTrace')
-
 
 ns_geo_file = 'abcd'
 lns_geo_file = 'abcd'    # needed for generating workload
@@ -120,8 +115,8 @@ primary_name_server = 3  # Number of primary name servers. Must be less than num
                          # To run with static placement, set primary_name_server to the number of replicas per name.
                          # and set replication_interval to a value more than the duration of the experiment.
 
-replication_interval = 100000   # (in seconds). Intervals at which auspice compute new set of active replicas.
-
+replication_interval = 100000   # (in seconds). Intervals at which name servers compute new set of active replicas.
+                                # and local name servers sends votes to name servers
 
 # if True, more detailed log messages are printed
 is_debug_mode = False
@@ -135,6 +130,16 @@ emulate_ping_latencies = False
 # variation in latency emulation
 variation = 0.10
 
+event_file = None  # file with list of events at nodes, e.g., failure, restart, node addition, node removal
+
+scheme = 'locality'
+
+## do not edit these variables ## choose scheme using variable 'scheme'
+is_beehive_replication = False
+is_location_replication = False
+is_random_replication = False
+is_static_replication = False
+
 ################# LNS parameters ######################
 
 wfile = None   # contains workload parameters (simulated by local name servers)
@@ -143,8 +148,8 @@ run_http_server = False
 load_balancing = False
 
 numberOfTransmissions = 3
-maxQueryWaitTime = 10100
-queryTimeout = 2000           # query timeout interval
+maxQueryWaitTime = 20100
+queryTimeout = 5000           # query timeout interval
 adaptiveTimeout = False
 delta = 0.05
 mu = 1.5
@@ -154,16 +159,14 @@ lns_main = 'edu.umass.cs.gns.main.StartLocalNameServer'
 
 cache_size = 1000000
 
+#
 ################## NS parameters ######################
-
 
 mongo_port = 28123
 
-normalizing_constant = 1  # this value is used. set in name-server.py
+normalizing_constant = 1.0
 
 name_server_selection_vote_size = 5
-
-#paxos_log_folder = 'paxos_log/'
 
 min_replica = 3
 max_replica = 100
@@ -184,53 +187,28 @@ failure_detection_timeout_interval = 28
 
 read_coordination = False
 
+no_paxos_log = False
+
 quit_after_time = -1
 quit_node_id = -1
 
 ##################### LOGGING #########################
 
-nslog = 'WARNING'
+nslog = 'SEVERE'
 nslogstat = 'FINE'  # records write propagation times
-lnslog = 'WARNING'
+lnslog = 'SEVERE'
 lnslogstat = 'FINE'
 
-##################### SCHEMES #########################
 
-if scheme not in schemes:
-    print 'ERROR: Scheme name not valid:', scheme, 'Valid scheme names:', schemes.keys()
-    sys.exit(2)
-
-## do not edit these variables ## choose scheme using variable 'scheme'
-is_beehive_replication = False
-is_location_replication = False
-is_random_replication = False
-is_static_replication = False
-
-if scheme == 'locality':
-    is_location_replication = True
-elif scheme == 'uniform':
-    is_random_replication = True
-elif scheme == 'static3':
-    is_static_replication = True
-elif scheme == 'replicate_all':
-    assert False
-    is_static_replication = True
-    primary_name_server = num_ns
-elif scheme == 'beehive':
-    assert False
-    is_beehive_replication = True
-    load_balancing = False
+#### methods for parsing options in config file
 
 
 def initialize(filename):
     """ Initializes the parameters above based on given config file"""
     parser = ConfigParser.ConfigParser()
     parser.read(filename)
-
     os.system('cat ' + filename)
-
     initialize_env_variables(parser)
-
     initialize_gns_parameters(parser)
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'experiment_run_time'):
@@ -253,12 +231,22 @@ def initialize(filename):
         global node_config_folder
         node_config_folder = parser.get(ConfigParser.DEFAULTSECT, 'config_folder')
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'event_file'):
+        global event_file
+        event_file = parser.get(ConfigParser.DEFAULTSECT, 'event_file')
+
+    # this must be after 'primary_name_server' parameter is parsed
+    initialize_replication()
+
 
 def initialize_gns_parameters(parser):
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server'):
         global primary_name_server
         primary_name_server = parser.getint(ConfigParser.DEFAULTSECT, 'primary_name_server')
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'scheme'):
+        global scheme
+        scheme = parser.get(ConfigParser.DEFAULTSECT, 'scheme')
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'is_experiment_mode'):
         global is_experiment_mode
@@ -276,8 +264,42 @@ def initialize_gns_parameters(parser):
         global read_coordination
         read_coordination = parser.getboolean(ConfigParser.DEFAULTSECT, 'read_coordination')
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'no_paxos_log'):
+        global no_paxos_log
+        no_paxos_log = parser.getboolean(ConfigParser.DEFAULTSECT, 'no_paxos_log')
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'replication_interval'):
+        global replication_interval
+        replication_interval = parser.getint(ConfigParser.DEFAULTSECT, 'replication_interval')
+
+
+def initialize_replication():
+    """ Initializes type of replication used by GNS"""
+
+    schemes = ['beehive', 'locality', 'uniform', 'static', 'replicate_all']
+
+    assert scheme in schemes
+
+    global is_location_replication, is_random_replication, is_static_replication, is_beehive_replication
+    if scheme == 'locality':
+        is_location_replication = True
+    elif scheme == 'uniform':
+        is_random_replication = True
+    elif scheme == 'static':
+        is_static_replication = True
+    elif scheme == 'replicate_all':
+        assert False
+        is_static_replication = True
+        primary_name_server = num_ns
+    elif scheme == 'beehive':
+        assert False
+        is_beehive_replication = True
+        load_balancing = False
+
 
 def initialize_env_variables(parser):
+    """ Initializes variables related to the environment in which test is run"""
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'local_output_folder'):
         global local_output_folder
         local_output_folder = parser.get(ConfigParser.DEFAULTSECT, 'local_output_folder')

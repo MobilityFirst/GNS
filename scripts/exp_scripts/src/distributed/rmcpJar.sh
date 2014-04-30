@@ -16,7 +16,7 @@ jar_file_remote=$7
 #pssh -l umass_bittorrent -h /tmp/pl_nodes 'rm GNS.jar'
 echo "Create folder at remote dirs where jar will be copied ... "
 cat $pl_ns $pl_lns | parallel -j+100 ssh -l $user -i $ssh_key  -oConnectTimeout=60 -oStrictHostKeyChecking=no {} "mkdir -p $remote_jar_folder"
-echo "Copying jar from $local_jar to $jar_file_remote "
+echo "Syncing jar from $local_jar to $jar_file_remote "
 cat $pl_ns $pl_lns | parallel -j+100 rsync -e \"ssh -i $ssh_key\" $local_jar $user@{}:$jar_file_remote
 
 #echo "Copy GNS.jar to nodes ..."

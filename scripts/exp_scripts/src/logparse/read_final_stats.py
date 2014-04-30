@@ -59,7 +59,8 @@ class FinalStats:
             self.add_failed = int(keys_values['Failed-Add'])
             self.remove_failed = int(keys_values['Failed-Remove'])
             self.group_change = int(keys_values['GroupChange'])
-
+        else:
+            print "\nERROR: Summary file does not exist: " + summary_file
         latency_file = os.path.join(stats_folder, 'latency_stats.txt')
         if os.path.exists(latency_file):
             keys_values = read_keys_values(latency_file)
@@ -83,3 +84,7 @@ class FinalStats:
 
 
 
+if __name__ == '__main__':
+    stats = FinalStats(sys.argv[1])
+    print 'Total requests: ', stats.requests
+    print 'Successful requests: ', stats.success

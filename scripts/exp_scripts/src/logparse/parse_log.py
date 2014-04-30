@@ -94,11 +94,13 @@ def parse_log(log_files_dir, output_dir, filter=None):
 
     plot_groupchange_latency(log_files_dir)
 
-    from latency_over_time import failed_over_time, latency_over_time
+    from latency_over_time import failed_over_time, latency_over_time, throughput_over_time_bin
 
     failed_over_time(os.path.join(output_dir, 'all_tuples.txt'))
 
     latency_over_time(os.path.join(output_dir, 'all_tuples.txt'))
+
+    throughput_over_time_bin(os.path.join(output_dir, 'all_tuples.txt'))
 
     # Abhigyan: might enable these stats in future
 
@@ -350,7 +352,8 @@ def get_host_latencies(filenames, hostname, filter):
     return read_l1, write_l1, add_l1, remove_l1, group_change_l1, host_tuples1, ping_host1, closest_host1
 
 
-first_start = -1  # first successful request at a LNS was recorded at this time, used to assign a time to other requests at that LNS.
+first_start = -1  # first successful request at a LNS was recorded at this time, used to assign a time to other
+# requests at that LNS
 
 
 def get_latencies(filecount, filename, hostname, filter=None):

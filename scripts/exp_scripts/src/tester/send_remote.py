@@ -13,7 +13,7 @@ sys.path.append(parent_folder)
 local_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 
 # config file for remote node
-config_file = os.path.join(parent_folder, 'resources', 'skuld_env.ini')
+config_file = os.path.join(parent_folder, 'resources', 'ec2_env.ini')
 
 ssh_key = '/Users/abhigyan/.ssh/id_rsa'
 user = 'abhigyan'
@@ -26,11 +26,11 @@ os.system('ssh -i ' + ssh_key + ' ' + user + '@' + remote_host + ' " mkdir -p " 
 print 'Syncing jar ... '
 os.system('rsync -e "ssh  -i ' + ssh_key + ' " ' + local_jar + ' ' + user + '@' + remote_host + ':' + remote_skuld_folder)
 
-print 'Copying script folder ... '
+print 'Syncing script folder ... '
 # folder containing all scripts
 os.system('rsync -e "ssh  -i ' + ssh_key + ' " -r ' + parent_folder + ' ' + user + '@' + remote_host + ':' + remote_skuld_folder)
 
-print 'Syncing skuld env file ... '
+print 'Syncing env file ... ', config_file
 # TODO we do not know how to supply a parameter to a unit test
 remote_conf_file = os.path.join(remote_skuld_folder, 'src', 'resources', 'distributed_test_env.ini')
 os.system('rsync -e "ssh  -i ' + ssh_key + ' " ' + config_file + ' ' + user + '@' + remote_host + ':' + remote_conf_file)

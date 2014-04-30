@@ -39,11 +39,41 @@ def latency_over_time(tuples_file):
     
     from write_array_to_file import write_array
     filename = os.path.join(folder, 'latency-over-time.txt')
-    write_array(select_lines, filename, p = True)
+    write_array(select_lines, filename, p=True)
     try:
         os.system('cd ' + folder + '; gnuplot ' + gnuplot_file_latency)
     except:
         print 'ERROR: gnuplot error'
+
+
+def throughput_over_time_bin(tuples_file):
+    """ List of successful requests in each time window
+    """
+    bin_duration = 5  # seconds
+    num_bins = 2000  # assuming no experiment is more than 10000 sec
+    req_by_time = [0] * num_bins
+
+    folder = os.path.split(tuples_file)[0]
+    f = open(tuples_file)
+    lines = f.readlines()
+    max_t = -1
+    for line in lines:
+        tokens = line.split()
+        if tokens[5] == 'w' or tokens[5] == 'r' or tokens[5] == 'a' or tokens[5] == 'd':
+            t = int(float(tokens[6]) / 1000.0 / bin_duration)
+            if t >= 0:
+                assert len(req_by_time) > t
+                req_by_time[t] += 1
+                max_t = max(t, max_t)
+    if max_t != -1:
+        req_by_time = req_by_time[: max_t]
+        output_tuples = []
+        for i, t in enumerate(req_by_time):
+            output_tuples.append([i*bin_duration, t])
+        filename = os.path.join(folder, 'throughput-over-time.txt')
+        from write_array_to_file import write_tuple_array
+        write_tuple_array(output_tuples, filename, p=True)
+
 
 
 def failed_over_time(tuples_file):

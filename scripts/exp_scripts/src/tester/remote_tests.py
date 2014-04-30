@@ -5,11 +5,9 @@ import sys
 import inspect
 import random
 
-
 script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
 parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
-
 
 import distributed.exp_config
 from logparse.read_final_stats import FinalStats
@@ -17,10 +15,14 @@ from nodeconfig.node_config_writer import deployment_config_writer
 from nodeconfig.node_config_latency_calculator import default_latency_calculator
 from workload.write_workload import RequestType, WorkloadParams, workload_writer
 from test_utils import *
+from util.exp_events import NodeCrashEvent, write_events_to_file
+from workload.gen_add_requests import gen_add_requests
+from workload.gen_geolocality_workload import gen_geolocality_trace
 
 import local_tests
 
 __author__ = 'abhigyan'
+
 
 class TestSetupRemote(local_tests.BasicSetup):
     """ Performs common setup tasks for running distributed tests. Other tests use this as base class"""
@@ -30,6 +32,8 @@ class TestSetupRemote(local_tests.BasicSetup):
 
     # list of nodes to run local name server
     lns_file = None
+
+    lns_geo_file = None
 
     def setUp(self):
 
@@ -46,33 +50,37 @@ class TestSetupRemote(local_tests.BasicSetup):
         self.ns = get_line_count(self.ns_file)
         self.lns_file = self.config_parse.get(ConfigParser.DEFAULTSECT, 'lns_file')
         self.lns = get_line_count(self.lns_file)
+        if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'lns_geo_file'):
+            self.lns_geo_file = self.config_parse.get(ConfigParser.DEFAULTSECT, 'lns_geo_file')
 
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
         self.trace_folder = os.path.join(self.local_output_folder, 'trace')
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'update_trace', self.trace_folder)
 
     def run_exp(self, requests):
-        """Not a test. Run experiments given a set of requests."""
-        tmp_nsfile = self.ns_file
+        """Run experiments given a set of requests for a single local name server"""
+
+        workload_writer({self.ns: requests}, self.trace_folder)
+        return self.run_exp_multi_lns()
+
+    def run_exp_multi_lns(self):
+        """ Runs experiments with multiple local name servers sending requests"""
+
+        tmp_ns_file = self.ns_file
         if self.ns != get_line_count(self.ns_file):
             # write a new ns file with only 'self.ns' name servers
-            tmp_nsfile = '/tmp/ns_file'
-            fw = open(tmp_nsfile, 'w')
+            tmp_ns_file = '/tmp/ns_file'
+            fw = open(tmp_ns_file, 'w')
             for i, line in enumerate(open(self.ns_file)):
                 fw.write(line)
                 if i == self.ns - 1:
                     break
             fw.close()
 
-            self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_file', tmp_nsfile)
-
-        assert self.ns == get_line_count(tmp_nsfile)
-
-        lns_id = self.ns
-        workload_writer({lns_id: requests}, self.trace_folder)
+            self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_file', tmp_ns_file)
 
         node_config_file = os.path.join(self.local_output_folder, 'node_config_file')
-        deployment_config_writer(tmp_nsfile, self.lns_file, node_config_file)
+        deployment_config_writer(tmp_ns_file, self.lns_file, node_config_file)
 
         node_config_folder = os.path.join(self.local_output_folder, 'node_config_folder')
         default_latency_calculator(node_config_file, node_config_folder, filename_id=False)
@@ -86,6 +94,8 @@ class TestSetupRemote(local_tests.BasicSetup):
 
         if self.exp_output_folder is not None and self.exp_output_folder != '':
             self.config_parse.set(ConfigParser.DEFAULTSECT, 'local_output_folder', self.exp_output_folder)
+        else:
+            self.exp_output_folder = self.local_output_folder
 
         # write the config file here
         self.config_parse.write(open(temp_config_file, 'w'))
@@ -117,9 +127,8 @@ class ThroughputTestDistributed(TestSetupRemote):
     # what fraction of requests must be successful for a throughput test to pass.
     success_threshold = 1.0
 
-    def test_a_read_write_latency(self):
+    def test_a_latency(self):
         """ Measures read and write latency for varying number of replicas at low load"""
-
         num_names = 10000
         num_replica_set = range(3, self.ns + 1, 2)
         print "Replica set: ", num_replica_set
@@ -130,10 +139,15 @@ class ThroughputTestDistributed(TestSetupRemote):
             print 'Testing read/write latency with replicas =', num_replica, 'Folder =', self.exp_output_folder
             self.run_latency_test(num_replica, num_names)
 
-    def test_b_read_write_latency(self):
+    def test_b_latency_read_coordination(self):
         """ Measures read latency when we replicas coordinate on reads also"""
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'read_coordination', True)
-        self.test_a_read_write_latency()
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'read_coordination', str(True))
+        self.test_a_latency()
+
+    def test_b1_latency_no_log(self):
+        """ Measures latency when paxos does not write any messages to disk"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'no_paxos_log', str(True))
+        self.test_b_latency_read_coordination()
 
     def test_c_group_change_latency(self):
         """ Measure latency of group changes in GNS. LNS sends group change requests and NS replies back to LNS
@@ -148,23 +162,27 @@ class ThroughputTestDistributed(TestSetupRemote):
             print 'Testing group change latency with replicas =', num_replica, 'Folder =', self.exp_output_folder
             self.run_group_change_test(num_replica, num_names)
 
+    def test_c1_group_change_latency_nolog(self):
+        """Measures latency of group changes when paxos does not write any messages to disk"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'no_paxos_log', str(True))
+        self.test_c_group_change_latency()
+
     def test_d_write_throughput(self):
         """ Run write throughput tests for varying number of replicas of name.
         Number of name servers equals number of replicas so that all names are replicated at all locations."""
 
-        num_names = 10000
-        num_replica_set = range(5, self.ns + 1, 2)
+        num_names = 100
+        num_replica_set = range(3, self.ns + 1, 2)
         print "Replica set: ", num_replica_set
         for num_replica in num_replica_set:
             print 'Testing write throughput with replicas =', num_replica
             self.run_write_throughput_test(num_replica, num_names)
 
-
     def test_e_coordinated_read_throughput(self):
         """ Run (coordinated) read throughput tests for varying number of name servers.
         Number of name servers equals number of replicas so that all names are replicated at all locations."""
 
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'read_coordination', True)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'read_coordination', str(True))
 
         num_names = 10000
         num_replica_set = range(3, self.ns + 1, 2)
@@ -183,13 +201,58 @@ class ThroughputTestDistributed(TestSetupRemote):
             print 'Testing group change throughput with replicas =', num_replica
             self.run_group_change_throughput_test(num_replica, num_names)
 
-    def test_g_object_size_throughput(self):
-        """ Test write throughput with a 1KB object size. Other experiments are with a 10-byte object size"""
+    def test_g_write_throughput_4k_object(self):
+        """ Test write throughput with a 4KB object size. Other experiments are with a 200-byte object size"""
 
         size_kb = 4
-        print 'Testing throughput with object size: ', size_kb, 'KB'
-        self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size_kb)
+        print 'Testing read throughput with object size: ', size_kb, 'KB'
+        self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, str(size_kb))
         self.test_d_write_throughput()
+
+    def test_h_read_throughput_4k_object(self):
+        """ Test write throughput with a 4KB object size. Other experiments are with a 200-byte object size"""
+
+        size_kb = 4
+        print 'Testing read throughput with object size: ', size_kb, 'KB'
+        self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, str(size_kb))
+        self.test_e_coordinated_read_throughput()
+
+    def test_i_write_throughput_node_failure(self):
+        """Test write throughput when a node fails in the middle of the experiment"""
+        num_names = 10000
+        num_replica = 7
+        # write a failure event
+        exp_duration = 150
+        req_rate = 2000
+
+        failure_event_time = 50
+        failed_node = 4
+        event = NodeCrashEvent(failed_node, failure_event_time)
+        exp_events = [event]
+        event_file = os.path.join(self.local_output_folder, 'event_file')
+        write_events_to_file(exp_events, event_file)
+        print 'Event file is:', event_file
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'event_file', event_file)
+
+        self.ns = num_replica
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', num_replica)
+
+        self.exp_output_folder = os.path.join(self.local_output_folder, 'node_failure_test', 'failed_'
+                                                                                             + str(failed_node))
+
+        # self.run_write_throughput_test(num_replica, num_names, duration=exp_duration)
+        try:
+            self.run_exp_writes(num_names, req_rate, exp_duration)
+        except AssertionError:
+            # Failures expected due to node crash
+            pass
+
+    def test_i1_write_throughput_node_failure_static_replication(self):
+        """This test measures throughput immediately after a node failure when using a static replication.
+        This test is  written only to compare performance against GNS's locality-based placement. Locality-based
+        placement creates one paxos instance per name but static placement creates only one paxos instance per node"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'scheme', 'static')
+        self.test_i_write_throughput_node_failure()
 
     ######## methods below are not tests. they are helper methods for running tests above
 
@@ -219,19 +282,21 @@ class ThroughputTestDistributed(TestSetupRemote):
         total_time += delay/1000
 
         # send lookups in random order
-        for i in range(3):
-            shuffle(names)
-            request_set.extend([[name, RequestType.LOOKUP] for name in names])
-            total_time += len(names)/req_rate
+        num_lookups = 50000
+        for i in range(num_lookups):
+            name = names[random.randint(0, num_names - 1)]
+            request_set.append([name, RequestType.LOOKUP])
+        total_time += num_lookups/req_rate
 
         request_set.append([delay, RequestType.DELAY])
         total_time += delay/1000
 
         # send updates in random order
-        for i in range(3):
-            shuffle(names)
-            request_set.extend([[name, RequestType.UPDATE] for name in names])
-            total_time += len(names)/req_rate
+        num_updates = 50000
+        for i in range(num_updates):
+            name = names[random.randint(0, num_names - 1)]
+            request_set.append([name, RequestType.UPDATE])
+        total_time += num_updates/req_rate
 
         request_set.append([delay, RequestType.DELAY])
         total_time += delay/1000
@@ -245,10 +310,11 @@ class ThroughputTestDistributed(TestSetupRemote):
         print 'Total time', total_time
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', total_time)  # in seconds
         output_stats = self.run_exp(request_set)
-        self.assertEqual(output_stats.requests, num_names * 8, "Total requests mismatch")
-        self.assertEqual(output_stats.success, num_names * 8, "Successful requests mismatch")
-        self.assertEqual(output_stats.read, num_names * 3, "Successful reads mismatch")
-        self.assertEqual(output_stats.write, num_names * 3, "Successful writes mismatch")
+        self.assertEqual(output_stats.requests, num_names * 2 + num_lookups + num_updates, "Total requests mismatch")
+        self.assertEqual(output_stats.success, num_names * 2 + num_lookups + num_updates,
+                         "Successful requests mismatch")
+        self.assertEqual(output_stats.read, num_lookups, "Successful reads mismatch")
+        self.assertEqual(output_stats.write, num_updates, "Successful writes mismatch")
         self.assertEqual(output_stats.add, num_names, "Successful adds mismatch")
         self.assertEqual(output_stats.remove, num_names, "Successful removes mismatch")
 
@@ -301,14 +367,14 @@ class ThroughputTestDistributed(TestSetupRemote):
         self.assertEqual(output_stats.add, num_names, "Successful adds mismatch")
         self.assertEqual(output_stats.group_change, num_group_changes*num_names, "Successful group change mismatch")
 
-    def run_write_throughput_test(self, num_replica, num_names):
+    def run_write_throughput_test(self, num_replica, num_names, duration=100):
         """Tests throughput of write requests for a given number of replicas of name"""
         self.ns = num_replica
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', num_replica)
         min_rate = 0
-        max_rate = 1500
+        max_rate = 6000
         width = 250
-        duration = 100
+
         while max_rate - min_rate > width:
             mid_rate = (max_rate + min_rate)/2
             output_dir = 'write_throughput_test/replica_' + str(num_replica) + '/rate_' + str(mid_rate)
@@ -329,9 +395,13 @@ class ThroughputTestDistributed(TestSetupRemote):
         names = ['test_name' + str(i) for i in range(num_names)]
 
         # add all names
-        add_rate = 250
-        request_set = [[500, RequestType.RATE]]   # add requests are sent at fixed rate so that add does not become
-                                                  # bottleneck.
+        add_rate = 500
+        if self.workload_conf.has_option(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE):
+            size_kb = self.workload_conf.get(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE)
+            if size_kb >= 1:
+                add_rate = 200
+        request_set = [[add_rate, RequestType.RATE]]   # add requests are sent at fixed rate so that add
+                                                        # does not become bottleneck.
 
         request_set.extend([[name, RequestType.ADD] for name in names])
         total_time += len(names)/add_rate
@@ -362,9 +432,9 @@ class ThroughputTestDistributed(TestSetupRemote):
     def run_coordinated_read_throughput_test(self, num_replica, num_names):
         """Tests throughput of coordinated read requests for a given number of replicas of name"""
         self.ns = num_replica
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', num_replica)
-        min_rate = 2000
-        max_rate = 10000
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(num_replica))
+        min_rate = 0
+        max_rate = 8000
         width = 250
         duration = 100
         while max_rate - min_rate > width:
@@ -389,7 +459,11 @@ class ThroughputTestDistributed(TestSetupRemote):
 
         # add all names
         add_rate = 500
-        request_set = [[500, RequestType.RATE]]   # add requests are sent at fixed rate so that add does not become
+        if self.workload_conf.has_option(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE):
+            size_kb = self.workload_conf.getint(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE)
+            if size_kb >= 1:
+                add_rate = 200
+        request_set = [[add_rate, RequestType.RATE]]   # add requests are sent at fixed rate so that add does not become
                                                   # bottleneck.
 
         request_set.extend([[name, RequestType.ADD] for name in names])
@@ -581,8 +655,8 @@ class ThroughputTestDistributed(TestSetupRemote):
         return output_stats
 
     def run_exp_add_remove(self, request_rate, exp_duration):
-        """ Runs an experiment which first add a set of names to GNS and then removes them.
-        """
+        """ Runs an experiment which first add a set of names to GNS and then removes them"""
+
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
         # name = 'test_name'
         n = int(request_rate * exp_duration)
@@ -600,3 +674,104 @@ class ThroughputTestDistributed(TestSetupRemote):
         self.assertEqual(output_stats.add, n, "Successful adds mismatch")
         return output_stats
 
+
+class TestWorkloadWithGeoLocality(TestSetupRemote):
+    """ Generates workloads with geo-locality and runs experiment on a wide-area platform"""
+
+    def test_a_request_latency(self):
+        """[Sequential consistency] Test with a geo-locality based workload and measures read and write latencies"""
+
+        assert self.lns_geo_file is not None
+
+        # self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(self.ns))
+
+        total_time = 0
+        # write workload. decide experiment time
+        lns_ids_int = range(self.ns, self.ns + self.lns)
+        lns_ids = [str(lns_id) for lns_id in lns_ids_int]
+
+        num_names = 1000
+        prefix = 'test_name'
+        # create new trace
+        self.create_empty_trace_files(lns_ids, self.trace_folder)
+
+        delay = 10000  # (wait for all nodes to startup)
+        self.append_request_to_all_files([delay,  RequestType.DELAY], lns_ids, self.trace_folder)
+        total_time += delay/1000
+        # set a request rate
+        add_req_rate = 10
+
+        self.append_request_to_all_files([add_req_rate,  RequestType.RATE], lns_ids, self.trace_folder)
+
+        total_time += num_names/len(lns_ids)/add_req_rate
+
+        gen_add_requests(self.trace_folder, self.lns_file, number_names=num_names, append_to_file=True,
+                         lns_ids=lns_ids, name_prefix=prefix)
+
+        delay = 50000
+        self.append_request_to_all_files([delay,  RequestType.DELAY], lns_ids, self.trace_folder)
+        total_time += delay/1000
+        read_write_req_rate = 10
+
+        num_lookups = num_names * 30
+        num_updates = num_names * 30
+        expected_time = (num_lookups + num_updates)/len(lns_ids)/read_write_req_rate
+        total_time += expected_time
+        print 'Expected time: ', expected_time
+        total_lookups, total_updates = gen_geolocality_trace(self.trace_folder, self.lns_geo_file,
+                                                             number_names=num_names, num_lookups=num_lookups,
+                                                             num_updates=num_updates, append_to_file=True,
+                                                             lns_ids=lns_ids, name_prefix=prefix,
+                                                             exp_duration=expected_time,
+                                                             locality_parameter=1,
+                                                             locality_percent=1.0)
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, "experiment_run_time", str(total_time))
+        output_stats = self.run_exp_multi_lns()
+        self.assertEqual(output_stats.requests, num_names + total_lookups + total_updates,
+                         "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, num_names + total_lookups + total_updates,
+                         "Successful requests mismatch")
+        self.assertEqual(output_stats.add, num_names, "Successful adds mismatch")
+        self.assertEqual(output_stats.read, total_lookups, "Successful reads mismatch")
+        self.assertEqual(output_stats.write, total_updates, "Successful writes mismatch")
+
+    def test_a1_request_latency_replication(self):
+        """Test dynamic replication of name records"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'replication_interval', str(100))
+        self.test_a_request_latency()
+
+    def test_b_request_latency_read_coordination(self):
+        """[Linearizable consistency] Tests request latency with reads also coordinate with other replicas"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, "read_coordination", str(True))
+        self.test_a1_request_latency_replication()
+
+    def test_c_request_latency_eventual(self):
+        """[Eventual consistency] Tests request latency with an eventual consistency protocol"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, "eventual_consistency", str(True))
+        self.test_a_request_latency()
+
+    def test_d_fluid_replication(self):
+        """Generate a workload with varying geo-locality and change placement at fast time-scales"""
+
+    @staticmethod
+    def create_empty_trace_files(lns_ids, trace_folder):
+        """Creates empty trace files for all local name servers"""
+        os.system('mkdir -p ' + trace_folder)
+        os.system('rm ' + trace_folder + '/*')
+        for lns_id in lns_ids:
+            file_name = os.path.join(trace_folder, str(lns_id))
+            fw = open(file_name, 'w')
+            fw.close()
+
+    @staticmethod
+    def append_request_to_all_files(request, lns_ids, trace_folder):
+        """Appends request to trace of all files in lns"""
+        for lns_id in lns_ids:
+            file_name = os.path.join(trace_folder, str(lns_id))
+            fw = open(file_name, 'a')
+            for t in request:
+                fw.write(str(t))
+                fw.write('\t')
+            fw.write('\n')
+            fw.close()

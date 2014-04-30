@@ -36,8 +36,10 @@ TINY_UPDATE = '-tinyUpdate'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
 
+
 READ_COORDINATION = '-readCoordination'
 EVENTUAL_CONSISTENCY = '-eventualConsistency'
+NO_PAXOS_LOG = '-noPaxosLog'
 NO_LOAD_DB = '-noLoadDB'
 #PRIMARY_PAXOS = '-primaryPaxos'
 PAXOS_DISK_BACKUP = '-paxosDiskBackup'
@@ -81,8 +83,9 @@ def run_name_server(node_id, config_file, node_config_file):
     primary_name_server = exp_config.primary_name_server
     aggregate_interval = exp_config.replication_interval  # In seconds
     replication_interval = exp_config.replication_interval  # In seconds
-    normalizing_constant = exp_config.normalizing_constant  # Used for calculating number of replicas
-    #NumReplicas = lookupRate / (updateRate * normalizing_constant)
+    # Used for calculating number of replicas as per this formula:
+    # NumReplicas = lookupRate / (updateRate * normalizing_constant)
+    normalizing_constant = exp_config.normalizing_constant
     moving_avg_window_size = 20  # Used for calculating inter-arrival update time and ttl value
 
     ttl_constant = 0.0  # Multiplied by inter-arrival update time to calculate ttl value of a name
@@ -145,7 +148,7 @@ def run_name_server(node_id, config_file, node_config_file):
     check_file(name_server_jar)
     check_file(node_config_file)
 
-    command = 'nohup ' + java_bin + '/java -Xmx4000m -cp ' + name_server_jar + ' ' + exp_config.ns_main
+    command = 'nohup ' + java_bin + '/java -cp ' + name_server_jar + ' ' + exp_config.ns_main
 
     command += ' ' + ID + ' ' + str(node_id)
     command += ' ' + NAMESERVER_FILE + ' ' + node_config_file
@@ -209,6 +212,8 @@ def run_name_server(node_id, config_file, node_config_file):
     if paxos_start_min_delay_sec > 0:
         command += ' ' + PAXOS_START_MIN_DELAY + ' ' + str(paxos_start_min_delay_sec)
         command += ' ' + PAXOS_START_MAX_DELAY + ' ' + str(paxos_start_max_delay_sec)
+    if exp_config.no_paxos_log:
+        command += ' ' + NO_PAXOS_LOG
 
     command += ' ' + WORKER_THREAD_COUNT + ' ' + str(worker_thread_count)
 

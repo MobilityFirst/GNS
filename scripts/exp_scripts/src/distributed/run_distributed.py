@@ -31,12 +31,11 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
 
-
 import exp_config
 from logparse.parse_log import parse_log  # added parent_folder to path to import parse_log module here
 from run_all_nodes import run_all_lns, run_all_ns
 import copy_workload
-
+from util.exp_events import parse_experiment_events, EventType
 
 def main():
     # first we initialize parameter in exp_config before importing any local module.
@@ -51,7 +50,6 @@ def main():
 
 def run_one_experiment(local_output_folder, local_config_file):
 
-    exp_time_sec = exp_config.experiment_run_time
     time1 = time.time()
 
     if os.path.exists(local_output_folder):
@@ -128,19 +126,10 @@ def run_one_experiment(local_output_folder, local_config_file):
     run_all_lns(exp_config.user, exp_config.ssh_key, lns_ids, exp_config.remote_gns_logs, remote_config_file,
                 REMOTE_NODE_CONFIG, REMOTE_UPDATE_TRACE, remote_workload_config)
 
-    # this is the excess wait after given duration of experiment
-    excess_wait = exp_config.extra_wait
-
-    print 'LNS running. Now wait for ', (exp_time_sec + excess_wait) / 60, 'min ...'
-
-    # sleep for experiment_time
-    if exp_time_sec == -1:
-        return
-    sleep_time = 0
-    while sleep_time < exp_time_sec + excess_wait:
-        os.system('sleep 60')
-        sleep_time += 60
-        if sleep_time % 60 == 0: print 'Time = ', sleep_time / 60, 'min /', (exp_time_sec + excess_wait) / 60, 'min'
+    if exp_config.event_file is None:
+        wait_exp_over()
+    else:
+        handle_events(exp_config.event_file, exp_config.experiment_run_time, ns_ids, lns_ids)
 
     print 'Ending experiment ..'
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' + exp_config.local_lns_file)
@@ -172,6 +161,22 @@ def get_node_ids(local_ns_file, local_lns_file):
     return ns_ids, lns_ids
 
 
+def wait_exp_over():
+    # this is the excess wait after given duration of experiment
+    excess_wait = exp_config.extra_wait
+    exp_time_sec = exp_config.experiment_run_time
+    print 'LNS running. Now wait for ', (exp_time_sec + excess_wait) / 60, 'min ...'
+
+    # sleep for experiment_time
+    if exp_time_sec == -1:
+        return
+    sleep_time = 0
+    while sleep_time < exp_time_sec + excess_wait:
+        os.system('sleep 60')
+        sleep_time += 60
+        if sleep_time % 60 == 0: print 'Time = ', sleep_time / 60, 'min /', (exp_time_sec + excess_wait) / 60, 'min'
+
+
 def sleep_for_time(sleep_time):
     if sleep_time < 10:
         time.sleep(sleep_time)
@@ -181,6 +186,36 @@ def sleep_for_time(sleep_time):
     for j in range(count):
         time.sleep(10)
         print 'Sleep ', str(j * 10), ' sec / ' + str(sleep_time) + ' sec'
+
+
+def handle_events(event_file, exp_time, ns_ids, lns_ids):
+    """ Takes actions corresponding to events in the event file"""
+    print ' Handling events ... parsing: ',
+    events = parse_experiment_events(event_file)
+    # if no events, sleep out the experiment
+    if events is None or len(events) == 0:
+        print 'Sleeping for experiment duration: ... ', exp_time
+        time.sleep(exp_time)
+        return
+    print 'Number of events', len(events)
+    prev_event_time = 0
+    for event in events:
+        sleep_time = event.event_time - prev_event_time
+        prev_event_time = event.event_time
+
+        print 'Sleeping for', sleep_time, 'sec'
+        time.sleep(sleep_time)
+        if event.event_type == EventType.NODE_CRASH:
+            print 'Killing node. ....'
+            crash_name_server(ns_ids[event.node_id])
+
+    assert exp_time - prev_event_time >= 0
+    print 'Sleeping for', (exp_time - prev_event_time), 'sec'
+    time.sleep(exp_time - prev_event_time)
+
+
+def crash_name_server(hostname):
+    os.system('ssh -i ' + exp_config.ssh_key + ' ' + exp_config.user + '@' + hostname + ' "killall -9 java"')
 
 
 if __name__ == "__main__":

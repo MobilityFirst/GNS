@@ -50,6 +50,14 @@ def run_all_ns(user, ssh_key, ns_ids, remote_gns_folder, config_file, node_confi
     os.system('parallel -a ' + tmp_cmd_file)
 
 
+def run_name_server():
+    pass
+
+
+def kill_name_server():
+    pass
+
+
 def read_host_names(file_name):
     host_names = []
     f = open(file_name)
