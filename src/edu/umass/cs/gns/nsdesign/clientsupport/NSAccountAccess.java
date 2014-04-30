@@ -278,7 +278,7 @@ public class NSAccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (!LNSUpdateHandler.sendAddRecord(guid,  AccountAccess.ACCOUNT_INFO, accountInfo.toDBFormat(), activeReplica).isAnError()) {
+        if (!LNSUpdateHandler.sendAddRecord(guid, AccountAccess.ACCOUNT_INFO, accountInfo.toDBFormat(), activeReplica).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           LNSUpdateHandler.sendUpdate(guid, AccountAccess.GUID_INFO, guidInfo.toDBFormat(), UpdateOperation.CREATE, activeReplica);
           return OKRESPONSE;

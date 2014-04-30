@@ -53,7 +53,7 @@ public class AddRemove {
             System.currentTimeMillis(), new HashSet<Integer>());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     addRecordPacket.getLocalNameServerID();
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Add  Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
+    GNS.getLogger().info(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
   }
 
   /**
@@ -103,7 +103,7 @@ public class AddRemove {
   static void handlePacketConfirmAdd(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
     UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Confirm update packet: " + confirmAddPacket + " json = " + json + " add info " + addInfo);
+    GNS.getLogger().info("Confirm add packet: " + confirmAddPacket.toString() + " add info " + addInfo);
     if (addInfo == null) {
       GNS.getLogger().warning("Add confirmation return info not found.: lns request id = " + confirmAddPacket.getLNSRequestID());
     } else {
@@ -122,8 +122,9 @@ public class AddRemove {
   static void handlePacketConfirmRemove(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
     UpdateInfo removeInfo = LocalNameServer.removeUpdateInfo(confirmRemovePacket.getLNSRequestID());
+    GNS.getLogger().info("Confirm remove packet: " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     if (removeInfo == null) {
-      GNS.getLogger().warning("Remove confirmation return info not found.");
+      GNS.getLogger().warning("Remove confirmation return info not found.: lns request id = " + confirmRemovePacket.getLNSRequestID());
     } else {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);

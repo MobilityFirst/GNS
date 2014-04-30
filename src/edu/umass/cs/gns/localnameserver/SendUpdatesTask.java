@@ -171,14 +171,18 @@ public class SendUpdatesTask extends TimerTask {
       }
     }
     // create the packet that we'll send to the primary
-    UpdatePacket pkt = new UpdatePacket(-1,
+    UpdatePacket pkt = new UpdatePacket(
+            updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
             updatePacket.getRequestID(),
             updateRequestID, // the id use by the LNS (that would be us here)
-            name, updatePacket.getRecordKey(),
+            name, 
+            updatePacket.getRecordKey(),
             updatePacket.getUpdateValue(),
             updatePacket.getOldValue(),
             updatePacket.getArgument(),
-            updatePacket.getOperation(), LocalNameServer.getNodeID(), nameServerID, updatePacket.getTTL(),
+            updatePacket.getOperation(), 
+            LocalNameServer.getNodeID(), 
+            nameServerID, updatePacket.getTTL(),
             //signature info
             updatePacket.getAccessor(),
             updatePacket.getSignature(),

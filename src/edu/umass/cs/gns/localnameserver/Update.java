@@ -48,7 +48,7 @@ public class Update {
 
     UpdatePacket updateAddressPacket = new UpdatePacket(json);
 
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("UPDATE PACKET RECVD: Operation: " + updateAddressPacket.getOperation());
+    GNS.getLogger().info("UPDATE PACKET RECVD: " + json.toString());
 
     if (updateAddressPacket.getOperation().isUpsert()) {
       AddRemove.handleUpsert(updateAddressPacket);
@@ -121,16 +121,16 @@ public class Update {
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet) throws JSONException {
     if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      if (StartLocalNameServer.debugMode) GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
-      // FIXME: Why not use GNS nio transport for sending this packet ?
+      if (StartLocalNameServer.debugMode) GNS.getLogger().info("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
       try {
-        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
-                packet.getReturnTo(), GNS.PortType.NS_TCP_PORT);
-      } catch (IOException e) {
-        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
+        LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
+//        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
+//                packet.getReturnTo(), GNS.PortType.NS_TCP_PORT);
+//      } catch (IOException e) {
+//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
       } catch (JSONException e) {
         GNS.getLogger().severe("Unable to send packet back to NS: " + e);
       }

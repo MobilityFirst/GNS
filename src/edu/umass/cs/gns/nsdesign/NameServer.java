@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.database.MongoRecords;
@@ -121,7 +126,7 @@ public class NameServer{
     MongoRecords mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
 
     // initialize GNS
-    GnsReconfigurable gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport,
+    gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport,
             threadPoolExecutor, mongoRecords);
     GNS.getLogger().info("GNS initialized. ");
     // initialize active replica with the app

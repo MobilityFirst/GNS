@@ -9,9 +9,11 @@ package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
+import edu.umass.cs.gns.clientsupport.CommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;
@@ -44,22 +46,32 @@ public class RegisterAccount extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String name = json.getString(NAME);
-    String guid = json.optString(GUID, null);
-    String publicKey = json.getString(PUBLICKEY);
-    String password = json.optString(PASSWORD, null);
-    if (guid == null) {
-      guid = ClientUtils.createGuidFromPublicKey(publicKey);
-    }
-    String result = AccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password);
-    if (OKRESPONSE.equals(result)) {
-      // set up the default read access
-      FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
-      return guid;
+    if (CommandDefs.handleAcccountCommandsAtNameServer) { 
+      return CommandRequestHandler.sendCommandRequest(json);
     } else {
-      return result;
+      String name = json.getString(NAME);
+      String guid = json.optString(GUID, null);
+      String publicKey = json.getString(PUBLICKEY);
+      String password = json.optString(PASSWORD, null);
+      if (guid == null) {
+        guid = ClientUtils.createGuidFromPublicKey(publicKey);
+      }
+      String result = AccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password);
+      if (OKRESPONSE.equals(result)) {
+        // set up the default read access
+        FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
+        return guid;
+      } else {
+        return result;
+      }
     }
   }
+  
+//  @Override
+//  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+//          JSONException, NoSuchAlgorithmException, SignatureException {
+
+//  }
 
   @Override
   public String getCommandDescription() {

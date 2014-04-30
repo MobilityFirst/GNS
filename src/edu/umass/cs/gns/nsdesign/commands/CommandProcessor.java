@@ -34,7 +34,7 @@ public class CommandProcessor {
     NSCommand command = commandModule.lookupCommand(json);
     try {
       if (command != null) {
-        GNS.getLogger().fine("Executing command: " + command.toString());
+        GNS.getLogger().info("NS" + gnsReconfigurable.getNodeID() + " executing command: " + command.toString());
         return command.execute(json, gnsReconfigurable);
       } else {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED;

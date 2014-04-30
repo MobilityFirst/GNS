@@ -135,12 +135,13 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
    * Constructs a new UpdateAddressPacket with the given parameters.
    * Used by client support to create a packet to send to the LNS.
    *
-   * @param type
+   * @param sourceId
    * @param requestID
    * @param name
    * @param recordKey
    * @param newValue
    * @param oldValue
+   * @param argument
    * @param operation
    * @param localNameServerId
    * @param ttl
@@ -159,12 +160,13 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
    * Constructs a new UpdateAddressPacket with the given parameters.
    * Used by the LNS to create a packet to send to the NS.
    *
-   * @param type
+   * @param sourceId
    * @param requestID
    * @param LNSRequestID
    * @param name
    * @param recordKey
    * @param newValue
+   * @param argument
    * @param oldValue
    * @param operation
    * @param localNameServerId

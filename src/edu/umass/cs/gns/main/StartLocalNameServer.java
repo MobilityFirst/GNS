@@ -18,103 +18,55 @@ import java.util.HashMap;
 import java.util.Properties;
 
 /**
- * ************************************************************
  * Starts a single instance of the Local Nameserver with the specified parameters.
- *
- * @author Hardeep Uppal ***********************************************************
  */
 public class StartLocalNameServer {
 
   public static final String HELP = "help";
-
   public static final String CONFIG_FILE = "configFile";
-
   public static final String ID = "id";
-
   public static final String NS_FILE = "nsfile";
-
   public static final String CACHE_SIZE = "cacheSize";
-
   public static final String PRIMARY = "primary";
-
   public static final String LOCATION = "location";
-
   public static final String VOTE_INTERVAL = "vInterval";
-
   public static final String BEEHIVE = "beehive";
-
   public static final String BEEHIVE_BASE = "beehiveBase";
-
   public static final String LEAF_SET = "leafSet";
-
   public static final String OPTIMAL = "optimal";
-
   public static final String OPTIMAL_TRACE = "optimalTrace";
-
   public static final String REPLICATION_INTERVAL = "rInterval";
-
   public static final String LOAD_DEPENDENT_REDIRECTION = "loadDependentRedirection";
-
   public static final String LOAD_MONITOR_INTERVAL = "nsLoadMonitorIntervalSeconds";
-
   public static final String MAX_QUERY_WAIT_TIME = "maxQueryWaitTime";
-
   public static final String NUMBER_OF_TRANSMISSIONS = "numberOfTransmissions";
-
   public static final String QUERY_TIMEOUT = "queryTimeout";
-
   public static final String ADAPTIVE_TIMEOUT = "adaptiveTimeout";
-
   public static final String DELTA = "delta";
-
   public static final String MU = "mu";
-
   public static final String PHI = "phi";
-
   public static final String ZIPF = "zipf";
-
   public static final String ALPHA = "alpha";
-
   public static final String REGULAR_WORKLOAD = "rworkload";
-
   public static final String MOBILE_WORKLOAD = "mworkload";
-
   public static final String WORKLOAD_FILE = "wfile";
-
   public static final String LOOKUP_TRACE = "lookupTrace";
-
   public static final String UPDATE_TRACE = "updateTrace";
-
   public static final String NUM_QUERY = "numQuery";
-
   public static final String NUM_UPDATE = "numUpdate";
-
   public static final String NAME = "name";
-
   public static final String LOOKUP_RATE = "lookupRate";
-
   public static final String UPDATE_RATE_MOBILE = "updateRateMobile";
-
   public static final String UPDATE_RATE_REGULAR = "updateRateRegular";
-
   public static final String OUTPUT_SAMPLE_RATE = "outputSampleRate";
-
   public static final String DEBUG_MODE = "debugMode";
-
   public static final String EXPERIMENT_MODE = "experimentMode";
-
   public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
-
   public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
-
   public static final String STAT_FILE_LOGGING_LEVEL = "statFileLoggingLevel";
-
   public static final String STAT_CONSOLE_OUTPUT_LEVEL = "statConsoleOutputLevel";
-
   public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
-
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
-
   public static final String VARIATION = "variation";
 
   public static ReplicationFrameworkType replicationFramework;

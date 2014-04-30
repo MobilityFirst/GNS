@@ -27,7 +27,7 @@ public class CommandRequest {
       // Pick one NS to send it to
       // This should pick a Nameserver using the same method as a query!!
       int serverID = LocalNameServer.getGnsNodeConfig().getClosestNameServer();
-      GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " transmitting CommandPacket " + incomingJSON + " to " + serverID);
+      GNS.getLogger().info("LNS" + LocalNameServer.getNodeID() + " transmitting CommandPacket " + incomingJSON + " to " + serverID);
       LocalNameServer.sendToNS(incomingJSON, serverID);
     } else {
       // PACKET IS COMING BACK FROM A NAMESERVER

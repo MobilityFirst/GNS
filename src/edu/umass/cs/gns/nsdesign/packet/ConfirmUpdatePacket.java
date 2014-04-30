@@ -79,7 +79,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
    */
   public static ConfirmUpdatePacket createSuccessPacket(UpdatePacket updatePacket) {
     return new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE, updatePacket.getSourceId(),
-            updatePacket.getRequestID(), updatePacket.getLNSRequestID(), //updatePacket.getName(), updatePacket.getRecordKey(),
+            updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
             NSResponseCode.NO_ERROR);
   }
 

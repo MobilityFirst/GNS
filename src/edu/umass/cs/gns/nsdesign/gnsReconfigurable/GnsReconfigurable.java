@@ -139,6 +139,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
           msgTask = Remove.executeActiveRemove(new OldActiveSetStopPacket(json), this, noCoordinationState);
           break;
+          // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:

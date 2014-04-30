@@ -12,6 +12,9 @@ package edu.umass.cs.gns.commands;
  * @author westy
  */
 public class CommandDefs {
+  
+  // This will be set to true (and eventually go away) when the new code is ready.
+  public static boolean handleAcccountCommandsAtNameServer = false;
 
   private static String[] commands = new String[]{
     "edu.umass.cs.gns.commands.data.Append",

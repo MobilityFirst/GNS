@@ -106,6 +106,7 @@ public class GnsHttpServer {
           OutputStream responseBody = exchange.getResponseBody();
 
           URI uri = exchange.getRequestURI();
+          GNS.getLogger().info("HTTP SERVER GOT: " + uri.toString());
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
 
@@ -162,7 +163,7 @@ public class GnsHttpServer {
     GnsCommand command = commandModule.lookupCommand(json);
     try {
       if (command != null) {
-        GNS.getLogger().fine("Executing command: " + command.toString());
+        GNS.getLogger().info("Executing command: " + command.toString());
         //GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
         return command.execute(json);
       } else {

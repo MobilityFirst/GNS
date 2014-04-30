@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 
 /**
+ * Provides methods for sending commands to a NameServer.
  *
  * @author westy
  */
@@ -27,13 +28,20 @@ public class CommandRequestHandler {
   private static ConcurrentMap<Integer, CommandPacket> resultsMap = new ConcurrentHashMap<Integer, CommandPacket>(10, 0.75f, 3);
   private static Random randomID = new Random();
   
+  /**
+   * Sends a command to the LNS command handler which forwards it on to an appropriate Name Server.
+   * 
+   * @param command
+   * @return 
+   */
   public static String sendCommandRequest(JSONObject command) {
     int id = nextRequestID();
     return sendCommandHelper(id, new CommandPacket(id, LocalNameServer.getNodeID(), command)); 
   }
   
-  public static String sendCommandHelper(int id, CommandPacket commandPacket) {
+  private static String sendCommandHelper(int id, CommandPacket commandPacket) {
     try {
+      GNS.getLogger().info("Sending CommandPacket #" + id + " to Intercessor");
       Intercessor.injectPacketIntoLNSQueue(commandPacket.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring JSON error while sending Command request: " + e);
@@ -49,6 +57,11 @@ public class CommandRequestHandler {
     }
   }
   
+  /**
+   * Typically called by the Intercessor to handle incoming (returning from NS) CommandRequest packets.
+   * 
+   * @param json 
+   */
   public static void processCommandResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
@@ -56,7 +69,7 @@ public class CommandRequestHandler {
           try {
             CommandPacket response = new CommandPacket(json);
             int id = response.getRequestId();
-            GNS.getLogger().fine("Processing CommandPacket for " + id);
+            GNS.getLogger().info("Processing returning CommandPacket for " + id);
             synchronized (monitor) {
               resultsMap.put(id, response);
               monitor.notifyAll();
