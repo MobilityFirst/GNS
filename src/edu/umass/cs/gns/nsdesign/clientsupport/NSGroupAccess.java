@@ -3,14 +3,13 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.InternalField;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 /**
@@ -34,19 +33,44 @@ public class NSGroupAccess {
     return NSFieldAccess.lookupField(guid, GroupAccess.GROUP, allowQueryToOtherNSs, activeReplica);
   }
   
-//  public static ResultValue lookupGroupRecords(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
-//    return NSFieldAccess.lookupField(guid, GROUP_RECORDS, allowQueryToOtherNSs, activeReplica);
-//  }
-
   public static void updateMembers(String guid, Set<String> members, GnsReconfigurable activeReplica) {
     LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
             UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
   }
+  
+  /**
+   * Returns the groups that a GUID is a member of.
+   *
+   * @param guid
+   * @return
+   */
+  public static ResultValue lookupGroups(String guid, GnsReconfigurable activeReplica) {
+    return NSFieldAccess.lookupField(guid, GroupAccess.GROUPS, true, activeReplica);
+  }
+  
+  public static NSResponseCode removeFromGroup(String guid, String memberGuid, GnsReconfigurable activeReplica) {
+    NSResponseCode groupResponse =  LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(Arrays.asList(memberGuid)),
+            UpdateOperation.REMOVE, activeReplica);
+    // We could roll back the above operation if the one below gets an error, but we don't
+    // We'll worry about this when we get transactions working.
+    if (!groupResponse.isAnError()) {
+       LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(guid)),
+              UpdateOperation.REMOVE, activeReplica);
+    }
+    return groupResponse;
+  }
 
-//  public static void updateRecords(String guid, JSONArray records, GnsReconfigurable activeReplica) throws JSONException {
-//    LNSUpdateHandler.sendUpdate(guid, GROUP_RECORDS, new ResultValue(records.toString()),
-//            UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
-//  }
+/**
+   * Removes all group links when we're deleting a guid.
+   * 
+   * @param guid 
+   */
+  public static void cleanupGroupsForDelete(String guid, GnsReconfigurable activeReplica) {
+    // just so you know all the nulls mean we're ignoring signatures and authentication
+    for (String groupGuid : lookupGroups(guid, activeReplica).toStringSet()) {
+      removeFromGroup(groupGuid, guid, activeReplica);
+    }
+  }
 
   public static void updateLastUpdate(String guid, Date lastUpdate, GnsReconfigurable activeReplica) {
     LNSUpdateHandler.sendUpdate(guid, GROUP_LAST_UPDATE, new ResultValue(Arrays.asList(Long.toString(lastUpdate.getTime()))),

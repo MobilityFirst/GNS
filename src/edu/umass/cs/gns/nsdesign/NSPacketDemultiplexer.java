@@ -3,6 +3,8 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
+import edu.umass.cs.gns.nsdesign.commands.CommandProcessor;
+import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -39,6 +41,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           Packet.PacketType type = Packet.getPacketType(json);
 
           switch (type) {
+            case COMMAND:
+              CommandProcessor.processCommand(new CommandPacket(json).getCommand(), nameServer.getGnsReconfigurable());
+              break;
             case UPDATE:
               // TODO define a different packet type for upserts
               UpdatePacket updateAddressPacket = new UpdatePacket(json);

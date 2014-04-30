@@ -24,6 +24,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.COMMANDNAME;
 public class NSCommandModule {
 
   private TreeSet<NSCommand> commands;
+  private String host;
 
   public NSCommandModule() {
     initCommands();
@@ -95,6 +96,14 @@ public class NSCommandModule {
       }
     }
     return true;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
   }
 
 }

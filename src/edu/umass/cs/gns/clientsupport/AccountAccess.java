@@ -5,10 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import static edu.umass.cs.gns.clientsupport.Defs.BADACCOUNT;
-import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
-import static edu.umass.cs.gns.clientsupport.Defs.OKRESPONSE;
-import static edu.umass.cs.gns.clientsupport.Defs.VERIFICATIONERROR;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
@@ -299,18 +296,18 @@ public class AccountAccess {
         if (!Intercessor.sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
-          return Defs.OKRESPONSE;
+          return OKRESPONSE;
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           Intercessor.sendRemoveRecord(name);
-          return Defs.BADRESPONSE + " " + Defs.DUPLICATEGUID;
+          return BADRESPONSE + " " + DUPLICATEGUID;
         }
       } else {
-        return Defs.BADRESPONSE + " " + Defs.DUPLICATENAME;
+        return BADRESPONSE + " " + DUPLICATENAME;
       }
     } catch (JSONException e) {
-      return Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR;
+      return BADRESPONSE + " " + JSONPARSEERROR;
     }
   }
 
@@ -339,9 +336,9 @@ public class AccountAccess {
       }
 
       // all is well
-      return Defs.OKRESPONSE;
+      return OKRESPONSE;
     } else {
-      return Defs.BADRESPONSE + " " + Defs.BADACCOUNT;
+      return BADRESPONSE + " " + BADACCOUNT;
     }
   }
 
@@ -363,7 +360,7 @@ public class AccountAccess {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid) != null) {
-        return Defs.BADRESPONSE + " " + Defs.DUPLICATEGUID;
+        return BADRESPONSE + " " + DUPLICATEGUID;
       }
       // do this first so if there is an execption we don't have to back out of anything
       ResultValue guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
@@ -380,14 +377,14 @@ public class AccountAccess {
           // add a link the new GUID to primary GUID
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.CREATE);
-          return Defs.OKRESPONSE;
+          return OKRESPONSE;
         }
       }
       // otherwise roll it back
       accountInfo.removeGuid(guid);
-      return Defs.BADRESPONSE + " " + Defs.DUPLICATENAME;
+      return BADRESPONSE + " " + DUPLICATENAME;
     } catch (JSONException e) {
-      return Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR;
+      return BADRESPONSE + " " + JSONPARSEERROR;
     }
   }
 
@@ -427,8 +424,8 @@ public class AccountAccess {
   public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid) {
     // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
-      if (AccountAccess.lookupAccountInfoFromGuid(guid.getGuid()) != null) {
-        return Defs.BADRESPONSE + " " + Defs.BADGUID + " " + guid.getGuid() + " is an account guid";
+      if (lookupAccountInfoFromGuid(guid.getGuid()) != null) {
+        return BADRESPONSE + " " + BADGUID + " " + guid.getGuid() + " is an account guid";
       }
     }
     // Fill in a missing account info
@@ -436,10 +433,10 @@ public class AccountAccess {
       String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid());
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-        return Defs.BADRESPONSE + " " + Defs.BADACCOUNT + " " + guid.getGuid() + " does not have a primary account guid";
+        return BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " does not have a primary account guid";
       }
-      if ((accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid)) == null) {
-        return Defs.BADRESPONSE + " " + Defs.BADACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid;
+      if ((accountInfo = lookupAccountInfoFromGuid(accountGuid)) == null) {
+        return BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid;
       }
     }
     // First remove any group links
@@ -451,19 +448,19 @@ public class AccountAccess {
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
-        return Defs.OKRESPONSE;
+        return OKRESPONSE;
       } else {
         // update the account guid to know that we deleted the guid
         accountInfo.removeGuid(guid.getGuid());
         accountInfo.noteUpdate();
         if (updateAccountInfo(accountInfo)) {
-          return Defs.OKRESPONSE;
+          return OKRESPONSE;
         } else {
-          return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
+          return BADRESPONSE + " " + UPDATEERROR;
         }
       }
     } else {
-      return Defs.BADRESPONSE + " " + Defs.BADGUID;
+      return BADRESPONSE + " " + BADGUID;
     }
   }
 
@@ -484,16 +481,16 @@ public class AccountAccess {
     // insure that that name does not already exist
     if (!Intercessor.sendAddRecord(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       if (updateAccountInfo(accountInfo)) {
-        return Defs.OKRESPONSE;
+        return OKRESPONSE;
       } else { // back out if we got an error
         Intercessor.sendRemoveRecord(alias);
         accountInfo.removeAlias(alias);
-        return Defs.BADRESPONSE + " " + Defs.BADALIAS;
+        return BADRESPONSE + " " + BADALIAS;
       }
     }
     // roll this back
     accountInfo.removeAlias(alias);
-    return Defs.BADRESPONSE + " " + Defs.DUPLICATENAME;
+    return BADRESPONSE + " " + DUPLICATENAME;
   }
 
   /**
@@ -509,15 +506,15 @@ public class AccountAccess {
       // remove the NAME -> GUID record
       NSResponseCode responseCode;
       if ((responseCode = Intercessor.sendRemoveRecord(alias)).isAnError()) {
-        return Defs.BADRESPONSE + " " + responseCode.getProtocolCode();
+        return BADRESPONSE + " " + responseCode.getProtocolCode();
       }
       accountInfo.removeAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {
-        return Defs.OKRESPONSE;
+        return OKRESPONSE;
       }
     }
-    return Defs.BADRESPONSE + " " + Defs.BADALIAS;
+    return BADRESPONSE + " " + BADALIAS;
   }
 
   /**
@@ -531,9 +528,9 @@ public class AccountAccess {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo)) {
-      return Defs.OKRESPONSE;
+      return OKRESPONSE;
     }
-    return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
+    return BADRESPONSE + " " + UPDATEERROR;
   }
 
   /**
@@ -547,10 +544,10 @@ public class AccountAccess {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
-      return Defs.OKRESPONSE;
+      return OKRESPONSE;
     }
     guidInfo.removeTag(tag);
-    return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
+    return BADRESPONSE + " " + UPDATEERROR;
   }
 
   /**
@@ -564,9 +561,9 @@ public class AccountAccess {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
-      return Defs.OKRESPONSE;
+      return OKRESPONSE;
     }
-    return Defs.BADRESPONSE + " " + Defs.UPDATEERROR;
+    return BADRESPONSE + " " + UPDATEERROR;
   }
 
   private static boolean updateAccountInfo(AccountInfo accountInfo) {

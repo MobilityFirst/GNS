@@ -41,6 +41,8 @@ public class NameServer{
   private ActiveReplica activeReplica; // reconfiguration logic
  
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
+  
+  private GnsReconfigurable gnsReconfigurable;
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -168,4 +170,9 @@ public class NameServer{
   public ScheduledThreadPoolExecutor getExecutorService() {
     return executorService;
   }
+
+  public GnsReconfigurable getGnsReconfigurable() {
+    return gnsReconfigurable;
+  }
+  
 }

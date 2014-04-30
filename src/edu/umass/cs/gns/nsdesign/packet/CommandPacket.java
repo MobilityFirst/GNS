@@ -12,9 +12,10 @@ import org.json.JSONObject;
 public class CommandPacket extends BasicPacket {
 
   private final static String REQUESTID = "reqID";
-  private static final String COMMAND = "command";
+  private final static String COMMAND = "command";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
+  private final static String LNSID = "lnsid";
 
   /**
    * Identifier of the request.
@@ -27,15 +28,18 @@ public class CommandPacket extends BasicPacket {
   private final JSONObject command;
   private final NSResponseCode responseCode;
   private final String errorMessage;
+  private final int lnsID; // the local name server handling this request
+  
 
   /**
    *
    * @param requestId
    * @param command
    */
-  public CommandPacket(int requestId, JSONObject command) {
+  public CommandPacket(int requestId, int lns, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.requestId = requestId;
+    this.lnsID = lns;
     this.command = command;
     this.responseCode = null;
     this.errorMessage = null;
@@ -47,9 +51,10 @@ public class CommandPacket extends BasicPacket {
    * @param requestId
    * @param command
    */
-  public CommandPacket(int requestId, JSONObject command, NSResponseCode responseCode, String errorMessage) {
+  public CommandPacket(int requestId, int lns, JSONObject command, NSResponseCode responseCode, String errorMessage) {
     this.setType(PacketType.COMMAND);
     this.requestId = requestId;
+    this.lnsID = lns;
     this.command = command;
     this.responseCode = responseCode;
     this.errorMessage = errorMessage;
@@ -58,6 +63,7 @@ public class CommandPacket extends BasicPacket {
   public CommandPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.requestId = json.getInt(REQUESTID);
+    this.lnsID = json.getInt(LNSID);
     this.command = json.getJSONObject(COMMAND);
     this.responseCode = json.has(RESPONSECODE) ? NSResponseCode.getResponseCode(json.getInt(RESPONSECODE)) : null;
     this.errorMessage = json.has(ERRORSTRING) ? json.optString(ERRORSTRING, null) : null;
@@ -74,6 +80,7 @@ public class CommandPacket extends BasicPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(REQUESTID, this.requestId);
+    json.put(LNSID, lnsID);
     json.put(COMMAND, this.command);
     if (responseCode != null) {
       json.put(RESPONSECODE, responseCode.name());
@@ -86,6 +93,14 @@ public class CommandPacket extends BasicPacket {
 
   public int getRequestId() {
     return requestId;
+  }
+
+  public static String getLNSID() {
+    return LNSID;
+  }
+
+  public int getLnsID() {
+    return lnsID;
   }
 
   public JSONObject getCommand() {

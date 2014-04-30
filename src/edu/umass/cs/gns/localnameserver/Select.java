@@ -12,12 +12,8 @@ import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.net.UnknownHostException;
-import java.util.Set;
 
-//import edu.umass.cs.gns.util.BestServerSelection;
-//import edu.umass.cs.gns.util.ConfigFileInfo;
 /**
  * Handles sending and receiving of queries.
  *

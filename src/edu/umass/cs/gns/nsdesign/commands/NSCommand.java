@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.commands;
 
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -52,7 +53,7 @@ public abstract class NSCommand implements Comparable<NSCommand> {
 
   public abstract String getCommandName();
 
-  public abstract String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public abstract String execute(JSONObject json, GnsReconfigurable activeReplica) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException;
 
   /**

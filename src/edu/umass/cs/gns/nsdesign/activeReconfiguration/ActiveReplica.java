@@ -115,36 +115,36 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   /**
    * The app will call this method after it has executed stop decision
    */
-  void stopProcessed(OldActiveSetStopPacket stopPacket) {
+  public void stopProcessed(OldActiveSetStopPacket stopPacket) {
     GroupChange.handleStopProcessed(stopPacket, this);
   }
 
 
-  Reconfigurable getActiveReplicaApp() {
+  public Reconfigurable getActiveReplicaApp() {
     return activeReplicaApp;
   }
 
-  int getNodeID() {
+  public int getNodeID() {
     return nodeID;
   }
 
-  GNSNIOTransportInterface getNioServer() {
+  public GNSNIOTransportInterface getNioServer() {
     return nioServer;
   }
 
-  ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+  public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
     return scheduledThreadPoolExecutor;
   }
 
-  GNSNodeConfig getGnsNodeConfig() {
+  public GNSNodeConfig getGnsNodeConfig() {
     return gnsNodeConfig;
   }
 
-  UniqueIDHashMap getOngoingStateTransferRequests() {
+  public UniqueIDHashMap getOngoingStateTransferRequests() {
     return ongoingStateTransferRequests;
   }
 
-  UniqueIDHashMap getActiveStartupInProgress() {
+  public UniqueIDHashMap getActiveStartupInProgress() {
     return activeStartupInProgress;
   }
 

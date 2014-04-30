@@ -94,6 +94,9 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
         case GROUP_CHANGE_COMPLETE:
           LNSTestRequests.handleGroupChangeComplete(json);
           break;
+        case COMMAND:
+          CommandRequest.handlePacketCommandRequest(json);
+          break;
         default:
           isPacketTypeFound = false;
           break;

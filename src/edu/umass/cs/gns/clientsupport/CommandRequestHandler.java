@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
 import org.json.JSONException;
@@ -28,7 +29,7 @@ public class CommandRequestHandler {
   
   public static String sendCommandRequest(JSONObject command) {
     int id = nextRequestID();
-    return sendCommandHelper(id, new CommandPacket(id, command)); 
+    return sendCommandHelper(id, new CommandPacket(id, LocalNameServer.getNodeID(), command)); 
   }
   
   public static String sendCommandHelper(int id, CommandPacket commandPacket) {
