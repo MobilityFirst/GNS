@@ -215,7 +215,7 @@ public class Intercessor {
   public static NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     GNS.getLogger().fine("Sending remove: " + name);
-    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, id, name, localServerID);
+    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);

@@ -37,7 +37,7 @@ import java.util.Date;
 public class AccountAccess {
 
   public static final String ACCOUNT_INFO = InternalField.makeInternalFieldString("account_info");
-  public static final String GUID = InternalField.makeInternalFieldString("guid");
+  public static final String HRN_GUID = InternalField.makeInternalFieldString("guid");
   public static final String PRIMARY_GUID = InternalField.makeInternalFieldString("primary_guid");
   public static final String GUID_INFO = InternalField.makeInternalFieldString("guid_info");
 
@@ -46,7 +46,7 @@ public class AccountAccess {
    * was used to create an account.
    * <p>
    * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
-   * GUID: "GUID" -> GUID (primary) for secondary guid<br>
+   * GUID: "PRIMARY_GUID" -> GUID (primary) for secondary guid<br>
    * GUID: "GUID_INFO" -> {guid info}<br>
    * HRN: "GUID" -> GUID<br>
    * <p>
@@ -131,9 +131,9 @@ public class AccountAccess {
    */
   public static String lookupGuid(String name) {
 
-    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(name, GUID);
+    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(name, HRN_GUID);
     if (!guidResult.isError()) {
-      return (String) guidResult.get(GUID).get(0);
+      return (String) guidResult.get(HRN_GUID).get(0);
     } else {
       return null;
     }
@@ -285,7 +285,7 @@ public class AccountAccess {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
-      if (!Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!Intercessor.sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -369,7 +369,7 @@ public class AccountAccess {
       accountInfo.noteUpdate();
 
       // First try to create the HRN to insure that that name does not already exist
-      if (!Intercessor.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!Intercessor.sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // update the account info
         if (updateAccountInfo(accountInfo)) {
           // add the GUID_INFO link
@@ -479,7 +479,7 @@ public class AccountAccess {
     accountInfo.noteUpdate();
 
     // insure that that name does not already exist
-    if (!Intercessor.sendAddRecord(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
+    if (!Intercessor.sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       if (updateAccountInfo(accountInfo)) {
         return OKRESPONSE;
       } else { // back out if we got an error

@@ -122,7 +122,7 @@ public class LNSUpdateHandler {
     outStandingUpdates.put(id, id);
     int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
     GNS.getLogger().info("----------- Node " + activeReplica.getNodeID() + "; Sending remove: " + name + " to LNS " + recipientId);
-    RemoveRecordPacket packet = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, id, name, -1);
+    RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, -1);
     try {
       activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
     } catch (JSONException e) {

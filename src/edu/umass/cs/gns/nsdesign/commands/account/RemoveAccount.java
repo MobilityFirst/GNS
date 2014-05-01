@@ -7,10 +7,10 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.commands.NSCommand;
 import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
@@ -53,7 +53,7 @@ public class RemoveAccount extends NSCommand {
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+    if (NSAccessSupport.verifySignature(guidInfo, signature, message)) {
       AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromName(name, activeReplica);
       if (accountInfo != null) {
         return NSAccountAccess.removeAccount(accountInfo, activeReplica);

@@ -14,10 +14,7 @@ import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
-import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import org.json.JSONException;
@@ -33,30 +30,30 @@ import java.util.Date;
  */
 public class NSAccountAccess {
 
+  /**
+   * Gets the AccountInfo record for guid if the guid is an account guid.
+   *
+   * @param guid
+   * @param activeReplica
+   * @return
+   */
   public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurable activeReplica) {
-    ResultValue accountResult = NSFieldAccess.lookupFieldOnThisServer(guid, AccountAccess.ACCOUNT_INFO, activeReplica);
-//    ResultValue accountResult = null;
-//    try {
-//      accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
-//              AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
-//    } catch (FieldNotFoundException e) {
-//    } catch (RecordNotFoundException e) {
-//    }
-    if (accountResult == null) {
-      guid = lookupPrimaryGuid(guid, activeReplica);
-      if (guid != null) {
-        accountResult = NSFieldAccess.lookupFieldOnThisServer(guid, AccountAccess.ACCOUNT_INFO, activeReplica);
-      }
-//      try {
-//        if (guid != null) {
-//          accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
-//                  AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
-//        }
-//      } catch (FieldNotFoundException e) {
-//      } catch (RecordNotFoundException e) {
-//      }
-    }
-    if (accountResult != null) {
+    return lookupAccountInfoFromGuid(guid, false, activeReplica);
+  }
+
+  /**
+   * Gets the AccountInfo record for guid if the guid is an account guid.
+   * If allowQueryToOtherNSs is true and the record is not available locally
+   * a query will be sent another name server to find the record.
+   *
+   * @param guid
+   * @param allowQueryToOtherNSs
+   * @param activeReplica
+   * @return
+   */
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+    ResultValue accountResult = NSFieldAccess.lookupField(guid, AccountAccess.ACCOUNT_INFO, allowQueryToOtherNSs, activeReplica);
+    if (!accountResult.isEmpty()) {
       try {
         return new AccountInfo(accountResult.toResultValueString());
       } catch (JSONException e) {
@@ -69,7 +66,32 @@ public class NSAccountAccess {
   }
 
   /**
-   * If GUID is associated with another account, returns the GUID of that account,
+   * Gets the AccountInfo record for guid if the guid is an account guid OR if the guid is a subguid gets it from
+   * the parent account guid. 
+   * If allowQueryToOtherNSs is true and the record is not available locally
+   * a query will be sent another name server to find the record.
+   *
+   *
+   * @param guid
+   * @param activeReplica
+   * @return
+   */
+  public static AccountInfo lookupAccountInfoFromGuidOrParent(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+    AccountInfo info = lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica);
+    if (info != null) {
+      return info;
+    } else {
+      guid = lookupPrimaryGuid(guid, activeReplica);
+      if (guid != null) {
+        return lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica);
+      } else {
+        return null;
+      }
+    }
+  }
+
+  /**
+   * If GUID has a parent guid account, returns the GUID of that account,
    * otherwise returns null.
    * <p>
    * GUID = Globally Unique Identifier
@@ -78,7 +100,7 @@ public class NSAccountAccess {
    * @return a GUID
    */
   public static String lookupPrimaryGuid(String guid, GnsReconfigurable activeReplica) {
-    return lookupSingletonFieldOnThisServer(guid, AccountAccess.PRIMARY_GUID, activeReplica);
+    return NSFieldAccess.lookupSingletonFieldOnThisServer(guid, AccountAccess.PRIMARY_GUID, activeReplica);
   }
 
   /**
@@ -91,30 +113,9 @@ public class NSAccountAccess {
    * @return a GUID
    */
   public static String lookupGuid(String name, GnsReconfigurable activeReplica) {
-    return lookupSingletonFieldOnThisServer(name, AccountAccess.GUID, activeReplica);
+    return NSFieldAccess.lookupSingletonFieldOnThisServer(name, AccountAccess.HRN_GUID, activeReplica);
   }
 
-  /**
-   * Returns null if the field or the record cannot be found.
-   *
-   * @param recordName
-   * @param key
-   * @param activeReplica
-   * @return
-   */
-  private static String lookupSingletonFieldOnThisServer(String recordName, String key, GnsReconfigurable activeReplica) {
-    ResultValue guidResult = null;
-    try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), recordName, null, key).getKey(key);
-    } catch (FieldNotFoundException e) {
-    } catch (RecordNotFoundException e) {
-    }
-    if (guidResult != null) {
-      return (String) guidResult.get(0);
-    } else {
-      return null;
-    }
-  }
 
   /**
    * Obtains the guid info record from the database for GUID given.
@@ -130,7 +131,7 @@ public class NSAccountAccess {
 
   /**
    * Obtains the guid info record from the database for GUID given.
-   * If allowSiteToSiteQuery is true and the record is not available locally
+   * If allowQueryToOtherNSs is true and the record is not available locally
    * a query will be sent another name server to find the record.
    *
    * @param guid
@@ -138,8 +139,7 @@ public class NSAccountAccess {
    * @return
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
-    ResultValue guidResult = NSFieldAccess.lookupField(guid,
-            AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
+    ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
     if (!guidResult.isEmpty()) {
       try {
         return new GuidInfo(guidResult.toResultValueString());
@@ -188,6 +188,7 @@ public class NSAccountAccess {
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication, activeReplica)).equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
         String verifyCode = createVerificationCode(name);
+        // Make sure the addAccount above actually worked.
         AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, activeReplica);
         if (accountInfo == null) {
           return BADRESPONSE + " " + BADACCOUNT + " " + guid;
@@ -276,7 +277,7 @@ public class NSAccountAccess {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
-      if (!LNSUpdateHandler.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid)), activeReplica).isAnError()) {
+      if (!LNSUpdateHandler.sendAddRecord(name, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(guid)), activeReplica).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -360,7 +361,7 @@ public class NSAccountAccess {
       accountInfo.noteUpdate();
 
       // First try to create the HRN to insure that that name does not already exist
-      if (!LNSUpdateHandler.sendAddRecord(name, GUID, new ResultValue(Arrays.asList(guid)), activeReplica).isAnError()) {
+      if (!LNSUpdateHandler.sendAddRecord(name, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(guid)), activeReplica).isAnError()) {
         // update the account info
         if (updateAccountInfo(accountInfo, activeReplica)) {
           // add the GUID_INFO link
@@ -470,7 +471,7 @@ public class NSAccountAccess {
     accountInfo.noteUpdate();
 
     // insure that that name does not already exist
-    if (!LNSUpdateHandler.sendAddRecord(alias, GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())), activeReplica).isAnError()) {
+    if (!LNSUpdateHandler.sendAddRecord(alias, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())), activeReplica).isAnError()) {
       if (updateAccountInfo(accountInfo, activeReplica)) {
         return OKRESPONSE;
       } else { // back out if we got an error

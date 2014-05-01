@@ -35,6 +35,7 @@ public class NSFieldAccess {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, field);
+      GNS.getLogger().info("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       result = nameRecord.getKey(field);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
@@ -43,6 +44,24 @@ public class NSFieldAccess {
       return result;
     } else {
       return new ResultValue();
+    }
+  }
+  
+  /**
+   * Looks up the first element of field in the guid on this NameServer as a String.
+   * Returns null if the field or the record cannot be found.
+   *
+   * @param recordName
+   * @param key
+   * @param activeReplica
+   * @return a string representing the first value in field
+   */
+  public static String lookupSingletonFieldOnThisServer(String recordName, String key, GnsReconfigurable activeReplica) {
+    ResultValue guidResult = lookupFieldOnThisServer(recordName, key, activeReplica);
+    if (guidResult != null && !guidResult.isEmpty()) {
+      return (String) guidResult.get(0);
+    } else {
+      return null;
     }
   }
 

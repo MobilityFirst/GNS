@@ -38,7 +38,6 @@ public class LookupGuid extends NSCommand {
   @Override
   public String execute(JSONObject json, GnsReconfigurable activeReplica) throws JSONException {
     String name = json.getString(NAME);
-    // look for an account guid
     String result = NSAccountAccess.lookupGuid(name, activeReplica);
     if (result != null) {
       return result;
@@ -49,7 +48,7 @@ public class LookupGuid extends NSCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Returns the guid associated with for the human readable name. "
+    return "Returns the guid associated with the human readable name. "
             + "Returns " + BADACCOUNT + " if the GUID has not been registered.";
   }
 }

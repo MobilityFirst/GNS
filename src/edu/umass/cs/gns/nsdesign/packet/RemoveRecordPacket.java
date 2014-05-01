@@ -33,7 +33,7 @@ public class RemoveRecordPacket extends BasicPacket {
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
    */
-  public final static int LOCAL_SOURCE_ID = -1;
+  public final static int INTERCESSOR_SOURCE_ID = -1;
 
   /**
    * Unique identifier used by the entity making the initial request to confirm

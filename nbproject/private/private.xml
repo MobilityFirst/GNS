@@ -13,92 +13,75 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/replicaController/ReplicaControllerCoordinatorPaxos.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/GNSMessagingTask.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/LookupAccountRecord.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/replicaCoordination/ReplicaControllerCoordinator.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/replicaCoordination/ActiveReplicaCoordinator.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/package-info.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/GroupAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/GNSNodeConfig.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/group/RevokeMemberships.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/group/GrantMemberships.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/LookupGuidRecord.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RemoveAccount.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/AddAlias.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/gnsReconfigurable/Lookup.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/activeReconfiguration/GroupChange.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/LNSPacketDemultiplexer.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/ResultValue.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/AddGuid.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/QueryResult.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RemoveGuid.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/LookupGuidRecord.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RemoveAlias.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/CommandProcessor.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RegisterAccountWithoutGuidOrPassword.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/PacketInterface.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/ConfirmUpdatePacket.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RegisterAccountWithoutGuid.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/FieldMetaData.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/BasicPacket.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/CommandRequest.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RetrieveAliases.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RemoveGuidNoAccount.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/SetPassword.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RegisterAccountWithoutGuid.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RetrieveAliases.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/LookupAccountRecord.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/DNSRecordType.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/CommandModule.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/SetPassword.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/AccountAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/AddRemove.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/Reconfigurable.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/ClientUtils.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/activeReconfiguration/ActiveReplicaApp.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/ActiveNSUpdatePacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/AddGuid.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/SetPassword.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NSPacketDemultiplexer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSAccountAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/GroupChangeCompletePacket.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/VerifyAccount.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/CommandDefs.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/LNSQueryHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/Packet.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/gnsReconfigurable/GnsReconfigurable.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/acl/AclAdd.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RegisterAccount.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/NSCommandModule.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/LNSUpdateHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/ActiveNameServerInfoPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NameServer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSGroupAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/DNSRequestTask.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/NameRecord.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/replicaController/ReplicaController.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/group/RemoveMembersFromGroup.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/Intercessor.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/SelectRequestPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSFieldMetaData.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/RemoveRecordPacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RemoveGuidNoAccount.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/gnsReconfigurable/Update.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/LookupGuid.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/DNSPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/httpserver/GnsHttpServer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Select.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RegisterAccount.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/GnsCommand.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/package-info.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/org/json/JSONObject.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/VerifyAccount.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RemoveAlias.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RegisterAccountWithoutPassword.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/LookupPrimaryGuid.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RemoveAccount.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/NSCommand.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/Application.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/ExtensiblePacketInterface.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/PendingTasks.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/RequestActivesPacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/LookupGuid.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/Application.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/group/AddMembersToGroup.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/CommandPacket.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/CommandRequestHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/activeReconfiguration/ActiveReplica.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/replicaController/DefaultRcCoordinator.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/AddRecordPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NSListenerAdmin.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/SelectHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/Header.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/NSResponseCode.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/SelectResponsePacket.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSAccessSupport.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/BasicPacketWithSignatureInfo.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/gnsReconfigurable/Select.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/FieldAccess.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/clientsupport/NSFieldAccess.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/AddAlias.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/NSCommandDefs.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/UpdatePacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/CacheEntry.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/CreateList.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/LookupPrimaryGuid.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Update.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/UpdatePacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/NSCommandDefs.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RemoveGuid.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Lookup.java</file>
         </group>
     </open-files>
 </project-private>

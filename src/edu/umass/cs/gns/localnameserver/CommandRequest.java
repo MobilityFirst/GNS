@@ -40,17 +40,18 @@ public class CommandRequest {
   }
 
   /**
-   * Look up the name or guid in the command 
-   * @param incomingJSON
-   * @return 
+   * Look up the name or guid in the command
+   *
+   * @param commandJSON
+   * @return
    */
-  private static String getUsefulRecordName(JSONObject incomingJSON) {
+  private static String getUsefulRecordName(JSONObject commandJSON) {
     // try a couple
     try {
-      return incomingJSON.getString(Defs.GUID);
+      return commandJSON.getString(Defs.GUID);
     } catch (JSONException e) {
       try {
-        return incomingJSON.getString(Defs.NAME);
+        return commandJSON.getString(Defs.NAME);
       } catch (JSONException f) {
         return null;
       }
@@ -70,9 +71,11 @@ public class CommandRequest {
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
         int id = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (id != GNSNodeConfig.INVALID_NAME_SERVER_ID) {
+          GNS.getLogger().info("@@@@@@@ Picked NS" + id + " for record " + guid);
           return id;
         }
       }
+      GNS.getLogger().warning("!?!?!?!?!?!?!?! NO SERVER FOR NS for record " + guid);
     }
     return LocalNameServer.getGnsNodeConfig().getClosestServer(LocalNameServer.getGnsNodeConfig().getNameServerIDs());
   }
