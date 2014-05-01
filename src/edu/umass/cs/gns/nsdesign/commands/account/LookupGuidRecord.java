@@ -7,12 +7,12 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.commands.account.*;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.commands.NSCommand;
+import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,9 +20,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupGuidRecord extends GnsCommand {
+public class LookupGuidRecord extends NSCommand {
 
-  public LookupGuidRecord(CommandModule module) {
+  public LookupGuidRecord(NSCommandModule module) {
     super(module);
   }
 
@@ -37,10 +37,10 @@ public class LookupGuidRecord extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws JSONException {
     String guid = json.getString(GUID);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (guidInfo != null) {

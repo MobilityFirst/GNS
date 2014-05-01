@@ -7,14 +7,14 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.commands.account.*;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.commands.NSCommand;
+import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -26,9 +26,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveGuid extends GnsCommand {
+public class RemoveGuid extends NSCommand {
 
-  public RemoveGuid(CommandModule module) {
+  public RemoveGuid(NSCommandModule module) {
     super(module);
   }
 
@@ -43,7 +43,7 @@ public class RemoveGuid extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guidToRemove = json.getString(GUID);
     String accountGuid = json.optString(ACCOUNT_GUID, null);
@@ -51,23 +51,23 @@ public class RemoveGuid extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
-    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
+    if ((guidInfoToRemove = NSAccountAccess.lookupGuidInfo(guidToRemove, activeReplica)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
     }
     if (accountGuid != null) {
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
+      if ((accountGuidInfo = NSAccountAccess.lookupGuidInfo(accountGuid, activeReplica)) == null) {
         return BADRESPONSE + " " + BADGUID + " " + accountGuid;
       }
     }
-    if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
+    if (NSAccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
       AccountInfo accountInfo = null;
       if (accountGuid != null) {
-        accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+        accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(accountGuid, activeReplica);
         if (accountInfo == null) {
           return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
         }
       }
-      return AccountAccess.removeGuid(guidInfoToRemove, accountInfo);
+      return NSAccountAccess.removeGuid(guidInfoToRemove, accountInfo, activeReplica);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }

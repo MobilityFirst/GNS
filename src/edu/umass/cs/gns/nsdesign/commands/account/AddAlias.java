@@ -7,12 +7,12 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.clientsupport.AccessSupport;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.httpserver.Defs;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.commands.NSCommand;
 import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
@@ -51,11 +51,11 @@ public class AddAlias extends NSCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+    if (NSAccessSupport.verifySignature(guidInfo, signature, message)) {
+      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(guid, activeReplica);
       if (accountInfo == null) {
         return BADRESPONSE + " " + BADACCOUNT + " " + guid;
       }
@@ -64,7 +64,7 @@ public class AddAlias extends NSCommand {
       } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
         return BADRESPONSE + " " + TOMANYALIASES;
       } else {
-        return AccountAccess.addAlias(accountInfo, name);
+        return NSAccountAccess.addAlias(accountInfo, name, activeReplica);
       }
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;

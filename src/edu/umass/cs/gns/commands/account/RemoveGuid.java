@@ -10,8 +10,10 @@ package edu.umass.cs.gns.commands.account;
 import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
+import edu.umass.cs.gns.clientsupport.CommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;
@@ -44,31 +46,35 @@ public class RemoveGuid extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String guidToRemove = json.getString(GUID);
-    String accountGuid = json.optString(ACCOUNT_GUID, null);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
-    GuidInfo accountGuidInfo = null;
-    GuidInfo guidInfoToRemove;
-    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
-    }
-    if (accountGuid != null) {
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
-        return BADRESPONSE + " " + BADGUID + " " + accountGuid;
+    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+      return CommandRequestHandler.sendCommandRequest(json);
+    } else {
+      String guidToRemove = json.getString(GUID);
+      String accountGuid = json.optString(ACCOUNT_GUID, null);
+      String signature = json.getString(SIGNATURE);
+      String message = json.getString(SIGNATUREFULLMESSAGE);
+      GuidInfo accountGuidInfo = null;
+      GuidInfo guidInfoToRemove;
+      if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
+        return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
       }
-    }
-    if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
-      AccountInfo accountInfo = null;
       if (accountGuid != null) {
-        accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
-        if (accountInfo == null) {
-          return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
+        if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
+          return BADRESPONSE + " " + BADGUID + " " + accountGuid;
         }
       }
-      return AccountAccess.removeGuid(guidInfoToRemove, accountInfo);
-    } else {
-      return BADRESPONSE + " " + BADSIGNATURE;
+      if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
+        AccountInfo accountInfo = null;
+        if (accountGuid != null) {
+          accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+          if (accountInfo == null) {
+            return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
+          }
+        }
+        return AccountAccess.removeGuid(guidInfoToRemove, accountInfo);
+      } else {
+        return BADRESPONSE + " " + BADSIGNATURE;
+      }
     }
   }
 

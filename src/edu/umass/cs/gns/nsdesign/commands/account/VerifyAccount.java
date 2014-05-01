@@ -7,11 +7,11 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.commands.account.*;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.commands.NSCommand;
+import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -23,9 +23,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class VerifyAccount extends GnsCommand {
+public class VerifyAccount extends NSCommand {
   
-  public VerifyAccount(CommandModule module) {
+  public VerifyAccount(NSCommandModule module) {
     super(module);
   }
   
@@ -40,11 +40,11 @@ public class VerifyAccount extends GnsCommand {
   }
   
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String code = json.getString(CODE);
-    return AccountAccess.verifyAccount(guid, code);
+    return NSAccountAccess.verifyAccount(guid, code, activeReplica);
   }
   
   @Override

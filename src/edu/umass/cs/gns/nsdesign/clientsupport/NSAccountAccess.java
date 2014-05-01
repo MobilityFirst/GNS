@@ -27,28 +27,34 @@ import java.util.Arrays;
 import java.util.Date;
 
 /**
- * * DO NOT not use any class in package edu.umass.cs.gns.nsdesign **
+ * Provides Name Server side support for reading and writing guid account information from the database.
+ *
+ * @author westy
  */
 public class NSAccountAccess {
 
   public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurable activeReplica) {
-    ResultValue accountResult = null;
-    try {
-      accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
-              AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
-    } catch (FieldNotFoundException e) {
-    } catch (RecordNotFoundException e) {
-    }
+    ResultValue accountResult = NSFieldAccess.lookupFieldOnThisServer(guid, AccountAccess.ACCOUNT_INFO, activeReplica);
+//    ResultValue accountResult = null;
+//    try {
+//      accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
+//              AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+//    } catch (FieldNotFoundException e) {
+//    } catch (RecordNotFoundException e) {
+//    }
     if (accountResult == null) {
-      try {
-        guid = lookupPrimaryGuid(guid, activeReplica);
-        if (guid != null) {
-          accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
-                  AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
-        }
-      } catch (FieldNotFoundException e) {
-      } catch (RecordNotFoundException e) {
+      guid = lookupPrimaryGuid(guid, activeReplica);
+      if (guid != null) {
+        accountResult = NSFieldAccess.lookupFieldOnThisServer(guid, AccountAccess.ACCOUNT_INFO, activeReplica);
       }
+//      try {
+//        if (guid != null) {
+//          accountResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
+//                  AccountAccess.ACCOUNT_INFO).getKey(AccountAccess.ACCOUNT_INFO);
+//        }
+//      } catch (FieldNotFoundException e) {
+//      } catch (RecordNotFoundException e) {
+//      }
     }
     if (accountResult != null) {
       try {
@@ -72,18 +78,7 @@ public class NSAccountAccess {
    * @return a GUID
    */
   public static String lookupPrimaryGuid(String guid, GnsReconfigurable activeReplica) {
-    ResultValue guidResult = null;
-    try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null,
-              AccountAccess.PRIMARY_GUID).getKey(AccountAccess.PRIMARY_GUID);
-    } catch (FieldNotFoundException e) {
-    } catch (RecordNotFoundException e) {
-    }
-    if (guidResult != null) {
-      return (String) guidResult.get(0);
-    } else {
-      return null;
-    }
+    return lookupSingletonFieldOnThisServer(guid, AccountAccess.PRIMARY_GUID, activeReplica);
   }
 
   /**
@@ -96,10 +91,21 @@ public class NSAccountAccess {
    * @return a GUID
    */
   public static String lookupGuid(String name, GnsReconfigurable activeReplica) {
+    return lookupSingletonFieldOnThisServer(name, AccountAccess.GUID, activeReplica);
+  }
+
+  /**
+   * Returns null if the field or the record cannot be found.
+   *
+   * @param recordName
+   * @param key
+   * @param activeReplica
+   * @return
+   */
+  private static String lookupSingletonFieldOnThisServer(String recordName, String key, GnsReconfigurable activeReplica) {
     ResultValue guidResult = null;
     try {
-      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), name, null,
-              AccountAccess.GUID).getKey(AccountAccess.GUID);
+      guidResult = NameRecord.getNameRecordMultiField(activeReplica.getDB(), recordName, null, key).getKey(key);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {
     }

@@ -7,11 +7,11 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.commands.account.*;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.commands.NSCommand;
+import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,9 +19,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupPrimaryGuid extends GnsCommand {
+public class LookupPrimaryGuid extends NSCommand {
 
-  public LookupPrimaryGuid(CommandModule module) {
+  public LookupPrimaryGuid(NSCommandModule module) {
     super(module);
   }
 
@@ -36,9 +36,9 @@ public class LookupPrimaryGuid extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws JSONException {
     String guid = json.getString(GUID);
-    String result = AccountAccess.lookupPrimaryGuid(guid);
+    String result = NSAccountAccess.lookupPrimaryGuid(guid, activeReplica);
     if (result != null) {
       return result;
     } else {

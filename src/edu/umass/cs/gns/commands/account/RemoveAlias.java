@@ -10,8 +10,10 @@ package edu.umass.cs.gns.commands.account;
 import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
+import edu.umass.cs.gns.clientsupport.CommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;
@@ -44,22 +46,26 @@ public class RemoveAlias extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String guid = json.getString(GUID);
-    String name = json.getString(NAME);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
-    GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
-    }
-    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
-      if (accountInfo == null) {
-        return BADRESPONSE + " " + BADACCOUNT + " " + guid;
-      }
-      return AccountAccess.removeAlias(accountInfo, name);
+    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+      return CommandRequestHandler.sendCommandRequest(json);
     } else {
-      return BADRESPONSE + " " + BADSIGNATURE;
+      String guid = json.getString(GUID);
+      String name = json.getString(NAME);
+      String signature = json.getString(SIGNATURE);
+      String message = json.getString(SIGNATUREFULLMESSAGE);
+      GuidInfo guidInfo;
+      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+        return BADRESPONSE + " " + BADGUID + " " + guid;
+      }
+      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+        if (accountInfo == null) {
+          return BADRESPONSE + " " + BADACCOUNT + " " + guid;
+        }
+        return AccountAccess.removeAlias(accountInfo, name);
+      } else {
+        return BADRESPONSE + " " + BADSIGNATURE;
+      }
     }
   }
 

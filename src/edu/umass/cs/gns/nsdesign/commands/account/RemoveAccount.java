@@ -7,14 +7,14 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.commands.account.*;
 import edu.umass.cs.gns.clientsupport.AccessSupport;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.commands.NSCommand;
+import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -26,9 +26,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveAccount extends GnsCommand {
+public class RemoveAccount extends NSCommand {
 
-  public RemoveAccount(CommandModule module) {
+  public RemoveAccount(NSCommandModule module) {
     super(module);
   }
 
@@ -43,20 +43,20 @@ public class RemoveAccount extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String name = json.getString(NAME);
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name);
+      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromName(name, activeReplica);
       if (accountInfo != null) {
-        return AccountAccess.removeAccount(accountInfo);
+        return NSAccountAccess.removeAccount(accountInfo, activeReplica);
       } else {
         return BADRESPONSE + " " + BADACCOUNT;
       }

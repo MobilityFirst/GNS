@@ -7,14 +7,15 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.commands.account.*;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.commands.NSCommand;
+import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -28,9 +29,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RetrieveAliases extends GnsCommand {
+public class RetrieveAliases extends NSCommand {
 
-  public RetrieveAliases(CommandModule module) {
+  public RetrieveAliases(NSCommandModule module) {
     super(module);
   }
 
@@ -45,7 +46,7 @@ public class RetrieveAliases extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
@@ -54,8 +55,8 @@ public class RetrieveAliases extends GnsCommand {
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
-    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+    if (NSAccessSupport.verifySignature(guidInfo, signature, message)) {
+      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(guid, activeReplica);
       ArrayList<String> aliases = accountInfo.getAliases();
       return new JSONArray(aliases).toString();
     } else {

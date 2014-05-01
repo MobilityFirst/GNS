@@ -13,7 +13,6 @@ import org.json.JSONObject;
 
 import java.util.Set;
 
-
 /**
  * This packet is sent by local name server to a name server to request the current active replicas
  * for a name. The name server replies also uses this packet to send the reply to a local name server.
@@ -24,18 +23,17 @@ import java.util.Set;
  *
  * @author Abhigyan
  */
-public class RequestActivesPacket extends BasicPacket
-{
+public class RequestActivesPacket extends BasicPacket {
 
-	public final static String NAME = "name";
-	public static final String ACTIVES = "actives";
-	public final static String LNSID = "lnsid";
-  public final static String LNS_REQ_ID = "lnsreqid";
+  public static final String NAME = "name";
+  public static final String ACTIVES = "actives";
+  public static final String LNSID = "lnsid";
+  public static final String LNS_REQ_ID = "lnsreqid";
 
   /**
    * Name for which the active replicas are being requested
    */
-	private String name;
+  private String name;
 
   /**
    * Local name server sending the request.
@@ -48,56 +46,53 @@ public class RequestActivesPacket extends BasicPacket
    */
   private Set<Integer> activeNameServers;
 
-
   /**
    * Unique request ID assigned by local name server.
    */
   private int lnsRequestID;
 
-
-	public RequestActivesPacket(String name, int lnsID, int lnsRequestID) {
-		this.name = name;
-		this.type = PacketType.REQUEST_ACTIVES;
-		this.lnsID = lnsID;
+  public RequestActivesPacket(String name, int lnsID, int lnsRequestID) {
+    this.name = name;
+    this.type = PacketType.REQUEST_ACTIVES;
+    this.lnsID = lnsID;
     this.lnsRequestID = lnsRequestID;
-	}
+  }
 
-	public RequestActivesPacket(JSONObject json) throws JSONException {
-		this.name = json.getString(NAME);
-		this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVES));
-		this.type = PacketType.REQUEST_ACTIVES;
-		this.lnsID = json.getInt(LNSID);
+  public RequestActivesPacket(JSONObject json) throws JSONException {
+    this.name = json.getString(NAME);
+    this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVES));
+    this.type = PacketType.REQUEST_ACTIVES;
+    this.lnsID = json.getInt(LNSID);
     this.lnsRequestID = json.getInt(LNS_REQ_ID);
   }
 
-	@Override
-	public JSONObject toJSONObject() throws JSONException
-	{
-		JSONObject json = new JSONObject();
-		json.put(NAME,name);
-		json.put(ACTIVES,new JSONArray(activeNameServers));
-		Packet.putPacketType(json, getType());
-		json.put(LNSID, lnsID);
+  @Override
+  public JSONObject toJSONObject() throws JSONException {
+    JSONObject json = new JSONObject();
+    json.put(NAME, name);
+    json.put(ACTIVES, new JSONArray(activeNameServers));
+    Packet.putPacketType(json, getType());
+    json.put(LNSID, lnsID);
     json.put(LNS_REQ_ID, lnsRequestID);
-		return json;
-	}
+    return json;
+  }
 
-	public void setActiveNameServers(Set<Integer> activeNameServers) {
-		this.activeNameServers = activeNameServers;
+  public void setActiveNameServers(Set<Integer> activeNameServers) {
+    this.activeNameServers = activeNameServers;
 //    this.activeChangeInProgress = activeChangeInProgress;
-	}
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public Set<Integer> getActiveNameServers() {
-		return activeNameServers;
-	}
-	
-	public int getLNSID() {
-		return lnsID;
-	}
+  public Set<Integer> getActiveNameServers() {
+    return activeNameServers;
+  }
+
+  public int getLNSID() {
+    return lnsID;
+  }
 
   public int getLnsRequestID() {
     return lnsRequestID;

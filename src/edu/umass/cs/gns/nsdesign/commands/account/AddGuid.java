@@ -7,18 +7,18 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import edu.umass.cs.gns.commands.account.*;
-import edu.umass.cs.gns.clientsupport.AccessSupport;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.httpserver.Defs;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSFieldMetaData;
+import edu.umass.cs.gns.nsdesign.commands.NSCommand;
+import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -30,9 +30,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AddGuid extends GnsCommand {
+public class AddGuid extends NSCommand {
 
-  public AddGuid(CommandModule module) {
+  public AddGuid(NSCommandModule module) {
     super(module);
   }
 
@@ -47,7 +47,7 @@ public class AddGuid extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String name = json.getString(NAME);
     String accountGuid = json.getString(GUID);
@@ -56,11 +56,11 @@ public class AddGuid extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
+    if ((accountGuidInfo = NSAccountAccess.lookupGuidInfo(accountGuid, activeReplica)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
-    if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+    if (NSAccessSupport.verifySignature(accountGuidInfo, signature, message)) {
+      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(accountGuid, activeReplica);
       if (accountInfo == null) {
         return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
       }
@@ -69,13 +69,13 @@ public class AddGuid extends GnsCommand {
       } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
         return BADRESPONSE + " " + TOMANYGUIDS;
       } else {
-        String result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey);
+        String result = NSAccountAccess.addGuid(accountInfo, name, newGuid, publicKey, activeReplica);
         if (OKRESPONSE.equals(result)) {
           // set up the default read access
-          FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
+          NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, activeReplica);
           // give account guid read and write access to all fields in the new guid
-          FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
-          FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+          NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid, activeReplica);
+          NSFieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid, activeReplica);
           return newGuid;
         } else {
           return result;
