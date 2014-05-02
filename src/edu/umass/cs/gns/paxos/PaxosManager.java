@@ -104,6 +104,8 @@ public class PaxosManager extends AbstractPaxosManager {
 
   private boolean debugMode = false;
 
+  private boolean consistentHashCoordinatorOrder = false;
+
   /********************BEGIN: public methods for paxos manager********************/
 
   public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransportInterface nioServer,
@@ -115,6 +117,7 @@ public class PaxosManager extends AbstractPaxosManager {
     this.nioServer = nioServer;
     this.clientRequestHandler = outputHandler;
     this.debugMode = paxosConfig.isDebugMode();
+    this.consistentHashCoordinatorOrder = paxosConfig.isConsistentHashCoordinatorOrder();
     // recover previous state if exists using logger
 //    this.clientRequestHandler.deleteStateBeforeRecovery();
     paxosLogger = new PaxosLogger(paxosConfig.getPaxosLogFolder(), nodeID, this);
@@ -178,6 +181,15 @@ public class PaxosManager extends AbstractPaxosManager {
     return createPaxosInstance(paxosIDNoVersion, version, nodeIDs, initialState);
   }
 
+  @Override
+  public Set<Integer> getPaxosNodeIDs(String paxosIDNoVersion) {
+    PaxosReplicaInterface replica = paxosInstances.get(paxosIDNoVersion);
+    if (replica != null) {
+      return replica.getNodeIDs();
+    }
+    return null;
+  }
+
 
   /**
    * Adds a new Paxos instance to the set of actives.
@@ -211,7 +223,7 @@ public class PaxosManager extends AbstractPaxosManager {
       } else {
 
         assert initialState != null;
-        r = createPaxosReplicaObject(paxosID, nodeID, nodeIDs);//new PaxosReplicaInterface(paxosID, nodeID, nodeIDs);
+        r = createPaxosReplicaObject(paxosID, nodeID, nodeIDs);
 
         paxosLogger.logPaxosStart(paxosID, nodeIDs, new StatePacket(r.getAcceptorBallot(), 0, initialState));
 
@@ -223,7 +235,7 @@ public class PaxosManager extends AbstractPaxosManager {
     if (r1 != null && !r1.getPaxosID().equals(paxosID)) {
       r1.removePendingProposals();
       GNS.getLogger().info("OldPaxos replica replaced .. so log a stop message .. " + r1.getPaxosID() + " new replica " + paxosID);
-      paxosLogger.logPaxosStop(r1.getPaxosID());    // multiple stop msgs can get logged because other replica might stop in meanwhile.
+      paxosLogger.logPaxosStop(r1.getPaxosID());  // multiple stop msgs can get logged because other replica might stop in meanwhile.
     }
 
     if (r!= null) {
@@ -610,6 +622,9 @@ public class PaxosManager extends AbstractPaxosManager {
     }
   }
 
+  public boolean isConsistentHashCoordinatorOrder() {
+    return consistentHashCoordinatorOrder;
+  }
 }
 
 /**

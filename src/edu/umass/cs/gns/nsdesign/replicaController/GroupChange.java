@@ -173,7 +173,6 @@ public class GroupChange {
     } else {
       GNS.getLogger().info("Confirmation is received previously or is excessively delayed. " + oldActiveSetStop);
     }
-
   }
 
   /**

@@ -5,12 +5,12 @@ import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
-
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationOutput;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +51,7 @@ public class ComputeNewActivesTask extends TimerTask {
     computeNewActivesFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
     computeNewActivesFields.add(ReplicaControllerRecord.PRIMARY_NAMESERVERS);
     computeNewActivesFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+    computeNewActivesFields.add(ReplicaControllerRecord.ACTIVE_VERSION);
 
     computeNewActivesFields.add(ReplicaControllerRecord.PREV_TOTAL_READ);
     computeNewActivesFields.add(ReplicaControllerRecord.PREV_TOTAL_WRITE);
@@ -104,18 +105,19 @@ public class ComputeNewActivesTask extends TimerTask {
 
         GNS.getLogger().fine("I will select new actives for name = " + rcRecord.getName());
         Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
+        assert newActiveNameServers.size() >= Config.minReplica;
         if (isActiveSetModified(rcRecord.getActiveNameservers(), newActiveNameServers)) {
           numGroupChanges += 1;
           GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + numNamesRead +
                   "\tRound\t" + replicationRound + "\tUpdatingOtherActives");
 
           int newActiveVersion = replicaController.getNewActiveVersion(rcRecord.getActiveVersion());
-          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(), replicaController.getNodeID(),
-                  newActiveNameServers, newActiveVersion);
+          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(),
+                  replicaController.getNodeID(), newActiveNameServers, newActiveVersion);
           // to propose request for coordination we send it to ourselves, so that coordinator receives the request
           replicaController.getNioServer().sendToID(replicaController.getNodeID(), activePropose.toJSONObject());
           try {
-            Thread.sleep(10); // sleep between successive names so we do not start a large number of group changes
+            Thread.sleep(100); // sleep between successive names so we do not start a large number of group changes
             // at the same time and a large fraction of the system resources are used in just doing group changes.
           } catch (InterruptedException e) {
             e.printStackTrace();
@@ -170,16 +172,18 @@ public class ComputeNewActivesTask extends TimerTask {
     int numReplica = numberOfReplica(rcRecord);
 
     // used for beehive.
-    if (Config.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
+    if (Config.replicationFrameworkType == ReplicationFrameworkType.BEEHIVE) {
       numReplica = BeehiveReplication.numActiveNameServers(rcRecord.getName()) - 3;
     }
 
     //Get a new set of active name servers for this record
-    newActiveNameServers = replicaController.getReplicationFramework().newActiveReplica(replicaController, rcRecord, numReplica, count);
+    ReplicationOutput replicationOutput =  replicaController.getReplicationFrameworkInterface().newActiveReplica(
+            replicaController,rcRecord, numReplica, count);
+    newActiveNameServers = replicationOutput.getReplicas();
 
     GNS.getStatLogger().info("ComputeNewActives: Round:" + count + " Name:" + rcRecord.getName()
-            + " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
-            + " NewReplica:" + newActiveNameServers.toString());
+    + " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
+    + " NewReplica:" + newActiveNameServers.toString());
     return newActiveNameServers;
   }
 
@@ -204,21 +208,19 @@ public class ComputeNewActivesTask extends TimerTask {
       // no updates, replicate everywhere.
       replicaCount = replicaController.getGnsNodeConfig().getNameServerIDs().size();
     } else {
-      replicaCount = StrictMath.round(StrictMath.round(
-              (lookup / (update * Config.normalizingConstant) + Config.minReplica)));
 
+      replicaCount = StrictMath.round(StrictMath.round(
+              (lookup / (update * Config.normalizingConstant))));
+      replicaCount = Math.max(replicaCount, Config.minReplica);
       if (replicaCount > replicaController.getGnsNodeConfig().getNameServerIDs().size()) {
         replicaCount = replicaController.getGnsNodeConfig().getNameServerIDs().size();
       }
     }
 
-    if (replicaCount > Config.maxReplica) {
-      replicaCount = Config.maxReplica;
-    }
+    replicaCount = Math.min(replicaCount, Config.maxReplica);
 
-    GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t"
-            + rcRecord.getName() + "\tLookup\t" + lookup + "\tUpdate\t" + update
-            + "\tReplicaCount\t" + replicaCount);
+    GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t" + rcRecord.getName() + "\tLookup\t" + lookup +
+            "\tUpdate\t" + update + "\tReplicaCount\t" + replicaCount);
 
     return replicaCount;
   }

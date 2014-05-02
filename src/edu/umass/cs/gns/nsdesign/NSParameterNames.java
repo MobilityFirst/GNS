@@ -82,9 +82,7 @@ public class NSParameterNames {
 
   public static final String FAILURE_DETECTION_TIMEOUT_INTERVAL = "failureDetectionTimeoutInterval";
 
-  public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
 
-  public static final String VARIATION = "variation";
 
   public static final String MOVING_AVERAGE_WINDOW_SIZE = "mavg";
 
@@ -118,10 +116,19 @@ public class NSParameterNames {
 
   public static final String NAME_ACTIVES = "nameActives";
 
+
+  // Test-related parameters
   public static final String SINGLE_NS = "singleNS";
 
   public static final String READ_COORDINATION = "readCoordination";
 
+  public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
+
+  public static final String VARIATION = "variation";
+
+  public static final String NO_PAXOS_LOG = "noPaxosLog";
+
+  public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
 
   /**
    * Returns the list of command line options recognized by a name servers.
@@ -208,8 +215,6 @@ public class NSParameterNames {
 
     Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec", true, "paxos starts at most this many seconds after start of experiment");
 
-    Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "add packet delay equal to ping delay between two servers (used for emulation).");
-    Option variation = new Option(VARIATION, true, "variation");
 
     Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Size of window to calculate the "
@@ -252,14 +257,16 @@ public class NSParameterNames {
             .withDescription("File with all LNS-NS ping latencies")
             .create(LNS_NS_PING_FILE);
     Option signatureCheck = new Option(SIGNATURE_CHECK, "whether an update operation checks signature or not");
+
     // used for testing only
-
     Option quitAfterTime = new Option(QUIT_AFTER_TIME, true, "name server will quit after this time");
-
     Option nameActives = new Option(NAME_ACTIVES, false, "list of name actives provided to this file");
-
     Option singleNS = new Option(SINGLE_NS, false, "If true, run a single name server");
     Option readCoordination = new Option(READ_COORDINATION, false, "If true, coordinate on read requests also");
+    Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "add packet delay equal to ping delay between two servers (used for emulation).");
+    Option variation = new Option(VARIATION, true, "variation");
+    Option noPaxosLog = new Option(NO_PAXOS_LOG, false, "noPaxosLog");
+    Option useGNSNIOTransport = new Option(USE_GNS_NIO_TRANSPORT, false, "to use GNSNIOTransport or to use NioServer");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -320,6 +327,8 @@ public class NSParameterNames {
     commandLineOptions.addOption(nameActives);
     commandLineOptions.addOption(singleNS);
     commandLineOptions.addOption(readCoordination);
+    commandLineOptions.addOption(noPaxosLog);
+    commandLineOptions.addOption(useGNSNIOTransport);
     return commandLineOptions;
   }
 }

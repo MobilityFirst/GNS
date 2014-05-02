@@ -65,7 +65,7 @@ import edu.umass.cs.gns.util.Util;
  * incoming messages to the appropriate application paxos
  * instance.
  */
-public class PaxosManager extends AbstractPaxosManager {
+public class PaxosManager{
 	public static final boolean DEBUG=NIOTransport.DEBUG;
 
 	private static final long MORGUE_DELAY = 30000;

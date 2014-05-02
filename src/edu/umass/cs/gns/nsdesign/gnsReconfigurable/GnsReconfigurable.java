@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -336,38 +337,48 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 
   @Override
   public String getState(String name) {
-
-    try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-      if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
-      return new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive()).toString();
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe("Record not found for name: " + name);
-      e.printStackTrace();
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-      e.printStackTrace();
+    if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
+      // incomplete feature as it is only used in running experiments
+      return "";
+    } else {
+      try {
+        NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
+        if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
+        return new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive()).toString();
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().severe("Record not found for name: " + name);
+        e.printStackTrace();
+      } catch (FieldNotFoundException e) {
+        GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+        e.printStackTrace();
+      }
+      return null;
     }
-    return null;
   }
 
   @Override
   public boolean updateState(String name, String state) {
-    try {
-      TransferableNameRecordState state1 = new TransferableNameRecordState(state);
-      NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-      nameRecord.updateState(state1.valuesMap, state1.ttl);
-      // todo handle the case if record does not exist. for this update state should return record not found exception.
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-      e.printStackTrace();
-    } catch (FailedUpdateException e) {
-      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-      e.printStackTrace();
+    if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
+      // incomplete feature as it is only used in running experiments
+      // do nothing
+      return true;
+    } else {
+      try {
+        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
+        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
+        nameRecord.updateState(state1.valuesMap, state1.ttl);
+        // todo handle the case if record does not exist. for this update state should return record not found exception.
+      } catch (JSONException e) {
+        e.printStackTrace();
+      } catch (FieldNotFoundException e) {
+        GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+        e.printStackTrace();
+      } catch (FailedUpdateException e) {
+        GNS.getLogger().severe("Failed update exception: " + e.getMessage());
+        e.printStackTrace();
+      }
+      return true;
     }
-    return true;
   }
 
   /**

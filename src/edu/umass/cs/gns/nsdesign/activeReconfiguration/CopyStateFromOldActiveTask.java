@@ -42,13 +42,13 @@ public class CopyStateFromOldActiveTask extends TimerTask {
 //    ValuesMap valuesMap = new ValuesMap();
 //    ResultValue rv = new ResultValue();
 //    rv.add("pqrst");
-//    valuesMap.put("abcd", rv);
+//    valuesMap.put(NameRecordKey.EdgeRecord.getName(), rv);
 //    packet.changePacketTypeToPreviousValueResponse();
 //    packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
 //
 //  }
 //
-//  public void run1() {
+//  public void run() {
 //    makeFakeResponse(packet);
 //    try {
 //      activeReplica.getNioServer().sendToID(activeReplica.getNodeID(), packet.toJSONObject());
@@ -78,7 +78,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
 
       if (oldActive == -1) {
         // this will happen after all actives have been tried at least once.
-        GNS.getLogger().severe(" Exception ERROR:  No More Actives Left To Query. Cancel Task!!! " + packet);
+        GNS.getLogger().severe(" Exception ERROR:  No More Actives Left To Query. Cancel Task!!! " + packet + " Actives queried: " + oldActivesQueried);
         activeReplica.getOngoingStateTransferRequests().remove(requestID);
         throw new CancelExecutorTaskException();
       }

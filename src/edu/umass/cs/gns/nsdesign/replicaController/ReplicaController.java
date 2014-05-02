@@ -68,7 +68,7 @@ public class ReplicaController implements Replicable {
   private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
 
   /** Algorithm for replicating name records.*/
-  private ReplicationFrameworkInterface replicationFramework;
+  private ReplicationFrameworkInterface replicationFrameworkInterface;
 
   /**
    * constructor object
@@ -84,9 +84,12 @@ public class ReplicaController implements Replicable {
 
     this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
-    // todo uncomment this after testing demand-based replication
-//		scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
-//				Config.analysisIntervalMillis, Config.analysisIntervalMillis, TimeUnit.MILLISECONDS);
+    // todo commented this because locality-based replication is still under testing
+//    this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType);
+//    if (replicationFrameworkInterface != null) {
+//      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
+//              new Random().nextInt(Config.analysisIntervalSec), Config.analysisIntervalSec, TimeUnit.SECONDS);
+//    }
   }
 
   /**
@@ -120,8 +123,8 @@ public class ReplicaController implements Replicable {
     return scheduledThreadPoolExecutor;
   }
 
-  public ReplicationFrameworkInterface getReplicationFramework() {
-    return replicationFramework;
+  public ReplicationFrameworkInterface getReplicationFrameworkInterface() {
+    return replicationFrameworkInterface;
   }
 
   /**

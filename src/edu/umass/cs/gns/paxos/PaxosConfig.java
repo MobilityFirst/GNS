@@ -46,6 +46,7 @@ public class PaxosConfig {
 
   private static final int DEFAULT_FD_TIMEOUT_MILLIS = 30000;
 
+  private boolean consistentHashCoordinatorOrder = false;
 
   /**
    * This constructor will initialize all parameters to default values.
@@ -116,4 +117,13 @@ public class PaxosConfig {
   public void setDebugMode(boolean debugMode) {
     this.debugMode = debugMode;
   }
+
+  public boolean isConsistentHashCoordinatorOrder() {
+    return consistentHashCoordinatorOrder;
+  }
+
+  public void setConsistentHashCoordinatorOrder(boolean consistentHashCoordinatorOrder) {
+    this.consistentHashCoordinatorOrder = consistentHashCoordinatorOrder;
+  }
+
 }

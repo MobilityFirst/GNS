@@ -16,10 +16,17 @@ public class WorkloadParams {
 
   public static final String OBJECT_SIZE = "object_size_kb";
   public static final String TTL = "ttl";
+  public static final String DURATION = "duration";
 
   private int objectSizeKB;
 
   private int ttl;
+
+//  public int getDurationSec() {
+//    return durationSec;
+//  }
+
+//  private int durationSec = -1;
 
   public WorkloadParams(String workloadConfFile) throws IOException {
     if (workloadConfFile == null) return;
@@ -39,6 +46,12 @@ public class WorkloadParams {
       this.ttl = Integer.parseInt(prop.getProperty(TTL));
       GNS.getLogger().info("TTL value = " + ttl);
     } else this.ttl = GNS.DEFAULT_TTL_SECONDS;
+
+//    if (prop.containsKey(DURATION)) {
+//      this.durationSec = Integer.parseInt(prop.getProperty(DURATION));
+//      GNS.getLogger().info("Duration sec = " + durationSec);
+//    }
+
   }
 
   public int getObjectSizeKB() {

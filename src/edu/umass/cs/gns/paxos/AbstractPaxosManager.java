@@ -25,6 +25,7 @@ public abstract class AbstractPaxosManager {
    */
   public abstract boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, Replicable paxosInterface);
 
+  public abstract Set<Integer> getPaxosNodeIDs(String paxosIDNoVersion);
   /**
    * Propose requestPacket in the paxos instance with the given paxosID.
    *

@@ -4,8 +4,6 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 
-import java.util.Set;
-
 
 
 /*************************************************************
@@ -25,5 +23,5 @@ public interface ReplicationFrameworkInterface {
    * @param numReplica Number of replicas
    * @return A Set containing active nameservers id.
    ************************************************************/
-  public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord record, int numReplica, int count) throws FieldNotFoundException;
+  public ReplicationOutput newActiveReplica(ReplicaController rc, ReplicaControllerRecord record, int numReplica, int count) throws FieldNotFoundException;
 }

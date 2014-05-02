@@ -21,18 +21,14 @@ import java.util.Set;
  * replicas.
  * <br/>
  * @see edu.umass.cs.gns.localnameserver.NameRecordStats
- * @see edu.umass.cs.gns.nameserver.replicacontroller.ListenerNameRecordStats
+ * @see edu.umass.cs.gns.nsdesign.replicaController.NameStats
  * @author Hardeep Uppal, Abhigyan
  *************************************************************/
 public class NameServerVoteThread extends Thread {
 
-
 	/** Time interval in ms between transmitting votes **/
 	private long voteIntervalMillis;
 
-
-//  public static ConcurrentHashMap<Integer,Integer> unackedVotes = new ConcurrentHashMap<Integer,Integer>();
-	
 	/**************************************************************
 	 * Constructs a new NameServerVoteThread that periodically 
 	 * multicast nameserver selection votes to primary nameservers 
@@ -54,10 +50,8 @@ public class NameServerVoteThread extends Thread {
 		long interval;
 		int count = 0;
 
-    Random r = new Random();
-		
 		try {
-			long x = voteIntervalMillis / 2 + r.nextInt((int) voteIntervalMillis / 2);
+			long x = voteIntervalMillis  + new Random().nextInt((int) voteIntervalMillis);
 			Thread.sleep(x);
 			GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + x + "ms");
 		} catch (InterruptedException e) {
@@ -83,7 +77,10 @@ public class NameServerVoteThread extends Thread {
       int update;
 			NameServerSelectionPacket nsSelectionPacket;
       int nsToVoteFor = selectNSToVoteFor(); // name server selection does not depend on name
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" NameRecordStats Key Set: " + LocalNameServer.getNameRecordStatsKeySet());
+      GNS.getLogger().info("LNS ID" + LocalNameServer.getNodeID() + " Closest NS " + nsToVoteFor);
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().fine(" NameRecordStats Key Set Size: " + LocalNameServer.getNameRecordStatsKeySet().size());
+      }
       int nameCount = 0;
       int allNames = 0;
       long t0  = System.currentTimeMillis();
@@ -109,7 +106,7 @@ public class NameServerVoteThread extends Thread {
           for (int primary: primaryNameServers) {
             LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);
           }
-          Thread.sleep(5); // we are sleeping between sending votes. if we do not sleep, there will be a period
+          Thread.sleep(100); // we are sleeping between sending votes. if we do not sleep, there will be a period
           // where all resources are used for sending votes, which will affect other traffic at LNS.
         } catch (Exception e) {
           e.printStackTrace();

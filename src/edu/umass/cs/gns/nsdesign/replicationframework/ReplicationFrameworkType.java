@@ -21,14 +21,15 @@ public enum ReplicationFrameworkType {
   OPTIMAL;
 
   public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type) {
-    ReplicationFrameworkInterface framework;
+    ReplicationFrameworkInterface framework = null;
     // what type of replication?
-    switch (Config.replicationFramework) {
+    switch (Config.replicationFrameworkType) {
       case LOCATION:
         framework = new LocationBasedReplication();
         break;
       case RANDOM:
-        framework = new RandomReplication();
+        assert false: "FIXME: RandomReplication should implement ReplicationFrameworkInterface";
+//        framework = new RandomReplication();
         break;
       case BEEHIVE:
         // Abhigyan: we will enable beehive if we again need to run experiments with it.
@@ -38,6 +39,9 @@ public enum ReplicationFrameworkType {
 //                StartNameServer.alpha, StartNameServer.base);
 //        framework = new RandomReplication();
 //        break;
+      case STATIC:
+        framework = null;
+        break;
       default:
         throw new RuntimeException("Invalid replication framework");
     }

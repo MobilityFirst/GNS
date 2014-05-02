@@ -29,9 +29,6 @@ public class Config {
 
   public static boolean experimentMode = false;
 
-  public static boolean singleNS = false;
-
-  public static boolean readCoordination = false;
 
 //  public static int numReplicaControllers = 3;
 
@@ -41,14 +38,14 @@ public class Config {
   public static String paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
 
   public static DataStoreType dataStore = DataStoreType.MONGO;
-
+  public static int mongoPort = 27017;
 
   // active replica group change related parameters
   public static double normalizingConstant = 0.5;
   public static int minReplica = 3;
   public static int maxReplica = 100;
-  public static ReplicationFrameworkType replicationFramework;
-  public static int analysisIntervalMillis = 10000000;
+  public static ReplicationFrameworkType replicationFrameworkType;
+  public static int analysisIntervalSec = 100000;
   public static int movingAverageWindowSize = 20;
   public static int nameServerVoteSize = 5;
   public static final int NS_TIMEOUT_MILLIS = 2000;
@@ -57,7 +54,10 @@ public class Config {
   public static boolean useGNSNIOTransport = false;
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
-  public static int mongoPort = 27017;
+  public static boolean noPaxosLog = false;
+  public static boolean singleNS = false;
+  public static boolean readCoordination = false;
+
 
   public static synchronized void initialize(HashMap<String, String> allValues) {
     if (initialized) return;
@@ -67,8 +67,7 @@ public class Config {
     if (allValues.containsKey(NSParameterNames.PRIMARY_REPLICAS)) {
       GNS.numPrimaryReplicas = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));
 //      GNS.numPrimaryReplicas = numReplicaControllers;
-     }
-
+    }
     if (allValues.containsKey(NSParameterNames.FILE_LOGGING_LEVEL)) {
       GNS.fileLoggingLevel = allValues.get(NSParameterNames.FILE_LOGGING_LEVEL);
     }
@@ -101,6 +100,11 @@ public class Config {
       singleNS = true;
     }
 
+    if (allValues.containsKey(NSParameterNames.SINGLE_NS)) {
+      GNS.numPrimaryReplicas = 1;
+      singleNS = true;
+    }
+
     if (allValues.containsKey(NSParameterNames.READ_COORDINATION)) {
       readCoordination = Boolean.parseBoolean(allValues.get(NSParameterNames.READ_COORDINATION));
     }
@@ -112,12 +116,35 @@ public class Config {
       GNS.getLogger().info("Emulating ping latency at name server: emulatePingLatencies = " + emulatePingLatencies);
     }
 
+    if (allValues.containsKey(NSParameterNames.NO_PAXOS_LOG)) {
+      noPaxosLog = Boolean.parseBoolean(allValues.get(NSParameterNames.NO_PAXOS_LOG));
+    }
+
     if (allValues.containsKey(NSParameterNames.MONGO_PORT)) {
       mongoPort = Integer.parseInt(allValues.get(NSParameterNames.MONGO_PORT));
     }
 
     if (allValues.containsKey(NSParameterNames.DEBUG_MODE)) {
       debugMode = Boolean.parseBoolean(allValues.get(NSParameterNames.DEBUG_MODE));
+    }
+
+    if (allValues.containsKey(NSParameterNames.STATIC)) {
+      replicationFrameworkType = ReplicationFrameworkType.STATIC;
+    } else if (allValues.containsKey(NSParameterNames.LOCATION)) {
+      replicationFrameworkType = ReplicationFrameworkType.LOCATION;
+    } else if (allValues.containsKey(NSParameterNames.RANDOM)) {
+      replicationFrameworkType = ReplicationFrameworkType.RANDOM;
+    }
+    GNS.getLogger().info("using replication type: " + replicationFrameworkType);
+
+    if (allValues.containsKey(NSParameterNames.REPLICATION_INTERVAL)) {
+      analysisIntervalSec = Integer.parseInt(allValues.get(NSParameterNames.REPLICATION_INTERVAL));
+    }
+    if (allValues.containsKey(NSParameterNames.NORMALIZING_CONSTANT)) {
+      normalizingConstant = Double.parseDouble(allValues.get(NSParameterNames.NORMALIZING_CONSTANT));
+    }
+    if (allValues.containsKey(NSParameterNames.USE_GNS_NIO_TRANSPORT)) {
+      useGNSNIOTransport = Boolean.parseBoolean(allValues.get(NSParameterNames.USE_GNS_NIO_TRANSPORT));
     }
 
   }

@@ -13,9 +13,9 @@ import java.util.*;
  * 
  * @author Hardeep Uppal
  ************************************************************/
-public class RandomReplication implements ReplicationFrameworkInterface {
-
-  @Override
+public class RandomReplication {//implements ReplicationFrameworkInterface
+  int NUM_RETRY = 1000;
+//  @Override
   public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count)
           throws FieldNotFoundException {
     // random replicas will be selected deterministically for each name.

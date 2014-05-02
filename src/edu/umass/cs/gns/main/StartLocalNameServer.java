@@ -70,6 +70,7 @@ public class StartLocalNameServer {
   public static final String VARIATION = "variation";
 
   public static ReplicationFrameworkType replicationFramework;
+
   public static int regularWorkloadSize;
   public static int mobileWorkloadSize;
   public static double alpha;

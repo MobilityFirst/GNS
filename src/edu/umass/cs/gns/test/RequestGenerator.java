@@ -52,6 +52,7 @@ public class RequestGenerator {
     int count = 0;
 
     double ratePerSec = 100.0; // default rate is 100 req/sec
+
     for (TestRequest r: requests) {
       if (r.type == TestRequest.RATE) {     // delay
         ratePerSec = Double.parseDouble(r.name);
@@ -154,7 +155,7 @@ public class RequestGenerator {
 
     private int requestCount;
     private String name;
-    private LNSPacketDemultiplexer packetDemultiplexer;
+    private LNSPacketDemultiplexer packetDemux;
     private int objectSizeKB;
     private int ttl;
 
@@ -162,8 +163,8 @@ public class RequestGenerator {
 
       this.requestCount = count;
       this.name = name;
-      this.packetDemultiplexer = packetDemux;
-      this.objectSizeKB = 0;
+      this.packetDemux = packetDemux;
+      this.objectSizeKB = objectSizeKB;
       this.ttl = ttl;
     }
 
@@ -176,7 +177,7 @@ public class RequestGenerator {
               -1, ttl);
 
       try {
-        packetDemultiplexer.handleJSONObject(packet.toJSONObject());
+        packetDemux.handleJSONObject(packet.toJSONObject());
       } catch (JSONException e) {
         e.printStackTrace();
       }
@@ -188,7 +189,6 @@ public class RequestGenerator {
     private int requestCount;
     private String name;
     private LNSPacketDemultiplexer packetDemultiplexer;
-
 
     public GenerateRemoveRequest(String name, int count, LNSPacketDemultiplexer packetDemultiplexer) {
 

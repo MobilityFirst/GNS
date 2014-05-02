@@ -3,6 +3,7 @@ package edu.umass.cs.gns.paxos;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.paxos.paxospacket.*;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -258,13 +259,16 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable{
     this.paxosID = paxosID;
     this.nodeIDs = nodeIDs;
     this.nodeID = ID;
+    this.paxosManager = paxosManager;
+    // initialize paxos manager before initializing acceptorBallot and coordinatorBallot
+    // because getInitialCoordinatorReplica depends on paxos manager
     // initialize acceptorBallot and coordinatorBallot to default values
     acceptorBallot = new Ballot(0, getInitialCoordinatorReplica());
 
     coordinatorBallot  = new Ballot(0, getInitialCoordinatorReplica());
     if (coordinatorBallot.coordinatorID == nodeID) activeCoordinator = true;
-    this.paxosManager = paxosManager;
 
+    if (debugMode) GNS.getLogger().fine("Default coordinator chosen as: " + coordinatorBallot);
   }
 
   /********************* START: Methods for recovery from paxos logs ********************************/
@@ -645,16 +649,8 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable{
    * @return
    */
   private int getInitialCoordinatorReplica() {
-
-    String paxosID1 = paxosID;
-    int index = paxosID.lastIndexOf("-");
-    if (index > 0) paxosID1 = paxosID.substring(0, index);
-
-    Random r = new Random(paxosID1.hashCode());
-    ArrayList<Integer> x1  = new ArrayList<Integer>(nodeIDs);
-    Collections.sort(x1);
-    Collections.shuffle(x1, r);
-    return x1.get(0);
+    if (paxosManager.isConsistentHashCoordinatorOrder()) return getConsistentHashCoordinatorOrder().get(0);
+    return getDefaultCoordinatorOrder().get(0);
   }
 
   /**
@@ -665,21 +661,52 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable{
    * @return nodeID of next coordinator replica
    */
   private int getNextCoordinatorReplica() {
+    ArrayList<Integer> x1;
+    if (paxosManager.isConsistentHashCoordinatorOrder()) x1 = getConsistentHashCoordinatorOrder();
+    else x1 = getDefaultCoordinatorOrder();
 
-    String paxosID1 = paxosID;
-    int index = paxosID.lastIndexOf("-");
-    if (index > 0) paxosID1 = paxosID.substring(0, index);
-
-    Random r = new Random(paxosID1.hashCode());
-    ArrayList<Integer> x1  = new ArrayList<Integer>(nodeIDs);
-    Collections.sort(x1);
-    Collections.shuffle(x1, r);
     for (int x: x1) {
       if (paxosManager.isNodeUp(x)) return x;
     }
     return  x1.get(0);
   }
 
+  /**
+   * Computes the default ordering among nodes to be elected as coordinator.
+   */
+  private ArrayList<Integer> getDefaultCoordinatorOrder() {
+
+    String paxosID1 = paxosManager.getPaxosKeyFromPaxosID(paxosID);
+    Random r = new Random(paxosID1.hashCode());
+    ArrayList<Integer> x1  = new ArrayList<Integer>(nodeIDs);
+    Collections.sort(x1);
+    Collections.shuffle(x1, r);
+    return x1;
+  }
+
+  /**
+   * Computes the ordering among nodes based on a consistent hash of their node IDs. Nodes are sorted in a circular
+   * order with the first node as the node whose consistent hash is greater or equal to the paxos ID.
+   */
+  private ArrayList<Integer> getConsistentHashCoordinatorOrder() {
+    GNS.getLogger().info("Using consistent-hash based coordinator");
+    TreeMap<String, Integer> sorted = new TreeMap<String, Integer>();
+    for (int x: nodeIDs) {
+      String hashVal = ConsistentHashing.getConsistentHash(Integer.toString(x));
+      sorted.put(hashVal, x);
+    }
+    // assuming paxos ID is the hash of the name
+    String paxosIDHash = paxosManager.getPaxosKeyFromPaxosID(paxosID);
+    ArrayList<Integer> sorted1 = new ArrayList<Integer>();
+    for(String nodeHash: sorted.keySet()) {
+      if (nodeHash.compareTo(paxosIDHash) >=0) sorted1.add(sorted.get(nodeHash));
+    }
+    for(String nodeHash: sorted.keySet()) {
+      if (nodeHash.compareTo(paxosIDHash) >=0) break;
+      sorted1.add(sorted.get(nodeHash));
+    }
+    return sorted1;
+  }
 
   /**
    * Received request from client, so propose it to the current coordinator.

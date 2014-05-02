@@ -23,7 +23,6 @@ public class ConsistentHashing {
 
   private static int numReplicaControllers;
 
-
   /**
    * A treemap whose keys are hashes of ID of all name servers, and values are IDs of name servers.
    */
@@ -123,6 +122,10 @@ public class ConsistentHashing {
       }
     }
     return groupIDsAndMembers;
+  }
+
+  public static String getConsistentHash(String name) {
+    return getMD5Hash(name);
   }
 
   /******************END: public methods in this class ******************************/

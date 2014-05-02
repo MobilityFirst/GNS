@@ -14,50 +14,32 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-//import edu.umass.cs.gns.nameserver.NameServer;
-
 public class FailureDetection{
 	
-	/**
-	 * Frequency of pinging a node.
-	 */
-	 private int pingIntervalMillis = 10000;
+	/*** Frequency of pinging a node */
+	private int pingIntervalMillis = 10000;
 
-  /**
-   * Interval after which a node is declared as failed is no response is received
-   */
+  /** Interval after which a node is declared as failed is no response is received */
   private int timeoutIntervalMillis = 30000;
 
-//	/**
-//	 * number of nodes.
-//	 */
-//	 int N;
-	
 	/**
 	 * ID of this node.
 	 */
-	 int nodeID;
+	public int nodeID;
 
 	/**
 	 * Last time a message is received from this node.
 	 */
-	 ConcurrentHashMap<Integer,Long> nodeInfo = new ConcurrentHashMap<Integer, Long>();
+  public ConcurrentHashMap<Integer,Long> nodeInfo = new ConcurrentHashMap<Integer, Long>();
 	
-	/**
-	 * Current status (up or down) of all nodes.
+	/*** Current status (up or down) of all nodes.
 	 */
-	 ConcurrentHashMap<Integer,Boolean> nodeStatus = new ConcurrentHashMap<Integer, Boolean>();
+  private ConcurrentHashMap<Integer,Boolean> nodeStatus = new ConcurrentHashMap<Integer, Boolean>();
 
-	/**
-	 * 
-	 */
+	/** Current status (up or down) of all nodes. */
 	 private ReentrantLock lock = new ReentrantLock();
 
 //	public DatagramSocket socket;
-
-	/**
-	 * Timer object to schedule failure detection messages.
-	 */
 
 
 	/**

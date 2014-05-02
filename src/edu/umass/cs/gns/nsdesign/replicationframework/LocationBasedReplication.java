@@ -14,7 +14,7 @@ import java.util.Set;
  * and is used to select active name servers based on location
  * of the demand.
  * 
- * @author Hardeep Uppal
+ * @author Hardeep Uppal, Abhigyan
  ************************************************************/
 public class LocationBasedReplication implements ReplicationFrameworkInterface {
 
@@ -29,44 +29,50 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
    * @param count  Number of times replicas have been computed
    ************************************************************/
   @Override
-  public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
+  public ReplicationOutput newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
 
 
-    if (numReplica >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
-      return new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs());
-    }
+
     Set<Integer> newActiveNameServerSet;
+    Set<Integer> localityBasedReplicas;
     //		 Use top-K based on locality.
     if (numReplica > Config.nameServerVoteSize) {
       newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc.getGnsNodeConfig(), Config.nameServerVoteSize);
+      localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
     } else {
       newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc.getGnsNodeConfig(), numReplica);
+      localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
     }
 
-    // Select based on votes as much as you can.
+    if (numReplica >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
+      newActiveNameServerSet = new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs());
+    } else {
 
-    if (newActiveNameServerSet.size() < numReplica) {
-      int difference = numReplica - newActiveNameServerSet.size();
-      //Randomly select the other active name servers
-      for (int i = 1; i <= difference; i++) {
-        if (newActiveNameServerSet.size() >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
-          break;
-        }
-        boolean added = false;
-        // Ensures that random selection will still be deterministic for each name. 
-        Random random = new Random(rcRecord.getName().hashCode());
-        do {
-          int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNameServerIDs().size());
-          int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNameServerIDs(),nsIndex);
-          if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
-            continue;
+      // Select based on votes as much as you can.
+
+      if (newActiveNameServerSet.size() < numReplica) {
+        int difference = numReplica - newActiveNameServerSet.size();
+        //Randomly select the other active name servers
+        for (int i = 1; i <= difference; i++) {
+          if (newActiveNameServerSet.size() >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
+            break;
           }
-          added = newActiveNameServerSet.add(newActiveNameServerId);
-        } while (!added);
+          boolean added = false;
+          // Ensures that random selection will still be deterministic for each name.
+          Random random = new Random(rcRecord.getName().hashCode());
+          do {
+            int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNameServerIDs().size());
+            int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNameServerIDs(), nsIndex);
+            if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
+              continue;
+            }
+            added = newActiveNameServerSet.add(newActiveNameServerId);
+          } while (!added);
+        }
       }
     }
 
-    return newActiveNameServerSet;
+    return new ReplicationOutput(newActiveNameServerSet, localityBasedReplicas);
   }
 
   private int getSetIndex(Set<Integer> nodeIds, int index) {

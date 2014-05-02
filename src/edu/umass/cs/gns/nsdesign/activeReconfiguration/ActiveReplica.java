@@ -1,12 +1,15 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorPaxos;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.StaticReplicationCoordinator;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
@@ -70,6 +73,10 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
 
     if (Config.singleNS) {
       this.coordinator = new DefaultGnsCoordinator(nodeID, this.activeReplicaApp);
+    } else if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
+      GNS.getLogger().info("Using static replication .... ");
+      this.coordinator = new StaticReplicationCoordinator(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
+              this.activeReplicaApp, paxosConfig, Config.readCoordination);
     } else {
       this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
               this.activeReplicaApp, paxosConfig, Config.readCoordination);

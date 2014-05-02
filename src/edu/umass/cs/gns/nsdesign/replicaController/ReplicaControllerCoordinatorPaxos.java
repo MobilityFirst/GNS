@@ -30,6 +30,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
                                            Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
+    paxosConfig.setConsistentHashCoordinatorOrder(true);
     this.paxosManager = new PaxosManager(nodeID, nodeConfig,
             new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION), paxosInterface, paxosConfig);
     createPrimaryPaxosInstances();

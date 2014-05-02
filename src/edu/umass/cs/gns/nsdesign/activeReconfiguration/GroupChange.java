@@ -154,7 +154,18 @@ public class GroupChange {
    * state from one of the old active replicas who have executed the stop request.
    */
   public static void handleNewActiveStartForward(NewActiveSetStartupPacket packet, ActiveReplica activeReplica)
-          throws JSONException{
+          throws JSONException, IOException {
+
+//    int currentVersion = 100;
+//    if (packet.getNewActiveVersion() == currentVersion) {
+//      packet.changePacketTypeToResponse();
+//      int sendingActive = packet.getSendingActive();
+//      packet.changeSendingActive(activeReplica.getNodeID());
+//
+//      if (Config.debugMode) GNS.getLogger().info("NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
+//
+//      activeReplica.getNioServer().sendToID(sendingActive, packet.toJSONObject());
+//    }
     CopyStateFromOldActiveTask copyTask = new CopyStateFromOldActiveTask(packet, activeReplica);
     activeReplica.getScheduledThreadPoolExecutor().scheduleAtFixedRate(copyTask, 0, Config.NS_TIMEOUT_MILLIS,
             TimeUnit.MILLISECONDS);

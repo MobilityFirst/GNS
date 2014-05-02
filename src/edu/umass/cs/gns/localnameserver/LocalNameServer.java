@@ -13,7 +13,6 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
@@ -146,7 +145,7 @@ public class LocalNameServer {
     // After starting PingManager because it accesses PingManager.
     new LNSListenerAdmin().start();
 
-    // todo abhigyan: un-comment this after enabling group changes of active replicas at name server.
+    // todo commented this because locality-based replication is still under testing
 //    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
 //      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
 //    }
