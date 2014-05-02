@@ -41,6 +41,7 @@ HELP = '-help'
 
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
+USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 
 BEEHIVE_REPLICATION = '-beehive'
 BEEHIVEDHTBASE = '-beehiveBase'
@@ -214,6 +215,9 @@ def run_local_name_server(node_id, work_dir, update_trace_file):
     if emulate_ping_latencies:
         command += ' ' + EMULATE_PING_LATENCIES
         command += ' ' + VARIATION + ' ' + str(variation)
+
+    if exp_config.use_gns_nio_transport:
+        command += ' ' + USE_GNS_NIO_TRANSPORT
 
     if adaptiveTimeout:
         command += ' ' + ADAPTIVE_TIMEOUT

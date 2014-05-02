@@ -10,8 +10,9 @@ def copy_workload(user, ssh_key, lns_ids, trace_folder, remote_folder, remote_fi
     cmd_filename = '/tmp/copy_trace.sh'
     fw = open(cmd_filename, 'w')
     for lns_id, host_name in lns_ids.items():
+        node_folder = os.path.join(remote_folder, str(lns_id))
         cmd = 'scp -i ' + ssh_key + ' -oStrictHostKeyChecking=no -oConnectTimeout=60 ' + trace_folder + '/' + str(lns_id) \
-              + ' ' + user + '@' + host_name + ':' + remote_folder + '/' + remote_filename
+              + ' ' + user + '@' + host_name + ':' + node_folder + '/' + remote_filename
         fw.write(cmd + '\n')
     fw.close()
     os.system('parallel -a ' + cmd_filename)

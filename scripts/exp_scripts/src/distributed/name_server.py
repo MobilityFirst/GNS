@@ -35,7 +35,7 @@ HELP = '-help'
 TINY_UPDATE = '-tinyUpdate'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
-
+USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 
 READ_COORDINATION = '-readCoordination'
 EVENTUAL_CONSISTENCY = '-eventualConsistency'
@@ -214,6 +214,8 @@ def run_name_server(node_id, config_file, node_config_file):
         command += ' ' + PAXOS_START_MAX_DELAY + ' ' + str(paxos_start_max_delay_sec)
     if exp_config.no_paxos_log:
         command += ' ' + NO_PAXOS_LOG
+    if exp_config.use_gns_nio_transport:
+        command += ' ' + USE_GNS_NIO_TRANSPORT
 
     command += ' ' + WORKER_THREAD_COUNT + ' ' + str(worker_thread_count)
 

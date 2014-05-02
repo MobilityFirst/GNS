@@ -40,6 +40,7 @@ HELP = '-help'
 TINY_UPDATE = '-tinyUpdate'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
+USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 
 KMEDOIDS_REPLICATION = '-kmedoids'
 NUM_LNS = '-numLNS' 
@@ -62,17 +63,17 @@ NAME_ACTIVES = '-nameActives'
 
 #Parameters: Update as required
 name_server_jar = exp_config.gnrs_jar
-is_local = False                          #Run the name server instance on the local host.
+is_local = False                          # Run the name server instance on the local host.
 node_config = exp_config.node_config
 primary_name_server = exp_config.primary_name_server
-aggregate_interval = exp_config.replication_interval      #In seconds
-replication_interval = exp_config.replication_interval      #In seconds
+aggregate_interval = exp_config.replication_interval      # In seconds
+replication_interval = exp_config.replication_interval      # In seconds
 #exp_config.replication_interval    #In seconds
-normalizing_constant = 0.1   #Used as the denominator for calculating number of replicas
+normalizing_constant = 0.1   # Used as the denominator for calculating number of replicas
                             #NumReplicas = lookupRate / (updateRate * normalizing_constant)
-moving_avg_window_size = 20 #Used for calculating inter-arrival update time and ttl value
+moving_avg_window_size = 20  # Used for calculating inter-arrival update time and ttl value
 
-ttl_constant = 0.0            #Multiplied by inter-arrival update time to calculate ttl value of a name
+ttl_constant = 0.0            # Multiplied by inter-arrival update time to calculate ttl value of a name
 
 default_ttl_regular_name = 0   # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
 default_ttl_mobile_name = 0    # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
@@ -171,6 +172,8 @@ def run_name_server(node_id, work_dir):
     else:
         print 'Error: No replication model selected'
         sys.exit(2)
+
+
     if primary_name_server == 1:
         command += ' ' + SINGLE_NS
 
@@ -186,6 +189,8 @@ def run_name_server(node_id, work_dir):
     if emulate_ping_latencies:
         command += ' ' + EMULATE_PING_LATENCIES
         command += ' ' + VARIATION + ' ' + str(variation)
+    if exp_config.use_gns_nio_transport:
+        command += ' ' + USE_GNS_NIO_TRANSPORT
     if not name_actives ==  '':
         command += ' ' + NAME_ACTIVES + ' ' + name_actives
         

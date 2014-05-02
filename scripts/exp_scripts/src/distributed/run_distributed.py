@@ -36,6 +36,8 @@ from logparse.parse_log import parse_log  # added parent_folder to path to impor
 from run_all_nodes import run_all_lns, run_all_ns
 import copy_workload
 from util.exp_events import parse_experiment_events, EventType
+from nodeconfig.node_config_writer import read_node_to_hostname_mapping
+
 
 def main():
     # first we initialize parameter in exp_config before importing any local module.
@@ -48,21 +50,22 @@ def main():
     run_one_experiment(output_folder, local_config_file)
 
 
-def run_one_experiment(local_output_folder, local_config_file):
+def run_one_experiment(local_log_folder, local_config_file):
 
     time1 = time.time()
 
-    if os.path.exists(local_output_folder):
-        os.system('rm -rf ' + local_output_folder)
+    if os.path.exists(local_log_folder):
+        os.system('rm -rf ' + local_log_folder)
         # print '***** QUITTING!!! Output folder already exists:', output_folder, '*******'
         # sys.exit(2)
-    if local_output_folder.endswith('/'):
-        local_output_folder = local_output_folder[:-1]
+    if local_log_folder.endswith('/'):
+        local_log_folder = local_log_folder[:-1]
     # copy config files to record experiment configuration
-    print 'Creating local output folder: ' + local_output_folder
-    os.system('mkdir -p ' + local_output_folder)
+    print 'Creating local log folder: ' + local_log_folder
+    os.system('mkdir -p ' + local_log_folder)
 
-    ns_ids, lns_ids = get_node_ids(exp_config.local_ns_file, exp_config.local_lns_file)
+    # ns_ids, lns_ids = get_node_ids(exp_config.local_ns_file, exp_config.local_lns_file)
+    ns_ids, lns_ids = get_ns_lns_ids_config_file()
 
     remote_workload_config = os.path.split(exp_config.wfile)[1]
 
@@ -70,7 +73,7 @@ def run_one_experiment(local_output_folder, local_config_file):
 
     REMOTE_UPDATE_TRACE = 'request_trace'
 
-    remote_config_file = os.path.join(exp_config.remote_gns_logs, os.path.split(local_config_file)[1])
+    remote_config_file = os.path.split(local_config_file)[1]
 
     os.system('date')
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +
@@ -88,23 +91,22 @@ def run_one_experiment(local_output_folder, local_config_file):
         os.system('sleep ' + str(exp_config.mongo_sleep))  # ensures mongo is fully running
 
     # copy scripts and config files ...
-    cmd = './cpScriptsConfigs.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' '\
-              +  exp_config.local_lns_file + ' ' + local_config_file + ' ' + exp_config.wfile + ' ' + exp_config.node_config_folder + ' ' + \
-          exp_config.remote_gns_logs + ' ' + REMOTE_NODE_CONFIG
-    os.system(cmd)  #
+    from cp_scripts_configs import cp_scripts_configs
+    cp_scripts_configs(exp_config.user, exp_config.ssh_key, ns_ids, lns_ids,
+                       exp_config.remote_gns_logs, local_config_file, exp_config.wfile,
+                       exp_config.node_config_folder, REMOTE_NODE_CONFIG)
 
     # copy workload for local name servers ....
     copy_workload.copy_workload(exp_config.user, exp_config.ssh_key, lns_ids, exp_config.update_trace,
                                 exp_config.remote_gns_logs, REMOTE_UPDATE_TRACE)
-    # os.system('./cpWorkload.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_lns_file + ' '
-    #           + exp_config.remote_gns_logs + ' ' + exp_config.update_trace + ' ' + REMOTE_UPDATE_TRACE)
 
     # copy GNS jar file ....
     if exp_config.copy_jar:
         remote_jar_folder = os.path.split(exp_config.remote_jar_file)[0]
         print remote_jar_folder
         os.system('./rmcpJar.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +
-                  exp_config.local_lns_file + ' ' + exp_config.local_jar_file + ' ' + remote_jar_folder + ' ' + exp_config.remote_jar_file)
+                  exp_config.local_lns_file + ' ' + exp_config.local_jar_file + ' ' + remote_jar_folder + ' ' +
+                  exp_config.remote_jar_file)
     elif exp_config.download_jar:
         # url of jar file is hardcoded
         # location of jar file is hard coded
@@ -129,24 +131,39 @@ def run_one_experiment(local_output_folder, local_config_file):
     if exp_config.event_file is None:
         wait_exp_over()
     else:
+        # NOTE: not sure if this works in emulation
+        assert False
         handle_events(exp_config.event_file, exp_config.experiment_run_time, ns_ids, lns_ids)
 
     print 'Ending experiment ..'
-    os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' + exp_config.local_lns_file)
+    # ok
+    os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +
+              exp_config.local_lns_file)
+    from get_log import get_log
+    get_log(exp_config.user, exp_config.ssh_key, ns_ids, lns_ids, local_log_folder, exp_config.remote_gns_logs)
 
-    os.system('./getLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' + exp_config.local_lns_file + ' ' + local_output_folder + '  ' + exp_config.remote_gns_logs)
-
+    #  ensure that this does not change
     print 'Output stats ...'
-    stats_folder = local_output_folder + '_stats'
-    if local_output_folder.endswith('/'):
-        stats_folder = local_output_folder[:-1] + '_stats'
-    parse_log(local_output_folder, stats_folder)
+
+    stats_folder = local_log_folder + '_stats'
+    if local_log_folder.endswith('/'):
+        stats_folder = local_log_folder[:-1] + '_stats'
+    parse_log(local_log_folder, stats_folder)
 
     time2 = time.time()
 
     diff = time2 - time1
     print 'TOTAL EXPERIMENT TIME:', int(diff / 60), 'minutes'
     sys.exit(2)
+
+
+def get_ns_lns_ids_config_file():
+    """Reads node_id to host name mapping from one of the config files in the map"""
+    assert exp_config.node_config_folder is not None and os.path.exists(exp_config.node_config_folder)
+
+    files = os.listdir(exp_config.node_config_folder)
+    # read mapping from any file
+    return read_node_to_hostname_mapping(os.path.join(exp_config.node_config_folder, files[0]))
 
 
 def get_node_ids(local_ns_file, local_lns_file):
@@ -171,10 +188,13 @@ def wait_exp_over():
     if exp_time_sec == -1:
         return
     sleep_time = 0
+
     while sleep_time < exp_time_sec + excess_wait:
-        os.system('sleep 60')
-        sleep_time += 60
-        if sleep_time % 60 == 0: print 'Time = ', sleep_time / 60, 'min /', (exp_time_sec + excess_wait) / 60, 'min'
+        t = 10
+        os.system('sleep ' + str(t))
+        sleep_time += t
+        if sleep_time % 60 == 0:
+            print 'Time = ', sleep_time / 60, 'min /', (exp_time_sec + excess_wait) / 60, 'min'
 
 
 def sleep_for_time(sleep_time):

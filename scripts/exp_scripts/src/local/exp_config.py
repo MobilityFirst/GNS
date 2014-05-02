@@ -83,6 +83,8 @@ is_experiment_mode = False  # set to True to run experiments, false otherwise.
 is_debug_mode = False   #
 primary_name_server = 3  # number of primary name servers
 
+use_gns_nio_transport = False
+
 #lookupTrace = 'lookupTrace10'
 #updateTrace = 'updateTrace10'
 
@@ -160,6 +162,18 @@ def initialize(filename):
         global clean_start
         clean_start = parser.getboolean(ConfigParser.DEFAULTSECT, 'clean_start')
 
+    #
+    # Parameters related to experiment setup
+    #
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_sleep'):
+        global ns_sleep
+        ns_sleep = int(parser.get(ConfigParser.DEFAULTSECT, 'ns_sleep'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'random_node_ids'):
+        global random_node_ids
+        random_node_ids = int(parser.get(ConfigParser.DEFAULTSECT, 'random_node_ids'))
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'experiment_run_time'):
         global experiment_run_time
         experiment_run_time = int(parser.get(ConfigParser.DEFAULTSECT, 'experiment_run_time'))
@@ -172,6 +186,14 @@ def initialize(filename):
         global num_lns
         num_lns = int(parser.get(ConfigParser.DEFAULTSECT, 'num_lns'))
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'failed_nodes'):  # multiple failed nodes are concatenated by ':'
+        global failed_nodes
+        failed_nodes = parser.get(ConfigParser.DEFAULTSECT, 'failed_nodes').split(':')
+        failed_nodes = [int(x) for x in failed_nodes]
+
+    #
+    # GNS-specific parameters
+    #
     if parser.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server'):
         global primary_name_server
         primary_name_server = int(parser.get(ConfigParser.DEFAULTSECT, 'primary_name_server'))
@@ -192,11 +214,6 @@ def initialize(filename):
         global replication_interval
         replication_interval = parser.getint(ConfigParser.DEFAULTSECT, 'replication_interval')
 
-    if parser.has_option(ConfigParser.DEFAULTSECT, 'failed_nodes'):  # multiple failed nodes are concatenated by ':'
-        global failed_nodes
-        failed_nodes = parser.get(ConfigParser.DEFAULTSECT, 'failed_nodes').split(':')
-        failed_nodes = [int(x) for x in failed_nodes]
-
     if parser.has_option(ConfigParser.DEFAULTSECT, 'failure_detection_msg_interval'):
         global failure_detection_msg_interval
         failure_detection_msg_interval = int(parser.get(ConfigParser.DEFAULTSECT, 'failure_detection_msg_interval'))
@@ -206,14 +223,9 @@ def initialize(filename):
         failure_detection_timeout_interval = int(parser.get(ConfigParser.DEFAULTSECT,
                                                             'failure_detection_timeout_interval'))
 
-    if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_sleep'):
-        global ns_sleep
-        ns_sleep = int(parser.get(ConfigParser.DEFAULTSECT, 'ns_sleep'))
-
-    if parser.has_option(ConfigParser.DEFAULTSECT, 'random_node_ids'):
-        global random_node_ids
-        random_node_ids = int(parser.get(ConfigParser.DEFAULTSECT, 'random_node_ids'))
-
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'use_gns_nio_transport'):
+        global use_gns_nio_transport
+        use_gns_nio_transport = bool(parser.get(ConfigParser.DEFAULTSECT, 'use_gns_nio_transport'))
 
 def initialize_path_locations(parser):
     """Initializes locations of various folders:

@@ -15,11 +15,12 @@ import local.exp_config
 import local.generate_config_file
 from test_utils import *
 
+
 class BasicSetup(unittest.TestCase):
     """Base class for all unittests for gns. Describes the common parameters needed by all tests"""
 
     # number of name servers
-    ns = 3
+    ns = 8
     # number of local name servers
     lns = 1
     lns_id = None

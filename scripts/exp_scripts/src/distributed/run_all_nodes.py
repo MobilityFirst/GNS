@@ -11,9 +11,9 @@ def run_all_lns(user, ssh_key, lns_ids, remote_gns_folder, config_file, node_con
 
     cmds = []
     for node_id, lns in lns_ids.items():
-
+        remote_node_folder = os.path.join(remote_gns_folder, str(node_id))
         cmd = 'ssh -i ' + ssh_key + '  -oConnectTimeout=60 -oStrictHostKeyChecking=no -l ' + user \
-              + ' ' + lns + ' "mkdir -p ' + remote_gns_folder + '; cd ' + remote_gns_folder + '; python local_name_server.py '
+              + ' ' + lns + ' "mkdir -p ' + remote_node_folder + '; cd ' + remote_node_folder + '; python local_name_server.py '
         if update_trace_param is not None and update_trace_param is not '':
             cmd += '  --updateTrace ' + update_trace_param
         if workload_config_file is not None and workload_config_file is not '':
@@ -36,8 +36,9 @@ def run_all_ns(user, ssh_key, ns_ids, remote_gns_folder, config_file, node_confi
     tmp_cmd_file = '/tmp/name-server.sh'
     cmds = []
     for node_id, ns in ns_ids.items():
+        remote_node_folder = os.path.join(remote_gns_folder, node_id)
         cmd = 'ssh -i ' + ssh_key + ' -oConnectTimeout=60 -oStrictHostKeyChecking=no -l ' + user \
-              + ' ' + ns + ' "mkdir -p ' + remote_gns_folder + '; cd ' + remote_gns_folder + '; python name_server.py --id ' + str(node_id)
+              + ' ' + ns + ' "mkdir -p ' + remote_node_folder + '; cd ' + remote_node_folder + '; python name_server.py --id ' + str(node_id)
         if node_config_file is not None and node_config_file is not '':
             cmd += '  --nsfile ' + node_config_file
         cmd += '  --configFile ' + config_file + ' "'

@@ -53,6 +53,7 @@ PHI = '-phi'
 
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
+USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 
 FILE_LOGGING_LEVEL = '-fileLoggingLevel'
 CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
@@ -193,6 +194,8 @@ def run_local_name_server(node_id, config_file, node_config_file, update_trace, 
     if emulate_ping_latencies:
         command += ' ' + EMULATE_PING_LATENCIES
         command += ' ' + VARIATION + ' ' + str(variation)
+    if exp_config.use_gns_nio_transport:
+        command += ' ' + USE_GNS_NIO_TRANSPORT
 
     command += ' ' + FILE_LOGGING_LEVEL + ' ' + file_logging_level
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level

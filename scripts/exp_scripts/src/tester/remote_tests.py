@@ -11,8 +11,8 @@ sys.path.append(parent_folder)
 
 import distributed.exp_config
 from logparse.read_final_stats import FinalStats
-from nodeconfig.node_config_writer import deployment_config_writer
-from nodeconfig.node_config_latency_calculator import default_latency_calculator
+from nodeconfig.node_config_writer import emulation_config_writer   # deployment_config_writer
+from nodeconfig.node_config_latency_calculator import default_latency_calculator, geo_latency_calculator
 from workload.write_workload import RequestType, WorkloadParams, workload_writer
 from test_utils import *
 from util.exp_events import NodeCrashEvent, write_events_to_file
@@ -35,6 +35,11 @@ class TestSetupRemote(local_tests.BasicSetup):
 
     lns_geo_file = None
 
+    ns_geo_file = None
+
+    # type of emulation to be used. can be : None/geographic/latency
+    emulation = None
+
     def setUp(self):
 
         print "Command line arguments: ",  sys.argv
@@ -53,37 +58,32 @@ class TestSetupRemote(local_tests.BasicSetup):
         if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'lns_geo_file'):
             self.lns_geo_file = self.config_parse.get(ConfigParser.DEFAULTSECT, 'lns_geo_file')
 
+        if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'ns_geo_file'):
+            self.ns_geo_file = self.config_parse.get(ConfigParser.DEFAULTSECT, 'ns_geo_file')
+
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
         self.trace_folder = os.path.join(self.local_output_folder, 'trace')
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'update_trace', self.trace_folder)
 
     def run_exp(self, requests):
         """Run experiments given a set of requests for a single local name server"""
-
         workload_writer({self.ns: requests}, self.trace_folder)
         return self.run_exp_multi_lns()
 
     def run_exp_multi_lns(self):
         """ Runs experiments with multiple local name servers sending requests"""
 
-        tmp_ns_file = self.ns_file
-        if self.ns != get_line_count(self.ns_file):
-            # write a new ns file with only 'self.ns' name servers
-            tmp_ns_file = '/tmp/ns_file'
-            fw = open(tmp_ns_file, 'w')
-            for i, line in enumerate(open(self.ns_file)):
-                fw.write(line)
-                if i == self.ns - 1:
-                    break
-            fw.close()
-
-            self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_file', tmp_ns_file)
-
         node_config_file = os.path.join(self.local_output_folder, 'node_config_file')
-        deployment_config_writer(tmp_ns_file, self.lns_file, node_config_file)
+        emulation_config_writer(self.ns, self.lns, node_config_file, self.ns_file, self.lns_file)
+        # deployment_config_writer(self.ns_file, self.lns_file, node_config_file)
 
         node_config_folder = os.path.join(self.local_output_folder, 'node_config_folder')
-        default_latency_calculator(node_config_file, node_config_folder, filename_id=False)
+
+        if self.emulation is None:
+            default_latency_calculator(node_config_file, node_config_folder)
+        elif self.emulation == 'geographic':
+            geo_latency_calculator(node_config_folder, node_config_file, self.ns_geo_file, self.lns_geo_file)
+
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'config_folder', node_config_folder)
         temp_workload_config_file = os.path.join(self.local_output_folder, 'tmp_w.ini')
         self.workload_conf.write(open(temp_workload_config_file, 'w'))
@@ -685,6 +685,10 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
 
         # self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(self.ns))
 
+        self.ns = 40
+        self.lns = 40
+
+        # emulate latencies for 1K names
         total_time = 0
         # write workload. decide experiment time
         lns_ids_int = range(self.ns, self.ns + self.lns)
@@ -705,13 +709,13 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
 
         total_time += num_names/len(lns_ids)/add_req_rate
 
-        gen_add_requests(self.trace_folder, self.lns_file, number_names=num_names, append_to_file=True,
+        gen_add_requests(self.trace_folder, number_names=num_names, append_to_file=True,
                          lns_ids=lns_ids, name_prefix=prefix)
 
         delay = 50000
         self.append_request_to_all_files([delay,  RequestType.DELAY], lns_ids, self.trace_folder)
         total_time += delay/1000
-        read_write_req_rate = 10
+        read_write_req_rate = 50
 
         num_lookups = num_names * 30
         num_updates = num_names * 30
@@ -724,7 +728,8 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
                                                              lns_ids=lns_ids, name_prefix=prefix,
                                                              exp_duration=expected_time,
                                                              locality_parameter=1,
-                                                             locality_percent=1.0)
+                                                             locality_percent=1.0,
+                                                             num_lns=self.lns)
 
         self.config_parse.set(ConfigParser.DEFAULTSECT, "experiment_run_time", str(total_time))
         output_stats = self.run_exp_multi_lns()
@@ -736,23 +741,35 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         self.assertEqual(output_stats.read, total_lookups, "Successful reads mismatch")
         self.assertEqual(output_stats.write, total_updates, "Successful writes mismatch")
 
-    def test_a1_request_latency_replication(self):
-        """Test dynamic replication of name records"""
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'replication_interval', str(100))
+    def test_a2_check_latency_emulation(self):
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies', str(True))
+        self.emulation = 'geographic'
         self.test_a_request_latency()
+
+    def test_a3_request_latency_replication(self):
+        """Test replication of name records based on geo-locality"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'replication_interval', str(50))
+        self.test_a_request_latency()
+
 
     def test_b_request_latency_read_coordination(self):
         """[Linearizable consistency] Tests request latency with reads also coordinate with other replicas"""
         self.config_parse.set(ConfigParser.DEFAULTSECT, "read_coordination", str(True))
-        self.test_a1_request_latency_replication()
+        self.test_a_request_latency()
 
     def test_c_request_latency_eventual(self):
         """[Eventual consistency] Tests request latency with an eventual consistency protocol"""
+        # not implemented
+        assert False
         self.config_parse.set(ConfigParser.DEFAULTSECT, "eventual_consistency", str(True))
         self.test_a_request_latency()
 
+
+
     def test_d_fluid_replication(self):
         """Generate a workload with varying geo-locality and change placement at fast time-scales"""
+        # not implemented
+        assert False
 
     @staticmethod
     def create_empty_trace_files(lns_ids, trace_folder):

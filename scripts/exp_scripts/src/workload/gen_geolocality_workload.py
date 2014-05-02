@@ -82,9 +82,6 @@ def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_
     if locality_parameter > len(lns_list):
         locality_parameter = len(lns_list)
 
-    #
-
-
     fw_lookup = []  # file writer for lookup traces of each local name server
     fw_update = []  # file writer for update traces of each local name server
     for i, lns in enumerate(lns_list):
@@ -143,7 +140,7 @@ def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_
             write_to_file(fw_lookup[x], fw_name_lns_lookup, x, mobile_name, 1)
             q_count += 1
         fw_name_lns_lookup.write('\n')
-    
+
     # close all files
     for fw in fw_lookup:
         fw.close()
@@ -223,14 +220,15 @@ def read_lns_geo_file(filename, num_lns):
     """Returns list of lns, and a dict with pairwise distances between lns"""
     lns = []
     f = open(filename)
-    for line in f:
-        lns.append(line.split()[0].strip())
+    for i, line in enumerate(f):
+        # lns.append(line.split()[0].strip())
+        lns.append(str(i))
 
     lns_geo = {}
     f = open(filename)
-    for line in f:
+    for i, line in enumerate(f):
         tokens = line.split()
-        lns_geo[tokens[0]] = [float(tokens[1]), float(tokens[2])]
+        lns_geo[str(i)] = [float(tokens[0]), float(tokens[1])]
     lns_dist = {}
     if num_lns < 0:
         num_lns = len(lns)

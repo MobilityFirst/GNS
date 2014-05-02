@@ -130,6 +130,8 @@ emulate_ping_latencies = False
 # variation in latency emulation
 variation = 0.10
 
+use_gns_nio_transport = True
+
 event_file = None  # file with list of events at nodes, e.g., failure, restart, node addition, node removal
 
 scheme = 'locality'
@@ -271,6 +273,10 @@ def initialize_gns_parameters(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'replication_interval'):
         global replication_interval
         replication_interval = parser.getint(ConfigParser.DEFAULTSECT, 'replication_interval')
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies'):
+        global emulate_ping_latencies
+        emulate_ping_latencies = bool(parser.get(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies'))
 
 
 def initialize_replication():
