@@ -8,9 +8,6 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 import edu.umass.cs.amazontools.AMIRecord;
 import edu.umass.cs.amazontools.AMIRecordType;
-import static edu.umass.cs.amazontools.AMIRecordType.Amazon_Linux_AMI_2013_03_1;
-import static edu.umass.cs.amazontools.AMIRecordType.Amazon_Linux_AMI_2013_09_2;
-import static edu.umass.cs.amazontools.AMIRecordType.MongoDB_2_4_8_with_1000_IOPS;
 import edu.umass.cs.amazontools.AWSEC2;
 import edu.umass.cs.amazontools.InstanceStateRecord;
 import edu.umass.cs.amazontools.RegionRecord;
@@ -158,7 +155,7 @@ public class EC2Runner {
           + "gpgcheck=0\n"
           + "enabled=1\\\" > mongodb.repo\n" // crazy double escaping for JAVA and BASH going on here!!
           + "mv mongodb.repo /etc/yum.repos.d/mongodb.repo\n"
-          + "yum --quiet --assumeyes install mongo-10gen-server\n"
+          + "yum --quiet --assumeyes install mongodb-org\n"
           + "service mongod start\n";
 //  private static final String mongoInstallScript = "#!/bin/bash\n"
 //          + "cd /home/ec2-user\n"
@@ -218,22 +215,17 @@ public class EC2Runner {
         installScript = cassandraInstallScript;
         break;
       default: // MONGO
-        switch (amiRecordType) {
-//          case Amazon_Linux_AMI_2014_03_1:
-//            installScript = mongoInstallScript;
-//            break;
-          case Amazon_Linux_AMI_2013_03_1:
-            installScript = mongoInstallScript;
-            break;
-          case Amazon_Linux_AMI_2013_09_2:
-            installScript = mongoInstallScript;
-            break;
-          case MongoDB_2_4_8_with_1000_IOPS:
-            installScript = mongoShortInstallScript;
-            break;
-          default:
-            System.out.println("Invalid combination of " + amiRecordType + " and " + dataStoreType);
-            return;
+        if (amiRecordType.toString().contains("Amazon_Linux")) {
+          installScript = mongoInstallScript;
+        } else {
+          switch (amiRecordType) {
+            case MongoDB_2_4_8_with_1000_IOPS:
+              installScript = mongoShortInstallScript;
+              break;
+            default:
+              System.out.println("Invalid combination of " + amiRecordType + " and " + dataStoreType);
+              return;
+          }
         }
     }
 
@@ -460,8 +452,8 @@ public class EC2Runner {
 
       configName = createRunsetName != null ? createRunsetName
               : terminateRunsetName != null ? terminateRunsetName
-              : runsetDescribe != null ? runsetDescribe 
-              : runSetWriteConfig != null ? runSetWriteConfig 
+              : runsetDescribe != null ? runsetDescribe
+              : runSetWriteConfig != null ? runSetWriteConfig
               : null;
 
       System.out.println("Config name: " + configName);

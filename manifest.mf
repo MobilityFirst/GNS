@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.2
+Created-By: 1.7.0_45-b18 (Oracle Corporation)
+X-COMMENT: Main-Class will be added automatically by build
+Built-By: westy
+Main-Class: edu.umass.cs.gns.httpserver.GnsHttpServer
+Build-Version: 1.7_2014-4-25_build2
+Class-Path: .
+

@@ -9,7 +9,6 @@ import edu.umass.cs.amazontools.AMIRecordType;
 import edu.umass.cs.amazontools.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
 
-import static edu.umass.cs.gns.installer.HostConfigParser.getConfPath;
 import edu.umass.cs.gns.main.GNS;
 import java.io.File;
 import java.io.InputStream;
