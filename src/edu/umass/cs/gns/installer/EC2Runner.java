@@ -8,6 +8,9 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 import edu.umass.cs.amazontools.AMIRecord;
 import edu.umass.cs.amazontools.AMIRecordType;
+import static edu.umass.cs.amazontools.AMIRecordType.Amazon_Linux_AMI_2013_03_1;
+import static edu.umass.cs.amazontools.AMIRecordType.Amazon_Linux_AMI_2013_09_2;
+import static edu.umass.cs.amazontools.AMIRecordType.MongoDB_2_4_8_with_1000_IOPS;
 import edu.umass.cs.amazontools.AWSEC2;
 import edu.umass.cs.amazontools.InstanceStateRecord;
 import edu.umass.cs.amazontools.RegionRecord;
@@ -216,6 +219,9 @@ public class EC2Runner {
         break;
       default: // MONGO
         switch (amiRecordType) {
+//          case Amazon_Linux_AMI_2014_03_1:
+//            installScript = mongoInstallScript;
+//            break;
           case Amazon_Linux_AMI_2013_03_1:
             installScript = mongoInstallScript;
             break;

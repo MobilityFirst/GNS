@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+<ec2username name="ec2-user"/>
+<keyname name="aws"/>
+<hosttype name="linux"/>
+<datastore name="MONGO"/>
+<host id="0" ip="54.82.134.12"/>
+<host id="2" ip="54.214.162.170"/>
+<host id="1" ip="54.193.240.45"/>
+</root>
