@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.amazontools.RegionRecord;
+import edu.umass.cs.aws.support.RegionRecord;
 
 /**
  *

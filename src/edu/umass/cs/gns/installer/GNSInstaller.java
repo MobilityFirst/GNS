@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.networktools.SSHClient;
+import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
@@ -8,7 +8,7 @@ import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import edu.umass.cs.gns.statusdisplay.StatusModel;
 import edu.umass.cs.gns.util.Format;
-import edu.umass.cs.networktools.ExecuteBash;
+import edu.umass.cs.aws.networktools.ExecuteBash;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
