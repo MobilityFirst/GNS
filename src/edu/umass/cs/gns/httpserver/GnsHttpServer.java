@@ -106,7 +106,7 @@ public class GnsHttpServer {
           OutputStream responseBody = exchange.getResponseBody();
 
           URI uri = exchange.getRequestURI();
-          GNS.getLogger().info("HTTP SERVER GOT: " + uri.toString());
+          GNS.getLogger().info("HTTP SERVER REEQUEST FROM " + exchange.getRemoteAddress().getHostName() + ": " + uri.toString());
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
 

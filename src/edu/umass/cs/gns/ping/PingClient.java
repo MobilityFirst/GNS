@@ -9,7 +9,7 @@ package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.utils.Util;
+import edu.umass.cs.gns.util.ThreadUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -95,7 +95,7 @@ public class PingClient {
         processPingResponse(id, receivedTime);
       } catch (IOException e) {
         GNS.getLogger().severe("Error waiting for response " + e);
-        Util.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
+       ThreadUtils.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
       } catch (NumberFormatException e) {
         GNS.getLogger().severe("Error parsing response " + e);
       }
@@ -162,7 +162,7 @@ public class PingClient {
     PingClient pingClient = new PingClient(gnsNodeConfig1);
     while (true) {
       GNS.getLogger().info("RTT = " + pingClient.sendPing(0));
-      Util.sleep(1000);
+      ThreadUtils.sleep(1000);
     }
   }
 }

@@ -173,7 +173,7 @@ public class EC2Runner {
   private static final String mongoShortInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
-          + "yum --quiet --assumeyes install emacs\n" // for debugging
+          //+ "yum --quiet --assumeyes install emacs\n" // for debugging
           + "service mongod start\n";
   private static final String cassandraInstallScript = "#!/bin/bash\n"
           + "cd /home/ubuntu\n" //          + "echo \\\"[datastax]\n"
@@ -221,6 +221,9 @@ public class EC2Runner {
           switch (amiRecordType) {
             case MongoDB_2_4_8_with_1000_IOPS:
               installScript = mongoShortInstallScript;
+              break;
+            case Mongo_2014_5_6:
+              installScript = null;
               break;
             default:
               System.out.println("Invalid combination of " + amiRecordType + " and " + dataStoreType);

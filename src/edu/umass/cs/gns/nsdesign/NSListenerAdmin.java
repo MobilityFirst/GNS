@@ -55,8 +55,8 @@ public class NSListenerAdmin extends Thread {
    * @throws IOException
    */
   public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ActiveReplicaCoordinator appCoordinator,
-                         ReplicaController replicaController, ReplicaControllerCoordinator rcCooordinator,
-                         GNSNodeConfig gnsNodeConfig) {
+          ReplicaController replicaController, ReplicaControllerCoordinator rcCooordinator,
+          GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
     this.gnsReconfigurable = gnsReconfigurable;
     this.appCoordinator = appCoordinator;
@@ -164,10 +164,7 @@ public class NSListenerAdmin extends Thread {
             dumpRequestPacket.setJsonArray(jsonArray);
             Packet.sendTCPPacket(gnsNodeConfig, dumpRequestPacket.toJSONObject(), dumpRequestPacket.getLocalNameServer(), GNS.PortType.LNS_ADMIN_PORT);
             //Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), socket);
-
-            if (GNS.getLogger().isLoggable(Level.FINER)) {
-              GNS.getLogger().finer("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
-            }
+            GNS.getLogger().info("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             break;
           case ADMIN_REQUEST:
             AdminRequestPacket adminRequestPacket = new AdminRequestPacket(incomingJSON);

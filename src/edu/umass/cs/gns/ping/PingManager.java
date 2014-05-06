@@ -9,7 +9,7 @@ package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.utils.Util;
+import edu.umass.cs.gns.util.ThreadUtils;
 import java.io.IOException;
 import java.net.PortUnreachableException;
 
@@ -54,7 +54,7 @@ public class PingManager {
     GNS.getLogger().fine("Waiting for a bit before we start pinging.");
     int windowSlot = 0;
     while (true) {
-      Util.sleep(TIME_BETWEEN_PINGS);
+      ThreadUtils.sleep(TIME_BETWEEN_PINGS);
       for (int id : gnsNodeConfig.getNodeIDs()) {
         try {
           if (id != nodeId) {

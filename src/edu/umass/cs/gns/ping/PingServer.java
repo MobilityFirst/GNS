@@ -9,7 +9,7 @@ package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.utils.Util;
+import edu.umass.cs.gns.util.ThreadUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -58,7 +58,7 @@ public class PingServer {
           serverSocket.send(sendPacket);
         } catch (IOException e) {
           GNS.getLogger().severe("Error receiving ping packet " + e);
-          Util.sleep(2000);
+          ThreadUtils.sleep(2000);
         }
       }
     } catch (SocketException e) {

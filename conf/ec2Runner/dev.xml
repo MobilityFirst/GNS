@@ -6,7 +6,7 @@ All Rights Reserved
 -->
 <root>
   <ec2username name = "ec2-user"/>
-  <ami name="Amazon_Linux_AMI_2014_03_1"/>
+  <ami name="Mongo_2014_5_6"/>
   <datastore name = "MONGO"/>
   <region name="US_EAST_1"      cnt="1" ip="23.21.160.80"/>
   <region name="US_WEST_1"      cnt="1" ip="54.241.15.214"/>
