@@ -67,6 +67,7 @@ public class UpdateInfo {
   public synchronized String getUpdateStats(ConfirmUpdatePacket confirmPkt) {
     int latency = (int)(System.currentTimeMillis() - sendTime);
     int numTransmissions = 0;
+    confirmPkt.getResponseCode();
     String success = confirmPkt.isSuccess() ? "Success" : "Failed";
     String requestType = null;
     if (confirmPkt.getType().equals(Packet.PacketType.CONFIRM_ADD))
@@ -77,9 +78,6 @@ public class UpdateInfo {
       requestType = success + "-Update";
     return getFinalString(requestType, name, latency, numTransmissions, nameserverID, LocalNameServer.getNodeID(),
             confirmPkt.getRequestID(), numInvalidActiveError, System.currentTimeMillis());
-//    return requestType + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameserverID
-//            + "\t" + LocalNameServer.getNodeID() + "\t" + confirmPkt.getRequestID() + "\t" + numInvalidActiveError
-//            + "\t-1" + "\t" + System.currentTimeMillis();
   }
 
   public synchronized String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID,

@@ -224,7 +224,9 @@ public class GroupChange {
       // inform old actives to delete state
       OldActiveSetStopPacket oldActiveSetStopPacket = new OldActiveSetStopPacket(packet.getName(), 0,
               replicaController.getNodeID(), -1, packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
-      replicaController.getNioServer().sendToIDs(packet.getOldActiveNameServers(), oldActiveSetStopPacket.toJSONObject());
+      for (int nodeID: packet.getOldActiveNameServers()) {
+        replicaController.getNioServer().sendToID(nodeID, oldActiveSetStopPacket.toJSONObject());
+      }
       GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());
       replicaController.getNioServer().sendToID(replicaController.getNodeID(), proposePacket.toJSONObject());
       if (Config.debugMode) {

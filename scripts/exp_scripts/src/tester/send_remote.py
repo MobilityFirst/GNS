@@ -1,6 +1,7 @@
 import os
 import sys
 import inspect
+import argparse
 __author__ = 'abhigyan'
 
 script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
@@ -13,12 +14,19 @@ sys.path.append(parent_folder)
 local_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 
 # config file for remote node
-config_file = os.path.join(parent_folder, 'resources', 'skuld_env.ini')
+config_file = os.path.join(parent_folder, 'resources', 'planetlab_env.ini')
 
 ssh_key = '/Users/abhigyan/.ssh/id_rsa'
 user = 'abhigyan'
 remote_host = 'skuld.cs.umass.edu'
 remote_skuld_folder = '/home/abhigyan/gns/test_folder'
+#
+# parser = argparse.ArgumentParser()
+# parser.add_argument("-rfolder", "remote_skuld_folder", "remote folder where scripts are stored")
+#
+# args = parser.parse_args()
+# if args.remote_skuld_folder is not None:
+#     remote_skuld_folder = args.remote_skuld_folder
 
 print 'Making remote dir ... ' + remote_skuld_folder
 os.system('ssh -i ' + ssh_key + ' ' + user + '@' + remote_host + ' " mkdir -p " ' + remote_skuld_folder)

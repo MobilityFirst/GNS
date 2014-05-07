@@ -2,12 +2,12 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
@@ -56,11 +56,9 @@ public class StopActiveSetTask extends TimerTask {
   @Override
   public void run() {
     try {
-      GNSMessagingTask gnsMessagingTask = getMessagingTask();
-      if (gnsMessagingTask == null) {
+      boolean cancelTask = checkCancelTask();
+      if (cancelTask) {
         throw new CancelExecutorTaskException();
-      } else {
-        GNSMessagingTask.send(gnsMessagingTask, rc.getNioServer());
       }
     } catch (Exception e) {
       if (e.getClass().equals(CancelExecutorTaskException.class)) {
@@ -71,10 +69,9 @@ public class StopActiveSetTask extends TimerTask {
     }
   }
 
-  private GNSMessagingTask getMessagingTask() {
+  private boolean checkCancelTask() throws IOException {
 
-    GNSMessagingTask msgTask = null;
-
+    boolean cancelTask = true;
     if (rc.getOngoingStopActiveRequests().get(requestID) == null) {
       GNS.getLogger().fine("Old active name servers stopped. Version: " + oldVersion + " Old Actives : "
               + oldActiveNameServers);
@@ -92,14 +89,15 @@ public class StopActiveSetTask extends TimerTask {
                 oldVersion, packetType);
         GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
         try {
-          msgTask = new GNSMessagingTask(selectedOldActive, packet.toJSONObject());
+          rc.getNioServer().sendToID(selectedOldActive, packet.toJSONObject());
+          cancelTask = false;
         } catch (JSONException e) {
           GNS.getLogger().severe("JSON Exception in sending OldActiveSetSTOPPacket: " + e.getMessage());
           e.printStackTrace();
         }
       }
     }
-    return msgTask;
+    return cancelTask;
   }
 
 }

@@ -126,7 +126,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   /**
    * @return the primaryNameServer
    */
-  public synchronized HashSet<Integer> getPrimaryNameServer() {
+  public synchronized HashSet<Integer> getReplicaControllers() {
     return primaryNameServers;
   }
 
@@ -221,7 +221,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     entry.append("\n    TimestampAddress: " + timeStampHashToString(timestampAddress, timeToLiveInSeconds * 1000));
     entry.append("\n    PrimaryNS:[");
     boolean first = true;
-    for (int id : getPrimaryNameServer()) {
+    for (int id : getReplicaControllers()) {
       if (first) {
         entry.append(id);
         first = false;

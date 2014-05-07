@@ -101,7 +101,7 @@ public class NameServerVoteThread extends Thread {
 					nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.getNodeID(), 0);
 
           // send to all primaries.
-          Set<Integer> primaryNameServers = LocalNameServer.getPrimaryNameServers(name);
+          Set<Integer> primaryNameServers = LocalNameServer.getReplicaControllers(name);
           if (StartLocalNameServer.debugMode) GNS.getLogger().info("Primary name servers = " + primaryNameServers + " name = " + name);
           for (int primary: primaryNameServers) {
             LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);

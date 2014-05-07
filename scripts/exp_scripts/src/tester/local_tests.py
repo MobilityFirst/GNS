@@ -72,6 +72,11 @@ class TestSetupLocal(BasicSetup):
 
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'wfile', temp_workload_config_file)
 
+        if self.exp_output_folder is not None and self.exp_output_folder != '':
+            self.config_parse.set(ConfigParser.DEFAULTSECT, 'output_folder', self.exp_output_folder)
+        else:
+            self.exp_output_folder = self.local_output_folder
+
         temp_config_file = os.path.join(work_dir, 'tmp.ini')
         self.config_parse.write(open(temp_config_file, 'w'))
         exp_script = os.path.join(parent_folder, 'local', 'run_all_local.py')
@@ -79,7 +84,8 @@ class TestSetupLocal(BasicSetup):
         errfile = os.path.join(work_dir, 'test.err')
         os.system(exp_script + ' ' + temp_config_file + ' > ' + outfile + ' 2> ' + errfile)
 
-        stats_folder = os.path.join(work_dir, local.exp_config.DEFAULT_STATS_FOLDER)
+        stats_folder = os.path.join(self.exp_output_folder, local.exp_config.DEFAULT_STATS_FOLDER)
+        # stats_folder = os.path.join(work_dir, exp_config.DEFAULT_STATS_FOLDER)
         return FinalStats(stats_folder)
 
 
@@ -118,17 +124,20 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
     def test_b_1name_n_times(self):
         """Repeat N times the test for add, remove, lookup, and delete operations for a single name"""
         n = 5
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(n * 4))  # in seconds
+
         name = 'test_name'
-        requests = [[name, RequestType.ADD],
+        delay_ms = 2500
+        requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY],
                     [name, RequestType.LOOKUP],
                     [name, RequestType.UPDATE],
                     [name, RequestType.LOOKUP],
-                    [name, RequestType.REMOVE]]
+                    [name, RequestType.REMOVE], [delay_ms, RequestType.DELAY]]
         request_n_times = []
         for i in range(n):
             request_n_times.extend(requests)
+        exp_duration = int(n * (1 + 2*delay_ms/1000))
 
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration))  # in seconds
         output_stats = self.run_exp(request_n_times)
 
         self.assertEqual(output_stats.requests, 5 * n, "Total number of requests mismatch")
@@ -141,14 +150,15 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
     def test_c0_1name_restart(self):
         """Add a name to GNS, restart GNS, and test if we can perform requests for the name.
         This tests if log recovery works correctly."""
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(5))  # in seconds
+
         name = 'test_name'
 
         # run first experiment
-        requests = [[name, RequestType.ADD],
+        delay_ms = 2500
+        requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY],
                     [name, RequestType.LOOKUP],
                     [name, RequestType.UPDATE]]
-
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(5))  # in seconds
         output_stats = self.run_exp(requests)
 
         self.assertEqual(output_stats.requests, 3, "Total number of requests mismatch")
@@ -160,11 +170,12 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
 
         # run second experiment: restart GNS without deleting state
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)  # in seconds
-
+        # sleep after starting NS to give ns time to recover
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
         requests = [[name, RequestType.LOOKUP],
-                    [name, RequestType.UPDATE],
+                    [name, RequestType.UPDATE], [delay_ms, RequestType.DELAY],
                     [name, RequestType.REMOVE]]
-
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(5))  # in seconds
         output_stats = self.run_exp(requests)
         self.assertEqual(output_stats.requests, 3, "Total number of requests mismatch")
         self.assertEqual(output_stats.success, 3, "Successful requests mismatch")
@@ -177,6 +188,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         """Add and remove a name to GNS, restart GNS, and test if we can again add and remove it.
         This check if name is cleanly removed on log recovery as well.."""
         self.test_a_1name()
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
         self.test_a_1name()
 
@@ -374,6 +386,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.test_h_group_change_1name()
         # restart gns and recover from existing logs
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', 5)
         # test if requests are successful
         name = 'test_name'
         requests = [[name, RequestType.LOOKUP],
@@ -479,7 +492,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
 
         # step 2: restart system and send lookups. these should not be cached
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
-
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', 5)  # wait for 5 sec after running ns so that
         num_lookups = 1000
         requests = ([[name, RequestType.LOOKUP]]*num_lookups)
         exp_duration_sec = 10

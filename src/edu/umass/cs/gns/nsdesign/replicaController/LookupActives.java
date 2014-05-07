@@ -3,10 +3,11 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;
+
+import java.io.IOException;
 
 /**
  * A replica controller will execute this code on a local name server's request to lookup
@@ -18,10 +19,8 @@ import org.json.JSONException;
  */
 public class LookupActives {
 
-  public static GNSMessagingTask executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController)
-          throws JSONException{
-
-    GNSMessagingTask msgTask = null;
+  public static void executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController)
+          throws JSONException, IOException {
 
     GNS.getLogger().fine("Received Request Active Packet Name = " + packet.getName());
 
@@ -34,8 +33,7 @@ public class LookupActives {
         isError = true;
       } else { // send reply to client
         packet.setActiveNameServers(rcRecord.getActiveNameservers());
-        msgTask = new GNSMessagingTask(packet.getLNSID(), packet.toJSONObject());
-
+        replicaController.getNioServer().sendToID(packet.getLNSID(), packet.toJSONObject());
         GNS.getLogger().fine("Sent actives for " + packet.getName() + " Actives = " + rcRecord.getActiveNameservers());
       }
     } catch (RecordNotFoundException e) {
@@ -47,10 +45,8 @@ public class LookupActives {
 
     if (isError) {
       packet.setActiveNameServers(null);
-      msgTask = new GNSMessagingTask(packet.getLNSID(), packet.toJSONObject());
+      replicaController.getNioServer().sendToID(packet.getLNSID(), packet.toJSONObject());
         GNS.getLogger().fine("Error: Record does not exist for " + packet.getName());
     }
-
-    return msgTask;
   }
 }

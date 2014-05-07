@@ -84,6 +84,7 @@ public class GNSNodeConfig implements NodeConfig {
    */
   public final void initFromFile(String nodeInfoFile, int nameServerID) {
     this.nodeID = nameServerID;
+    long t0 = System.currentTimeMillis();
     // Reads in data from a text file containing information about each name server
     // in the system.
     BufferedReader br = null;
@@ -161,6 +162,8 @@ public class GNSNodeConfig implements NodeConfig {
       System.err.println("Problem reading host config for NS " + nameServerID + " :" + e);
     }
     GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
+    long t1 = System.currentTimeMillis();
+    GNS.getStatLogger().info("Time to read all hosts info: " + (t1 - t0)/1000 + " sec");
   }
 
   /**

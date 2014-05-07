@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
+ * Coordinates requests among replicas of replica controllers by using paxos consensus protocol.
  * Created by abhigyan on 3/30/14.
  */
 public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator{

@@ -10,13 +10,11 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Random;
@@ -88,6 +86,10 @@ public class Update {
       handleInvalidActiveError(updateInfo);
     } else { // In all other types of errors, we immediately send response to client.
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+      if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
+        GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt));
+      }
+
     }
   }
 

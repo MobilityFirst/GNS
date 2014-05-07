@@ -7,7 +7,6 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
@@ -15,6 +14,7 @@ import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -33,31 +33,17 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class Update {
 
-//  public static GNSMessagingTask handleUpdate(JSONObject json, GnsReconfigurable replica)
-//          throws JSONException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-//
-//    UpdatePacket updateAddressPacket = new UpdatePacket(json);
-//    updateAddressPacket.setNameServerId(replica.getNodeID());
-//    if (replica.getActiveCoordinator() == null) {
-//      return Update.executeUpdateLocal(updateAddressPacket, replica);
-//    } else {
-//      replica.getActiveCoordinator().coordinateRequest(updateAddressPacket.toJSONObject());
-//      return null;
-//    }
-//
-//  }
-  public static GNSMessagingTask executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
-          boolean noCoordinatonState)
-          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException {
+  public static void executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
+          boolean noCoordinatonState, boolean recovery)
+          throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException {
     if (Config.debugMode) GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
 
     if (noCoordinatonState) {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
-//      NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
-      return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+      if (!recovery) replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+      return;
     }
 
-//    UpdateAddressPacket updatePacket = new UpdateAddressPacket(incomingJSON);
     // First we do signature and ACL checks
     String guid = updatePacket.getName();
     String field = updatePacket.getRecordKey().getName();
@@ -71,8 +57,11 @@ public class Update {
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
-//      NameServer.returnToSender(failConfirmPacket.toJSONObject(), updatePacket.getLocalNameServerId());
-      return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+      if (!recovery) {
+        replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+
+      }
+      return;
     }
 
     NameRecord nameRecord;
@@ -86,9 +75,14 @@ public class Update {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + updatePacket.getName());
         e.printStackTrace();
         ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
-        return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+        if (!recovery) {
+          replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+
+        }
+        return;
       }
     }
+
     // Apply update
     if (Config.debugMode) GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
     boolean result;
@@ -106,33 +100,35 @@ public class Update {
           ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
-
           if (Config.debugMode) GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
-          return new GNSMessagingTask(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());
+          if (!recovery) {
+            replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());
+          }
         }
-        return null;
-      }
-      if (Config.debugMode) GNS.getLogger().fine("Update applied" + updatePacket);
 
-      // Abhigyan: commented this because we are using lns votes for this calculation.
-      // this should be uncommented once active replica starts to send read/write statistics for name.
+      } else {
+        if (Config.debugMode) GNS.getLogger().fine("Update applied" + updatePacket);
+
+        // Abhigyan: commented this because we are using lns votes for this calculation.
+        // this should be uncommented once active replica starts to send read/write statistics for name.
 //        nameRecord.incrementUpdateRequest();
-      if (updatePacket.getNameServerId() == replica.getNodeID()) {
-        ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
-                updatePacket.getSourceId(),
-                updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-        if (Config.debugMode) GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
-        return new GNSMessagingTask(updatePacket.getLocalNameServerId(), confirmPacket.toJSONObject());
+        if (updatePacket.getNameServerId() == replica.getNodeID()) {
+          ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
+                  updatePacket.getSourceId(),
+                  updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
+          if (Config.debugMode)
+            GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
+          if (!recovery) {
+            replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), confirmPacket.toJSONObject());
+          }
+        }
       }
-      return null;
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. Exception = " + e.getMessage());
       e.printStackTrace();
-      return null;
     } catch (FailedUpdateException e) {
       GNS.getLogger().severe("Failed update exception. Exception = " + e.getMessage());
       e.printStackTrace();
-      return null;
     }
   }
 

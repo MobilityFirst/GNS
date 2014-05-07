@@ -17,6 +17,7 @@ import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.GnsMessenger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -99,6 +100,9 @@ public class NameServer{
    */
   private void init(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
     // create nio server
+    // init worker thread pool
+    int numThreads = 5;
+    ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(numThreads);
 
 //    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
@@ -109,16 +113,16 @@ public class NameServer{
     GNSNIOTransportInterface tcpTransport;
     if (Config.useGNSNIOTransport) {
       JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
-      tcpTransport = new GNSNIOTransport(nodeID, gnsNodeConfig, worker);
+      GNSNIOTransport gnsnioTransport = new GNSNIOTransport(nodeID, gnsNodeConfig, worker);
+      new Thread(gnsnioTransport).start();
+      tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, threadPoolExecutor);
     } else {
       ByteStreamToJSONObjects byteToJson = new ByteStreamToJSONObjects(nsDemultiplexer);
-      tcpTransport = new NioServer(nodeID, byteToJson, gnsNodeConfig);
+      NioServer nioServer= new NioServer(nodeID, byteToJson, gnsNodeConfig);
+      new Thread(nioServer).start();
+      tcpTransport = nioServer;
     }
-    new Thread(tcpTransport).start();
 
-    // init worker thread pool
-    int numThreads = 5;
-    ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(numThreads);
 
     // be careful to give same 'nodeID' to everyone
 
@@ -146,6 +150,7 @@ public class NameServer{
       replicaControllerCoordinator = new DefaultRcCoordinator(nodeID, rc);
     } else {
       PaxosConfig paxosConfig = new PaxosConfig();
+      paxosConfig.setDebugMode(Config.debugMode);
       paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
       paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
       paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);

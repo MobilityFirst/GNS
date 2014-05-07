@@ -8,13 +8,15 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
-import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.Reconfigurable;
+import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -112,17 +114,17 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
    */
   @Override
   public boolean handleDecision(String name, String value, boolean recovery) {
-    GNSMessagingTask msgTask = null;
+//    GNSMessagingTask msgTask = null;
     try {
       JSONObject json = new JSONObject(value);
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
         case DNS:
-          msgTask = Lookup.executeLookupLocal(new DNSPacket(json), this, noCoordinationState);
+          Lookup.executeLookupLocal(new DNSPacket(json), this, noCoordinationState, recovery);
           break;
         case UPDATE:
-          msgTask = Update.executeUpdateLocal(new UpdatePacket(json), this, noCoordinationState);
+          Update.executeUpdateLocal(new UpdatePacket(json), this, noCoordinationState, recovery);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
@@ -135,10 +137,10 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
          */
         case ACTIVE_ADD: // sent when new name is added to GNS
           AddRecordPacket addRecordPacket = new AddRecordPacket(json);
-          msgTask = Add.handleActiveAdd(addRecordPacket, this);
+          Add.handleActiveAdd(addRecordPacket, this);
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          msgTask = Remove.executeActiveRemove(new OldActiveSetStopPacket(json), this, noCoordinationState);
+          Remove.executeActiveRemove(new OldActiveSetStopPacket(json), this, noCoordinationState, recovery);
           break;
           // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
         case CONFIRM_UPDATE:
@@ -150,9 +152,6 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
           GNS.getLogger().severe(" Packet type not found: " + json);
           break;
 
-      }
-      if (msgTask != null && !recovery) {
-        GNSMessagingTask.send(msgTask, nioServer);
       }
     } catch (JSONException e) {
       e.printStackTrace();
@@ -337,48 +336,37 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 
   @Override
   public String getState(String name) {
-    if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
-      // incomplete feature as it is only used in running experiments
-      return "";
-    } else {
-      try {
-        NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-        if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
-        return new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive()).toString();
-      } catch (RecordNotFoundException e) {
-        GNS.getLogger().severe("Record not found for name: " + name);
-        e.printStackTrace();
-      } catch (FieldNotFoundException e) {
-        GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-        e.printStackTrace();
-      }
-      return null;
+    try {
+      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
+      if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
+      return new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive()).toString();
+    } catch (RecordNotFoundException e) {
+      GNS.getLogger().severe("Record not found for name: " + name);
+      e.printStackTrace();
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+      e.printStackTrace();
     }
+    return null;
   }
 
   @Override
   public boolean updateState(String name, String state) {
-    if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
-      // incomplete feature as it is only used in running experiments
-      // do nothing
-      return true;
-    } else {
-      try {
-        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
-        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-        nameRecord.updateState(state1.valuesMap, state1.ttl);
-        // todo handle the case if record does not exist. for this update state should return record not found exception.
-      } catch (JSONException e) {
-        e.printStackTrace();
-      } catch (FieldNotFoundException e) {
-        GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-        e.printStackTrace();
-      } catch (FailedUpdateException e) {
-        GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-        e.printStackTrace();
-      }
-      return true;
+    try {
+      TransferableNameRecordState state1 = new TransferableNameRecordState(state);
+      NameRecord nameRecord = new NameRecord(nameRecordDB, name);
+      nameRecord.updateState(state1.valuesMap, state1.ttl);
+      // todo handle the case if record does not exist. for this update state should return record not found exception.
+    } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+      e.printStackTrace();
+    } catch (FailedUpdateException e) {
+      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
+      e.printStackTrace();
     }
+    return true;
   }
 
   /**

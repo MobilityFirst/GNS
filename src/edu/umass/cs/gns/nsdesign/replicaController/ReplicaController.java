@@ -7,7 +7,7 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
+//import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -224,7 +224,6 @@ public class ReplicaController implements Replicable {
   @Override
   public boolean handleDecision(String name, String value, boolean recovery) {
     try {
-      GNSMessagingTask msgTask = null;
       try {
         JSONObject json = new JSONObject(value);
         Packet.PacketType packetType = Packet.getPacketType(json);
@@ -232,29 +231,29 @@ public class ReplicaController implements Replicable {
 
           // add name to GNS
           case ADD_RECORD:
-            msgTask = Add.executeAddRecord(new AddRecordPacket(json), this, recovery);
+            Add.executeAddRecord(new AddRecordPacket(json), this, recovery);
             break;
           case ACTIVE_ADD_CONFIRM:
-            msgTask = Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
+            Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
             break;
           case UPDATE: // this is a special update which adds a name if that does not exist.
-            msgTask = Upsert.handleUpsert(new UpdatePacket(json), this);
+            Upsert.handleUpsert(new UpdatePacket(json), this);
             break;
 
           // lookup actives for name
           case REQUEST_ACTIVES:
-            msgTask = LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
+            LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
             break;
 
           // remove
           case REMOVE_RECORD:
-            msgTask = Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this, recovery);
+            Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this, recovery);
             break;
           case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-            msgTask = Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this, recovery);
+            Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this, recovery);
             break;
           case RC_REMOVE:
-            msgTask = Remove.executeRemoveRecord(new RemoveRecordPacket(json), this, recovery);
+            Remove.executeRemoveRecord(new RemoveRecordPacket(json), this, recovery);
             break;
 
           // group change
@@ -280,9 +279,6 @@ public class ReplicaController implements Replicable {
             break;
         }
         // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
-        if (msgTask != null && !recovery) {
-          GNSMessagingTask.send(msgTask, nioServer);
-        }
       } catch (JSONException e) {
         e.printStackTrace();
       } catch (IOException e) {

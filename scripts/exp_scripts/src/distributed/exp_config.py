@@ -196,9 +196,9 @@ quit_node_id = -1
 
 ##################### LOGGING #########################
 
-nslog = 'SEVERE'
+nslog = 'FINE'
 nslogstat = 'FINE'  # records write propagation times
-lnslog = 'SEVERE'
+lnslog = 'FINE'
 lnslogstat = 'FINE'
 
 
@@ -216,6 +216,15 @@ def initialize(filename):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'experiment_run_time'):
         global experiment_run_time
         experiment_run_time = parser.getint(ConfigParser.DEFAULTSECT, 'experiment_run_time')
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_sleep'):
+        global ns_sleep
+        ns_sleep = int(parser.get(ConfigParser.DEFAULTSECT, 'ns_sleep'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'extra_wait'):
+        global extra_wait
+        extra_wait = int(parser.get(ConfigParser.DEFAULTSECT, 'extra_wait'))
+
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'clean_start'):
         global clean_start
@@ -277,6 +286,7 @@ def initialize_gns_parameters(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies'):
         global emulate_ping_latencies
         emulate_ping_latencies = bool(parser.get(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies'))
+
 
 
 def initialize_replication():

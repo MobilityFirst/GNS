@@ -50,10 +50,10 @@ public class AddRemove {
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
 
     SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
-            System.currentTimeMillis(), new HashSet<Integer>());
+            System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-    addRecordPacket.getLocalNameServerID();
-    GNS.getLogger().info(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
+    if (StartLocalNameServer.debugMode)
+    GNS.getLogger().fine(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
   }
 
   /**
@@ -64,7 +64,7 @@ public class AddRemove {
   static void handleUpsert(UpdatePacket updateAddressPacket) throws JSONException {
 
     SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
-            System.currentTimeMillis(), new HashSet<Integer>());
+            System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Upsert Task Scheduled: "
             + "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
@@ -88,7 +88,7 @@ public class AddRemove {
       senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
     }
     SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
-            System.currentTimeMillis(), new HashSet<Integer>());
+            System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (StartLocalNameServer.debugMode) {

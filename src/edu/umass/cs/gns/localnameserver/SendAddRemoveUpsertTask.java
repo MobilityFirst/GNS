@@ -33,16 +33,15 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
   private String name;
   private BasicPacket packet;
-  private int updateRequestID;
-  private HashSet<Integer> primariesQueried;
+  private int lnsRequestID;
+  private HashSet<Integer> replicaControllersQueried;
   private int timeoutCount = -1;
   private long requestRecvdTime;
 
-  public SendAddRemoveUpsertTask(BasicPacket packet, String name, long requestRecvdTime,
-                                 HashSet<Integer> primariesQueried) {
+  public SendAddRemoveUpsertTask(BasicPacket packet, String name, long requestRecvdTime) {
     this.name = name;
     this.packet = packet;
-    this.primariesQueried = primariesQueried;
+    this.replicaControllersQueried = new HashSet<Integer>();
     this.requestRecvdTime = requestRecvdTime;
   }
 
@@ -74,7 +73,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   }
 
   private boolean isResponseReceived() {
-    if (getTimeoutCount() > 0 && LocalNameServer.getUpdateInfo(getUpdateRequestID()) == null) {
+    if (getTimeoutCount() > 0 && LocalNameServer.getUpdateInfo(getLnsRequestID()) == null) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
       }
@@ -86,26 +85,25 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   private boolean isMaxWaitTimeExceeded() {
 
     if (getTimeoutCount() > 0 && System.currentTimeMillis() - getRequestRecvdTime() > StartLocalNameServer.maxQueryWaitTime) {
-      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(getUpdateRequestID());
+      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(getLnsRequestID());
 
       if (updateInfo == null) {
         GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
         return true;
       }
-      GNS.getLogger().fine("Request FAILED no response until MAX-wait time: " + getUpdateRequestID() + " name = " + getName());
+      GNS.getLogger().fine("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
       ConfirmUpdatePacket confirmPkt = getConfirmFailurePacket(getPacket());
       try {
         if (confirmPkt != null) {
           Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
-          //Intercessor.handleIncomingPackets(confirmPkt.toJSONObject());
         } else {
           GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
         }
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem converting packet to JSON: " + e);
       }
-      String updateStats = updateInfo.getUpdateFailedStats(getPrimariesQueried(), LocalNameServer.getNodeID(), getUpdateRequestID(), -1);
-      GNS.getStatLogger().fine(updateStats);
+      String updateStats = updateInfo.getUpdateFailedStats(getReplicaControllersQueried(), LocalNameServer.getNodeID(), getLnsRequestID(), -1);
+      GNS.getStatLogger().info(updateStats);
 
       return true;
     }
@@ -113,15 +111,13 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   }
 
   private int selectNS() {
-//    if (getPrimariesQueried().size() == GNS.numPrimaryReplicas) {
-//      getPrimariesQueried().clear();
-//    }
-    int nameServerID = LocalNameServer.getClosestPrimaryNameServer(getName(), getPrimariesQueried());
+
+    int nameServerID = LocalNameServer.getClosestReplicaController(getName(), getReplicaControllersQueried());
 
     if (nameServerID == -1) {
-      GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + getPrimariesQueried());
+      GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + getReplicaControllersQueried());
     } else {
-      getPrimariesQueried().add(nameServerID);
+      getReplicaControllersQueried().add(nameServerID);
     }
     return nameServerID;
   }
@@ -130,12 +126,12 @@ public class SendAddRemoveUpsertTask extends TimerTask {
 
     if (nameServerID == -1) return;
 
-    primariesQueried.add(nameServerID);
+    replicaControllersQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {
-      updateRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, packet);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getUpdateRequestID());
-      updatePacketWithRequestID(getPacket(), getUpdateRequestID());
+      lnsRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, packet);
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
+      updatePacketWithRequestID(getPacket(), getLnsRequestID());
     }
     // create the packet that we'll send to the primary
 
@@ -146,7 +142,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       JSONObject jsonToSend = getPacket().toJSONObject();
       LocalNameServer.sendToNS(jsonToSend, nameServerID);
 
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send add/remove/upsert to: " + nameServerID + " Name:" + getName() + " Id:" + getUpdateRequestID() +
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine(" Send add/remove/upsert to: " + nameServerID + " Name:" + getName() + " Id:" + getLnsRequestID() +
               " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
     } catch (JSONException e) {
       e.printStackTrace();
@@ -208,17 +204,17 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   }
 
   /**
-   * @return the updateRequestID
+   * @return the lnsRequestID
    */
-  public int getUpdateRequestID() {
-    return updateRequestID;
+  public int getLnsRequestID() {
+    return lnsRequestID;
   }
 
   /**
-   * @return the primariesQueried
+   * @return the replicaControllersQueried
    */
-  public HashSet<Integer> getPrimariesQueried() {
-    return primariesQueried;
+  public HashSet<Integer> getReplicaControllersQueried() {
+    return replicaControllersQueried;
   }
 
   /**

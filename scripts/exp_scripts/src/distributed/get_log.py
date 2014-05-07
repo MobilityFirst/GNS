@@ -62,7 +62,7 @@ fi
 echo "Output copied to: " $local_output_folder
     """
     # local_output_folder = os.path.join(local_output_folder, 'log')
-    print '*********** GET LOGS BEGIN >>>>>> ',  local_output_folder
+    # print '*********** GET LOGS BEGIN >>>>>> ',  local_output_folder
     os.system('rm -rf ' + local_output_folder)
     os.system('mkdir -p ' + local_output_folder)
 

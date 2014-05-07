@@ -519,6 +519,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable{
   /**
    * This method is called in the special case of group change.
    * TODO complete documentation
+   *
    */
   public void removePendingProposals() {
     synchronized (stopLock) {

@@ -116,7 +116,8 @@ public class Select {
     JSONObject outgoingJSON = packet.toJSONObject();
     GNS.getLogger().fine("NS" + replica.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
     try {
-      replica.getNioServer().sendToIDs(serverIds, outgoingJSON); // send to myself too
+      for (int serverId: serverIds)
+        replica.getNioServer().sendToID(serverId, outgoingJSON); // send to myself too
     } catch (IOException e) {
       GNS.getLogger().severe("Exception while sending select request: " + e);
     }

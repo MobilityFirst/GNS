@@ -5,7 +5,6 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -25,26 +24,22 @@ import java.util.Set;
  */
 public class Upsert {
 
-
-  public static GNSMessagingTask handleUpsert(UpdatePacket updatePacket, ReplicaController replicaController) throws JSONException, IOException {
-    // this must be primary
-    //
-    GNS.getLogger().fine("<>>>>>>>>>>>>>>>>>> Handling upsert case ....... ");
-    GNSMessagingTask msgTask = null;
+  public static void handleUpsert(UpdatePacket updatePacket, ReplicaController replicaController) throws JSONException, IOException {
+    if (Config.debugMode) {
+      GNS.getLogger().fine("Handling upsert case ....... ");
+    }
     ReplicaControllerRecord nameRecordPrimary;
     try {
       nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(replicaController.getDB(), updatePacket.getName(),
               ReplicaControllerRecord.MARKED_FOR_REMOVAL, ReplicaControllerRecord.ACTIVE_NAMESERVERS);
       if (nameRecordPrimary.isMarkedForRemoval()) {
         ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
-        msgTask = new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+        replicaController.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
         if (Config.debugMode) {
           GNS.getLogger().fine(" UPSERT-FAILED because name record deleted already\t" + updatePacket.getName()
-                  + "\t" + replicaController.getNodeID() + "\t" + updatePacket.getLocalNameServerId());// + "\t" + updatePacket.getSequenceNumber());
+                  + "\t" + replicaController.getNodeID() + "\t" + updatePacket.getLocalNameServerId());
         }
       } else {
-
-
         int activeID = -1;
         Set<Integer> activeNS;
         activeNS = nameRecordPrimary.getActiveNameservers();
@@ -61,13 +56,13 @@ public class Upsert {
           if (Config.debugMode) {
             GNS.getLogger().fine("UPSERT forwarded as UPDATE to active: " + activeID);
           }
-          msgTask = new GNSMessagingTask(activeID, updatePacket.toJSONObject());
+          replicaController.getNioServer().sendToID(activeID, updatePacket.toJSONObject());
           // could not find activeNS for this name
         } else {
           // send error to LNS
           ConfirmUpdatePacket failConfirmPacket =
                   ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
-          msgTask = new GNSMessagingTask(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+          replicaController.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
           if (Config.debugMode) {
             GNS.getLogger().fine(" UPSERT-FAILED\t" + updatePacket.getName() + "\t" + replicaController.getNodeID() +
                     "\t" + updatePacket.getLocalNameServerId());
@@ -83,7 +78,6 @@ public class Upsert {
               updatePacket.getTTL()); //  getTTL() is used only with upsert.
       addRecordPacket.setLNSRequestID(updatePacket.getLNSRequestID());
       replicaController.getNioServer().sendToID(replicaController.getNodeID(), addRecordPacket.toJSONObject());
-//      replicaController.handleJSONObject(addRecordPacket.toJSONObject());
 
       if (Config.debugMode) {
         GNS.getLogger().fine(" NS processing UPSERT changed to ADD: " + addRecordPacket.getName());
@@ -92,7 +86,7 @@ public class Upsert {
       GNS.getLogger().fine("Field not found exception. " + e.getMessage());
       e.printStackTrace();
     }
-    return msgTask;
+//    return msgTask;
   }
 
 }

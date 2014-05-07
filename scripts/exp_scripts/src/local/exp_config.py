@@ -7,7 +7,8 @@ import sys
 # Constant values
 #
 DEFAULT_WORKING_DIR = 'test_output'
-DEFAULT_STATS_FOLDER = 'log_local_stats'
+DEFAULT_GNS_OUTPUT_FOLDER = 'log'
+DEFAULT_STATS_FOLDER = 'log_stats'
 
 #types of latency emulation
 CONSTANT_DELAY = 'constant_delay'
@@ -29,7 +30,7 @@ mongo_bin_folder = '/opt/local/bin'
 gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 
 # top level folder
-working_dir = gns_folder + '/' + DEFAULT_WORKING_DIR  # location of top-level folder checked out from SVN.
+#working_dir = gns_folder + '/' + DEFAULT_WORKING_DIR  # location of top-level folder checked out from SVN.
 
 # output folder: GNS logs for name servers, and local name servers are stored in this folder 
 output_folder = None
@@ -52,7 +53,7 @@ experiment_run_time = -1    # duration of experiment (seconds)
 
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
-ns_sleep = 1      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
+ns_sleep = 5      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
 extra_wait = 10   # extra wait time after LNS sends all requests
 
 random_node_ids = None  # option to select nodeIDs randomly. If random_node_ids is not None, it takes an int value.
@@ -80,7 +81,7 @@ update_count = 10   # number of updates at local name server
 #
 # GNS parameters common to name server / local name servers
 is_experiment_mode = False  # set to True to run experiments, false otherwise.
-is_debug_mode = False   #
+is_debug_mode = True   #
 primary_name_server = 3  # number of primary name servers
 
 use_gns_nio_transport = False
@@ -165,15 +166,6 @@ def initialize(filename):
     #
     # Parameters related to experiment setup
     #
-
-    if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_sleep'):
-        global ns_sleep
-        ns_sleep = int(parser.get(ConfigParser.DEFAULTSECT, 'ns_sleep'))
-
-    if parser.has_option(ConfigParser.DEFAULTSECT, 'random_node_ids'):
-        global random_node_ids
-        random_node_ids = int(parser.get(ConfigParser.DEFAULTSECT, 'random_node_ids'))
-
     if parser.has_option(ConfigParser.DEFAULTSECT, 'experiment_run_time'):
         global experiment_run_time
         experiment_run_time = int(parser.get(ConfigParser.DEFAULTSECT, 'experiment_run_time'))
@@ -190,6 +182,14 @@ def initialize(filename):
         global failed_nodes
         failed_nodes = parser.get(ConfigParser.DEFAULTSECT, 'failed_nodes').split(':')
         failed_nodes = [int(x) for x in failed_nodes]
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_sleep'):
+        global ns_sleep
+        ns_sleep = int(parser.get(ConfigParser.DEFAULTSECT, 'ns_sleep'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'random_node_ids'):
+        global random_node_ids
+        random_node_ids = int(parser.get(ConfigParser.DEFAULTSECT, 'random_node_ids'))
 
     #
     # GNS-specific parameters
@@ -237,8 +237,8 @@ def initialize_path_locations(parser):
     6. mongoDB data folder
     7. mongoDB bin folder
     """
-    global gns_folder, gnrs_jar, working_dir, mongo_bin_folder, output_folder, paxos_log_folder, trace_folder,\
-        mongodb_data_folder
+    global gns_folder, gnrs_jar, mongo_bin_folder, output_folder, paxos_log_folder, trace_folder,\
+        mongodb_data_folder  # working_dir,
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'mongo_bin_folder'):
         mongo_bin_folder = parser.get(ConfigParser.DEFAULTSECT, 'mongo_bin_folder')
@@ -252,7 +252,6 @@ def initialize_path_locations(parser):
 
     # if working dir is given, we initialize all variables with respect to working dir.
     if parser.has_option(ConfigParser.DEFAULTSECT, 'working_dir'):
-
         working_dir = parser.get(ConfigParser.DEFAULTSECT, 'working_dir')
         update_path_locations(working_dir)
 
@@ -276,7 +275,7 @@ def update_path_locations(working_dir1):
 
     # output folder: GNS logs for name servers, and local name servers are stored in this folder
     global output_folder
-    output_folder = working_dir1 + '/log_local/'
+    output_folder = working_dir1
 
     # paxos log folder
     global paxos_log_folder

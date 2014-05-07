@@ -48,10 +48,10 @@ public class Config {
   public static int analysisIntervalSec = 100000;
   public static int movingAverageWindowSize = 20;
   public static int nameServerVoteSize = 5;
-  public static final int NS_TIMEOUT_MILLIS = 2000;
+  public static final int NS_TIMEOUT_MILLIS = 5000;
 
   // testing related parameters
-  public static boolean useGNSNIOTransport = false;
+  public static boolean useGNSNIOTransport = true;
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
   public static boolean noPaxosLog = false;
@@ -135,7 +135,6 @@ public class Config {
     } else if (allValues.containsKey(NSParameterNames.RANDOM)) {
       replicationFrameworkType = ReplicationFrameworkType.RANDOM;
     }
-    GNS.getLogger().info("using replication type: " + replicationFrameworkType);
 
     if (allValues.containsKey(NSParameterNames.REPLICATION_INTERVAL)) {
       analysisIntervalSec = Integer.parseInt(allValues.get(NSParameterNames.REPLICATION_INTERVAL));

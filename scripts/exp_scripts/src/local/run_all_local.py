@@ -32,12 +32,15 @@ def run_exp():
     from kill_local import kill_local_gnrs
     kill_local_gnrs()
     node_config = exp_config.node_config
-    output_folder = exp_config.output_folder
+    # folder where GNS logs are output
+    log_output_folder = os.path.join(exp_config.output_folder, exp_config.DEFAULT_GNS_OUTPUT_FOLDER)
+    # folder where GNS stats are output
+    stats_folder = os.path.join(exp_config.output_folder, exp_config.DEFAULT_STATS_FOLDER)
 
     print 'Clearing old GNS logs ..'
-    if not os.path.exists(output_folder): 
-        os.system('mkdir -p ' + output_folder)
-    os.system('rm -rf ' + output_folder + '/*')
+    if not os.path.exists(log_output_folder):
+        os.system('mkdir -p ' + log_output_folder)
+    os.system('rm -rf ' + log_output_folder + '/*')
 
     if exp_config.clean_start:
         print 'Doing clean start ...'
@@ -68,12 +71,12 @@ def run_exp():
             if is_failed_node(id):
                 print 'NODE FAILED = ', id
                 continue
-            name_server.run_name_server(id, output_folder)
+            name_server.run_name_server(id, log_output_folder)
         else:
             if first_lns is False:
                 time.sleep(exp_config.ns_sleep)  # sleep so that name servers load name records into DB
                 first_lns = True
-            local_name_server.run_local_name_server(id, output_folder, get_update_trace(exp_config.trace_folder, id))
+            local_name_server.run_local_name_server(id, log_output_folder, get_update_trace(exp_config.trace_folder, id))
 
     # kill local
     if not exp_config.is_experiment_mode:
@@ -85,10 +88,10 @@ def run_exp():
 
     kill_local_gnrs()
 
-    stats_folder = exp_config.output_folder + '_stats'
-    if exp_config.output_folder.endswith('/'):
-        stats_folder = exp_config.output_folder[:-1] + '_stats'
-    parse_log(exp_config.output_folder, stats_folder)
+
+    # if exp_config.output_folder.endswith('/'):
+    #     stats_folder = exp_config.output_folder[:-1] + '_stats'
+    parse_log(log_output_folder, stats_folder)
     # parse logs and generate output
 
     # not doing restart stuff right now
@@ -99,7 +102,7 @@ def run_exp():
     for i in range(number_restarts):
         time.sleep(restart_period)
         print 'Restarting node ' + restart_node 
-        run_name_server(restart_node, output_folder, node_config)
+        run_name_server(restart_node, log_output_folder, node_config)
         print 'Done'
 
 

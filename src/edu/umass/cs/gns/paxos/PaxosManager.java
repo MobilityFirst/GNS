@@ -79,7 +79,7 @@ public class PaxosManager extends AbstractPaxosManager {
   /**
    * Minimum interval (in milliseconds) between two garbage state collections of replicas.
    */
-  static int MEMORY_GARBAGE_COLLECTION_INTERVAL = 100;
+  static int MEMORY_GARBAGE_COLLECTION_INTERVAL = 1000;
 
   /**
    * Paxos coordinator checks whether all replicas have received the latest messages decided.
@@ -322,14 +322,6 @@ public class PaxosManager extends AbstractPaxosManager {
     }
     switch (incomingPacketType){
 
-//      case PaxosPacketType.DECISION:
-//        try {
-//          paxosLogger.logMessage(new LoggingCommand(json.getString(PAXOS_ID), json, LoggingCommand.LOG_AND_EXECUTE));
-//        } catch (JSONException e) {
-//          e.printStackTrace();
-//        }
-//
-//        break;
       case PaxosPacketType.FAILURE_DETECT:
       case PaxosPacketType.FAILURE_RESPONSE:
         processMessage(new HandleFailureDetectionPacketTask(json, failureDetection));
@@ -352,7 +344,7 @@ public class PaxosManager extends AbstractPaxosManager {
           }
           else {
             // this case can arise just before (after) a paxos instance is created (stopped).
-            GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID);
+            GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID + " Message: " + json);
           }
         } catch (Exception e) {
           GNS.getLogger().severe(" PAXOS Exception EXCEPTION!!. Msg = " + json);
@@ -367,8 +359,6 @@ public class PaxosManager extends AbstractPaxosManager {
             GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms.");
           }
         }
-//        GNS.getLogger().fine("Received packet: " + json);
-//        processMessage(new HandlePaxosMessageTask(json,incomingPacketType, this));
         break;
     }
   }
@@ -451,9 +441,9 @@ public class PaxosManager extends AbstractPaxosManager {
 
 
   void addToActiveProposals(ProposalStateAtCoordinator propState) {
-    synchronized (proposalStates) {
-      proposalStates.add(propState);
-    }
+//    synchronized (proposalStates) {
+//      proposalStates.add(propState);
+//    }
   }
 
   void removeFromActiveProposals(ProposalStateAtCoordinator propState) {
@@ -597,7 +587,10 @@ public class PaxosManager extends AbstractPaxosManager {
       if (!debug) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
-      if (initialized) nioServer.sendToIDs(destIDs, json);
+      if (initialized) {
+        for (int x: destIDs)
+          nioServer.sendToID(x, json);
+      }
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. " + destIDs);
@@ -612,7 +605,12 @@ public class PaxosManager extends AbstractPaxosManager {
       if (!debug) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
-      if (initialized) nioServer.sendToIDs(destIDs, json, excludeID);
+      if (initialized) {
+        for (int x : destIDs) {
+          if (x != excludeID)
+            nioServer.sendToID(x, json);
+        }
+      }
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. ");

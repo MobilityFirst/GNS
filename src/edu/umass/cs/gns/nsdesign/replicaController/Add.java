@@ -4,12 +4,11 @@ import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -37,34 +36,37 @@ public class Add {
    * @param addRecordPacket   Packet sent by client.
    * @param replicaController ReplicaController object calling this method.
    */
-  public static GNSMessagingTask executeAddRecord(AddRecordPacket addRecordPacket, ReplicaController replicaController,
+  public static void executeAddRecord(AddRecordPacket addRecordPacket, ReplicaController replicaController,
                                                   boolean recovery)
           throws JSONException, FailedUpdateException, IOException {
 
-    GNSMessagingTask gnsMessagingTask = null;
-    if (Config.debugMode) GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket + " Local name server ID = " +
-            addRecordPacket.getLocalNameServerID());
+    if (Config.debugMode) GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket +
+            " Local name server ID = " + addRecordPacket.getLocalNameServerID());
     if (recovery) ReplicaControllerRecord.removeNameRecordPrimary(replicaController.getDB(), addRecordPacket.getName());
-    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(),
-            addRecordPacket.getName(), true);
+    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(),
+            true);
     // change packet type
     try {
-
       ReplicaControllerRecord.addNameRecordPrimary(replicaController.getDB(), rcRecord);
       addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
-      gnsMessagingTask = new GNSMessagingTask(replicaController.getNodeID(), addRecordPacket.toJSONObject());
+      if (!recovery) {
+        replicaController.getNioServer().sendToID(replicaController.getNodeID(), addRecordPacket.toJSONObject());
+      }
 
       if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
-
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
         if (Config.debugMode) GNS.getLogger().fine("Add complete informing client. " + addRecordPacket + " Local name server ID = " +
                 addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
-        replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+        if (!recovery) {
+          replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+        }
       }
     } catch (FailedUpdateException e) {
       // send error to client
       ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
-      gnsMessagingTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+      if (!recovery) {
+        replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+      }
     } catch (RecordExistsException e) {
       if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
         // send error to client
@@ -72,22 +74,21 @@ public class Add {
         if (Config.debugMode)
           GNS.getLogger().fine("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server ID = " +
                   addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
-        gnsMessagingTask = new GNSMessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+        if (!recovery) {
+          replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+        }
       }
     }
-
-    return recovery ? null : gnsMessagingTask;
   }
 
   /**
    * Method is called after GnsReconfigurable confirms it has added the record. This methods sends confirmation
    * to local name server that record is added.
    */
-  public static GNSMessagingTask executeAddActiveConfirm(AddRecordPacket addRecordPacket,
+  public static void executeAddActiveConfirm(AddRecordPacket addRecordPacket,
                                                          ReplicaController replicaController)
           throws JSONException {
     // no action needed.
-    return null;
 
   }
 }

@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import org.json.JSONException;
@@ -48,11 +47,10 @@ public class GroupChange {
 
   /********************   BEGIN: methods executed at old active replicas. *********************/
 
-  public static GNSMessagingTask handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica replica)
+  public static void handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica replica)
           throws JSONException{
     replica.getCoordinator().coordinateRequest(stopPacket.toJSONObject());
     // do the check and propose to replica controller.
-    return null;
   }
 
   /**
@@ -60,20 +58,18 @@ public class GroupChange {
    */
   public static void handleStopProcessed(OldActiveSetStopPacket stopPacket, ActiveReplica activeReplica) {
     try {
-      GNSMessagingTask msgTask = null;
       // confirm to primary name server that this set of actives has stopped
       if (stopPacket.getActiveReceiver() == activeReplica.getNodeID()) {
         // the active node who received this node, sends confirmation to primary
         // confirm to primary
         stopPacket.changePacketTypeToConfirm();
-        msgTask = new GNSMessagingTask(stopPacket.getPrimarySender(), stopPacket.toJSONObject());
+        activeReplica.getNioServer().sendToID(stopPacket.getPrimarySender(), stopPacket.toJSONObject());
         GNS.getLogger().info("Active removed: Name Record updated. Sent confirmation to replica controller. Packet = " +
                 stopPacket);
       } else {
         // other nodes do nothing.
         GNS.getLogger().info("Active removed: Name Record updated. OldVersion = " + stopPacket.getVersion());
       }
-      GNSMessagingTask.send(msgTask, activeReplica.getNioServer());
     } catch (JSONException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -140,9 +136,11 @@ public class GroupChange {
     packet.setUniqueID(requestID); // this ID is set by active replica for identifying this packet.
     if (Config.debugMode) GNS.getLogger().info("NEW_ACTIVE_START: forwarded msg to nodes; "
             + packet.getNewActiveNameServers());
-
-    activeReplica.getNioServer().sendToIDs(packet.getNewActiveNameServers(), packet.toJSONObject(), activeReplica.getNodeID());
-
+    for (int nodeID: packet.getNewActiveNameServers()) {
+      if (activeReplica.getNodeID() != nodeID) { // exclude myself
+        activeReplica.getNioServer().sendToID(nodeID, packet.toJSONObject());
+      }
+    }
     CopyStateFromOldActiveTask copyTask = new CopyStateFromOldActiveTask(packet, activeReplica);
     activeReplica.getScheduledThreadPoolExecutor().scheduleAtFixedRate(copyTask, 0, Config.NS_TIMEOUT_MILLIS,
             TimeUnit.MILLISECONDS);

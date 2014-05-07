@@ -17,6 +17,7 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -182,16 +183,20 @@ public class LocalNameServer {
       if (StartLocalNameServer.emulatePingLatencies) {
         GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
       }
-      tcpTransport = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer()));
+      GNSNIOTransport gnsNiot = new GNSNIOTransport(LocalNameServer.nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer()));
+      new Thread(gnsNiot).start();
+      tcpTransport = new GnsMessenger(nodeID, gnsNiot, executorService);
 
     } else {
       NioServer nioServer = new NioServer(LocalNameServer.nodeID, new ByteStreamToJSONObjects(new LNSPacketDemultiplexer()), gnsNodeConfig);
       if (StartLocalNameServer.emulatePingLatencies) {
         nioServer.emulateConfigFileDelays(gnsNodeConfig, StartLocalNameServer.variation);
       }
+      new Thread(nioServer).start();
       tcpTransport = nioServer;
+
     }
-    new Thread(tcpTransport).start();
+
   }
 
   /**
@@ -503,12 +508,12 @@ public class LocalNameServer {
    * @throws UnsupportedEncodingException
    * @throws NoSuchAlgorithmException
    */
-  public static Set<Integer> getPrimaryNameServers(String name) {
+  public static Set<Integer> getReplicaControllers(String name) {
     //NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
     //CacheEntry cacheEntry = cache.getIfPresent(nameAndType);
     CacheEntry cacheEntry = cache.getIfPresent(name);
     //if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("GNRS Logger: Current cache entry: " + cacheEntry + " Name = " + name + " record " + recordKey);
-    return (cacheEntry != null) ? cacheEntry.getPrimaryNameServer() : ConsistentHashing.getReplicaControllerSet(name);
+    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : ConsistentHashing.getReplicaControllerSet(name);
   }
 
   /**
@@ -518,9 +523,9 @@ public class LocalNameServer {
    * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
    *
    */
-  public static int getClosestPrimaryNameServer(String name, Set<Integer> nameServersQueried) {
+  public static int getClosestReplicaController(String name, Set<Integer> nameServersQueried) {
     try {
-      Set<Integer> primary = getPrimaryNameServers(name);
+      Set<Integer> primary = getReplicaControllers(name);
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
       }
