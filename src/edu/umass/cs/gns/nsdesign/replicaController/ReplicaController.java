@@ -236,7 +236,7 @@ public class ReplicaController implements Replicable {
           case ACTIVE_ADD_CONFIRM:
             Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
             break;
-          case UPDATE: // this is a special update which adds a name if that does not exist.
+          case UPDATE: // TO BE REMOVED - THIS WAS BASED ON AN ERRONEOUS INTERPRETATION OF WHAT UPSERT MEANS
             Upsert.handleUpsert(new UpdatePacket(json), this);
             break;
 

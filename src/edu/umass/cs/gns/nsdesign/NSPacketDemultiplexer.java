@@ -46,18 +46,21 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
               break;
             case UPDATE:
               // TODO define a different packet type for upserts
+              // Rebuttal to above comment:
+              // Does an upsert operation really need to be handled by a replica controller? It’s not
+              // creating a new guid *record*, just a new *field* in an existing guid record. 
               UpdatePacket updateAddressPacket = new UpdatePacket(json);
-              if (updateAddressPacket.getOperation().isUpsert()) {
-                ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
-                if (replicaController != null) {
-                  replicaController.coordinateRequest(json);
-                }
-              } else {
+//              if (updateAddressPacket.getOperation().isUpsert()) {
+//                ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
+//                if (replicaController != null) {
+//                  replicaController.coordinateRequest(json);
+//                }
+//              } else {
                 ActiveReplicaCoordinator gnsReconfigurable = nameServer.getActiveReplicaCoordinator();
                 if (gnsReconfigurable != null) {
                   gnsReconfigurable.coordinateRequest(json);
                 }
-              }
+              //}
               break;
 
             // Packets sent from LNS

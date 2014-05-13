@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
+ * TO BE REMOVED - THIS WAS BASED ON AN ERRONEOUS INTERPRETATION OF WHAT UPSERT MEANS
+ * WE ARE UPSERTING A FIELD NOT A RECORD.
+ * 
  * Handles the upsert case of UpdateAddressPacket. If the record exists in the replica controller database, upsert is
  * converted to an update operation and forwarded to an active replica (on a possibly remote node) to execute the update.
  * Otherwise, upsert is convert to an add operation and is executed by the replica controller module.
@@ -22,11 +25,12 @@ import java.util.Set;
  *
  * Created by abhigyan on 3/21/14.
  */
+@Deprecated
 public class Upsert {
 
   public static void handleUpsert(UpdatePacket updatePacket, ReplicaController replicaController) throws JSONException, IOException {
     if (Config.debugMode) {
-      GNS.getLogger().fine("Handling upsert case ....... ");
+      GNS.getLogger().warning("!!!!!!!SHOULD NOT BE CALLED. Handling upsert case ....... ");
     }
     ReplicaControllerRecord nameRecordPrimary;
     try {
