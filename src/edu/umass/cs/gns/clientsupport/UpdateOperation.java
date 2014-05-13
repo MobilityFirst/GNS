@@ -20,8 +20,8 @@ import java.util.Set;
  * REPLACESINGLETON - treats the value as a singleton and replaces the current value with this one<br>
  * CLEAR - deletes all the values from the field<br>
  * APPEND - appends the given value onto the current values TREATING THE LIST AS A SET - meaning no duplicates<br>
- * APPEND_OR_CREATE - an upsert operation similar to APPEND that creates the record if it does not exist<br>
- * REPLACE_ALL_OR_CREATE - an upsert operation similar to REPLACE_ALL that creates the record if it does not exist<br>
+ * APPEND_OR_CREATE - an upsert operation similar to APPEND that creates the field if it does not exist<br>
+ * REPLACE_ALL_OR_CREATE - an upsert operation similar to REPLACE_ALL that creates the field if it does not exist<br>
  * APPEND_WITH_DUPLICATION - appends the given value onto the current values TREATING THE LIST AS A LIST - duplicates are not removed<br>
  * SUBSTITUTE - replaces all instances of the old value with the new value - if old and new are lists does a pairwise replacement<br>
  *

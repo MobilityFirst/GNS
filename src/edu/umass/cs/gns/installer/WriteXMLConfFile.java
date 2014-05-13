@@ -26,14 +26,18 @@ import org.w3c.dom.Element;
 public class WriteXMLConfFile {
 
 // Something like this:
-// <root>
-//  <ec2username name = "ec2-user"/>
+//<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+//<root>
+//  <ec2username name="ec2-user"/>
+//  <keyname name="aws"/>
 //  <hosttype name="linux"/>
-//  <datastore name = "MONGO"/>
-//  <host id="0" ip="ec2-67-202-13-126.compute-1.amazonaws.com"/>
-//  <host id="1" ip="ec2-184-169-217-139.us-west-1.compute.amazonaws.com"/>
-//  <host id="2" ip="ec2-54-184-69-227.us-west-2.compute.amazonaws.com"/>
-// </root>
+//  <datastore name="MONGO"/>
+//  <host hostname="ec2-54-253-252-188.ap-southeast-2.compute.amazonaws.com" id="6" ip="54.253.252.188" lat="-33.8615" lon="151.205505"/>
+//  <host hostname="ec2-54-238-57-233.ap-northeast-1.compute.amazonaws.com" id="5" ip="54.238.57.233" lat="47.634399" lon="-122.342201"/>
+//  <host hostname="ec2-23-21-160-80.compute-1.amazonaws.com" id="0" ip="23.21.160.80" lat="39.043701" lon="-77.487503"/>
+//  <host hostname="ec2-79-125-27-206.eu-west-1.compute.amazonaws.com" id="7" ip="79.125.27.206" lat="53.0" lon="-8.0"/>
+//</root>
+
   public static void writeFile(String filename, String keyName, String ec2UserName, String hostType, String datastore,
           ConcurrentHashMap<Integer, HostInfo> idTable) {
 

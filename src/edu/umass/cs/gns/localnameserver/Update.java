@@ -48,6 +48,8 @@ public class Update {
 
     GNS.getLogger().info("UPDATE PACKET RECVD: " + json.toString());
 
+    // Does an upsert operation really need to be handled by a replica controller? It’s not
+    // creating a new guid *record*, just a new *field* in an existing guid record.
     if (updateAddressPacket.getOperation().isUpsert()) {
       AddRemove.handleUpsert(updateAddressPacket);
     } else {
@@ -81,7 +83,7 @@ public class Update {
       if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
         GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt));
       }
-    }  else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)){
+    } else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)) {
       // if error type is invalid active error, we fetch a fresh set of actives from replica controllers and try again
       handleInvalidActiveError(updateInfo);
     } else { // In all other types of errors, we immediately send response to client.
@@ -100,7 +102,9 @@ public class Update {
    * @throws JSONException
    */
   private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException {
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
+    }
 
     UpdatePacket updatePacket = (UpdatePacket) updateInfo.getUpdatePacket();
 
@@ -123,10 +127,14 @@ public class Update {
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet) throws JSONException {
     if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      }
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().info("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
+      if (StartLocalNameServer.debugMode) {
+        GNS.getLogger().info("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
+      }
       try {
         LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
 //        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),

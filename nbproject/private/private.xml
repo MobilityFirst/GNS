@@ -3,44 +3,30 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/EC2RegionSpec.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/EC2Runner.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/EC2RegionSpec.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/CommandProcessor.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/scripts/3nodeslocal/run.sh</file>
+            <file>file:/Users/westy/Documents/Code/GNS/manifest.mf</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingClient.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/Amazontool.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/WriteXMLConfFile.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingServer.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingManager.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/Logging.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/conf/gnsInstaller/dev.xml</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NSListenerAdmin.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/build.xml</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/InstanceStateRecord.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/nbproject/project.properties</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/EC2ConfigParser.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/networktools/SSHClient.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/Util.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/build.properties</file>
             <file>file:/Users/westy/Documents/Code/GNS/nbbuild.xml</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/GNSInstaller.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/httpserver/GnsHttpServer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/conf/ec2Runner/dev.xml</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/examples/AWSStatusCheck.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/examples/UserAuthPubKey.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/networktools/UserInfoPrompted.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/CommandProcessor.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/Route53.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/manifest.mf</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/examples/Sudo.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/AWSEC2.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingManager.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/AMIRecordType.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NSListenerAdmin.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/nbproject/project.properties</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/Util.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/GNSInstaller.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/networktools/ExecuteBash.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/AMIRecord.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/ThreadUtils.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/resources/AwsCredentials.properties</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/ec2Runner/test.xml</file>
             <file>file:/Users/westy/Documents/Code/GNS/conf/ec2Runner/mongo_ami_test.xml</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/amazontools/RegionRecord.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/networktools/Pinger.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/ec2Runner/test.xml</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/CommandDefs.java</file>
         </group>
     </open-files>

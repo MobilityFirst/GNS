@@ -45,7 +45,7 @@ public class SendUpdatesTask extends TimerTask {
   private int coordinatorID = -1;
 
   public SendUpdatesTask(UpdatePacket updatePacket,
-                         long requestRecvdTime, HashSet<Integer> activesQueried, int numRestarts) {
+          long requestRecvdTime, HashSet<Integer> activesQueried, int numRestarts) {
     this.name = updatePacket.getName();
     this.updatePacket = updatePacket;
     this.activesQueried = activesQueried;
@@ -54,6 +54,7 @@ public class SendUpdatesTask extends TimerTask {
   }
 
   @Override
+  // Pretty much the same code as in DNSRequestTask
   public void run() {
     try {
 
@@ -66,11 +67,13 @@ public class SendUpdatesTask extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-
       CacheEntry cacheEntry = LocalNameServer.getCacheEntry(name);
-
+      // IF we don't have one or more valid active replicas in the cache entry
+      // we need to request a new set for this name.
       if (cacheEntry == null || cacheEntry.isValidNameserver() == false) {
         requestNewActives();
+        // Cancel the task now. 
+        // When the request is satisfied this current task will be rescheduled.
         throw new CancelExecutorTaskException();
       }
       int nameServerID = selectNS(cacheEntry);
@@ -175,13 +178,13 @@ public class SendUpdatesTask extends TimerTask {
             updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
             updatePacket.getRequestID(),
             updateRequestID, // the id use by the LNS (that would be us here)
-            name, 
+            name,
             updatePacket.getRecordKey(),
             updatePacket.getUpdateValue(),
             updatePacket.getOldValue(),
             updatePacket.getArgument(),
-            updatePacket.getOperation(), 
-            LocalNameServer.getNodeID(), 
+            updatePacket.getOperation(),
+            LocalNameServer.getNodeID(),
             nameServerID, updatePacket.getTTL(),
             //signature info
             updatePacket.getAccessor(),
