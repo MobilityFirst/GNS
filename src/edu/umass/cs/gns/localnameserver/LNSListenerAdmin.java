@@ -143,7 +143,7 @@ public class LNSListenerAdmin extends Thread {
               break;
             case DUMPCACHE:
               JSONObject jsonResponse = new JSONObject();
-              jsonResponse.put("CACHE", LocalNameServer.cacheLogString("CACHE:\n"));
+              jsonResponse.put("CACHE", LocalNameServer.getCacheLogString("CACHE:\n"));
               AdminResponsePacket responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
               Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
               break;

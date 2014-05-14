@@ -183,6 +183,17 @@ public class NSAccountAccess {
   private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server at %s.\n"
           + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
 
+  /**
+   * Creates a user account using email verification to insure that a valid email account is associated with the account guid.
+   * 
+   * @param host
+   * @param name
+   * @param guid
+   * @param publicKey
+   * @param password
+   * @param activeReplica
+   * @return 
+   */
   public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password, GnsReconfigurable activeReplica) {
     String response;
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication, activeReplica)).equals(OKRESPONSE)) {
@@ -228,6 +239,14 @@ public class NSAccountAccess {
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 
+  /**
+   * Compares the code with the code stored with the GNS to insure that the email user created the account guid.
+   * 
+   * @param guid
+   * @param code
+   * @param activeReplica
+   * @return 
+   */
   public static String verifyAccount(String guid, String code, GnsReconfigurable activeReplica) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, activeReplica)) == null) {

@@ -166,7 +166,7 @@ public class DNSRequestTask extends TimerTask {
     GNS.getStatLogger().info("Success-Lookup-CacheHit\t" + stats);
     if (GNS.getLogger().isLoggable(Level.FINER)) {
       if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().finer(LocalNameServer.cacheLogString("LNS CACHE: "));
+        GNS.getLogger().finer(LocalNameServer.getCacheLogString("LNS CACHE: "));
       }
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().finer(LocalNameServer.nameRecordStatsMapLogString());

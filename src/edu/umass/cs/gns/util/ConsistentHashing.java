@@ -1,11 +1,20 @@
+/*
+ * Copyright (C) 2013
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.util;
-
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * This class contains the hash function used to find replica controllers (primary replicas)
@@ -16,10 +25,9 @@ import java.util.*;
  *
  * The class is thread-safe.
  *
- * @author  Abhigyan
+ * @author Abhigyan
  */
 public class ConsistentHashing {
-
 
   private static int numReplicaControllers;
 
@@ -33,25 +41,28 @@ public class ConsistentHashing {
    */
   private static final Object lock = new Object();
 
-  /******************BEGIN: public methods in this class ******************************/
-
+  /**
+   * ****************BEGIN: public methods in this class *****************************
+   */
   /**
    * Initialize consistent hashing. Before calling any method in this class, <code>initialize</code> method must be
    * called. If <code>initialize</code> method is called multiple times, the initialization is done based on the first
    * call; later calls make no difference.
    */
-  public static void initialize(int numReplicaControllers, Set<Integer> nameServerIDs){
+  public static void initialize(int numReplicaControllers, Set<Integer> nameServerIDs) {
     if (numReplicaControllers > nameServerIDs.size()) {
-      throw  new IllegalArgumentException("ERROR: Number of replica controllers " + numReplicaControllers +
-              " numNameServers = " + nameServerIDs.size());
+      throw new IllegalArgumentException("ERROR: Number of replica controllers " + numReplicaControllers
+              + " numNameServers = " + nameServerIDs.size());
     }
     synchronized (lock) {   // lock so that we do not initialize nsTreeMap multiple times.
-      if (nsTreeMap != null) return;
+      if (nsTreeMap != null) {
+        return;
+      }
       ConsistentHashing.numReplicaControllers = numReplicaControllers;
       nsTreeMap = new TreeMap<String, Integer>();
       // Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
       nsTreeMap = new TreeMap<String, Integer>();
-      for (int nodeID: nameServerIDs) {
+      for (int nodeID : nameServerIDs) {
         nsTreeMap.put(getMD5Hash(Integer.toString(nodeID)), nodeID);
       }
     }
@@ -60,6 +71,7 @@ public class ConsistentHashing {
   /**
    * Returns the set of replica controllers for a name.
    * The set of replica controllers is determined using consistent hashing.
+   *
    * @param name Name
    * @return a set with nodeIDs of replica controllers
    */
@@ -67,12 +79,7 @@ public class ConsistentHashing {
     if (name == null || name.trim().equals("")) {
       return null;
     }
-
-    Set<Integer> primaryReplicas;
-
-    primaryReplicas = getPrimaryReplicasNoCache(name);
-//    GNRS.getLogger().fine("Compute primaries and return: Name = " + name + " Primaries = " + primaryReplicas);
-    return primaryReplicas;
+    return getPrimaryReplicasNoCache(name);
   }
 
   /**
@@ -127,11 +134,7 @@ public class ConsistentHashing {
   public static String getConsistentHash(String name) {
     return getMD5Hash(name);
   }
-
-  /******************END: public methods in this class ******************************/
-
-
-
+  
   /**
    * Returns MD5 hash of given string. This is the hash function used for determining
    * replica controllers of a name.
@@ -157,20 +160,24 @@ public class ConsistentHashing {
   private static Set<Integer> getPrimaryReplicasNoCache(String name) {
     String s = getMD5Hash(name);
     HashSet<Integer> primaryNameServers = new HashSet<Integer>();
-    while(true) {
+    while (true) {
       Map.Entry entry = nsTreeMap.higherEntry(s);
-      if (entry == null) break;
+      if (entry == null) {
+        break;
+      }
       primaryNameServers.add((Integer) entry.getValue());
       s = (String) entry.getKey();
 //        System.out.println("x\t" + entry.getValue());
-      if (primaryNameServers.size() == numReplicaControllers) return primaryNameServers;
+      if (primaryNameServers.size() == numReplicaControllers) {
+        return primaryNameServers;
+      }
     }
 
     Map.Entry entry = nsTreeMap.firstEntry();
     primaryNameServers.add((Integer) entry.getValue());
 //      System.out.println("y\t" + entry.getValue());
     s = (String) entry.getKey();
-    while(primaryNameServers.size() != numReplicaControllers) {
+    while (primaryNameServers.size() != numReplicaControllers) {
       entry = nsTreeMap.higherEntry(s);
       primaryNameServers.add((Integer) entry.getValue());
       s = (String) entry.getKey();
@@ -179,10 +186,9 @@ public class ConsistentHashing {
     return primaryNameServers;
   }
 
-
-
   /**
    * Computes the SHA of a string
+   *
    * @param text string
    * @param md Hashing algorithm
    * @return Hash of a string as byte array
@@ -195,8 +201,9 @@ public class ConsistentHashing {
     return md.digest();
   }
 
-
-  /** Test **/
+  /**
+   * Test *
+   */
   public static void main(String[] args) {
 
     try {
@@ -213,11 +220,11 @@ public class ConsistentHashing {
       for (int i = 0; i < names; i++) {
         String name = Integer.toString(i);
         Set<Integer> primaryNameServers = getPrimaryReplicasNoCache(name);
-        System.out.println("Name: " + name + "\tPrimaries: " + primaryNameServers + "\tGroupID:" +
-                getReplicaControllerGroupID(name) + "\t");
+        System.out.println("Name: " + name + "\tPrimaries: " + primaryNameServers + "\tGroupID:"
+                + getReplicaControllerGroupID(name) + "\t");
       }
       for (int i = 0; i < nameServers; i++) {
-        System.out.println("Groups for node: "+ "\t" + i + "\t" + getReplicaControllerGroupIDsForNode(i));
+        System.out.println("Groups for node: " + "\t" + i + "\t" + getReplicaControllerGroupIDsForNode(i));
       }
 
       System.exit(2);
@@ -225,20 +232,17 @@ public class ConsistentHashing {
       ArrayList<Integer> nodeCount = new ArrayList<Integer>();
       int avg = names * numPrimaryReplicas / nameServers;
       System.out.println("Avg: " + avg);
-      for (int x: nodeNameCount.values()) {
+      for (int x : nodeNameCount.values()) {
         nodeCount.add(x);
       }
       Collections.sort(nodeCount);
       System.out.println(nodeCount);
-      System.exit(2);
-
 
       System.out.println(ByteUtils.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-1"))));
       String s = new String(SHA("www.google.com", MessageDigest.getInstance("SHA-1")));
       System.out.println(s);
       byte[] t = s.getBytes();
       System.out.println(ByteUtils.convertToHex(t));
-
 
       System.out.println(SHA("www.google.com", MessageDigest.getInstance("SHA-1")).length);
       System.out.println(ByteUtils.convertToHex(SHA("www.google.com", MessageDigest.getInstance("SHA-256"))));
@@ -249,7 +253,6 @@ public class ConsistentHashing {
       System.out.println("\n" + ByteUtils.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-1"))));
       System.out.println(ByteUtils.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-256"))));
       System.out.println(ByteUtils.ByteArrayToInt(SHA("www.google.com", MessageDigest.getInstance("SHA-512"))));
-
 
       String name = "13";
       Set<Integer> replicas = getReplicaControllerSet(name);
@@ -262,7 +265,7 @@ public class ConsistentHashing {
       System.out.println(replicas);
       s = "B04A8EBC86BC3BFDD1EF88377D55B8304088821C";
       replicas = getReplicaControllerSet(s);
-      System.out.println("Primary replicas for name  "+ s + ":" + replicas);
+      System.out.println("Primary replicas for name  " + s + ":" + replicas);
 
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();

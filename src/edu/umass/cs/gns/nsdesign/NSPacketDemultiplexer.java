@@ -33,6 +33,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
    *
    * @param json JSON object received by NIO package.
    */
+  @Override
   public boolean handleJSONObject(final JSONObject json) {
     nameServer.getExecutorService().submit(new Runnable() {
       @Override
@@ -49,7 +50,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
               // Rebuttal to above comment:
               // Does an upsert operation really need to be handled by a replica controller? It’s not
               // creating a new guid *record*, just a new *field* in an existing guid record. 
-              UpdatePacket updateAddressPacket = new UpdatePacket(json);
+              //UpdatePacket updateAddressPacket = new UpdatePacket(json);
 //              if (updateAddressPacket.getOperation().isUpsert()) {
 //                ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
 //                if (replicaController != null) {
