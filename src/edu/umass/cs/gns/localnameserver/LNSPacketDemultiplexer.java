@@ -48,13 +48,13 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           switch (incomingPacketType) {
             // Lookup
             case DNS:
-              Lookup.handlePacketLookupRequest(json, dnsPacket);
+              Lookup.handlePacketLookupRequest(json, dnsPacket, handler);
               break;
             case DNS_RESPONSE:
-              Lookup.handlePacketLookupResponse(json, dnsPacket);
+              Lookup.handlePacketLookupResponse(json, dnsPacket, handler);
               break;
             case DNS_ERROR_RESPONSE:
-              Lookup.handlePacketLookupErrorResponse(json, dnsPacket);
+              Lookup.handlePacketLookupErrorResponse(json, dnsPacket, handler);
               break;
           }
           break;

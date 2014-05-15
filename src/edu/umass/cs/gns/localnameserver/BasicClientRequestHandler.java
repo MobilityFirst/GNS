@@ -10,7 +10,7 @@ package edu.umass.cs.gns.localnameserver;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
@@ -43,6 +43,7 @@ import org.json.JSONObject;
  */
 public class BasicClientRequestHandler implements ClientRequestHandlerInterface {
 
+  private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
@@ -58,6 +59,11 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   private final Cache<String, CacheEntry> cache;
 
   /**
+   * Map of name record statistics *
+   */
+  private final ConcurrentMap<String, NameRecordStats> nameRecordStatsMap;
+
+  /**
    * GNS node config object used by LNS to get node information, such as IP, Port, ping latency.
    */
   private final GNSNodeConfig gnsNodeConfig;
@@ -70,14 +76,16 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    */
   private final int nodeID;
 
-  public BasicClientRequestHandler(int nodeID, GNSNodeConfig gnsNodeConfig) throws IOException {
+  public BasicClientRequestHandler(int nodeID, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
+    this.parameters = parameters;
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.updateTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
-    this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(StartLocalNameServer.cacheSize).build();
+    this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
+    nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
     this.tcpTransport = initTransport();
   }
 
@@ -104,9 +112,17 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return gnsNodeConfig;
   }
 
-  /**
-   * ******************** BEGIN: methods for read/write to info about reads (queries) and updates ***************
-   */
+  @Override
+  public int getNodeID() {
+    return nodeID;
+  }
+ 
+  @Override
+  public RequestHandlerParameters getParameters() {
+    return parameters;
+  }
+
+  // REQUEST INFO METHODS
   /**
    **
    * Adds information of a transmitted query to a query transmitted map.
@@ -208,12 +224,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return requestTransmittedMap.get(id);
   }
 
-  /**
-   * ******************** END: methods for read/write to the stats map ******************
-   */
-  /**
-   * ******************** BEGIN: methods that read/write to the cache at the local name server ***************
-   */
+  // CACHE METHODS
   @Override
   public void invalidateCache() {
     cache.invalidateAll();
@@ -376,10 +387,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    */
   @Override
   public Set<Integer> getReplicaControllers(String name) {
-    //NameAndRecordKey nameAndType = new NameAndRecordKey(name, recordKey);
-    //CacheEntry cacheEntry = cache.getIfPresent(nameAndType);
     CacheEntry cacheEntry = cache.getIfPresent(name);
-    //if (StartLocalNameServer.debugMode) GNRS.getLogger().fine("GNRS Logger: Current cache entry: " + cacheEntry + " Name = " + name + " record " + recordKey);
     return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : ConsistentHashing.getReplicaControllerSet(name);
   }
 
@@ -433,6 +441,75 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     }
     return x1.get(0);
     //    return  x1.get(count);
+  }
+  
+
+  // STATS MAP
+  @Override
+  public NameRecordStats getStats(String name) {
+    return nameRecordStatsMap.get(name);
+  }
+
+  @Override
+  public Set<String> getNameRecordStatsKeySet() {
+    return nameRecordStatsMap.keySet();
+  }
+
+  @Override
+  public void incrementLookupRequest(String name) {
+
+    if (nameRecordStatsMap.containsKey(name)) {
+      nameRecordStatsMap.get(name).incrementLookupCount();
+    } else {
+      NameRecordStats nameRecordStats = new NameRecordStats();
+      nameRecordStats.incrementLookupCount();
+      nameRecordStatsMap.put(name, nameRecordStats);
+    }
+  }
+
+  @Override
+  public void incrementUpdateRequest(String name) {
+    if (nameRecordStatsMap.containsKey(name)) {
+      nameRecordStatsMap.get(name).incrementUpdateCount();
+    } else {
+      NameRecordStats nameRecordStats = new NameRecordStats();
+      nameRecordStats.incrementUpdateCount();
+      nameRecordStatsMap.put(name, nameRecordStats);
+    }
+  }
+
+  @Override
+  public void incrementLookupResponse(String name) {
+    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
+    if (nameRecordStats != null) {
+      nameRecordStats.incrementLookupResponse();
+    }
+  }
+
+  @Override
+  public void incrementUpdateResponse(String name) {
+    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
+    if (nameRecordStats != null) {
+      nameRecordStats.incrementUpdateResponse();
+    }
+  }
+
+  /**
+   **
+   * Prints name record statistic
+   *
+   * @return 
+   */
+  @Override
+  public String getNameRecordStatsMapLogString() {
+    StringBuilder str = new StringBuilder();
+    for (Map.Entry<String, NameRecordStats> entry : nameRecordStatsMap.entrySet()) {
+      str.append("\n");
+      str.append("Name " + entry.getKey());
+      str.append("->");
+      str.append(" " + entry.getValue().toString());
+    }
+    return "***NameRecordStatsMap***" + str.toString();
   }
 
 }

@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
@@ -36,6 +37,20 @@ public interface ClientRequestHandlerInterface {
    * @return 
    */
   public GNSNodeConfig getGnsNodeConfig();
+  
+  /**
+   * Returns that set of parameters used to control the handlers behavior.
+   * 
+   * @return 
+   */
+  public RequestHandlerParameters getParameters();
+  
+  /**
+   * Returns the id of this node.
+   * 
+   * @return 
+   */
+  public int getNodeID();
 
   // REQUEST AND UPDATE INFO METHODS
   
@@ -260,5 +275,32 @@ public interface ClientRequestHandlerInterface {
    */
   public int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs); 
   
+  // STATS MAP
+  
+  /**
+   * Returns the NameRecordStats object for a given guid.
+   * 
+   * @param name
+   * @return 
+   */
+  public NameRecordStats getStats(String name);
+
+  public Set<String> getNameRecordStatsKeySet();
+  
+  public void incrementLookupRequest(String name);
+
+  public void incrementUpdateRequest(String name);
+
+  public void incrementLookupResponse(String name);
+
+  public void incrementUpdateResponse(String name);
+
+  /**
+   **
+   * Prints name record statistic
+   *
+   * @return 
+   */
+  public String getNameRecordStatsMapLogString();
 }
   

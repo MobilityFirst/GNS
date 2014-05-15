@@ -8,6 +8,7 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
@@ -16,6 +17,7 @@ import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.TraceRequestGenerator;
@@ -47,10 +49,6 @@ public class LocalNameServer {
    */
   private static int nodeID;
 
-  /**
-   * Map of name record statistic *
-   */
-  private static ConcurrentMap<String, NameRecordStats> nameRecordStatsMap;
   /**
    * Unique and random query ID *
    */
@@ -87,7 +85,17 @@ public class LocalNameServer {
    */
   public LocalNameServer(int nodeID, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
-    requestHandler = new BasicClientRequestHandler(nodeID, gnsNodeConfig);
+    RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
+            StartLocalNameServer.experimentMode,
+            StartLocalNameServer.emulatePingLatencies,
+            StartLocalNameServer.adaptiveTimeout,
+            StartLocalNameServer.outputSampleRate,
+            StartLocalNameServer.queryTimeout,
+            StartLocalNameServer.maxQueryWaitTime,
+            StartLocalNameServer.cacheSize,
+            StartLocalNameServer.loadDependentRedirection,
+            StartLocalNameServer.replicationFramework);
+    requestHandler = new BasicClientRequestHandler(nodeID, gnsNodeConfig, parameters);
     LocalNameServer.nodeID = nodeID;
 //    LocalNameServer.gnsNodeConfig = gnsNodeConfig;
 //    requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
@@ -95,7 +103,7 @@ public class LocalNameServer {
 //    selectTransmittedMap = new ConcurrentHashMap<Integer, SelectInfo>(10, 0.75f, 3);
 //    random = new Random(System.currentTimeMillis());
 //    cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(StartLocalNameServer.cacheSize).build();
-    nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
+//    nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
 
     Intercessor.init(requestHandler);
@@ -278,68 +286,6 @@ public class LocalNameServer {
     return requestHandler.getCacheEntry(name);
   }
 
- 
-  // STATS MAP
-  
-  public static NameRecordStats getStats(String name) {
-    return nameRecordStatsMap.get(name);
-  }
-
-  public static Set<String> getNameRecordStatsKeySet() {
-    return nameRecordStatsMap.keySet();
-  }
-
-  public static void incrementLookupRequest(String name) {
-
-    if (nameRecordStatsMap.containsKey(name)) {
-      nameRecordStatsMap.get(name).incrementLookupCount();
-    } else {
-      NameRecordStats nameRecordStats = new NameRecordStats();
-      nameRecordStats.incrementLookupCount();
-      nameRecordStatsMap.put(name, nameRecordStats);
-    }
-  }
-
-  public static void incrementUpdateRequest(String name) {
-    if (nameRecordStatsMap.containsKey(name)) {
-      nameRecordStatsMap.get(name).incrementUpdateCount();
-    } else {
-      NameRecordStats nameRecordStats = new NameRecordStats();
-      nameRecordStats.incrementUpdateCount();
-      nameRecordStatsMap.put(name, nameRecordStats);
-    }
-  }
-
-  public static void incrementLookupResponse(String name) {
-    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
-    if (nameRecordStats != null) {
-      nameRecordStats.incrementLookupResponse();
-    }
-  }
-
-  public static void incrementUpdateResponse(String name) {
-    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
-    if (nameRecordStats != null) {
-      nameRecordStats.incrementUpdateResponse();
-    }
-  }
-
-  /**
-   **
-   * Prints name record statistic
-   *
-   */
-  public static String nameRecordStatsMapLogString() {
-    StringBuilder str = new StringBuilder();
-    for (Map.Entry<String, NameRecordStats> entry : nameRecordStatsMap.entrySet()) {
-      str.append("\n");
-      str.append("Name " + entry.getKey());
-      str.append("->");
-      str.append(" " + entry.getValue().toString());
-    }
-    return "***NameRecordStatsMap***" + str.toString();
-  }
-
   /**
    * Invalidates the active name server set in cache by setting its value to <i>null</i>.
    *
@@ -436,13 +382,43 @@ public class LocalNameServer {
   public static String getCacheLogString(String preamble) {
     return requestHandler.getCacheLogString(preamble);
   }
+  
+  // STATS MAP
+  
+  public static NameRecordStats getStats(String name) {
+    return requestHandler.getStats(name);
+  }
+
+  public static Set<String> getNameRecordStatsKeySet() {
+    return requestHandler.getNameRecordStatsKeySet();
+  }
+  
+  public static void incrementLookupRequest(String name) {
+    requestHandler.incrementLookupRequest(name);
+  }
+
+  public static void incrementUpdateRequest(String name) {
+    requestHandler.incrementUpdateRequest(name);
+  }
+
+  public static void incrementLookupResponse(String name) {
+    requestHandler.incrementLookupResponse(name);
+  }
+
+  public static void incrementUpdateResponse(String name) {
+    requestHandler.incrementUpdateResponse(name);
+  }
 
   /**
-   * *******************END: methods for sending packets to name servers. *******************************
+   **
+   * Prints name record statistic
+   *
    */
-  /**
-   * *******************BEGIN: methods for monitoring load at name servers. *******************************
-   */
+  public static String getNameRecordStatsMapLogString() {
+    return requestHandler.getNameRecordStatsMapLogString();
+  }
+          
+  // MONITOR NAME SERVER LOADS
   private void initializeNameServerLoadMonitoring() {
     nameServerLoads = new ConcurrentHashMap<Integer, Double>();
     Set<Integer> nameServerIDs = requestHandler.getGnsNodeConfig().getNameServerIDs();

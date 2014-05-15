@@ -1,0 +1,103 @@
+package edu.umass.cs.gns.main;
+
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+
+/**
+ * Parameters that are needed by the request handler.
+ */
+public class RequestHandlerParameters {
+  /**
+   * Determines if we execute logging statements.
+   */
+  private boolean debugMode = false;
+  /**
+   * Used for running experiments for Auspice paper.
+   */
+  private boolean experimentMode = false;
+  /**
+   * If this is true we use fake ping latencies.
+   */
+  private boolean emulatePingLatencies = false;
+  /**
+   * Whether use a fixed timeout or an adaptive timeout. By default, fixed timeout is used.
+   */
+  private boolean adaptiveTimeout = false;
+  /**
+   * Determines how often we sample and output to the StatLogger.
+   */
+  private double outputSampleRate = 1.0;
+  /**
+   * Fixed timeout after which a query retransmitted.
+   */
+  private int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
+  /**
+   * Maximum time a name server waits for a response from name server query is logged as failed after this.
+   */
+  private int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
+  /**
+   * The size of the cache used to store values and active nameservers.
+   */
+  private int cacheSize = 1000;
+  /**
+   * Should we use do load dependent redirection.
+   */
+  private boolean loadDependentRedirection = false;
+  /**
+   * The replicationFrameworkType we are using.
+   */
+  private ReplicationFrameworkType replicationFramework;
+
+  public RequestHandlerParameters(boolean debugMode, boolean experimentMode, boolean emulatePingLatencies, boolean adaptiveTimeout, double outputSampleRate, int queryTimeout, int maxQueryWaitTime, int cacheSize, boolean loadDependentRedirection, ReplicationFrameworkType replicationFramework) {
+    this.debugMode = debugMode;
+    this.experimentMode = experimentMode;
+    this.emulatePingLatencies = emulatePingLatencies;
+    this.adaptiveTimeout = adaptiveTimeout;
+    this.outputSampleRate = outputSampleRate;
+    this.queryTimeout = queryTimeout;
+    this.maxQueryWaitTime = maxQueryWaitTime;
+    this.cacheSize = cacheSize;
+    this.loadDependentRedirection = loadDependentRedirection;
+    this.replicationFramework = replicationFramework;
+  }
+
+  public boolean isDebugMode() {
+    return debugMode;
+  }
+
+  public boolean isExperimentMode() {
+    return experimentMode;
+  }
+
+  public boolean isEmulatePingLatencies() {
+    return emulatePingLatencies;
+  }
+
+  public boolean isAdaptiveTimeout() {
+    return adaptiveTimeout;
+  }
+
+  public double getOutputSampleRate() {
+    return outputSampleRate;
+  }
+
+  public int getQueryTimeout() {
+    return queryTimeout;
+  }
+
+  public int getMaxQueryWaitTime() {
+    return maxQueryWaitTime;
+  }
+
+  public int getCacheSize() {
+    return cacheSize;
+  }
+
+  public boolean isLoadDependentRedirection() {
+    return loadDependentRedirection;
+  }
+
+  public ReplicationFrameworkType getReplicationFramework() {
+    return replicationFramework;
+  }
+
+}
