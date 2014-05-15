@@ -83,10 +83,10 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
 
   private GNSNIOTransportInterface initTransport() throws IOException {
 
-    new LNSListenerUDP(gnsNodeConfig).start();
+    new LNSListenerUDP(gnsNodeConfig, this).start();
 
     GNS.getLogger().info("LNS listener started.");
-    GNSNIOTransport gnsNiot = new GNSNIOTransport(nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer()));
+    GNSNIOTransport gnsNiot = new GNSNIOTransport(nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
     new Thread(gnsNiot).start();
     return new GnsMessenger(nodeID, gnsNiot, executorService);
   }

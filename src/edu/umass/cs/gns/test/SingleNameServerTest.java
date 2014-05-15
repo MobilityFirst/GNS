@@ -64,7 +64,7 @@ public class SingleNameServerTest {
 
       double mean = 5000.0;
       Constant constantValue = new Constant(mean);
-      new RequestGenerator().generateRequests(new WorkloadParams(null), testRequest, constantValue, LocalNameServer.getExecutorService());
+      new RequestGenerator().generateRequests(new WorkloadParams(null), testRequest, constantValue, LocalNameServer.getRequestHandler());
 
 
     } catch (IOException e) {

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.test;
 
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.workloads.Constant;
@@ -21,7 +22,7 @@ public class TraceRequestGenerator {
   /******* BEGIN: during experiments, these methods read workload trace files. Not used outside experiments. ********/
 
   public static void genRequests(String workloadFile, String lookupTraceFile, String updateTraceFile, double lookupRate,
-                                 double updateRate, ScheduledThreadPoolExecutor executorService)
+                                 double updateRate, ClientRequestHandlerInterface handler)
           throws IOException, InterruptedException{
 
     WorkloadParams workloadParams = new WorkloadParams(workloadFile);
@@ -40,12 +41,12 @@ public class TraceRequestGenerator {
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Scheduling all lookups.");
     }
-    new RequestGenerator().generateRequests(workloadParams, lookupTrace, new Constant(lookupRate), executorService);
+    new RequestGenerator().generateRequests(workloadParams, lookupTrace, new Constant(lookupRate), handler);
 
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("Scheduling all updates.");
     }
-    new RequestGenerator().generateRequests(workloadParams, updateTrace, new Constant(updateRate), executorService);
+    new RequestGenerator().generateRequests(workloadParams, updateTrace, new Constant(updateRate), handler);
   }
 
   private static List<TestRequest> readTrace(String filename, int defaultRequestType) throws IOException {

@@ -84,7 +84,7 @@ public class MultiNameServerTest {
       double mean = 5000.0;
       Constant constantValue = new Constant(mean);
       new RequestGenerator().generateRequests(new WorkloadParams(null), testRequest, constantValue,
-              LocalNameServer.getExecutorService());
+              LocalNameServer.getRequestHandler());
 
     } catch (IOException e) {
       GNS.getLogger().info("ERROR: Test unsuccessful due to exception.");

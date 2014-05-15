@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
@@ -21,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class RequestGenerator {
 
   public  void generateRequests(WorkloadParams workloadParams, List<TestRequest> requests,
-                                ProbabilityDistribution probDistribution1, ScheduledThreadPoolExecutor executorService) {
+                                ProbabilityDistribution probDistribution1, ClientRequestHandlerInterface handler) {
     if (requests == null) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Request trace is null. Scheduler returning.");
@@ -43,7 +44,7 @@ public class RequestGenerator {
 //    }
     double delay = 0;
 //            probDistribution.getMean();
-    LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer();
+    LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
     GNS.getLogger().info(" Initial update delay: " + delay);
 
     List<Double> delays = new ArrayList<Double>();
@@ -86,7 +87,7 @@ public class RequestGenerator {
     long t0 = System.currentTimeMillis();
     assert tasks.size() == delays.size();
     for (int i = 0; i < tasks.size(); i++) {
-      executorService.schedule(tasks.get(i), (long) delays.get(i).intValue(), TimeUnit.MILLISECONDS);
+      handler.getExecutorService().schedule(tasks.get(i), (long) delays.get(i).intValue(), TimeUnit.MILLISECONDS);
     }
     long t1 = System.currentTimeMillis();
     GNS.getLogger().severe(" Time to submit all requests: " + (t1 - t0) + " Delay = " + delay);

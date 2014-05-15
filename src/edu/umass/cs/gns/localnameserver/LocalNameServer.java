@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -97,8 +98,9 @@ public class LocalNameServer {
     nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
 
+    Intercessor.init(requestHandler);
     //startTransport();
-    if (!StartLocalNameServer.experimentMode) { // creates exceptions with multiple local name servers on on machine
+    if (!StartLocalNameServer.experimentMode) { // creates exceptions with multiple local name servers on a machine
       GnsHttpServer.runHttp(nodeID);
     }
 
@@ -129,7 +131,7 @@ public class LocalNameServer {
 
       TraceRequestGenerator.genRequests(StartLocalNameServer.workloadFile, StartLocalNameServer.lookupTraceFile,
               StartLocalNameServer.updateTraceFile, StartLocalNameServer.lookupRate,
-              StartLocalNameServer.updateRateRegular, requestHandler.getExecutorService());
+              StartLocalNameServer.updateRateRegular, requestHandler);
 
       // name server loads initialized.
       if (StartLocalNameServer.loadDependentRedirection) {
@@ -144,6 +146,16 @@ public class LocalNameServer {
   public static int getNodeID() {
     return nodeID;
   }
+
+  /**
+   * Should really only be used for testing code.
+   * 
+   * @return 
+   */
+  public static ClientRequestHandlerInterface getRequestHandler() {
+    return requestHandler;
+  }
+ 
   /**
    * @return the executorService
    */
@@ -210,6 +222,7 @@ public class LocalNameServer {
   }
 
   // CACHE METHODS
+  
   public static void invalidateCache() {
     requestHandler.invalidateCache();
   }
@@ -265,12 +278,9 @@ public class LocalNameServer {
     return requestHandler.getCacheEntry(name);
   }
 
-  /**
-   * ******************** END: methods for read/write to info about queries (read) and updates ***************
-   */
-  /**
-   * ******************** BEGIN: methods for read/write to the stats map ******************
-   */
+ 
+  // STATS MAP
+  
   public static NameRecordStats getStats(String name) {
     return nameRecordStatsMap.get(name);
   }
@@ -397,7 +407,7 @@ public class LocalNameServer {
    * @return Best name server among serverIDs given.
    * ***********************************************************
    */
-  public static int selectBestUsingLatecyPlusLoad(Set<Integer> serverIDs) {
+  public static int selectBestUsingLatencyPlusLoad(Set<Integer> serverIDs) {
     if (serverIDs == null || serverIDs.size() == 0) {
       return -1;
     }

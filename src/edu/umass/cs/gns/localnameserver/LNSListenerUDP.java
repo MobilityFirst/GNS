@@ -21,13 +21,14 @@ public class LNSListenerUDP extends Thread {
 
   public static Transport udpTransport;
 
-  private static LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer();
+  private static LNSPacketDemultiplexer lnsPacketDemultiplexer;
 
-  public LNSListenerUDP(GNSNodeConfig gnsNodeConfig) throws IOException {
+  public LNSListenerUDP(GNSNodeConfig gnsNodeConfig, ClientRequestHandlerInterface handler) throws IOException {
     super("LNSListenerUDP");
     GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " starting LNSListenerUDP on port " 
             + gnsNodeConfig.getLNSUdpPort(LocalNameServer.getNodeID()));
     udpTransport = new Transport(LocalNameServer.getNodeID(), gnsNodeConfig.getLNSUdpPort(LocalNameServer.getNodeID()));
+    lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
 
   }
 

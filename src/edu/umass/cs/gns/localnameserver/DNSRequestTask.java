@@ -211,7 +211,7 @@ public class DNSRequestTask extends TimerTask {
   private int selectNS(CacheEntry cacheEntry) {
     int ns;
     if (StartLocalNameServer.loadDependentRedirection) {
-      ns = LocalNameServer.selectBestUsingLatecyPlusLoad(nameserversQueried);
+      ns = LocalNameServer.selectBestUsingLatencyPlusLoad(nameserversQueried);
     } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
       ns = RandomReplication.getBeehiveNameServer(LocalNameServer.getGnsNodeConfig(), cacheEntry.getActiveNameServers(),
               nameserversQueried);
