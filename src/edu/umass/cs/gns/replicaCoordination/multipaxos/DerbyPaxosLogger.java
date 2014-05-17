@@ -23,14 +23,14 @@ import org.json.JSONObject;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PreparePacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.StatePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
@@ -66,6 +66,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final boolean CONN_POOLING= true;
 	private static final String DUPLICATE_KEY = "23505";
 	private static final String DUPLICATE_TABLE = "X0Y32";
+	private static final String NONEXISTENT_TABLE = "42Y07";
 	private static final String USER = "user"; 
 	private static final String PASSWORD = "user";
 	private static final String DATABASE = "paxos_logs";
@@ -80,15 +81,18 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_STATE_SIZE = 8192; // FIXME: Need to make this configurable
 	private static final int PAUSE_STATE_SIZE = 256;
 	private static final int MAX_GROUP_SIZE = 256; // maximum size of a paxos replica group
-	private static final int MAX_LOG_MESSAGE_SIZE = 256; // maximum size of a log message
+	private static final int MAX_LOG_MESSAGE_SIZE = 512; // maximum size of a log message
 	private static final int MAX_OLD_DECISIONS = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 
 	private ComboPooledDataSource dataSource=null;
 	private Connection defaultConn = null;
 	private Connection cursorConn = null; // FIXME: We should really use a connection pool
 
-	private static boolean firstConnect = true; // coz db needs a create=true flag just once
 	private boolean closed = true;
+	private boolean processing = false;
+	private synchronized boolean getProcessing() {return this.processing;}
+	private synchronized void setProcessing(boolean b) {this.processing=b; if(!b) notify();}
+	protected static boolean isLoggingEnabled() {return !DISABLE_LOGGING;}
 
 	/* The global statements are not really need and can be replaced
 	 * by local variables in log(.) and duplicateOrOutdated(.)
@@ -110,7 +114,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private synchronized Connection getDefaultConn() throws SQLException {return dataSource.getConnection();}
 	private synchronized Connection getCursorConn() throws SQLException {
 		return (this.cursorConn = this.dataSource.getConnection());
-		}
+	}
 
 	/* The entry point for checkpointing. Puts given checkpoint state 
 	 * for paxosID. 'state' could be anything that allows PaxosInterface 
@@ -121,6 +125,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 */
 	public void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int acceptedGCSlot) {
 		if(isClosed() || DISABLE_LOGGING) return;
+
+		long t1=System.currentTimeMillis(),t2=0;
 		// Stupid derby doesn't have an insert if not exist command
 		String insertCmd = "insert into " + getCTable() + " (version,members,slot,ballotnum,coordinator,state,paxos_id) values (?,?,?,?,?,?,?)";
 		String updateCmd = "update " + getCTable() + " set version=?,members=?, slot=?, ballotnum=?, coordinator=?, state=? where paxos_id=?";
@@ -138,9 +144,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			insertCP.setString(7, paxosID);
 			insertCP.executeUpdate(); 
 			conn.commit();
-			// why can't insertCP.toString() return the query string? :/
-			if(DEBUG) log.info("Node " + this.myID + " DB inserted checkpoint ("+paxosID+","+Util.arrayToSet(group).toString()+","+
-					slot+","+ballot+","+state+","+acceptedGCSlot+")");
+			t2=System.currentTimeMillis();
 		} catch(SQLException sqle) {
 			log.severe("SQLException while checkpointing as " + cmd); sqle.printStackTrace();
 		} finally {cleanup(insertCP);cleanup(conn);}
@@ -150,10 +154,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		 * concurrently active paxosIDs. Realized this the hard way. :)
 		 */
 		this.deleteOutdatedMessages(paxosID, slot, ballot.ballotNumber, ballot.coordinatorID, acceptedGCSlot);
+		// why can't insertCP.toString() return the query string? :/
+		log.info("Node " + this.myID + " DB inserted checkpoint ("+paxosID+","+Util.arrayToSet(group).toString()+","+
+				slot+","+ballot+","+state+","+acceptedGCSlot+"); took " + (t2-t1) + "ms; garbage collection took " + 
+				(System.currentTimeMillis()-t2)+"ms");
 	}
 	/* Called by putCheckpointState to delete logged messages from before the checkpoint. */
 	private void deleteOutdatedMessages(String paxosID, int slot, int ballotnum, int coordinator, int acceptedGCSlot) {
 		if(isClosed()) return;
+		if(slot<PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL) return; // an optimization to avoid GC at slot 0
 
 		PreparedStatement pstmt=null,dstmt=null; ResultSet checkpointRS=null; Connection conn=null;
 		try {
@@ -166,7 +175,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			conn = getDefaultConn();
 			dstmt = conn.prepareStatement(dcmd);
 			dstmt.execute();
-			//conn.commit();
+			conn.commit();
 		} catch(SQLException sqle) {
 			log.severe("SQLException while deleting outdated messages for " + paxosID); sqle.printStackTrace();
 		} finally {cleanup(pstmt,checkpointRS);cleanup(dstmt); cleanup(conn);}
@@ -207,13 +216,18 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		finally {cleanup(localLogMsgStmt); cleanup(conn);} // no cleanup if statement is re-used
 		return logged;
 	}
-	public boolean pause(String paxosID, String serializedState) {
-		if(isClosed() || DISABLE_LOGGING) return false;
+	/* Can not start pause or unpause after close has been called. For other 
+	 * operations like checkpointing or logging, we need to be able to do 
+	 * them even after close has been called as waitToFinish needs that.
+	 */
+	public synchronized boolean pause(String paxosID, String serializedState) {
+		if(isCloseCalled() || DISABLE_LOGGING) return false; else this.setProcessing(true);
 
 		boolean paused = false;
 		String insertCmd = "insert into " + getPTable() + " (serialized, paxos_id) values (?,?)";
-		String updateCmd = "update " + getPTable() + " set serialized=? where paxos_id=?";
-		String cmd = this.unpause(paxosID)!=null ? updateCmd : insertCmd; 
+		//String updateCmd = "update " + getPTable() + " set serialized=? where paxos_id=?";
+		//this.deletePaused(paxosID); // ignore return value
+		String cmd = insertCmd; //this.unpause(paxosID)!=null ? updateCmd : insertCmd; 
 		PreparedStatement insertP=null; Connection conn=null;
 		try {
 			conn = this.getDefaultConn();
@@ -224,15 +238,16 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			paused = true;
 		} catch(SQLException sqle) {
 			log.severe("Node "+myID+" failed to pause instance "+paxosID);
+			this.deletePaused(paxosID); 
 			sqle.printStackTrace();
 		} finally {cleanup(insertP); cleanup(conn);};
+		this.setProcessing(false);
 		return paused;
 	}
-	public HotRestoreInfo unpause(String paxosID) {
-		if(isClosed() || DISABLE_LOGGING) return null;
+	public synchronized HotRestoreInfo unpause(String paxosID) {
+		if(isCloseCalled() || DISABLE_LOGGING) return null; else this.setProcessing(true);
 
 		HotRestoreInfo hri = null;
-		//String cmd = "select serialized from " + getPTable() + " where paxos_id="+paxosID;
 		PreparedStatement pstmt=null; ResultSet rset=null; Connection conn=null;
 		try {
 			conn = this.getDefaultConn();
@@ -247,7 +262,28 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			log.severe("Node "+myID+" failed to pause instance "+paxosID);
 			sqle.printStackTrace();
 		} finally {cleanup(pstmt,rset); cleanup(conn);};
+		if(hri!=null) this.deletePaused(paxosID); // unpause will also delete paused state
+		this.setProcessing(false);
 		return hri;
+	}
+	private void deletePaused(String paxosID) {
+		if(isClosed() || DISABLE_LOGGING) return;
+		PreparedStatement pstmt=null; ResultSet rset=null; Connection conn=null;
+		try {
+			conn = this.getDefaultConn();
+			pstmt = conn.prepareStatement("delete from " + getPTable() + " where paxos_id='" + paxosID+"'");
+			pstmt.executeUpdate();
+			conn.commit();
+		}  catch(SQLException sqle) {
+			log.severe("Node "+myID+" failed to delete paused state for "+paxosID);
+			sqle.printStackTrace();
+		} finally {cleanup(pstmt,rset); cleanup(conn);};
+	}
+	
+	public synchronized void waitToFinish() {
+		try {
+			while(this.getProcessing()) wait();
+		} catch(InterruptedException ie) {ie.printStackTrace();}
 	}
 
 	/**
@@ -367,12 +403,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	/************* Start of incremental checkpoint read methods **********************/
-	protected synchronized boolean initiateReadCheckpoints() {
+	protected synchronized boolean initiateReadCheckpoints(boolean readState) {
 		if(isClosed() || this.cursorPstmt!=null || this.cursorRset!=null || this.cursorConn!=null) return false;
 
+		log.info("Node "+this.myID + " initiatedReadCheckpoints"); 
 		boolean initiated = false;
 		try {
-			this.cursorPstmt = this.getPreparedStatement(this.getCursorConn(), getCTable(), null, "paxos_id, version, members, state");
+			this.cursorPstmt = this.getPreparedStatement(this.getCursorConn(), getCTable(), null, 
+					"paxos_id, version, members" + (readState? ", state" : ""));
 			this.cursorRset = this.cursorPstmt.executeQuery();
 			initiated = true;
 		} catch(SQLException sqle) {
@@ -380,7 +418,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		}
 		return initiated;
 	}
-	protected synchronized RecoveryInfo readNextCheckpoint() {
+	protected synchronized RecoveryInfo readNextCheckpoint(boolean readState) {
 		RecoveryInfo pri = null;
 		try {
 			if(cursorRset!=null && cursorRset.next()) {
@@ -390,7 +428,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
 				int[] group = new int[pieces.length];
 				for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
-				String state = cursorRset.getString(4);
+				String state = (readState ? cursorRset.getString(4) : null);
 				pri = new RecoveryInfo(paxosID, version, group, state);
 			}
 		} catch(SQLException sqle) {
@@ -398,8 +436,34 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		}
 		return pri;
 	}
+	protected synchronized boolean initiateReadMessages() {
+		if(isClosed() || this.cursorPstmt!=null || this.cursorRset!=null || this.cursorConn!=null) return false;
+
+		log.info("Node "+this.myID + " initiatedReadMessages"); 
+		boolean initiated = false;
+		try {
+			this.cursorPstmt = this.getPreparedStatement(this.getCursorConn(), getMTable(), null, "message");
+			this.cursorRset = this.cursorPstmt.executeQuery();
+			initiated = true;
+		} catch(SQLException sqle) {
+			log.severe("SQLException while getting all paxos IDs " + " : " + sqle);
+		}
+		return initiated;
+	}
+	protected synchronized PaxosPacket readNextMessage() {
+		PaxosPacket packet = null;
+		try {
+			if(cursorRset!=null && cursorRset.next()) {
+				String msg = cursorRset.getString(1);
+				packet = DerbyPaxosLogger.getPaxosPacket(msg);
+			}
+		} catch(SQLException sqle) {
+			log.severe("Node " + this.myID + " got SQLException in readNextMessage: " + " : " + sqle); sqle.printStackTrace();
+		}
+		return packet;	
+	}
 	protected synchronized void closeReadAll() {
-		cleanup(this.cursorPstmt,this.cursorRset);
+		log.info("Node " + myID + " invoking closeReadAll");
 		this.cleanupCursorConn();
 	}
 	/************* End of incremental checkpoint read methods **********************/
@@ -515,6 +579,11 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	public synchronized boolean removeAll() {
 		return this.remove(null);
 	}
+	public void close() {
+		log.info("Node "+this.myID+" closing DB");
+		if(!firstClose()) return; 
+		this.closeGracefully();
+	}
 
 	/**
 	 * Closes the database and the connection. Must be invoked 
@@ -522,7 +591,20 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * recovery will take longer upon the next bootup.
 	 * @return
 	 */
-	public synchronized boolean closeGracefully() {
+	public boolean closeGracefully() {
+
+		/* If there are pending tasks and the DB is closed ungracefully, 
+		 * this can cause problems upon recovery. The DB is consistent 
+		 * as per its design but it takes some time upon recovery for it 
+		 * to rollback or roll forward incomplete tasks. What this means 
+		 * is that some logged messages may not be available when a 
+		 * recovering node reads them to roll forward but may suddenly 
+		 * become available a little while later when the logged messages 
+		 * finally get committed. This triggers some assert violations in 
+		 * the paxos code as prepare replies contain positive replies even 
+		 * though the list of contained accepts implies otherwise.
+		 */
+		waitToFinishAll(); // parent method needs to be called to finish gracefully
 
 		if (FRAMEWORK.equals("embedded")) {
 			try {
@@ -625,14 +707,16 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				"version smallint, slot int, ballotnum int, coordinator int, packet_type int, message varchar(" +
 				MAX_LOG_MESSAGE_SIZE + ")/*, primary key(paxos_id, slot, ballotnum, coordinator, packet_type)*/)";
 		// FIXME: How to batch while avoiding duplicate key exceptions with indexing??? Aargh!
+		String cmdMI = "create index messages_index on " + getMTable() + "(paxos_id,packet_type,slot,ballotnum,coordinator)";
 		String cmdP = "create table " + getPTable() + " (paxos_id varchar(" + PAXOS_ID_SIZE + 
 				") not null, serialized varchar("+PAUSE_STATE_SIZE+") not null, primary key (paxos_id))";
+		if(this.dbDirectoryExists()) this.dropTable(getPTable()); // using pause table unnecessarily slows down recovery significantly
 		Statement stmt=null; Connection conn=null;
 		try {
 			conn = this.getDefaultConn();
 			stmt = conn.createStatement();
 			createdCheckpoint=createTable(stmt, cmdC, getCTable());
-			createdMessages=createTable(stmt, cmdM, getCTable());
+			createdMessages=createTable(stmt, cmdM, getCTable()) && createIndex(stmt, cmdMI, getMTable());
 			createdPTable=createTable(stmt, cmdP, getPTable());
 			log.info("Created tables " + getCTable() + " and "  + getMTable() + " and " + getPTable());
 		} catch(SQLException sqle) {
@@ -656,6 +740,28 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		}
 		return created;
 	}
+	private boolean createIndex(Statement stmt, String cmd, String table) {
+		return createTable(stmt, cmd, table);
+	}
+	private boolean dropTable(String table) {
+		String cmd = "drop table " + getPTable();
+		PreparedStatement pstmt = null;
+		boolean dropped = false;
+		try {
+			Connection conn = this.getDefaultConn();
+			pstmt = conn.prepareStatement(cmd);
+			pstmt.execute();
+			conn.commit();
+			dropped = true;
+			log.info("Node " +myID+ " dropped pause table " + table);
+		} catch(SQLException sqle) {
+			if(!sqle.getSQLState().equals(NONEXISTENT_TABLE)) {
+				log.severe("Node " + this.myID + " could not drop table " + table + ":"+sqle.getSQLState());
+				sqle.printStackTrace();
+			}
+		}
+		return dropped;
+	}
 
 	private boolean dbDirectoryExists() {
 		File f = new File(this.logDirectory+DATABASE);
@@ -671,7 +777,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		props.put("password", DerbyPaxosLogger.PASSWORD);
 		System.setProperty("derby.system.home", this.logDirectory); // doesn't seem to work
 
-		String dbCreation = PROTOCOL + this.logDirectory+DATABASE + (!dbDirectoryExists() ? ";create=true" : "");
+		String dbCreation = PROTOCOL + this.logDirectory+DATABASE + (!dbDirectoryExists() && isFirstConnect() ? ";create=true" : "");
 
 		try {
 			dataSource = (ComboPooledDataSource)setupDataSourceC3P0(dbCreation, props);
@@ -682,12 +788,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		while(!connected && connAttempts<maxAttempts) {
 			try {
 				connAttempts++;
-				//if(getDefaultConn()==null) DriverManager.getConnection(dbCreation, props);
 				if(getCursorConn()==null) this.cursorConn = dataSource.getConnection(); //test opening a connection
 				log.info("Connected to and created database " + DATABASE);
 				connected = true;
-				log.info("Connected successfully to derby DB");
-				if(!firstConnect && (firstConnect=true)) fixURI();
+				fixURI();
 			} catch(SQLException sqle) {
 				log.severe("Could not connect to the derby DB: " + sqle);
 				try {
@@ -708,33 +812,35 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private synchronized void cleanupCursorConn() {
 		try {
 			if(this.cursorConn!=null && CONN_POOLING) {this.cursorConn.close(); this.cursorConn=null;}
+			if(this.cursorPstmt!=null) {this.cursorPstmt.close(); this.cursorPstmt=null;}
+			if(this.cursorRset!=null) {this.cursorRset.close(); this.cursorRset=null;}
 		} catch(SQLException sqle) {
 			log.severe("Could not close connection " + this.cursorConn);sqle.printStackTrace();
 		}
 	}
 
-	private synchronized void cleanup(Connection conn) {
+	private void cleanup(Connection conn) {
 		try {
 			if(conn!=null && CONN_POOLING) {conn.close();}
 		} catch(SQLException sqle) {
 			log.severe("Could not close connection " + conn);sqle.printStackTrace();
 		}
 	}
-	private synchronized void cleanup(Statement stmt) {
+	private void cleanup(Statement stmt) {
 		try {
 			if(stmt!=null) {stmt.close();}
 		} catch(SQLException sqle) {
 			log.severe("Could not clean up statement " + stmt);sqle.printStackTrace();
 		}
 	}
-	private synchronized void cleanup(ResultSet rs) {
+	private void cleanup(ResultSet rs) {
 		try {
 			if(rs!=null) {rs.close();}
 		} catch(SQLException sqle) {
 			log.severe("Could not close result set " + rs); sqle.printStackTrace();
 		}
 	}
-	private synchronized void cleanup(PreparedStatement pstmt, ResultSet rset) {
+	private void cleanup(PreparedStatement pstmt, ResultSet rset) {
 		cleanup(pstmt);
 		cleanup(rset);
 	}
@@ -829,6 +935,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private void fixURI() {this.dataSource.setJdbcUrl(PROTOCOL + this.logDirectory+DATABASE);}
 
 	public synchronized boolean logBatch(PaxosPacket[] packets) {
+		if(isClosed() || DISABLE_LOGGING) return false;
 		boolean logged = true;
 		PreparedStatement pstmt = null; Connection conn = null;
 		String cmd = "insert into " + getMTable() +  " values (?, ?, ?, ?, ?, ?, ?)";
@@ -917,7 +1024,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				ProposalPacket prop = new ProposalPacket(i, req);
 				PValuePacket pvalue = new PValuePacket(ballot, prop);
 				AcceptPacket accept = new AcceptPacket(nodeID, pvalue, -1);
-				pvalue = pvalue.getDecisionPacket(-1);
+				pvalue = pvalue.makeDecision(-1);
 				PreparePacket prepare = new PreparePacket(coordinator, nodeID, new Ballot(i, ballot.coordinatorID));
 				if(j%3==0) { // prepare
 					packets[j] = prepare;
@@ -952,9 +1059,9 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			Ballot newBallot = new Ballot(0,2);
 			logger.putCheckpointState(paxosID, (short)0, group, 2, newBallot, "Hello World",0);
 			System.out.println("Printing logger state after checkpointing:");
-			logger.initiateReadCheckpoints();
+			logger.initiateReadCheckpoints(true);
 			RecoveryInfo pri=null;
-			while((pri = logger.readNextCheckpoint())!=null) {
+			while((pri = logger.readNextCheckpoint(true))!=null) {
 				assert(pri!=null); 
 			}
 			System.out.print("Checking deletion of logged messages...");

@@ -10,12 +10,12 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.StatePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
@@ -32,7 +32,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState
  * per machine. This class is no longer maintained but is lying around in 
  * case we want to do some performance comparison of memory vs. disk operations.
  * 
- * Use DerbyDummyPaxosLogger that extends this class for a more scalable, efficient, 
+ * Use DerbyPaxosLogger that extends this class for a more scalable, efficient, 
  * and persistent logger.
  * 
  * Testing: Only shows that this logger barely scales to a few hundred 
@@ -74,9 +74,7 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 
 	/************* Start of non-extensible methods **********************/
 	public static final void logAndExecute(DummyPaxosLogger logger, PValuePacket decision, PaxosInstanceStateMachine pism) {
-		PaxosLogTask task = new PaxosLogTask(logger, pism.getPaxosID(), pism.getVersion(), decision.slot, decision.ballot, 
-				decision.getType(), decision, pism);
-		timer.schedule(task, 0);
+		assert(false) : "Method not implemented";
 	}
 	/************* End of non-extensible methods **********************/
 
@@ -190,11 +188,19 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 		assert(false); // should never be invoked
 		return false;
 	}
-	protected synchronized boolean initiateReadCheckpoints() {
+	protected synchronized boolean initiateReadCheckpoints(boolean b) {
 		assert(false) : "Method not implemented";
 		return false;
 	}
-	protected synchronized RecoveryInfo readNextCheckpoint() {
+	protected synchronized RecoveryInfo readNextCheckpoint(boolean b) {
+		assert(false) : "Method not implemented";
+		return null;
+	}
+	protected boolean initiateReadMessages() {
+		assert(false) : "Method not implemented";
+		return false;		
+	}
+	protected PaxosPacket readNextMessage() {
 		assert(false) : "Method not implemented";
 		return null;
 	}
@@ -216,6 +222,12 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 	public HotRestoreInfo unpause(String paxosID) {
 		assert(false) : "Method not implemented";
 		return null;
+	}
+	public void close() {
+		assert(false) : "Method not implemented";
+	}
+	public void waitToFinish() {
+		assert(false) : "Method not implemented";		
 	}
 
 

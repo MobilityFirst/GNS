@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 
 /**

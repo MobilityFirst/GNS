@@ -20,7 +20,7 @@ import edu.umass.cs.gns.nio.SampleNodeConfig;
  */
 public class TESTPaxosConfig {
 	public static final boolean DEBUG = PaxosManager.DEBUG;
-	public static final boolean MEMORY_TESTING=false;
+	public static final boolean MEMORY_TESTING=true;
 	public static final boolean DISK_ACCESS_TESTING=true;
 
 	public static final int MAX_TEST_REQS = 1000000;
@@ -40,6 +40,17 @@ public class TESTPaxosConfig {
 	public static final String TEST_GUID_PREFIX = "paxos";
 	public static final String TEST_GUID = "paxos0";
 	public static final int MAX_CONFIG_GROUPS = 10;
+	
+	/**************** Number of paxos groups *******************/
+	public static final int NUM_GROUPS = 100000;  // NUM_GROUPS could be set to much greater than MAX_CONFIG_GROUPS
+	/***********************************************************/
+
+	/**************** Load parameters *******************/
+	public static final int NUM_CLIENTS = 10; // 1;// 4 default
+	public static final int NUM_REQUESTS = 1000; // 20;  // 40000 default
+	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
+	public static final double TOTAL_LOAD = 1000; // 2000 reqs/sec default (across all clients)
+	/***********************************************************/
 
 	private static final SampleNodeConfig nodeConfig = new SampleNodeConfig();
 	//private static final TreeSet<Integer> nodes = new TreeSet<Integer>();
@@ -55,11 +66,6 @@ public class TESTPaxosConfig {
 	private static boolean reply_to_client = true;
 
 	private static boolean clean_db = false;
-
-	public static final int NUM_CLIENTS = 4; // 1;// 4 default
-	public static final int NUM_REQUESTS = 40000; // 20;  // 40000 default
-	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
-	public static final double TOTAL_LOAD = 2000;//1/10.0; // 2000 reqs/sec default
 	
 	static{assert(NUM_CLIENTS <= MAX_CONFIG_GROUPS);} // all tests should be with at most MAX_CONFIG_GROUPS
 
@@ -168,9 +174,8 @@ public class TESTPaxosConfig {
 		return TESTPaxosConfig.failedNodes.contains(nodeID);
 	}
 	public synchronized static void setRecovered(int id, String paxosID, boolean b) {
-		assert(id < MAX_NODE_ID);
+		assert(id < MAX_NODE_ID) : " id = "+id + ", MAX_NODE_ID = " + MAX_NODE_ID;
 		if(paxosID.equals(TEST_GUID)) {
-			System.out.println("Node " + id + " has recovered");
 			recovered[id] = b;
 		}
 	}

@@ -7,10 +7,10 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PreparePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
@@ -20,13 +20,14 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
  */
 
 /* FIXME: This class is not used anymore and will be removed soon.
+ * Dated: 4/21/14
  * 
  * This class is a task to log either the checkpoint or a log message.
  * It is somewhat wasteful as some fields are relevant to only one of 
  * the two, e.g., group and gcSlot only to checkpoint. 
  * 
- * FIXME: Needs to be cleaned up. Not enough code reuse.
  */
+
 public final class PaxosLogTask extends TimerTask {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
 

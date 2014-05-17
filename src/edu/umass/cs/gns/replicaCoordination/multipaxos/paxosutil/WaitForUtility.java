@@ -15,6 +15,7 @@ public class WaitForUtility {
 	private final boolean[] responded;
 	private int heardCount=0;
 	private int initTime=0; // to calculate how long we have been waiting
+	private int retransmissionCount=0;
 	
 	public WaitForUtility(int[] m) {
 		this.members = m;
@@ -58,12 +59,21 @@ public class WaitForUtility {
 	public long totalWaitTime() {
 		return (int)System.currentTimeMillis() - this.initTime;
 	}
+	public void setInitTime() {
+		this.initTime = (int)System.currentTimeMillis();
+	}
 	private int getIndex(int node) {
 		int index = -1;
 		for(int i=0; i<this.members.length; i++) {
 			if(this.members[i] == node) index = i;
 		}
 		return index;
+	}
+	public void incrRetransmissonCount() {
+		this.retransmissionCount++;
+	}
+	public int getRetransmissionCount() {
+		return this.retransmissionCount;
 	}
 	public String toString() {
 		String s="{Members: [ ";

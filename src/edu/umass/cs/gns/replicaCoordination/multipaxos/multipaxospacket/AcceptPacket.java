@@ -3,12 +3,11 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 
 public final class AcceptPacket extends PValuePacket {
 	public final int nodeID; // sender nodeID
 	public final int majorityCommittedSlot; 	// slot number up to which a majority have committed
-	public final boolean recovery;
+	//public final boolean recovery;
 
 	protected static final String NODE = "node";
 	private static final String SLOT = "slotCommitted@Majority";
@@ -18,7 +17,7 @@ public final class AcceptPacket extends PValuePacket {
 		this.packetType = PaxosPacketType.ACCEPT;
 		this.nodeID = nodeID;
 		this.majorityCommittedSlot = slotNumber;
-		this.recovery = false;
+		//this.recovery = false;
 	}
 
 	public AcceptPacket(JSONObject json) throws JSONException {
@@ -28,7 +27,7 @@ public final class AcceptPacket extends PValuePacket {
 		this.nodeID = json.getInt(NODE);
 		this.majorityCommittedSlot = json.getInt(SLOT);
 		this.paxosID = json.getString(PaxosPacket.PAXOS_ID);
-		this.recovery = json.getBoolean(RECOVERY);
+		//this.recovery = json.getBoolean(RECOVERY);
 	}
 
 

@@ -3,7 +3,6 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 
 /* A <slot, ballot, request> three-tuple. The slot and request are
@@ -18,8 +17,8 @@ public class PValuePacket extends ProposalPacket {
 	private static final String MCSLOT = "slotCommitted@Majority";
 
 	public final Ballot ballot;
-	public final int majorityCommittedSlot; // for garbage collection, similar to that in AcceptPacket
 	public final boolean recovery;
+	private int majorityCommittedSlot; // for garbage collection, similar to that in AcceptPacket
 	
 	public PValuePacket(Ballot b, ProposalPacket p) {
     	super(p);
@@ -33,26 +32,20 @@ public class PValuePacket extends ProposalPacket {
 		super(pvalue);
 		this.ballot = pvalue.ballot;
 		this.majorityCommittedSlot = pvalue.majorityCommittedSlot;
-		this.recovery = pvalue.recovery;
+		this.packetType = pvalue.getType();
+		this.recovery = false; //pvalue.recovery;
 	}
 
-	// Private constructor called by getDecisionPacket
-	private PValuePacket(PValuePacket pvalue, int mcSlot) {
-		super(pvalue);
-		this.ballot = pvalue.ballot;
-		this.majorityCommittedSlot=mcSlot;
-		// packetType inherited, not assigned
-		this.recovery = pvalue.recovery;
-	}
-	public PValuePacket getDecisionPacket(int mcSlot) {
-		PValuePacket decision = new PValuePacket(this, mcSlot);
-		decision.packetType = PaxosPacketType.DECISION;
-		return decision;
+	public PValuePacket makeDecision(int mcSlot) {
+		this.packetType = PaxosPacketType.DECISION;
+		this.majorityCommittedSlot = mcSlot;
+		return new PValuePacket(this); // can't modify recovery, so new
 	}
 	public PValuePacket preempt() {
 		this.packetType = PaxosPacketType.PREEMPTED; // preemption does not change final fields, unlike getDecisionPacket
 		return this;
 	}
+	public int getMajorityCommittedSlot() {return this.majorityCommittedSlot;}
 	public boolean isRecovery() {
 		return this.recovery;
 	}

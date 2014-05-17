@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 
 import org.json.JSONException;

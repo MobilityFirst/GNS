@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
  * send to the sender the commits it is reporting as
  * missing in this sync reply.
  */
-public final class SynchronizeReplyPacket extends PaxosPacket{
+public final class SyncDecisionsPacket extends PaxosPacket{
 
 	public final int nodeID; // sending node
 	public final int maxDecisionSlot; 	// max decided slot at nodeID
@@ -25,16 +24,16 @@ public final class SynchronizeReplyPacket extends PaxosPacket{
 	private final static String MISSING = "MISSING";
 	private final static String FLAG = "MISSING_TOO_MUCH";
 
-	public SynchronizeReplyPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
+	public SyncDecisionsPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
 		super((PaxosPacket)null);
 		this.missingTooMuch = flag;
-		this.packetType = (missingTooMuch ? PaxosPacketType.SYNC_REPLY : PaxosPacketType.SYNC_REPLY); // missingTooMuch => checkpoint transfer
+		this.packetType = (missingTooMuch ? PaxosPacketType.SYNC_DECISIONS : PaxosPacketType.SYNC_DECISIONS); // missingTooMuch => checkpoint transfer
 		this.nodeID = nodeID;
 		this.maxDecisionSlot = maxDecisionSlot;
 		this.missingSlotNumbers = missingSlotNumbers;
 	}
 
-	public SynchronizeReplyPacket(JSONObject json) throws JSONException{
+	public SyncDecisionsPacket(JSONObject json) throws JSONException{
 		super(json);
 		this.nodeID = json.getInt(NODE);
 		this.maxDecisionSlot = json.getInt(MAX_SLOT);
@@ -42,8 +41,8 @@ public final class SynchronizeReplyPacket extends PaxosPacket{
 			missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
 		else missingSlotNumbers = null;
 		this.missingTooMuch = json.getBoolean(FLAG);
-		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.SYNC_REPLY || PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_REQUEST); // coz class is final
-		this.packetType = PaxosPacketType.SYNC_REPLY;
+		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.SYNC_DECISIONS || PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_REQUEST); // coz class is final
+		this.packetType = PaxosPacketType.SYNC_DECISIONS;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 
 /**
 @author V. Arun
@@ -14,7 +14,7 @@ import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
  * may be different.
  * 
  * This is a utility class as it is really just
- * a contained for two arrays.
+ * a container for two arrays.
  */
 public class MessagingTask {
 

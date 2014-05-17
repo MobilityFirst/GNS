@@ -17,14 +17,18 @@ import java.util.TreeSet;
  * @author Hardeep Uppal, Westy
  */
 public class Util {
-	public static final DecimalFormat decimalFormat = new DecimalFormat("#.##");
-	public static final double ALPHA = 0.125;
+	public static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
+	public static final double ALPHA = 0.05;
 
 	public static final String df(double d) {return decimalFormat.format(d);}
 	public static final String mu(double d) {return decimalFormat.format(d*1000)+"us";} // milli to microseconds
-	public static final double movingAverage(long sample, double historicalAverage) {
+	public static final double movingAverage(double sample, double historicalAverage) {
 		return (1-ALPHA)*((double)historicalAverage) + ALPHA*((double)sample);
-	} 
+	}
+	public static final double movingAverage(long sample, double historicalAverage) {
+		return movingAverage((double)sample, historicalAverage);
+	}
+
 
 	public static int roundToInt(double d) {
 		return (int) Math.round(d);

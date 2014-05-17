@@ -60,7 +60,7 @@ public class PaxosCoordinator {
 		return sendPrepare ? pcs.prepare(members) : null; // For ballotnum>0, must explicitly prepare
 	}
 	protected synchronized Ballot remakeCoordinator(int[] members) {
-		return (this.isActive() ? pcs.prepare(members): null);
+		return (this.exists() && !this.isActive() ? pcs.prepare(members): null);
 	}
 	protected synchronized Ballot hotRestore(HotRestoreInfo hri) {
 		if(hri.coordBallot==null) return null;
@@ -77,7 +77,7 @@ public class PaxosCoordinator {
 		if(this.exists() && !pcs.isActive()) {
 			preActiveProposals = pcs.getPreActiveProposals();
 			log.info("Coordinator "+this.pcs.getBallot() + " resigning, " +
-					"preActive proposals = " + this.pcs.getPreActiveProposals());
+					"preActive proposals = " + preActiveProposals);
 		}
 
 		pcs = null; // The main point of this method.
@@ -98,6 +98,7 @@ public class PaxosCoordinator {
 	/* Phase2a
 	 */
 	protected synchronized AcceptPacket propose(int[] groupMembers, RequestPacket req) {
+		if(!this.exists()) log.severe("Coordinator resigned after check, DROPPING request: " + req);
 		return this.exists() ? this.pcs.propose(groupMembers, req) : null;
 	}
 
@@ -109,11 +110,13 @@ public class PaxosCoordinator {
 		PValuePacket committedPValue=null; PValuePacket preemptedPValue=null;
 		if(acceptReply.ballot.compareTo(this.pcs.getBallot()) > 0) {
 			if((preemptedPValue = pcs.handleAcceptReplyHigherBallot(acceptReply))!=null) {
-				/* Can ignore return value of preActiveProposals as handleAcceptReplyHigherBallot 
+				/* Can ignore return value of preActiveProposals below as handleAcceptReplyHigherBallot 
 				 * returns true only if there are no proposals at this coordinator.
 				 */
 				//if(DEBUG) 
-				log.info("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + acceptReply.slotNumber);
+				log.info("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + 
+						acceptReply.slotNumber + ", " + acceptReply.getPaxosID());
+				assert(preemptedPValue.ballot.compareTo(acceptReply.ballot) < 0);
 				if(pcs.preemptedFully()) {
 					log.info("Coordinator " + this.pcs.getBallot() + " preempted fully, about to resign");
 					resignAsCoordinator();
@@ -122,7 +125,7 @@ public class PaxosCoordinator {
 		}
 		else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
 			committedPValue = pcs.handleAcceptReplyMyBallot(members, acceptReply);
-		}
+		} else assert(false):"YIKES! Acceptor "+acceptReply.nodeID+" replied without updating its ballot";
 		return committedPValue!=null ? committedPValue : preemptedPValue; // both could be null too
 	}
 
@@ -160,7 +163,7 @@ public class PaxosCoordinator {
 	 * Received prepare reply with higher ballot.
 	 */
 	protected synchronized ArrayList<ProposalPacket> getPreActivesIfPreempted(PrepareReplyPacket prepareReply, int[] members) {
-		return (this.exists() && this.pcs.isPreemptable(prepareReply)) ? this.resignAsCoordinator() : null;
+		return (this.exists() && !this.isActive() && this.pcs.isPreemptable(prepareReply)) ? this.resignAsCoordinator() : null;
 	}
 	protected synchronized boolean isOverloaded(int acceptorSlot) {
 		return this.isActive() ? this.pcs.isOverloaded(acceptorSlot) : false;

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 
 /**
 @author V. Arun
@@ -32,6 +32,6 @@ public class LogMessagingTask extends MessagingTask {
 	}
 	
 	public String toString() {
-		return "toLog = " + (logMsg.getType()) +": " + logMsg + "; \ntoMsg = " + super.toString();
+		return "toLog = " + (logMsg.getType()) +": " + logMsg + "; toMsg = " + super.toString();
 	}
 }

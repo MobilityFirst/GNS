@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.packet;
+package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
 import java.util.HashMap;
 
@@ -45,8 +45,9 @@ public abstract class PaxosPacket extends Packet {
 		CHECKPOINT_STATE ("CHECKPOINT_STATE", 21),
 		CHECKPOINT_REQUEST ("CHECKPOINT_REQUEST", 23),
 		SYNC_REQUEST ("SYNC_REQUEST", 31),
-		SYNC_REPLY ("SYNC_REPLY", 32), 
-		FIND_REPLICA_GROUP ("FIND_REPLICA_GROUP", 33);
+		SYNC_DECISIONS ("SYNC_DECISIONS", 32), 
+		FIND_REPLICA_GROUP ("FIND_REPLICA_GROUP", 33),
+		NO_TYPE ("NO_TYPE", 9999);
 
 		private static HashMap<String,PaxosPacketType> labels = new HashMap<String,PaxosPacketType>();
 		private static HashMap<Integer,PaxosPacketType> numbers = new HashMap<Integer,PaxosPacketType>();
@@ -130,6 +131,7 @@ public abstract class PaxosPacket extends Packet {
 		Packet.putPacketType(json, PacketType.PAXOS_PACKET); // tells Packet that this is a PaxosPacket
 		json.put(PaxosPacket.PAXOS_TYPE, this.packetType.getNumber()); // the specific type of PaxosPacket
 		json.put(PaxosPacket.PAXOS_ID, this.paxosID);
+		json.put(PaxosPacket.PAXOS_VERSION, this.version);
 
 		// copy over child fields, can also call child first and copy parent fields 
 		JSONObject child = toJSONObjectImpl();

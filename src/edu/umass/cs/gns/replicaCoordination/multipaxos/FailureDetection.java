@@ -211,29 +211,6 @@ public class FailureDetection {
 		}
 	}
 
-
-	/***************************************************************/
-	/* Unused. May be invoked by PaxosInstanceStateMachine via
-	 * PaxosManager. We don't need this because a paxos instance
-	 * checks whether it needs to run for coordinator upon 
-	 * receipt of every packet. If it receives no packets, it
-	 * doesn't need to bother electing a coordinator right away.
-	 */
-	protected class RunForCoordinatorTask implements Runnable {
-		private final PaxosInstanceStateMachine pinstance;
-		RunForCoordinatorTask(PaxosInstanceStateMachine p) {pinstance =  p;}
-		// Too expensive to call for each instance periodically
-		public void run() {pinstance.checkRunForCoordinator();} 
-	}
-	/* Unused. May be invoked by PaxosInstanceStateMachine via
-	 * PaxosManager later.
-	 */
-	protected void scheduleRunForCoordinatorTask(PaxosInstanceStateMachine pism) {
-		RunForCoordinatorTask rctask = new RunForCoordinatorTask(pism);
-		execpool.scheduleAtFixedRate(rctask, 0, 5, TimeUnit.SECONDS);
-	}
-	/***************************************************************/
-
 	// Used only for testing
 	protected GNSNIOTransport getNIOTransport() {
 		return this.nioTransport;

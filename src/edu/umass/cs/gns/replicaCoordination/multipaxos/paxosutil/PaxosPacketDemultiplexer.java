@@ -10,6 +10,7 @@ import org.json.JSONObject;
 /**
 @author V. Arun
  */
+/* Needed to get NIO to send paxos packets to PaxosManager */
 public class PaxosPacketDemultiplexer extends PacketDemultiplexer {
 
 	private final PaxosManager paxosManager;

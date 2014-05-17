@@ -11,8 +11,8 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.NIOTransport;
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 
 /**
 @author V. Arun

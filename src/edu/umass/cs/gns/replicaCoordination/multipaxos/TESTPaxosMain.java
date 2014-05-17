@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.PaxosInstrumenter;
 import edu.umass.cs.gns.util.Util;
 
 /**
@@ -74,8 +75,6 @@ public class TESTPaxosMain {
 		System.out.println("\nThis is a single-node test. For distributed testing, use TESTPaxosNode " +
 				"and TESTPaxosClient with the appropriate configuration file.\nInitiating single-node test...\n");
 		try {
-			Thread.sleep(2000);
-
 			/*************** Setting up servers below ***************************/
 
 			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
@@ -85,17 +84,14 @@ public class TESTPaxosMain {
 			TESTPaxosMain tpMain=null;
 			tpMain = new TESTPaxosMain(); // creates all nodes, each with its paxos manager and app
 
-			Thread.sleep(2000);
-
 			createRandomGroups(); // no effect if recovery is enabled coz we need consistent groups across runs
 
 			// creates paxos groups (may not create if recovering)
 			for(int id : tpMain.nodes.keySet()) {
 				tpMain.nodes.get(id).createDefaultGroupInstances();
-				tpMain.nodes.get(id).createNonDefaultGroupInstanes(1);
+				tpMain.nodes.get(id).createNonDefaultGroupInstanes(TESTPaxosConfig.NUM_GROUPS);
 			}
 
-			Thread.sleep(2000);
 			/*************** End of server setup ***************************/
 
 			/*************** Client requests/responses below ****************/
@@ -105,14 +101,23 @@ public class TESTPaxosMain {
 			long t1=System.currentTimeMillis();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
-			Thread.sleep(2000);
+			Thread.sleep(1000);
+			TESTPaxosClient.sendTestRequests(numReqs, clients);
+			TESTPaxosClient.waitForResponses(clients);
 
-			//tpMain.assertRSMInvariant(TESTPaxosConfig.TEST_GUID);
+
 			long t2=System.currentTimeMillis();
 
 			TESTPaxosClient.printOutput(clients);
 			System.out.println("Average throughput (req/sec) = " + 
 					Util.df(numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)));
+			for(int i=0; i<3; i++) {
+				PaxosManager.waitToFinishAll();
+				AbstractPaxosLogger.waitToFinishAll();
+				Thread.sleep(1000);
+			}
+			for(TESTPaxosNode node : tpMain.nodes.values()) node.close(); // can only close after all nodes have finished
+			System.out.println(PaxosInstrumenter.getStats());
 			System.exit(1);
 		} catch(Exception e) {e.printStackTrace();System.exit(1);}
 	}

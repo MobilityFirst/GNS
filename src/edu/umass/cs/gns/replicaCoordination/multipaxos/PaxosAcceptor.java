@@ -52,7 +52,7 @@ public class PaxosAcceptor {
 	 * received and remove it when the corresponding decision is received.
 	 * We might as well not memory-log accepts *at all*. 
 	 */
-	public static final boolean ACCEPTED_PROPOSALS_ON_DISK=true; // true = we don't maintain accepted proposals in memory, just disk
+	public static final boolean ACCEPTED_PROPOSALS_ON_DISK=DerbyPaxosLogger.isLoggingEnabled(); 
 
 	private int slot=0;
 	private int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
@@ -119,19 +119,19 @@ public class PaxosAcceptor {
 	 * be carefully moved by the would-be coordinator to its proposed ballot.
 	 * (2) The (possibly updated) current ballot.
 	 */
-	protected synchronized PrepareReplyPacket handlePrepare(PreparePacket prepare) {
+	protected synchronized PrepareReplyPacket handlePrepare(PreparePacket prepare, String debug) {
 		if(this.isStopped()) return null;
 
 		PrepareReplyPacket preply = null;
 		if(prepare.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) > 0) {
-			log.info("Acceptor " + prepare.receiverID + " updating to higher ballot " + prepare.ballot);
+			log.info(debug + " acceptor " + prepare.receiverID + " updating to higher ballot " + prepare.ballot);
 			this.ballotNum = prepare.ballot.ballotNumber; this.ballotCoord = prepare.ballot.coordinatorID;
 		}
 		/* Why return accepted values even though they were proposed in lower 
 		 * ballots? So that the preparer knows the set of accepted values to
 		 * carry over across a view change.
 		 */
-		preply = new PrepareReplyPacket(prepare.coordinatorID, prepare.receiverID, this.getBallot(), //prepare.ballot, 
+		preply = new PrepareReplyPacket(prepare.coordinatorID, prepare.receiverID, this.getBallot(), 
 				pruneAcceptedProposals(this.acceptedProposals.getMap(), prepare.firstUndecidedSlot), 
 				this.minCommittedFrontierSlot);
 		return preply;
@@ -160,8 +160,8 @@ public class PaxosAcceptor {
 		if(this.isStopped()) return null;
 
 		if (accept.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) >= 0) {  // accept the pvalue and the ballot
-			this.ballotNum = accept.ballot.ballotNumber; this.ballotCoord=accept.ballot.coordinatorID; // no-op if the two are equal anyway 
-			this.acceptedProposals.put(accept.slot, accept);
+			this.ballotNum = accept.ballot.ballotNumber; this.ballotCoord=accept.ballot.coordinatorID; // no-op if the two are equal anyway
+			if(accept.slot > this.minCommittedFrontierSlot) this.acceptedProposals.put(accept.slot, accept);
 		}
 		garbageCollectAccepted(accept.majorityCommittedSlot);
 		return new Ballot(ballotNum,ballotCoord);
@@ -172,8 +172,8 @@ public class PaxosAcceptor {
 		if(this.isStopped()) return null;
 		if(decision==null && (decision=this.committedRequests.get(this.getSlot()))==null) return null;
 
-		this.garbageCollectAccepted(decision.majorityCommittedSlot);
-		this.acceptedProposals.remove(decision.slot); // corresponding accept must be disk-logged at a majority 
+		this.garbageCollectAccepted(decision.getMajorityCommittedSlot());
+		if(ACCEPTED_PROPOSALS_ON_DISK) this.acceptedProposals.remove(decision.slot); // corresponding accept must be disk-logged at a majority 
 
 		if(decision.slot>=this.getSlot()) this.committedRequests.put(decision.slot, decision); 
 		PValuePacket nextExecutable=null;
@@ -238,8 +238,26 @@ public class PaxosAcceptor {
 
 	/***************** Start of testing methods *******************************/
 	public String toString() {
-		return "{Acceptor: [slot=" + this.getSlot() + ", ballot="+this.ballotNum+":"+this.ballotCoord +", isStopped="+this.isStopped()+"]}";
+		return "{Acceptor: [slot=" + this.getSlot() + ", ballot="+this.ballotNum+":"+this.ballotCoord +
+				", isStopped="+this.isStopped()+", |accepted|="+this.acceptedProposals.size() + ", |committed|=" + 
+				this.committedRequests.size() + ", committedFrontier="+ this.minCommittedFrontierSlot + 
+				this.getAccepted() + this.getCommitted() + "]}";
 	}
+	private String getAccepted() {
+		String s=" accepted=[";
+		for(PValuePacket pvalue : this.acceptedProposals.values()) {
+			s += pvalue.slot + " ";
+		}
+		return s+"] ";
+	}
+	private String getCommitted() {
+		String s=" committed=[";
+		for(PValuePacket pvalue : this.committedRequests.values()) {
+			s += pvalue.slot + " ";
+		}
+		return s+"] ";
+	}
+
 	protected void testingInitInstance(int load) {
 		this.acceptedProposals = new NullIfEmptyMap<Integer,PValuePacket>();
 		this.committedRequests = new NullIfEmptyMap<Integer,PValuePacket>();

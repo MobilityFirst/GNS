@@ -631,6 +631,7 @@ public class NIOTransport implements Runnable {
 		} catch (IOException e) {
 			// Cancel the channel's registration with our selector
 			log.warning("Node " + this.myID + " failed to connect to " + isa);
+			// FIXME: Should probably drop outstanding data here
 			this.cleanup(key, socketChannel);
 		}
 

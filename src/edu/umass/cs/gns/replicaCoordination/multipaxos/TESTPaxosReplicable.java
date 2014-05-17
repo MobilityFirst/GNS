@@ -16,6 +16,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.Proposal
 @author V. Arun
  */
 public class TESTPaxosReplicable implements Replicable {
+	private static final boolean DEBUG=PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null ;
 	private GNSNIOTransport niot = null;
@@ -75,7 +76,7 @@ public class TESTPaxosReplicable implements Replicable {
 			this.notify();
 			assert(requestPacket.requestID>=0) : requestPacket.toString();
 			if(niot!=null && requestPacket.getReplyToClient()) {
-				//log.info("Sending response to client " + requestPacket.clientID + ": " + reqJson);
+				if(DEBUG) log.info("App sending response to client " + requestPacket.clientID + ": " + reqJson);
 				niot.sendToID(requestPacket.clientID, reqJson);
 			}
 		} catch(JSONException je) {je.printStackTrace();}
@@ -87,7 +88,7 @@ public class TESTPaxosReplicable implements Replicable {
 		byte[] digest = md.digest();
 		int dig=0;
 		for(int i=0; i<digest.length; i++) {
-			dig = (int)digest[i];
+			dig += (int)digest[i];
 		}
 		return dig;
 	}

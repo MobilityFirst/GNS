@@ -13,6 +13,12 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.Proposal
 /**
 @author V. Arun
  */
+/* The default "app" using paxos. It has some support for computing 
+ * the hash of the current state in a manner reflecting the entire
+ * sequence of operations, so that we can assert the state machine
+ * replication invariant. It also sends the reply to the client
+ * if the flag is set in RequestPacket (used by the coordinator).
+ */
 public class DefaultPaxosInterfaceApp implements Replicable {
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private static MessageDigest md ;

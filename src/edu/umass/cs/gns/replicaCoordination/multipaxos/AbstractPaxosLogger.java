@@ -2,23 +2,24 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket;
-import edu.umass.cs.gns.nsdesign.packet.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PreparePacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.StatePacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.PaxosInstrumenter;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState;
 
@@ -33,12 +34,20 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState
  */
 public abstract class AbstractPaxosLogger {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
-	protected final int myID;
-	protected final String logDirectory;
+	protected final int myID; // protected coz the pluggable logger needs it
+	protected final String logDirectory; // protected coz the pluggable logger needs it
+	
+	private static ArrayList<AbstractPaxosLogger> instances = new ArrayList<AbstractPaxosLogger>();
+	protected static boolean firstConnect = true; // coz db needs a create=true flag just once
+	protected static boolean closeCalled = false;
+	protected static synchronized boolean firstClose() {boolean tmp = !closeCalled; closeCalled = true; return tmp;}
+	protected static synchronized boolean isCloseCalled() {return closeCalled;}
+	protected static boolean isFirstConnect() {boolean b=firstConnect; firstConnect=false; return b;}
 
 	private final BatchLogger batchLogger;
 	private final Messenger messenger;
-	Timer timer = new Timer(); // for checkpointing, so single thread is fine
+	//private Timer timer = new Timer(); // for checkpointing, so single thread is fine
+	private final CCheckpointer collapsingCheckpointer;
 
 	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class.getName()); // GNS.getLogger();
 
@@ -48,6 +57,9 @@ public abstract class AbstractPaxosLogger {
 		this.messenger=msgr;
 		this.batchLogger = new BatchLogger(this, this.messenger);
 		(new Thread(this.batchLogger)).start();
+		this.collapsingCheckpointer = new CCheckpointer();
+		(new Thread(this.collapsingCheckpointer)).start();
+		addLogger(this);
 	}
 
 	/************* Start of non-extensible methods **********************/
@@ -72,18 +84,18 @@ public abstract class AbstractPaxosLogger {
 	// Will log and execute a decision. The former need not happen before the latter.
 	public static final void logAndExecute(AbstractPaxosLogger logger, PValuePacket decision, PaxosInstanceStateMachine pism) {
 		logger.batchLogger.enqueue(new LogMessagingTask(decision));
-		
+
 		long t1=System.currentTimeMillis();
 		pism.sendMessagingTask(pism.extractExecuteAndCheckpoint(decision));
-		if(!decision.isRecovery()) updateExecTime(System.currentTimeMillis()-t1, 1);
+		if(!decision.isRecovery()) PaxosInstrumenter.update("EEC", t1);
 	}
 
 	// Designed to offload checkpointing to its own task so that the paxos instance can move on.
 	public static final void checkpoint(AbstractPaxosLogger logger, String paxosID, short version, 
 			int[] members, int slot, Ballot ballot, String state, int gcSlot) {
-		Checkpointer checkpointer = logger.new Checkpointer(logger, paxosID, version, members, 
+		CheckpointTask checkpointer = logger.new CheckpointTask(logger, paxosID, version, members, 
 				slot, ballot, state, gcSlot);
-		logger.timer.schedule(checkpointer, 0);
+		logger.collapsingCheckpointer.enqueue(checkpointer);
 	}
 
 	/* Will replay logged messages from checkpoint onwards. Static
@@ -95,6 +107,7 @@ public abstract class AbstractPaxosLogger {
 			for(PaxosPacket paxosMsg : loggedMessages) {
 				MessagingTask mtask = new MessagingTask(logger.myID, paxosMsg);
 				try {
+					if(DEBUG) log.info("Node " + logger.myID + " rolling forward " + mtask);
 					messenger.send(mtask);
 				} catch (IOException e) {
 					log.severe("IOException encountered while replaying logged message " + paxosMsg); e.printStackTrace();
@@ -103,6 +116,14 @@ public abstract class AbstractPaxosLogger {
 				} 
 				// must continue, exceptions, warts, and all
 			}
+		}
+	}
+
+	public static void waitToFinishAll() {
+		for(AbstractPaxosLogger logger : AbstractPaxosLogger.instances) {
+			logger.batchLogger.waitToFinish();
+			logger.collapsingCheckpointer.waitToFinish();
+			logger.waitToFinish();
 		}
 	}
 
@@ -121,6 +142,15 @@ public abstract class AbstractPaxosLogger {
 		s+="---------------END log------------------";
 		return s;
 	}
+
+	private static void addLogger(AbstractPaxosLogger logger) {
+		synchronized(AbstractPaxosLogger.instances) {
+			if(!AbstractPaxosLogger.instances.contains(logger)) {
+				AbstractPaxosLogger.instances.add(logger);
+			}
+		}
+	}
+
 	/************* End of non-extensible methods **********************/
 
 
@@ -129,9 +159,12 @@ public abstract class AbstractPaxosLogger {
 	 * database, or anything else. Not all of the methods are 
 	 * independent nor do they all make sense for a generic,
 	 * non-database logger.
+	 * 
+	 * FIXME: There is no good reason why the recovery methods are
+	 * protected and others public. They could all be public or all
+	 * be protected. They are called by either PaxosManager and/or
+	 * by PaxosInstanceStateMachine. 
 	 */
-	// getting meta-information about all paxos instances upon recovery
-	public abstract ArrayList<RecoveryInfo> getAllPaxosInstances();
 
 	// checkpointing methods
 	public abstract String getCheckpointState(String paxosID);
@@ -140,11 +173,18 @@ public abstract class AbstractPaxosLogger {
 	public abstract SlotBallotState getSlotBallotState(String paxosID);
 	public abstract void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int gcSlot);
 	public abstract  StatePacket getStatePacket(String paxosID);
-	protected abstract boolean initiateReadCheckpoints();
-	protected abstract  RecoveryInfo readNextCheckpoint();
-	protected abstract RecoveryInfo getRecoveryInfo(String paxosID);
 
-	protected abstract void closeReadAll(); 
+	// recovery methods
+	protected abstract ArrayList<RecoveryInfo> getAllPaxosInstances(); // not used anymore in favor of the cursor methods below
+	protected abstract RecoveryInfo getRecoveryInfo(String paxosID);
+	protected abstract boolean initiateReadCheckpoints(boolean b); // starts a cursor
+	protected abstract  RecoveryInfo readNextCheckpoint(boolean b); // reads next checkpoint 
+	protected abstract boolean initiateReadMessages(); // starts a cursor
+	protected abstract  PaxosPacket readNextMessage(); // reads next checkpoint 
+	protected abstract void closeReadAll();  // closes the cursor
+
+	public abstract void waitToFinish();
+	public abstract void close();
 	public abstract boolean remove(String paxosID);
 	public abstract boolean removeAll();
 
@@ -155,28 +195,13 @@ public abstract class AbstractPaxosLogger {
 	public abstract ArrayList<PaxosPacket> getLoggedMessages(String paxosID); 
 	public abstract Map<Integer,PValuePacket> getLoggedAccepts(String paxosID, int firstSlot);
 	public abstract ArrayList<PValuePacket> getLoggedDecisions(String paxosID, int minSlot, int maxSlot) throws JSONException;
-	//protected abstract boolean initiateReadLogMessages(String paxosID);
-	//protected abstract PaxosPacket readNextLogMessage();
-	
+
 	// pausing methods
 	protected abstract boolean pause(String paxosID, String serialized);
 	protected abstract HotRestoreInfo unpause(String paxosID);
 
 	/**************** End of extensible methods ***********************/
 
-	private static long totalLogTime=0;
-	private static int numLogged=1;
-	private static long totalExecTime=0;
-	private static int numExecd=1;
-	public static long totalLockTime=0;
-	public static long numLocked=1;
-
-	private synchronized static void updateLogTime(long t, int n) {totalLogTime += t;numLogged+=n;}
-	protected synchronized static double getAvgLogTime() {return totalLogTime*1.0/numLogged;}
-	
-	private synchronized static void updateExecTime(long t, int n) {totalExecTime += t;numExecd+=n;}
-	protected synchronized static double getAvgExecTime() {return totalExecTime*1.0/numExecd;}
-	
 	// A utility method with seemingly no other place to put
 	public static int[] getSlotBallot(PaxosPacket packet) {
 		int slot=-1;
@@ -199,13 +224,14 @@ public abstract class AbstractPaxosLogger {
 		int[] slotBallot = {slot, ballot.ballotNumber, ballot.coordinatorID};
 		return slotBallot;
 	}
-	
+
 	/*********************************** Private utility classes below ****************************/
 	// Makes sure that message logging batches as much as possible.
 	private class BatchLogger implements Runnable {
 		private final AbstractPaxosLogger logger;
 		private final Messenger messenger;
 		private final ArrayList<LogMessagingTask> logMessages = new ArrayList<LogMessagingTask>();
+		private boolean processing = false;
 
 		BatchLogger(AbstractPaxosLogger lgr, Messenger msgr) {
 			this.logger = lgr;
@@ -226,9 +252,15 @@ public abstract class AbstractPaxosLogger {
 					packets[i] = lmTasks[i].logMsg;
 				}
 
+				this.setProcessing(true);
 				long t1=System.currentTimeMillis();
 				this.logger.logBatch(packets); // the main point of this class
-				updateLogTime(System.currentTimeMillis()-t1, packets.length);
+				PaxosInstrumenter.update("log", t1, packets.length);
+				this.setProcessing(false);
+
+				synchronized(this) {
+					notify(); // notify waitToFinish
+				}
 
 				for(LogMessagingTask lmTask : lmTasks) {
 					try {
@@ -260,14 +292,28 @@ public abstract class AbstractPaxosLogger {
 				return lmTasks;
 			}
 		}
+		private boolean isEmpty() {
+			synchronized(this.logMessages) {
+				return this.logMessages.isEmpty();
+			}
+		}
+		private synchronized void waitToFinish() {
+			try {
+				while(!this.isEmpty() || this.getProcessing()) wait();
+			} catch(InterruptedException ie) {ie.printStackTrace();}
+		}
+		private synchronized boolean getProcessing() {return this.processing;}
+		private synchronized void setProcessing(boolean b) {this.processing=b;}
+
 	}
-	
-	// Just spawns a task to do a single checkpoint
-	private class Checkpointer extends TimerTask {
+
+
+	// Just a convenience container for a single checkpoint task
+	private class CheckpointTask {
 		final AbstractPaxosLogger logger; final String paxosID; 
 		final short version; final int[] members; final int slot; 
 		final Ballot ballot; final String state; final int gcSlot;
-		Checkpointer(AbstractPaxosLogger logger, String paxosID, short version, 
+		CheckpointTask(AbstractPaxosLogger logger, String paxosID, short version, 
 				int[] members, int slot, Ballot ballot, String state, int gcSlot) {
 			this.logger=logger;
 			this.paxosID=paxosID;
@@ -278,10 +324,68 @@ public abstract class AbstractPaxosLogger {
 			this.state=state;
 			this.gcSlot=gcSlot;
 		}
-		public void run() {
-			logger.putCheckpointState(paxosID, version, members, slot, ballot, state, gcSlot);
+		public void checkpoint() {
+			logger.putCheckpointState(paxosID, version, members, 
+					slot, ballot, state, gcSlot);
 		}
 	}
+	private class CCheckpointer implements Runnable {
+		private final HashMap<String,CheckpointTask> checkpoints = new HashMap<String,CheckpointTask>();
+		private boolean processing = false;
+		private void enqueue(CheckpointTask newCP) {
+			synchronized(checkpoints) {
+				CheckpointTask oldCP = checkpoints.get(newCP.paxosID);
+				if(oldCP==null || oldCP.slot < newCP.slot) {
+					this.checkpoints.put(newCP.paxosID, newCP);
+					this.checkpoints.notify();
+				}
+			}
+		}
+		private CheckpointTask dequeue() {
+			synchronized(checkpoints) {
+				CheckpointTask cp = null;
+				for(Iterator<CheckpointTask> cpIter = checkpoints.values().iterator(); cpIter.hasNext();) {
+					cp = cpIter.next();
+					cpIter.remove();
+					break;
+				}
+				return cp;
+			}
+		}
+		private boolean isEmpty() {
+			synchronized(this.checkpoints) {
+				return this.checkpoints.isEmpty();
+			}
+		}
+		private synchronized void waitToFinish() {
+			try {
+				while(!this.isEmpty() || this.getProcessing()) {
+					this.wait();
+				}
+			} catch(InterruptedException ie) {ie.printStackTrace();}
+		}
+		private synchronized boolean getProcessing() {return this.processing;}
+		private synchronized void setProcessing(boolean b) {this.processing=b;}
+
+		public void run() {
+			while(true) {
+				synchronized(this.checkpoints) {
+					try {
+						while(this.checkpoints.isEmpty()) this.checkpoints.wait();
+
+					} catch(InterruptedException ie) {ie.printStackTrace();}
+				}
+				CheckpointTask checkpointTask = this.dequeue();
+				assert(checkpointTask!=null);
+				this.setProcessing(true);
+				checkpointTask.checkpoint();
+				this.setProcessing(false);
+				synchronized(this) {this.notifyAll();}
+			}
+		}
+	}
+
 	/******************************** End of private utility classes ****************************/
 
+	/*************************** Instrumentation methods below ************************/
 }

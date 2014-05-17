@@ -2,6 +2,7 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 /**
 @author V. Arun
  */
+
 /* Used by PaxosInstanceStateMachine and PaxosLogger to get 
  * checkpoint information. Just a container class.
  */
@@ -27,4 +28,7 @@ public class SlotBallotState {
 	public int getSlot() {return this.slot;}
 	public int getBallotnum() {return this.ballotnum;}
 	public int getCoordinator() {return this.coordinator;}
+	public String toString() {
+		return "[slot="+slot+", ballot="+ballotnum+":"+coordinator+", state = "+ state+"]";
+	}
 }
