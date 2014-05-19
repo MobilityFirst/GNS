@@ -90,18 +90,20 @@ def run_one_experiment(local_log_folder, local_config_file):
         print "Waiting for mongod process to start fully ..."
         os.system('sleep ' + str(exp_config.mongo_sleep))  # ensures mongo is fully running
 
-    # copy scripts and config files ...
+    print 'Copy scripts and config files ...'
     from cp_scripts_configs import cp_scripts_configs
     cp_scripts_configs(exp_config.user, exp_config.ssh_key, ns_ids, lns_ids,
                        exp_config.remote_gns_logs, local_config_file, exp_config.wfile,
                        exp_config.node_config_folder, REMOTE_NODE_CONFIG)
-
+    #
+    print 'Copy workload to LNS ...'
     # copy workload for local name servers ....
     copy_workload.copy_workload(exp_config.user, exp_config.ssh_key, lns_ids, exp_config.update_trace,
                                 exp_config.remote_gns_logs, REMOTE_UPDATE_TRACE)
 
     # copy GNS jar file ....
     if exp_config.copy_jar:
+        print 'Copy jar to remote folder ...'
         remote_jar_folder = os.path.split(exp_config.remote_jar_file)[0]
         print remote_jar_folder
         os.system('./rmcpJar.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +

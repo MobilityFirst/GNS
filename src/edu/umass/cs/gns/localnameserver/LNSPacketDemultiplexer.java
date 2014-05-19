@@ -38,7 +38,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
    */
   @Override
   public boolean handleJSONObject(JSONObject json) {
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("******* Handling: " + json);
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("******* Incoming packet: " + json);
     boolean isPacketTypeFound = true;
     try {
       switch (Packet.getPacketType(json)) {

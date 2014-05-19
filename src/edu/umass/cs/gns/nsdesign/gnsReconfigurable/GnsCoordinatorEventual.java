@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.NodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
@@ -28,7 +27,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 3/28/14.
  */
-public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
+public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
 
   private int nodeID;
   // this is the app object
@@ -41,20 +40,14 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
   private GNSNIOTransportInterface nioTransport;
 
-  public GnsCoordinatorPaxos(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
-                             Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
+  public GnsCoordinatorEventual(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
+                                Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
-    if (Config.useMultiPaxos) {
-      assert false: "Not working yet";
-      this.paxosManager = new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID, nodeConfig,
-      (GNSNIOTransport) nioServer, paxosInterface, paxosConfig);
-    } else {
-      this.paxosManager = new PaxosManager(nodeID, nodeConfig,
-              new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
-    }
+    this.paxosManager = new PaxosManager(nodeID, nodeConfig,
+            new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
   }
 
   /**
@@ -68,9 +61,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
     boolean noCoordinatorState = false;
     try {
       Packet.PacketType type = Packet.getPacketType(request);
-      if (!type.equals(Packet.PacketType.ACTIVE_COORDINATION)) {
-        GNS.getLogger().info(" GNS recvd msg: " + request);
-      }
+      String paxosID;
       switch (type) {
         // coordination packets internal to paxos
         case ACTIVE_COORDINATION:
@@ -79,13 +70,16 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
         // call propose
         case UPDATE: // updates need coordination
+
           UpdatePacket update = new UpdatePacket(request);
-          update.setNameServerId(nodeID);
-          String paxosID = paxosManager.propose(update.getName(), update.toString());
-          if (paxosID == null) {
-            callHandleDecision = update.toJSONObject();
-            noCoordinatorState = true;
+          Set<Integer> nodeIDs = paxosManager.getPaxosNodeIDs(update.getName());
+          if (update.getNameServerId() == nodeID && nodeIDs!= null) {
+            for (int x: nodeIDs) {
+              if (x != nodeID)
+                nioTransport.sendToID(x,update.toJSONObject());
+            }
           }
+          paxosInterface.handleDecision(update.getName(), update.toJSONObject().toString(), false);
           break;
 
         // call proposeStop
@@ -110,13 +104,13 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           // calling handle decision before creating paxos instance to insert state for name in database.
           paxosInterface.handleDecision(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
-          paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
+          paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
           if (Config.debugMode) GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
           // active replica has already put initial state for the name in DB. we only need to create paxos instance.
           NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request);
-          paxosManager.createPaxosInstance(newActivePacket.getName(), (short)newActivePacket.getNewActiveVersion(),
+          paxosManager.createPaxosInstance(newActivePacket.getName(), (short) newActivePacket.getNewActiveVersion(),
                   newActivePacket.getNewActiveNameServers(), paxosInterface);
           break;
 

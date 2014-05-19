@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.installer;
 
+import edu.umass.cs.aws.networktools.ExecuteBash;
 import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
@@ -8,21 +9,12 @@ import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import edu.umass.cs.gns.statusdisplay.StatusModel;
 import edu.umass.cs.gns.util.Format;
-import edu.umass.cs.aws.networktools.ExecuteBash;
+import org.apache.commons.cli.*;
+
 import java.io.File;
-import java.net.InetAddress;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 /**
  * Installs n instances of the GNS Jars and executes them.
@@ -288,14 +280,14 @@ public class GNSInstaller {
   private static void updateNodeConfigAndSendOutServerInit() {
     GNSNodeConfig nodeConfig = new GNSNodeConfig();
     // update the config info so know where to send stuff
-    try {
+//    try {
       for (HostInfo info : hostTable.values()) {
-        InetAddress ipAddress = InetAddress.getByName(info.getHostname());
-        nodeConfig.addHostInfo(info.getId(), ipAddress, GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
+//        InetAddress ipAddress = InetAddress.getByName();
+        nodeConfig.addHostInfo(info.getId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
       }
-    } catch (UnknownHostException e) {
-      System.err.println("Problem parsing IP address " + e);
-    }
+//    } catch (UnknownHostException e) {
+//      System.err.println("Problem parsing IP address " + e);
+//    }
     // now we send out packets telling all the hosts where to send their status updates
     StatusListener.sendOutServerInitPackets(nodeConfig, hostTable.keySet());
   }

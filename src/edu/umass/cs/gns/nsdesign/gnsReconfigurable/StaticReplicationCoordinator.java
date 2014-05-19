@@ -62,7 +62,7 @@ public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
     HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
-      paxosManager.createPaxosInstance(groupID, 1, groupIDsMembers.get(groupID), paxosInterface);
+      paxosManager.createPaxosInstance(groupID, (short) 1, groupIDsMembers.get(groupID), paxosInterface);
     }
   }
 

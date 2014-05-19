@@ -7,6 +7,7 @@ parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
 
 from util.write_utils import write_tuple_array
+
 __author__ = 'abhigyan'
 
 
@@ -22,10 +23,18 @@ class RequestType:
     RATE = '7'   # sends subsequent requests at given rate/sec. rate can be specified multiple
                # times during a trace to change the rate of later requests
 
+
 class WorkloadParams:
+    EXP_TYPE = 'exp_type'   # type of experiment: trace / connect_time
+
     OBJECT_SIZE = 'object_size_kb'
     TTL = 'ttl'
-    DURATION = 'duration'
+
+    MOBILE_UPDATE_INTERVAL = 'mobile_update_interval'
+
+class ExpType:
+    TRACE = 'trace'
+    CONNECT_TIME = 'connect_time'
 
 
 def get_trace_filename(trace_folder, client_id):

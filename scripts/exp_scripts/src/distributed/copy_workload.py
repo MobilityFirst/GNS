@@ -15,4 +15,4 @@ def copy_workload(user, ssh_key, lns_ids, trace_folder, remote_folder, remote_fi
               + ' ' + user + '@' + host_name + ':' + node_folder + '/' + remote_filename
         fw.write(cmd + '\n')
     fw.close()
-    os.system('parallel -a ' + cmd_filename)
+    os.system('parallel -j 50 -a ' + cmd_filename)

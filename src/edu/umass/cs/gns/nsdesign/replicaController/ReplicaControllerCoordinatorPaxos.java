@@ -1,8 +1,10 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -21,7 +23,7 @@ import java.util.Set;
  * Coordinates requests among replicas of replica controllers by using paxos consensus protocol.
  * Created by abhigyan on 3/30/14.
  */
-public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator{
+public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator {
   private final int nodeID;
   private AbstractPaxosManager paxosManager;
 
@@ -31,74 +33,81 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
                                            Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
-    paxosConfig.setConsistentHashCoordinatorOrder(true);
-    this.paxosManager = new PaxosManager(nodeID, nodeConfig,
-            new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION), paxosInterface, paxosConfig);
+    if (Config.useMultiPaxos) {
+      assert false: "Not working yet";
+      this.paxosManager = new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID, nodeConfig,
+              (GNSNIOTransport) nioServer, paxosInterface, paxosConfig);
+    } else {
+      paxosConfig.setConsistentHashCoordinatorOrder(true);
+      this.paxosManager = new PaxosManager(nodeID, nodeConfig,
+              new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
+              paxosInterface, paxosConfig);
+    }
     createPrimaryPaxosInstances();
   }
 
   private void createPrimaryPaxosInstances() {
     HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
-
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
-      paxosManager.createPaxosInstance(groupID, 1, groupIDsMembers.get(groupID), paxosInterface);
+      paxosManager.createPaxosInstance(groupID, (short) 1, groupIDsMembers.get(groupID), paxosInterface);
     }
-
   }
 
   @Override
   public int coordinateRequest(JSONObject request) {
-      if (this.paxosInterface == null) return -1; // replicable app not set
-      try {
-        Packet.PacketType type = Packet.getPacketType(request);
-        switch (type) {
-          // packets from coordination modules at replica controller
-          case REPLICA_CONTROLLER_COORDINATION:
-            paxosManager.handleIncomingPacket(request);
-            break;
-          case ADD_RECORD:
-            AddRecordPacket recordPacket = new AddRecordPacket(request);
-            recordPacket.setNameServerID(nodeID);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), recordPacket.toString());
-            break;
-          case REMOVE_RECORD:
-            RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
-            removePacket.setNameServerID(nodeID);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
-            break;
-            // Packets sent from active replica
-          case RC_REMOVE:
-            removePacket = new RemoveRecordPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
-            break;
-          case NEW_ACTIVE_PROPOSE:
-            NewActiveProposalPacket activePropose = new NewActiveProposalPacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), activePropose.toString());
-            break;
-          case GROUP_CHANGE_COMPLETE:
-            GroupChangeCompletePacket groupChangePkt = new GroupChangeCompletePacket(request);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(groupChangePkt.getName()), groupChangePkt.toString());
-            break;
-          case UPDATE:
-          case REQUEST_ACTIVES:
-          case NAMESERVER_SELECTION:
-          case NAME_RECORD_STATS_RESPONSE:
-          case ACTIVE_ADD_CONFIRM:
-          case ACTIVE_REMOVE_CONFIRM:
-          case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
-          case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
-            // no coordination needed for these packet types.
-            paxosInterface.handleDecision(null, request.toString(), false);
-            break;
-          default:
-            GNS.getLogger().severe("Packet type not found in coordination: " + type);
-            break;
-        }
-      } catch (JSONException e) {
-        e.printStackTrace();
+    if (this.paxosInterface == null) return -1; // replicable app not set
+    try {
+      Packet.PacketType type = Packet.getPacketType(request);
+      if (!type.equals(Packet.PacketType.REPLICA_CONTROLLER_COORDINATION)) {
+        GNS.getLogger().info(" RC recvd msg: " + request);
       }
-      return 0;
+      switch (type) {
+        // packets from coordination modules at replica controller
+        case REPLICA_CONTROLLER_COORDINATION:
+          paxosManager.handleIncomingPacket(request);
+          break;
+        case ADD_RECORD:
+          AddRecordPacket recordPacket = new AddRecordPacket(request);
+          recordPacket.setNameServerID(nodeID);
+          paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), recordPacket.toString());
+          break;
+        case REMOVE_RECORD:
+          RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
+          removePacket.setNameServerID(nodeID);
+          paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
+          break;
+        // Packets sent from active replica
+        case RC_REMOVE:
+          removePacket = new RemoveRecordPacket(request);
+          paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
+          break;
+        case NEW_ACTIVE_PROPOSE:
+          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(request);
+          paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), activePropose.toString());
+          break;
+        case GROUP_CHANGE_COMPLETE:
+          GroupChangeCompletePacket groupChangePkt = new GroupChangeCompletePacket(request);
+          paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(groupChangePkt.getName()), groupChangePkt.toString());
+          break;
+        case REQUEST_ACTIVES:
+        case NAMESERVER_SELECTION:
+        case NAME_RECORD_STATS_RESPONSE:
+        case ACTIVE_ADD_CONFIRM:
+        case ACTIVE_REMOVE_CONFIRM:
+        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
+        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
+          // no coordination needed for these packet types.
+          paxosInterface.handleDecision(null, request.toString(), false);
+          break;
+        default:
+          GNS.getLogger().severe("Packet type not found in coordination: " + type);
+          break;
+      }
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return 0;
   }
 
   @Override

@@ -102,7 +102,9 @@ public class ComputeNewActivesTask extends TimerTask {
           rcRecord.recomputeAverageReadWriteRate(); // this will keep moving average calculation updated.
           continue;
         }
-
+//        if (rcRecord.getActiveVersion() == 2) {
+//          continue;
+//        }
         GNS.getLogger().fine("I will select new actives for name = " + rcRecord.getName());
         Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
         assert newActiveNameServers.size() >= Config.minReplica;
@@ -170,6 +172,10 @@ public class ComputeNewActivesTask extends TimerTask {
     Set<Integer> newActiveNameServers;
 
     int numReplica = numberOfReplica(rcRecord);
+    if (numReplica == 0) {
+      return oldActiveNameServers;
+    }
+
 
     // used for beehive.
     if (Config.replicationFrameworkType == ReplicationFrameworkType.BEEHIVE) {
@@ -202,11 +208,12 @@ public class ComputeNewActivesTask extends TimerTask {
 
     int replicaCount;
     if (update == 0 && lookup == 0) {
-      // no requests seen, replicate at minimum number of locations.
-      replicaCount = Config.minReplica;
+      replicaCount = 0;
+//      replicaCount = Config.minReplica;
     } else if (update == 0) {
       // no updates, replicate everywhere.
       replicaCount = replicaController.getGnsNodeConfig().getNameServerIDs().size();
+      replicaCount = Math.min(replicaCount, Config.maxReplica);
     } else {
 
       replicaCount = StrictMath.round(StrictMath.round(
@@ -215,9 +222,10 @@ public class ComputeNewActivesTask extends TimerTask {
       if (replicaCount > replicaController.getGnsNodeConfig().getNameServerIDs().size()) {
         replicaCount = replicaController.getGnsNodeConfig().getNameServerIDs().size();
       }
+      replicaCount = Math.min(replicaCount, Config.maxReplica);
     }
 
-    replicaCount = Math.min(replicaCount, Config.maxReplica);
+
 
     GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t" + rcRecord.getName() + "\tLookup\t" + lookup +
             "\tUpdate\t" + update + "\tReplicaCount\t" + replicaCount);

@@ -19,8 +19,10 @@ import java.io.IOException;
  */
 public class LookupActives {
 
-  public static void executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController)
+  public static void executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController, boolean recovery)
           throws JSONException, IOException {
+
+    if (recovery || packet.getNsID() != replicaController.getNodeID()) return;
 
     GNS.getLogger().fine("Received Request Active Packet Name = " + packet.getName());
 

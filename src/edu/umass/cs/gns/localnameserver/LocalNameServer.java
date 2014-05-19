@@ -11,26 +11,20 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
-import edu.umass.cs.gns.test.TraceRequestGenerator;
+import edu.umass.cs.gns.test.StartExperiment;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class LocalNameServer {
 
-  // Implements handling of client requests, comms and cacheing
+  // Implements handling of client requests, comms and caching
   private static ClientRequestHandlerInterface requestHandler;
 
   /**
@@ -61,7 +55,7 @@ public class LocalNameServer {
   private static long initialExpDelayMillis = 100;
 
   /**
-   * Ping manager object for pinging other nodes and updating ping latencies in {@link #gnsNodeConfig}.
+   * Ping manager object for pinging other nodes and updating ping latencies in
    */
   private static PingManager pingManager;
 
@@ -84,6 +78,8 @@ public class LocalNameServer {
    * @throws IOException
    */
   public LocalNameServer(int nodeID, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
+    // set node ID first because constructor for BasicClientRequestHandler reads it.
+    LocalNameServer.nodeID = nodeID;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
             StartLocalNameServer.experimentMode,
@@ -96,7 +92,7 @@ public class LocalNameServer {
             StartLocalNameServer.loadDependentRedirection,
             StartLocalNameServer.replicationFramework);
     requestHandler = new BasicClientRequestHandler(nodeID, gnsNodeConfig, parameters);
-    LocalNameServer.nodeID = nodeID;
+
 //    LocalNameServer.gnsNodeConfig = gnsNodeConfig;
 //    requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
 //    updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
@@ -125,9 +121,9 @@ public class LocalNameServer {
     new LNSListenerAdmin().start();
 
     // todo commented this because locality-based replication is still under testing
-//    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
+    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
 //      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
-//    }
+    }
     if (StartLocalNameServer.experimentMode) {
       try {
         Thread.sleep(initialExpDelayMillis); // Abhigyan: When multiple LNS are running on same machine, we wait for
@@ -137,9 +133,9 @@ public class LocalNameServer {
         e.printStackTrace();
       }
 
-      TraceRequestGenerator.genRequests(StartLocalNameServer.workloadFile, StartLocalNameServer.lookupTraceFile,
-              StartLocalNameServer.updateTraceFile, StartLocalNameServer.lookupRate,
-              StartLocalNameServer.updateRateRegular, requestHandler);
+      new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile,
+              StartLocalNameServer.lookupTraceFile, StartLocalNameServer.updateTraceFile,
+              StartLocalNameServer.lookupRate, StartLocalNameServer.updateRateRegular, requestHandler);
 
       // name server loads initialized.
       if (StartLocalNameServer.loadDependentRedirection) {

@@ -65,7 +65,7 @@ def geo_latency_calculator(output_folder, node_config_file, ns_geo_file, lns_geo
             dist_km = haversine(node_id_geo[id][0], node_id_geo[id][1], node_id_geo[tokens[0]][0],
                                 node_id_geo[tokens[0]][1])
             latency_ms = dist_km / 300000.0 * 1000.0 * 3  # (dist_km)/(speed of light)*(1000 msec/sec)*(inflation)
-            tokens[4] = str(latency_ms)
+            tokens[4] = str(int(latency_ms))
             fw.write('\t'.join(tokens) + '\n')
         fw.close()
 

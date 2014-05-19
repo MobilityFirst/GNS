@@ -19,7 +19,7 @@ def main():
 
 def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_name=0, num_lookups=100000,
                           num_updates=100000, locality_percent=0.75, locality_parameter=3, num_lns=-1, exp_duration=300,
-                          append_to_file=False, lns_ids=None, name_prefix=None):
+                          append_to_file=False, lns_ids=None, name_prefix=None, seed=12345):
     """
     Generates lookups (aka reads) and updates for all local name servers in lns_geo_file. Lookup traces and update
     traces are respectively stored in sub-directories 'lookupTrace' and  'updateTrace' of trace_folder.
@@ -95,7 +95,8 @@ def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_
     fw_readwrite = open(os.path.join(other_data_folder, 'read_write_rate'), 'w')
 
     fw_name_lns_lookup = open(os.path.join(other_data_folder, 'name_lns_lookup'), 'w')
-    random.seed(12345)
+    if seed is not None:
+        random.seed(seed)
     print 'Generating workload ...'
     for i in range(number_names):
 
@@ -228,7 +229,7 @@ def read_lns_geo_file(filename, num_lns):
     f = open(filename)
     for i, line in enumerate(f):
         tokens = line.split()
-        lns_geo[str(i)] = [float(tokens[0]), float(tokens[1])]
+        lns_geo[str(i)] = [float(tokens[1]), float(tokens[2])]
     lns_dist = {}
     if num_lns < 0:
         num_lns = len(lns)

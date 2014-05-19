@@ -10,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -141,19 +140,19 @@ public class GNSNodeConfig implements NodeConfig {
         } else {
           localNameServerMapping.put(id, id);
         }
-        InetAddress ipAddress = null;
-        try {
-          ipAddress = InetAddress.getByName(ipAddressString);
-        } catch (UnknownHostException e) {
-          System.err.println("Problem parsing IP address for NS " + nameServerID + " :" + e);
-        }
+//        InetAddress ipAddress = null;
+//        try {
+//          ipAddress = InetAddress.getByName(ipAddressString);
+//        } catch (UnknownHostException e) {
+//          System.err.println("Problem parsing IP address for NS " + nameServerID + " :" + e);
+//        }
         int startingPort;
         if (startingPortString.startsWith("-") || startingPortString.startsWith("default")) {
           startingPort = GNS.STARTINGPORT;
         } else {
           startingPort = Integer.parseInt(startingPortString);
         }
-        addHostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
+        addHostInfo(id, ipAddressString, startingPort, pingLatency, latitude, longitude);
       }
       br.close();
     } catch (NumberFormatException e) {
@@ -176,7 +175,7 @@ public class GNSNodeConfig implements NodeConfig {
    * @param latitude
    * @param longitude 
    */
-  public void addHostInfo(int id, InetAddress ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
+  public void addHostInfo(int id, String ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);

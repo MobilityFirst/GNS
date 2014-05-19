@@ -5,7 +5,7 @@ from operator import itemgetter
 from stats import get_stats, get_stat_in_tuples, get_cdf
 from write_array_to_file import *
 
-from output_by_time import output_by_time
+
 
 # GLOBAL VARIABLES
 initial_fraction = 0.0  # exclude initial fraction of requests
@@ -20,7 +20,7 @@ total_reads = 0  # number of successful read requests
 total_writes = 0  # number of successful write requests
 total_adds = 0  # number of successful read requests
 total_removes = 0  # number of successful write requests
-total_group_changes = 0 # number of group changes sent by LNS
+total_group_changes = 0  # number of group changes sent by LNS
 contact_primary = 0
 
 latencies = {}
@@ -32,6 +32,8 @@ group_change_latencies = {}
 all_tuples = []  # stats for all read and write requests
 ping_latencies = []  # ping latency to first NS contacted for each read
 closest_ns_latencies = []  # for each read, the closest NS to the LNS receiving this read query
+
+time_to_connect_values = []
 
 closest_ns_latency_dict = {}  # mapping: k = LNS-hostname, v = latency to closest NS
 lns_ids = {}  # mapping: k = LNS-hostname, v = node ID in experiment
@@ -46,7 +48,6 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 
 
 def main():
-
     log_files_dir = sys.argv[1]
     if not os.path.isdir(log_files_dir):
         print 'Folder does not exist:', log_files_dir
@@ -55,7 +56,6 @@ def main():
     os.system('mkdir -p ' + output_files_dir)
 
     parse_log(log_files_dir, output_files_dir)
-
 
 
 def get_indir_outdir(dir):
@@ -102,10 +102,11 @@ def parse_log(log_files_dir, output_dir, filter=None):
 
     throughput_over_time_bin(os.path.join(output_dir, 'all_tuples.txt'))
 
-    # Abhigyan: might enable these stats in future
+    # write the sum of msgs received by name servers
+    from count_all_ns_msgs import count_msgs
+    count_msgs(log_files_dir, output_dir)
 
-    #from latency_over_time import failed_over_time
-    #failed_over_time(os.path.join(output_dir, 'all_tuples.txt'))
+    # Abhigyan: might enable these stats in future
 
     #from count_incomplete_response import count_incomplete_response
     #count_incomplete_response(log_files_dir)
@@ -113,7 +114,6 @@ def parse_log(log_files_dir, output_dir, filter=None):
     #count_ns_msgs(log_files_dir, output_dir)
 
     #from get_active_count import output_active_counts
-
     #replication_round = 4  # by 4th round, number of replicas is stable.
     #output_active_counts(log_files_dir, output_dir, replication_round)
 
@@ -122,7 +122,7 @@ def initialize_variables():
     global latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies, all_tuples, \
         ping_latencies, closest_ns_latencies, closest_ns_latency_dict, lns_ids, \
         success, failed, lns_cache_hit, retrans_count, total_processing_delay, total_reads, total_writes, total_adds, \
-        total_removes, total_group_changes, contact_primary
+        total_removes, total_group_changes, contact_primary, time_to_connect_values
 
     latencies = {}
     read_latencies = {}
@@ -145,14 +145,16 @@ def initialize_variables():
     total_writes = 0  # number of successful write requests
     total_adds = 0  # number of successful add requests
     total_removes = 0  # number of successful remove requests
-    total_group_changes = 0 # number of successful group changes
+    total_group_changes = 0  # number of successful group changes
     contact_primary = 0
+
+    time_to_connect_values = []
 
 
 def extract_data_from_log(log_files_dir, filter):
     """parses log files in this dir."""
 
-    global latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies
+    global latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies, time_to_connect_values
 
     #os.system('gzip -d '+ log_files_dir + '/log_*/* '+ log_files_dir + '/log_*/gns_stat* ' + log_files_dir +
     # '/log_*/log/gns_stat* 1> /dev/null 2>/dev/null')
@@ -166,6 +168,8 @@ def extract_data_from_log(log_files_dir, filter):
     # get all, read and write latencies
     latencies, read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies = \
         get_all_latencies(host_files, filter)
+
+    time_to_connect_values = read_time_to_connect_values(host_files)
 
 
 def fill_lns_ids(log_files_dir):
@@ -273,6 +277,18 @@ def get_all_latencies(host_files, filter):
 
         read_l1, write_l1, add_l1, remove_l1, group_change_l1, host_tuples1, ping_host1, closest_host1 = \
             get_host_latencies(files, hostname, filter)
+        fail_perc = 0
+        if host_failed + host_success > 0:
+            fail_perc = (host_failed * 1.0 / (host_failed + host_success))
+        if fail_perc > 0.40:
+            read_latencies[hostname] = []
+            write_latencies[hostname] = []
+            add_latencies[hostname] = []
+            remove_latencies[hostname] = []
+            group_change_latencies[hostname] = []
+            latencies[hostname] = []
+            print 'EXCLUDING HOST: ', hostname
+            continue
         read_latencies[hostname] = read_l1
         write_latencies[hostname] = write_l1
         add_latencies[hostname] = add_l1
@@ -292,9 +308,7 @@ def get_all_latencies(host_files, filter):
         total_adds += len(add_latencies[hostname])
         total_removes += len(remove_latencies[hostname])
         total_group_changes += len(group_change_latencies[hostname])
-        fail_perc = 0
-        if host_failed + host_success > 0:
-            fail_perc = (host_failed * 1.0 / (host_failed + host_success))
+
         all_tuples.extend(host_tuples1)
         print '\tSuccess', host_success, '\tFailed', host_failed, '\tNumFiles', len(files), hostname
         success += host_success
@@ -588,6 +602,29 @@ def exclude_queries(x):
     return x[y: z]
 
 
+def read_time_to_connect_values(host_files):
+    """ Reads all connect time values in all files """
+    connect_times = []
+    for files in host_files.values():
+        for fname in files:
+            connect_times.extend(read_connect_times(fname))
+    connect_times = exclude_queries(connect_times)
+    return connect_times
+
+
+def read_connect_times(fname):
+    """ Reads all connect time values in file """
+    values = []
+    if fname.endswith('.gz'):
+        fname = fname[:-3]
+    for line in open(fname).readlines():
+        tokens = line.split()
+        if len(tokens) >= 4 and (tokens[1] == 'Success-ConnectTime' or tokens[1] == 'Failed-ConnectTime'):
+            latency = int(tokens[2])
+            values.append(latency)
+    return values
+
+
 def output_latency_stats(output_dir):
     """Output all statistics"""
     # older code: output read, write, overall stats
@@ -608,7 +645,8 @@ def output_latency_stats(output_dir):
     write_tuple_array(get_cdf(closest_ns_latencies), os.path.join(output_dir, 'closest_ns_latency.txt'), p=True)
 
     # output mean and median query latencies ove time during the experiment.
-    #output_by_time(output_dir, 'latency_by_time.txt')
+    from output_by_time import output_by_time
+    output_by_time(output_dir, 'latency_by_time.txt')
 
     # output start and end times
     #get_start_end_times(all_tuples, os.path.join(output_dir,'start_end_times.txt'))
@@ -623,6 +661,10 @@ def output_latency_stats(output_dir):
     # experiment summary stats:
     write_tuple_array(get_summary_stats(), output_dir + '/summary.txt', p=True)
     os.system('cat ' + output_dir + '/summary.txt')
+
+    time_to_connect_stats = get_stat_in_tuples(time_to_connect_values, 'time_to_connect')
+    write_tuple_array(time_to_connect_stats, os.path.join(output_dir, 'time_to_connect.txt'), p=True)
+    os.system('cat ' + os.path.join(output_dir, 'time_to_connect.txt'))
 
     # results for this folder.
     plot(output_dir)

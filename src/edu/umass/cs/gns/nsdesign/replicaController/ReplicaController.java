@@ -7,7 +7,6 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nsdesign.Config;
-//import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -15,6 +14,7 @@ import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface;
+import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +22,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+//import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 
 /**
  * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
@@ -85,11 +87,11 @@ public class ReplicaController implements Replicable {
     this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
     // todo commented this because locality-based replication is still under testing
-//    this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType);
-//    if (replicationFrameworkInterface != null) {
+    this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType);
+    if (replicationFrameworkInterface != null) {
 //      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
 //              new Random().nextInt(Config.analysisIntervalSec), Config.analysisIntervalSec, TimeUnit.SECONDS);
-//    }
+    }
   }
 
   /**
@@ -139,8 +141,8 @@ public class ReplicaController implements Replicable {
     Collections.sort(x1);
     Collections.shuffle(x1, r);
     for (int x : x1) {
-      // todo do failure detection check here
-      return x == nodeID;
+      if (gnsNodeConfig.getPingLatency(x) < 9000L)
+        return x == nodeID;
     }
     return false;
 
@@ -242,7 +244,7 @@ public class ReplicaController implements Replicable {
 
           // lookup actives for name
           case REQUEST_ACTIVES:
-            LookupActives.executeLookupActives(new RequestActivesPacket(json), this);
+            LookupActives.executeLookupActives(new RequestActivesPacket(json), this, recovery);
             break;
 
           // remove

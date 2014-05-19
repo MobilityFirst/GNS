@@ -53,10 +53,10 @@ public class Update {
 //    if (updateAddressPacket.getOperation().isUpsert()) {
 //      AddRemove.handleUpsert(updateAddressPacket);
 //    } else {
-      LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
-      SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
-              System.currentTimeMillis(), new HashSet<Integer>(), 0);
-      LocalNameServer.getExecutorService().scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
+    SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
+            System.currentTimeMillis(), new HashSet<Integer>(), 0);
+    LocalNameServer.getExecutorService().scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     //}
   }
 

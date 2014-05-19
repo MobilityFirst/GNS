@@ -4,7 +4,7 @@ import sys
 from os.path import  dirname, exists
 from group_by import group_by
 from stats import get_stat_in_tuples
-from write_array_to_file import	write_tuple_array
+from write_array_to_file import	write_tuple_array, write_array
 from plot_cdf import get_cdf_and_plot
 import inspect
 
@@ -37,23 +37,31 @@ def group_and_write_output(filename, name_index, value_index, output_file, filte
     write_tuple_array(output_tuples1, outfile1, p = True)
                 
 
-def output_stats_by_name(filename):
-    
+def output_stats_by_name(all_tuples_filename):
+
     value_index = 4
-    name_index = 0 # 0 = name, 1 = lns, 2 = ns
-    
-    folder = dirname(filename)
-    
+    name_index = 0  # 0 = name, 1 = lns, 2 = ns
+
+    # this option removes names for which there is a failed read request
+
+    folder = dirname(all_tuples_filename)
+
+    exclude_failed_reads = False
+    if exclude_failed_reads:
+        failed_reads_names = select_failed_reads_names(all_tuples_filename)
+        write_array(failed_reads_names.keys(), os.path.join(folder, 'failed_reads_names.txt'))
+        all_tuples_filename = write_all_tuples_excluding_failed(all_tuples_filename, failed_reads_names)
+
     outfile1 = os.path.join(folder, 'all_by_name.txt')
-    output_tuples1 = group_by(filename, name_index, value_index)
+    output_tuples1 = group_by(all_tuples_filename, name_index, value_index)
     my_tuples = write_tuple_array(output_tuples1, outfile1, p = True)
     
     outfile2 =os.path.join(folder, 'writes_by_name.txt')
-    output_tuples2 = group_by(filename, name_index, value_index, filter = write_filter)
+    output_tuples2 = group_by(all_tuples_filename, name_index, value_index, filter = write_filter)
     my_tuples = write_tuple_array(output_tuples2, outfile2, p = True)
     
     outfile3 = os.path.join(folder, 'reads_by_name.txt')
-    output_tuples3 = group_by(filename, name_index, value_index, filter = read_filter)
+    output_tuples3 = group_by(all_tuples_filename, name_index, value_index, filter = read_filter)
     my_tuples = write_tuple_array(output_tuples3, outfile3, p = True)
     
     filenames = [outfile1, outfile2, outfile3]
@@ -95,6 +103,7 @@ x = [23, 24, 30, 57, 61, 71]
 for i in x:
     exclude_ns[i] = 1
 
+
 def write_filter_excluding_ns(tokens):
     """exclud a few NS in calculating write latencies"""
     ns = int(tokens[2])
@@ -108,20 +117,43 @@ def write_filter(tokens):
         return True
     return False
 
+
 def read_filter(tokens):
     if tokens[5] == 'r':
         return True
     return False
+
 
 def fail_filter(tokens):
     if tokens[5] == 'rf':
         return True
     return False
 
+
 def retrans_filter(tokens):
     if tokens[5] == 'r' and int(tokens[3]) > 1:
         return True
     return False
+
+
+def select_failed_reads_names(filename):
+    names = {}
+    for line in open(filename):
+        tokens = line.split()
+        if tokens[5] == 'rf':
+            names[tokens[0]] = 1
+    return names
+
+
+def write_all_tuples_excluding_failed(all_tuples_file, exclude_names):
+    new_filename = all_tuples_file + '_filter'
+    fw = open(new_filename, 'w')
+    for line in open(all_tuples_file):
+        tokens = line.split()
+        if tokens[0] not in exclude_names:
+            fw.write(line)
+    fw.close()
+    return new_filename
 
 if __name__ == "__main__":
     output_stats_by_name(sys.argv[1])

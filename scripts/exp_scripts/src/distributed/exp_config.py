@@ -24,10 +24,10 @@ paxos_log_folder = '/home/ec2-user/paxos_log/'  # remote folder where paxos logs
 
 db_folder = '/home/ec2-user/gnsdb/'  # remote folder where mongodb will store its logs
 
-mongo_sleep = 20
-ns_sleep = 1
+mongo_sleep = 30
+ns_sleep = 10
 experiment_run_time = 60  # duration for which requests are sent
-extra_wait = 20
+extra_wait = 30
 
 failed_nodes = None
 
@@ -196,9 +196,9 @@ quit_node_id = -1
 
 ##################### LOGGING #########################
 
-nslog = 'FINE'
+nslog = 'WARNING'
 nslogstat = 'FINE'  # records write propagation times
-lnslog = 'FINE'
+lnslog = 'WARNING'
 lnslogstat = 'FINE'
 
 
@@ -224,7 +224,6 @@ def initialize(filename):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'extra_wait'):
         global extra_wait
         extra_wait = int(parser.get(ConfigParser.DEFAULTSECT, 'extra_wait'))
-
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'clean_start'):
         global clean_start
@@ -255,6 +254,7 @@ def initialize_gns_parameters(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server'):
         global primary_name_server
         primary_name_server = parser.getint(ConfigParser.DEFAULTSECT, 'primary_name_server')
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'scheme'):
         global scheme
         scheme = parser.get(ConfigParser.DEFAULTSECT, 'scheme')
@@ -287,6 +287,13 @@ def initialize_gns_parameters(parser):
         global emulate_ping_latencies
         emulate_ping_latencies = bool(parser.get(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies'))
 
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'min_replica'):
+        global min_replica
+        min_replica = int(parser.get(ConfigParser.DEFAULTSECT, 'min_replica'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'max_replica'):
+        global max_replica
+        max_replica = int(parser.get(ConfigParser.DEFAULTSECT, 'max_replica'))
 
 
 def initialize_replication():

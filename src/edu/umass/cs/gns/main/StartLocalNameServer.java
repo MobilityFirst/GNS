@@ -498,7 +498,7 @@ public class StartLocalNameServer {
       // lookup and update tace files
       lookupTraceFile = allValues.containsKey(LOOKUP_TRACE) ? allValues.get(LOOKUP_TRACE) : null;
       updateTraceFile = allValues.containsKey(UPDATE_TRACE) ? allValues.get(UPDATE_TRACE) : null;
-      workloadFile = allValues.containsKey(UPDATE_TRACE) ? allValues.get(WORKLOAD_FILE): null;
+      workloadFile = allValues.containsKey(WORKLOAD_FILE) ? allValues.get(WORKLOAD_FILE): null;
 
       // all parameters related to synthetic workload
       isSyntheticWorkload = allValues.containsKey(ZIPF) && Boolean.parseBoolean(allValues.get(ZIPF));

@@ -64,23 +64,23 @@ class FinalStats:
         latency_file = os.path.join(stats_folder, 'latency_stats.txt')
         if os.path.exists(latency_file):
             keys_values = read_keys_values(latency_file)
-            if 'readperc90' in keys_values:
-                self.read_perc90 = float(keys_values['readperc90'])
-            if 'writeperc90' in keys_values:
-                self.write_perc90 = float(keys_values['writeperc90'])
-            if 'addeperc90' in keys_values:
-                self.add_perc90 = float(keys_values['addperc90'])
-            if 'removeeperc90' in keys_values:
-                self.remove_perc90 = float(keys_values['removeperc90'])
+            if 'readperc95' in keys_values:
+                self.read_perc90 = float(keys_values['readperc95'])
+            if 'writeperc95' in keys_values:
+                self.write_perc90 = float(keys_values['writeperc95'])
+            if 'addeperc95' in keys_values:
+                self.add_perc90 = float(keys_values['addperc95'])
+            if 'removeeperc95' in keys_values:
+                self.remove_perc90 = float(keys_values['removeperc95'])
 
-            if 'failed_readperc90' in keys_values:
-                self.failed_read_perc90 = float(keys_values['failed_readperc90'])
-            if 'failed_writeperc90' in keys_values:
-                self.failed_write_perc90 = float(keys_values['failed_writeperc90'])
-            if 'failed_addeperc90' in keys_values:
-                self.failed_add_perc90 = float(keys_values['failed_addperc90'])
-            if 'failed_removeeperc90' in keys_values:
-                self.failed_remove_perc90 = float(keys_values['failed_removeperc90'])
+            if 'failed_readperc95' in keys_values:
+                self.failed_read_perc90 = float(keys_values['failed_readperc95'])
+            if 'failed_writeperc95' in keys_values:
+                self.failed_write_perc90 = float(keys_values['failed_writeperc95'])
+            if 'failed_addeperc95' in keys_values:
+                self.failed_add_perc90 = float(keys_values['failed_addperc95'])
+            if 'failed_removeeperc95' in keys_values:
+                self.failed_remove_perc90 = float(keys_values['failed_removeperc95'])
 
 
 

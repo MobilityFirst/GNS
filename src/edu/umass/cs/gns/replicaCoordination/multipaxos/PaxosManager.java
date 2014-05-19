@@ -1,50 +1,30 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.paxos.AbstractPaxosManager;
+import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FindReplicaGroupPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.ActivePaxosState;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.LogMessagingTask;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.MessagingTask;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.PaxosInstrumenter;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.PaxosPacketDemultiplexer;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.RateLimiter;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.RecoveryInfo;
-
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.*;
+import edu.umass.cs.gns.util.MultiArrayMap;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-
-import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nio.NIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nio.SampleNodeConfig;
-import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.paxos.AbstractPaxosManager;
-import edu.umass.cs.gns.paxos.PaxosConfig;
-import edu.umass.cs.gns.util.MultiArrayMap;
-import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
@@ -66,7 +46,7 @@ import edu.umass.cs.gns.util.Util;
  * incoming messages to the appropriate application paxos
  * instance.
  */
-public class PaxosManager{
+public class PaxosManager extends AbstractPaxosManager {
 	public static final boolean DEBUG=NIOTransport.DEBUG;
 
 	private static final long MORGUE_DELAY = 30000;
@@ -108,7 +88,7 @@ public class PaxosManager{
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); //GNS.getLogger();;
 
-	PaxosManager(int id, NodeConfig nc, GNSNIOTransport niot, Replicable pi, PaxosConfig pc) {
+	public PaxosManager(int id, NodeConfig nc, GNSNIOTransport niot, Replicable pi, PaxosConfig pc) {
 		this.myID = id;
 		this.myApp = pi;
 		this.FD = new FailureDetection(id, nc, niot, pc);
@@ -154,7 +134,17 @@ public class PaxosManager{
 	public boolean createPaxosInstance(String paxosID, short version, Set<Integer> gms, Replicable app) {
 		return this.createPaxosInstance(paxosID, version, this.myID, gms, app, null, true);
 	}
-	protected boolean createPaxosInstance(String paxosID, short version, int id, Set<Integer> gms, Replicable app, 
+
+  public Set<Integer> getPaxosNodeIDs(String paxosID) {
+    Set<Integer> hashSet = new HashSet<>();
+    PaxosInstanceStateMachine p = pinstances.get(paxosID);
+    if (p != null) {
+      for (int nodeID : p.getMembers()) hashSet.add(nodeID);
+    }
+    return hashSet;
+  }
+
+  protected boolean createPaxosInstance(String paxosID, short version, int id, Set<Integer> gms, Replicable app,
 			HotRestoreInfo hri, boolean tryRestore) {
 		if(this.isClosed() || id!=myID) return false;
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID, (hasRecovered && hri==null), tryRestore); 

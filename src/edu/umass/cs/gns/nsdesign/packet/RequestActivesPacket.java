@@ -29,6 +29,7 @@ public class RequestActivesPacket extends BasicPacket {
   public static final String ACTIVES = "actives";
   public static final String LNSID = "lnsid";
   public static final String LNS_REQ_ID = "lnsreqid";
+  public static final String NSID = "nsid";
 
   /**
    * Name for which the active replicas are being requested
@@ -39,6 +40,12 @@ public class RequestActivesPacket extends BasicPacket {
    * Local name server sending the request.
    */
   private int lnsID;
+
+
+  /**
+   * Name server that received request from LNS.
+   */
+  private int nsID;
 
   /**
    * Active name servers for the name. This field is populated when name server
@@ -51,11 +58,12 @@ public class RequestActivesPacket extends BasicPacket {
    */
   private int lnsRequestID;
 
-  public RequestActivesPacket(String name, int lnsID, int lnsRequestID) {
+  public RequestActivesPacket(String name, int lnsID, int lnsRequestID, int nsID) {
     this.name = name;
     this.type = PacketType.REQUEST_ACTIVES;
     this.lnsID = lnsID;
     this.lnsRequestID = lnsRequestID;
+    this.nsID = nsID;
   }
 
   public RequestActivesPacket(JSONObject json) throws JSONException {
@@ -64,6 +72,7 @@ public class RequestActivesPacket extends BasicPacket {
     this.type = PacketType.REQUEST_ACTIVES;
     this.lnsID = json.getInt(LNSID);
     this.lnsRequestID = json.getInt(LNS_REQ_ID);
+    this.nsID = json.getInt(NSID);
   }
 
   @Override
@@ -74,12 +83,12 @@ public class RequestActivesPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(LNSID, lnsID);
     json.put(LNS_REQ_ID, lnsRequestID);
+    json.put(NSID, nsID);
     return json;
   }
 
   public void setActiveNameServers(Set<Integer> activeNameServers) {
     this.activeNameServers = activeNameServers;
-//    this.activeChangeInProgress = activeChangeInProgress;
   }
 
   public String getName() {
@@ -96,5 +105,9 @@ public class RequestActivesPacket extends BasicPacket {
 
   public int getLnsRequestID() {
     return lnsRequestID;
+  }
+
+  public int getNsID() {
+    return nsID;
   }
 }

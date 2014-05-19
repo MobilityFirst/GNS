@@ -29,7 +29,7 @@ def run_all_lns(user, ssh_key, lns_ids, remote_gns_folder, config_file, node_con
     for cmd in cmds:
         fw.write(cmd + '\n')
     fw.close()
-    os.system('parallel -a ' + tmp_cmd_file)
+    os.system('parallel -j 50 -a ' + tmp_cmd_file)
 
 
 def run_all_ns(user, ssh_key, ns_ids, remote_gns_folder, config_file, node_config_file):
@@ -48,7 +48,7 @@ def run_all_ns(user, ssh_key, ns_ids, remote_gns_folder, config_file, node_confi
     for cmd in cmds:
         fw.write(cmd + '\n')
     fw.close()
-    os.system('parallel -a ' + tmp_cmd_file)
+    os.system('parallel -j 50 -a ' + tmp_cmd_file)
 
 
 def run_name_server():

@@ -81,7 +81,7 @@ update_count = 10   # number of updates at local name server
 #
 # GNS parameters common to name server / local name servers
 is_experiment_mode = False  # set to True to run experiments, false otherwise.
-is_debug_mode = True   #
+is_debug_mode = False   #
 primary_name_server = 3  # number of primary name servers
 
 use_gns_nio_transport = False
@@ -120,9 +120,9 @@ load_balancing = False  # Redirect to closest name server based on (RTT + server
 
 #
 # logging options
-nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'WARNING'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 

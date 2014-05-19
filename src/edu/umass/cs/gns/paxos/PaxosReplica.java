@@ -266,6 +266,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable{
     acceptorBallot = new Ballot(0, getInitialCoordinatorReplica());
 
     coordinatorBallot  = new Ballot(0, getInitialCoordinatorReplica());
+    debugMode = paxosManager.isDebugMode();
     if (coordinatorBallot.coordinatorID == nodeID) activeCoordinator = true;
 
     if (debugMode) GNS.getLogger().fine("Default coordinator chosen as: " + coordinatorBallot);
@@ -1788,7 +1789,6 @@ class ProposalStateAtCoordinator implements Comparable, Serializable{
   int numReplicas;
 
   public ProposalStateAtCoordinator(PaxosReplicaInterface paxosReplica, PValuePacket pValuePacket, int numReplicas) {
-
     this.paxosReplica = paxosReplica;
     this.pValuePacket = pValuePacket;
     this.nodes = new ConcurrentHashMap<Integer, Integer>();
@@ -1813,7 +1813,6 @@ class ProposalStateAtCoordinator implements Comparable, Serializable{
     return false;
   }
 
-
   public boolean hasNode(int node) {
     return nodes.containsKey(node);
   }
@@ -1834,7 +1833,6 @@ class ProposalStateAtCoordinator implements Comparable, Serializable{
     if (pValuePacket.proposal.slot > p.pValuePacket.proposal.slot) return 1;
     return 0;
   }
-
 
   // main method to test serialization/deserialization performance of paxos replica
   public static void main(String[] args) throws IOException, ClassNotFoundException {

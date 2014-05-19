@@ -14,19 +14,24 @@ import java.util.Properties;
  */
 public class WorkloadParams {
 
+
+  public static final String EXP_TYPE = "exp_type";
+
   public static final String OBJECT_SIZE = "object_size_kb";
   public static final String TTL = "ttl";
-  public static final String DURATION = "duration";
+
+  public static final String MOBILE_ID = "mobile_id";
+  public static final String CORRESPONDENT_ID = "correspondent_id";
+  public static final String MOBILE_UPDATE_INTERVAL = "mobile_update_interval";
+
+  private ExpType expType;
 
   private int objectSizeKB;
-
   private int ttl;
 
-//  public int getDurationSec() {
-//    return durationSec;
-//  }
-
-//  private int durationSec = -1;
+  private int mobileId = 3;
+  private int correspondentId = 4;
+  private double mobileUpdateInterval = 4;
 
   public WorkloadParams(String workloadConfFile) throws IOException {
     if (workloadConfFile == null) return;
@@ -36,6 +41,23 @@ public class WorkloadParams {
 
     Properties prop = new Properties();
     prop.load(new FileReader(workloadConfFile));
+
+    if (prop.containsKey(EXP_TYPE)) {
+      this.expType = ExpType.getExpType(prop.getProperty(EXP_TYPE));
+      readConnectTimeExpParameters(prop);
+    }  else {
+      this.expType = ExpType.TRACE;
+      readTraceExpParameters(prop);
+    }
+
+
+
+  }
+
+  /**
+   * Reads parameters related to trace experiment
+   */
+  private void readTraceExpParameters(Properties prop) {
 
     if (prop.containsKey(OBJECT_SIZE)) {
       this.objectSizeKB = Integer.parseInt(prop.getProperty(OBJECT_SIZE));
@@ -47,10 +69,26 @@ public class WorkloadParams {
       GNS.getLogger().info("TTL value = " + ttl);
     } else this.ttl = GNS.DEFAULT_TTL_SECONDS;
 
-//    if (prop.containsKey(DURATION)) {
-//      this.durationSec = Integer.parseInt(prop.getProperty(DURATION));
-//      GNS.getLogger().info("Duration sec = " + durationSec);
-//    }
+    if (prop.containsKey(EXP_TYPE)) {
+      this.expType = ExpType.getExpType(prop.getProperty(EXP_TYPE));
+    }  else {
+      this.expType = ExpType.TRACE;
+    }
+  }
+
+  /**
+   * Reads parameters related to connect time experiment
+   */
+  private void readConnectTimeExpParameters(Properties prop) {
+    if (prop.containsKey(MOBILE_UPDATE_INTERVAL)) {
+      this.mobileUpdateInterval = Double.parseDouble(prop.getProperty(MOBILE_UPDATE_INTERVAL));
+    }
+    if (prop.containsKey(MOBILE_ID)) {
+      this.mobileId = Integer.parseInt(prop.getProperty(MOBILE_ID));
+    }
+    if (prop.containsKey(CORRESPONDENT_ID)) {
+      this.correspondentId = Integer.parseInt(prop.getProperty(CORRESPONDENT_ID));
+    }
 
   }
 
@@ -61,5 +99,22 @@ public class WorkloadParams {
 
   public int getTtl() {
     return ttl;
+  }
+
+
+  public ExpType getExpType() {
+    return expType;
+  }
+
+  public int getMobileId() {
+    return mobileId;
+  }
+
+  public int getCorrespondentId() {
+    return correspondentId;
+  }
+
+  public double getMobileUpdateInterval() {
+    return mobileUpdateInterval;
   }
 }

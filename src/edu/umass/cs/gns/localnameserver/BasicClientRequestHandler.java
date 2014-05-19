@@ -15,26 +15,17 @@ import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.NameRecordKey;
+import org.json.JSONObject;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import org.json.JSONObject;
 
 /**
  * Implements basic functionality needed by servers to handle client type requests.
@@ -292,7 +283,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     switch (packet.getType()) {
       case CONFIRM_ADD:
         // active name servers will be the same as replica controllers, so we update cache with active replica set
-        RequestActivesPacket reqActives = new RequestActivesPacket(name, nodeID, 0);
+        RequestActivesPacket reqActives = new RequestActivesPacket(name, nodeID, 0, -1);
         reqActives.setActiveNameServers(ConsistentHashing.getReplicaControllerSet(name));
         cache.put(name, new CacheEntry(reqActives));
         break;

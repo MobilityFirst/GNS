@@ -40,7 +40,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class NameServer{
 
-  private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5); // worker thread pool
+  private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(10); // worker thread pool
 
   private ActiveReplicaCoordinator  appCoordinator; // coordinates app's requests
  
@@ -109,7 +109,10 @@ public class NameServer{
 
     // init transport
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
-    if (Config.emulatePingLatencies) GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
+    if (Config.emulatePingLatencies) {
+      GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
+      GNS.getLogger().info("Emulating delays ... ");
+    }
     GNSNIOTransportInterface tcpTransport;
     if (Config.useGNSNIOTransport) {
       JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
@@ -122,7 +125,6 @@ public class NameServer{
       new Thread(nioServer).start();
       tcpTransport = nioServer;
     }
-
 
     // be careful to give same 'nodeID' to everyone
 

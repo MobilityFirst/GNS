@@ -96,7 +96,7 @@ public class RequestActivesTask extends TimerTask {
    */
   private void sendActivesRequestPacketToPrimary(String name, int primaryID, int requestID) {
 
-    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getNodeID(), requestID);
+    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getNodeID(), requestID, primaryID);
     try
     {
       JSONObject sendJson = packet.toJSONObject();

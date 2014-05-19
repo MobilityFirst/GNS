@@ -11,8 +11,7 @@ def main():
     gen_add_requests(trace_folder)
 
 
-def gen_add_requests(trace_folder, number_names=10000, first_name=0, num_lns=-1,
-                     append_to_file=False, lns_ids=None, name_prefix=None):
+def gen_add_requests(trace_folder, number_names=10000, first_name=0, append_to_file=False, lns_ids=None, name_prefix=None):
     """Generates 'add' requests for 'number_names' from a set of local name servers
     # Workload generation parameters
     number_names = 10000   # number of names in workload.
@@ -30,18 +29,21 @@ def gen_add_requests(trace_folder, number_names=10000, first_name=0, num_lns=-1,
     name_prefix = None       # if name-prefix is not None, append given prefix to all names
     """
 
-    os.system('mkdir -p ' + trace_folder)
+    names = []
+    for i in range(number_names):
+        if name_prefix is None:
+            name = str(i + first_name)
+        else:
+            name = name_prefix + str(i)
+        names.append(name)
+    gen_add_requests_names(trace_folder, names, lns_ids, append_to_file)
 
-    # lns_list = read_col_from_file(lns_file)
-    # if num_lns != -1 and num_lns < len(lns_list):
-    #     lns_list = lns_list[:len(lns_list)]
+
+def gen_add_requests_names(trace_folder, names, lns_ids, append_to_file=False):
+    os.system('mkdir -p ' + trace_folder)
 
     # start file writers
     fw_lns = []  # list of file writers for each lns
-    # for i, lns in enumerate(lns_list):
-    #     f_name = lns
-    #     if lns_ids is not None:
-    #         f_name = lns_ids[i]
     for f_name in lns_ids:
         output_file = os.path.join(trace_folder, f_name)
         if append_to_file:
@@ -49,13 +51,9 @@ def gen_add_requests(trace_folder, number_names=10000, first_name=0, num_lns=-1,
         else:
             fw_lns.append(open(output_file, 'w'))
 
-    for i in range(number_names):
+    for i in range(len(names)):
         lns_index = i % len(lns_ids)
-        if name_prefix is None:
-            name = str(i + first_name)
-        else:
-            name = name_prefix + str(i)
-        request = [name, write_workload.RequestType.ADD]
+        request = [names[i], write_workload.RequestType.ADD]
         for t in request:
             fw_lns[lns_index].write(str(t))
             fw_lns[lns_index].write('\t')

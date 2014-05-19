@@ -23,7 +23,7 @@ public abstract class AbstractPaxosManager {
    * @return true if paxos instance is created. false if another instance with same ID and version already exists, or
    * size of nodeIDs is less than 3.
    */
-  public abstract boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, Replicable paxosInterface);
+  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<Integer> nodeIDs, Replicable paxosInterface);
 
   public abstract Set<Integer> getPaxosNodeIDs(String paxosIDNoVersion);
   /**

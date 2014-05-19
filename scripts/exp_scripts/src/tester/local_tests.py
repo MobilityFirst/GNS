@@ -9,7 +9,7 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
 
-from workload.write_workload import get_trace_filename, RequestType, WorkloadParams, workload_writer
+from workload.write_workload import get_trace_filename, RequestType, WorkloadParams, ExpType, workload_writer
 from logparse.read_final_stats import FinalStats
 import local.exp_config
 import local.generate_config_file
@@ -52,21 +52,26 @@ class TestSetupLocal(BasicSetup):
         self.ns = 8
         self.lns = 1
         self.lns_id = self.ns
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_ns', self.ns)
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_lns', self.lns)
+
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
         self.local_output_folder = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR)
         self.trace_folder = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR, 'trace')
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'trace_folder', self.trace_folder)
 
     def run_exp(self, requests):
-        """Not a test. Run experiments given a set of requests"""
-
+        """Not a test. Run experiments given a set of requests for a single local name server"""
         workload_writer({self.lns_id: requests}, self.trace_folder)
-        # write_tuple_array(requests, self.trace_filename, p=False)
-        work_dir = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR)
-        # write config
+        return self.run_exp_multi_lns()
 
+    def run_exp_multi_lns(self):
+        """ Runs an experiment involving multiple local name servers"""
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_ns', self.ns)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_lns', self.lns)
+
+        work_dir = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR)
+
+        # write config
         temp_workload_config_file = os.path.join(work_dir, 'tmp_w.ini')
         self.workload_conf.write(open(temp_workload_config_file, 'w'))
 
@@ -612,6 +617,25 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         return output_stats
 
 
+class ConnectTimeMeasureTest(TestSetupLocal):
+
+    def test_a_connect_time_test(self):
+        """ Measures connect time for a name."""
+        self.lns = 2
+        self.ns = 3
+        self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.EXP_TYPE,  ExpType.CONNECT_TIME)
+        exp_duration = 100
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration))
+        mobile_update_intervals = [10, 100, 1000, 10000]
+        for mui in mobile_update_intervals:
+            self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.MOBILE_UPDATE_INTERVAL, str(mui))
+            print 'Running experiment with update = ', mui
+            output_dir = 'connect_time/update_' + str(mui)
+            self.exp_output_folder = os.path.join(self.local_output_folder, output_dir)
+            print 'Exp outupt folder = ', self.exp_output_folder
+            self.run_exp_multi_lns()
+
+
 class FeatureTest1NodeLocal(FeatureTestMultiNodeLocal):
     """Tests a 1 name server and 1 local name server GNS"""
 
@@ -622,7 +646,7 @@ class FeatureTest1NodeLocal(FeatureTestMultiNodeLocal):
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', 1)
 
 
-#
+
 # class ThroughputTest1NodeLocal(ThroughputTest3NodeLocal):
 #     """ Tests throughput for a single node setup. NEVER TESTED.
 #     """

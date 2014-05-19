@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.util;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * ***********************************************************
@@ -17,7 +18,13 @@ public class HostInfo {
   /**
    * IP address of the name server *
    */
-  private final InetAddress ipAddress;
+  private InetAddress ipAddress = null;
+
+  /**
+   * IP address of the name server *
+   */
+  private final String ipAddressString;
+
   /**
    * Starting port number *
    */
@@ -51,10 +58,11 @@ public class HostInfo {
    * @param longitude Longitude of the nameserver
    ***********************************************************
    */
-  public HostInfo(int id, InetAddress ipAddress, int startingPortNumber, long pingLatency, double latitude, double longitude) {
+  public HostInfo(int id, String ipAddressString, int startingPortNumber, long pingLatency, double latitude, double longitude) {
 
     this.id = id;
-    this.ipAddress = ipAddress;
+    this.ipAddressString = ipAddressString;
+//    this.ipAddress = ipAddress;
     this.startingPortNumber = startingPortNumber;
     this.pingLatency = pingLatency;
     this.latitude = latitude;
@@ -65,7 +73,18 @@ public class HostInfo {
     return id;
   }
 
-  public InetAddress getIpAddress() {
+  public synchronized InetAddress getIpAddress() {
+    // Abhigyan: lookup IP address on first access.
+    // this is done to help experiments on PlanetLab with a few 100 nodes.
+    // A DNS lookup for few hundred names when starting a node takes a long time (1 sec/node) in some cases.
+    if (ipAddress == null) {
+      try {
+        ipAddress = InetAddress.getByName(ipAddressString);
+      } catch (UnknownHostException e) {
+        e.printStackTrace();
+      }
+
+    }
     return ipAddress;
   }
 

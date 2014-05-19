@@ -5,10 +5,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -44,40 +42,6 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	}
 	
 	/********************Start of send methods*****************************************/
-	/* A sequence of ugly public methods that are essentially redundant ways of 
-	 * invoking send() on NIOTransport. They exist primarily for backwards compatibility
-	 * and must be cleaned up to a smaller number that is really needed. None of these 
-	 * methods actually sends on a socket. That is done by a single private method that
-	 * invokes the underlying send in the parent.
-	 * 
-	 * These methods are undocumented because it is not clear which classes are designed
-	 * to call which of these methods. They have been copied over from the older NioServer
-	 * and need to be documented or overhauled completely.
-	 */
-	public int sendToIDs(Set<Integer> destIDs, JSONObject jsonData) throws IOException {
-		return sendToIDs(destIDs, jsonData, -1);
-	}
-
-	public int sendToIDs(short[] destIDs, JSONObject jsonData) throws IOException {
-		return sendToIDs(destIDs, jsonData, -1);
-	}
-
-	public int sendToIDs(short[]destIDs, JSONObject jsonData, int excludeID) throws IOException {
-		TreeSet<Integer> IDs = new TreeSet<Integer>();
-		for (int destID: destIDs) {
-			IDs.add((int)destIDs[destID]);
-		}
-		return sendToIDs(IDs, jsonData, excludeID);
-	}
-
-    public int sendToIDs(Set<Integer> destIDs, JSONObject jsonData, int excludeID) throws IOException {
-    	int written=0;
-		for (int destID:destIDs) {
-			if (destID == excludeID) continue;
-			written += sendToID(destID, jsonData);
-		}
-		return written;
-	}
 
     /* WARNING: This method returns a meaningless value. Need to get
      * return value from task scheduled in the future, which is 
@@ -90,8 +54,8 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
      */
     public int sendToID(int id, JSONObject jsonData) throws IOException {
     	int sent = 0;
-    	if(GNSDelayEmulator.isDelayEmulated()) { 
-    		GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
+    	if(GNSDelayEmulator.isDelayEmulated()) {
+        GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
     		sent = jsonData.length(); // cheating!
     	} else sent = this.sendToIDActual(id, jsonData);
     	return sent;

@@ -18,7 +18,7 @@ public enum ReplicationFrameworkType {
   RANDOM,
   LOCATION,
   BEEHIVE,
-  OPTIMAL;
+  OPTIMAL, ReplicationFrameworkType;
 
   public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type) {
     ReplicationFrameworkInterface framework = null;

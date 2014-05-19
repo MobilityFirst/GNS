@@ -1,17 +1,14 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.main.GNS;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gns.main.GNS;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author V. Arun
@@ -46,11 +43,11 @@ import java.util.concurrent.Executors;
  */
 public class JSONMessageExtractor implements DataProcessingWorker {
 
-  private static final int SIZE_OF_THREAD_POOL = 100;
+//  private static final int SIZE_OF_THREAD_POOL = 100;
   public static final String HEADER_PATTERN = "&"; // Could be an arbitrary string
   private HashMap<SocketChannel, String> sockStreams = null;
   private ArrayList<PacketDemultiplexer> packetDemuxes = null;
-  private ExecutorService executor = null; // we use a thread pool to execute message handlers
+//  private ExecutorService executor = null; // we use a thread pool to execute message handlers
 
   Logger log = GNS.getLogger();
 
@@ -58,7 +55,7 @@ public class JSONMessageExtractor implements DataProcessingWorker {
     packetDemuxes = new ArrayList<PacketDemultiplexer>();
     packetDemuxes.add(pd);
     sockStreams = new HashMap<SocketChannel, String>();
-    executor = Executors.newFixedThreadPool(SIZE_OF_THREAD_POOL);
+//    executor = Executors.newFixedThreadPool(SIZE_OF_THREAD_POOL);
   }
 
   /* Note: Use with care. This will change demultiplexing behavior
@@ -124,8 +121,8 @@ public class JSONMessageExtractor implements DataProcessingWorker {
     // message handlers to waitfor the receipt of other messages which would not be possible
     // if this were single-threaded. The bad things... time will tell.
     JsonMessageWorker worker = new JsonMessageWorker(jsonMsg, packetDemuxes);
-    executor.execute(worker);
-    //worker.run();
+//    executor.execute(worker);
+    worker.run();
   }
 
   private class JsonMessageWorker implements Runnable {

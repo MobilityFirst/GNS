@@ -55,6 +55,7 @@ public class PingManager {
     int windowSlot = 0;
     while (true) {
       ThreadUtils.sleep(TIME_BETWEEN_PINGS);
+      long t0 = System.currentTimeMillis();
       for (int id : gnsNodeConfig.getNodeIDs()) {
         try {
           if (id != nodeId) {
@@ -72,6 +73,8 @@ public class PingManager {
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
         }
       }
+      long timeForAllPings = (System.currentTimeMillis() - t0)/1000;
+      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId + "\t");
       if (debug) GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
       windowSlot = (windowSlot + 1) % WINDOWSIZE;
     }
@@ -79,7 +82,7 @@ public class PingManager {
 
   /**
    * Calculates the average ping time from the given node.
-   * Returns 999L if value can't be determined.
+   * Returns 9999L if value can't be determined.
    *
    * @param node
    * @return
@@ -98,7 +101,7 @@ public class PingManager {
     }
     if (count == 0) {
       // probably should never happen but just in case
-      return 999L;
+      return 9999L;
     } else {
       return Math.round(total / count);
     }

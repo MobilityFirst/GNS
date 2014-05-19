@@ -86,7 +86,7 @@ def run_name_server(node_id, config_file, node_config_file):
     # Used for calculating number of replicas as per this formula:
     # NumReplicas = lookupRate / (updateRate * normalizing_constant)
     normalizing_constant = exp_config.normalizing_constant
-    moving_avg_window_size = 20  # Used for calculating inter-arrival update time and ttl value
+    moving_avg_window_size = 1  # Used for calculating inter-arrival update time and ttl value
 
     ttl_constant = 0.0  # Multiplied by inter-arrival update time to calculate ttl value of a name
 
@@ -181,10 +181,10 @@ def run_name_server(node_id, config_file, node_config_file):
         print 'Error: No replication model selected'
         sys.exit(2)
     # min and max number of replica
-    if min_replica != primary_name_server:
-        command += ' ' + MIN_REPLICA + ' ' + str(min_replica)
-    if max_replica != 100:
-        command += ' ' + MAX_REPLICA + ' ' + str(max_replica)
+    # if min_replica != primary_name_server:
+    command += ' ' + MIN_REPLICA + ' ' + str(min_replica)
+    # if max_replica != 100:
+    command += ' ' + MAX_REPLICA + ' ' + str(max_replica)
 
     command += ' ' + FILE_LOGGING_LEVEL + ' ' + file_logging_level
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level

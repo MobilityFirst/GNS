@@ -42,12 +42,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class Remove {
 
-  private static ArrayList<ColumnField> removeRecordLNSFields = new ArrayList<ColumnField>();
-
-  static {
-    removeRecordLNSFields.add(ReplicaControllerRecord.MARKED_FOR_REMOVAL);
-  }
-
   private static ArrayList<ColumnField> applyMarkedForRemovalFields = new ArrayList<ColumnField>();
 
   static {
@@ -57,32 +51,6 @@ public class Remove {
     applyMarkedForRemovalFields.add(ReplicaControllerRecord.ACTIVE_VERSION);
   }
 
-//  /**
-//   * Handle a client request to remove a record. If record does not exist, an error message is sent to client.
-//   * Otherwise, replica controller proceed to mark the record as removed, after coordinating with other replica
-//   * controllers.
-//   */
-//  public static GNSMessagingTask handleRemoveRecordLNS(RemoveRecordPacket removeRecord, ReplicaController rc)
-//          throws JSONException{
-//    GNSMessagingTask msgTask = null;
-//    try {
-//      ReplicaControllerRecord.getNameRecordPrimaryMultiField(rc.getDB(), removeRecord.getName(), removeRecordLNSFields);
-//      // record exists
-//      removeRecord.setNameServerID(rc.getNodeID());
-//      if (rc.getRcCoordinator() == null) {
-//        msgTask = executeMarkRecordForRemoval(removeRecord, rc);
-//      } else {
-//        rc.getRcCoordinator().coordinateRequest(removeRecord.toJSONObject());
-//      }
-//
-//    } catch (RecordNotFoundException e) {
-//      // return failure, because record was not even found
-//      ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
-//      GNS.getLogger().severe("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
-//      msgTask = new GNSMessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
-//    }
-//    return  msgTask;
-//  }
   /**
    * Executes the first phase of remove operation, which updates record to say it is going to be removed.
    * This method also forwards request to current active replicas to remove the record.
@@ -92,7 +60,7 @@ public class Remove {
    *
    * @param removeRecord Packet sent by client
    * @param rc ReplicaController calling this method
-   * @param recovery
+   * @param recovery  true if we are replaying logs during recovery
    */
   public static void executeMarkRecordForRemoval(RemoveRecordPacket removeRecord, ReplicaController rc,
           boolean recovery) throws JSONException, IOException {
@@ -136,7 +104,7 @@ public class Remove {
       if (Config.debugMode) GNS.getLogger().severe("Field Not Found Exception. " + e.getMessage());
       e.printStackTrace();
     }
-    if (sendError & !recovery) {
+    if (removeRecord.getNameServerID() == rc.getNodeID() && sendError & !recovery) {
       ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(respCode, removeRecord);
       rc.getNioServer().sendToID(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
     }
@@ -168,6 +136,7 @@ public class Remove {
    *
    * @param removeRecordPacket Packet sent by client
    * @param rc ReplicaController calling this method
+   *
    */
   public static void executeRemoveRecord(RemoveRecordPacket removeRecordPacket, ReplicaController rc,
           boolean recovery) throws JSONException, FailedUpdateException, IOException {

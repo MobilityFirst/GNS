@@ -64,7 +64,7 @@ public class Add {
     } catch (FailedUpdateException e) {
       // send error to client
       ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
-      if (!recovery) {
+      if (!recovery && addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
         replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
       }
     } catch (RecordExistsException e) {

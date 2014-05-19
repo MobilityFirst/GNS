@@ -90,7 +90,7 @@ public class PaxosManager extends AbstractPaxosManager {
   /**
    * debug = true is used to debug the paxos module,  debug = false when complete GNRS system is running.
    */
-  private  boolean debug = false;
+  private  boolean test = false;
 
   PaxosLogger paxosLogger;
 
@@ -176,10 +176,11 @@ public class PaxosManager extends AbstractPaxosManager {
 
   }
 
-  public boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, Replicable pi) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<Integer> nodeIDs, Replicable pi) {
     String initialState = pi.getState(paxosIDNoVersion);
     return createPaxosInstance(paxosIDNoVersion, version, nodeIDs, initialState);
   }
+
 
   @Override
   public Set<Integer> getPaxosNodeIDs(String paxosIDNoVersion) {
@@ -406,7 +407,6 @@ public class PaxosManager extends AbstractPaxosManager {
         }
       }
     }
-
   }
 
   void sendMessage(int destID, JSONObject json, String paxosID) {
@@ -416,7 +416,6 @@ public class PaxosManager extends AbstractPaxosManager {
     } catch (JSONException e) {
       e.printStackTrace();  
     }
-
   }
 
   void sendMessage(Set<Integer> destIDs, JSONObject json, String paxosID) {
@@ -426,7 +425,6 @@ public class PaxosManager extends AbstractPaxosManager {
     } catch (JSONException e) {
       e.printStackTrace();  
     }
-
   }
 
   void sendMessage(short[] destIDs, JSONObject json, String paxosID, int excludeID) {
@@ -436,14 +434,12 @@ public class PaxosManager extends AbstractPaxosManager {
     } catch (JSONException e) {
       e.printStackTrace();  
     }
-
   }
 
-
   void addToActiveProposals(ProposalStateAtCoordinator propState) {
-//    synchronized (proposalStates) {
-//      proposalStates.add(propState);
-//    }
+    synchronized (proposalStates) {
+      proposalStates.add(propState);
+    }
   }
 
   void removeFromActiveProposals(ProposalStateAtCoordinator propState) {
@@ -567,7 +563,7 @@ public class PaxosManager extends AbstractPaxosManager {
   private  void sendMessage(int destID, JSONObject json) {
     try
     {
-      if (!debug) {
+      if (!test) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
 
       }
@@ -584,7 +580,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
   private  void sendMessage(Set<Integer> destIDs, JSONObject json) {
     try {
-      if (!debug) {
+      if (!test) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
       if (initialized) {
@@ -602,7 +598,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
   private void sendMessage(short[] destIDs, JSONObject json, int excludeID) {
     try {
-      if (!debug) {
+      if (!test) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
       if (initialized) {

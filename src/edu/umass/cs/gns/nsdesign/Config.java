@@ -47,17 +47,18 @@ public class Config {
   public static ReplicationFrameworkType replicationFrameworkType;
   public static int analysisIntervalSec = 100000;
   public static int movingAverageWindowSize = 20;
-  public static int nameServerVoteSize = 5;
+  public static int nameServerVoteSize = 30;
   public static final int NS_TIMEOUT_MILLIS = 5000;
 
   // testing related parameters
   public static boolean useGNSNIOTransport = true;
+  public static boolean useMultiPaxos = false; // option to use multipaxos package
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
   public static boolean noPaxosLog = false;
   public static boolean singleNS = false;
   public static boolean readCoordination = false;
-
+  public static boolean eventualConsistency = false;
 
   public static synchronized void initialize(HashMap<String, String> allValues) {
     if (initialized) return;
@@ -100,9 +101,12 @@ public class Config {
       singleNS = true;
     }
 
-    if (allValues.containsKey(NSParameterNames.SINGLE_NS)) {
-      GNS.numPrimaryReplicas = 1;
-      singleNS = true;
+    if (allValues.containsKey(NSParameterNames.MIN_REPLICA)) {
+      minReplica =  Integer.parseInt(allValues.get(NSParameterNames.MIN_REPLICA));
+    }
+
+    if (allValues.containsKey(NSParameterNames.MAX_REPLICA)) {
+      maxReplica =  Integer.parseInt(allValues.get(NSParameterNames.MAX_REPLICA));
     }
 
     if (allValues.containsKey(NSParameterNames.READ_COORDINATION)) {

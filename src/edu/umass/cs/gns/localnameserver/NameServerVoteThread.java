@@ -127,7 +127,7 @@ public class NameServerVoteThread extends Thread {
           for (int primary : primaryNameServers) {
             LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);
           }
-          Thread.sleep(100); // we are sleeping between sending votes. if we do not sleep, there will be a period
+          Thread.sleep(100); // rate limit the sending of votes. if we do limit rate, there will be a period
           // where all resources are used for sending votes, which will affect other traffic at LNS.
         } catch (Exception e) {
           e.printStackTrace();
