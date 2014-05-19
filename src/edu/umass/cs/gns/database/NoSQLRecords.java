@@ -10,6 +10,7 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -23,7 +24,7 @@ import java.util.HashMap;
  * 
  * And to make things more confusing some of the *user* fields are actually only used internally by the GNS.
  *
- * @author westy
+ * @author westy, Abhigyan
  */
 public interface NoSQLRecords {
   

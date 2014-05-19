@@ -197,11 +197,17 @@ public class ComputeNewActivesTask extends TimerTask {
    * ***********************************************************
    * Returns the size of active replica set that should exist for this name record
    * depending on the lookup and update rate of this name record.
+   * There are two special cases: (1) if there are no lookups or updates for this name, it returns 0.
+   * (2) if (numberReplicaControllers == 1), then the system is un-replicated, therefore it always returns 1;
+   *
+   * Otherwise returns a value in the range {@link edu.umass.cs.gns.nsdesign.Config#minReplica} and
+   * {@link edu.umass.cs.gns.nsdesign.Config#maxReplica}.
    *
    * @param rcRecord ReplicaControllerRecord for this name
    ***********************************************************
    */
   private int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException, FailedUpdateException {
+
     double[] readWrites = rcRecord.recomputeAverageReadWriteRate();
     double lookup = readWrites[0];
     double update = readWrites[1];
@@ -210,7 +216,9 @@ public class ComputeNewActivesTask extends TimerTask {
     if (update == 0 && lookup == 0) {
       replicaCount = 0;
 //      replicaCount = Config.minReplica;
-    } else if (update == 0) {
+    }
+    else if (Config.singleNS) replicaCount = 1;
+    else if (update == 0) {
       // no updates, replicate everywhere.
       replicaCount = replicaController.getGnsNodeConfig().getNameServerIDs().size();
       replicaCount = Math.min(replicaCount, Config.maxReplica);

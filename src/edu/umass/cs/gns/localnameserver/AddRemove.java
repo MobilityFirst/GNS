@@ -16,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  * will forward the request to active replicas.
  * <p>
  *
+ * @author abhigyan
  */
 public class AddRemove {
 

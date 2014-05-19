@@ -20,7 +20,9 @@ import java.util.TimerTask;
  * for this name.
  *
  * @see edu.umass.cs.gns.localnameserver.PendingTasks
- * @see edu.umass.cs.gns.packet.RequestActivesPacket
+ * @see edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket
+ *
+ * @author abhigyan
  */
 public class RequestActivesTask extends TimerTask {
 

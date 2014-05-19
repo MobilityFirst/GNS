@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @see edu.umass.cs.gns.localnameserver.RequestActivesTask
  *
+ * @author abhigyan
  */
 public class PendingTasks {
 
@@ -212,6 +213,7 @@ public class PendingTasks {
 
 /**
  * Represents a pending request of a name for which the set of active replicas is being obtained.
+ * @author abhigyan
  */
 class PendingTask {
 

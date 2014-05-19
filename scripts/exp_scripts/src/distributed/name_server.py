@@ -35,6 +35,7 @@ HELP = '-help'
 TINY_UPDATE = '-tinyUpdate'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
+SINGLE_NS = '-singleNS'
 USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 
 READ_COORDINATION = '-readCoordination'
@@ -190,6 +191,9 @@ def run_name_server(node_id, config_file, node_config_file):
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level
     command += ' ' + STAT_FILE_LOGGING_LEVEL + ' ' + stat_file_logging_level
     command += ' ' + STAT_CONSOLE_OUTPUT_LEVEL + ' ' + stat_console_output_level
+
+    if primary_name_server == 1:
+        command += ' ' + SINGLE_NS
 
     if emulate_ping_latencies:
         command += ' ' + EMULATE_PING_LATENCIES

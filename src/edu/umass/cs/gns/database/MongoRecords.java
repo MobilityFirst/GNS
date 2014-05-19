@@ -44,7 +44,7 @@ import java.util.Set;
  * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
  * representation.
  *
- * @author westy
+ * @author westy, Abhigyan
  */
 public class MongoRecords implements NoSQLRecords {
 

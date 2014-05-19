@@ -141,9 +141,9 @@ public class GroupChange {
         if (activeProposalPacket.getProposingNode() == replicaController.getNodeID()) {// if I have proposed this change, I will start actives group change process
           GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
                   + activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
-
-          // todo could use failure detector here NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
-          // todo else if proposing node has failed, then also I will start group change
+          // todo could use failure detector here
+          // todo if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
+          // todo then proposing node has failed, so I will start group change
           if (Config.debugMode) {
             GNS.getLogger().fine(" : Stop oldActiveSet now: Name = " + activeProposalPacket.getName());
           }

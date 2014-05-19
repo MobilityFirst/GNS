@@ -7,15 +7,14 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * ************************************************************
  * This class implements the thread that periodically multicasts
- * nameserver selection votes to primary nameservers of a name.
+ * nameserver selection votes to replica controllers of a name.
  * <br/>
- * The votes are reported to the primary nameservers and used
- * to select active nameservers with the highest votes during
+ * The votes are reported to the replica controllers and used
+ * to select active replicas with the highest votes during
  * replication period.
  * <br/>
- * We have add support to also report the number of updates for a
+ * We have added support to also report the number of updates for a
  * name received at local name server. The ratio of lookups
  * to updates for a name is used to decide the number of active
  * replicas.
@@ -24,7 +23,6 @@ import java.util.Set;
  * @see edu.umass.cs.gns.localnameserver.NameRecordStats
  * @see edu.umass.cs.gns.nsdesign.replicaController.NameStats
  * @author Hardeep Uppal, Abhigyan
- ************************************************************
  */
 public class NameServerVoteThread extends Thread {
 

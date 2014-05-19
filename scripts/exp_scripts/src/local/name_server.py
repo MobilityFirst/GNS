@@ -173,7 +173,6 @@ def run_name_server(node_id, work_dir):
         print 'Error: No replication model selected'
         sys.exit(2)
 
-
     if primary_name_server == 1:
         command += ' ' + SINGLE_NS
 

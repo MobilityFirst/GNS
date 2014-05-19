@@ -51,6 +51,8 @@ import java.util.concurrent.TimeUnit;
  * @see edu.umass.cs.gns.localnameserver.DNSRequestTask
  * @see edu.umass.cs.gns.localnameserver.DNSRequestInfo
  * @see edu.umass.cs.gns.nsdesign.packet.DNSPacket
+ *
+ * @author abhigyan
  */
 public class Lookup {
 

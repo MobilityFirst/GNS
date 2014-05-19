@@ -17,7 +17,6 @@ def gen_add_requests(trace_folder, number_names=10000, first_name=0, append_to_f
     number_names = 10000   # number of names in workload.
     first_name = 0    # workload will have names in range (first_name, first_name + number_names)
 
-
     num_lns = -1             # set this to -1 if you want to generate trace for all LNS in lns geo file.
                              # otherwise trace will be generated for first 'num_lns' in lns geo file
 

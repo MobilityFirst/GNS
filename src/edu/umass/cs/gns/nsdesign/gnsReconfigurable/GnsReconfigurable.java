@@ -177,6 +177,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   }
 
   public boolean stopVersion(String name, short version) {
+    if (Config.debugMode) GNS.getLogger().fine("executing stop version: " + name + "\t" + version);
     NameRecord nameRecord;
     try {
       // we copy the active version field to old active version field,

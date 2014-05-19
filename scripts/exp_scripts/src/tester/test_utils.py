@@ -17,14 +17,13 @@ def get_new_group_members_str(node_ids, group_size):
 
 
 def get_new_group_members(node_ids, group_size):
-    assert 3 <= group_size <= len(node_ids)
+    # assert 3 <= group_size <= len(node_ids)
     import random
     # hosts = range(num_ns)
     from copy import copy
     node_ids_copy = copy(node_ids)
     random.shuffle(node_ids_copy)
     return node_ids_copy[:group_size]
-
 
 
 def get_line_count(filename):

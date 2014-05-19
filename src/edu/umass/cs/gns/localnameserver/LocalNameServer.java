@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
  **
  * This class represents the functions of a Local Name Server.
  *
+ * @author abhigyan
  */
 public class LocalNameServer {
 
@@ -51,8 +52,6 @@ public class LocalNameServer {
 //  private static GNSNIOTransportInterface tcpTransport;
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
-
-  private static long initialExpDelayMillis = 100;
 
   /**
    * Ping manager object for pinging other nodes and updating ping latencies in
@@ -78,7 +77,7 @@ public class LocalNameServer {
    * @throws IOException
    */
   public LocalNameServer(int nodeID, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
-    // set node ID first because constructor for BasicClientRequestHandler reads it.
+    // set node ID first because constructor for BasicClientRequestHandler reads 'nodeID' value.
     LocalNameServer.nodeID = nodeID;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
@@ -125,18 +124,9 @@ public class LocalNameServer {
 //      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
     if (StartLocalNameServer.experimentMode) {
-      try {
-        Thread.sleep(initialExpDelayMillis); // Abhigyan: When multiple LNS are running on same machine, we wait for
-        // all lns's to bind to their respective listening port before sending any traffic. Otherwise, another LNS could
-        // start a new connection and bind to this LNS's listening port. We have seen this very often in cluster tests.
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-
       new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile,
               StartLocalNameServer.lookupTraceFile, StartLocalNameServer.updateTraceFile,
               StartLocalNameServer.lookupRate, StartLocalNameServer.updateRateRegular, requestHandler);
-
       // name server loads initialized.
       if (StartLocalNameServer.loadDependentRedirection) {
         initializeNameServerLoadMonitoring();

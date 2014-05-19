@@ -16,6 +16,15 @@ public class StartExperiment {
   public void startMyTest(int nodeID, String workloadFile, String lookupTraceFile, String updateTraceFile,
                            double lookupRate, double updateRate, ClientRequestHandlerInterface handler)
           throws IOException, InterruptedException {
+
+//        long initialExpDelayMillis = 1000;
+//        Thread.sleep(initialExpDelayMillis); // Abhigyan: When multiple LNS are running on same machine, we wait for
+//        // all lns's to bind to their respective listening port before sending any traffic. Otherwise, another LNS could
+//        // start a new connection and bind to this LNS's listening port. We have seen this very often in cluster tests.
+//      } catch (InterruptedException e) {
+//        e.printStackTrace();
+//      }
+
     GNS.getLogger().info("Workload config file: " + workloadFile);
     WorkloadParams params = null;
     if (workloadFile != null) {

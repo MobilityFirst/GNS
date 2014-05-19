@@ -62,6 +62,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   private final GNSNIOTransportInterface tcpTransport;
 
   private final Random random;
+
   /**
    * Name Server ID *
    */

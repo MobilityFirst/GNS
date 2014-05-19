@@ -724,7 +724,7 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         lns_ids_int = range(self.ns, self.ns + self.lns)
         lns_ids = [str(lns_id) for lns_id in lns_ids_int]
 
-        num_names = 1000
+        num_names = 10000
         prefix = 'test_name'
         # create new trace
         create_empty_trace_files(lns_ids, self.trace_folder)
@@ -734,7 +734,7 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         append_request_to_all_files([delay, RequestType.DELAY], lns_ids, self.trace_folder)
         total_time += delay / 1000
         # set a request rate
-        add_req_rate = 10
+        add_req_rate = 50
 
         append_request_to_all_files([add_req_rate, RequestType.RATE], lns_ids, self.trace_folder)
 
@@ -743,16 +743,16 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         gen_add_requests(self.trace_folder, number_names=num_names, append_to_file=True, lns_ids=lns_ids,
                          name_prefix=prefix)
 
-        delay = 30000
+        delay = 20000
         append_request_to_all_files([delay, RequestType.DELAY], lns_ids, self.trace_folder)
         total_time += delay / 1000
         read_write_req_rate = 200
 
-        reads_per_epoch_per_name = 800
-        writes_per_epoch_per_name = 400
+        reads_per_epoch_per_name = 80
+        writes_per_epoch_per_name = 40
         total_lookups = 0
         total_updates = 0
-        num_geo_locality_changes = 2
+        num_geo_locality_changes = 1
         for i in range(num_geo_locality_changes):
             num_lookups = num_names * reads_per_epoch_per_name
             num_updates = num_names * writes_per_epoch_per_name
@@ -781,9 +781,6 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         self.assertEqual(output_stats.read, total_lookups, "Successful reads mismatch")
         self.assertEqual(output_stats.write, total_updates, "Successful writes mismatch")
 
-    def run_exp_with_given_workload(self):
-        pass
-
     def test_a2_check_latency_emulation(self):
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies', str(True))
         self.emulation = 'geographic'
@@ -791,7 +788,7 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
 
     def test_a3_request_latency_replication(self):
         """Test replication of name records based on geo-locality"""
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'replication_interval', str(75))
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'replication_interval', str(50))
         self.test_a2_check_latency_emulation()
 
     def test_b_request_latency_read_coordination(self):
@@ -810,6 +807,14 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         """Generate a workload with varying geo-locality and change placement at fast time-scales"""
         # not implemented
         assert False
+
+
+class TestWorkloadWithGeoLocalityUnreplicatedGNS(TestWorkloadWithGeoLocality):
+    """On a local machine, tests a GNS in which both name records and replica controllers are unreplicated"""
+
+    def setUp(self):
+        TestWorkloadWithGeoLocality.setUp(self)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(1))
 
 
 class RunTestPreConfigured(TestSetupRemote):

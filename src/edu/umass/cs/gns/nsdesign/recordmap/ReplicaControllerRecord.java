@@ -98,6 +98,8 @@ import java.util.concurrent.ConcurrentMap;
  * @see edu.umass.cs.gns.nsdesign.replicaController.ReplicaController
  * @see edu.umass.cs.gns.nsdesign.recordmap.RecordMapInterface
  * @see edu.umass.cs.gns.exceptions.FieldNotFoundException
+ *
+ * @author abhigyan
  */
 public class ReplicaControllerRecord {
 

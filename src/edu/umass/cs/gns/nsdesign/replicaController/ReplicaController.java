@@ -23,13 +23,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-//import edu.umass.cs.gns.nsdesign.GNSMessagingTask;
 
 /**
- * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
- */
-/**
- * Work in progress. Inactive code.
  *
  * Class implements all functionality of a replica controller.
  * We keep a single instance of this class for all names for whom this name server is a replica controller.
@@ -39,10 +34,6 @@ public class ReplicaController implements Replicable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 
-//  /**
-//   * object handles coordination among replicas on a request, if necessary
-//   */
-//  private ReplicaControllerCoordinator rcCoordinator = null;
   /**
    * ID of this node
    */
@@ -275,7 +266,7 @@ public class ReplicaController implements Replicable {
             NameStats.handleLNSVotesPacket(json, this);
             break;
           case NAME_RECORD_STATS_RESPONSE:
-            // todo these packets related to stats reporting are not implemented yet.
+            // todo this packets related to stats reporting are not implemented yet.
             throw new UnsupportedOperationException();
           default:
             break;

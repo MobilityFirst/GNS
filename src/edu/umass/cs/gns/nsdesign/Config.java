@@ -67,7 +67,6 @@ public class Config {
 
     if (allValues.containsKey(NSParameterNames.PRIMARY_REPLICAS)) {
       GNS.numPrimaryReplicas = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));
-//      GNS.numPrimaryReplicas = numReplicaControllers;
     }
     if (allValues.containsKey(NSParameterNames.FILE_LOGGING_LEVEL)) {
       GNS.fileLoggingLevel = allValues.get(NSParameterNames.FILE_LOGGING_LEVEL);
@@ -96,9 +95,11 @@ public class Config {
       failureDetectionTimeoutSec = Integer.parseInt(allValues.get(NSParameterNames.FAILURE_DETECTION_TIMEOUT_INTERVAL));
     }
 
-    if (allValues.containsKey(NSParameterNames.SINGLE_NS)) {
+    // singleNS option must be read after GNS.numPrimaryReplicas is read.
+    if (allValues.containsKey(NSParameterNames.SINGLE_NS) || GNS.numPrimaryReplicas == 1) {
       GNS.numPrimaryReplicas = 1;
       singleNS = true;
+      GNS.getLogger().fine("Number of primary: " + GNS.numPrimaryReplicas + " \tSingleNS\t" + singleNS);
     }
 
     if (allValues.containsKey(NSParameterNames.MIN_REPLICA)) {

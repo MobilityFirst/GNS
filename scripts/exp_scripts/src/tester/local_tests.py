@@ -356,15 +356,20 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         delay_ms = 2500
 
         initial_version = 1
-        group_size = min(5, self.ns)
+        if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server') and \
+           int(self.config_parse.get(ConfigParser.DEFAULTSECT, 'primary_name_server')) == 1:
+            group_size = 1
+        else:
+            group_size = min(5, self.ns)
         assert group_size <= self.ns
         num_group_changes = 3
 
         requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY]]
         for i in range(num_group_changes):
             version = (i + 1) + initial_version
-            grp_change_request = [name, RequestType.GROUP_CHANGE, version,
-                                  get_new_group_members_str(range(self.ns), group_size)]
+            group = get_new_group_members_str(range(self.ns), group_size)
+            grp_change_request = [name, RequestType.GROUP_CHANGE, version, group]
+            print 'New group members:', group, ' Size:', group_size
             requests.extend([grp_change_request,
                              [delay_ms, RequestType.DELAY],
                              [name, RequestType.UPDATE],
@@ -544,7 +549,11 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         delay_ms = 2500
 
         initial_version = 1
-        group_size = min(5, self.ns)
+        if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server') and \
+           int(self.config_parse.get(ConfigParser.DEFAULTSECT, 'primary_name_server')) == 1:
+            group_size = 1
+        else:
+            group_size = min(5, self.ns)
         assert group_size <= self.ns
 
         requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY]]
@@ -636,14 +645,12 @@ class ConnectTimeMeasureTest(TestSetupLocal):
             self.run_exp_multi_lns()
 
 
-class FeatureTest1NodeLocal(FeatureTestMultiNodeLocal):
-    """Tests a 1 name server and 1 local name server GNS"""
-
-    ns = 1
+class FeatureTestUnreplicatedGNS(FeatureTestMultiNodeLocal):
+    """On local machine, tests a GNS in which both name records and replica controllers are unreplicated"""
 
     def setUp(self):
         FeatureTestMultiNodeLocal.setUp(self)
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', 1)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(1))
 
 
 

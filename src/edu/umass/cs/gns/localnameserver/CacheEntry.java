@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * explicitly invalidated or updated by local name server. The TTL value is set based on TTL value
  * stored at name servers, and is not determined by the local name server.
  *
+ * @author abhigyan
  */
 public class CacheEntry implements Comparable<CacheEntry> {
 

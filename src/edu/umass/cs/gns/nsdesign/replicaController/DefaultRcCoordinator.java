@@ -45,7 +45,6 @@ public class DefaultRcCoordinator implements ReplicaControllerCoordinator{
         case RC_REMOVE:
         case NEW_ACTIVE_PROPOSE:
         case GROUP_CHANGE_COMPLETE:
-        case UPDATE:
         case REQUEST_ACTIVES:
         case NAMESERVER_SELECTION:
         case NAME_RECORD_STATS_RESPONSE:

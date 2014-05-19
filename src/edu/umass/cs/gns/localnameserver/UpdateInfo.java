@@ -8,6 +8,8 @@ import java.util.Set;
  * add and remove requests transmitted by the local name
  * server. It contains a few fields only for logging statistics
  * related to the requests.
+ *
+ * @author abhigyan
  *************************************************************/
 public class UpdateInfo {
 

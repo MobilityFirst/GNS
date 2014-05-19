@@ -7,6 +7,10 @@ import org.json.JSONException;
 
 import java.util.TimerTask;
 
+/**
+ * @author abhigyan
+ * @deprecated
+ */
 public class SendLoadMonitorPacketTask extends TimerTask {
 
   private int nameServerID;

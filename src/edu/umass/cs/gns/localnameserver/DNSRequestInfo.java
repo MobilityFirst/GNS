@@ -15,7 +15,8 @@ import java.util.Set;
  * about queries (name lookup) transmitted by the local name
  * server. It contains a few fields only for logging statistics
  * related to the requests.
- * 
+ *
+ * @author abhigyan
  *************************************************************/
 public class DNSRequestInfo {
 

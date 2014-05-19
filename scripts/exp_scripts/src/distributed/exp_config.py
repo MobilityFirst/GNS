@@ -128,7 +128,7 @@ is_experiment_mode = True
 emulate_ping_latencies = False
 
 # variation in latency emulation
-variation = 0.10
+variation = 0.50
 
 use_gns_nio_transport = True
 

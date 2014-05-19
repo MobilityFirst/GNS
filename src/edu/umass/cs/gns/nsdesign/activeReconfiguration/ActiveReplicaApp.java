@@ -12,7 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
-@author V. Arun
+@author V. Arun, abhigyan
  */
 public class ActiveReplicaApp implements Reconfigurable, Replicable {
 
@@ -35,15 +35,17 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
     try {
       JSONObject json = new JSONObject(value);
       if (Packet.getPacketType(json).equals(Packet.PacketType.OLD_ACTIVE_STOP)) {
+        OldActiveSetStopPacket stopPkt = new OldActiveSetStopPacket(json);
+        if (Config.debugMode) GNS.getLogger().fine("Executing stop request: " + value);
         boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
         if (noCoordinationState) {
           // probably stop has already been executed, so send confirmation to replica controller
           GNS.getLogger().warning("No coordinator state found for stop request: " + value);
           executed = true;
         } else {
-          executed = stopVersion(name, (short) -1);
+          executed = stopVersion(stopPkt.getName(), (short) -1);
           if (!executed) {
-            GNS.getLogger().severe("Stop request not executed: name = " + name + " request = " + value);
+            GNS.getLogger().severe("Stop request not executed: name = " + stopPkt.getName() + " request = " + value);
           }
         }
         if (executed) {

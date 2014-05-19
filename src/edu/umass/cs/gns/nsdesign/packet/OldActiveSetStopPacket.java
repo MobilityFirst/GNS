@@ -62,7 +62,6 @@ public class OldActiveSetStopPacket extends BasicPacket
 	public OldActiveSetStopPacket(String name, int requestID, int primarySender, int activeReceiver, int version, PacketType type1) {
 		this.name = name;
     this.requestID = requestID;
-		//this.recordKey = recordKey;
 		this.type = type1;
 		this.primarySender = primarySender;
 		this.activeReceiver = activeReceiver;

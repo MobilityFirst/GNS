@@ -23,6 +23,7 @@ import java.util.Set;
 /**
  * 
  * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
+ * @author abhigyan
  */
 public class NameRecord implements Comparable<NameRecord> {
 
@@ -425,25 +426,21 @@ public class NameRecord implements Comparable<NameRecord> {
 
     ValuesMap valuesMap = getValuesMap();
 
-      ArrayList<ColumnField> updateFields = getCurrentActiveStopFields();
+    ArrayList<ColumnField> updateFields = getCurrentActiveStopFields();
 
+    ArrayList<Object> updateValues = new ArrayList<Object>();
+    updateValues.add(getActiveVersion());
+    updateValues.add(NULL_VALUE_ACTIVE_VERSION);
+    updateValues.add(valuesMap);
+    updateValues.add(new ValuesMap());
 
-      ArrayList<Object> updateValues = new ArrayList<Object>();
-      updateValues.add(getActiveVersion());
-      updateValues.add(NULL_VALUE_ACTIVE_VERSION);
-//      updateValues.add(new HashSet<Integer>());
-      updateValues.add(valuesMap);
-      updateValues.add(new ValuesMap());
-
-      recordMap.updateConditional(getName(), NAME, ACTIVE_VERSION, getActiveVersion(), updateFields, updateValues,
-              null,null,null);
-      // todo this is a conditional update: it may not be applied. therefore, fields below may not be valid.
-      hashMap.put(OLD_ACTIVE_VERSION, getActiveVersion());
-      hashMap.put(ACTIVE_VERSION, NULL_VALUE_ACTIVE_VERSION);
-//      hashMap.put(ACTIVE_NAMESERVERS, new HashSet<Integer>());
-      hashMap.put(OLD_VALUES_MAP, valuesMap);
-      hashMap.put(VALUES_MAP, new ValuesMap());
-//    }
+    recordMap.updateConditional(getName(), NAME, ACTIVE_VERSION, getActiveVersion(), updateFields, updateValues,
+            null,null,null);
+    // todo this is a conditional update: it may not be applied. therefore, fields below may not be valid.
+    hashMap.put(OLD_ACTIVE_VERSION, getActiveVersion());
+    hashMap.put(ACTIVE_VERSION, NULL_VALUE_ACTIVE_VERSION);
+    hashMap.put(OLD_VALUES_MAP, valuesMap);
+    hashMap.put(VALUES_MAP, new ValuesMap());
   }
 
 
