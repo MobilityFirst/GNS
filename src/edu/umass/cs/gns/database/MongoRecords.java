@@ -106,9 +106,9 @@ public class MongoRecords implements NoSQLRecords {
 
   private void initializeIndex(String collectionName) {
     MongoCollectionSpec spec = MongoCollectionSpec.getCollectionSpec(collectionName);
-    db.getCollection(spec.getName()).ensureIndex(spec.getPrimaryIndex(), new BasicDBObject("unique", true));
+    db.getCollection(spec.getName()).createIndex(spec.getPrimaryIndex(), new BasicDBObject("unique", true));
     for (BasicDBObject index : spec.getOtherIndexes()) {
-      db.getCollection(spec.getName()).ensureIndex(index);
+      db.getCollection(spec.getName()).createIndex(index);
     }
     GNS.getLogger().info("Indexes initialized");
   }

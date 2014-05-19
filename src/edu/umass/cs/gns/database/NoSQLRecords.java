@@ -12,7 +12,6 @@ import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  * Provides an interface for insert, update, remove and lookup operations in a nosql database.
@@ -35,6 +34,7 @@ public interface NoSQLRecords {
    * @param name
    * @param value
    * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
   public void insert(String collection, String name, JSONObject value) throws FailedUpdateException, RecordExistsException;
 
@@ -44,6 +44,7 @@ public interface NoSQLRecords {
    * @param collection collection to be inserted into.
    * @param values list of records to be inserted
    * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
   public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException, RecordExistsException;
 
@@ -120,6 +121,7 @@ public interface NoSQLRecords {
   /**
    * For the record with given name, return the values of given fields in form of a HashMap.
    *
+   * @param collection
    * @param name
    * @param nameField
    * @param fields
