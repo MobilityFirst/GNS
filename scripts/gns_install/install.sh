@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #All the installations will happen in home directory
 
 cd $HOME
@@ -11,7 +10,7 @@ wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-
 if [ $? -eq 0 ]
 then
   echo "jdk is sucessfully downloaded"
-  tar -xvf jdk*
+  tar -xvf jdk-7u55*
 else
   echo "jdk unsuccessfully downloaded"
   status=1
@@ -29,9 +28,9 @@ else
   status=1
 fi
 
-if [ status -eq 0 ]
+if [ $status -eq 0 ]
 then
- export PATH=$PATH:$HOME/jdk1.7.0_55/bin/:$HOME/mongodb-linux-i686-2.6.1/bin
+ set PATH=$PATH:$HOME/jdk1.7.0_55/bin/:$HOME/mongodb-linux-i686-2.6.1/bin
  exit 0
 else
  echo "Error in Script Execution"
