@@ -152,6 +152,10 @@ public class StartLocalNameServer {
    */
   public static double serverLoadThreshold = 5.0; //
 
+  // nio parameters
+  /**
+   * Use the new nio implementation: nio/GNSNIOTransport.java
+   */
   public static boolean useGNSNIOTransport = true;
 
   /**
