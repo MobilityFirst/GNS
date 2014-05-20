@@ -211,12 +211,8 @@ public class DNSRequestTask extends TimerTask {
   }
 
   private int selectNS(CacheEntry cacheEntry) {
-    int ns = -1;
-    // PUNT ON THIS FOR NOW
-    if (handler.getParameters().isLoadDependentRedirection()) {
-      GNS.getLogger().severe("!!!!LoadDependentRedirection is not supported yet!!! Expect errors :-)");
-//      ns = handler.selectBestUsingLatencyPlusLoad(nameserversQueried);
-    } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
+    int ns;
+    if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
       ns = RandomReplication.getBeehiveNameServer(handler.getGnsNodeConfig(), cacheEntry.getActiveNameServers(),
               nameserversQueried);
     } else {

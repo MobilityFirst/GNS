@@ -125,12 +125,6 @@ public class PaxosManager extends AbstractPaxosManager {
 	 * handleIncomingPacket() -> getInstance(paxosID) ->? unpause(paxosID) ->? createPaxosInstance(info)
 	 */
 
-	// FIXME: Need to change AbstractPaxosManager
-	public boolean createPaxosInstance(String paxosID, int version, Set<Integer> gms, Replicable app) {
-		assert(false) : "Version must be of type short, not int";
-		System.exit(1);
-		return false;
-	}
 	public boolean createPaxosInstance(String paxosID, short version, Set<Integer> gms, Replicable app) {
 		return this.createPaxosInstance(paxosID, version, this.myID, gms, app, null, true);
 	}
