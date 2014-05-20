@@ -51,10 +51,9 @@ def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_
     name_prefix = None       # if name-prefix is not None, append given prefix to all names.
     """
 
-    # include add requests here.
-    os.system('mkdir -p ' + trace_folder)
-    # if not append_to_file:
-    #     os.system('rm ' + trace_folder + '/*')
+    lookup_trace_folder = os.path.join(trace_folder, 'lookupTrace')
+    update_trace_folder = os.path.join(trace_folder, 'updateTrace')
+    other_data_folder = os.path.joAccenture Technology Labsin(trace_folder, 'otherData')
 
     # tmp folder to write lookups and updates, which we will include in trace_folder now
     tmp_trace_folder = '/tmp/trace/'
@@ -283,3 +282,11 @@ def haversine(lat1, lon1, lat2, lon2):
 
 if __name__ == "__main__":
     main()
+
+
+'''
+cqlsh> create keyspace icepice with replication = { 'class' : 'SimpleStrategy' , 'replication_factor' : 2 } ;
+cqlsh> use icepice ;
+cqlsh:icepice> create table info ( nos int primary key );
+cqlsh:icepice> insert into info (nos) values (1) ;
+'''

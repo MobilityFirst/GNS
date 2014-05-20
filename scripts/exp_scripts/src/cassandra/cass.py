@@ -16,9 +16,9 @@ col_fam = ColumnFamily(pool, 'info')
 #Sample Insert operations 
 #col_fam.insert('row_key',{'col_name' : 'value' })
 
-'''Sample Get operations . 
+'''Sample Get operations. 
 Need to wrap the get operations in exception block for safe failing from
-'key not found error' .
+'key not found error'.
 '''
 try:
   for i in range(0,1000):
