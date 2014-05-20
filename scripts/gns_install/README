@@ -4,3 +4,19 @@ The installation scripts works like this
 pscp -h host.txt -l <username> <filename> <gns.jar>  <path in that host>
 pssh -h host.txt -l <username> "sh <absolute filename to be executed>"
 
+
+For Example:
+-------------
+pscp -h host.txt -l umass_nameservice cassandra_inctimeout_config.jar /home/umass_nameservice/rahul/
+
+pssh -h host.txt -l umass_nameservice "java -jar /home/umass_nameservice/rahul/cassandra_inctimeout_config.jar"
+
+
+Note
+-----
+1. pscp/ssh can fail if the keys are not added in the ssh path. To add the desired keys in your path.
+
+$ ssh-add <filename> 
+
+
+
