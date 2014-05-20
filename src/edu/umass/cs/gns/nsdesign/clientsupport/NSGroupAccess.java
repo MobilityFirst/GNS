@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.InternalField;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
@@ -11,10 +12,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 
-//import edu.umass.cs.gns.packet.QueryResultValue;
-/**
- * * DO NOT not use any class in package edu.umass.cs.gns.nsdesign **
- */
 /**
  * GroupAccess provides an interface to the group information in the GNS.
  *
@@ -44,11 +41,11 @@ public class NSGroupAccess {
    * @param guid
    * @return
    */
-  public static ResultValue lookupGroups(String guid, GnsReconfigurable activeReplica) {
+  public static ResultValue lookupGroups(String guid, GnsReconfigurableInterface activeReplica) {
     return NSFieldAccess.lookupField(guid, GroupAccess.GROUPS, true, activeReplica);
   }
   
-  public static NSResponseCode removeFromGroup(String guid, String memberGuid, GnsReconfigurable activeReplica) {
+  public static NSResponseCode removeFromGroup(String guid, String memberGuid, GnsReconfigurableInterface activeReplica) {
     NSResponseCode groupResponse =  LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(Arrays.asList(memberGuid)),
             UpdateOperation.REMOVE, activeReplica);
     // We could roll back the above operation if the one below gets an error, but we don't
@@ -65,7 +62,7 @@ public class NSGroupAccess {
    * 
    * @param guid 
    */
-  public static void cleanupGroupsForDelete(String guid, GnsReconfigurable activeReplica) {
+  public static void cleanupGroupsForDelete(String guid, GnsReconfigurableInterface activeReplica) {
     // just so you know all the nulls mean we're ignoring signatures and authentication
     for (String groupGuid : lookupGroups(guid, activeReplica).toStringSet()) {
       removeFromGroup(groupGuid, guid, activeReplica);

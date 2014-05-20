@@ -12,6 +12,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
 
@@ -31,7 +32,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ResultValue
    */
-  public static ResultValue lookupFieldOnThisServer(String guid, String field, GnsReconfigurable activeReplica) {
+  public static ResultValue lookupFieldOnThisServer(String guid, String field, GnsReconfigurableInterface activeReplica) {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, field);
@@ -56,7 +57,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return a string representing the first value in field
    */
-  public static String lookupSingletonFieldOnThisServer(String recordName, String key, GnsReconfigurable activeReplica) {
+  public static String lookupSingletonFieldOnThisServer(String recordName, String key, GnsReconfigurableInterface activeReplica) {
     ResultValue guidResult = lookupFieldOnThisServer(recordName, key, activeReplica);
     if (guidResult != null && !guidResult.isEmpty()) {
       return (String) guidResult.get(0);
@@ -65,7 +66,7 @@ public class NSFieldAccess {
     }
   }
 
-  private static ResultValue lookupFieldQueryLNS(String guid, String field, GnsReconfigurable activeReplica) {
+  private static ResultValue lookupFieldQueryLNS(String guid, String field, GnsReconfigurableInterface activeReplica) {
     QueryResult queryResult = LNSQueryHandler.sendQuery(guid, field, activeReplica);
     if (!queryResult.isError()) {
       return queryResult.get(field);
@@ -86,7 +87,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    */
-  public static ResultValue lookupField(String guid, String field, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+  public static ResultValue lookupField(String guid, String field, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) {
     ResultValue result = lookupFieldOnThisServer(guid, field, activeReplica);
     // and if we're allowed, send a query to the LNS
     if (result.isEmpty() && allowQueryToOtherNSs) {

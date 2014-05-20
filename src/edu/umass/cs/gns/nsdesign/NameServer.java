@@ -9,7 +9,9 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.DefaultRcCoordinator;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerCoordinatorPaxos;
@@ -48,7 +50,7 @@ public class NameServer{
  
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
   
-  private GnsReconfigurable gnsReconfigurable;
+  private GnsReconfigurableInterface gnsReconfigurable;
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -132,8 +134,11 @@ public class NameServer{
     MongoRecords mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
 
     // initialize GNS
-    gnsReconfigurable = new GnsReconfigurable(nodeID, configParameters, gnsNodeConfig, tcpTransport,
-            threadPoolExecutor, mongoRecords);
+    if (Config.dummyGNS) {
+      gnsReconfigurable = new DummyGnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport);
+    } else { // real GNS
+      gnsReconfigurable = new GnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
+    }
     GNS.getLogger().info("GNS initialized. ");
     // initialize active replica with the app
     activeReplica  = new ActiveReplica(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
@@ -183,7 +188,7 @@ public class NameServer{
     return executorService;
   }
 
-  public GnsReconfigurable getGnsReconfigurable() {
+  public GnsReconfigurableInterface getGnsReconfigurable() {
     return gnsReconfigurable;
   }
   

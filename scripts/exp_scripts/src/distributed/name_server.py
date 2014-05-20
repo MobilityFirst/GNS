@@ -37,6 +37,7 @@ EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
 SINGLE_NS = '-singleNS'
 USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
+DUMMY_GNS = '-dummyGNS'
 
 READ_COORDINATION = '-readCoordination'
 EVENTUAL_CONSISTENCY = '-eventualConsistency'
@@ -220,6 +221,8 @@ def run_name_server(node_id, config_file, node_config_file):
         command += ' ' + NO_PAXOS_LOG
     if exp_config.use_gns_nio_transport:
         command += ' ' + USE_GNS_NIO_TRANSPORT
+    if exp_config.dummy_gns:
+        command += ' ' + DUMMY_GNS
 
     command += ' ' + WORKER_THREAD_COUNT + ' ' + str(worker_thread_count)
 

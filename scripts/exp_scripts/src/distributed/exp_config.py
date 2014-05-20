@@ -130,7 +130,9 @@ emulate_ping_latencies = False
 # variation in latency emulation
 variation = 0.50
 
-use_gns_nio_transport = True
+use_gns_nio_transport = False
+
+dummy_gns = True
 
 event_file = None  # file with list of events at nodes, e.g., failure, restart, node addition, node removal
 

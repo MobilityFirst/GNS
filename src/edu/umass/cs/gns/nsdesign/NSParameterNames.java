@@ -120,6 +120,8 @@ public class NSParameterNames {
   // Test-related parameters
   public static final String SINGLE_NS = "singleNS";
 
+  public static final String DUMMY_GNS = "dummyGNS";
+
   public static final String READ_COORDINATION = "readCoordination";
 
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
@@ -267,6 +269,7 @@ public class NSParameterNames {
     Option variation = new Option(VARIATION, true, "variation");
     Option noPaxosLog = new Option(NO_PAXOS_LOG, false, "noPaxosLog");
     Option useGNSNIOTransport = new Option(USE_GNS_NIO_TRANSPORT, false, "to use GNSNIOTransport or to use NioServer");
+    Option dummyGNS = new Option(DUMMY_GNS, false, "use a dummy GNS app");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -329,6 +332,7 @@ public class NSParameterNames {
     commandLineOptions.addOption(readCoordination);
     commandLineOptions.addOption(noPaxosLog);
     commandLineOptions.addOption(useGNSNIOTransport);
+    commandLineOptions.addOption(dummyGNS);
     return commandLineOptions;
   }
 }

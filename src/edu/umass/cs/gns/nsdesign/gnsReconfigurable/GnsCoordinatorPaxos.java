@@ -48,7 +48,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
     if (Config.useMultiPaxos) {
-      assert false: "Not working yet";
+      assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
       this.paxosManager = new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID, nodeConfig,
       (GNSNIOTransport) nioServer, paxosInterface, paxosConfig);
     } else {

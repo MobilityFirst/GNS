@@ -7,14 +7,15 @@
  */
 package edu.umass.cs.gns.nsdesign.commands.account;
 
-import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.commands.NSCommand;
 import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 
 /**
  *
@@ -37,7 +38,7 @@ public class LookupGuidRecord extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurable activeReplica) throws JSONException {
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws JSONException {
     String guid = json.getString(GUID);
     GuidInfo guidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {

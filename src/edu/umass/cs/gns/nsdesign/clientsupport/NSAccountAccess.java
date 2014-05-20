@@ -10,6 +10,7 @@ import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.SHA1HashFunction;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -37,7 +38,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurable activeReplica) {
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurableInterface activeReplica) {
     return lookupAccountInfoFromGuid(guid, false, activeReplica);
   }
 
@@ -51,7 +52,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) {
     ResultValue accountResult = NSFieldAccess.lookupField(guid, AccountAccess.ACCOUNT_INFO, allowQueryToOtherNSs, activeReplica);
     if (!accountResult.isEmpty()) {
       try {
@@ -99,7 +100,7 @@ public class NSAccountAccess {
    * @param guid
    * @return a GUID
    */
-  public static String lookupPrimaryGuid(String guid, GnsReconfigurable activeReplica) {
+  public static String lookupPrimaryGuid(String guid, GnsReconfigurableInterface activeReplica) {
     return NSFieldAccess.lookupSingletonFieldOnThisServer(guid, AccountAccess.PRIMARY_GUID, activeReplica);
   }
 
@@ -112,7 +113,7 @@ public class NSAccountAccess {
    * @param name
    * @return a GUID
    */
-  public static String lookupGuid(String name, GnsReconfigurable activeReplica) {
+  public static String lookupGuid(String name, GnsReconfigurableInterface activeReplica) {
     return NSFieldAccess.lookupSingletonFieldOnThisServer(name, AccountAccess.HRN_GUID, activeReplica);
   }
 
@@ -125,7 +126,7 @@ public class NSAccountAccess {
    * @param guid
    * @return an {@link edu.umass.cs.gns.clientsupport.GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurable activeReplica) {
+  public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurableInterface activeReplica) {
     return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica);
   }
 
@@ -138,7 +139,7 @@ public class NSAccountAccess {
    * @param allowQueryToOtherNSs
    * @return
    */
-  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) {
     ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
     if (!guidResult.isEmpty()) {
       try {
@@ -160,7 +161,7 @@ public class NSAccountAccess {
    * @param name
    * @return an {@link edu.umass.cs.gns.clientsupport.AccountInfo} instance
    */
-  public static AccountInfo lookupAccountInfoFromName(String name, GnsReconfigurable activeReplica) {
+  public static AccountInfo lookupAccountInfoFromName(String name, GnsReconfigurableInterface activeReplica) {
     String guid = lookupGuid(name, activeReplica);
     if (guid != null) {
       return lookupAccountInfoFromGuid(guid, activeReplica);
@@ -194,7 +195,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return 
    */
-  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password, GnsReconfigurable activeReplica) {
+  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password, GnsReconfigurableInterface activeReplica) {
     String response;
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication, activeReplica)).equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
@@ -247,7 +248,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return 
    */
-  public static String verifyAccount(String guid, String code, GnsReconfigurable activeReplica) {
+  public static String verifyAccount(String guid, String code, GnsReconfigurableInterface activeReplica) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, activeReplica)) == null) {
       return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to read account info";
@@ -292,7 +293,7 @@ public class NSAccountAccess {
    * @param password
    * @return status result
    */
-  public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify, GnsReconfigurable activeReplica) {
+  public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify, GnsReconfigurableInterface activeReplica) {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
@@ -328,7 +329,7 @@ public class NSAccountAccess {
    * @param accountInfo
    * @return status result
    */
-  public static String removeAccount(AccountInfo accountInfo, GnsReconfigurable activeReplica) {
+  public static String removeAccount(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) {
     // First remove any group links
     NSGroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), activeReplica);
     // Then remove the HRN link
@@ -367,7 +368,7 @@ public class NSAccountAccess {
    * @param publicKey - the public key to use with the new account
    * @return status result
    */
-  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey, GnsReconfigurable activeReplica) {
+  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey, GnsReconfigurableInterface activeReplica) {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid, activeReplica) != null) {
@@ -417,7 +418,7 @@ public class NSAccountAccess {
    * @param guid
    * @return status result
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, GnsReconfigurable activeReplica) {
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) {
     return removeGuid(guid, accountInfo, false, activeReplica);
   }
 
@@ -432,7 +433,7 @@ public class NSAccountAccess {
    * @param ignoreAccountGuid
    * @return
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid, GnsReconfigurable activeReplica) {
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid, GnsReconfigurableInterface activeReplica) {
     // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuid(guid.getGuid(), activeReplica) != null) {
@@ -485,7 +486,7 @@ public class NSAccountAccess {
    * @param alias
    * @return status result
    */
-  public static String addAlias(AccountInfo accountInfo, String alias, GnsReconfigurable activeReplica) {
+  public static String addAlias(AccountInfo accountInfo, String alias, GnsReconfigurableInterface activeReplica) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
 
@@ -511,7 +512,7 @@ public class NSAccountAccess {
    * @param alias
    * @return status result
    */
-  public static String removeAlias(AccountInfo accountInfo, String alias, GnsReconfigurable activeReplica) {
+  public static String removeAlias(AccountInfo accountInfo, String alias, GnsReconfigurableInterface activeReplica) {
 
     if (accountInfo.containsAlias(alias)) {
       // remove the NAME -> GUID record
@@ -535,7 +536,7 @@ public class NSAccountAccess {
    * @param password
    * @return status result
    */
-  public static String setPassword(AccountInfo accountInfo, String password, GnsReconfigurable activeReplica) {
+  public static String setPassword(AccountInfo accountInfo, String password, GnsReconfigurableInterface activeReplica) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo, activeReplica)) {
@@ -577,7 +578,7 @@ public class NSAccountAccess {
     return BADRESPONSE + " " + UPDATEERROR;
   }
 
-  private static boolean updateAccountInfo(AccountInfo accountInfo, GnsReconfigurable activeReplica) {
+  private static boolean updateAccountInfo(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) {
     try {
       if (!LNSUpdateHandler.sendUpdate(accountInfo.getPrimaryGuid(), AccountAccess.ACCOUNT_INFO,
               accountInfo.toDBFormat(), UpdateOperation.REPLACE_ALL, activeReplica).isAnError()) {

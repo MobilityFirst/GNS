@@ -10,8 +10,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.Reconfigurable;
-import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
@@ -29,8 +27,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Implements GNS module which stores the name records for all names that are replicated at this name server.
@@ -39,7 +35,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  *
  * Created by abhigyan on 2/26/14.
  */
-public class GnsReconfigurable implements Replicable, Reconfigurable {
+public class GnsReconfigurable implements GnsReconfigurableInterface {
 
   /**
    * ID of this node
@@ -51,10 +47,6 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
    */
   private GNSNIOTransportInterface nioServer;
 
-  /**
-   * executor service for handling tasks
-   */
-  private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
   /**
    * Object provides interface to the database table storing name records
@@ -68,12 +60,9 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
 
   private PingManager pingManager;
 
-  /**
-   * constructor object
-   */
-  public GnsReconfigurable(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-          GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
-          MongoRecords mongoRecords) {
+  /*** Constructor object */
+  public GnsReconfigurable(int nodeID, GNSNodeConfig gnsNodeConfig, GNSNIOTransportInterface nioServer,
+                           MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
     this.gnsNodeConfig = gnsNodeConfig;
@@ -86,24 +75,25 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
       this.pingManager = new PingManager(nodeID, gnsNodeConfig);
       this.pingManager.startPinging();
     }
-
-    this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
-
     this.nameRecordDB = new MongoRecordMap(mongoRecords, MongoRecords.DBNAMERECORD);
   }
 
+  @Override
   public int getNodeID() {
     return nodeID;
   }
 
+  @Override
   public BasicRecordMap getDB() {
     return nameRecordDB;
   }
 
+  @Override
   public GNSNodeConfig getGNSNodeConfig() {
     return gnsNodeConfig;
   }
 
+  @Override
   public GNSNIOTransportInterface getNioServer() {
     return nioServer;
   }
@@ -308,7 +298,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   //  @Override
 
   /**
-   * Used by deleteFinalState method
+   * Used by deleteFinalState method (so not deleting this method.
    * @param name
    * @return
    */
@@ -373,6 +363,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
   /**
    * Nuclear option for clearing out all state at GNS.
    */
+  @Override
   public void reset() {
     nameRecordDB.reset();
   }
@@ -384,6 +375,7 @@ public class GnsReconfigurable implements Replicable, Reconfigurable {
     readVersions.add(NameRecord.OLD_ACTIVE_VERSION);
   }
 
+  @Override
   public PingManager getPingManager() {
     return pingManager;
   }

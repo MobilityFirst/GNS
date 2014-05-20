@@ -3,7 +3,11 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
+import edu.umass.cs.gns.util.NameRecordKey;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -37,32 +41,36 @@ public class CopyStateFromOldActiveTask extends TimerTask {
     this.packet.changeSendingActive(activeReplica.getNodeID());
   }
 
-//  private static void makeFakeResponse(NewActiveSetStartupPacket packet) {
-//    packet.changePreviousValueCorrect(true);
-//    ValuesMap valuesMap = new ValuesMap();
-//    ResultValue rv = new ResultValue();
-//    rv.add("pqrst");
-//    valuesMap.put(NameRecordKey.EdgeRecord.getName(), rv);
-//    packet.changePacketTypeToPreviousValueResponse();
-//    packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
-//
-//  }
-//
-//  public void run() {
-//    makeFakeResponse(packet);
-//    try {
-//      activeReplica.getNioServer().sendToID(activeReplica.getNodeID(), packet.toJSONObject());
-//      throw new CancelExecutorTaskException();
-//    } catch (IOException e) {
-//      e.printStackTrace();
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//    } catch (CancelExecutorTaskException e) {
-//      throw new RuntimeException();
-//    }
-//  }
+  private static void makeFakeResponse(NewActiveSetStartupPacket packet) {
+    packet.changePreviousValueCorrect(true);
+    ValuesMap valuesMap = new ValuesMap();
+    ResultValue rv = new ResultValue();
+    rv.add("pqrst");
+    valuesMap.put(NameRecordKey.EdgeRecord.getName(), rv);
+    packet.changePacketTypeToPreviousValueResponse();
+    packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
+
+  }
+
+  public void run_alt() {
+    makeFakeResponse(packet);
+    try {
+      activeReplica.getNioServer().sendToID(activeReplica.getNodeID(), packet.toJSONObject());
+      throw new CancelExecutorTaskException();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (CancelExecutorTaskException e) {
+      throw new RuntimeException();
+    }
+  }
 
   public void run() {
+    if (Config.dummyGNS) {
+      run_alt();
+      return;
+    }
     try {
 
       if (Config.debugMode) GNS.getLogger().info(" NEW_ACTIVE_START_FORWARD received packet: " + packet.toJSONObject());

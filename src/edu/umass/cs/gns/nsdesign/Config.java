@@ -56,6 +56,7 @@ public class Config {
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
   public static boolean noPaxosLog = false;
+  public static boolean dummyGNS = false;
   public static boolean singleNS = false;
   public static boolean readCoordination = false;
   public static boolean eventualConsistency = false;
@@ -149,6 +150,10 @@ public class Config {
     }
     if (allValues.containsKey(NSParameterNames.USE_GNS_NIO_TRANSPORT)) {
       useGNSNIOTransport = Boolean.parseBoolean(allValues.get(NSParameterNames.USE_GNS_NIO_TRANSPORT));
+    }
+
+    if (allValues.containsKey(NSParameterNames.DUMMY_GNS)) {
+      dummyGNS = Boolean.parseBoolean(allValues.get(NSParameterNames.DUMMY_GNS));
     }
 
   }

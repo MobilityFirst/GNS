@@ -8,11 +8,11 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,7 +45,7 @@ public class LNSQueryHandler {
    * @param activeReplica
    * @return the entire guid record in a QueryResult.
    */
-  public static QueryResult sendQuery(String name, String key, GnsReconfigurable activeReplica) {
+  public static QueryResult sendQuery(String name, String key, GnsReconfigurableInterface activeReplica) {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
@@ -63,7 +63,7 @@ public class LNSQueryHandler {
     return result;
   }
 
-  private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurable activeReplica) {
+  private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurableInterface activeReplica) {
     DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, new NameRecordKey(key), null, null, null);
     JSONObject json;
     try {
@@ -141,7 +141,7 @@ public class LNSQueryHandler {
     return id;
   }
   
-   public static int pickClosestLNServer(GnsReconfigurable activeReplica) {
+   public static int pickClosestLNServer(GnsReconfigurableInterface activeReplica) {
     int result = activeReplica.getGNSNodeConfig().getClosestLocalNameServer();
     if (result != GNSNodeConfig.INVALID_NAME_SERVER_ID) {
       return result;

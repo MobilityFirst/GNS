@@ -6,7 +6,7 @@ import edu.umass.cs.gns.database.BasicRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
@@ -39,7 +39,7 @@ public class NSListenerAdmin extends Thread {
    */
   private ServerSocket serverSocket;
 
-  private GnsReconfigurable gnsReconfigurable;
+  private GnsReconfigurableInterface gnsReconfigurable;
 
   private ActiveReplicaCoordinator appCoordinator;
 
@@ -54,7 +54,7 @@ public class NSListenerAdmin extends Thread {
    *
    * @throws IOException
    */
-  public NSListenerAdmin(GnsReconfigurable gnsReconfigurable, ActiveReplicaCoordinator appCoordinator,
+  public NSListenerAdmin(GnsReconfigurableInterface gnsReconfigurable, ActiveReplicaCoordinator appCoordinator,
           ReplicaController replicaController, ReplicaControllerCoordinator rcCooordinator,
           GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");

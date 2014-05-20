@@ -5,13 +5,14 @@
  */
 package edu.umass.cs.gns.nsdesign.commands;
 
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -53,7 +54,7 @@ public abstract class NSCommand implements Comparable<NSCommand> {
 
   public abstract String getCommandName();
 
-  public abstract String execute(JSONObject json, GnsReconfigurable activeReplica) throws InvalidKeyException, InvalidKeySpecException,
+  public abstract String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException;
 
   /**

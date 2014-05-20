@@ -724,7 +724,7 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         lns_ids_int = range(self.ns, self.ns + self.lns)
         lns_ids = [str(lns_id) for lns_id in lns_ids_int]
 
-        num_names = 10000
+        num_names = 1000
         prefix = 'test_name'
         # create new trace
         create_empty_trace_files(lns_ids, self.trace_folder)
@@ -746,10 +746,10 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         delay = 20000
         append_request_to_all_files([delay, RequestType.DELAY], lns_ids, self.trace_folder)
         total_time += delay / 1000
-        read_write_req_rate = 200
+        read_write_req_rate = 150
 
-        reads_per_epoch_per_name = 80
-        writes_per_epoch_per_name = 40
+        reads_per_epoch_per_name = 800
+        writes_per_epoch_per_name = 400
         total_lookups = 0
         total_updates = 0
         num_geo_locality_changes = 1
