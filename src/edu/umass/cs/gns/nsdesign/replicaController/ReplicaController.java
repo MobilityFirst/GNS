@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
@@ -59,6 +60,9 @@ public class ReplicaController implements Replicable {
   private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap();
 
   private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
+
+
+  private final ConcurrentHashMap<Integer, Double> nsRequestRates = new ConcurrentHashMap<>();
 
   /** Algorithm for replicating name records.*/
   private ReplicationFrameworkInterface replicationFrameworkInterface;
@@ -268,6 +272,8 @@ public class ReplicaController implements Replicable {
           case NAME_RECORD_STATS_RESPONSE:
             // todo this packets related to stats reporting are not implemented yet.
             throw new UnsupportedOperationException();
+          case NAME_SERVER_LOAD:
+            updateNSLoad(json);
           default:
             break;
         }
@@ -282,6 +288,18 @@ public class ReplicaController implements Replicable {
       e.printStackTrace();
     }
     return true;
+  }
+
+  private void updateNSLoad(JSONObject json) throws JSONException {
+    NameServerLoadPacket nsLoad  = new NameServerLoadPacket(json);
+    if (Config.debugMode) GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
+            "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID()) +
+            "\tNewNoad: " + nsLoad.getLoadValue() + "\t");
+    nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
+  }
+
+  public ConcurrentHashMap<Integer, Double> getNsRequestRates() {
+    return nsRequestRates;
   }
 
   /**

@@ -660,11 +660,10 @@ public class ReplicaControllerRecord {
   }
 
   /**
-   * Returns the total number of lookup request across all active name servers
-   *
-   * @return
+   * Returns a 2-element array whose first (second) element is total number of lookups (updates)
+   * in recent time window.
    */
-  public double[] recomputeAverageReadWriteRate() throws FieldNotFoundException, FailedUpdateException {
+  public double[] updateMovingWindowReadsWrites() throws FieldNotFoundException, FailedUpdateException {
     int previousTotalReads = getPreviousAggregateReadFrequency();
     int previousTotalWrites = getPreviousAggregateWriteFrequency();
     MovingAverage lookups = new MovingAverage(getMovingAvgAggregateLookupFrequency(), Config.movingAverageWindowSize);
@@ -673,9 +672,9 @@ public class ReplicaControllerRecord {
     lookups.add(previousTotalReads);
     updates.add(previousTotalWrites);
 
-    double[] readWriteRate = new double[2];
-    readWriteRate[0] = lookups.getAverage();
-    readWriteRate[1] = updates.getAverage();
+    double[] readWriteCounts = new double[2];
+    readWriteCounts[0] = lookups.getSum();
+    readWriteCounts[1] = updates.getSum();
 
     ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
     updateFields.add(PREV_TOTAL_READ);
@@ -695,7 +694,7 @@ public class ReplicaControllerRecord {
     hashMap.put(PREV_TOTAL_WRITE, 0);
     hashMap.put(MOV_AVG_READ, lookups.toArrayList());
     hashMap.put(MOV_AVG_WRITE, updates.toArrayList());
-    return readWriteRate;
+    return readWriteCounts;
 
   }
 
@@ -933,7 +932,7 @@ public class ReplicaControllerRecord {
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
     System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
     record.addNameServerStats(10, 50, 75);
-    System.out.println("READ STATS: " + record.recomputeAverageReadWriteRate());
+    System.out.println("READ STATS: " + record.updateMovingWindowReadsWrites());
 
     record.addReplicaSelectionVote(11, 5, 0);
     record.addReplicaSelectionVote(11, 1, 0);

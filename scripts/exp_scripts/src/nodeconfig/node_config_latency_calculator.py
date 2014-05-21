@@ -90,7 +90,7 @@ def get_node_ids_geo_map(node_config_file, ns_geo_file, lns_geo_file):
 
 
 def get_lat_long(line):
-    return [float(line.split()[0]), float(line.split()[1])]
+    return [float(line.split()[1]), float(line.split()[2])]
 
 
 def haversine(lat1, lon1, lat2, lon2):

@@ -1792,7 +1792,7 @@ class ProposalStateAtCoordinator implements Comparable, Serializable{
     this.paxosReplica = paxosReplica;
     this.pValuePacket = pValuePacket;
     this.nodes = new ConcurrentHashMap<Integer, Integer>();
-    acceptSentTime = System.currentTimeMillis();
+    this.acceptSentTime = System.currentTimeMillis();
     this.numReplicas = numReplicas;
   }
 

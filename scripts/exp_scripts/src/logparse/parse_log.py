@@ -218,7 +218,7 @@ def get_all_files(mydir):
             #                if xml_file.startswith(log_file_name) and not xml_file.endswith('.lck'):
             #                    cur_host_files.append(mydir + '/' + f + '/' + xml_file)
             host_files[hostname] = cur_host_files
-            print 'Host files are: ', cur_host_files, hostname
+            # print 'Host files are: ', cur_host_files, hostname
     return host_files
 
 
@@ -277,18 +277,20 @@ def get_all_latencies(host_files, filter):
 
         read_l1, write_l1, add_l1, remove_l1, group_change_l1, host_tuples1, ping_host1, closest_host1 = \
             get_host_latencies(files, hostname, filter)
-        fail_perc = 0
-        if host_failed + host_success > 0:
-            fail_perc = (host_failed * 1.0 / (host_failed + host_success))
-        if fail_perc > 0.40:
-            read_latencies[hostname] = []
-            write_latencies[hostname] = []
-            add_latencies[hostname] = []
-            remove_latencies[hostname] = []
-            group_change_latencies[hostname] = []
-            latencies[hostname] = []
-            print 'EXCLUDING HOST: ', hostname
-            continue
+        ## useful in PL exps to filter out bad LNSs
+        # fail_perc = 0
+        # if host_failed + host_success > 0:
+        #     fail_perc = (host_failed * 1.0 / (host_failed + host_success))
+        #
+        # if fail_perc > 0.40:
+        #     read_latencies[hostname] = []
+        #     write_latencies[hostname] = []
+        #     add_latencies[hostname] = []
+        #     remove_latencies[hostname] = []
+        #     group_change_latencies[hostname] = []
+        #     latencies[hostname] = []
+        #     print 'EXCLUDING HOST: ', hostname
+        #     continue
         read_latencies[hostname] = read_l1
         write_latencies[hostname] = write_l1
         add_latencies[hostname] = add_l1
@@ -330,11 +332,11 @@ def get_host_latencies(filenames, hostname, filter):
     ping_host1 = []
     closest_host1 = []
     for filename in filenames:
-        print filename
-        print filename[-2:]
+        print 'Processing file:', filename
+        # print filename[-2:]
         if filename[-2:] == 'gz':
             #print 'gzipping ..'
-            os.system('gzip -d ' + filename)  #newchange
+            os.system('gzip -d ' + filename)  # newchange
     for i, filename in enumerate(filenames):
         if filename[-2:] == 'gz':
             filename = filename[:-3]  # remove .gz prefix #newchange

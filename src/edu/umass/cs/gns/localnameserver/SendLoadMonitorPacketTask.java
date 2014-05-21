@@ -28,7 +28,7 @@ public class SendLoadMonitorPacketTask extends TimerTask {
     } catch (JSONException e) {
       e.printStackTrace();
     }
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("LoadMonitorPacketSent. NameServer:" + nsLoad.getNsID() +
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("LoadMonitorPacketSent. NameServer:" + nsLoad.getReportingNodeID() +
             " Load:" + nsLoad.getLoadValue());
   }
 

@@ -19,6 +19,9 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
 	Application app=null;
 	ActiveReplica activeReplica = null;
 
+  /*** Total number of requests handled by this node */
+  private int requestCount = 0;
+
 	public ActiveReplicaApp(Application app, ActiveReplica activeReplica) {
 		this.app = app;
     this.activeReplica = activeReplica;
@@ -31,6 +34,7 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
 
 	@Override
 	public boolean handleDecision(String name, String value, boolean recovery) {
+    if (!recovery) incrementRequestCount();
     boolean executed = false;
     try {
       JSONObject json = new JSONObject(value);
@@ -64,7 +68,9 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
 		return executed;
 	}
 
-	@Override
+
+
+  @Override
 	public boolean stopVersion(String name, short version) {
 		assertReconfigurable();
 		return ((Reconfigurable)(this.app)).stopVersion(name, version);
@@ -96,5 +102,14 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
   @Override
   public boolean updateState(String name, String state) {
     return ((Replicable)app).updateState(name, state);
+  }
+
+
+  private synchronized void incrementRequestCount() {
+    requestCount++;
+  }
+
+  public synchronized int getRequestCount() {
+    return requestCount;
   }
 }

@@ -6,43 +6,43 @@ import org.json.JSONObject;
 
 public class NameServerLoadPacket extends BasicPacket {
 
-  private int nsID;
-  private int lnsID;
+  private int reportingNodeID;
+  private int requestingNodeID;
   private double loadValue;
 
-  public NameServerLoadPacket(int nsID, int lnsID, double loadValue) {
+  public NameServerLoadPacket(int reportingNodeID, int requestingNodeID, double loadValue) {
     this.type = PacketType.NAME_SERVER_LOAD;
-    this.nsID = nsID;
+    this.reportingNodeID = reportingNodeID;
     this.loadValue = loadValue;
-    this.lnsID = lnsID;
+    this.requestingNodeID = requestingNodeID;
   }
 
   public NameServerLoadPacket(JSONObject json) throws JSONException {
-    this.nsID = json.getInt("nsID");
+    this.reportingNodeID = json.getInt("reportingNodeID");
     this.loadValue = json.getDouble("lV");
     this.type = PacketType.NAME_SERVER_LOAD;
-    this.lnsID = json.getInt("lnsID");
+    this.requestingNodeID = json.getInt("requestingNodeID");
   }
 
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put("nsID", getNsID());
+    json.put("reportingNodeID", getReportingNodeID());
     json.put("lV", getLoadValue());
-    json.put("lnsID", lnsID);
+    json.put("requestingNodeID", requestingNodeID);
     return json;
   }
 
   /**
-   * @return the nsID
+   * @return the reportingNodeID
    */
-  public int getNsID() {
-    return nsID;
+  public int getReportingNodeID() {
+    return reportingNodeID;
   }
 
-  public int getLnsID() {
-    return lnsID;
+  public int getRequestingNodeID() {
+    return requestingNodeID;
   }
   /**
    * @return the loadValue

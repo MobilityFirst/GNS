@@ -110,7 +110,6 @@ public class PaxosManager extends AbstractPaxosManager {
 
   public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransportInterface nioServer,
                               Replicable outputHandler, PaxosConfig paxosConfig) {
-//    super(nodeID, nodeConfig, nioServer, outputHandler, paxosConfig);
 
     this.executorService = new ScheduledThreadPoolExecutor(2);
     this.nodeID = nodeID;
@@ -118,8 +117,6 @@ public class PaxosManager extends AbstractPaxosManager {
     this.clientRequestHandler = outputHandler;
     this.debugMode = paxosConfig.isDebugMode();
     this.consistentHashCoordinatorOrder = paxosConfig.isConsistentHashCoordinatorOrder();
-    // recover previous state if exists using logger
-//    this.clientRequestHandler.deleteStateBeforeRecovery();
     paxosLogger = new PaxosLogger(paxosConfig.getPaxosLogFolder(), nodeID, this);
     long t0 = System.currentTimeMillis();
     ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.recoverPaxosLogs();
@@ -192,17 +189,15 @@ public class PaxosManager extends AbstractPaxosManager {
   }
 
 
-  /**
-   * Adds a new Paxos instance to the set of actives.
-   */
-  public  boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, String initialState) {
+  /*** Adds a new Paxos instance to the set of actives. */
+  public boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<Integer> nodeIDs, String initialState) {
 
     String paxosID = getPaxosIDWithVersionNumber(paxosIDNoVersion, version);
 
     if(debugMode) GNS.getLogger().info(paxosID + "\tEnter createPaxos");
     if (nodeIDs.size() < 3) {
-      GNS.getLogger().severe(nodeID + " less than three replicas " +
-              "paxos instance cannot be created. SEVERE ERROR. EXCEPTION Exception.");
+      GNS.getLogger().severe(nodeID + " less than three replicas paxos instance cannot be created. SEVERE ERROR. " +
+              "EXCEPTION Exception.");
       return false;
     }
 
@@ -463,14 +458,6 @@ public class PaxosManager extends AbstractPaxosManager {
     startResendPendingMessages();
   }
 
-//  /**
-//   * set the paxos log folder to given value
-//   * @param paxosLogFolder name of the folder
-//   */
-//  public  void setPaxosLogFolder(String paxosLogFolder) {
-//    PaxosLogger.setLoggerParameters(paxosLogFolder);
-//  }
-
   /**
    * delete paxos logs that are useless
    */
@@ -632,65 +619,12 @@ class PaxosPacketDemultiplexer extends PacketDemultiplexer {
     this.paxosManager = paxosManager;
   }
 
-
   @Override
   public boolean handleJSONObject(JSONObject jsonObject) {
     paxosManager.handleIncomingPacket(jsonObject);
     return true;
   }
 }
-
-//
-//class HandlePaxosMessageTask extends TimerTask {
-//
-//  JSONObject json;
-//
-//  int packetType;
-//
-//  PaxosManager paxosManager;
-//
-//  HandlePaxosMessageTask(JSONObject json, int packetType, PaxosManager paxosManager){
-//    this.json = json;
-//    this.packetType = packetType;
-//    this.paxosManager = paxosManager;
-//  }
-//
-//  @Override
-//  public void run() {
-//
-//    long t0 = System.currentTimeMillis();
-//    try {
-//      String paxosID;
-//      try {
-//        paxosID = json.getString(PaxosManager.PAXOS_ID);
-//      } catch (JSONException e) {
-//        e.printStackTrace();
-//        return;
-//      }
-//
-//      PaxosReplicaInterface replica = paxosManager.paxosInstances.get(paxosManager.getPaxosKeyFromPaxosID(paxosID));
-//      if (replica != null && replica.getPaxosID().equals(paxosID)) {
-//        replica.handleIncomingMessage(json,packetType);
-//      }
-//      else {
-//        // this case can arise just before (after) a paxos instance is created (stopped).
-//        GNS.getLogger().warning("ERROR: Paxos Instances does not contain ID = " + paxosID);
-//      }
-//    } catch (Exception e) {
-//      GNS.getLogger().severe(" PAXOS Exception EXCEPTION!!. Msg = " + json);
-//      e.printStackTrace();
-//    }
-//    long t1 = System.currentTimeMillis();
-//    if (t1 - t0 > 100) {
-//      if (json.toString().length() < 1000) {
-//        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + json);
-//      }
-//      else {
-//        GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms.");
-//      }
-//    }
-//  }
-//}
 
 /**
  * Resend proposals (for all paxos instances) that have not yet been accepted by majority.

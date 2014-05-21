@@ -20,7 +20,7 @@ class BasicSetup(unittest.TestCase):
     """Base class for all unittests for gns. Describes the common parameters needed by all tests"""
 
     # number of name servers
-    ns = 8
+    ns = 5
     # number of local name servers
     lns = 1
     lns_id = None
@@ -49,8 +49,6 @@ class TestSetupLocal(BasicSetup):
         self.config_parse.optionxform = str
         self.config_parse.read(self.config_file)
         self.gns_folder = self.config_parse.get(ConfigParser.DEFAULTSECT, 'gns_folder')
-        self.ns = 8
-        self.lns = 1
         self.lns_id = self.ns
 
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
@@ -584,8 +582,8 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
     def test_l_dynamic_replication(self):
         """ Test dynamic replication in GNS based on read rate, write rate, and geo-distribution of LNS"""
         self.config_parse.set(ConfigParser.DEFAULTSECT, "replication_interval", str(5))
-        request_rate = 50
-        duration = 50
+        request_rate = 100
+        duration = 100
         self.run_exp_reads_writes(request_rate, duration)
 
     @unittest.expectedFailure

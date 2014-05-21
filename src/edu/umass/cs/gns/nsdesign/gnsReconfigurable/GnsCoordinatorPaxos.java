@@ -144,7 +144,6 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
             }
 
           }
-        case NAME_SERVER_LOAD:
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
         case CONFIRM_UPDATE:

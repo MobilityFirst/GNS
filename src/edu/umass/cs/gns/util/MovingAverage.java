@@ -20,6 +20,8 @@ public class MovingAverage {
   private Queue<Integer> window;
   /** Size of the moving average window **/
   private final int WINDOW_SIZE;
+
+
   /** Sum of all numbers in the window **/
   private double sum;
 
@@ -49,6 +51,7 @@ public class MovingAverage {
       this.sum = this.sum + x;
     }
   }
+
   public MovingAverage(ArrayList<Integer> values, int windowSize) {
     this.window = new LinkedList<Integer>(values);
     this.WINDOW_SIZE = windowSize;
@@ -56,6 +59,10 @@ public class MovingAverage {
     for (Integer x : this.window) {
       this.sum = this.sum + x;
     }
+  }
+
+  public double getSum() {
+    return sum;
   }
 
   public JSONArray toJSONArray () {

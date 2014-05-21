@@ -423,34 +423,9 @@ public class LocalNameServer {
   }
 
   public static void handleNameServerLoadPacket(JSONObject json) throws JSONException {
-    NameServerLoadPacket nsLoad = new NameServerLoadPacket(json);
-    LocalNameServer.nameServerLoads.put(nsLoad.getNsID(), nsLoad.getLoadValue());
+//    NameServerLoadPacket nsLoad = new NameServerLoadPacket(json);
+//    LocalNameServer.nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
+    throw new UnsupportedOperationException();
   }
 
-}
-
-/**
- * When we emulate ping latencies between LNS and NS, this task will actually send packets to NS.
- * See option StartLocalNameServer.emulatePingLatencies
- */
-class SendMessageWithDelay extends TimerTask {
-
-  /**
-   * Json object to send
-   */
-  JSONObject json;
-  /**
-   * Name server to send this packet to.
-   */
-  int nameServer;
-
-  public SendMessageWithDelay(JSONObject json, int nameServer) {
-    this.json = json;
-    this.nameServer = nameServer;
-  }
-
-  @Override
-  public void run() {
-    LocalNameServer.sendToNS(json, nameServer);
-  }
 }

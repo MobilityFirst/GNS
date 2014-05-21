@@ -74,7 +74,9 @@ public class ComputeNewActivesTask extends TimerTask {
 
     replicationRound++;
 
-    GNS.getLogger().severe("ComputeNewActives started: " + replicationRound);
+    GNS.getLogger().info("ComputeNewActives started: " + replicationRound);
+
+    GNS.getStatLogger().info("Current request loads at name servers: " + replicaController.getNsRequestRates());
 
     int numNamesRead = 0; // number of names read from db
     int numGroupChanges = 0;  // number of names for which group changes is started.
@@ -99,15 +101,17 @@ public class ComputeNewActivesTask extends TimerTask {
         }
         if (rcRecord.isMarkedForRemoval() || !rcRecord.getPrimaryNameservers().contains(replicaController.getNodeID())
                 || !replicaController.isSmallestNodeRunning(rcRecord.getName(), rcRecord.getPrimaryNameservers())) {
-          rcRecord.recomputeAverageReadWriteRate(); // this will keep moving average calculation updated.
+          rcRecord.updateMovingWindowReadsWrites(); // this will keep moving average calculation updated.
           continue;
         }
-//        if (rcRecord.getActiveVersion() == 2) {
-//          continue;
-//        }
         GNS.getLogger().fine("I will select new actives for name = " + rcRecord.getName());
         Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
-        assert newActiveNameServers.size() >= Config.minReplica;
+        if (newActiveNameServers.size() < Config.minReplica) {
+          GNS.getLogger().warning("No group change as less than min replicas chosen: name: " + rcRecord.getName() +
+                  " NewActives: " + newActiveNameServers + " OldActives: " + rcRecord.getActiveNameservers());
+          continue;
+        }
+
         if (isActiveSetModified(rcRecord.getActiveNameservers(), newActiveNameServers)) {
           numGroupChanges += 1;
           GNS.getLogger().fine("\tComputeNewActives\t" + rcRecord.getName() + "\tCount\t" + numNamesRead +
@@ -208,14 +212,17 @@ public class ComputeNewActivesTask extends TimerTask {
    */
   private int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException, FailedUpdateException {
 
-    double[] readWrites = rcRecord.recomputeAverageReadWriteRate();
+    double[] readWrites = rcRecord.updateMovingWindowReadsWrites();
     double lookup = readWrites[0];
     double update = readWrites[1];
 
     int replicaCount;
-    if (update == 0 && lookup == 0) {
+
+    // need at least a threshold number of 'lookups' before adapting replication
+    final int minThresholdLookups = 50;
+
+    if (lookup < minThresholdLookups) {
       replicaCount = 0;
-//      replicaCount = Config.minReplica;
     }
     else if (Config.singleNS) replicaCount = 1;
     else if (update == 0) {

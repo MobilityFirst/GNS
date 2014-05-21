@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
@@ -31,8 +32,6 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
   @Override
   public ReplicationOutput newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
 
-
-
     Set<Integer> newActiveNameServerSet;
     Set<Integer> localityBasedReplicas;
     //		 Use top-K based on locality.
@@ -42,6 +41,22 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
     } else {
       newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc.getGnsNodeConfig(), numReplica);
       localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
+    }
+    // remove highly loaded replicas that are chosen based on locality
+    HashSet<Integer> highlyLoaded = new HashSet<>();
+    for (int nodeID: newActiveNameServerSet) {
+      if (isHighlyLoaded(rc, nodeID)) {
+        highlyLoaded.add(nodeID);
+      }
+    }
+
+    if (highlyLoaded.size() > 0) {
+      GNS.getStatLogger().info(" Removing highly loaded servers from replica set. Name: " +
+              rcRecord.getName() + " Loaded Servers: " + highlyLoaded);
+      newActiveNameServerSet.removeAll(highlyLoaded);
+      localityBasedReplicas.removeAll(highlyLoaded);
+    } else {
+      if (Config.debugMode) GNS.getLogger().fine("No highly loaded nodes among: " + newActiveNameServerSet);
     }
 
     if (numReplica >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
@@ -58,21 +73,28 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
             break;
           }
           boolean added = false;
+
           // Ensures that random selection will still be deterministic for each name.
           Random random = new Random(rcRecord.getName().hashCode());
+          int retries = 0;
           do {
+            retries += 1;
             int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNameServerIDs().size());
             int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNameServerIDs(), nsIndex);
             if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
               continue;
             }
             added = newActiveNameServerSet.add(newActiveNameServerId);
-          } while (!added);
+          } while (!added && retries < 5*rc.getGnsNodeConfig().getNameServerIDs().size());
         }
       }
     }
 
     return new ReplicationOutput(newActiveNameServerSet, localityBasedReplicas);
+  }
+
+  private boolean isHighlyLoaded(ReplicaController rc, int nodeID) {
+    return rc.getNsRequestRates().get(nodeID) != null && rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
   }
 
   private int getSetIndex(Set<Integer> nodeIds, int index) {

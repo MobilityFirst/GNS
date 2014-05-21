@@ -24,7 +24,7 @@ paxos_log_folder = '/home/ec2-user/paxos_log/'  # remote folder where paxos logs
 
 db_folder = '/home/ec2-user/gnsdb/'  # remote folder where mongodb will store its logs
 
-mongo_sleep = 30
+mongo_sleep = 20
 ns_sleep = 10
 experiment_run_time = 60  # duration for which requests are sent
 extra_wait = 30
@@ -128,11 +128,11 @@ is_experiment_mode = True
 emulate_ping_latencies = False
 
 # variation in latency emulation
-variation = 0.50
+variation = 0.8
 
 use_gns_nio_transport = False
 
-dummy_gns = True
+
 
 event_file = None  # file with list of events at nodes, e.g., failure, restart, node addition, node removal
 
@@ -196,6 +196,11 @@ no_paxos_log = False
 quit_after_time = -1
 quit_node_id = -1
 
+dummy_gns = True
+
+max_req_rate = 300
+
+
 ##################### LOGGING #########################
 
 nslog = 'WARNING'
@@ -217,7 +222,7 @@ def initialize(filename):
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'experiment_run_time'):
         global experiment_run_time
-        experiment_run_time = parser.getint(ConfigParser.DEFAULTSECT, 'experiment_run_time')
+        experiment_run_time = parser.getfloat(ConfigParser.DEFAULTSECT, 'experiment_run_time')
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_sleep'):
         global ns_sleep
@@ -296,6 +301,10 @@ def initialize_gns_parameters(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'max_replica'):
         global max_replica
         max_replica = int(parser.get(ConfigParser.DEFAULTSECT, 'max_replica'))
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'max_req_rate'):
+        global max_req_rate
+        max_req_rate = float(parser.get(ConfigParser.DEFAULTSECT, 'max_req_rate'))
 
 
 def initialize_replication():

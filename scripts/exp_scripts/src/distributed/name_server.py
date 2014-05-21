@@ -25,6 +25,8 @@ LOCATION_REPLICATION = '-location'
 NAMESERVER_SELECTION_VOTE_SIZE = '-nsVoteSize'
 MIN_REPLICA = '-minReplica'
 MAX_REPLICA = '-maxReplica'
+MAX_REQ_RATE = '-maxReqRate'
+
 BEEHIVE_REPLICATION = '-beehive'
 C = '-C'
 ALPHA = '-alpha'
@@ -187,6 +189,7 @@ def run_name_server(node_id, config_file, node_config_file):
     command += ' ' + MIN_REPLICA + ' ' + str(min_replica)
     # if max_replica != 100:
     command += ' ' + MAX_REPLICA + ' ' + str(max_replica)
+    command += ' ' + MAX_REQ_RATE + ' ' + str(exp_config.max_req_rate)
 
     command += ' ' + FILE_LOGGING_LEVEL + ' ' + file_logging_level
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level

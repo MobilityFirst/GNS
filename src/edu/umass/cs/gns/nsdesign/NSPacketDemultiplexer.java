@@ -44,7 +44,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         case COMMAND:
         case UPDATE:
         case DNS:
-        case NAME_SERVER_LOAD:
+
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
           // Packets sent from replica controller
@@ -72,6 +72,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
         case GROUP_CHANGE_COMPLETE:
         case NAMESERVER_SELECTION:
         case NAME_RECORD_STATS_RESPONSE:
+        case NAME_SERVER_LOAD:
           // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:
 
@@ -102,7 +103,6 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
                 // Packets sent from LNS
                 case UPDATE:
                 case DNS:
-                case NAME_SERVER_LOAD:
                 case SELECT_REQUEST:
                 case SELECT_RESPONSE:
                   // Packets sent from replica controller
@@ -137,6 +137,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
                 case GROUP_CHANGE_COMPLETE:
                 case NAMESERVER_SELECTION:
                 case NAME_RECORD_STATS_RESPONSE:
+                case NAME_SERVER_LOAD:
                   // packets from coordination modules at replica controller
                 case REPLICA_CONTROLLER_COORDINATION:
                   ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();

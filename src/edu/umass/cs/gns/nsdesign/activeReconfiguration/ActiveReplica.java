@@ -41,11 +41,6 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   /** Configuration for all nodes in GNS **/
   private GNSNodeConfig gnsNodeConfig;
 
-
-//  /** Ongoing stop requests proposed by this active replica. */
-//  private ConcurrentHashMap<String, OldActiveSetStopPacket> ongoingStops =
-//          new ConcurrentHashMap<String, OldActiveSetStopPacket>();
-
   private UniqueIDHashMap ongoingStateTransferRequests = new UniqueIDHashMap();
 
   private UniqueIDHashMap activeStartupInProgress = new UniqueIDHashMap();
@@ -55,7 +50,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
     return coordinator;
   }
 
-  public ActiveReplica(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
+  public ActiveReplica(int nodeID, GNSNodeConfig gnsNodeConfig,
                        GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                        AppType reconfigurableApp) {
     this.nodeID = nodeID;
@@ -79,6 +74,8 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
       this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
     }
+    SendRequestLoadTask requestLoadTask = new SendRequestLoadTask(activeReplicaApp, this);
+    scheduledThreadPoolExecutor.submit(requestLoadTask);
   }
 
   public void handleIncomingPacket(JSONObject json) {

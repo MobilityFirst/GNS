@@ -97,6 +97,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
         case ACTIVE_REMOVE_CONFIRM:
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
+        case NAME_SERVER_LOAD:
           // no coordination needed for these packet types.
           paxosInterface.handleDecision(null, request.toString(), false);
           break;

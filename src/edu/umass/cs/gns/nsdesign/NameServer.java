@@ -139,10 +139,9 @@ public class NameServer{
     } else { // real GNS
       gnsReconfigurable = new GnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
     }
-    GNS.getLogger().info("GNS initialized. ");
+    GNS.getLogger().info("GNS initialized");
     // initialize active replica with the app
-    activeReplica  = new ActiveReplica(nodeID, configParameters, gnsNodeConfig, tcpTransport, threadPoolExecutor,
-            gnsReconfigurable);
+    activeReplica  = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, threadPoolExecutor, gnsReconfigurable);
     GNS.getLogger().info("Active replica initialized");
 
     // we create app coordinator inside constructor for activeReplica because of cyclic dependency between them

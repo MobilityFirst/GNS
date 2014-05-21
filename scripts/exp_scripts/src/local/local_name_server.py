@@ -190,23 +190,12 @@ def run_local_name_server(node_id, work_dir, update_trace_file):
         command += ' ' + REGULAR_WORLOAD + ' ' + str(regular_workload)
         command += ' ' + MOBILE_WORLOAD + ' ' + str(mobile_workload)
 
-    # if lookup_trace_file is not None and lookup_trace_file != '':
-    #     command += ' ' + LOOKUP_TRACE_FILE + ' ' + lookup_trace_file
-        
     if update_trace_file is not None and update_trace_file != '':
         command += ' ' + UPDATE_TRACE_FILE + ' ' + update_trace_file
         command += ' ' + UPDATE_RATE_REGULAR + ' ' + str(update_rate_regular)
 
     if workload_file is not None and workload_file != '':
         command += ' ' + WORKLOAD_FILE + ' ' + workload_file
-    #else:
-    #    command += ' ' + NAME + ' ' + name
-    
-    #command += ' ' + NUM_LOOKUP + ' ' + str(num_lookups)
-    #command += ' ' + NUM_Update + ' ' + str(num_updates)
-    
-    # command += ' ' + LOOKUP_RATE + ' ' + str(lookup_rate)
-    # command += ' ' + UPDATE_RATE_MOBILE + ' ' + str(update_rate_mobile)
 
     command += ' ' + NUMER_OF_TRANSMISSIONS + ' ' + str(numberOfTransmissions)
     command += ' ' + MAX_QUERY_WAIT_TIME + ' ' + str(maxQueryWaitTime)

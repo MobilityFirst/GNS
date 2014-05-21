@@ -21,7 +21,10 @@ import java.io.IOException;
  * WARNING: DO NOT USE THIS CLASS!!! It is guaranteed to return fake and incorrect values of name records.
  *
  * It is an app resembling GnsReconfigurable.java which sends confirmation to clients as required by GNS
- * except that it does not use a database to store records and returns
+ * except that it does not use a database to store records and returns fake and incorrect values of name records.
+ * It sends only one type of error message, invalid active error, which it sends when the gns coordinator
+ * informs that it not a valid replica of this name.
+ *
  * Created by abhigyan on 5/19/14.
  */
 public class DummyGnsReconfigurable implements GnsReconfigurableInterface {

@@ -53,7 +53,7 @@ def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_
 
     lookup_trace_folder = os.path.join(trace_folder, 'lookupTrace')
     update_trace_folder = os.path.join(trace_folder, 'updateTrace')
-    other_data_folder = os.path.joAccenture Technology Labsin(trace_folder, 'otherData')
+    other_data_folder = os.path.join(trace_folder, 'otherData')
 
     # tmp folder to write lookups and updates, which we will include in trace_folder now
     tmp_trace_folder = '/tmp/trace/'

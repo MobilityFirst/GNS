@@ -52,6 +52,7 @@ public class DefaultRcCoordinator implements ReplicaControllerCoordinator{
         case ACTIVE_REMOVE_CONFIRM:
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
+        case NAME_SERVER_LOAD:
           // no coordination needed for these packet types.
           app.handleDecision(null, request.toString(), false);
           break;

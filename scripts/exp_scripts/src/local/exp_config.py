@@ -86,7 +86,7 @@ primary_name_server = 3  # number of primary name servers
 
 use_gns_nio_transport = False
 
-dummy_gns = True
+dummy_gns = False
 
 #lookupTrace = 'lookupTrace10'
 #updateTrace = 'updateTrace10'
@@ -124,7 +124,7 @@ load_balancing = False  # Redirect to closest name server based on (RTT + server
 # logging options
 nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 
@@ -170,7 +170,7 @@ def initialize(filename):
     #
     if parser.has_option(ConfigParser.DEFAULTSECT, 'experiment_run_time'):
         global experiment_run_time
-        experiment_run_time = int(parser.get(ConfigParser.DEFAULTSECT, 'experiment_run_time'))
+        experiment_run_time = float(parser.get(ConfigParser.DEFAULTSECT, 'experiment_run_time'))
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'num_ns'):
         global num_ns

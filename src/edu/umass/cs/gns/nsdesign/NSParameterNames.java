@@ -24,113 +24,80 @@ public class NSParameterNames {
 
   public static final String NS_FILE = "nsfile";
 
-  public static final String STATIC = "static";
-
-  public static final String RANDOM = "random";
-
-  public static final String LOCATION = "location";
-
-  public static final String BEEHIVE = "beehive";
-
-  public static final String KMEDIODS = "kmediods";
-
-  public static final String OPTIMAL = "optimal";
-
-  public static final String WORKER_THREAD_COUNT = "workerThreadCount";
-
-  public static final String TINY_UPDATE = "tinyUpdate";
-
-  public static final String DEBUG_MODE = "debugMode";
-
-  public static final String EXPERIMENT_MODE = "experimentMode";
-
-  public static final String NO_LOAD_DB = "noLoadDB";
-
-  public static final String EVENTUAL_CONSISTENCY = "eventualConsistency";
-
-  public static final String DATA_STORE = "dataStore";
-
-  public static final String SIMPLE_DISK_STORE = "simpleDiskStore";
-
-  public static final String DATA_FOLDER = "dataFolder";
-
-  public static final String MONGO_PORT = "mongoPort";
-
-  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
-
-  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
-
-  public static final String STAT_FILE_LOGGING_LEVEL = "statFileLoggingLevel";
-
-  public static final String STAT_CONSOLE_OUTPUT_LEVEL = "statConsoleOutputLevel";
-
-  public static final String REGULAR_WORKLOAD = "rworkload";
-
-  public static final String MOBILE_WORKLOAD = "mworkload";
-
   public static final String PRIMARY_REPLICAS = "primary";
-
-  public static final String AGGREGATE_INTERVAL = "aInterval";
-
-  public static final String REPLICATION_INTERVAL = "rInterval";
-
-  public static final String NORMALIZING_CONSTANT = "nconstant";
-
-  public static final String PAXOS_LOG_FOLDER = "paxosLogFolder";
-
-  public static final String FAILURE_DETECTION_MSG_INTERVAL = "failureDetectionMsgInterval";
-
-  public static final String FAILURE_DETECTION_TIMEOUT_INTERVAL = "failureDetectionTimeoutInterval";
-
-
-
-  public static final String MOVING_AVERAGE_WINDOW_SIZE = "mavg";
 
   public static final String TTL_CONSTANT = "ttlconstant";
 
-  public static final String TTL_REGULAR_NAMES = "rttl";
+  // replication-related parameters
 
-  public static final String TTL_MOBILE_NAMES = "mttl";
+  public static final String LOCATION = "location";
+  public static final String STATIC = "static";
+  public static final String RANDOM = "random";
+  public static final String BEEHIVE = "beehive";
+  public static final String KMEDIODS = "kmediods";
+  public static final String OPTIMAL = "optimal";
 
+  public static final String AGGREGATE_INTERVAL = "aInterval";
+  public static final String REPLICATION_INTERVAL = "rInterval";
+  public static final String NORMALIZING_CONSTANT = "nconstant";
   public static final String NAME_SERVER_VOTE_SIZE = "nsVoteSize";
-
   public static final String MIN_REPLICA = "minReplica";
-
   public static final String MAX_REPLICA = "maxReplica";
+  public static final String MAX_REQ_RATE = "maxReqRate";
+  public static final String MOVING_AVERAGE_WINDOW_SIZE = "mavg";
 
   public static final String BEEHIVE_C = "C";
-
   public static final String BASE = "base";
-
   public static final String ALPHA = "alpha";
 
-  public static final String NUMBER_LNS = "numLNS";
+  // other parameters
+  public static final String WORKER_THREAD_COUNT = "workerThreadCount";
 
-  public static final String NS_NS_PING_FILE = "nsnsPingFile";
 
-  public static final String LNS_NS_PING_FILE = "lnsnsPingFile";
+  public static final String DATA_STORE = "dataStore";
+  public static final String MONGO_PORT = "mongoPort";
 
-  public static final String SIGNATURE_CHECK = "signatureCheck";
 
-  public static final String QUIT_AFTER_TIME = "quitAfterTime";
+  // logging related
+  public static final String DEBUG_MODE = "debugMode";
 
-  public static final String NAME_ACTIVES = "nameActives";
+  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
+  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
+  public static final String STAT_FILE_LOGGING_LEVEL = "statFileLoggingLevel";
+  public static final String STAT_CONSOLE_OUTPUT_LEVEL = "statConsoleOutputLevel";
+
+
+  // paxos parameters
+  public static final String PAXOS_LOG_FOLDER = "paxosLogFolder";
+  public static final String FAILURE_DETECTION_MSG_INTERVAL = "failureDetectionMsgInterval";
+  public static final String FAILURE_DETECTION_TIMEOUT_INTERVAL = "failureDetectionTimeoutInterval";
 
 
   // Test-related parameters
+  public static final String EXPERIMENT_MODE = "experimentMode";
   public static final String SINGLE_NS = "singleNS";
-
   public static final String DUMMY_GNS = "dummyGNS";
-
   public static final String READ_COORDINATION = "readCoordination";
-
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
-
   public static final String VARIATION = "variation";
-
   public static final String NO_PAXOS_LOG = "noPaxosLog";
-
   public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
+  public static final String EVENTUAL_CONSISTENCY = "eventualConsistency";
+
+
+  // useless test-related parameters
+
+  public static final String TTL_REGULAR_NAMES = "rttl";
+  public static final String TTL_MOBILE_NAMES = "mttl";
+  public static final String SIGNATURE_CHECK = "signatureCheck";
+  public static final String QUIT_AFTER_TIME = "quitAfterTime";
+  public static final String NAME_ACTIVES = "nameActives";
+  public static final String REGULAR_WORKLOAD = "rworkload";
+  public static final String MOBILE_WORKLOAD = "mworkload";
+  public static final String SIMPLE_DISK_STORE = "simpleDiskStore";
+  public static final String DATA_FOLDER = "dataFolder";
+  public static final String NO_LOAD_DB = "noLoadDB";
+
 
   /**
    * Returns the list of command line options recognized by a name servers.
@@ -152,9 +119,20 @@ public class NSParameterNames {
             .addOption(kmediodsReplication)
             .addOption(optimalReplication);
 
+    Option aggregateInterval = OptionBuilder.withArgName("seconds").hasArg()
+            .withDescription("Interval between collecting stats")
+            .create(AGGREGATE_INTERVAL);
+
+    Option replicationInterval = OptionBuilder.withArgName("seconds").hasArg()
+            .withDescription("Interval between replication")
+            .create(REPLICATION_INTERVAL);
+
+    Option normalizingConstant = OptionBuilder.withArgName("#").hasArg()
+            .withDescription("Normalizing constant")
+            .create(NORMALIZING_CONSTANT);
+    Option maxReqRate = new Option(MAX_REQ_RATE, true, "Maximum request rate that a NS can sustain");
 
     Option workerThreadCount = new Option(WORKER_THREAD_COUNT, true, "Number of worker threads");
-    Option tinyUpdate = new Option(TINY_UPDATE, "Use a smaller update packet");
 
 
     Option debugMode = new Option(DEBUG_MODE, "Run in debug mode");
@@ -194,18 +172,6 @@ public class NSParameterNames {
     Option primaryReplicas = OptionBuilder.withArgName("#primaries").hasArg()
             .withDescription("Number of primary nameservers")
             .create(PRIMARY_REPLICAS);
-
-    Option aggregateInterval = OptionBuilder.withArgName("seconds").hasArg()
-            .withDescription("Interval between collecting stats")
-            .create(AGGREGATE_INTERVAL);
-
-    Option replicationInterval = OptionBuilder.withArgName("seconds").hasArg()
-            .withDescription("Interval between replication")
-            .create(REPLICATION_INTERVAL);
-
-    Option normalizingConstant = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("Normalizing constant")
-            .create(NORMALIZING_CONSTANT);
 
     Option paxosLogFolder = new Option(PAXOS_LOG_FOLDER, true, "Folder where paxos logs are stored in a persistent manner.");
     Option failureDetectionMsgInterval = new Option(FAILURE_DETECTION_MSG_INTERVAL, true,
@@ -249,15 +215,6 @@ public class NSParameterNames {
             .withDescription("Zipf distribution")
             .create(ALPHA);
 
-    Option numberLNS = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Number of LNS")
-            .create(NUMBER_LNS);
-    Option nsnsPingFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("File with all NS-NS ping latencies")
-            .create(NS_NS_PING_FILE);
-    Option lnsnsPingFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("File with all LNS-NS ping latencies")
-            .create(LNS_NS_PING_FILE);
     Option signatureCheck = new Option(SIGNATURE_CHECK, "whether an update operation checks signature or not");
 
     // used for testing only
@@ -279,22 +236,26 @@ public class NSParameterNames {
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(syntheticWorkloadSleepTimeBetweenAddingNames);
     commandLineOptions.addOption(primaryReplicas);
+
     commandLineOptions.addOptionGroup(replication);
+
     commandLineOptions.addOption(aggregateInterval);
     commandLineOptions.addOption(replicationInterval);
     commandLineOptions.addOption(normalizingConstant);
+    commandLineOptions.addOption(nameServerVoteSize);
+    commandLineOptions.addOption(minReplica);
+    commandLineOptions.addOption(maxReplica);
+    commandLineOptions.addOption(maxReqRate);
+    commandLineOptions.addOption(C);
+    commandLineOptions.addOption(base);
+    commandLineOptions.addOption(alpha);
 
     commandLineOptions.addOption(movingAverageWindowSize);
     commandLineOptions.addOption(ttlConstant);
     commandLineOptions.addOption(defaultTTLRegularNames);
     commandLineOptions.addOption(defaultTTLMobileNames);
 
-    commandLineOptions.addOption(nameServerVoteSize);
-    commandLineOptions.addOption(minReplica);
-    commandLineOptions.addOption(maxReplica);
-    commandLineOptions.addOption(C);
-    commandLineOptions.addOption(base);
-    commandLineOptions.addOption(alpha);
+
     commandLineOptions.addOption(debugMode);
     commandLineOptions.addOption(experimentMode);
     commandLineOptions.addOption(noLoadDB);
@@ -313,13 +274,7 @@ public class NSParameterNames {
     commandLineOptions.addOption(variation);
 
     commandLineOptions.addOption(workerThreadCount);
-    commandLineOptions.addOption(tinyUpdate);
     commandLineOptions.addOption(help);
-
-    commandLineOptions.addOption(numberLNS);
-    commandLineOptions.addOption(nsnsPingFile);
-    commandLineOptions.addOption(lnsnsPingFile);
-
 
     commandLineOptions.addOption(fileLoggingLevel);
     commandLineOptions.addOption(consoleOutputLevel);
