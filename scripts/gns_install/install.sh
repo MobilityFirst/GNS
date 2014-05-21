@@ -1,40 +1,54 @@
 #!/bin/bash
-#All the installations will happen in home directory
 
-cd $HOME
 
-status=0
+tool=$1
+download=$2
+path=$3
 
-wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz
+: '
+Sample Download Path 
 
-if [ $? -eq 0 ]
-then
-  echo "jdk is sucessfully downloaded"
-  tar -xvf jdk-7u55*
+MongoDB: http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz
+Java: http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz
+
+'
+
+if [[ $tool == 'mongodb' ]]
+	then
+	version=$(mongo -version)
+elif [[ $tool == 'jdk' ]]
+	then
+	version=$(java -version 2>&1 | head -n 1 | cut -d\" -f 2)
+	jcookie='--header  "Cookie: oraclelicense=accept-securebackup-cookie"  '
 else
-  echo "jdk unsuccessfully downloaded"
-  status=1
+	echo "Unable to identify the tool to be installed"
+	exit 1
 fi
 
 
-wget http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz
-
-if [ $? -eq 0 ]
-then
-  echo "mongodb is sucessfully downloaded"
-  tar -xvf mongodb*
-else
-  echo "mongodb unsuccessfully downloaded"
-  status=1
+if [ -z "$version" ]
+ then
+ 	cd $path  #navigating to desired directory
+ 	echo "wget" $download
+	wget --no-check-certificate --no-cookies $jcookie $download 
+	if [ $? -eq 0 ]
+	then
+  		echo "sucessfully downloaded"
+  		echo "tar -xvf" $1*
+  		tar -xvf $1*
+	else
+ 			echo $1 "unsuccessfully downloaded"
+ 			exit 1
+	fi
+ 	else
+ 		echo $1 "is already installed in the system , version =>" $version
 fi
 
-if [ $status -eq 0 ]
-then
- set PATH=$PATH:$HOME/jdk1.7.0_55/bin/:$HOME/mongodb-linux-i686-2.6.1/bin
- exit 0
-else
- echo "Error in Script Execution"
- exit 1 
-fi
 
-#-----------End of Installation Script ----------------------------------------
+: '
+Finally the self-Descruting Myself :(
+	rm -f installer.sh
+	echo "Everything Successfull GoodBye"
+'
+
+#-----------------End of Installation Script --------------------------------
