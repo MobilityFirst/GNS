@@ -27,10 +27,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class PingClient {
 
-  /**
-   * Represents an invalid or unknown value for the ping interval.
-   */
-  public static final long INVALID_INTERVAL = -1L;
   private DatagramSocket clientSocket;
   private final Object monitor = new Object();
   // Map between id and RTT time. Get will be null until the packet identified by id has come back.

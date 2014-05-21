@@ -40,7 +40,7 @@ public class PingManager {
    */
   public void startPinging() {
     pingClient = new PingClient(gnsNodeConfig);
-    pingTable = new SparseMatrix(PingClient.INVALID_INTERVAL);
+    pingTable = new SparseMatrix(GNSNodeConfig.INVALID_PING_LATENCY);
     // make a thread to run the pinger
     (new Thread() {
       @Override
@@ -93,7 +93,7 @@ public class PingManager {
     double total = 0;
     for (int j = 0; j < WINDOWSIZE; j++) {
       //System.out.println("PINGTABLE: Node: " + node + " Time: " + j + " = " + pingTable.get(node, j));
-      if (pingTable.get(node, j) != PingClient.INVALID_INTERVAL) {
+      if (pingTable.get(node, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
         total = total + pingTable.get(node, j);
       } else {
         count = count - 1;
@@ -126,7 +126,7 @@ public class PingManager {
         // not print out all the samples... just do it in array order 
         // maybe do it in time order someday if we want to be cute
         for (int j = 0; j < WINDOWSIZE; j++) {
-          if (pingTable.get(i, j) != PingClient.INVALID_INTERVAL) {
+          if (pingTable.get(i, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
             result.append(String.format("%3d", pingTable.get(i, j)));
           } else {
             result.append("  X");
