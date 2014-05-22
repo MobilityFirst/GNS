@@ -1,22 +1,26 @@
-The installation scripts works like this
-============================================
+Usage
+======
 
-pscp -h host.txt -l <username> <filename> <gns.jar>  <path in that host>
-pssh -h host.txt -l <username> "sh <absolute filename to be executed>"
+The installation has following options. 
+
+./setup.sh  <options>
+-j  "username /path/to/install/jdk"
+-m  "username /path/to/isntall/mongodb"
+-g  "username /path/to/copy/gns.jar"
+
+The arguments to the options must be specified with double quotes. 
 
 
-For Example:
--------------
-pscp -h host.txt -l umass_nameservice cassandra_inctimeout_config.jar /home/umass_nameservice/rahul/
+Pre-requisites
+==============
 
-pssh -h host.txt -l umass_nameservice "java -jar /home/umass_nameservice/rahul/cassandra_inctimeout_config.jar"
+1. host.txt file with list of hostnames (sample file in the repository)
+2. pssh / pscp tools. You can download it from here
+http://www.theether.org/pssh/
 
 
 Note
 -----
 1. pscp/ssh can fail if the keys are not added in the ssh path. To add the desired keys in your path.
-
-$ ssh-add <filename> 
-
-
+$ ssh-add <key.filename> 
 

@@ -47,7 +47,7 @@ fi
 
 : '
 Finally the self-Descruting Myself :(
-	rm -f installer.sh
+	rm -f install.sh
 	echo "Everything Successfull GoodBye"
 '
 
