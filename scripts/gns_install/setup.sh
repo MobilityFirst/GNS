@@ -18,16 +18,16 @@ while getopts ":j:m:g:" opt; do
       user=${oarg[0]}
       spath=${oarg[1]}
       echo "Java path in remote machine =>" $spath
-      parallel_exec "jdk" "download link"
+      parallel_exec "jdk" "http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz"
       ;;
     m)
-	  echo "-m option is triggered, Parameter: $OPTARG" >&2
-	  oarg=($OPTARG)
+	    echo "-m option is triggered, Parameter: $OPTARG" >&2
+	    oarg=($OPTARG)
       user=${oarg[0]}
       spath=${oarg[1]}
       echo "Mongo path in remote machine =>" $spath
-	  parallel_exec "mongodb" "download link"
-	  ;;
+	    parallel_exec "mongodb" "http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz"
+	   ;;
 	g)
 	  echo "-g option is triggered, Parameter: $OPTARG" >&2
 	  gopt=($OPTARG)

@@ -7,10 +7,8 @@ path=$3
 
 : '
 Sample Download Path 
-
 MongoDB: http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz
 Java: http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz
-
 '
 
 if [[ $tool == 'mongodb' ]]
