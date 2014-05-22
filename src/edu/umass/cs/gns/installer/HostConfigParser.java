@@ -8,9 +8,11 @@ package edu.umass.cs.gns.installer;
 import edu.umass.cs.gns.database.DataStoreType;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.util.GEOLocator;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,6 +30,15 @@ import org.w3c.dom.NodeList;
  * @author westy
  */
 public class HostConfigParser {
+  
+  private static final String USERNAME = "username";
+  private static final String KEYNAME = "keyname";
+  private static final String HOSTTYPE = "hosttype";
+  private static final String DATASTORE = "datastore";
+  private static final String ID = "id";
+  private static final String HOSTNAME = "hostname";
+  private static final String LON = "lon";
+  private static final String LAT = "lat";
   
   private static final String fileExtension = ".xml";
   private static final String folder = "gnsInstaller";
@@ -69,12 +80,12 @@ public class HostConfigParser {
     }
     try {
       InputStream is = Files.newInputStream(Paths.get(confPath, folder, filename + fileExtension));
-        //InputStream is = ClassLoader.getSystemResourceAsStream(filename + ".xml");
+      //InputStream is = ClassLoader.getSystemResourceAsStream(filename + ".xml");
       //File fXmlFile = new File(filename);
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
       Document doc = dBuilder.parse(is);
-        //Document doc = dBuilder.parse(fXmlFile);
+      //Document doc = dBuilder.parse(fXmlFile);
 
 //	//optional, but recommended
 //	//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
@@ -88,17 +99,31 @@ public class HostConfigParser {
 
         if (nNode.getNodeType() == Node.ELEMENT_NODE) {
           Element eElement = (Element) nNode;
-          hosts.add(new HostInfo(Integer.parseInt(eElement.getAttribute("id")),
-                  eElement.getAttribute("hostname"),
-                  eElement.getAttribute("ip"),
-                  new Point2D.Double(Double.parseDouble(eElement.getAttribute("lon")),
-                          Double.parseDouble(eElement.getAttribute("lat")))));
+          String idString = eElement.getAttribute(ID);
+          String hostname = eElement.getAttribute(HOSTNAME);
+          String latString = eElement.getAttribute(LAT);
+          String lonString = eElement.getAttribute(LON);
+          if (idString.isEmpty() || hostname.isEmpty()) {
+            throw new RuntimeException("Missing id or hostname attribute!");
+          }
+          int id = Integer.parseInt(idString);
+          Point2D location = null;
+          if (!lonString.isEmpty() && !latString.isEmpty()) {
+            location = new Point2D.Double(Double.parseDouble(lonString), Double.parseDouble(latString));
+          }
+          if (location == null) {
+            InetAddress inetAddress = InetAddress.getByName(hostname);
+            String ip = inetAddress.getHostAddress();
+            // and take a guess at the location (lat, long) of this host
+            location = GEOLocator.lookupIPLocation(ip);
+          }
+          hosts.add(new HostInfo(id, hostname, location));
         }
       }
-      keyname = ((Element) doc.getElementsByTagName("keyname").item(0)).getAttribute("name");
-      username = ((Element) doc.getElementsByTagName("ec2username").item(0)).getAttribute("name");
-      hostType = ((Element) doc.getElementsByTagName("hosttype").item(0)).getAttribute("name");
-      dataStoreType = DataStoreType.valueOf(((Element) doc.getElementsByTagName("datastore").item(0)).getAttribute("name"));
+      keyname = ((Element) doc.getElementsByTagName(KEYNAME).item(0)).getAttribute("name");
+      username = ((Element) doc.getElementsByTagName(USERNAME).item(0)).getAttribute("name");
+      hostType = ((Element) doc.getElementsByTagName(HOSTTYPE).item(0)).getAttribute("name");
+      dataStoreType = DataStoreType.valueOf(((Element) doc.getElementsByTagName(DATASTORE).item(0)).getAttribute("name"));
 
     } catch (Exception e) {
       e.printStackTrace();

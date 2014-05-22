@@ -21,18 +21,20 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Typical use:
  *
- * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -create gns_dev
+ * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -install gns_dev
  *
  * Where gns_dev is an xml formatted configuration file that looks something like this:
  * <code>
  * <root>
- * <ec2username name="ec2-user"/>
- * <keyname name="aws"/>
- * <hosttype name="linux"/>
- * <datastore name="MONGO"/>
- * <host id="0" ip="127.0.0.1"/>
- * <host id="1" ip="127.0.0.2"/>
- * <host id="2" ip="127.0.0.3"/>
+ *  <username name="ec2-user"/>
+ *  <keyname name="aws"/>
+ *  <hosttype name="linux"/>
+ *  <datastore name="MONGO"/>
+ *  <host id="0" hostname="ec2-54-87-145-248.compute-1.amazonaws.com" />
+ *  <host id="1" hostname="ec2-204-236-139-195.us-west-1.compute.amazonaws.com" />
+ *  <host id="2" hostname="ec2-54-188-39-102.us-west-2.compute.amazonaws.com" />
+ *  <host id="3" hostname="ec2-54-73-42-157.eu-west-1.compute.amazonaws.com" />
+ *  <host id="4" hostname="ec2-54-248-3-101.ap-northeast-1.compute.amazonaws.com" />
  * </root>
  * </code>
  *
@@ -373,7 +375,7 @@ public class GNSInstaller {
   }
 
   private static void printUsage() {
-    formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.main.EC2Installer <options>", commandLineOptions);
+    formatter.printHelp("java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller <options>", commandLineOptions);
   }
 
   public static void main(String[] args) {

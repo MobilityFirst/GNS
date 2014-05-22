@@ -258,7 +258,7 @@ public class EC2Runner {
         Point2D location = GEOLocator.lookupIPLocation(ip);
         StatusModel.getInstance().queueUpdate(id, hostname, ip, location);
         // update our table of instance information
-        hostTable.put(id, new HostInfo(id, hostname, ip, location));
+        hostTable.put(id, new HostInfo(id, hostname, location));
 
         // and we're done
         StatusModel.getInstance().queueUpdate(id, "Waiting for other servers");
@@ -332,7 +332,7 @@ public class EC2Runner {
             String ip = getHostIPSafe(hostname);
             // and take a guess at the location (lat, long) of this host
             Point2D location = GEOLocator.lookupIPLocation(ip);
-            hostTable.put(id, new HostInfo(id, hostname, ip, location));
+            hostTable.put(id, new HostInfo(id, hostname, location));
           }
         }
       }

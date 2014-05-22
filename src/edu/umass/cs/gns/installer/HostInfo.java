@@ -16,13 +16,11 @@ import java.awt.geom.Point2D;
 class HostInfo {
   private final int id;
   private final String hostname;
-  private final String ip;
   private final Point2D location;
 
-  public HostInfo(int id, String hostname, String ip, Point2D location) {
+  public HostInfo(int id, String hostname, Point2D location) {
     this.id = id;
     this.hostname = hostname;
-    this.ip = ip;
     this.location = location;
   }
 
@@ -34,17 +32,13 @@ class HostInfo {
     return hostname;
   }
 
-  public String getIp() {
-    return ip;
-  }
-
   public Point2D getLocation() {
     return location;
   }
 
   @Override
   public String toString() {
-    return "InstanceInfo{" + "id=" + id + ", hostname=" + hostname + ", ip=" + ip + ", location=" + location + '}';
+    return "InstanceInfo{" + "id=" + id + ", hostname=" + hostname + ", location=" + location + '}';
   }
   
 }
