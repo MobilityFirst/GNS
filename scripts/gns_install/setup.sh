@@ -2,10 +2,10 @@
 
 #Param1: tool name <mongodb,jdk>
 parallel_exec() {
-	echo "pscp -h host.txt -l" $user "installer.sh" $spath
-	pscp -h host.txt -l $user "installer.sh" $spath
-	echo "pssh -h host.txt -l" $user "'sh" $spath"/installer.sh " $1 $2 $spath "'"
-	pssh -h host.txt -l $user "' sh " $spath"/installer.sh " $1 $2 $spath "'"
+	echo "pscp -h host.txt -l" $user "install.sh" $spath
+	pscp -h host.txt -l $user "install.sh" $spath
+	echo "pssh -h host.txt -l" $user "'sh" $spath"/install.sh " $1 $2 $spath "'"
+	pssh -h host.txt -l $user "' sh " $spath"/install.sh " $1 $2 $spath "'"
 }
 
 

@@ -1,3 +1,12 @@
+Pre-requisites
+==============
+1. host.txt file with list of hostnames (sample file in the repository)
+2. pssh / pscp tools. You can download it from here
+http://www.theether.org/pssh/
+
+
+
+
 Usage
 ======
 
@@ -10,13 +19,6 @@ The installation has following options.
 
 The arguments to the options must be specified WITH Double Quotes. 
 
-
-Pre-requisites
-==============
-
-1. host.txt file with list of hostnames (sample file in the repository)
-2. pssh / pscp tools. You can download it from here
-http://www.theether.org/pssh/
 
 
 Note
