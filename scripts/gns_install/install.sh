@@ -5,6 +5,17 @@ tool=$1
 download=$2
 path=$3
 
+
+#Assuming the bash_profile to be in its ideal place
+set_path() {
+	PATH=$PATH:$1
+	echo "the new PATH is " $PATH
+	sed -i '/export PATH/d' ~/.bash_profile
+	echo "export PATH="$PATH >> ~/.bash_profile
+}
+
+
+
 : '
 Sample Download Path 
 MongoDB: http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz
@@ -34,6 +45,7 @@ if [ -z "$version" ]
   		echo "sucessfully downloaded"
   		echo "tar -xvf" $1*
   		tar -xvf $1*
+  		set_path $1/bin  #Need to test the parameter passing
 	else
  			echo $1 "unsuccessfully downloaded"
  			exit 1
