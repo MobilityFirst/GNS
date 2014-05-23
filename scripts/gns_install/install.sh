@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 tool=$1
 download=$2
 path=$3
@@ -10,10 +9,10 @@ path=$3
 set_path() {
 	PATH=$PATH:$1
 	echo "the new PATH is " $PATH
-	sed -i '/export PATH/d' ~/.bash_profile
-	echo "export PATH="$PATH >> ~/.bash_profile
+	sed -i '/export PATH/d' ~/.bashrc
+	echo "export PATH="$PATH >> ~/.bashrc
+	source ~/.bashrc
 }
-
 
 
 : '
@@ -45,7 +44,8 @@ if [ -z "$version" ]
   		echo "sucessfully downloaded"
   		echo "tar -xvf" $1*
   		tar -xvf $1*
-  		set_path $1/bin  #Need to test the parameter passing
+  		dname=`ls -l | grep '^d' | grep $tool | awk '{print $9}'`
+  		set_path $path/$dname/bin  #Need to test the parameter passing
 	else
  			echo $1 "unsuccessfully downloaded"
  			exit 1
