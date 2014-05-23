@@ -11,6 +11,9 @@ import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Forwards incoming json objects to either active replica or replica controller at this node.
  * <p/>
@@ -20,11 +23,27 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
   private NameServer nameServer;
 
-  public NSPacketDemultiplexer(NameServer nameServer) {
+  private int msgCount = 0;
+
+  private int prevMsgCount = 0;
+
+  private int intervalCount = 0;
+
+  public NSPacketDemultiplexer(final NameServer nameServer, final int nodeID) {
     this.nameServer = nameServer;
+    this.nameServer.getExecutorService().scheduleAtFixedRate(new TimerTask() {
+      @Override
+      public void run() {
+        intervalCount += 1;
+
+        GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount " +
+                (getMsgCount() - prevMsgCount) + " Node " + nodeID + " ");
+        prevMsgCount = msgCount;
+      }
+    },0, 10, TimeUnit.SECONDS);
   }
 
-  private int msgCount = 0;
+
 
   /**
    * Entry point for all packets received at name server.
@@ -40,6 +59,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
     try {
       final Packet.PacketType type = Packet.getPacketType(json);
       // return value should be true if packet type matches these packets:
+      if (Config.debugMode) GNS.getLogger().fine(" MsgType " + type + " Msg " + json);
       switch (type) {
         case COMMAND:
         case UPDATE:
@@ -180,9 +200,9 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
 
   private synchronized void incrementMsgCount() {
     msgCount += 1;
-    if (msgCount % 1000 == 0) {
-      GNS.getStatLogger().info(" MsgCount " + msgCount + "\tNode " + nameServer.getGnsReconfigurable().getNodeID() + " ");
-    }
   }
 
+  private synchronized int getMsgCount() {
+    return msgCount;
+  }
 }

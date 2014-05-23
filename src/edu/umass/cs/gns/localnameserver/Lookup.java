@@ -129,11 +129,8 @@ public class Lookup {
 
       // create objects to be passed to PendingTasks
       boolean firstInvalidActiveError = (query.numInvalidActiveError == 0);
-      DNSRequestTask queryTaskObject = new DNSRequestTask(handler,
-              query.getIncomingPacket(),
-              query.getLookupRecvdTime(), query.getId(),
-              0,
-              new HashSet<Integer>(), query.numInvalidActiveError + 1);
+      DNSRequestTask queryTaskObject = new DNSRequestTask(handler, query.getIncomingPacket(),
+              query.getLookupRecvdTime(), query.getId(), 0, new HashSet<Integer>(), query.numInvalidActiveError + 1);
       String failureMsg = DNSRequestInfo.getFailureLogMessage(0, dnsPacket.getKey(), dnsPacket.getGuid(),
               0, query.getLookupRecvdTime(), query.numInvalidActiveError + 1, -1, new HashSet<Integer>());
 

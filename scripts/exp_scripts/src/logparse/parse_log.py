@@ -277,7 +277,7 @@ def get_all_latencies(host_files, filter):
 
         read_l1, write_l1, add_l1, remove_l1, group_change_l1, host_tuples1, ping_host1, closest_host1 = \
             get_host_latencies(files, hostname, filter)
-        ## useful in PL exps to filter out bad LNSs
+        ## useful in PlanetLab exps to filter out bad LNSs
         # fail_perc = 0
         # if host_failed + host_success > 0:
         #     fail_perc = (host_failed * 1.0 / (host_failed + host_success))
@@ -397,8 +397,6 @@ def get_latencies(filecount, filename, hostname, filter=None):
     cur_time = 0
     if filecount == 0:
         first_start = -1
-    #print filename
-    #print '>>>>>>>>>>>>>>>>First start is ', first_start
     local_name_server = -1
     lines = f.readlines()
     for line in lines:

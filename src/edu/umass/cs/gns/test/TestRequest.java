@@ -33,5 +33,21 @@ public class TestRequest {
     return name + ":" + type;
   }
 
+  public static TestRequest parseLine(String line) {
+    if (line == null) {
+      return null;
+    }
+    line = line.trim();
+    if (line.length() == 0) return null;
+    // name type (add/remove/update)
+    String[] tokens = line.split("\\s+");
+    if (Integer.parseInt(tokens[1]) == TestRequest.GROUP_CHANGE) {
+      return new TestGroupChangeRequest(tokens[0], line);
+    } else if (tokens.length == 2) {
+      return new TestRequest(tokens[0], new Integer(tokens[1]));
+    }
+    return null;
+  }
+
 
 }

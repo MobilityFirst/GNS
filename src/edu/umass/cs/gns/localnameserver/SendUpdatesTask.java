@@ -45,8 +45,8 @@ public class SendUpdatesTask extends TimerTask {
   private int numRestarts;
   private int coordinatorID = -1;
 
-  public SendUpdatesTask(UpdatePacket updatePacket,
-          long requestRecvdTime, HashSet<Integer> activesQueried, int numRestarts) {
+  public SendUpdatesTask(UpdatePacket updatePacket, long requestRecvdTime, HashSet<Integer> activesQueried,
+                         int numRestarts) {
     this.name = updatePacket.getName();
     this.updatePacket = updatePacket;
     this.activesQueried = activesQueried;
@@ -56,6 +56,7 @@ public class SendUpdatesTask extends TimerTask {
 
   @Override
   // Pretty much the same code as in DNSRequestTask
+  // except DNSRequestTask can return a cached response to client
   public void run() {
     try {
 

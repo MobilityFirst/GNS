@@ -110,7 +110,7 @@ public class NameServer{
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
 
     // init transport
-    NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this);
+    NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this, nodeID);
     if (Config.emulatePingLatencies) {
       GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
       GNS.getLogger().info("Emulating delays ... ");

@@ -11,6 +11,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.util.StatsInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -490,7 +491,7 @@ public class ReplicaControllerRecord {
    *
    * @param numReplica Number of name servers to be selected.
    */
-  public Set<Integer> getHighestVotedReplicaID(GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
+  public Set<Integer> getHighestVotedReplicaID(ReplicaController rc, GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
     Set<Integer> replicas = new HashSet<Integer>();
 
     for (int i = 1; i <= numReplica; i++) {
@@ -501,10 +502,16 @@ public class ReplicaControllerRecord {
         int nameServerId = entry.getKey();
         int votes = entry.getValue();
         //Skip name server that are unreachable
-        // from main branch 269
         if (gnsNodeConfig.getPingLatency(nameServerId) == GNSNodeConfig.INVALID_PING_LATENCY) {
           continue;
         }
+        // Also skip highly loaded servers
+        if  (rc!= null && isHighlyLoaded(rc, nameServerId)) {
+          GNS.getLogger().warning("Not choosing highly loaded replica for replication Name:" + getName() +
+                  " NS ID: " + nameServerId);
+          continue;
+        }
+
         if (!replicas.contains(nameServerId)
                 && votes > highestVotes) {
           highestVotes = votes;
@@ -523,6 +530,10 @@ public class ReplicaControllerRecord {
       }
     }
     return replicas;
+  }
+
+  private boolean isHighlyLoaded(ReplicaController rc, int nodeID) {
+    return rc.getNsRequestRates().get(nodeID) != null && rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
   }
 
   /**
@@ -941,7 +952,7 @@ public class ReplicaControllerRecord {
     record.addReplicaSelectionVote(14, 4, 0);
     record.addNameServerStats(11, 50, 75);
     record.addNameServerStats(12, 50, 75);
-    System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(gnsNodeConfig, 3));
+    System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(null, gnsNodeConfig, 3));
 //    record.updateMovingAvgAggregateLookupFrequency(10);
 //    record.updateMovingAvgAggregateLookupFrequency(30);
 //    record.updateMovingAvgAggregateLookupFrequency(50);

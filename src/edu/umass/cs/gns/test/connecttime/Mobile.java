@@ -81,7 +81,6 @@ public class Mobile implements Runnable{
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-
       executor.submit(new UpdateTask());
     }
   }

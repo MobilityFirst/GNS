@@ -161,7 +161,7 @@ phi = 4.0
 
 lns_main = 'edu.umass.cs.gns.main.StartLocalNameServer'
 
-cache_size = 1000000
+cache_size = 10000
 
 #
 ################## NS parameters ######################
@@ -196,7 +196,7 @@ no_paxos_log = False
 quit_after_time = -1
 quit_node_id = -1
 
-dummy_gns = True
+dummy_gns = False
 
 max_req_rate = 300
 

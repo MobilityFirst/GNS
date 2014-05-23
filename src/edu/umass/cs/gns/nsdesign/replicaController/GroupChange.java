@@ -98,7 +98,6 @@ public class GroupChange {
   public static void executeNewActivesProposed(NewActiveProposalPacket activeProposalPacket,
                                                ReplicaController replicaController, boolean recovery) {
 
-
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
               replicaController.getDB(), activeProposalPacket.getName(), executeNewActivesProposedFields);
@@ -119,6 +118,12 @@ public class GroupChange {
         // change at same time OR  previous group change did not complete successfully.
         GNS.getLogger().warning(" DECISION NOT APPLIED. Because most recently "
                 + "proposed active name servers is not yet running: " + rcRecord.getActiveNameservers());
+        if (!recovery && trackGroupChange.size() > 0) {
+          int lnsID = activeProposalPacket.getLnsId();
+          GNS.getLogger().info("Group change canot be done so send confirmation to LNS  " + lnsID);
+          GroupChangeCompletePacket gccp = new GroupChangeCompletePacket(activeProposalPacket.getVersion(), rcRecord.getName());
+          replicaController.getNioServer().sendToID(lnsID, gccp.toJSONObject());
+        }
         return;
       }
       if (rcRecord.getActiveVersion() == activeProposalPacket.getVersion()) {
@@ -163,6 +168,10 @@ public class GroupChange {
       GNS.getLogger().warning("GROUP CHANGE DECISION: BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
     } catch (FailedUpdateException e) {
       GNS.getLogger().severe("Unexpected Error!" + e.getMessage());
+      e.printStackTrace();
+    } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

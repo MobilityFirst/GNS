@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
@@ -36,27 +35,11 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
     Set<Integer> localityBasedReplicas;
     //		 Use top-K based on locality.
     if (numReplica > Config.nameServerVoteSize) {
-      newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc.getGnsNodeConfig(), Config.nameServerVoteSize);
+      newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc, rc.getGnsNodeConfig(), Config.nameServerVoteSize);
       localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
     } else {
-      newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc.getGnsNodeConfig(), numReplica);
+      newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc, rc.getGnsNodeConfig(), numReplica);
       localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
-    }
-    // remove highly loaded replicas that are chosen based on locality
-    HashSet<Integer> highlyLoaded = new HashSet<>();
-    for (int nodeID: newActiveNameServerSet) {
-      if (isHighlyLoaded(rc, nodeID)) {
-        highlyLoaded.add(nodeID);
-      }
-    }
-
-    if (highlyLoaded.size() > 0) {
-      GNS.getStatLogger().info(" Removing highly loaded servers from replica set. Name: " +
-              rcRecord.getName() + " Loaded Servers: " + highlyLoaded);
-      newActiveNameServerSet.removeAll(highlyLoaded);
-      localityBasedReplicas.removeAll(highlyLoaded);
-    } else {
-      if (Config.debugMode) GNS.getLogger().fine("No highly loaded nodes among: " + newActiveNameServerSet);
     }
 
     if (numReplica >= rc.getGnsNodeConfig().getNameServerIDs().size()) {

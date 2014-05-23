@@ -1,9 +1,18 @@
+"""Includes basic feature tests of GNS system. The different classes in this module run tests
+either on a local machine or on a set of remote distributed machines. Further, the some classes can run GNS in
+an un-replicated mode where there is only one active replica and one replica controller for each name.
+
+Limitations:
+1. If all tests are run in succession on a local machine, tests start to fail after running 5-10 tests.
+2. We do not check the correctness of the values returned by GNS. Fake, incorrect responses will also pass this test.
+"""
+
+
 import unittest
 import ConfigParser
 import os
 import sys
 import inspect
-import random
 
 script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
 parent_folder = os.path.split(script_folder)[0]
@@ -14,89 +23,15 @@ from logparse.read_final_stats import FinalStats
 import local.exp_config
 import local.generate_config_file
 from test_utils import *
+from local_setup import TestSetupLocal
+from remote_setup import TestSetupRemote
 
-
-class BasicSetup(unittest.TestCase):
-    """Base class for all unittests for gns. Describes the common parameters needed by all tests"""
-
-    # number of name servers
-    ns = 5
-    # number of local name servers
-    lns = 1
-    lns_id = None
-
-    # include all workload parameters here
-    workload_conf = ConfigParser.ConfigParser()
-    # include all other config parameters
-    config_parse = ConfigParser.ConfigParser()
-
-    # folder where workload trace is stored
-    trace_folder = ''
-
-    # folder where output is stored on local machine
-    local_output_folder = ''
-
-    # folder where output from a single experiment is stored. this is used if we want to save the output from
-    # some experiments in a given test. by default, exp_output_folder = local_output_folder
-    exp_output_folder = ''
-
-
-class TestSetupLocal(BasicSetup):
-    """ Performs common setup tasks for running local tests. Other tests use this as base class"""
-
-    def setUp(self):
-        self.config_file = os.path.join(parent_folder, 'resources', 'local_test_env.ini')
-        self.config_parse.optionxform = str
-        self.config_parse.read(self.config_file)
-        self.gns_folder = self.config_parse.get(ConfigParser.DEFAULTSECT, 'gns_folder')
-        self.lns_id = self.ns
-
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
-        self.local_output_folder = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR)
-        self.trace_folder = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR, 'trace')
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'trace_folder', self.trace_folder)
-
-    def run_exp(self, requests):
-        """Not a test. Run experiments given a set of requests for a single local name server"""
-        workload_writer({self.lns_id: requests}, self.trace_folder)
-        return self.run_exp_multi_lns()
-
-    def run_exp_multi_lns(self):
-        """ Runs an experiment involving multiple local name servers"""
-
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_ns', self.ns)
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'num_lns', self.lns)
-
-        work_dir = os.path.join(self.gns_folder, local.exp_config.DEFAULT_WORKING_DIR)
-
-        # write config
-        temp_workload_config_file = os.path.join(work_dir, 'tmp_w.ini')
-        self.workload_conf.write(open(temp_workload_config_file, 'w'))
-
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'wfile', temp_workload_config_file)
-
-        if self.exp_output_folder is not None and self.exp_output_folder != '':
-            self.config_parse.set(ConfigParser.DEFAULTSECT, 'output_folder', self.exp_output_folder)
-        else:
-            self.exp_output_folder = self.local_output_folder
-
-        temp_config_file = os.path.join(work_dir, 'tmp.ini')
-        self.config_parse.write(open(temp_config_file, 'w'))
-        exp_script = os.path.join(parent_folder, 'local', 'run_all_local.py')
-        outfile = os.path.join(work_dir, 'test.out')
-        errfile = os.path.join(work_dir, 'test.err')
-        os.system(exp_script + ' ' + temp_config_file + ' > ' + outfile + ' 2> ' + errfile)
-
-        stats_folder = os.path.join(self.exp_output_folder, local.exp_config.DEFAULT_STATS_FOLDER)
-        # stats_folder = os.path.join(work_dir, exp_config.DEFAULT_STATS_FOLDER)
-        return FinalStats(stats_folder)
+__author__ = 'abhigyan'
 
 
 class FeatureTestMultiNodeLocal(TestSetupLocal):
     """This is the baseline test which GNS is expected to pass under local tests. It tests several features
     of GNS for a 3 name server and 1 local name server  setup. It does not measure throughput of GNS"""
-
-    # ns = 8
 
     special_char_set = '!@#$%^&*()-=_+{}|[]\\;\':",.<>?`~'
 
@@ -266,7 +201,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
     def test_d0_1name_read_write_latency(self):
         """For 1 name, measure read and write latencies on a local machine"""
         request_rate = 50
-        duration = 20
+        duration = 100
         output_stats = self.run_exp_reads_writes(request_rate, duration)
         print 'Read latency (90-percentile)', output_stats.read_perc90, 'ms', 'Write latency (90-percentile)', \
             output_stats.write_perc90, 'ms',
@@ -354,11 +289,8 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         delay_ms = 2500
 
         initial_version = 1
-        if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server') and \
-           int(self.config_parse.get(ConfigParser.DEFAULTSECT, 'primary_name_server')) == 1:
-            group_size = 1
-        else:
-            group_size = min(5, self.ns)
+        group_size = self.get_group_size()
+
         assert group_size <= self.ns
         num_group_changes = 3
 
@@ -594,6 +526,13 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(self.ns))
         self.test_a_1name()
 
+    def test_n_read_writes_groupchanges(self):
+        """ Tests a workload where reads and writes for 1 name are inter-mixed with group changes"""
+        request_rate = 1000
+        duration = 100
+        group_change_interval = 1
+        self.run_exp_reads_writes_groupchanges(request_rate, duration, group_change_interval)
+
     def run_exp_reads_writes(self, request_rate, exp_duration):
         """Runs an experiment with equal number of reads and writes for a name at a given request rate.
         It also checks if all requests are successful."""
@@ -623,8 +562,81 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
         return output_stats
 
+    def run_exp_reads_writes_groupchanges(self, request_rate, exp_duration, group_change_interval):
+        """Runs an experiment with equal number of reads and writes for a name at a given request rate.
+        It also checks if all requests are successful."""
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
+        name = 'test_name'
+        assert group_change_interval < exp_duration
+        num_group_changes = int(exp_duration/group_change_interval)
+        n = int(request_rate * group_change_interval)
+        initial_version = 1
+        requests = [[name, RequestType.ADD]]
+        group_size = self.get_group_size()
+        delay = 2000  # ms
+        requests.append([delay, RequestType.DELAY])  # wait after an add request to ensure name is added
+        requests.append([request_rate*2, RequestType.RATE])
+
+        for j in range(num_group_changes):
+            for i in range(n):
+                requests.append([name, RequestType.LOOKUP])
+                requests.append([name, RequestType.UPDATE])
+            # add a group change request
+            version = (j + 1) + initial_version
+            group = get_new_group_members_str(range(self.ns), group_size)
+            grp_change_request = [name, RequestType.GROUP_CHANGE, version, group]
+            requests.append(grp_change_request)
+
+        # wait before sending remove to ensure all previous requests are complete
+        requests.append([delay, RequestType.DELAY])
+        requests.append([name, RequestType.REMOVE])
+
+        output_stats = self.run_exp(requests)
+
+        self.assertEqual(output_stats.requests, 2 + (2*n + 1) * num_group_changes, "Total number of requests mismatch")
+        # some read and write can fail at start of test while name is being added
+        self.assertEqual(output_stats.success, 2 + (2*n + 1) * num_group_changes, "Successful requests mismatch")
+        self.assertEqual(output_stats.read, n*num_group_changes, "Successful reads mismatch")
+        self.assertEqual(output_stats.write, n*num_group_changes, "Successful writes mismatch")
+        self.assertEqual(output_stats.group_change, n, "Successful group change mismatch")
+        self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
+        self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
+        return output_stats
+
+    def get_group_size(self):
+        if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'primary_name_server') and \
+           int(self.config_parse.get(ConfigParser.DEFAULTSECT, 'primary_name_server')) == 1:
+            group_size = 1
+        else:
+            group_size = min(5, self.ns)
+        return group_size
+
+
+class FeatureTestDistributed(TestSetupRemote, FeatureTestMultiNodeLocal):
+    """ Runs local_tests.FeatureTestMultiNode in a distributed setup. The setup tasks are performed by
+    remote_setup.TestSetupRemote and test cases are provided by FeatureTestMultiNode"""
+    pass
+
+
+class FeatureTestUnreplicatedLocal(FeatureTestMultiNodeLocal):
+    """On local machine, tests a GNS in which both name records and replica controllers are unreplicated"""
+
+    def setUp(self):
+        FeatureTestMultiNodeLocal.setUp(self)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(1))
+
+
+class FeatureTestUnreplicatedDistributed(FeatureTestDistributed):
+    """On local machine, tests a GNS in which both name records and replica controllers are unreplicated"""
+
+    def setUp(self):
+        FeatureTestDistributed.setUp(self)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(1))
+
 
 class ConnectTimeMeasureTest(TestSetupLocal):
+    """Test setup to measure time-to-connect, i.e., time to obtain the correct value of a name"""
 
     def test_a_connect_time_test(self):
         """ Measures connect time for a name."""
@@ -643,21 +655,6 @@ class ConnectTimeMeasureTest(TestSetupLocal):
             self.run_exp_multi_lns()
 
 
-class FeatureTestUnreplicatedGNS(FeatureTestMultiNodeLocal):
-    """On local machine, tests a GNS in which both name records and replica controllers are unreplicated"""
+class ConnectTimeMeasureTestDistributed(TestSetupRemote, ConnectTimeMeasureTest):
+    """Runs connect time measurement in a distributed setup """
 
-    def setUp(self):
-        FeatureTestMultiNodeLocal.setUp(self)
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(1))
-
-
-
-# class ThroughputTest1NodeLocal(ThroughputTest3NodeLocal):
-#     """ Tests throughput for a single node setup. NEVER TESTED.
-#     """
-#     ns = 1
-#
-#     def setUp(self):
-#         FeatureTestMultiNodeLocal.setUp(self)
-#         self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', 1)
-#

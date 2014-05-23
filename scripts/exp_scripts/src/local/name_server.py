@@ -56,9 +56,12 @@ STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 #PERSISTENT_DATA_STORE = '-persistentDataStore'
 MONGO_PORT = '-mongoPort'
 
+
 PAXOS_LOG_FOLDER = '-paxosLogFolder'
 FAILURE_DETECTION_MSG_INTERVAL = '-failureDetectionMsgInterval'
 FAILURE_DETECTION_TIMEOUT_INTERVAL = '-failureDetectionTimeoutInterval'
+NO_PAXOS_LOG = '-noPaxosLog'
+
 QUIT_AFTER_TIME = '-quitAfterTime'
 NAME_ACTIVES = '-nameActives'
 
@@ -185,6 +188,8 @@ def run_name_server(node_id, work_dir):
     command += ' ' + PAXOS_LOG_FOLDER + ' ' + paxos_log_folder + '/log_'  + str(node_id)
     command += ' ' + FAILURE_DETECTION_MSG_INTERVAL + ' ' + str(failure_detection_msg_interval)
     command += ' ' + FAILURE_DETECTION_TIMEOUT_INTERVAL + ' ' + str(failure_detection_timeout_interval)
+    if exp_config.no_paxos_log:
+        command += ' ' + NO_PAXOS_LOG
 
     if emulate_ping_latencies:
         command += ' ' + EMULATE_PING_LATENCIES

@@ -1,13 +1,15 @@
 #!/usr/bin/env python2.7
-import local_tests
+""" Runs features tests on a local setup
+"""
+
+import feature_tests
+import unittest
 
 __author__ = 'abhigyan'
 
 
-import unittest
-
 # include all modules here
-test_modules = [local_tests.FeatureTestMultiNodeLocal]
+test_modules = [feature_tests.FeatureTestMultiNodeLocal]
                 # test_check.Test3NodeLocal]
 
 # this runs tests

@@ -13,8 +13,8 @@ import java.io.IOException;
  */
 public class StartExperiment {
 
-  public void startMyTest(int nodeID, String workloadFile, String lookupTraceFile, String updateTraceFile,
-                           double lookupRate, double updateRate, ClientRequestHandlerInterface handler)
+  public void startMyTest(int nodeID, String workloadFile, String updateTraceFile,
+                          ClientRequestHandlerInterface handler)
           throws IOException, InterruptedException {
 
 //        long initialExpDelayMillis = 1000;
@@ -33,8 +33,9 @@ public class StartExperiment {
 
     if (params == null || params.getExpType().equals(ExpType.TRACE)) {
       GNS.getLogger().info("Starting trace based experiment ... ");
-      TraceRequestGenerator.genRequests(workloadFile, lookupTraceFile, updateTraceFile, lookupRate, updateRate,
-              handler);
+      new NewRequestGenerator(new WorkloadParams(workloadFile), updateTraceFile, handler);
+//      TraceRequestGenerator.genRequests(workloadFile, lookupTraceFile, updateTraceFile, lookupRate, updateRate,
+//              handler);
     }
     else if (params.getExpType().equals(ExpType.CONNECT_TIME)) {
       GNS.getLogger().info("Starting connect time experiment ... ");

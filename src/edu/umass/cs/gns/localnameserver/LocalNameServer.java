@@ -23,7 +23,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Set;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -124,9 +123,8 @@ public class LocalNameServer {
 //      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
     if (StartLocalNameServer.experimentMode) {
-      new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile,
-              StartLocalNameServer.lookupTraceFile, StartLocalNameServer.updateTraceFile,
-              StartLocalNameServer.lookupRate, StartLocalNameServer.updateRateRegular, requestHandler);
+      new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
+              requestHandler);
       // name server loads initialized.
       if (StartLocalNameServer.loadDependentRedirection) {
         initializeNameServerLoadMonitoring();

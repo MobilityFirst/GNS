@@ -28,12 +28,7 @@ public class PaxosManager extends AbstractPaxosManager {
   static final String PAXOS_ID = "PXS";
 
   /**
-   * Total number of nodes. node IDs = 0, 1, ..., N -1
-   */
-//  private  int N;
-
-  /**
-   * nodeID of this node. Among node IDs = 0, 1, ..., (N - 1).
+   * nodeID of this node.
    */
   int nodeID;
 
@@ -85,6 +80,8 @@ public class PaxosManager extends AbstractPaxosManager {
    * Paxos coordinator checks whether all replicas have received the latest messages decided.
    */
   static long RESEND_PENDING_MSG_INTERVAL_MILLIS = 2000;
+
+  static int MAX_RESENDS = 5;
 
 
   /**
@@ -574,11 +571,9 @@ public class PaxosManager extends AbstractPaxosManager {
         for (int x: destIDs)
           nioServer.sendToID(x, json);
       }
-    } catch (IOException e)
-    {
+    } catch (IOException e) {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. " + destIDs);
-    } catch (JSONException e)
-    {
+    } catch (JSONException e) {
       GNS.getLogger().severe("JSON Exception in sending to IDs. " + destIDs);
     }
   }
@@ -639,28 +634,47 @@ class ResendPendingMessagesTask extends TimerTask{
 
   @Override
   public void run() {
-
+    // requests that will be reattempted
     ArrayList<ProposalStateAtCoordinator> reattempts = new ArrayList<ProposalStateAtCoordinator>();
+    // requests that will be removed because they have already been tried  'MAX_RESENDS' times
+    ArrayList<ProposalStateAtCoordinator> removeList = new ArrayList<ProposalStateAtCoordinator>();
 
     try{
-      // synchronization over
+      //
       synchronized (paxosManager.proposalStates){
         for (ProposalStateAtCoordinator propState: paxosManager.proposalStates) {
-          if (propState.getTimeSinceAccept() > PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS) {
+          if (propState.getResendCount() >= PaxosManager.MAX_RESENDS) {
+            removeList.add(propState);
+          }
+          else if (propState.getTimeSinceAccept() > PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS) {
             reattempts.add(propState);
           }
           else break;
         }
       }
+
+      for (ProposalStateAtCoordinator propState: removeList) {
+        synchronized (paxosManager.proposalStates){
+          paxosManager.proposalStates.remove(propState);
+        }
+        GNS.getLogger().severe("Stopping to resend proposal!! Pray that it gets accepted. "
+                + " PaxosID " + propState.paxosReplica.getPaxosID()
+                + " pValuePacket " + propState.pValuePacket);
+      }
+
       for (ProposalStateAtCoordinator propState: reattempts) {
         boolean result = propState.paxosReplica.resendPendingProposal(propState);
         if (!result) {
           synchronized (paxosManager.proposalStates){
             paxosManager.proposalStates.remove(propState);
           }
+        } else {
+          propState.increaseResendCount();
+          GNS.getLogger().warning("\tResendingMessage\t" + propState.paxosReplica.getPaxosID() + "\t" +
+                  propState.pValuePacket.proposal.slot + "\t");
         }
-        if (paxosManager.isDebugMode()) GNS.getLogger().severe("\tResendingMessage\t" +
-                propState.paxosReplica.getPaxosID() + "\t" + propState.pValuePacket.proposal.slot + "\t" + result + "\t");
+
+
       }
       paxosManager.startResendPendingMessages();
 

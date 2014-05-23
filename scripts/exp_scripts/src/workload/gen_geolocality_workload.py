@@ -153,19 +153,20 @@ def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_
     total_lookups = 0  # tracks the number of lookups actually generated
     total_updates = 0  # tracks the number of updates actually generated
 
+    # merge lookups and updates into a single file.
     for i, lns in enumerate(lns_list):
         lookup_trace_file = os.path.join(lookup_trace_folder, 'lookup_' + lns)
         update_trace_file = os.path.join(update_trace_folder, 'update_' + lns)
         tmp_file = '/tmp/trace/merge_tmp'
         fw = open(tmp_file, 'w')
         req_count = 0
-        for line in open(lookup_trace_file):
+        for line in open(lookup_trace_file).readlines():
             if name_prefix is not None:
                 fw.write(name_prefix)
             fw.write(line.strip() + '\t' + write_workload.RequestType.LOOKUP + '\n')
             total_lookups += 1
             req_count += 1
-        for line in open(update_trace_file):
+        for line in open(update_trace_file).readlines():
             if name_prefix is not None:
                 fw.write(name_prefix)
             fw.write(line.strip() + '\t' + write_workload.RequestType.UPDATE + '\n')
@@ -193,6 +194,7 @@ def gen_geolocality_trace(trace_folder, lns_geo_file, number_names=10000, first_
     print 'Output trace folder', trace_folder
     # print 'Update trace folder', update_trace_folder
     return total_lookups, total_updates
+
 
 def write_to_file2(fw, val, count):
     """Writes 'val' to file 'fw', 'count' times (once per line)"""

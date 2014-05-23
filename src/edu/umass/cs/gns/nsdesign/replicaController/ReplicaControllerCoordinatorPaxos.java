@@ -59,9 +59,6 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
     if (this.paxosInterface == null) return -1; // replicable app not set
     try {
       Packet.PacketType type = Packet.getPacketType(request);
-      if (!type.equals(Packet.PacketType.REPLICA_CONTROLLER_COORDINATION)) {
-        GNS.getLogger().info(" RC recvd msg: " + request);
-      }
       switch (type) {
         // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:

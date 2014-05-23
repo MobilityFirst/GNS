@@ -11,7 +11,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  *
@@ -72,6 +71,7 @@ public class TraceRequestGenerator {
     br.close();
     return trace;
   }
+
 
   /******* END: during experiments, these methods read workload trace files. Not used outside experiments. ********/
 

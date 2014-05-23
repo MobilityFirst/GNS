@@ -1099,9 +1099,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       sendMessage(i, prepare);
     }
 
-    int numberRetry = 50; //(int) (FailureDetection.timeoutIntervalMillis /
-    // PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS);
-    CheckPrepareMessageTask task = new CheckPrepareMessageTask(this,prepare, coordinator.ballotScout, numberRetry);
+    CheckPrepareMessageTask task = new CheckPrepareMessageTask(this,prepare, coordinator.ballotScout);
 
     paxosManager.executorService.scheduleAtFixedRate(task,PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS,
             PaxosManager.RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
