@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+  <ec2username name="ec2-user"/>
+  <keyname name="aws"/>
+  <hosttype name="linux"/>
+  <datastore name="MONGO"/>
+  <host id="0" hostname="ec2-54-87-145-248.compute-1.amazonaws.com" />
+  <host id="2" hostname="ec2-54-188-39-102.us-west-2.compute.amazonaws.com" />
+  <host id="1" hostname="ec2-204-236-139-195.us-west-1.compute.amazonaws.com" />
+  <host id="3" hostname="ec2-54-73-42-157.eu-west-1.compute.amazonaws.com" />
+  <host id="4" hostname="ec2-54-248-3-101.ap-northeast-1.compute.amazonaws.com" />
+</root>

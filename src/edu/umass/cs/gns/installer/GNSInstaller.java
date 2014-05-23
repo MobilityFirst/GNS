@@ -26,15 +26,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * Where gns_dev is an xml formatted configuration file that looks something like this:
  * <code>
  * <root>
- *  <username name="ec2-user"/>
- *  <keyname name="aws"/>
- *  <hosttype name="linux"/>
- *  <datastore name="MONGO"/>
- *  <host id="0" hostname="ec2-54-87-145-248.compute-1.amazonaws.com" />
- *  <host id="1" hostname="ec2-204-236-139-195.us-west-1.compute.amazonaws.com" />
- *  <host id="2" hostname="ec2-54-188-39-102.us-west-2.compute.amazonaws.com" />
- *  <host id="3" hostname="ec2-54-73-42-157.eu-west-1.compute.amazonaws.com" />
- *  <host id="4" hostname="ec2-54-248-3-101.ap-northeast-1.compute.amazonaws.com" />
+ * <username name="ec2-user"/>
+ * <keyname name="aws"/>
+ * <hosttype name="linux"/>
+ * <datastore name="MONGO"/>
+ * <host id="0" hostname="ec2-54-87-145-248.compute-1.amazonaws.com" />
+ * <host id="1" hostname="ec2-204-236-139-195.us-west-1.compute.amazonaws.com" />
+ * <host id="2" hostname="ec2-54-188-39-102.us-west-2.compute.amazonaws.com" />
+ * <host id="3" hostname="ec2-54-73-42-157.eu-west-1.compute.amazonaws.com" />
+ * <host id="4" hostname="ec2-54-248-3-101.ap-northeast-1.compute.amazonaws.com" />
  * </root>
  * </code>
  *
@@ -68,15 +68,21 @@ public class GNSInstaller {
   private static String lnsConfFileName;
   private static String nsConfFileName;
 
-  private static void loadConfig(String configName) {
-    HostConfigParser parser = new HostConfigParser(configName);
-    for (HostInfo hostInfo : parser.getHosts()) {
-      hostTable.put(hostInfo.getId(), hostInfo);
+  private static boolean loadConfig(String configName) {
+    try {
+      HostConfigParser parser = new HostConfigParser(configName);
+      for (HostInfo hostInfo : parser.getHosts()) {
+        hostTable.put(hostInfo.getId(), hostInfo);
+      }
+      keyName = parser.getKeyname();
+      ec2UserName = parser.getUsername();
+      dataStoreType = parser.getDataStoreType();
+      hostType = parser.getHostType();
+      return true;
+    } catch (HostConfigParseException e) {
+      System.out.println("Problem loading config file: " + e);
+      return false;
     }
-    keyName = parser.getKeyname();
-    ec2UserName = parser.getUsername();
-    dataStoreType = parser.getDataStoreType();
-    hostType = parser.getHostType();
   }
 
   /**
@@ -283,10 +289,10 @@ public class GNSInstaller {
     GNSNodeConfig nodeConfig = new GNSNodeConfig();
     // update the config info so know where to send stuff
 //    try {
-      for (HostInfo info : hostTable.values()) {
+    for (HostInfo info : hostTable.values()) {
 //        InetAddress ipAddress = InetAddress.getByName();
-        nodeConfig.addHostInfo(info.getId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
-      }
+      nodeConfig.addHostInfo(info.getId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
+    }
 //    } catch (UnknownHostException e) {
 //      System.err.println("Problem parsing IP address " + e);
 //    }
@@ -408,7 +414,9 @@ public class GNSInstaller {
 
       System.out.println("Config name: " + configName);
       if (configName != null) {
-        loadConfig(configName);
+        if(!loadConfig(configName)) {
+          System.exit(1);
+        }
       }
 
       if (!setupJarAndConfFilePaths()) {

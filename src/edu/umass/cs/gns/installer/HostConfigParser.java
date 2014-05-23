@@ -11,27 +11,32 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.GEOLocator;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author westy
  */
 public class HostConfigParser {
-  
+
   private static final String USERNAME = "username";
+  private static final String USERNAME_OLD = "ec2username"; // for backward compatibility
   private static final String KEYNAME = "keyname";
   private static final String HOSTTYPE = "hosttype";
   private static final String DATASTORE = "datastore";
@@ -39,7 +44,7 @@ public class HostConfigParser {
   private static final String HOSTNAME = "hostname";
   private static final String LON = "lon";
   private static final String LAT = "lat";
-  
+
   private static final String fileExtension = ".xml";
   private static final String folder = "gnsInstaller";
 
@@ -69,64 +74,85 @@ public class HostConfigParser {
     return hosts;
   }
 
-  public HostConfigParser(String filename) {
+  public HostConfigParser(String filename) throws HostConfigParseException {
     parseFile(filename);
   }
 
-  public void parseFile(String filename) {
+  public void parseFile(String filename) throws HostConfigParseException {
     String confPath = getConfPath();
     if (confPath == null) {
       return;
     }
+    Document doc = null;
     try {
       InputStream is = Files.newInputStream(Paths.get(confPath, folder, filename + fileExtension));
       //InputStream is = ClassLoader.getSystemResourceAsStream(filename + ".xml");
       //File fXmlFile = new File(filename);
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-      Document doc = dBuilder.parse(is);
-      //Document doc = dBuilder.parse(fXmlFile);
-
+      doc = dBuilder.parse(is);
+    } catch (IOException | ParserConfigurationException | SAXException e) {
+      throw new HostConfigParseException("Problem creating XML document " + e);
+    }
 //	//optional, but recommended
 //	//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
 //	doc.getDocumentElement().normalize();
-      //System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
-      NodeList nList = doc.getElementsByTagName("host");
+    NodeList nList = doc.getElementsByTagName("host");
 
-      for (int temp = 0; temp < nList.getLength(); temp++) {
+    for (int temp = 0; temp < nList.getLength(); temp++) {
 
-        Node nNode = nList.item(temp);
+      Node nNode = nList.item(temp);
 
-        if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-          Element eElement = (Element) nNode;
-          String idString = eElement.getAttribute(ID);
-          String hostname = eElement.getAttribute(HOSTNAME);
-          String latString = eElement.getAttribute(LAT);
-          String lonString = eElement.getAttribute(LON);
-          if (idString.isEmpty() || hostname.isEmpty()) {
-            throw new RuntimeException("Missing id or hostname attribute!");
-          }
-          int id = Integer.parseInt(idString);
-          Point2D location = null;
-          if (!lonString.isEmpty() && !latString.isEmpty()) {
-            location = new Point2D.Double(Double.parseDouble(lonString), Double.parseDouble(latString));
-          }
-          if (location == null) {
-            InetAddress inetAddress = InetAddress.getByName(hostname);
-            String ip = inetAddress.getHostAddress();
-            // and take a guess at the location (lat, long) of this host
-            location = GEOLocator.lookupIPLocation(ip);
-          }
-          hosts.add(new HostInfo(id, hostname, location));
+      if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+        Element eElement = (Element) nNode;
+        String idString = eElement.getAttribute(ID);
+        String hostname = eElement.getAttribute(HOSTNAME);
+        String latString = eElement.getAttribute(LAT);
+        String lonString = eElement.getAttribute(LON);
+        if (idString.isEmpty() || hostname.isEmpty()) {
+          throw new HostConfigParseException("Missing id or hostname attribute!");
         }
+        int id = Integer.parseInt(idString);
+        Point2D location = null;
+        if (!lonString.isEmpty() && !latString.isEmpty()) {
+          location = new Point2D.Double(Double.parseDouble(lonString), Double.parseDouble(latString));
+        }
+        if (location == null) {
+          InetAddress inetAddress = null;
+          try {
+            inetAddress = InetAddress.getByName(hostname);
+          } catch (UnknownHostException e) {
+            throw new HostConfigParseException("Problem looking up IP address " + e);
+          }
+          String ip = inetAddress.getHostAddress();
+          // and take a guess at the location (lat, long) of this host
+          location = GEOLocator.lookupIPLocation(ip);
+        }
+        hosts.add(new HostInfo(id, hostname, location));
       }
-      keyname = ((Element) doc.getElementsByTagName(KEYNAME).item(0)).getAttribute("name");
-      username = ((Element) doc.getElementsByTagName(USERNAME).item(0)).getAttribute("name");
-      hostType = ((Element) doc.getElementsByTagName(HOSTTYPE).item(0)).getAttribute("name");
-      dataStoreType = DataStoreType.valueOf(((Element) doc.getElementsByTagName(DATASTORE).item(0)).getAttribute("name"));
+    }
+    keyname = getSingleElementAttribute(doc, KEYNAME, "name");
+    username = getSingleElementAttribute(doc, USERNAME, "name");
+    hostType = getSingleElementAttribute(doc, HOSTTYPE, "name");
+    String dataStoreTypeName = getSingleElementAttribute(doc, DATASTORE, "name");
+    if (username == null) { // for backwards compatibility
+      username = getSingleElementAttribute(doc, USERNAME_OLD, "name");
+      if (username != null) {
+        System.out.println("!!!Use of deprecated element tag " + USERNAME_OLD + ". Fix this!!!");
+      }
+    }
+    if (keyname == null || username == null || hostType == null || dataStoreTypeName == null) {
+      throw new HostConfigParseException("Missing " + KEYNAME + " or " + USERNAME + " or " + HOSTTYPE + " or " + DATASTORE + " tag");
+    }
+    dataStoreType = DataStoreType.valueOf(dataStoreTypeName);
+  }
 
-    } catch (Exception e) {
-      e.printStackTrace();
+  private String getSingleElementAttribute(Document doc, String tagName, String attributeName) {
+    NodeList nodeList = doc.getElementsByTagName(tagName);
+    if (nodeList.getLength() > 0) {
+      return ((Element) nodeList.item(0)).getAttribute(attributeName);
+    } else {
+      return null;
     }
   }
 
