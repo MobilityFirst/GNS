@@ -2,11 +2,9 @@ import os
 from fabric.api import *
 
 env.user = 'umass_nameservice'
-env.hosts = ['planetlab2.cs.uoregon.edu'] #'planetlab1.acis.ufl.edu',
+env.hosts = ['planetlab2.cs.uoregon.edu','planetlab1.acis.ufl.edu']
 env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
 install_dir = '/home/umass_nameservice/'
-
-
 
 
 def populate_host():
@@ -30,7 +28,7 @@ def install_gns():
 
 
 #The following functions 
-#@parallel
+@parallel
 def install_mongo():
 	print "Initiating install_java routine"
 	with settings(warn_only=True):
@@ -43,7 +41,6 @@ def install_mongo():
 			presult = os.system(run_string) #The place where the install needs to be copied
 			print "presult is ", presult
 			run(install_dir+'install.sh'+'  mongodb http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz  '+install_dir)
-
 
 
 
