@@ -1,8 +1,8 @@
 Pre-requisites
 ==============
 1. host.txt file with list of hostnames (sample file in the repository)
-2. pssh / pscp tools. You can download it from here
-http://www.theether.org/pssh/
+2. Fabric Package Module in Python
+http://www.fabfile.org/installing.html
 
 
 
@@ -12,22 +12,18 @@ Usage
 
 The installation has following options. 
 
-./setup.sh  <options>
--j  "username /path/to/install/jdk"
--m  "username /path/to/isntall/mongodb"
--g  "username /path/to/copy/gns.jar"
+$ fab install_mongo (to install mongodb)
+$ fab install_java  (to install jdk )
+$ fab install_gns   (to install gns)
 
 The arguments to the options must be specified WITH Double Quotes. 
 
 
-
 Note
 -----
-1. pscp/ssh can fail if the keys are not added in the ssh path. To add the desired keys in your path.
-2. To add keys to ssh config 
+1. To add keys to ssh config 
 	$ ssh-add <key.filename> 
-3. Currently, the download link for jdk and mongodb are embedded in setup.sh this can be easily 
-changed as a parameter to parallel_exec subroutine. 
+2. Currently, the download link for jdk and mongodb are embedded in setup.sh this can be easily changed as a parameter to fabfile.py 
 
 
 
