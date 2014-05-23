@@ -1,5 +1,11 @@
 #!/bin/bash
 
+: '
+Sample Download Path 
+MongoDB: http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz
+Java: http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz
+'
+
 tool=$1
 download=$2
 path=$3
@@ -15,11 +21,7 @@ set_path() {
 }
 
 
-: '
-Sample Download Path 
-MongoDB: http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz
-Java: http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz
-'
+
 
 if [[ $tool == 'mongodb' ]]
 	then
@@ -54,11 +56,12 @@ if [ -z "$version" ]
  		echo $1 "is already installed in the system , version =>" $version
 fi
 
-
 : '
 Finally the self-Descruting Myself :(
 	rm -f install.sh
 	echo "Everything Successfull GoodBye"
 '
+
+
 
 #-----------------End of Installation Script --------------------------------
