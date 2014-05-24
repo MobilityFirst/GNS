@@ -55,7 +55,7 @@ Basic test for 1 name successful. Local name server exiting.
 
 The name server will continue to run and you need to kill them manually. 
 
-These scripts are can be automatically run by running the script ‘run_basic.sh’ in this folder as follows:
+Assuming you have completed step 1, the subsequent steps  can be automatically run by running the script ‘run_basic.sh’ in this folder as follows:
 
 ./run_basic.sh
 
