@@ -1,11 +1,15 @@
 import os 
 from fabric.api import *
 
-env.user = 'umass_nameservice'
-env.hosts = ['planetlab2.cs.uoregon.edu','planetlab1.acis.ufl.edu']
-env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
-install_dir = '/home/umass_nameservice/'
+#env.user = 'umass_nameservice'
+#env.hosts = ['planetlab2.cs.uoregon.edu','planetlab1.acis.ufl.edu']
+#env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
+#install_dir = '/home/umass_nameservice/'
 
+env.user = 'abhigyan'
+env.hosts = ['plum.cs.umass.edu', 'pear.cs.umass.edu', 'date.cs.umass.edu']
+#env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
+install_dir = '/home/abhigyan/'
 
 def populate_host():
 	thost = []
@@ -40,7 +44,7 @@ def install_mongo():
 			run_string = 'scp '+'  install.sh  '+ env.user+'@'+env.host_string+':'+install_dir
 			presult = os.system(run_string) #The place where the install needs to be copied
 			print "presult is ", presult
-			run(install_dir+'install.sh'+'  mongodb http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz  '+install_dir)
+			run('bash ' + install_dir+'install.sh'+' mongodb http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz '+install_dir)
 
 
 

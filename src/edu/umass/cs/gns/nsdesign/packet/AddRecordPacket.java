@@ -92,7 +92,6 @@ public class AddRecordPacket extends BasicPacket {
    */
   private int sourceId;
 
-  
 
   /**
    * Constructs a new AddRecordPacket with the given name, value, and TTL.

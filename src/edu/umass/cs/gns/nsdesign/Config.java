@@ -41,7 +41,7 @@ public class Config {
   public static double normalizingConstant = 0.5;
   public static int minReplica = 3;
   public static int maxReplica = 100;
-  public static ReplicationFrameworkType replicationFrameworkType;
+  public static ReplicationFrameworkType replicationFrameworkType = ReplicationFrameworkType.LOCATION;
   public static int analysisIntervalSec = 100000;
   public static int movingAverageWindowSize = 20;
   public static int nameServerVoteSize = 30;

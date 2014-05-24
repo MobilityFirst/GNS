@@ -97,7 +97,7 @@ class TestSetupRemote(BasicSetup):
             self.config_parse.set(ConfigParser.DEFAULTSECT, 'local_output_folder', self.exp_output_folder)
         else:
             self.exp_output_folder = self.local_output_folder
-
+            
         # write the config file here
         self.config_parse.write(open(temp_config_file, 'w'))
 
@@ -106,8 +106,9 @@ class TestSetupRemote(BasicSetup):
         exp_folder = os.path.join(parent_folder, 'distributed')
         print '\nStarting experiment ....\n'
         # the script 'run_distributed.py' can only be run from its current folder. so we 'cd' to its folder
-        os.system('cd ' + exp_folder + '; ./run_distributed.py ' + temp_config_file)
-        #+ ' > ' + out_file + ' 2> ' + err_file)
+        os.system('cd ' + exp_folder + '; ./run_distributed.py ' + temp_config_file
+                  + ' > ' + out_file + ' 2> ' + err_file)
+        #
         print '\nEXPERIMENT OVER \n'
         stats_folder = os.path.join(self.exp_output_folder, distributed.exp_config.DEFAULT_STATS_FOLDER)
         return FinalStats(stats_folder)

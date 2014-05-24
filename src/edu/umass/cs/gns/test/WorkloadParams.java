@@ -24,7 +24,7 @@ public class WorkloadParams {
   public static final String CORRESPONDENT_ID = "correspondent_id";
   public static final String MOBILE_UPDATE_INTERVAL = "mobile_update_interval";
 
-  private ExpType expType;
+  private ExpType expType = ExpType.BASICTEST;
 
   private int objectSizeKB;
   private int ttl;
@@ -44,9 +44,11 @@ public class WorkloadParams {
 
     if (prop.containsKey(EXP_TYPE)) {
       this.expType = ExpType.getExpType(prop.getProperty(EXP_TYPE));
+    }
+
+    if (this.expType.equals(ExpType.CONNECT_TIME)) {
       readConnectTimeExpParameters(prop);
-    }  else {
-      this.expType = ExpType.TRACE;
+    }  else if (this.expType.equals(ExpType.TRACE)) {
       readTraceExpParameters(prop);
     }
 

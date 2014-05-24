@@ -6,8 +6,6 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 
-import edu.umass.cs.gns.nsdesign.Config;
-
 /**
  *
  * @author westy
@@ -23,7 +21,7 @@ public enum ReplicationFrameworkType {
   public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type) {
     ReplicationFrameworkInterface framework = null;
     // what type of replication?
-    switch (Config.replicationFrameworkType) {
+    switch (type) {
       case LOCATION:
         framework = new LocationBasedReplication();
         break;

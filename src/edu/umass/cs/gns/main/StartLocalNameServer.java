@@ -69,7 +69,7 @@ public class StartLocalNameServer {
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
   public static final String VARIATION = "variation";
 
-  public static ReplicationFrameworkType replicationFramework;
+  public static ReplicationFrameworkType replicationFramework = ReplicationFrameworkType.LOCATION;
 
   public static int regularWorkloadSize;
   public static int mobileWorkloadSize;
@@ -201,8 +201,6 @@ public class StartLocalNameServer {
     Option delta = new Option(DELTA, true, "Adaptive Retransmission: Weight assigned to latest sample in calculating moving average.");
     Option mu = new Option(MU, true, "Adaptive Retransmission: Co-efficient of estimated RTT in calculating timeout.");
     Option phi = new Option(PHI, true, "Adaptive Retransmission: Co-efficient of deviation in calculating timeout.");
-
-//    Option chooseFromClosestK = new Option("chooseFromClosestK", true, "chooseFromClosestK");
 
     Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "fileLoggingLevel");
     Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "consoleOutputLevel");
@@ -459,9 +457,6 @@ public class StartLocalNameServer {
       if (allValues.containsKey(LOCATION) && Boolean.parseBoolean(allValues.get(LOCATION))) {
         replicationFramework = ReplicationFrameworkType.LOCATION;
         voteIntervalMillis = Integer.parseInt(allValues.get(VOTE_INTERVAL)) * 1000;
-//        if (allValues.containsKey("chooseFromClosestK")) {
-//          chooseFromClosestK = Integer.parseInt(allValues.get("chooseFromClosestK"));
-//        }
       } else if (allValues.containsKey(BEEHIVE) && Boolean.parseBoolean(allValues.get(BEEHIVE))) {
         replicationFramework = ReplicationFrameworkType.BEEHIVE;
         BeehiveDHTRouting.beehive_DHTbase = Integer.parseInt(allValues.get(BEEHIVE_BASE));

@@ -6,7 +6,7 @@ package edu.umass.cs.gns.test;
  * Created by abhigyan on 5/14/14.
  */
 public enum ExpType {
-
+  BASICTEST("basic_test"),               // sends requests given in trace
   TRACE("trace"),               // sends requests given in trace
   CONNECT_TIME("connect_time"); // measures time to connect for a name
 

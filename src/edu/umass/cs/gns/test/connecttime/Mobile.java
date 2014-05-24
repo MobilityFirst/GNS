@@ -93,7 +93,7 @@ public class Mobile implements Runnable{
       setCurrentValue(value);
       NSResponseCode response = Intercessor.sendUpdateRecordBypassingAuthentication(name, key,
               value, null, UpdateOperation.REPLACE_ALL);
-      assert response == NSResponseCode.NO_ERROR: "Error in adding record";
+      assert response == NSResponseCode.NO_ERROR: "Error in updating record";
     }
   }
 

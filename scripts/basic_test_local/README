@@ -1,0 +1,65 @@
+Running a local test with GNS.
+
+
+(1) Check out GNS from svn locally. Lets call the checkout folder GNS_FOLDER. Then, build jar file for GNS as follows:
+
+svn co svn+ssh://none.cs.umass.edu/svn/mobility-first/GNS/trunk GNS_FOLDER
+cd GNS_FOLDER
+ant all
+
+(2) Download and run mongoDB on local machine as follows. 
+
+# create directory where GNS data will be stored. Lets call that folder GNS_DATA
+mkdir -p GNS_DATA
+# run mongodb
+mongod --dbpath=GNS_DATA
+
+# to delete any state from from previous run of GNS. use following commands:
+killall -9 mongod
+rm -rf GNS_DATA
+
+
+(3) Now let us create a config file describing IP and ports for 3 name servers and 1 local name servers like this. Let us call this file NODE_CONFIG. A sample file is included in this folder by name: node_config
+
+0 yes 127.0.0.1 23410 0 0 0
+1 yes 127.0.0.1 23510 0 0 0
+2 yes 127.0.0.1 23610 0 0 0
+3 no 127.0.0.1 23710 0 0 0
+
+The format of each line is as follows: 
+node_id    isNS?    hostname   starting_port ping_latency latitude longitude
+
+‘isNS?' should be ‘yes' for  name servers, ’no’ for local name servers. The last three values are not really used and they can be zero. Note that starting port numbers are different for each node.
+
+(4) Now we will run name servers. For each name server, create a separate new directory and type the following command in side that directory. Specify complete path to NODE_CONFIG file when typing following commands.
+
+Run name server with id = 0:
+java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id 0 -nsfile NODE_CONFIG
+
+Run name server with id = 1:
+java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id 1 -nsfile NODE_CONFIG
+
+Run name server with id = 2:
+java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id 2 -nsfile NODE_CONFIG
+
+
+(5) Next, we will start a local name server that will send requests to the name server. Again create a separate directory for the local name server, and type the following command.
+
+java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer -id 3 -nsfile NODE_CONFIG -experimentMode -statFileLoggingLevel FINE -statConsoleOutputLevel FINE
+
+
+After some time, the local name server will terminate by printing the following message: 
+
+Basic test for 1 name successful. Local name server exiting.
+
+
+The name server will continue to run and you need to kill them manually. 
+
+These scripts are can be automatically run by running the script ‘run_basic.sh’ in this folder as follows:
+
+./run_basic.sh
+
+
+The test code which the local name server runs is in class edu.umass.cs.gns.test.basictest.Test1Name
+
+

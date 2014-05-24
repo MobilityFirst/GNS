@@ -12,6 +12,9 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ * @deprecated
+ */
 public class RequestGenerator {
 
   public  void generateRequests(WorkloadParams workloadParams, List<TestRequest> requests,
