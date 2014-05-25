@@ -6,7 +6,8 @@ env.hosts = ['planetlab2.cs.uoregon.edu','planetlab1.acis.ufl.edu']
 env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
 install_dir = '/home/umass_nameservice/'
 
-'''env.user = 'abhigyan'
+'''
+env.user = 'abhigyan'
 env.hosts = ['plum.cs.umass.edu', 'pear.cs.umass.edu', 'date.cs.umass.edu']
 #env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
 install_dir = '/home/abhigyan/'
@@ -36,9 +37,9 @@ def install_gns():
 #The following functions 
 @parallel
 def install_mongo():
-	print "Initiating install_java routine"
+	print "Initiating install_mongo routine"
 	with settings(warn_only=True):
-		result = run('mongo -version')
+		result = run("source ~/.bashrc && mongo -version")
 		if result.return_code == 0:
 			print "mongo already exists in PATH, no need to install"
 		else:

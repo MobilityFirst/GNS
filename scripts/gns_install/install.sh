@@ -43,9 +43,11 @@ if [ -z "$version" ]
 	if [ $? -eq 0 ]
 	then
   		echo "sucessfully downloaded"
-  		echo "tar -xvf" $tool*gz
-  		tar -xvf $1*
-  		dname=`ls -l | grep '^d' | grep $tool | awk '{print $9}'`
+  		#find . -type f -name "$tool*gz" -print | xargs tar -xvf
+  		find . -maxdepth 1 -name $tool\*gz -exec tar -zxvf {} \;
+  		#echo "tar -xvf" $tool*\.(tgz|tar\.gz)
+  		#tar -xvf $1*
+  		dname=`ls -l | grep '^d' | grep -E $tool*[1..9] | awk '{print $9}'`
   		set_path $path/$dname/bin  #Need to test the parameter passing
 	else
  			echo $1 "unsuccessfully downloaded"
@@ -55,11 +57,11 @@ if [ -z "$version" ]
  		echo $1 "is already installed in the system , version =>" $version
 fi
 
-: '
-Finally the self-Descruting Myself :(
-	rm -f install.sh
-	echo "Everything Successfull GoodBye"
-'
+#: 
+# Finally the self-Descruting Myself :(
+rm -f install.sh
+#	echo "Everything Successfull GoodBye"
+
 
 
 
