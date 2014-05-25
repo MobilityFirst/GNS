@@ -22,7 +22,6 @@ set_path() {
 
 
 
-
 if [[ $tool == 'mongodb' ]]
 	then
 	version=$(mongo -version)
@@ -44,7 +43,7 @@ if [ -z "$version" ]
 	if [ $? -eq 0 ]
 	then
   		echo "sucessfully downloaded"
-  		echo "tar -xvf" $1*
+  		echo "tar -xvf" $tool*gz
   		tar -xvf $1*
   		dname=`ls -l | grep '^d' | grep $tool | awk '{print $9}'`
   		set_path $path/$dname/bin  #Need to test the parameter passing

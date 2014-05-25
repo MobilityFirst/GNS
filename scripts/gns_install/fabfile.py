@@ -1,15 +1,17 @@
 import os 
 from fabric.api import *
 
-#env.user = 'umass_nameservice'
-#env.hosts = ['planetlab2.cs.uoregon.edu','planetlab1.acis.ufl.edu']
-#env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
-#install_dir = '/home/umass_nameservice/'
+env.user = 'umass_nameservice'
+env.hosts = ['planetlab2.cs.uoregon.edu','planetlab1.acis.ufl.edu']
+env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
+install_dir = '/home/umass_nameservice/'
 
-env.user = 'abhigyan'
+'''env.user = 'abhigyan'
 env.hosts = ['plum.cs.umass.edu', 'pear.cs.umass.edu', 'date.cs.umass.edu']
 #env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
 install_dir = '/home/abhigyan/'
+'''
+
 
 def populate_host():
 	thost = []
@@ -61,7 +63,7 @@ def install_java():
 			run_string = 'scp '+'  install.sh  '+ env.user+'@'+env.host_string+':/home/umass_nameservice/'
 			presult = os.system(run_string) #The place where the install needs to be copied
 			print "presult is ", presult
-			run(install_dir+'install.sh'+'  jdk http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz  '+install_dir)
+			run('bash '+ install_dir+'install.sh'+'  jdk http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz  '+install_dir)
 
 
 if __name__ == '__main__':

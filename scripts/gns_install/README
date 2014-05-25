@@ -5,15 +5,13 @@ Pre-requisites
 http://www.fabfile.org/installing.html
 
 
-
-
 Usage
 ======
 
 The installation has following options. 
 
 $ fab install_mongo (to install mongodb)
-$ fab install_java  (to install jdk )
+$ fab install_java  (to install jdk)
 $ fab install_gns   (to install gns)
 
 The arguments to the options must be specified WITH Double Quotes. 
@@ -24,7 +22,3 @@ Note
 1. To add keys to ssh config 
 	$ ssh-add <key.filename> 
 2. Currently, the download link for jdk and mongodb are embedded in setup.sh this can be easily changed as a parameter to fabfile.py 
-
-
-
-
