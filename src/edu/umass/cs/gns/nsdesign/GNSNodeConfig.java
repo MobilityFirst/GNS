@@ -458,7 +458,7 @@ public class GNSNodeConfig implements NodeConfig {
    * Tests *
    */
   public static void main(String[] args) throws Exception {
-	String filename = "/Users/arun/GNS/conf/testCodeResources/name-server-info";
+	String filename = Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/nodeConfig";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, 44);
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNameServerIDs().size());
