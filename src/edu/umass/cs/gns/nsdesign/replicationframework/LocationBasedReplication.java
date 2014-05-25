@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 
 import java.util.HashSet;
@@ -29,7 +30,7 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
    * @param count  Number of times replicas have been computed
    ************************************************************/
   @Override
-  public ReplicationOutput newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
+  public ReplicationOutput newActiveReplica(ReconfiguratorInterface rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
 
     Set<Integer> newActiveNameServerSet;
     Set<Integer> localityBasedReplicas;
@@ -76,7 +77,7 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
     return new ReplicationOutput(newActiveNameServerSet, localityBasedReplicas);
   }
 
-  private boolean isHighlyLoaded(ReplicaController rc, int nodeID) {
+  private boolean isHighlyLoaded(ReconfiguratorInterface rc, int nodeID) {
     return rc.getNsRequestRates().get(nodeID) != null && rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
   }
 

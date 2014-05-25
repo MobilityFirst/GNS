@@ -26,12 +26,21 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
 /**
+ * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
+ * 
+ * Arun: FIXME: Is the above comment still applicable? If not, remove.
+ */
+/**
+ * Work in progress. Inactive code.
+ * 
+ * Arun: FIXME: Is this still work in progress inactive code or is it used?
  *
  * Class implements all functionality of a replica controller.
  * We keep a single instance of this class for all names for whom this name server is a replica controller.
  * Created by abhigyan on 2/26/14.
+ * 
  */
-public class ReplicaController implements Replicable {
+public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 

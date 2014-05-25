@@ -7,6 +7,11 @@ import java.util.HashSet;
 /**
  *
  * Created by abhigyan on 3/28/14.
+ * 
+ * FIXME: Arun: Unclear what the point of this class is. Needs to be
+ * documented. It seems to be waiting for a majority of responses 
+ * from (old or new?) active replicas. Should use WaitforUtility in
+ * multipaxos.
  */
 public class NewActiveStartInfo {
 

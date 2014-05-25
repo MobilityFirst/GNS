@@ -15,7 +15,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
@@ -41,6 +40,9 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   /** Configuration for all nodes in GNS **/
   private GNSNodeConfig gnsNodeConfig;
 
+  /* FIXME: Arun: There needs to be detailed documentation of why you 
+   * need UniqueIDHashMap.
+   */
   private UniqueIDHashMap ongoingStateTransferRequests = new UniqueIDHashMap();
 
   private UniqueIDHashMap activeStartupInProgress = new UniqueIDHashMap();
@@ -50,6 +52,9 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
     return coordinator;
   }
 
+  /* FIXME: Arun: Really bizarre to pass a ScheduledThreadPoolExecutor in the constructor. Why
+   * can't this class use an internal executor of its own? 
+   */
   public ActiveReplica(int nodeID, GNSNodeConfig gnsNodeConfig,
                        GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                        AppType reconfigurableApp) {

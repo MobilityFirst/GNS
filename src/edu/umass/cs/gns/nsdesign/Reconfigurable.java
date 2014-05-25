@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign;
 
 /**
- * Created by abhigyan on 3/27/14.
+@author V. Arun
  */
 public interface Reconfigurable extends Application {
 

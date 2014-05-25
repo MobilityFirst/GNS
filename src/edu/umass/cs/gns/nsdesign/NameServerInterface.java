@@ -13,12 +13,17 @@ import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
  *
  *
  * Created by abhigyan on 2/27/14.
+ * 
+ * Arun: Edited to remove a warning about using raw types. FIXME: This is an
+ * odd interface to have. If the goal of this interface is just as a container
+ * for the members being retrieved below, they might as well be defined as
+ * public final members here and accessed directly.
  */
 public interface NameServerInterface {
 
   public ActiveReplicaCoordinator getActiveReplicaCoordinator();
 
-  public ActiveReplica getActiveReplica();
+  public ActiveReplica<?> getActiveReplica();
 
   public ReplicaControllerCoordinator getReplicaControllerCoordinator();
 

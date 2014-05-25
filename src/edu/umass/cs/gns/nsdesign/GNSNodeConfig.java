@@ -11,7 +11,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,9 +26,13 @@ import java.util.concurrent.ConcurrentMap;
  *
  *
  * @author Abhigyan
+ * 
+ * Arun: Removed unused variable warnings and dead code. FIXME: Unclear why we
+ * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable 
+ * from here.
  */
 public class GNSNodeConfig implements NodeConfig {
-
+	
   private int nodeID = -1;
 
   public static final long INVALID_PING_LATENCY = -1L;
@@ -52,9 +55,6 @@ public class GNSNodeConfig implements NodeConfig {
    */
   private ConcurrentMap<Integer, Integer> localNameServerMapping =
           new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
-
-
-  private Random rand = new Random();
 
   /**
    * Creates an empty GNSNodeConfig
@@ -451,33 +451,17 @@ public class GNSNodeConfig implements NodeConfig {
       }
     }
 
-//    // if multiple name servers are nearly equidistant, select randomly among them for load-balancing
-//    if (nameServerID != INVALID_NAME_SERVER_ID) {
-//      ArrayList<Integer> closeNameServers = new ArrayList<Integer>();
-//      long tolerance = 5; // tolerate few extra ms delay
-//      for (Integer serverId: serverIds) {
-//        if (excludeServers != null && excludeServers.contains(serverId)) {
-//          continue;
-//        }
-//        long pingLatency = getPingLatency(serverId);
-//        if (pingLatency >= 0 && pingLatency < lowestLatency + tolerance) {
-//          closeNameServers.add(serverId);
-//        }
-//      }
-//
-//      nameServerID = closeNameServers.get(rand.nextInt(closeNameServers.size()));
-//    }
     return nameServerID;
   }
 
   /**
    * Tests *
    */
-  public void main(String[] args) throws Exception {
-    GNSNodeConfig GNSNodeConfig = new GNSNodeConfig("name-server-info", 44);
-    System.out.println(GNSNodeConfig.hostInfoMapping.toString());
-    System.out.println(GNSNodeConfig.getNameServerIDs().size());
-//    System.out.println(GNSNodeConfig.getClosestNameServer() + "\t" + getPingLatency(getClosestNameServer()));
+  public static void main(String[] args) throws Exception {
+	String filename = "/Users/arun/GNS/conf/testCodeResources/name-server-info";
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, 44);
+    System.out.println(gnsNodeConfig.hostInfoMapping.toString());
+    System.out.println(gnsNodeConfig.getNameServerIDs().size());
 
     Set<Integer> nameservers = new HashSet<Integer>();
     nameservers.add(1);
@@ -487,9 +471,6 @@ public class GNSNodeConfig implements NodeConfig {
     nameservers.add(59);
     Set<Integer> nameserverQueried = new HashSet<Integer>();
     nameserverQueried.add(8);
-    System.out.println(GNSNodeConfig.this.getClosestServer(nameservers, null));
+    System.out.println(gnsNodeConfig.getClosestServer(nameservers, null));
   }
-
-
-
 }

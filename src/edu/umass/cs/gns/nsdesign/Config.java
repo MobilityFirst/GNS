@@ -27,7 +27,10 @@ public class Config {
   public static boolean debugMode = false;
 
   public static boolean experimentMode = false;
-
+  
+  // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?
+  public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/"; 
+  
 
   // paxos parameters
   public static int failureDetectionTimeoutSec = 30000;
@@ -166,8 +169,6 @@ public class Config {
       singleNS = true;
       if (Config.debugMode) GNS.getLogger().fine("Number of primary: " + GNS.numPrimaryReplicas + " \tSingleNS\t" + singleNS);
     }
-
-
   }
 
 }

@@ -31,6 +31,7 @@ public class Upsert {
   public static void handleUpsert(UpdatePacket updatePacket, ReplicaController replicaController) throws JSONException, IOException {
     if (Config.debugMode) {
       GNS.getLogger().warning("!!!!!!!SHOULD NOT BE CALLED. Handling upsert case ....... ");
+      throw new RuntimeException("This method should not have been called");
     }
     ReplicaControllerRecord nameRecordPrimary;
     try {

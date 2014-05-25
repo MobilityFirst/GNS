@@ -18,10 +18,12 @@ import java.util.TimerTask;
  *
  * todo write doc here.
  * Created by abhigyan on 3/28/14.
+ * 
+ * Arun: 
  */
 public class CopyStateFromOldActiveTask extends TimerTask {
 
-  private ActiveReplica activeReplica;
+  private ActiveReplica<?> activeReplica;
 
   private NewActiveSetStartupPacket packet;
 
@@ -29,7 +31,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
 
   private int requestID;
 
-  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica activeReplica) throws JSONException {
+  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica<?> activeReplica) throws JSONException {
     this.oldActivesQueried = new HashSet<Integer>();
     this.activeReplica = activeReplica;
     // first, store the original packet in hash map
@@ -49,7 +51,6 @@ public class CopyStateFromOldActiveTask extends TimerTask {
     valuesMap.put(NameRecordKey.EdgeRecord.getName(), rv);
     packet.changePacketTypeToPreviousValueResponse();
     packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
-
   }
 
   public void run_alt() {

@@ -14,15 +14,26 @@ import org.json.JSONObject;
 /**
 @author V. Arun, abhigyan
  */
+
+/*
+ * Arun: FIXME: I can't seem to remember creating this class. The method
+ * handleDecision is not documented, but it seems to be simply handling
+ * stops if needed and otherwise calling handleDecision on activeReplica.
+ * There's got to be a better way to do this with Reconfigurable and
+ * Replicable. Unclear why we have both ActiveReplica and ActiveReplicaApp.
+ * 
+ * There is a cyclic dependency between ActiveReplica and ActiveReplicaApp. 
+ * Cyclic dependency = bad design.
+ */
 public class ActiveReplicaApp implements Reconfigurable, Replicable {
 
 	Application app=null;
-	ActiveReplica activeReplica = null;
+	ActiveReplica<?> activeReplica = null;
 
   /*** Total number of requests handled by this node */
   private int requestCount = 0;
 
-	public ActiveReplicaApp(Application app, ActiveReplica activeReplica) {
+	public ActiveReplicaApp(Application app, ActiveReplica<?> activeReplica) {
 		this.app = app;
     this.activeReplica = activeReplica;
 	}

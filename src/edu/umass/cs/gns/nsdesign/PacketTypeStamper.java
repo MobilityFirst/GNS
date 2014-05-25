@@ -11,10 +11,14 @@ import java.io.IOException;
  * This class puts a given packet type on outgoing packets and sends them via GNSNIOTransportInterface.
  *
  * Created by abhigyan on 3/29/14.
+ * 
+ * Arun: Edited to make member fields private. FIXME: Need to change
+ * the name to StampAndSend or something to reflect that this class is 
+ * actually sending the packet.
  */
 public class PacketTypeStamper implements GNSNIOTransportInterface {
-  GNSNIOTransportInterface nio;
-  Packet.PacketType type;
+  private GNSNIOTransportInterface nio;
+  private Packet.PacketType type;
 
   public PacketTypeStamper(GNSNIOTransportInterface nio, Packet.PacketType type) {
     this.nio = nio;

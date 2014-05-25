@@ -1,15 +1,13 @@
 package edu.umass.cs.gns.nsdesign;
 
 /**
- * Created by abhigyan on 3/27/14.
+@author V. Arun
  */
-/* PaxosInterface is the same as this interface.
- */
+
 public interface Replicable extends Application {
 
-  //public void handleDecision(String name, String value, boolean recovery);
-
-  public String getState(String name);
-
+	public String getState(String name);
+  
   public boolean updateState(String name, String state);
+
 }

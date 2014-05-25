@@ -21,7 +21,6 @@ public class NSNodeConfig implements NodeConfig {
   @Override
   public boolean containsNodeInfo(int nodeId) {
     return gnsNodeConfig.getNameServerIDs().contains(nodeId);
-    //return nodeId < gnsNodeConfig.getNumberOfNameServers();
   }
 
 

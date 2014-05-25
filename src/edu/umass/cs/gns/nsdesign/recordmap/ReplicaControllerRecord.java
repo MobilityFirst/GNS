@@ -11,6 +11,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.util.StatsInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -491,7 +492,7 @@ public class ReplicaControllerRecord {
    *
    * @param numReplica Number of name servers to be selected.
    */
-  public Set<Integer> getHighestVotedReplicaID(ReplicaController rc, GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
+  public Set<Integer> getHighestVotedReplicaID(ReconfiguratorInterface rc, GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
     Set<Integer> replicas = new HashSet<Integer>();
 
     for (int i = 1; i <= numReplica; i++) {
@@ -532,7 +533,7 @@ public class ReplicaControllerRecord {
     return replicas;
   }
 
-  private boolean isHighlyLoaded(ReplicaController rc, int nodeID) {
+  private boolean isHighlyLoaded(ReconfiguratorInterface rc, int nodeID) {
     return rc.getNsRequestRates().get(nodeID) != null && rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
   }
 
