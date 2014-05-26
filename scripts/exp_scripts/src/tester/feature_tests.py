@@ -28,7 +28,7 @@ from remote_setup import TestSetupRemote
 __author__ = 'abhigyan'
 
 
-class FeatureTestMultiNodeLocal(TestSetupLocal):
+class FeatureTestLocal(TestSetupLocal):
     """This is the baseline test which GNS is expected to pass under local tests. It tests several features
     of GNS for a 3 name server and 1 local name server  setup. It does not measure throughput of GNS"""
 
@@ -529,7 +529,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
 
     def test_n_read_writes_groupchanges(self):
         """ Tests a workload where reads and writes for 1 name are inter-mixed with group changes"""
-        request_rate = 100
+        request_rate = 1000
         duration = 50
         group_change_interval = 1
         self.run_exp_reads_writes_groupchanges(request_rate, duration, group_change_interval)
@@ -542,7 +542,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         name = 'test_name'
         n = int(request_rate * exp_duration)
         requests = [[name, RequestType.ADD]]
-        delay = 2000  # ms
+        delay = 10000  # ms
         requests.append([delay, RequestType.DELAY])  # wait after an add request to ensure name is added
         requests.append([request_rate*2, RequestType.RATE])
         for i in range(n):
@@ -617,17 +617,17 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         return group_size
 
 
-class FeatureTestDistributed(TestSetupRemote, FeatureTestMultiNodeLocal):
+class FeatureTestDistributed(TestSetupRemote, FeatureTestLocal):
     """ Runs local_tests.FeatureTestMultiNode in a distributed setup. The setup tasks are performed by
     remote_setup.TestSetupRemote and test cases are provided by FeatureTestMultiNode"""
     pass
 
 
-class FeatureTestUnreplicatedLocal(FeatureTestMultiNodeLocal):
+class FeatureTestUnreplicatedLocal(FeatureTestLocal):
     """On local machine, tests a GNS in which both name records and replica controllers are unreplicated"""
 
     def setUp(self):
-        FeatureTestMultiNodeLocal.setUp(self)
+        FeatureTestLocal.setUp(self)
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(1))
 
 
