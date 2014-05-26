@@ -11,13 +11,15 @@ import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.util.NSResponseCode;
 
+import java.io.Serializable;
+
 /**
  * Either a ValuesMap or an Error. Also
  * has some instrumentation for round trip times and what server responded.
  * 
  * @author westy
  */
-public class QueryResult {
+public class QueryResult implements Serializable{
 
   /**
    * Set if the response is not an error.

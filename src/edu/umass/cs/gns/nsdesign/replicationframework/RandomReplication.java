@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
+import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
 
 import java.util.*;
 
@@ -13,15 +13,15 @@ import java.util.*;
  * 
  * @author Hardeep Uppal
  ************************************************************/
-public class RandomReplication {//implements ReplicationFrameworkInterface
+public class RandomReplication implements ReplicationFrameworkInterface{
   int NUM_RETRY = 1000;
-//  @Override
-  public Set<Integer> newActiveReplica(ReplicaController rc, ReplicaControllerRecord rcRecord, int numReplica, int count)
+  @Override
+  public ReplicationOutput newActiveReplica(ReconfiguratorInterface rc, ReplicaControllerRecord rcRecord, int numReplica, int count)
           throws FieldNotFoundException {
     // random replicas will be selected deterministically for each name.
 
     if (numReplica == rc.getGnsNodeConfig().getNameServerIDs().size()) {
-      return new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs());
+      return new ReplicationOutput(new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs()));
     }
 
     Set<Integer> activeNameServers = rcRecord.getActiveNameservers();
@@ -48,7 +48,7 @@ public class RandomReplication {//implements ReplicationFrameworkInterface
         } while (!added && numTries < NUM_RETRY);
       }
 
-      return newActiveNameServerSet;
+      return new ReplicationOutput(newActiveNameServerSet);
     } else if (numReplica < numActiveNameServers && count > 1) {
       //Randomly remove old active name server
 
@@ -60,7 +60,7 @@ public class RandomReplication {//implements ReplicationFrameworkInterface
         oldActiveNameServerSet.remove(oldActiveNameServerSet.size() - 1);
       }
 
-      return new HashSet<Integer>(oldActiveNameServerSet);
+      return new ReplicationOutput(new HashSet<Integer>(oldActiveNameServerSet));
     } else {
       if (count == 1) {
         Set<Integer> newActiveNameServerSet = new HashSet<Integer>();
@@ -77,14 +77,13 @@ public class RandomReplication {//implements ReplicationFrameworkInterface
           } while (!added && numTries < NUM_RETRY);
         }
 
-        return newActiveNameServerSet;
+        return new ReplicationOutput(newActiveNameServerSet);
       } else {
         //Return the old set of active name servers
-        return activeNameServers;
+        return new ReplicationOutput(activeNameServers);
       }
     }
   }
-
 
   private int getSetIndex(Set<Integer> nodeIds, int index) {
     int count = 0;
@@ -97,9 +96,10 @@ public class RandomReplication {//implements ReplicationFrameworkInterface
   }
 
   /**
-   * Putting this code here because it is related to the above random replication strategy.
+   * Abhigyan: Putting this code here because it is related to the above random replication strategy.
    * Implements the algorithm local name server uses to select a name server when we experiment with beehive
    * replication. It chooses the closest name server if available, otherwise picks a name server randomly.
+   * I think this approximates a replica that will be chosen using DHT routing.
    *
    * @param gnsNodeConfig
    * @param nameserverQueried

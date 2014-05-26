@@ -19,21 +19,21 @@ class GenerateUpdateRequest extends TimerTask {
   private int updateCount;
   private String name;
   private LNSPacketDemultiplexer packetDemultiplexer;
-  private int objectSizeKB;
+  private int objectSizeBytes;
 
-  public GenerateUpdateRequest(String name, int updateCount, int objectSizeKB, LNSPacketDemultiplexer packetDemultiplexer) {
+  public GenerateUpdateRequest(String name, int updateCount, int objectSizeBytes, LNSPacketDemultiplexer packetDemultiplexer) {
 
     this.updateCount = updateCount;
     this.name = name;
     this.packetDemultiplexer = packetDemultiplexer;
-    this.objectSizeKB = objectSizeKB;
+    this.objectSizeBytes = objectSizeBytes;
   }
 
   @Override
   public void run() {
 
     ResultValue newValue = new ResultValue();
-    newValue.add(Util.randomString(objectSizeKB));
+    newValue.add(Util.randomString(objectSizeBytes));
     //ignore signature info
     UpdatePacket updateAddressPacket = new UpdatePacket(-1, updateCount, updateCount, name, NameRecordKey.EdgeRecord,
             newValue, null, -1, UpdateOperation.REPLACE_ALL, -1, -1, GNS.DEFAULT_TTL_SECONDS, null, null, null);

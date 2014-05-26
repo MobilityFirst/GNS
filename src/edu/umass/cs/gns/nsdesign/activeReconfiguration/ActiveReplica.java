@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsCoordinatorUnreplicated;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorEventual;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorPaxos;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
@@ -70,12 +71,14 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
     paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/gnsReconfigurable");
     this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
 
-    if (Config.singleNS) {
+    if (Config.singleNS && Config.dummyGNS) {  // coordinator for testing only
+      this.coordinator = new DummyGnsCoordinatorUnreplicated(nodeID, this.activeReplicaApp);
+    } else if (Config.singleNS) {  // coordinator for testing only
       this.coordinator = new DefaultGnsCoordinator(nodeID, this.activeReplicaApp);
-    } else if(Config.eventualConsistency) {
+    } else if(Config.eventualConsistency) {  // coordinator for testing only
       this.coordinator = new GnsCoordinatorEventual(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
-    }else {
+    } else { // this is the actual coordinator
       this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
     }

@@ -45,7 +45,7 @@ public class Config {
   public static int minReplica = 3;
   public static int maxReplica = 100;
   public static ReplicationFrameworkType replicationFrameworkType = ReplicationFrameworkType.LOCATION;
-  public static int analysisIntervalSec = 100000;
+  public static int analysisIntervalSec = 1000000;
   public static int movingAverageWindowSize = 20;
   public static int nameServerVoteSize = 30;
   public static double maxReqRate = 50.0; // maximum request rate of name records

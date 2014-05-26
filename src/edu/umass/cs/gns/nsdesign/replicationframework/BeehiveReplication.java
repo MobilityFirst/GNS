@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- *  Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
  *
- *  This was hardeep's implementation of beehive DHT routing.
+ * This class does not implement {@link edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface}.
+ *
+ * Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
+ *
+ * This was Hardeep's implementation of beehive DHT routing.
  */
 public class BeehiveReplication {
 	private static int numNodes;

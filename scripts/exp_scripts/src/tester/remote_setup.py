@@ -15,7 +15,7 @@ import distributed.exp_config
 from logparse.read_final_stats import FinalStats
 from nodeconfig.node_config_writer import emulation_config_writer  # deployment_config_writer
 from nodeconfig.node_config_latency_calculator import default_latency_calculator, geo_latency_calculator
-from workload.write_workload import RequestType, WorkloadParams, workload_writer
+from workload.write_workload import workload_writer
 from test_utils import *
 
 from local_setup import BasicSetup
@@ -68,7 +68,14 @@ class TestSetupRemote(BasicSetup):
 
     def run_exp(self, requests):
         """Run experiments given a set of requests for a single local name server"""
-        workload_writer({self.ns: requests}, self.trace_folder)
+        lns_requests = {}
+        for i in range(self.lns):
+            lns_id = self.ns + i
+            if i == 0:
+                lns_requests[lns_id] = requests
+            else:
+                lns_requests[lns_id] = []
+        workload_writer(lns_requests, self.trace_folder)
         return self.run_exp_multi_lns()
 
     def run_exp_multi_lns(self):
@@ -104,11 +111,15 @@ class TestSetupRemote(BasicSetup):
         out_file = os.path.join(self.local_output_folder, 'test.out')
         err_file = os.path.join(self.local_output_folder, 'test.err')
         exp_folder = os.path.join(parent_folder, 'distributed')
+
+        output_to_console = True
+        x = ' > ' + out_file + ' 2> ' + err_file
+        if output_to_console:
+            x = ''
         print '\nStarting experiment ....\n'
         # the script 'run_distributed.py' can only be run from its current folder. so we 'cd' to its folder
-        os.system('cd ' + exp_folder + '; ./run_distributed.py ' + temp_config_file
-                  + ' > ' + out_file + ' 2> ' + err_file)
-        #
+        os.system('cd ' + exp_folder + '; ./run_distributed.py ' + temp_config_file + x)
+
         print '\nEXPERIMENT OVER \n'
         stats_folder = os.path.join(self.exp_output_folder, distributed.exp_config.DEFAULT_STATS_FOLDER)
         return FinalStats(stats_folder)

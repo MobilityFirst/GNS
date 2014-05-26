@@ -111,7 +111,7 @@ lnsnsping_file = ''
 nsnsping_file = ''
 
 #persistent_data_store = False
-mongo_port = 27017
+mongo_port = exp_config.mongo_port
 paxos_log_folder = exp_config.paxos_log_folder
 failure_detection_msg_interval = exp_config.failure_detection_msg_interval           # Interval (in sec) between
                                                                 # two failure detection messages sent to a node

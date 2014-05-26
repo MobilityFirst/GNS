@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -92,9 +93,10 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
     // todo commented this because locality-based replication is still under testing
     this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType);
+
     if (replicationFrameworkInterface != null) {
-//      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
-//              new Random().nextInt(Config.analysisIntervalSec), Config.analysisIntervalSec, TimeUnit.SECONDS);
+      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
+              new Random(nodeID*1000).nextInt(Config.analysisIntervalSec), Config.analysisIntervalSec, TimeUnit.SECONDS);
     }
   }
 

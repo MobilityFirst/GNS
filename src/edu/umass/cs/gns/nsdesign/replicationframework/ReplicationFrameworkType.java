@@ -7,8 +7,15 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 
 
 /**
+ * We choose the type of replication needed. The options that currently work are LOCATION, RANDOM, and STATIC.
+ * STATIC keeps replicas at same locations as replica controllers.
+ * LOCATION chooses replica locations for a name at those name servers that are close to the local name servers
+ * sending requests for tha name.
+ * RANDOM chooses replica locations randomly.
+ * Both LOCATION and RANDOM choose same number of replicas for a name; this number is determined by the read-to-write
+ * ratio of that name.
  *
- * @author westy
+ * @author westy, Abhigyan
  */
 public enum ReplicationFrameworkType {
 
@@ -16,18 +23,20 @@ public enum ReplicationFrameworkType {
   RANDOM,
   LOCATION,
   BEEHIVE,
-  OPTIMAL, ReplicationFrameworkType;
+  OPTIMAL;
 
   public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type) {
-    ReplicationFrameworkInterface framework = null;
+    ReplicationFrameworkInterface framework;
     // what type of replication?
     switch (type) {
       case LOCATION:
         framework = new LocationBasedReplication();
         break;
       case RANDOM:
-        assert false: "FIXME: RandomReplication should implement ReplicationFrameworkInterface";
-//        framework = new RandomReplication();
+        framework = new RandomReplication();
+        break;
+      case STATIC:
+        framework = null;
         break;
       case BEEHIVE:
         // Abhigyan: we will enable beehive if we again need to run experiments with it.
@@ -37,9 +46,8 @@ public enum ReplicationFrameworkType {
 //                StartNameServer.alpha, StartNameServer.base);
 //        framework = new RandomReplication();
 //        break;
-      case STATIC:
-        framework = null;
-        break;
+      case OPTIMAL:
+        throw new UnsupportedOperationException();
       default:
         throw new RuntimeException("Invalid replication framework");
     }

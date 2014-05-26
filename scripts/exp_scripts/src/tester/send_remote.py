@@ -18,15 +18,8 @@ config_file = os.path.join(parent_folder, 'resources', 'skuld_env.ini')
 
 ssh_key = '/Users/abhigyan/.ssh/id_rsa'
 user = 'abhigyan'
-remote_host = 'skuld.cs.umass.edu'
+remote_host = 'plum.cs.umass.edu'
 remote_skuld_folder = '/home/abhigyan/gns/test_folder'
-#
-# parser = argparse.ArgumentParser()
-# parser.add_argument("-rfolder", "remote_skuld_folder", "remote folder where scripts are stored")
-#
-# args = parser.parse_args()
-# if args.remote_skuld_folder is not None:
-#     remote_skuld_folder = args.remote_skuld_folder
 
 print 'Making remote dir ... ' + remote_skuld_folder
 os.system('ssh -i ' + ssh_key + ' ' + user + '@' + remote_host + ' " mkdir -p " ' + remote_skuld_folder)

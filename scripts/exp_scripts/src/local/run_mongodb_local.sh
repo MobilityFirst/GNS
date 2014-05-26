@@ -2,7 +2,7 @@
 echo "Running mongo db on ..."
 mongobinFolder=$1
 dbFolder=$2
-port=27017  # if
+port=$3  # if
 
 mkdir -p $dbFolder
 nohup $mongobinFolder/mongod --smallfiles --dbpath $dbFolder --port $port > /tmp/mongo.out 2> /tmp/mongo.err &

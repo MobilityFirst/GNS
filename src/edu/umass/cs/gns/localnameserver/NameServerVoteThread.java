@@ -58,7 +58,7 @@ public class NameServerVoteThread extends Thread {
     int count = 0;
 
     try {
-      long x = voteIntervalMillis + new Random().nextInt((int) voteIntervalMillis);
+      long x = voteIntervalMillis + new Random(LocalNameServer.getNodeID()*1000).nextInt((int) voteIntervalMillis);
       Thread.sleep(x);
       GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + x + "ms");
     } catch (InterruptedException e) {
@@ -66,14 +66,12 @@ public class NameServerVoteThread extends Thread {
         GNS.getLogger().fine("Initial thread sleeping period.");
       }
     }
-    /* Start interval */
     long startInterval = System.currentTimeMillis();
     while (true) {
       // sleep between loops
       interval = System.currentTimeMillis() - startInterval;
       if (count >= 1 && interval < voteIntervalMillis) {
         try {
-//					long x = voteInterval - interval;
           Thread.sleep(voteIntervalMillis);
           GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + voteIntervalMillis + "ms");
         } catch (InterruptedException e) {

@@ -6,7 +6,6 @@ from stats import get_stats, get_stat_in_tuples, get_cdf
 from write_array_to_file import *
 
 
-
 # GLOBAL VARIABLES
 initial_fraction = 0.0  # exclude initial fraction of requests
 final_fraction = 1.0  # parse queries up to the final fraction of responses.
@@ -662,12 +661,21 @@ def output_latency_stats(output_dir):
     write_tuple_array(get_summary_stats(), output_dir + '/summary.txt', p=True)
     os.system('cat ' + output_dir + '/summary.txt')
 
-    time_to_connect_stats = get_stat_in_tuples(time_to_connect_values, 'time_to_connect')
-    write_tuple_array(time_to_connect_stats, os.path.join(output_dir, 'time_to_connect.txt'), p=True)
-    os.system('cat ' + os.path.join(output_dir, 'time_to_connect.txt'))
-
-    # results for this folder.
+    # plot results for this experiment.
     plot(output_dir)
+
+    if len(time_to_connect_values) > 0:
+        time_to_connect_stats = get_stat_in_tuples(time_to_connect_values, 'time_to_connect')
+        timeout_value = 5000
+        timeout_count = 0
+        for t in time_to_connect_values:
+            if t > timeout_value:
+                timeout_count += 1
+        fraction_timeout = timeout_count*1.0/len(time_to_connect_values)
+        time_to_connect_stats.append(['fraction-timeouts', fraction_timeout])
+
+        write_tuple_array(time_to_connect_stats, os.path.join(output_dir, 'time_to_connect.txt'), p=True)
+        os.system('cat ' + os.path.join(output_dir, 'time_to_connect.txt'))
 
 
 def output_stats(latencies, prefix):

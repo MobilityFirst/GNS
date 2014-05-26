@@ -50,7 +50,6 @@ public class StartLocalNameServer {
   public static final String REGULAR_WORKLOAD = "rworkload";
   public static final String MOBILE_WORKLOAD = "mworkload";
   public static final String WORKLOAD_FILE = "wfile";
-  public static final String LOOKUP_TRACE = "lookupTrace";
   public static final String UPDATE_TRACE = "updateTrace";
   public static final String NUM_QUERY = "numQuery";
   public static final String NUM_UPDATE = "numUpdate";
@@ -69,48 +68,39 @@ public class StartLocalNameServer {
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
   public static final String VARIATION = "variation";
 
+  // size of cache at local name server
+  public static int cacheSize = 1000;
+
+  // replication related parameters
   public static ReplicationFrameworkType replicationFramework = ReplicationFrameworkType.LOCATION;
 
+  public static long voteIntervalMillis = 1000000000;
+
+  public static int replicationInterval = 0;
+
+  /*** Set to true for more verbose logging level. */
+  public static boolean debugMode = false;
+
+  /*** Used for running experiments for Auspice paper. */
+  public static boolean experimentMode = false;
+
+  // parameters related to experiments that are actually used.
+  public static String updateTraceFile;  // trace file for all requests (not just updates)
+  public static String workloadFile;    // file containing other experiment-related configuration
+
+  // parameters related to experiments. these are not used anymore. I am keeping them here in case needed.
+  public static int numQuery;
+  public static int numUpdate;
   public static int regularWorkloadSize;
   public static int mobileWorkloadSize;
   public static double alpha;
-  /**
-   * A list of names that are queried from the local name server *
-   */
-  public static String workloadFile;
-  public static String lookupTraceFile;
-  public static String updateTraceFile;
-  public static int numQuery;
-  public static int numUpdate;
-  public static long voteIntervalMillis = 100000;
   public static boolean isSyntheticWorkload = false;
   public static String name;
-  public static int cacheSize = 1000;
-  public static boolean debugMode = false;
-  private static HelpFormatter formatter = new HelpFormatter();
-  private static Options commandLineOptions;
-  public static double lookupRate;
-  public static double updateRateMobile;
-  public static double updateRateRegular;
   public static String optimalTrace = null;
-  public static int replicationInterval = 0;
   public static double outputSampleRate = 1.0;
-//  /**
-//   * Option not used currently.
-//   * Variant of voting, in which votes are sent not for closest but for a random node among k-closest.
-//   * Name server chosen for a name is the (name modulo k)-th closest node.
-//   */
-//  public static int chooseFromClosestK = 1;
-
-  /**
-   * Used for running experiments for Auspice paper.
-   */
-  public static boolean experimentMode = false;
-  public static boolean noEmail = false;
-  /**
-   * Used for running experiments with replicate everywhere strategy.
-   */
   public static boolean replicateAll = false;
+
+  public static boolean noEmail = false;
 
 //  Abhigyan: parameters related to retransmissions.
 //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
@@ -159,10 +149,18 @@ public class StartLocalNameServer {
   public static boolean useGNSNIOTransport = true;
 
   /**
-   *
+   * emulates ping latency given in config file
    */
   public static boolean emulatePingLatencies = false;
   public static double variation = 0.1; // 10 % variation above latency in config file.
+
+
+
+
+
+  private static Options commandLineOptions;
+
+  private static HelpFormatter formatter = new HelpFormatter();
 
   @SuppressWarnings("static-access")
   /**
@@ -231,10 +229,6 @@ public class StartLocalNameServer {
             .withDescription("List of names that are queried by the local name server")
             .create(WORKLOAD_FILE);
 
-    Option lookupTraceFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Lookup Trace")
-            .create(LOOKUP_TRACE);
-
     Option updateTraceFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("Update Trace")
             .create(UPDATE_TRACE);
@@ -270,14 +264,6 @@ public class StartLocalNameServer {
             .withDescription("Interval between nameserver votes")
             .create(VOTE_INTERVAL);
 
-    Option lookupRate = OptionBuilder.withArgName("ms").hasArg()
-            .withDescription("Inter-arrival time between lookups")
-            .create(LOOKUP_RATE);
-
-    Option updateRateMobile = OptionBuilder.withArgName("ms").hasArg()
-            .withDescription("Inter-arrival time between updates for mobile names")
-            .create(UPDATE_RATE_MOBILE);
-
     Option updateRateRegular = OptionBuilder.withArgName("ms").hasArg()
             .withDescription("Inter-arrival time between updates for regular names")
             .create(UPDATE_RATE_REGULAR);
@@ -296,7 +282,6 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(workloadFile);
-    commandLineOptions.addOption(lookupTraceFile);
     commandLineOptions.addOption(updateTraceFile);
     commandLineOptions.addOption(outputSampleRate);
     commandLineOptions.addOption(primaryReplicas);
@@ -307,8 +292,6 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(name);
     commandLineOptions.addOption(voteInterval);
     commandLineOptions.addOption(cacheSize);
-    commandLineOptions.addOption(lookupRate);
-    commandLineOptions.addOption(updateRateMobile);
     commandLineOptions.addOption(updateRateRegular);
     commandLineOptions.addOption(replicationInverval);
     commandLineOptions.addOption(optimalTrace);
@@ -495,7 +478,6 @@ public class StartLocalNameServer {
       }
 
       // lookup and update tace files
-      lookupTraceFile = allValues.containsKey(LOOKUP_TRACE) ? allValues.get(LOOKUP_TRACE) : null;
       updateTraceFile = allValues.containsKey(UPDATE_TRACE) ? allValues.get(UPDATE_TRACE) : null;
       workloadFile = allValues.containsKey(WORKLOAD_FILE) ? allValues.get(WORKLOAD_FILE): null;
 
@@ -510,18 +492,15 @@ public class StartLocalNameServer {
       numQuery = allValues.containsKey(NUM_QUERY) ? Integer.parseInt(allValues.get(NUM_QUERY)) : 0;
       numUpdate = allValues.containsKey(NUM_UPDATE) ? Integer.parseInt(allValues.get(NUM_UPDATE)) : 0;
 
-      lookupRate = allValues.containsKey(LOOKUP_RATE) ? Double.parseDouble(allValues.get(LOOKUP_RATE)) : 1.0;
-      updateRateMobile = allValues.containsKey(UPDATE_RATE_MOBILE) ?
-              Double.parseDouble(allValues.get(UPDATE_RATE_MOBILE)) : 0;
-      updateRateRegular = allValues.containsKey(UPDATE_RATE_REGULAR) ?
-              Double.parseDouble(allValues.get(UPDATE_RATE_REGULAR)) : 0;
 
       outputSampleRate = allValues.containsKey(OUTPUT_SAMPLE_RATE) ?
               Double.parseDouble(allValues.get(OUTPUT_SAMPLE_RATE)) : 1.0;
 
 
       debugMode = allValues.containsKey(DEBUG_MODE) && Boolean.parseBoolean(allValues.get(DEBUG_MODE));
-      experimentMode = allValues.containsKey(EXPERIMENT_MODE)  && Boolean.parseBoolean(allValues.get(EXPERIMENT_MODE));
+      if (allValues.containsKey(EXPERIMENT_MODE)) {
+        experimentMode = Boolean.parseBoolean(allValues.get(EXPERIMENT_MODE));
+      }
 
       // Logging related options.
       if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
@@ -562,15 +541,11 @@ public class StartLocalNameServer {
     GNS.getLogger().fine("Regular Workload Size: " + regularWorkloadSize);
     GNS.getLogger().fine("Mobile Workload Size: " + mobileWorkloadSize);
     GNS.getLogger().fine("Workload File: " + workloadFile);
-    GNS.getLogger().fine("Lookup Trace File: " + lookupTraceFile);
     GNS.getLogger().fine("Update Trace File: " + updateTraceFile);
     GNS.getLogger().fine("Primary: " + GNS.numPrimaryReplicas);
     GNS.getLogger().fine("Alpha: " + alpha);
     GNS.getLogger().fine("Lookups: " + numQuery);
     GNS.getLogger().fine("Updates: " + numUpdate);
-    GNS.getLogger().fine("Lookup Rate: " + lookupRate + "ms");
-    GNS.getLogger().fine("Update Rate Mobile: " + updateRateMobile + "ms");
-    GNS.getLogger().fine("Update Rate Regular: " + updateRateRegular + "ms");
     GNS.getLogger().fine("Zipf Workload: " + isSyntheticWorkload);
     GNS.getLogger().fine("Replication: " + replicationFramework.toString());
     GNS.getLogger().fine("Vote Interval: " + voteIntervalMillis + "ms");

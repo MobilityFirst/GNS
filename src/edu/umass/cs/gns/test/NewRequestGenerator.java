@@ -78,13 +78,15 @@ public class NewRequestGenerator {
             continue;
           }
 
+          int objectSizeBytes = (workloadParams.getObjectSizeKB() == 0) ? 10 : workloadParams.getObjectSizeKB()*1000;
+
           TimerTask t;
           if (r.type == TestRequest.LOOKUP) {
             t = new GenerateLookupRequest(r.name, reqCount, lnsPacketDemultiplexer);
           }else if (r.type == TestRequest.UPDATE) {
-            t = new GenerateUpdateRequest(r.name, reqCount, workloadParams.getObjectSizeKB(), lnsPacketDemultiplexer);
+            t = new GenerateUpdateRequest(r.name, reqCount, objectSizeBytes, lnsPacketDemultiplexer);
           } else if (r.type == TestRequest.ADD) {
-            t = new GenerateAddRequest(r.name, reqCount, workloadParams.getObjectSizeKB(), workloadParams.getTtl(),
+            t = new GenerateAddRequest(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
                     lnsPacketDemultiplexer);
           } else if (r.type == TestRequest.REMOVE) {
             t = new GenerateRemoveRequest(r.name, reqCount, lnsPacketDemultiplexer);

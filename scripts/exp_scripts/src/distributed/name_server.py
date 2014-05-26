@@ -75,9 +75,9 @@ MAX_LOG_NAME = '-maxLogName'
 def run_name_server(node_id, config_file, node_config_file):
     """ Executes an instance of Name Server with the give parameters """
 
-    print 'Node id', node_id
-    print 'Config file', config_file
-    print 'Node config file', node_config_file
+    # print 'Node id', node_id
+    # print 'Config file', config_file
+    # print 'Node config file', node_config_file
 
     if config_file is not None and config_file != '':
         exp_config.initialize(config_file)

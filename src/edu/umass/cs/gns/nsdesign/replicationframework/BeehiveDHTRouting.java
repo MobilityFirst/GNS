@@ -12,7 +12,8 @@ import java.util.Random;
 import java.util.TreeMap;
 
 /**
- *  Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
+ * This class does not implement {@link edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface};
+ * Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
  *
  *  This was xiaozheng's implementation of beehive DHT routing.
  */

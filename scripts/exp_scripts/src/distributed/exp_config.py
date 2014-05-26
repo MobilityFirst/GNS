@@ -1,6 +1,5 @@
 import ConfigParser
 import os
-import sys
 
 DEFAULT_STATS_FOLDER = 'log_stats'
 
@@ -47,27 +46,16 @@ node_config_folder = '/home/abhigyan/gnrs/ec2_data/ec2_config/'
 gen_node_config = False
 
 # Folder where workload is generated
-lookup_trace = ''  # get_lookup_folder(output_folder) # '/home/abhigyan/gnrs/ec2_data/workload/lookupTrace/'
-update_trace = ''  # get_update_folder(output_folder) #'/home/abhigyan/gnrs/ec2_data/workload/updateTrace/'
+lookup_trace = ''
+update_trace = ''
 
 # Options below are not supported currently.
-
-# folder where config files for each node are generated: this is not necessary anymore
-#config_folder = os.path.join(output_folder, 'configFolder') #'
-
-# def get_lookup_folder(output_folder):
-#     return os.path.join(output_folder, 'workload/lookupTrace')
-#
-#
-# def get_update_folder(output_folder):
-#     return os.path.join(output_folder, 'workload/updateTrace')
 
 ns_geo_file = 'abcd'
 lns_geo_file = 'abcd'    # needed for generating workload
 
 other_data = os.path.join(local_output_folder, 'workload/otherData')   # data to generate placement, e.g., read rate,
                                                                  # write rate, etc. are output in this folder.
-#'/home/abhigyan/gnrs/ec2_data/workload/otherData/'
 
 gen_workload = 'test'   # write 'test' to generate test workload with random values at each node, write 'locality' to
                         # generate locality-based workload
@@ -84,12 +72,6 @@ lookup_trace_url = ''  # 'https://s3.amazonaws.com/lookup100m/update_'
 
 load = 1  # used for cluster to generate workload
 loads = [1]
-
-# Data collected from planetlab used for generating workload
-#pl_latency_folder = '/home/abhigyan/gnrs/ec2_data/pl_data/pl_latency/'
-#lookup_regular_folder = '/home/abhigyan/gnrs/ec2_data/pl_data/lookupTraceRegular/'
-#pl_lns_workload = '/home/abhigyan/gnrs/ec2_data/pl_data/pl_lns_geo'
-#pl_lns_geo_workload = '/home/abhigyan/gnrs/ec2_data/pl_data/pl_lns_geo'
 
 #  Data collected from planetlab used for generating workload    
 pl_latency_folder = '/home/abhigyan/gnrs/ec2_data/pl_data_new/ping_new_local/'
@@ -119,7 +101,7 @@ replication_interval = 100000   # (in seconds). Intervals at which name servers 
                                 # and local name servers sends votes to name servers
 
 # if True, more detailed log messages are printed
-is_debug_mode = False
+is_debug_mode = True
 
 # if True, local name servers starts sending requests as per given workload
 is_experiment_mode = True
@@ -180,10 +162,6 @@ alpha = 0.63
 
 worker_thread_count = 10
 
-#persistent_data_store = True
-#signature_check = False
-#simple_disk_store = False
-
 ns_main = 'edu.umass.cs.gns.main.StartNameServer'
 
 failure_detection_msg_interval = 10
@@ -196,27 +174,24 @@ no_paxos_log = False
 quit_after_time = -1
 quit_node_id = -1
 
-dummy_gns = False
+dummy_gns = True
 
 max_req_rate = 300
 
-
 ##################### LOGGING #########################
 
-nslog = 'WARNING'
+nslog = 'INFO'
 nslogstat = 'FINE'  # records write propagation times
-lnslog = 'WARNING'
+lnslog = 'INFO'
 lnslogstat = 'FINE'
 
 
 #### methods for parsing options in config file
 
-
 def initialize(filename):
     """ Initializes the parameters above based on given config file"""
     parser = ConfigParser.ConfigParser()
     parser.read(filename)
-    os.system('cat ' + filename)
     initialize_env_variables(parser)
     initialize_gns_parameters(parser)
 
@@ -337,7 +312,6 @@ def initialize_env_variables(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'local_output_folder'):
         global local_output_folder
         local_output_folder = parser.get(ConfigParser.DEFAULTSECT, 'local_output_folder')
-        print 'Local output folder '
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'ns_file'):
         global local_ns_file

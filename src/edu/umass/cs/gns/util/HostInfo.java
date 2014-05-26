@@ -83,7 +83,6 @@ public class HostInfo {
       } catch (UnknownHostException e) {
         e.printStackTrace();
       }
-
     }
     return ipAddress;
   }

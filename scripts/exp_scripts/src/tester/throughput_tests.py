@@ -13,12 +13,10 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
 
-from nodeconfig.node_config_latency_calculator import default_latency_calculator, geo_latency_calculator
-from workload.write_workload import RequestType, WorkloadParams, workload_writer
+
+from workload.write_workload import RequestType, WorkloadParams
 from test_utils import *
 from util.exp_events import NodeCrashEvent, write_events_to_file
-from workload.gen_add_requests import gen_add_requests
-from workload.gen_geolocality_workload import gen_geolocality_trace
 from remote_setup import TestSetupRemote
 from local_setup import TestSetupLocal
 
@@ -30,10 +28,6 @@ class ThroughputTestDistributed(TestSetupRemote):
     For each operation, we run a series of tests doubling the request rate each time until
     maximum throughput is reached. These tests take tens of minutes to complete due to multiple
     tests with each operation. """
-
-
-    # what fraction of requests must be successful for a throughput test to pass.
-    success_threshold = 1.0
 
     def test_a_latency(self):
         """ Measures read and write latency for varying number of replicas at moderate load"""

@@ -46,6 +46,7 @@ def main():
     args = parser.parse_args()
     local_config_file = args.config_file
     exp_config.initialize(local_config_file)
+    os.system('cat ' + local_config_file)
     output_folder = os.path.join(exp_config.local_output_folder, 'log')
     run_one_experiment(output_folder, local_config_file)
 

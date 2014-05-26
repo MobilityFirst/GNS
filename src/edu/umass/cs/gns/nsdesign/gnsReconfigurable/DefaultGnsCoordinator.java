@@ -8,7 +8,10 @@ import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
+ *
  * Trivial coordinator for a single name server GNS, which executes requests without any coordination.
  * Created by abhigyan on 4/8/14.
  */

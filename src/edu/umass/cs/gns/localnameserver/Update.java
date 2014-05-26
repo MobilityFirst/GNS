@@ -48,16 +48,11 @@ public class Update {
 
     GNS.getLogger().info("UPDATE PACKET RECVD: " + json.toString());
 
-    //Removed this because an upsert operation does not need to be handled by a replica controller? It’s not
-    // creating a new guid *record*, just a new *field* in an existing guid record.
-//    if (updateAddressPacket.getOperation().isUpsert()) {
-//      AddRemove.handleUpsert(updateAddressPacket);
-//    } else {
     LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
     SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
             System.currentTimeMillis(), new HashSet<Integer>(), 0);
-    LocalNameServer.getExecutorService().scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-    //}
+    LocalNameServer.getExecutorService().scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout,
+            TimeUnit.MILLISECONDS);
   }
 
   public static void handlePacketConfirmUpdate(JSONObject json) throws UnknownHostException, JSONException {

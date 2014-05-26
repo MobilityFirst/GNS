@@ -43,23 +43,36 @@ Run name server with id = 2:
 java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id 2 -nsfile NODE_CONFIG
 
 
-(5) Next, we will start a local name server that will send requests to the name server. Again create a separate directory for the local name server, and type the following command.
+(5) Next, we will start a local name server. Local name server uses java RMI to receive client requests. So, start the
+rmiregistry using following command:
 
-java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer -id 3 -nsfile NODE_CONFIG -experimentMode -statFileLoggingLevel FINE -statConsoleOutputLevel FINE
+# kill existing rmiregistry
+killall -9 rmiregistry
+# the options with this command are really important
+rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false &
+
+To run local name server, again create a separate directory, and type the following command.
+
+java -ea -cp GNS_FOLDER/dist/GNS.jar  -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:GNS_FOLDER/dist/GNS.jar \
+edu.umass.cs.gns.main.StartLocalNameServer -id 3 -nsfile NODE_CONFIG -experimentMode -statFileLoggingLevel FINE -statConsoleOutputLevel FINE
 
 
-After some time, the local name server will terminate by printing the following message: 
+(6) Finally run the client using following command:
+
+java -ea -cp GNS_FOLDER/dist/GNS.jar  -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:$gns_jar \
+ edu.umass.cs.gns.test.testclient.TestClient
+
+The client will terminate by printing the following message:
 
 Basic test for 1 name successful. Local name server exiting.
 
 
-The name server will continue to run and you need to kill them manually. 
+The name servers and local name servers will continue to run and you need to kill them manually.
 
 Assuming you have completed step 1, the subsequent steps  can be automatically run by running the script ‘run_basic.sh’ in this folder as follows:
 
 ./run_basic.sh
 
-
-The test code which the local name server runs is in class edu.umass.cs.gns.test.basictest.Test1Name
+The test code which the client runs runs is in class edu.umass.cs.gns.test.testclient.TestClient
 
 

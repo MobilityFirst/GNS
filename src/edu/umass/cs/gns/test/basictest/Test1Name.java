@@ -6,6 +6,7 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Util;
 
 /**
  * Simple test for testing add, remove, lookup, and update for a single name.
@@ -19,7 +20,7 @@ public class Test1Name extends Thread {
   }
 
   public void run() {
-    String name = "test_name";
+    String name = "test_name_" + Util.randomString(10);
 
     String key = "test_key";
 

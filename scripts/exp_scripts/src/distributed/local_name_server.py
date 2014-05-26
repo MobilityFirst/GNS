@@ -91,11 +91,11 @@ def num_events(trace_file):
 
 def run_local_name_server(node_id, config_file, node_config_file, update_trace, workload_config_file):
     """ Executes an instance of the Local Name Server with the give parameters """
-    print 'node id ', node_id
-    print 'config file', config_file
-    print 'node config file', node_config_file
-    print 'update trace', update_trace
-    print 'workload config file', workload_config_file
+    # print 'node id ', node_id
+    # print 'config file', config_file
+    # print 'node config file', node_config_file
+    # print 'update trace', update_trace
+    # print 'workload config file', workload_config_file
 
     if config_file is not None and config_file != '':
         exp_config.initialize(config_file)
@@ -175,9 +175,9 @@ def run_local_name_server(node_id, config_file, node_config_file, update_trace, 
     if workload_config_file is not None and workload_config_file != '':
         command += ' ' + WORKLOAD_FILE + ' ' + workload_config_file
 
-    if update_trace is not None and update_trace != '':
+    if update_trace is not None and update_trace != '' and os.path.exists(update_trace):
         command += ' ' + UPDATE_TRACE_FILE + ' ' + update_trace
-        command += ' ' + UPDATE_RATE_REGULAR + ' ' + str(get_event_rate(experiment_run_time, update_trace))
+        # command += ' ' + UPDATE_RATE_REGULAR + ' ' + str(get_event_rate(experiment_run_time, update_trace))
 
     command += ' ' + OUTPUT_SAMPLE_RATE + ' ' + str(output_sample_rate)
 

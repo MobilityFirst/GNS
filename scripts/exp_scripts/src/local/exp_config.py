@@ -26,6 +26,8 @@ gns_folder = '/Users/abhigyan/Documents/workspace/GNS/'
 
 mongo_bin_folder = '/opt/local/bin'
 
+mongo_port = 31243
+
 # gns jar
 gnrs_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 
@@ -53,7 +55,7 @@ experiment_run_time = -1    # duration of experiment (seconds)
 
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
-ns_sleep = 5      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
+ns_sleep = 2      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
 extra_wait = 10   # extra wait time after LNS sends all requests
 
 random_node_ids = None  # option to select nodeIDs randomly. If random_node_ids is not None, it takes an int value.
@@ -123,9 +125,9 @@ load_balancing = False  # Redirect to closest name server based on (RTT + server
 
 #
 # logging options
-nslog = 'WARNING'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 
@@ -230,6 +232,7 @@ def initialize(filename):
         global use_gns_nio_transport
         use_gns_nio_transport = bool(parser.get(ConfigParser.DEFAULTSECT, 'use_gns_nio_transport'))
 
+
 def initialize_path_locations(parser):
     """Initializes locations of various folders:
     1. GNS jar file
@@ -271,6 +274,10 @@ def initialize_path_locations(parser):
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'mongodb_data_folder'):
         mongodb_data_folder = parser.get(ConfigParser.DEFAULTSECT, 'mongodb_data_folder')
+
+    if parser.has_option(ConfigParser.DEFAULTSECT, 'jar_file'):
+        print 'GNRS jar file is at this location:', gnrs_jar
+        gnrs_jar = parser.get(ConfigParser.DEFAULTSECT, 'jar_file')
 
 
 def update_path_locations(working_dir1):

@@ -47,7 +47,7 @@ def run_exp():
         os.system('rm -rf ' + exp_config.paxos_log_folder + '/*')
         os.system(script_folder + '/kill_mongodb_local.sh ' + exp_config.mongodb_data_folder)
         os.system(script_folder + '/run_mongodb_local.sh ' + exp_config.mongo_bin_folder + ' ' +
-                  exp_config.mongodb_data_folder)
+                  exp_config.mongodb_data_folder + ' ' + str(exp_config.mongo_port))
     else:
         print 'Resuming gns ...'
 

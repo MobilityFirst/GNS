@@ -192,8 +192,9 @@ public class ComputeNewActivesTask extends TimerTask {
     newActiveNameServers = replicationOutput.getReplicas();
 
     GNS.getStatLogger().info("ComputeNewActives: Round:" + count + " Name:" + rcRecord.getName()
-    + " OldActive:" + oldActiveNameServers.toString() + " NumberReplica:" + numReplica
-    + " NewReplica:" + newActiveNameServers.toString());
+            + " OldReplicas:" + oldActiveNameServers + " NumberReplicaNew:" + numReplica
+            + " NewReplicaSet:" + newActiveNameServers
+            + " Locality-based-replicas:" + replicationOutput.getLocalityBasedReplicas());
     return newActiveNameServers;
   }
 
@@ -239,7 +240,6 @@ public class ComputeNewActivesTask extends TimerTask {
       }
       replicaCount = Math.min(replicaCount, Config.maxReplica);
     }
-
 
 
     GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t" + rcRecord.getName() + "\tLookup\t" + lookup +

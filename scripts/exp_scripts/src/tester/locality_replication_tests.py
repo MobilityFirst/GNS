@@ -74,17 +74,18 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
         delay = 20000
         append_request_to_all_files([delay, RequestType.DELAY], lns_ids, self.trace_folder)
         total_time += delay / 1000
-        read_write_req_rate = 200
+        read_write_req_rate = 170
 
-        reads_per_epoch_per_name = 200
-        writes_per_epoch_per_name = 100
+        reads_per_epoch_per_name = 800
+        writes_per_epoch_per_name = 400
         total_lookups = 0
         total_updates = 0
-        num_geo_locality_changes = 1
+        num_geo_locality_changes = 3
         for i in range(num_geo_locality_changes):
             num_lookups = num_names * reads_per_epoch_per_name
             num_updates = num_names * writes_per_epoch_per_name
             expected_time = (num_lookups + num_updates) / len(lns_ids) / read_write_req_rate
+            print 'Read write send time', expected_time
             actual_lookups, actual_updates = gen_geolocality_trace(self.trace_folder, self.lns_geo_file,
                                                                    number_names=num_names, num_lookups=num_lookups,
                                                                    num_updates=num_updates, append_to_file=True,
@@ -116,7 +117,7 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
 
     def test_a3_request_latency_replication(self):
         """Test replication of name records based on geo-locality"""
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'replication_interval', str(100))
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'replication_interval', str(75))
         self.test_a2_check_latency_emulation()
 
     def test_a4_latency_multiexp(self):

@@ -14,7 +14,6 @@ import java.util.Properties;
  */
 public class WorkloadParams {
 
-
   public static final String EXP_TYPE = "exp_type";
 
   public static final String OBJECT_SIZE = "object_size_kb";

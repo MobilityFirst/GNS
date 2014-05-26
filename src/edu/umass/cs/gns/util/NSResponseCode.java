@@ -9,6 +9,8 @@ package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.clientsupport.Defs;
 
+import java.io.Serializable;
+
 /**
  * This class describes the error codes for Name Server packets that
  * get sent back to the LNS and the client.
@@ -22,7 +24,7 @@ import edu.umass.cs.gns.clientsupport.Defs;
  * @author Westy
  *
  */
-public enum NSResponseCode {
+public enum NSResponseCode implements Serializable{
 
   NO_ERROR(0, "", false),
   ERROR(1, Defs.GENERICEERROR, true),

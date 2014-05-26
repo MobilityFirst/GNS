@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,7 +29,7 @@ import java.util.Set;
  *
  * @author westy
  */
-public class ValuesMap {
+public class ValuesMap implements Serializable{
 
   private Map<String, ResultValue> content;
   

@@ -18,8 +18,7 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
 
-from workload.write_workload import get_trace_filename, RequestType, WorkloadParams, ExpType, workload_writer
-from logparse.read_final_stats import FinalStats
+from workload.write_workload import get_trace_filename, RequestType, WorkloadParams, ExpType
 import local.exp_config
 import local.generate_config_file
 from test_utils import *
@@ -36,6 +35,8 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
     special_char_set = '!@#$%^&*()-=_+{}|[]\\;\':",.<>?`~'
 
     unsupported_special_chars = '/'
+
+    lns = 1
 
     def test_a_1name(self):
         """Test add, remove, lookup, and delete operations for a single name"""
@@ -528,8 +529,8 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
 
     def test_n_read_writes_groupchanges(self):
         """ Tests a workload where reads and writes for 1 name are inter-mixed with group changes"""
-        request_rate = 1000
-        duration = 100
+        request_rate = 100
+        duration = 50
         group_change_interval = 1
         self.run_exp_reads_writes_groupchanges(request_rate, duration, group_change_interval)
 
@@ -548,6 +549,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
             requests.append([name, RequestType.LOOKUP])
             requests.append([name, RequestType.UPDATE])
         # wait before sending remove to ensure all previous requests are complete
+        delay = 10000  # ms
         requests.append([delay, RequestType.DELAY])
         requests.append([name, RequestType.REMOVE])
 
@@ -566,15 +568,15 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         """Runs an experiment with equal number of reads and writes for a name at a given request rate.
         It also checks if all requests are successful."""
 
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
         name = 'test_name'
-        assert group_change_interval < exp_duration
+        assert group_change_interval <= exp_duration
         num_group_changes = int(exp_duration/group_change_interval)
         n = int(request_rate * group_change_interval)
         initial_version = 1
         requests = [[name, RequestType.ADD]]
         group_size = self.get_group_size()
         delay = 2000  # ms
+        exp_duration += delay/1000
         requests.append([delay, RequestType.DELAY])  # wait after an add request to ensure name is added
         requests.append([request_rate*2, RequestType.RATE])
 
@@ -587,11 +589,13 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
             group = get_new_group_members_str(range(self.ns), group_size)
             grp_change_request = [name, RequestType.GROUP_CHANGE, version, group]
             requests.append(grp_change_request)
-
         # wait before sending remove to ensure all previous requests are complete
+        delay = 10000
         requests.append([delay, RequestType.DELAY])
+        exp_duration += delay/1000
         requests.append([name, RequestType.REMOVE])
 
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
         output_stats = self.run_exp(requests)
 
         self.assertEqual(output_stats.requests, 2 + (2*n + 1) * num_group_changes, "Total number of requests mismatch")
@@ -599,7 +603,7 @@ class FeatureTestMultiNodeLocal(TestSetupLocal):
         self.assertEqual(output_stats.success, 2 + (2*n + 1) * num_group_changes, "Successful requests mismatch")
         self.assertEqual(output_stats.read, n*num_group_changes, "Successful reads mismatch")
         self.assertEqual(output_stats.write, n*num_group_changes, "Successful writes mismatch")
-        self.assertEqual(output_stats.group_change, n, "Successful group change mismatch")
+        self.assertEqual(output_stats.group_change, num_group_changes, "Successful group change mismatch")
         self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
         self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
         return output_stats
@@ -643,9 +647,9 @@ class ConnectTimeMeasureTest(TestSetupLocal):
         self.lns = 2
         self.ns = 3
         self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.EXP_TYPE,  ExpType.CONNECT_TIME)
-        exp_duration = 100
+        exp_duration = 600
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration))
-        mobile_update_intervals = [10, 100, 1000, 10000]
+        mobile_update_intervals = [1, 10, 100, 1000, 10000]
         for mui in mobile_update_intervals:
             self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.MOBILE_UPDATE_INTERVAL, str(mui))
             print 'Running experiment with update = ', mui
@@ -657,4 +661,3 @@ class ConnectTimeMeasureTest(TestSetupLocal):
 
 class ConnectTimeMeasureTestDistributed(TestSetupRemote, ConnectTimeMeasureTest):
     """Runs connect time measurement in a distributed setup """
-

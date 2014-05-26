@@ -118,11 +118,12 @@ public class LocalNameServer {
     // After starting PingManager because it accesses PingManager.
     new LNSListenerAdmin().start();
 
-    // todo commented this because locality-based replication is still under testing
     if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
-//      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
+      // todo commented this because locality-based replication is still under testing
+      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
     if (StartLocalNameServer.experimentMode) {
+      GNS.getLogger().info("Starting experiment ..... ");
       new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
       // name server loads initialized.

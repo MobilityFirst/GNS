@@ -20,12 +20,12 @@ class GenerateAddRequest extends TimerTask {
   private int objectSizeKB;
   private int ttl;
 
-  public GenerateAddRequest(String name, int count, int objectSizeKB, int ttl, LNSPacketDemultiplexer packetDemux) {
+  public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, LNSPacketDemultiplexer packetDemux) {
 
     this.requestCount = count;
     this.name = name;
     this.packetDemux = packetDemux;
-    this.objectSizeKB = objectSizeKB;
+    this.objectSizeKB = objectSizeBytes;
     this.ttl = ttl;
   }
 
