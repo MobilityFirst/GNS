@@ -67,7 +67,7 @@ public class NewRequestGenerator {
           TestRequest r = TestRequest.parseLine(line);
           if (r == null) {
             continue;
-          } else if (r.type == TestRequest.RATE) {     // delay
+          } else if (r.type == TestRequest.RATE) {     // rate of request
             ratePerSec = Double.parseDouble(r.name);
             dist = new ExponentialDistribution(1.0/ratePerSec);
             continue;
@@ -96,6 +96,7 @@ public class NewRequestGenerator {
             GNS.getLogger().severe("Unknown request type found: " + r.toString());
             throw new UnsupportedOperationException();
           }
+          GNS.getLogger().fine("delay: " + delayMillis + " count: " + reqCount);
           // 'delay' is the delay from the first run. from the current
           long delayFromNow = (delayMillis.longValue() - PERIOD*(numRuns-1));
           if (handler != null) handler.getExecutorService().schedule(t, delayFromNow, TimeUnit.MILLISECONDS);
