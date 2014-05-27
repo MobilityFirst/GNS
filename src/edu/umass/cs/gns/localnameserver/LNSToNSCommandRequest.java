@@ -19,7 +19,7 @@ import java.net.UnknownHostException;
  *
  * @author westy
  */
-public class CommandRequest {
+public class LNSToNSCommandRequest {
 
   public static void handlePacketCommandRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
 
