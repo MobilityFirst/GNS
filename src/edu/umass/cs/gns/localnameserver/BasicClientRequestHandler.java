@@ -29,6 +29,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Implements basic functionality needed by servers to handle client type requests.
+ * Abstracts out the storing of request info, caching and communication needs of
+ * a node. 
+ * 
+ * Note: This based on LNS code, but at some point the idea was that the LNS and NS
+ * would both use this interface. It's not done yet (interrupted for more pressing 
+ * issues).
  *
  * @author westy
  */

@@ -4,20 +4,35 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/MongoRecordMap.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/BasicRecordMap.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/CassandraRecordMap.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/BasicRecordMap.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingClient.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/MongoRecords.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/NoSQLRecords.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/replicationframework/RandomReplication.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/exceptions/RecordExistsException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/exceptions/CancelExecutorTaskException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/scripts/gns_install/README</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingServer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingManager.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/replicationframework/RandomReplication.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/gnsInstaller/dev.xml</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/GNSNodeConfig.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostConfigParseException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/exceptions/FieldNotFoundException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/ReplicaControllerRecord.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/build.properties</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostConfigParser.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Select.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/scripts/gns_install/setup.sh</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/ColumnField.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/exceptions/GnsRuntimeException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/NoSQLRecords.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/MongoRecords.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/exceptions/RecordNotFoundException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingManager.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/RecordMapInterface.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/ColumnFieldType.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/ReplicaControllerRecord.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Select.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/ColumnField.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/exceptions/FailedUpdateException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/GNSInstaller.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/scripts/gns_install/install.sh</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/exceptions/GnsException.java</file>
         </group>
     </open-files>
 </project-private>

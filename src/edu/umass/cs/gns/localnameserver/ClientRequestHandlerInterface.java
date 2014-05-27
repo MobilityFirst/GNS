@@ -19,7 +19,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  **
- *  An interface for handling of client requests, comms and cacheing
+ * An interface for handling of client requests, comms and cacheing.
+ * Abstracts out the methods for storing of request info, caching and 
+ * communication needs of
+ * a node.
+ * 
+ * Someday maybe both NS and LNS will use this.
  *
  */
 public interface ClientRequestHandlerInterface {
