@@ -27,12 +27,12 @@ public class JSONMessenger {
 	private static final int BACKOFF_FACTOR=2; 
 
 	private final int myID;
-	private final GNSNIOTransport nioTransport;
+	private final GNSNIOTransportInterface nioTransport;
 	private ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 
 	Logger log = Logger.getLogger(getClass().getName());
 
-	public JSONMessenger(int id, GNSNIOTransport niot) {
+	public JSONMessenger(int id, GNSNIOTransportInterface niot) {
 		myID = id; // needed only for debug printing
 		nioTransport = niot;
 	}

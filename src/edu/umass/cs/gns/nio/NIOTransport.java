@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nio;
 
 import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -71,6 +72,8 @@ import java.util.logging.Logger;
  */
 public class NIOTransport implements Runnable {
 	public static final boolean DEBUG = false;
+	public static final boolean LOCAL_LOGGER = true; 
+			
 	private static final double LOG_SAMPLING_FRACTION = 0.1;
 
 	/* number of sends that can be queued because the connection
@@ -116,7 +119,7 @@ public class NIOTransport implements Runnable {
 	
 	private boolean started = false;
 	
-	private Logger log =  Logger.getLogger(NIOTransport.class.getName()); // GNS.getLogger();
+	private Logger log =  NIOTransport.LOCAL_LOGGER ? Logger.getLogger(NIOTransport.class.getName()) : GNS.getLogger();
 
 	public NIOTransport(int id, NodeConfig nc, DataProcessingWorker worker) throws IOException {
 		this.myID = id;
@@ -173,6 +176,8 @@ public class NIOTransport implements Runnable {
 		}
 	}
 	public boolean isStarted() {return this.started;}
+	
+	protected InetAddress getNodeAddress() {return this.nodeConfig.getNodeAddress(myID);}
 
 	/**
 	 * ********** Start of private methods ***************************

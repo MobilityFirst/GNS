@@ -75,6 +75,17 @@ public class MessagingTask {
 		}
 		return ppArray;
 	}
+	
+	public static MessagingTask[] toArray(MessagingTask mtask1, MessagingTask mtask2) {
+		MessagingTask[] mtasks = new MessagingTask[2];
+		mtasks[0] = mtask1; mtasks[1] = mtask2;
+		return mtasks;
+	}
+	public MessagingTask[] toArray() {
+		MessagingTask[] mtasks = new MessagingTask[1];
+		mtasks[0] = this;
+		return mtasks;
+	}
 
 	// Mostly just pretty printing
 	public String toString() {

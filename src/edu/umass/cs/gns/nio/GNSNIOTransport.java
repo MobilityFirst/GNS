@@ -31,41 +31,52 @@ import java.util.concurrent.TimeUnit;
  * 
  */
 public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInterface{
-	
-	Timer timer = new Timer();
-	
+
+	public static final String DEFAULT_IP_FIELD = "_IP_ADDRESS";
+
+	private String IPField = null;
+	private Timer timer = new Timer();
+
+	public GNSNIOTransport(int id, NodeConfig nodeConfig) throws IOException {
+		super(id, nodeConfig, new JSONMessageExtractor()); // Note: Default extractor will not do any useful demultiplexing
+	}
 	public GNSNIOTransport(int id, NodeConfig nodeConfig, JSONMessageExtractor worker) throws IOException {
 		super(id, nodeConfig, worker); // Switched order of the latter two arguments
 	}
 	public void addPacketDemultiplexer(PacketDemultiplexer pd) {
 		((JSONMessageExtractor)this.worker).addPacketDemultiplexer(pd);
 	}
-	
+
 	/********************Start of send methods*****************************************/
 
-    /* WARNING: This method returns a meaningless value. Need to get
-     * return value from task scheduled in the future, which is 
-     * not possible while maintaining NIO semantics. So we can
-     * not have a meaningful return value while being non-blocking.
-     * Such is life.
-     * 
-     * Experiments using this method should plan for return values
-     * being meaningless.
-     */
-    public int sendToID(int id, JSONObject jsonData) throws IOException {
-    	int sent = 0;
-    	if(GNSDelayEmulator.isDelayEmulated()) {
-        GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
-    		sent = jsonData.length(); // cheating!
-    	} else sent = this.sendToIDActual(id, jsonData);
-    	return sent;
-    }
+	/* WARNING: This method returns a meaningless value. Need to get
+	 * return value from task scheduled in the future, which is 
+	 * not possible while maintaining NIO semantics. So we can
+	 * not have a meaningful return value while being non-blocking.
+	 * Such is life.
+	 * 
+	 * Experiments using this method should plan for return values
+	 * being meaningless.
+	 */
+	public int sendToID(int id, JSONObject jsonData) throws IOException {
+		int sent = 0;
+		if(GNSDelayEmulator.isDelayEmulated()) {
+			GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
+			sent = jsonData.length(); // cheating!
+		} else sent = this.sendToIDActual(id, jsonData);
+		return sent;
+	}
+
+	public void enableStampSenderIP() {this.IPField = DEFAULT_IP_FIELD;}
+	public void enableStampSenderIP(String key) {this.IPField = key;}
+	public void disableStampSenderIP() {this.IPField = null;}
 
 	/* This method adds a header only if a socket channel is used to send to
 	 * a remote node, otherwise it hands over the message directly to the worker.
 	 */
 	protected int sendToIDActual(int destID, JSONObject jsonData) throws IOException {
 		int written = 0;
+		stampSenderIP(jsonData);
 		if(destID==this.myID) {
 			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 			jsonArray.add(jsonData);
@@ -80,7 +91,13 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 		return written;
 	}
 	/********************End of public send methods*****************************************/	
-	
+
+	private void stampSenderIP(JSONObject jsonData) {
+		try {
+			if(this.IPField!=null && !this.IPField.isEmpty()) 
+				jsonData.put(this.IPField, this.getNodeAddress().toString());
+		} catch(JSONException je) {je.printStackTrace();}
+	}
 	/* This method is really redundant. But it exists so that there is one place where
 	 * all NIO sends actually happen given the maddening number of different public send
 	 * methods above. Do NOT add more gunk to this method.
@@ -91,7 +108,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	private static JSONObject JSONify(int msgNum, String s) throws JSONException{
 		return new JSONObject("{\"msg\" : \"" + s + "\" , \"msgNum\" : " + msgNum + "}");
 	}
-	
+
 
 	/* The test code here is mostly identical to that of NIOTransport but tests
 	 * JSON messages, headers, and delay emulation features. Need to test it with 
@@ -106,14 +123,14 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 		JSONMessageExtractor[] workers = new JSONMessageExtractor[nNodes+1];
 		for(int i=0; i<nNodes+1; i++) workers[i] = new JSONMessageExtractor(new DefaultPacketDemultiplexer());
 		GNSNIOTransport[] niots = new GNSNIOTransport[nNodes];
-		
+
 		try {
 			int smallNNodes = 2;
 			for(int i=0; i<smallNNodes; i++) {
 				niots[i] = new GNSNIOTransport(i, snc, workers[i]);
 				new Thread(niots[i]).start();
 			}			
-			
+
 			/*************************************************************************/
 			/* Test a few simple hellos. The sleep is there to test 
 			 * that the successive writes do not "accidentally" benefit
@@ -127,19 +144,19 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 			niots[0].sendToIDActual(1, JSONify(msgNum++, "Third hello back from 0 to 1"));
 			niots[1].sendToIDActual(0, JSONify(msgNum++, "Thank you for all the hellos back from 1 to 0"));
 			/*************************************************************************/
-			
+
 			int seqTestNum=1;
 			Thread.sleep(2000);
 			System.out.println("\n\n\nBeginning test of " + seqTestNum + " random, sequential messages");
 			Thread.sleep(1000);
-			
+
 			/*************************************************************************/
 			//Create the remaining nodes up to nNodes
 			for(int i=smallNNodes; i<nNodes; i++) {
 				niots[i] = new GNSNIOTransport(i, snc, workers[i]);
 				new Thread(niots[i]).start();
 			}			
-			
+
 			// Test a random, sequential communication pattern
 			for(int i=0; i<nNodes*seqTestNum;i++) {
 				int k = (int)(Math.random()*nNodes);
@@ -190,14 +207,14 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 				System.out.println("Scheduling random message " + i + " with msgNum " + msgNum);
 				execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
 			}
-			
+
 			/*************************************************************************/
 			Thread.sleep(1000);
 			System.out.println("\n\n\nBeginning test of random, concurrent, " +
-			" any-to-any messages with emulated delays");
+					" any-to-any messages with emulated delays");
 			Thread.sleep(1000);
 			/*************************************************************************/			
-			
+
 			int load = nNodes*25;
 			int msgsToFailed=0;
 			ScheduledFuture<TX>[] futures = new ScheduledFuture[load];
@@ -205,12 +222,12 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 				int k = (int)(Math.random()*nNodes);
 				int j = (int)(Math.random()*nNodes);
 				//long millis = (long)(Math.random()*1000);
-				
+
 				if(i%100==0) {
 					j = nNodes+1; // Periodically try sending to a non-existent node
 					msgsToFailed++;
 				}
-				
+
 				TX task = new TX(k, j, niots, msgNum++);
 				System.out.println("Scheduling random message " + i + " with msgNum " + msgNum);
 				futures[i] = (ScheduledFuture<TX>)execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
@@ -242,10 +259,10 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 				"Unsent pending messages in NIO";
 			if(!pending || missing==msgsToFailed) System.out.println("\nSUCCESS: no pending messages to non-failed nodes!");
 
-	} catch (IOException e) {
-		e.printStackTrace();
-	} catch(Exception e) {
-		e.printStackTrace();
-	}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
