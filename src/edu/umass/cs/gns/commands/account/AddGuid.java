@@ -11,7 +11,7 @@ import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
-import edu.umass.cs.gns.clientsupport.CommandRequestHandler;
+import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
@@ -51,7 +51,7 @@ public class AddGuid extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return CommandRequestHandler.sendCommandRequest(json);
+      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
     } else {
       String name = json.getString(NAME);
       String accountGuid = json.getString(GUID);

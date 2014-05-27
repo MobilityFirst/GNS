@@ -4,7 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.PacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.commands.CommandProcessor;
-import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
@@ -61,7 +61,7 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
       // return value should be true if packet type matches these packets:
       if (Config.debugMode) GNS.getLogger().fine(" MsgType " + type + " Msg " + json);
       switch (type) {
-        case COMMAND:
+        case LNS_TO_NS_COMMAND:
         case UPDATE:
         case DNS:
 
@@ -116,8 +116,8 @@ public class NSPacketDemultiplexer extends PacketDemultiplexer {
           public void run() {
             try {
               switch (type) {
-                case COMMAND:
-                  CommandProcessor.processCommandPacket(new CommandPacket(json), nameServer.getGnsReconfigurable());
+                case LNS_TO_NS_COMMAND:
+                  CommandProcessor.processCommandPacket(new LNSToNSCommandPacket(json), nameServer.getGnsReconfigurable());
                   break;
 
                 // Packets sent from LNS

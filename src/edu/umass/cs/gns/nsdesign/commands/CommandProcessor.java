@@ -10,7 +10,7 @@ package edu.umass.cs.gns.nsdesign.commands;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
-import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +30,7 @@ public class CommandProcessor {
   
   private static final NSCommandModule commandModule = new NSCommandModule();
   
-  public static void processCommandPacket(CommandPacket packet, GnsReconfigurableInterface gnsReconfigurable) throws IOException, JSONException{
+  public static void processCommandPacket(LNSToNSCommandPacket packet, GnsReconfigurableInterface gnsReconfigurable) throws IOException, JSONException{
     String returnValue = processCommand(packet.getCommand(), gnsReconfigurable);
     packet.setReturnValue(returnValue);
      GNS.getLogger().info("NS" + gnsReconfigurable.getNodeID() + " sending back to LNS " + packet.getLnsID()

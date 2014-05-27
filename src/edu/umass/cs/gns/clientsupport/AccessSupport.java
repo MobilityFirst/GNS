@@ -27,6 +27,18 @@ import java.security.spec.X509EncodedKeySpec;
  */
 public class AccessSupport {
   
+  /**
+   * Compares the signature against the message to verify that the messages was signed by the guid.
+   * 
+   * @param guidInfo
+   * @param signature
+   * @param message
+   * @return
+   * @throws NoSuchAlgorithmException
+   * @throws InvalidKeySpecException
+   * @throws InvalidKeyException
+   * @throws SignatureException 
+   */
   public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
     if (!GNS.enableSignatureVerification) {
       return true;
@@ -47,9 +59,16 @@ public class AccessSupport {
     return result;
   }
 
-  public static String removeSignature(String fullString, String fullSignatureField) {
-    GNS.getLogger().finer("fullstring = " + fullString + " fullSignatureField = " + fullSignatureField);
-    String result = fullString.substring(0, fullString.lastIndexOf(fullSignatureField));
+  /**
+   * Extracts out the message string without the signature part.
+   * 
+   * @param messageStringWithSignatureParts
+   * @param signatureParts
+   * @return 
+   */
+  public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
+    GNS.getLogger().finer("fullstring = " + messageStringWithSignatureParts + " fullSignatureField = " + signatureParts);
+    String result = messageStringWithSignatureParts.substring(0, messageStringWithSignatureParts.lastIndexOf(signatureParts));
     GNS.getLogger().finer("result = " + result);
     return result;
   }

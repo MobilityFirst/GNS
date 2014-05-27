@@ -7,7 +7,7 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,11 +22,11 @@ import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
  *
  * @author westy
  */
-public class CommandRequestHandler {
+public class LNSToNSCommandRequestHandler {
   
   private static final Object monitor = new Object();
-  private static ConcurrentMap<Integer, CommandPacket> resultsMap = new ConcurrentHashMap<Integer, CommandPacket>(10, 0.75f, 3);
-  private static Random randomID = new Random();
+  private static final ConcurrentMap<Integer, LNSToNSCommandPacket> resultsMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+  private static final Random randomID = new Random();
   
   /**
    * Sends a command to the LNS command handler which forwards it on to an appropriate Name Server.
@@ -36,10 +36,10 @@ public class CommandRequestHandler {
    */
   public static String sendCommandRequest(JSONObject command) {
     int id = nextRequestID();
-    return sendCommandHelper(id, new CommandPacket(id, LocalNameServer.getNodeID(), command)); 
+    return sendCommandHelper(id, new LNSToNSCommandPacket(id, LocalNameServer.getNodeID(), command)); 
   }
   
-  private static String sendCommandHelper(int id, CommandPacket commandPacket) {
+  private static String sendCommandHelper(int id, LNSToNSCommandPacket commandPacket) {
     try {
       GNS.getLogger().info("Sending CommandPacket #" + id + " to Intercessor");
       Intercessor.injectPacketIntoLNSQueue(commandPacket.toJSONObject());
@@ -49,7 +49,7 @@ public class CommandRequestHandler {
       return null;
     }
     waitForResponsePacket(id);
-    CommandPacket packet = resultsMap.get(id);
+    LNSToNSCommandPacket packet = resultsMap.get(id);
     return packet.getReturnValue();
   }
   
@@ -61,9 +61,9 @@ public class CommandRequestHandler {
   public static void processCommandResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
-        case COMMAND:
+        case LNS_TO_NS_COMMAND:
           try {
-            CommandPacket response = new CommandPacket(json);
+            LNSToNSCommandPacket response = new LNSToNSCommandPacket(json);
             int id = response.getRequestId();
             GNS.getLogger().info("Processing returning CommandPacket for " + id);
             synchronized (monitor) {

@@ -10,7 +10,7 @@ package edu.umass.cs.gns.commands.account;
 import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
-import edu.umass.cs.gns.clientsupport.CommandRequestHandler;
+import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.commands.CommandDefs;
@@ -47,7 +47,7 @@ public class SetPassword extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return CommandRequestHandler.sendCommandRequest(json);
+      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
     } else {
       String guid = json.getString(GUID);
       String password = json.getString(PASSWORD);

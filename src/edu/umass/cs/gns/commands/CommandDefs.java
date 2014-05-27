@@ -13,7 +13,9 @@ package edu.umass.cs.gns.commands;
  */
 public class CommandDefs {
   
-  // This will be set to true (and eventually go away) when the new code is ready.
+  // If true this will enable a new feature that handles certain command
+  // requests at the name server. It is not finished and maybe never will be
+  // now. Don't set this to true without talking to Westy first!!
   public static boolean handleAcccountCommandsAtNameServer = false;
 
   private static String[] commands = new String[]{

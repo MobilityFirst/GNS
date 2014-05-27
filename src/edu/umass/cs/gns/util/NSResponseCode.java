@@ -33,7 +33,7 @@ public enum NSResponseCode implements Serializable{
   SIGNATURE_ERROR(3, Defs.BADSIGNATURE, true),
   ACCESS_ERROR(4, Defs.ACCESSDENIED, true),
   BAD_GUID_ERROR(5, Defs.BADGUID, true),
-  BAD_ACCESOR_ERROR(6, Defs.BADACCESSORGUID, true),
+  BAD_ACCESSOR_ERROR(6, Defs.BADACCESSORGUID, true),
   //
   VERIFICATION_ERROR(6, Defs.VERIFICATIONERROR, true)
   ;

@@ -143,7 +143,7 @@ public class Lookup {
       // Lookup the guid of the reader. This could potentiall not be on this NS.
     } else if ((readerGuidInfo = NSAccountAccess.lookupGuidInfo(reader, true, gnsApp)) == null) {
       if (Config.debugMode) GNS.getLogger().fine("Name " + guid + " key = " + field + ": BAD_ACCESOR_ERROR");
-      return NSResponseCode.BAD_ACCESOR_ERROR;
+      return NSResponseCode.BAD_ACCESSOR_ERROR;
     }
     // unsigned case, must be world readable
     if (signature == null) {

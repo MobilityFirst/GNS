@@ -99,7 +99,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
         case GROUP_CHANGE_COMPLETE:
           LNSTestRequests.handleGroupChangeComplete(json);
           break;
-        case COMMAND:
+        case LNS_TO_NS_COMMAND:
           CommandRequest.handlePacketCommandRequest(json);
           break;
         default:

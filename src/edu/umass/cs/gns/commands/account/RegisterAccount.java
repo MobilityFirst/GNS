@@ -9,7 +9,7 @@ package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
-import edu.umass.cs.gns.clientsupport.CommandRequestHandler;
+import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
@@ -47,7 +47,7 @@ public class RegisterAccount extends GnsCommand {
   public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) { 
-      return CommandRequestHandler.sendCommandRequest(json);
+      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
     } else {
       String name = json.getString(NAME);
       String guid = json.optString(GUID, null);

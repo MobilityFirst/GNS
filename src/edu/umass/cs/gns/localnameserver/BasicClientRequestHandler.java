@@ -15,14 +15,23 @@ import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONObject;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -30,10 +39,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 /**
  * Implements basic functionality needed by servers to handle client type requests.
  * Abstracts out the storing of request info, caching and communication needs of
- * a node. 
- * 
+ * a node.
+ *
  * Note: This based on LNS code, but at some point the idea was that the LNS and NS
- * would both use this interface. It's not done yet (interrupted for more pressing 
+ * would both use this interface. It's not done yet (interrupted for more pressing
  * issues).
  *
  * @author westy
@@ -114,7 +123,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   public int getNodeID() {
     return nodeID;
   }
- 
+
   @Override
   public RequestHandlerParameters getParameters() {
     return parameters;
@@ -440,7 +449,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return x1.get(0);
     //    return  x1.get(count);
   }
-  
 
   // STATS MAP
   @Override
@@ -496,7 +504,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    **
    * Prints name record statistic
    *
-   * @return 
+   * @return
    */
   @Override
   public String getNameRecordStatsMapLogString() {

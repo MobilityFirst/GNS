@@ -51,6 +51,8 @@ public class Packet {
 
     // SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
     // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
+// SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
+    // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
     DNS(-1),
     DNS_RESPONSE(-2),
     DNS_ERROR_RESPONSE(-3),
@@ -71,7 +73,7 @@ public class Packet {
     CONFIRM_UPDATE(21),
     // Lookup actives
     REQUEST_ACTIVES(30),
-    COMMAND(35),
+    LNS_TO_NS_COMMAND(35),
     // Admin:
     DUMP_REQUEST(40),
     SENTINAL(41),

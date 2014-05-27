@@ -133,8 +133,8 @@ public class Intercessor {
         case SELECT_RESPONSE:
           SelectHandler.processSelectResponsePackets(json);
           break;
-        case COMMAND:
-          CommandRequestHandler.processCommandResponsePackets(json);
+        case LNS_TO_NS_COMMAND:
+          LNSToNSCommandRequestHandler.processCommandResponsePackets(json);
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON error: " + e);

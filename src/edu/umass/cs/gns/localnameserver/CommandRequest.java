@@ -9,7 +9,7 @@ import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.net.UnknownHostException;
@@ -23,7 +23,7 @@ public class CommandRequest {
 
   public static void handlePacketCommandRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
 
-    CommandPacket packet = new CommandPacket(incomingJSON);
+    LNSToNSCommandPacket packet = new LNSToNSCommandPacket(incomingJSON);
     if (packet.getReturnValue() == null) {
       // PACKET IS GOING OUT TO A NAME SERVER
       // If the command is a guid or name command (has a GUID or NAME field) we MUST send it to a server 

@@ -157,15 +157,15 @@ public class GnsHttpServer {
       String message = AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
       queryMap.put(SIGNATUREFULLMESSAGE, message);
     }
-    JSONObject json = new JSONObject(queryMap);
+    JSONObject jsonFormattedCommand = new JSONObject(queryMap);
     
     // Now we execute the command
-    GnsCommand command = commandModule.lookupCommand(json);
+    GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     try {
       if (command != null) {
         GNS.getLogger().info("Executing command: " + command.toString());
         //GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
-        return command.execute(json);
+        return command.execute(jsonFormattedCommand);
       } else {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
       }

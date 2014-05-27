@@ -9,7 +9,7 @@ package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
-import edu.umass.cs.gns.clientsupport.CommandRequestHandler;
+import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -40,7 +40,7 @@ public class LookupAccountRecord extends GnsCommand {
   @Override
   public String execute(JSONObject json) throws JSONException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return CommandRequestHandler.sendCommandRequest(json);
+      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
     } else {
       String guid = json.getString(GUID);
       AccountInfo acccountInfo;

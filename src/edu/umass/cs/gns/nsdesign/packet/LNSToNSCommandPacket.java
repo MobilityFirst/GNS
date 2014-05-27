@@ -1,15 +1,16 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
-import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * This packet is used to send commands from a Local Name Server to a Name Server
  * as well as send responses back to the LNS.
+ * 
+ * This is used by an new module that is not yet completed.
  */
-public class CommandPacket extends BasicPacket {
+public class LNSToNSCommandPacket extends BasicPacket {
 
   private final static String REQUESTID = "reqID";
   private final static String COMMAND = "command";
@@ -20,9 +21,9 @@ public class CommandPacket extends BasicPacket {
    * Identifier of the request.
    */
   private final int requestId;
-
   /**
-   * ID of the group between new set of active replicas.
+   * The JSON form of the command. Always includes a COMMANDNAME field.
+   * Almost always has a GUID field or NAME (for HRN records) field.
    */
   private final JSONObject command;
   private String returnValue;
@@ -34,8 +35,8 @@ public class CommandPacket extends BasicPacket {
    * @param requestId
    * @param command
    */
-  public CommandPacket(int requestId, int lns, JSONObject command) {
-    this.setType(PacketType.COMMAND);
+  public LNSToNSCommandPacket(int requestId, int lns, JSONObject command) {
+    this.setType(PacketType.LNS_TO_NS_COMMAND);
     this.requestId = requestId;
     this.lnsID = lns;
     this.command = command;
@@ -43,7 +44,7 @@ public class CommandPacket extends BasicPacket {
 
   }
 
-  public CommandPacket(JSONObject json) throws JSONException {
+  public LNSToNSCommandPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.requestId = json.getInt(REQUESTID);
     this.lnsID = json.getInt(LNSID);
