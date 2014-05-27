@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nio;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * This interface exists to easily switch between old and new nio packages, both of which support
@@ -14,5 +15,7 @@ import java.io.IOException;
 public interface GNSNIOTransportInterface{
 
   public int sendToID(int id, JSONObject jsonData) throws IOException;
+  
+  public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException;
 
 }

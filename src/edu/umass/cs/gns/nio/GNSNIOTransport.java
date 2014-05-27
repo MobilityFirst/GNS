@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -58,6 +59,16 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	 * Experiments using this method should plan for return values
 	 * being meaningless.
 	 */
+        
+        /**
+         * Send a JSON packet to an NameServer using the id.
+         * 
+         * @param id
+         * @param jsonData
+         * @return
+         * @throws IOException 
+         */
+        @Override
 	public int sendToID(int id, JSONObject jsonData) throws IOException {
 		int sent = 0;
 		if(GNSDelayEmulator.isDelayEmulated()) {
@@ -66,6 +77,21 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 		} else sent = this.sendToIDActual(id, jsonData);
 		return sent;
 	}
+        
+        /**
+         * Send a JSON packet to an inet socket address (ip and port).
+         * 
+         * @param isa
+         * @param jsonData
+         * @return
+         * @throws IOException 
+         */
+        @Override
+        public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
+          stampSenderIP(jsonData);
+          String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
+          return this.send(isa, headeredMsg.getBytes());
+        }
 
 	public void enableStampSenderIP() {this.IPField = DEFAULT_IP_FIELD;}
 	public void enableStampSenderIP(String key) {this.IPField = key;}

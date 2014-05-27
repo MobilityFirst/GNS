@@ -33,6 +33,7 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import static edu.umass.cs.gns.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gns.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gns.httpserver.Defs.VALSEP;
+import edu.umass.cs.gns.localnameserver.CommandRequest;
 import edu.umass.cs.gns.util.Util;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -161,26 +162,27 @@ public class GnsHttpServer {
     
     // Now we execute the command
     GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    try {
-      if (command != null) {
-        GNS.getLogger().info("Executing command: " + command.toString());
-        //GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
-        return command.execute(jsonFormattedCommand);
-      } else {
-        return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-      return BADRESPONSE + " " + JSONPARSEERROR + " " + e;
-    } catch (NoSuchAlgorithmException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-    } catch (InvalidKeySpecException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-    } catch (SignatureException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-    } catch (InvalidKeyException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-    }
+    return CommandRequest.executeCommand(command, jsonFormattedCommand);
+//    try {
+//      if (command != null) {
+//        GNS.getLogger().info("Executing command: " + command.toString());
+//        //GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
+//        return command.execute(jsonFormattedCommand);
+//      } else {
+//        return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
+//      }
+//    } catch (JSONException e) {
+//      e.printStackTrace();
+//      return BADRESPONSE + " " + JSONPARSEERROR + " " + e;
+//    } catch (NoSuchAlgorithmException e) {
+//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+//    } catch (InvalidKeySpecException e) {
+//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+//    } catch (SignatureException e) {
+//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+//    } catch (InvalidKeyException e) {
+//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+//    }
   }
  
  

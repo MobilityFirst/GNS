@@ -61,7 +61,11 @@ public class Packet {
     CONFIRM_ADD(3),
     ACTIVE_ADD(4), // on an add request replica controller sends to active replica
     ACTIVE_ADD_CONFIRM(5), // after adding name, active replica confirms to replica controller
-
+    
+    // new client
+    COMMAND(7),
+    COMMAND_RETURN_VALUE(8),
+    
     // Remove
     REMOVE_RECORD(10),
     CONFIRM_REMOVE(11),

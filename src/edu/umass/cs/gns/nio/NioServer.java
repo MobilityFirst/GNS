@@ -138,6 +138,11 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
       return 0;
     }
   }
+  
+  @Override
+  public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   boolean sendToIDActual(int destID, JSONObject json) throws IOException {
 
@@ -515,6 +520,7 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
       e.printStackTrace();
     }
   }
+
 }
 
 class WakeupSelectorTask extends TimerTask {

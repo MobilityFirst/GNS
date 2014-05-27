@@ -273,6 +273,14 @@ public interface ClientRequestHandlerInterface {
   public void sendToNS(JSONObject json, int ns); 
 
   /**
+   * Send a JSON packet to an IP address / port.
+   * @param json
+   * @param address
+   * @param port 
+   */
+  public void sendToAddress(JSONObject json, String address, int port);
+  
+  /**
    * 
    * @param name
    * @param nodeIDs

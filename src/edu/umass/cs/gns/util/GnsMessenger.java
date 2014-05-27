@@ -6,6 +6,7 @@ import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +43,10 @@ public class GnsMessenger implements GNSNIOTransportInterface {
     return jsonData.length();
   }
 
-
+  @Override
+  public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   /* We need this because NIO may drop messages when congested. Thankfully,
    * it tells us when it does that. The task below exponentially backs

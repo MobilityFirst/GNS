@@ -29,16 +29,19 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
   public LNSPacketDemultiplexer(ClientRequestHandlerInterface handler) {
     this.handler = handler;
   }
-  
+
   /**
    * This is the entry point for all message received at a local name server. It de-multiplexes packets based on
    * their packet type and forwards to appropriate classes.
+   *
    * @param json
    * @return false if and invalid packet type is received
    */
   @Override
   public boolean handleJSONObject(JSONObject json) {
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("******* Incoming packet: " + json);
+    if (StartLocalNameServer.debugMode) {
+      GNS.getLogger().fine("******* Incoming packet: " + json);
+    }
     boolean isPacketTypeFound = true;
     try {
       switch (Packet.getPacketType(json)) {
@@ -46,7 +49,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           DNSPacket dnsPacket = new DNSPacket(json);
           Packet.PacketType incomingPacketType = Packet.getDNSPacketType(dnsPacket);
           switch (incomingPacketType) {
-            // Lookup
+            // Lookup // these have been converted to use handler
             case DNS:
               Lookup.handlePacketLookupRequest(json, dnsPacket, handler);
               break;
@@ -58,7 +61,7 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
               break;
           }
           break;
-        // Update
+        // Update // these have NOT been converted to use handler
         case UPDATE:
           Update.handlePacketUpdate(json);
           break;
@@ -101,6 +104,9 @@ public class LNSPacketDemultiplexer extends PacketDemultiplexer {
           break;
         case LNS_TO_NS_COMMAND:
           LNSToNSCommandRequest.handlePacketCommandRequest(json);
+          break;
+        case COMMAND:
+          CommandRequest.handlePacketCommandRequest(json, handler);
           break;
         default:
           isPacketTypeFound = false;

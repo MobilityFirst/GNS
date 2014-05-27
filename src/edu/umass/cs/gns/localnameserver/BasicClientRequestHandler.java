@@ -25,6 +25,7 @@ import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONObject;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -429,6 +430,21 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   public void sendToNS(JSONObject json, int ns) {
     try {
       tcpTransport.sendToID(ns, json);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  /**
+   * Send packet to NS
+   *
+   * @param json
+   * @param ns
+   */
+  @Override
+  public void sendToAddress(JSONObject json, String address, int port) {
+    try {
+      tcpTransport.sendToAddress(new InetSocketAddress(address, port), json);
     } catch (IOException e) {
       e.printStackTrace();
     }

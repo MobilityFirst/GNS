@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * This class puts a given packet type on outgoing packets and sends them via GNSNIOTransportInterface.
@@ -31,6 +32,17 @@ public class PacketTypeStamper implements GNSNIOTransportInterface {
     try {
       Packet.putPacketType(jsonData, type);
       return nio.sendToID(id, jsonData);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return -1;
+  }
+
+  @Override
+  public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
+    try {
+      Packet.putPacketType(jsonData, type);
+      return nio.sendToAddress(isa, jsonData);
     } catch (JSONException e) {
       e.printStackTrace();
     }

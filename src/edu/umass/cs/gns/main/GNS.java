@@ -18,6 +18,8 @@ public class GNS {
   public static final int STARTINGPORT = 24400;
   public static final String GNS_URL_PATH = "GNS";
   
+  public static final int CLIENTPORT = 24399;
+  
 
   // This is designed so we can run LNS and NS on the same host if needed
   public enum PortType {
