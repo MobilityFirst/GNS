@@ -32,6 +32,7 @@ public class GnsMessenger implements GNSNIOTransportInterface {
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
     this.gnsnioTransport = gnsnioTransport;
   }
+  public int getMyID() {return this.myID;}
 
   @Override
   public int sendToID(int id, JSONObject jsonData) throws IOException {

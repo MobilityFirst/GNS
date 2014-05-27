@@ -17,5 +17,7 @@ public interface GNSNIOTransportInterface{
   public int sendToID(int id, JSONObject jsonData) throws IOException;
   
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException;
+  
+  public int getMyID();
 
 }

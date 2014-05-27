@@ -70,7 +70,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 		this.gnsNodeConfig = nc;
 		this.app = app;
 		this.coordinator = setReplicaCoordinator();
-		this.messenger = new JSONMessenger(this.myID, niot);
+		this.messenger = new JSONMessenger(niot);
 		this.reportingFuture = startStatsReporter();
 	}
 
@@ -201,10 +201,10 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 		} else if (Config.singleNS) {  // coordinator for testing only
 			return new DefaultGnsCoordinator(getNodeID(), this.app);
 		} else if(Config.eventualConsistency) {  // coordinator for testing only
-			return new GnsCoordinatorEventual(getNodeID(), this.messenger.getNIO(), new NSNodeConfig(gnsNodeConfig),
+			return new GnsCoordinatorEventual(getNodeID(), this.messenger, new NSNodeConfig(gnsNodeConfig),
 					this.app, new PaxosConfig(), Config.readCoordination);
 		} else { // this is the actual coordinator
-			return new GnsCoordinatorPaxos(getNodeID(), this.messenger.getNIO(), new NSNodeConfig(gnsNodeConfig),
+			return new GnsCoordinatorPaxos(getNodeID(), this.messenger, new NSNodeConfig(gnsNodeConfig),
 					this.app, new PaxosConfig(), Config.readCoordination);
 		}
 	}

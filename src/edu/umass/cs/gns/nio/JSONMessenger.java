@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nio;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
  * ephemeral traffic bursts. If you are overloaded, you are overloaded.
  * 
  */
-public class JSONMessenger {
+public class JSONMessenger implements GNSNIOTransportInterface {
 	private static final long RTX_DELAY = 1000; //ms
 	private static final int BACKOFF_FACTOR=2; 
 
@@ -31,8 +32,8 @@ public class JSONMessenger {
 
 	Logger log = Logger.getLogger(getClass().getName());
 
-	public JSONMessenger(int id, GNSNIOTransportInterface niot) {
-		myID = id; // needed only for debug printing
+	public JSONMessenger(GNSNIOTransportInterface niot) {
+		myID = niot.getMyID(); // needed only for debug printing
 		nioTransport = niot;
 	}
 	
@@ -104,5 +105,14 @@ public class JSONMessenger {
 		}
 	}
 	
-	public GNSNIOTransportInterface getNIO() {return this.nioTransport;} // hack to be deprecated; do not use
+	/********************* Start of GNSNIOTransportInterface methods *********************/
+	public int sendToID(int id, JSONObject jsonData) throws IOException {
+		return this.nioTransport.sendToID(id, jsonData);
+	}
+	public int sendToAddress(InetSocketAddress address, JSONObject jsonData) throws IOException {
+		return this.nioTransport.sendToAddress(address, jsonData);
+	}
+	public int getMyID() {return this.myID;}
+	/********************* End of GNSNIOTransportInterface methods *********************/
+
 }

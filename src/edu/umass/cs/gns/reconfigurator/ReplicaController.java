@@ -63,7 +63,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		this.myID = nodeID;
 		this.gnsNodeConfig = gnsNodeConfig;
 		this.niot = nioServer;
-		this.messenger = new JSONMessenger(this.myID, this.niot);
+		this.messenger = new JSONMessenger(this.niot);
 		this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 		this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType);
 	}

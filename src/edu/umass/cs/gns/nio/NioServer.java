@@ -92,6 +92,8 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   }
 
+  public int getMyID() {return this.ID;}
+  
   /**
    * After this method is called, we emulate an additional delay in packets sent to all nodes.
    */

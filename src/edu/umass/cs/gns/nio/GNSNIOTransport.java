@@ -47,6 +47,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	public void addPacketDemultiplexer(PacketDemultiplexer pd) {
 		((JSONMessageExtractor)this.worker).addPacketDemultiplexer(pd);
 	}
+	public int getMyID() {return this.myID;}
 
 	/********************Start of send methods*****************************************/
 

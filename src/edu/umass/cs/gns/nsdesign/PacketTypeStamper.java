@@ -25,6 +25,8 @@ public class PacketTypeStamper implements GNSNIOTransportInterface {
     this.nio = nio;
     this.type = type;
   }
+  
+  public int getMyID() {return this.nio.getMyID();}
 
 
   @Override
