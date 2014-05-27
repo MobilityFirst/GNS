@@ -95,7 +95,7 @@ public class StartActiveSetTask extends TimerTask {
             newActivesQueried.add(selectedActive);
             NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(name, replicaController.getNodeID(),
                     selectedActive, newActiveNameServers, oldActiveNameServers,
-                    oldActiveVersion, newActiveVersion, PacketType.NEW_ACTIVE_START, initialValue, false);
+                    (short)oldActiveVersion, (short)newActiveVersion, PacketType.NEW_ACTIVE_START, initialValue, false);
             packet.setUniqueID(requestID);
             replicaController.getNioServer().sendToID(selectedActive, packet.toJSONObject());
             if (Config.debugMode) {

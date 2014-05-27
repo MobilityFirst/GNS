@@ -23,7 +23,7 @@ public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
 
   private Replicable replicable;
 
-  private ConcurrentHashMap<String, Integer>  nameAndGroupVersion = new ConcurrentHashMap<String, Integer>();
+  private ConcurrentHashMap<String, Short>  nameAndGroupVersion = new ConcurrentHashMap<String, Short>();
 
   public DummyGnsCoordinatorUnreplicated(int nodeID, Replicable replicable) {
     this.nodeID = nodeID;
@@ -54,7 +54,7 @@ public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
         case ACTIVE_REMOVE: // stop request for removing a name record
         case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
           OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket(request);
-          Integer version = nameAndGroupVersion.get(stopPacket1.getName());
+          Short version = nameAndGroupVersion.get(stopPacket1.getName());
           if (version == null || version != stopPacket1.getVersion()) {
             noCoordinatorState = true;
           }

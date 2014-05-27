@@ -52,14 +52,14 @@ public class OldActiveSetStopPacket extends BasicPacket
 	/**
 	 * Actives ID that is requested to be stopped.
 	 */
-  private int version;
+  private short version;
 
 	/**
 	 * 
 	 * @param name
 	 * @param primarySender
 	 */
-	public OldActiveSetStopPacket(String name, int requestID, int primarySender, int activeReceiver, int version, PacketType type1) {
+	public OldActiveSetStopPacket(String name, int requestID, int primarySender, int activeReceiver, short version, PacketType type1) {
 		this.name = name;
     this.requestID = requestID;
 		this.type = type1;
@@ -74,7 +74,7 @@ public class OldActiveSetStopPacket extends BasicPacket
 		this.name = json.getString(NAME);
 		this.primarySender = json.getInt(PRIMARY_SENDER);
 		this.activeReceiver = json.getInt(ACTIVE_RECEIVER);
-		this.version = json.getInt(VERSION);
+		this.version = (short)json.getInt(VERSION);
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class OldActiveSetStopPacket extends BasicPacket
 		return activeReceiver;
 	}
 	
-	public int getVersion() {
+	public short getVersion() {
 		return version;
 	}
 

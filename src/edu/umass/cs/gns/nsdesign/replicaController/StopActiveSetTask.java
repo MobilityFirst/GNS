@@ -86,7 +86,7 @@ public class StopActiveSetTask extends TimerTask {
         oldActivesQueried.add(selectedOldActive);
         GNS.getLogger().fine(" Old Active Name Server Selected to Query: " + selectedOldActive);
         OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, requestID, rc.getNodeID(), selectedOldActive,
-                oldVersion, packetType);
+                (short)oldVersion, packetType);
         GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
         try {
           rc.getNioServer().sendToID(selectedOldActive, packet.toJSONObject());

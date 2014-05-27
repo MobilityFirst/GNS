@@ -16,7 +16,7 @@ import java.util.HashMap;
 public class Config {
 
   /** First version number for a GUID. */
-  public static final int FIRST_VERSION = 1;
+  public static final short FIRST_VERSION = 1;
 
   public static final String NO_COORDINATOR_STATE_MARKER = "NoCoordinatorState";
 

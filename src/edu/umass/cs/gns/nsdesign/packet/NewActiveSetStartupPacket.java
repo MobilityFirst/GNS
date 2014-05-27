@@ -52,11 +52,11 @@ public class NewActiveSetStartupPacket extends BasicPacket {
   /**
    * Version of the new set of actives.
    */
-  int newActiveVersion;
+  short newActiveVersion;
   /**
    * Version of the old set of actives.
    */
-  int oldActiveVersion;
+  short oldActiveVersion;
   /**
    * Value at the end of previous epoch.
    */
@@ -74,7 +74,7 @@ public class NewActiveSetStartupPacket extends BasicPacket {
    */
   public NewActiveSetStartupPacket(String name,
           int primarySender, int activeSender, Set<Integer> newActives,
-          Set<Integer> oldActives, int oldActiveVersion, int newActiveVersion,
+          Set<Integer> oldActives, short oldActiveVersion, short newActiveVersion,
           PacketType type1, String previousValue, boolean previousValueCorrect) {
     Random r = new Random();
     this.uniqueID = r.nextInt();
@@ -125,9 +125,9 @@ public class NewActiveSetStartupPacket extends BasicPacket {
       oldActives.add(Integer.parseInt(x));
     }
 
-    this.oldActiveVersion = json.getInt(OLD_ACTIVE_VERSION);
+    this.oldActiveVersion = (short)json.getInt(OLD_ACTIVE_VERSION); 
 
-    this.newActiveVersion = json.getInt(NEW_ACTIVE_VERSION);
+    this.newActiveVersion = (short)json.getInt(NEW_ACTIVE_VERSION);
 
     this.previousValue = json.has(PREVIOUS_VALUE) ? json.getString(PREVIOUS_VALUE): null;
 
@@ -214,11 +214,11 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     return oldActives;
   }
 
-  public int getOldActiveVersion() {
+  public short getOldActiveVersion() {
     return oldActiveVersion;
   }
 
-  public int getNewActiveVersion() {
+  public short getNewActiveVersion() {
     return newActiveVersion;
   }
 

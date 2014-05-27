@@ -46,7 +46,7 @@ public class NameServer{
 
   private ActiveReplicaCoordinator  appCoordinator; // coordinates app's requests
  
-  private ActiveReplica activeReplica; // reconfiguration logic
+  private ActiveReplica<?> activeReplica; // reconfiguration logic
  
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
   
@@ -174,7 +174,7 @@ public class NameServer{
     return appCoordinator;
   }
 
-  public ActiveReplica getActiveReplica() {
+  public ActiveReplica<?> getActiveReplica() {
     return activeReplica;
   }
 
