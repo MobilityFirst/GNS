@@ -9,7 +9,6 @@ import org.json.JSONObject;
  */
 public interface ReplicaControllerCoordinator {
 	public int coordinateRequest(JSONObject request);
-	public int initGroupChange(String name);
-
-  void reset();
+	public int initGroupChange(String name); // FIXME: Arun: Why is this needed?
+	public void reset(); // FIXME: Arun: Why is this part of coordination??
 }

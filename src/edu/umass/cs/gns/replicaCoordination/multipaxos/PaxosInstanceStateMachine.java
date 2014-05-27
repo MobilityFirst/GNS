@@ -383,7 +383,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				JSONObject msg = new JSONObject();
 				msg.put(PaxosPacket.PAXOS_ID, this.getPaxosID());
 				msg.put(PaxosPacket.PAXOS_VERSION, this.getVersion());
-				msg.put(PaxosPacket.PAXOS_TYPE, PaxosPacketType.NO_TYPE.getNumber());
+				msg.put(PaxosPacket.PAXOS_PACKET_TYPE, PaxosPacketType.NO_TYPE.getNumber());
 				if(!TESTPaxosConfig.MEMORY_TESTING) log.info(this.getNodeState() + 
 						" sending test paxos message upon recovery");
 				this.handlePaxosMessage(msg);

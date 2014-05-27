@@ -1,6 +1,11 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
-import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
+import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONMessageExtractor;
+import edu.umass.cs.gns.nio.NIOTransport;
+import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.SampleNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -20,7 +25,12 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -160,13 +170,13 @@ public class PaxosManager extends AbstractPaxosManager {
 	public void handleIncomingPacket(JSONObject jsonMsg) {
 		if(this.isClosed()) return; else {setProcessing(true);}
 
-		PaxosPacketType incomingPacketType;
+		PaxosPacketType paxosPacketType;
 		try {
 			RequestPacket.addDebugInfo(jsonMsg, ("i"+myID));
-			assert(Packet.getPacketType(jsonMsg)==PacketType.PAXOS_PACKET);
-			incomingPacketType = PaxosPacket.getPaxosPacketType(jsonMsg);
+			assert(Packet.getPacketType(jsonMsg)==PacketType.PAXOS_PACKET || Packet.hasPacketTypeField(jsonMsg)); // coz of demultiplexing hierarchy
+			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg); // will throw exception if no PAXOS_PACKET_TYPE
 
-			switch (incomingPacketType){
+			switch (paxosPacketType){
 			case FAILURE_DETECT:
 				FailureDetectionPacket fdp = new FailureDetectionPacket(jsonMsg);
 				FD.receive(fdp);
@@ -229,7 +239,8 @@ public class PaxosManager extends AbstractPaxosManager {
 		return null;
 	}
 
-	public void resetAll() {
+	// FIXME: Unclear how this will be used. May cause problems with ongoing DB transactions.
+	public synchronized void resetAll() {
 		this.pinstances.clear();
 		this.corpses.clear();
 		this.paxosLogger.removeAll();

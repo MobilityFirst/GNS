@@ -5,13 +5,13 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-/**************** FIXME Package deprecated by nsdesign/packet. this will soon be deleted. **/
+import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
 /**  
 @author V. Arun. 
  */
-public abstract class PaxosPacket extends Packet {
+public abstract class PaxosPacket implements PacketInterface {
 
-	public static final String PAXOS_TYPE = "PAXOS_TYPE"; // Name of packet type field in JSON representation
+	public static final String PAXOS_PACKET_TYPE = "PAXOS_PACKET_TYPE"; // Name of packet type field in JSON representation
 	public static final String PAXOS_ID = "PAXOS_ID";
 	public static final String PAXOS_VERSION = "PAXOS_VERSION";
 	
@@ -26,10 +26,6 @@ public abstract class PaxosPacket extends Packet {
 	protected String paxosID=null;
 	protected short version=-1;
 
-	/* The enum type below could be merged with Packet. There
-	 * is little reason to have a special TYPE called PAXOS_PACKET in Packet
-	 * and then another field for sub-types indicating the PAXOS_TYPE.
-	 */
 	public enum PaxosPacketType {
 		RESPONSE ("RESPONSE", 0),
 		REQUEST ("REQUEST", 1),
@@ -92,7 +88,7 @@ public abstract class PaxosPacket extends Packet {
 	}
 
 	public static PaxosPacketType getPaxosPacketType(JSONObject json) throws JSONException {
-		return PaxosPacketType.getPaxosPacketType(json.getInt(PaxosPacket.PAXOS_TYPE));
+		return PaxosPacketType.getPaxosPacketType(json.getInt(PaxosPacket.PAXOS_PACKET_TYPE));
 	}
 
 	public abstract JSONObject toJSONObjectImpl() throws JSONException;
@@ -128,8 +124,8 @@ public abstract class PaxosPacket extends Packet {
 
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject json = new JSONObject();
-		Packet.putPacketType(json, PacketType.PAXOS_PACKET); // tells Packet that this is a PaxosPacket
-		json.put(PaxosPacket.PAXOS_TYPE, this.packetType.getNumber()); // the specific type of PaxosPacket
+		Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET); // tells Packet that this is a PaxosPacket
+		json.put(PaxosPacket.PAXOS_PACKET_TYPE, this.packetType.getNumber()); // the specific type of PaxosPacket
 		json.put(PaxosPacket.PAXOS_ID, this.paxosID);
 		json.put(PaxosPacket.PAXOS_VERSION, this.version);
 

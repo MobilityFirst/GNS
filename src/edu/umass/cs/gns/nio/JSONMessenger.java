@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
 
@@ -36,7 +35,7 @@ public class JSONMessenger {
 		myID = id; // needed only for debug printing
 		nioTransport = niot;
 	}
-
+	
 	/* send returns void because it is the "ultimate" send. It will retransmit
 	 * if necessary. It is inconvenient for senders to worry about 
 	 * retransmission anyway. We may need to retransmit despite using 
@@ -104,4 +103,6 @@ public class JSONMessenger {
 			}
 		}
 	}
+	
+	public GNSNIOTransportInterface getNIO() {return this.nioTransport;} // hack to be deprecated; do not use
 }

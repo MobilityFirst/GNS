@@ -60,8 +60,8 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 
 	public static int getNodeID(JSONObject msg) throws JSONException {
 		int id=-1;
-		if(msg.has(PaxosPacket.PAXOS_TYPE)) {
-			PaxosPacketType msgType = PaxosPacketType.getPaxosPacketType(msg.getInt(PaxosPacket.PAXOS_TYPE));
+		if(msg.has(PaxosPacket.PAXOS_PACKET_TYPE)) {
+			PaxosPacketType msgType = PaxosPacketType.getPaxosPacketType(msg.getInt(PaxosPacket.PAXOS_PACKET_TYPE));
 			switch(msgType) {
 			case ACCEPT:
 				id = msg.getInt(AcceptPacket.NODE);

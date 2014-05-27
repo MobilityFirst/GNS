@@ -22,11 +22,17 @@ public class Util {
 
 	public static final String df(double d) {return decimalFormat.format(d);}
 	public static final String mu(double d) {return decimalFormat.format(d*1000)+"us";} // milli to microseconds
+	public static final double movingAverage(double sample, double historicalAverage, double alpha) {
+		return (1-alpha)*((double)historicalAverage) + alpha*((double)sample);
+	}
 	public static final double movingAverage(double sample, double historicalAverage) {
-		return (1-ALPHA)*((double)historicalAverage) + ALPHA*((double)sample);
+		return movingAverage(sample, historicalAverage, ALPHA);
 	}
 	public static final double movingAverage(long sample, double historicalAverage) {
 		return movingAverage((double)sample, historicalAverage);
+	}
+	public static final double movingAverage(long sample, double historicalAverage, double alpha) {
+		return movingAverage((double)sample, historicalAverage, alpha);
 	}
 
 
@@ -74,6 +80,11 @@ public class Util {
 		TreeSet<Integer> set = new TreeSet<Integer>();
 		for(int i=0; i<array.length;i++) set.add(array[i]);
 		return set;
+	}
+	public static int[] setToArray(Set<Integer> set) {
+		int[] array = new int[set.size()];
+		int i=0; for(int id : set) array[i] = id;
+		return array;
 	}
 	public static int[] stringToArray(String string) {
 		string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
