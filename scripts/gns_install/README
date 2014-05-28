@@ -22,9 +22,9 @@ Available commands:
 
 The installation has following options. 
 
-$ fab phost install_mongo (to install mongodb)
-$ fab phost install_java  (to install jdk)
-$ fab phost install_gns   (to install gns)
+$ fab --user=umass_nameservice phost install_mongo (to install mongodb)
+$ fab --user=umass_nameservice phost install_java  (to install jdk)
+$ fab --user=umass_nameservice phost install_gns   (to install gns)
 
 
 the phost parameter populates the host mentioned in the host.txt file. 
@@ -34,11 +34,11 @@ the hosts present in the host.txt file.
 Mongodb / Java will not installed if its is already present in those hosts.
 
 
-
 Note
 -----
 1. To add keys to ssh config 
-	$ ssh-add <key.filename> 
-2. Currently, the download link for jdk and mongodb are embedded in setup.sh this can be easily changed as a parameter to fabfile.py 
-3. While installing GNS.jar . the jar file is expected to be in  the same directory. 
+	$ ssh-add <key_filename> 
 
+2. Currently, the download link for jdk and mongodb are embedded in setup.sh this can be easily changed as a parameter to fabfile.py 
+
+3. While installing GNS.jar . the jar file is expected to be in  the same directory. 

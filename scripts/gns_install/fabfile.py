@@ -1,17 +1,9 @@
 import os 
 from fabric.api import *
 
-env.user = 'umass_nameservice'
-#env.hosts = ['planetlab2.cs.uoregon.edu','planetlab1.acis.ufl.edu']
-env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
-install_dir = '/home/umass_nameservice/'
-
-'''
-env.user = 'abhigyan'
-env.hosts = ['plum.cs.umass.edu', 'pear.cs.umass.edu', 'date.cs.umass.edu']
+#env.user = 'umass_nameservice'
 #env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
-install_dir = '/home/abhigyan/'
-'''
+install_dir = '/home/umass_nameservice/'
 
 
 def phost():
