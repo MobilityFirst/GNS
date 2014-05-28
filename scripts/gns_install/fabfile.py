@@ -9,18 +9,14 @@ from fabric.api import *
 def_install = '/home/'+env.user+'/'
 
 def phost():
-	thost = []
-	fopen = open('host.txt' , 'r')
-	for i in fopen:
-		thost.append(i.strip('\n'))
-	print " done populating the hosts", thost
-	env.hosts = thost
+	env.hosts = open('hosts.txt', 'r').readlines()
+	print "the hosts are " , env.hosts
 
 
 @parallel
 def install_gns(install_dir = def_install):
 	print "the install dir is", install_dir
-	run_string = 'scp '+' /rahul_extra/GNS/trunk/dist/GNS.jar '+ env.user+'@'+env.host_string+':'+install_dir
+	run_string = 'rsync '+' /rahul_extra/GNS/trunk/dist/GNS.jar '+ env.user+'@'+env.host_string+':'+install_dir
 	result = os.system(run_string)
 	if result != 0:
 		print "gns copy failed for the host" , env.host_string
@@ -33,6 +29,8 @@ def install_gns(install_dir = def_install):
 def install_mongo(install_dir = def_install):
 	print "Initiating install_mongo routine"
 	print "the install dir is",install_dir
+	print "the mongo_download variable is ", env.mongo_download
+	#print "the various hosts are " , env.hosts
 	with settings(warn_only=True):
 		result = run("source ~/.bashrc && mongo -version")
 		if result.return_code == 0:
@@ -51,6 +49,7 @@ def install_mongo(install_dir = def_install):
 def install_java(install_dir = def_install):
 	print "Initiating install_java routine"
 	print "the install dir is",install_dir
+	print "java download link is",env.java_download
 	with settings(warn_only=True):
 		result = run('java -version')
 		if result.return_code == 0:
