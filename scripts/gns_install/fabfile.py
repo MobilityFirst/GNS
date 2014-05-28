@@ -3,8 +3,10 @@ from fabric.api import *
 
 #env.user = 'umass_nameservice'
 #env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
-install_dir = '/home/umass_nameservice/'
+#install_dir = '/home/umass_nameservice/'
 
+#Instantiating the default install directory to users home directory
+def_install = '/home/'+env.user+'/'
 
 def phost():
 	thost = []
@@ -13,24 +15,24 @@ def phost():
 		thost.append(i.strip('\n'))
 	print " done populating the hosts", thost
 	env.hosts = thost
-	#return thost
-
 
 
 @parallel
-def install_gns():
-    run_string = 'scp '+' /rahul_extra/GNS/trunk/dist/GNS.jar '+ env.user+'@'+env.host_string+':'+install_dir
-    result = os.system(run_string)
-    if result != 0:
-    	print "gns copy failed for the host" , env.host_string
-    else:
-    	print " gns copy sucessfull for the host" , env.host_string
+def install_gns(install_dir = def_install):
+	print "the install dir is", install_dir
+	run_string = 'scp '+' /rahul_extra/GNS/trunk/dist/GNS.jar '+ env.user+'@'+env.host_string+':'+install_dir
+	result = os.system(run_string)
+	if result != 0:
+		print "gns copy failed for the host" , env.host_string
+	else:
+		print " gns copy sucessfull for the host" , env.host_string
 
 
 #The following functions 
 @parallel
-def install_mongo():
+def install_mongo(install_dir = def_install):
 	print "Initiating install_mongo routine"
+	print "the install dir is",install_dir
 	with settings(warn_only=True):
 		result = run("source ~/.bashrc && mongo -version")
 		if result.return_code == 0:
@@ -46,8 +48,9 @@ def install_mongo():
 
 #The following functions 
 @parallel
-def install_java():
+def install_java(install_dir = def_install):
 	print "Initiating install_java routine"
+	print "the install dir is",install_dir
 	with settings(warn_only=True):
 		result = run('java -version')
 		if result.return_code == 0:

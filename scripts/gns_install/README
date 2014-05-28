@@ -22,12 +22,25 @@ Available commands:
 
 The installation has following options. 
 
-$ fab --user=umass_nameservice phost install_mongo (to install mongodb)
-$ fab --user=umass_nameservice phost install_java  (to install jdk)
-$ fab --user=umass_nameservice phost install_gns   (to install gns)
+$ fab --user=umass_nameservice -i /path/pvt_keyfile phost 
+<install_{mongo,java,gns}>:/path/to/install
+
+(to install mongodb/java/gns)
+
+Sample Command
+---------------
+$fab --user='umass_nameservice' -i ~/.ssh/id_rsa_pl phost install_mongo
+
+The above command will install mongo in defaul home directory of user.
+In this case /home/umass_nameservice
 
 
-the phost parameter populates the host mentioned in the host.txt file. 
+$fab --user='umass_nameservice' -i ~/.ssh/id_rsa_pl phost install_mongo:/home/test/
+
+The above command will install mongo in /home/test directory instead of home directory of user.
+
+
+The phost parameter populates the host mentioned in the host.txt file. 
 (install_mongo / install_java / install_gns ) will perform the necessary operations on
 the hosts present in the host.txt file.
 
