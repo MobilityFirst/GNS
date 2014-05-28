@@ -1,0 +1,4 @@
+ricepl-1.cs.rice.edu
+planetlab1.cs.du.edu
+planet3.cs.ucsb.edu
+planetlab2.cs.purdue.edu
