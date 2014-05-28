@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,7 +17,11 @@ import java.util.concurrent.TimeUnit;
 @author V. Arun
  */
 
-/* This class exists primarily as a GNS wrapper around NIOTransport. NIOTransport 
+/* 
+ * Consider using JSONMessenger any place you want to use this class. The
+ * former subsumes this class and also has support for MessagingTask objects.
+ * 
+ * This class exists primarily as a GNS wrapper around NIOTransport. NIOTransport 
  * is for general-purpose NIO byte stream communication between numbered nodes as 
  * specified by the NodeConfig interface and a data processing worker as specified 
  * by the DataProcessingWorker interface. 
@@ -36,7 +39,6 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	public static final String DEFAULT_IP_FIELD = "_IP_ADDRESS";
 
 	private String IPField = null;
-	private Timer timer = new Timer();
 
 	public GNSNIOTransport(int id, NodeConfig nodeConfig) throws IOException {
 		super(id, nodeConfig, new JSONMessageExtractor()); // Note: Default extractor will not do any useful demultiplexing
@@ -51,52 +53,48 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 
 	/********************Start of send methods*****************************************/
 
-	/* WARNING: This method returns a meaningless value. Need to get
-	 * return value from task scheduled in the future, which is 
-	 * not possible while maintaining NIO semantics. So we can
-	 * not have a meaningful return value while being non-blocking.
-	 * Such is life.
-	 * 
-	 * Experiments using this method should plan for return values
-	 * being meaningless.
+	/* Note: Delay emulation is currently implemented only for ID-based sends, not 
+	 * IP based sends. Even for ID-based sends, it is incorrect as the return 
+	 * value is not meaningful. It is used only for testing if at all.
 	 */
-        
-        /**
-         * Send a JSON packet to an NameServer using the id.
-         * 
-         * @param id
-         * @param jsonData
-         * @return
-         * @throws IOException 
-         */
-        @Override
-	public int sendToID(int id, JSONObject jsonData) throws IOException {
-		int sent = 0;
-		if(GNSDelayEmulator.isDelayEmulated()) {
-			GNSDelayEmulator.sendWithDelay(timer, this, id, jsonData);
-			sent = jsonData.length(); // cheating!
-		} else sent = this.sendToIDActual(id, jsonData);
-		return sent;
-	}
-        
-        /**
-         * Send a JSON packet to an inet socket address (ip and port).
-         * 
-         * @param isa
-         * @param jsonData
-         * @return
-         * @throws IOException 
-         */
-        @Override
-        public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
-          stampSenderIP(jsonData);
-          String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-          return this.send(isa, headeredMsg.getBytes());
-        }
 
-	public void enableStampSenderIP() {this.IPField = DEFAULT_IP_FIELD;}
-	public void enableStampSenderIP(String key) {this.IPField = key;}
-	public void disableStampSenderIP() {this.IPField = null;}
+	/**
+	 * Send a JSON packet to an NameServer using the id.
+	 * 
+	 * @param id
+	 * @param jsonData
+	 * @return
+	 * @throws IOException 
+	 */
+	@Override
+	public int sendToID(int id, JSONObject jsonData) throws IOException {
+		int written = 0;
+		if(GNSDelayEmulator.isDelayEmulated()) {
+			written = GNSDelayEmulator.sendWithDelay(this, id, jsonData); 
+		} 
+		else written = sendToIDActual(id, jsonData);
+		return written;
+	}
+
+	/**
+	 * Send a JSON packet to an inet socket address (ip and port).
+	 * 
+	 * @param isa
+	 * @param jsonData
+	 * @return
+	 * @throws IOException 
+	 */
+	@Override
+	public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
+		int written = 0;
+		stampSenderIP(jsonData);
+		if(isa.getAddress().equals(this.getNodeAddress())) written = sendLocal(jsonData);
+		else {
+			String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
+			written = this.sendUnderlying(isa, headeredMsg.getBytes());
+		}
+		return written;
+	}
 
 	/* This method adds a header only if a socket channel is used to send to
 	 * a remote node, otherwise it hands over the message directly to the worker.
@@ -104,38 +102,51 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	protected int sendToIDActual(int destID, JSONObject jsonData) throws IOException {
 		int written = 0;
 		stampSenderIP(jsonData);
-		if(destID==this.myID) {
-			ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
-			jsonArray.add(jsonData);
-			NIOInstrumenter.incrSent(); // instrumentation
-			((JSONMessageExtractor)worker).processJSONMessages(jsonArray);
-			written = jsonData.length();
-		}
+		if(destID==this.myID) written = sendLocal(jsonData);
 		else {
 			String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
 			written = this.sendUnderlying(destID, headeredMsg.getBytes());
 		}
 		return written;
 	}
-	/********************End of public send methods*****************************************/	
 
+	public void enableStampSenderIP() {this.IPField = DEFAULT_IP_FIELD;}
+	public void enableStampSenderIP(String key) {this.IPField = key;}
+	public void disableStampSenderIP() {this.IPField = null;}
+
+	/********************End of public send methods*************************************/	
+
+	// stamp sender IP address if IPField is set
 	private void stampSenderIP(JSONObject jsonData) {
 		try {
 			if(this.IPField!=null && !this.IPField.isEmpty()) 
 				jsonData.put(this.IPField, this.getNodeAddress().toString());
 		} catch(JSONException je) {je.printStackTrace();}
 	}
-	/* This method is really redundant. But it exists so that there is one place where
-	 * all NIO sends actually happen given the maddening number of different public send
-	 * methods above. Do NOT add more gunk to this method.
+	// fake send by directly passing to local worker
+	private int sendLocal(JSONObject jsonData) {
+		ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
+		jsonArray.add(jsonData);
+		NIOInstrumenter.incrSent(); // instrumentation
+		((JSONMessageExtractor)worker).processJSONMessages(jsonArray);
+		return jsonData.length();
+	}
+	
+	/***************************** Start of calls to NIO send **************************/
+	/* These methods are really redundant. But they exist so that there is one place where
+	 * all NIO sends actually happen. Do NOT add more gunk to this method.
 	 */
 	private int sendUnderlying(int id, byte[] data) throws IOException {
 		return this.send(id, data);
 	}
+	private int sendUnderlying(InetSocketAddress isa, byte[] data) throws IOException {
+		return this.send(isa, data);
+	}
+	/***************************** End of calls to NIO send **************************/
+
 	private static JSONObject JSONify(int msgNum, String s) throws JSONException{
 		return new JSONObject("{\"msg\" : \"" + s + "\" , \"msgNum\" : " + msgNum + "}");
 	}
-
 
 	/* The test code here is mostly identical to that of NIOTransport but tests
 	 * JSON messages, headers, and delay emulation features. Need to test it with 
@@ -244,7 +255,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 
 			int load = nNodes*25;
 			int msgsToFailed=0;
-			ScheduledFuture<TX>[] futures = new ScheduledFuture[load];
+			ScheduledFuture<?>[] futures = new ScheduledFuture[load];
 			for(int i=0; i<load; i++) {
 				int k = (int)(Math.random()*nNodes);
 				int j = (int)(Math.random()*nNodes);
@@ -257,7 +268,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 
 				TX task = new TX(k, j, niots, msgNum++);
 				System.out.println("Scheduling random message " + i + " with msgNum " + msgNum);
-				futures[i] = (ScheduledFuture<TX>)execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
+				futures[i] = (ScheduledFuture<?>)execpool.schedule(task, 0, TimeUnit.MILLISECONDS);
 			}
 			int numExceptions = 0;
 			for(int i=0; i<load; i++) {

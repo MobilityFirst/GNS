@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
 
@@ -30,7 +31,7 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 	private final GNSNIOTransportInterface nioTransport;
 	private ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 
-	Logger log = Logger.getLogger(getClass().getName());
+	Logger log = (NIOTransport.DEBUG ? Logger.getLogger(getClass().getName()) : GNS.getLogger());
 
 	public JSONMessenger(GNSNIOTransportInterface niot) {
 		myID = niot.getMyID(); // needed only for debug printing
@@ -73,6 +74,7 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 		}
 	}
 
+	/*************************** Start of retransmitter module *********************/
 	/* We need this because NIO may drop messages when congested. Thankfully, 
 	 * it tells us when it does that. The task below exponentially backs
 	 * off with each retransmission. We are probably doomed anyway if this 
@@ -104,6 +106,7 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 			}
 		}
 	}
+	/*************************** End of retransmitter module *********************/
 	
 	/********************* Start of GNSNIOTransportInterface methods *********************/
 	public int sendToID(int id, JSONObject jsonData) throws IOException {

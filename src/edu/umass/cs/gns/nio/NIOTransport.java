@@ -123,7 +123,7 @@ public class NIOTransport implements Runnable {
 
 	public NIOTransport(int id, NodeConfig nc, DataProcessingWorker worker) throws IOException {
 		this.myID = id;
-		this.nodeConfig = nc;
+		this.nodeConfig = (nc!=null ? nc : new SampleNodeConfig()); // null node config means no ID based communication
 		this.selector = this.initSelector();
 		this.worker = worker;
 
