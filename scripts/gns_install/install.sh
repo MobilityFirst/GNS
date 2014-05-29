@@ -11,14 +11,31 @@ download=$2
 path=$3
 
 
-#Assuming the bash_profile to be in its ideal place
+#Returns 0 if file exists else returns 1
+test_exist() {
+	if [ -f $1 ]
+	then 
+		echo "0"
+	else
+		echo "1"
+	fi
+}
+
+#Assuming the bashrc to be in the username home directory
+#If .bashrc is not present, then its created and made source.
+
 set_path() {
 	PATH=$PATH:$1
 	echo "the new PATH is " $PATH
-	sed -i '/export PATH/d' ~/.bashrc
+	result=$(test_exist ~/.bashrc)
+	if [ $result -eq 0 ]
+		then
+		sed -i '/export PATH/d' ~/.bashrc
+	fi
 	echo "export PATH="$PATH >> ~/.bashrc
 	source ~/.bashrc
 }
+
 
 
 

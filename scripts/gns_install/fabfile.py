@@ -4,8 +4,8 @@ from fabric.api import *
 #env.user = 'umass_nameservice'
 #env.key_filename = '/home/rahul/.ssh/id_rsa_pl'
 #install_dir = '/home/umass_nameservice/'
-
 #Instantiating the default install directory to users home directory
+
 def_install = '/home/'+env.user+'/'
 
 def phost():
