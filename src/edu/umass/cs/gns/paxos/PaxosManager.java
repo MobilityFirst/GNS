@@ -606,7 +606,7 @@ public class PaxosManager extends AbstractPaxosManager {
 /**
  * Packet demultiplexer object
  */
-class PaxosPacketDemultiplexer extends PacketDemultiplexer {
+class PaxosPacketDemultiplexer extends BasicPacketDemultiplexer {
 
   PaxosManager paxosManager;
 

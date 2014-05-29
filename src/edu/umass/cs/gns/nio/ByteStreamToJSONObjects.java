@@ -23,13 +23,13 @@ import java.util.List;
   private List queue = new LinkedList();
   int recvdMessageCount = 0;
 
-  PacketDemultiplexer packetDemux;
+  BasicPacketDemultiplexer packetDemux;
 
-  public ByteStreamToJSONObjects(PacketDemultiplexer packetDemux) {
+  public ByteStreamToJSONObjects(BasicPacketDemultiplexer packetDemux) {
     this.packetDemux = packetDemux;
   }
 
-  public PacketDemultiplexer getPacketDemux() {
+  public BasicPacketDemultiplexer getPacketDemux() {
     return packetDemux;
   }
 

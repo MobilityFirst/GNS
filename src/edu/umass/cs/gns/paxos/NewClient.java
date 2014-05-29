@@ -4,7 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.NioServer;
 import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import org.json.JSONException;
@@ -28,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 11:34 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewClient  extends PacketDemultiplexer{
+public class NewClient  extends BasicPacketDemultiplexer{
 
   /**
    * Non-blocking tcp connection object

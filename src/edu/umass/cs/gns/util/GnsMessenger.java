@@ -20,8 +20,9 @@ import java.util.concurrent.TimeUnit;
  * Created by abhigyan on 5/3/14.
  */
 public class GnsMessenger implements GNSNIOTransportInterface {
+
   private static final long RTX_DELAY = 1000; //ms
-  private static final int BACKOFF_FACTOR=2;
+  private static final int BACKOFF_FACTOR = 2;
 
   private final GNSNIOTransport gnsnioTransport;
   private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
@@ -32,21 +33,30 @@ public class GnsMessenger implements GNSNIOTransportInterface {
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
     this.gnsnioTransport = gnsnioTransport;
   }
-  public int getMyID() {return this.myID;}
+
+  @Override
+  public int getMyID() {
+    return this.myID;
+  }
 
   @Override
   public int sendToID(int id, JSONObject jsonData) throws IOException {
     int sent = gnsnioTransport.sendToID(id, jsonData);
     if (sent < jsonData.length()) {
-          Retransmitter rtxTask = new Retransmitter(id, jsonData, RTX_DELAY);
-          scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
+      Retransmitter rtxTask = new Retransmitter(id, jsonData, RTX_DELAY);
+      scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
     }
     return jsonData.length();
   }
 
   @Override
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
-    throw new UnsupportedOperationException("Not supported yet.");
+    int sent = gnsnioTransport.sendToAddress(isa, jsonData);
+    if (sent < jsonData.length()) {
+      Retransmitter rtxTask = new Retransmitter(isa, jsonData, RTX_DELAY);
+      scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
+    }
+    return jsonData.length();
   }
 
   /* We need this because NIO may drop messages when congested. Thankfully,
@@ -55,27 +65,59 @@ public class GnsMessenger implements GNSNIOTransportInterface {
    * class is invoked except rarely.
    */
   private class Retransmitter implements Runnable {
-    private final int dest;
+
+    // One of these next two will be non-null:
+    private final Integer destID;
+    private final InetSocketAddress destAddress;
+    //
     private final JSONObject msg;
     private final long delay;
-    Retransmitter(int id, JSONObject m, long d) {
-      this.dest=id;
-      this.msg=m;
-      this.delay=d;
+
+    Retransmitter(int destId, JSONObject m, long d) {
+      this.destID = destId;
+      this.destAddress = null;
+      this.msg = m;
+      this.delay = d;
     }
+
+    Retransmitter(InetSocketAddress dest, JSONObject m, long d) {
+      this.destID = null;
+      this.destAddress = dest;
+      this.msg = m;
+      this.delay = d;
+    }
+
+    private Object getDest() {
+      if (destID != null) {
+        return destID;
+      } else {
+        return destAddress;
+      }
+    }
+
+    @Override
     public void run() {
-      int sent=0;
+      int sent = 0;
       try {
-        sent = gnsnioTransport.sendToID(dest, msg);
-      } catch(IOException ioe) {
+        if (destID != null) {
+          sent = gnsnioTransport.sendToID(destID, msg);
+        } else {
+          sent = gnsnioTransport.sendToAddress(destAddress, msg);
+        }
+      } catch (IOException ioe) {
         ioe.printStackTrace();
       } finally {
-        if(sent < msg.length() && sent!=-1) {
-          GNS.getLogger().severe("Node " + myID + "->" + dest + " messenger backing off under severe congestion, Hail Mary!");
-          Retransmitter rtx = new Retransmitter(dest, msg, delay*BACKOFF_FACTOR);
-          scheduledThreadPoolExecutor.schedule(rtx, delay*BACKOFF_FACTOR, TimeUnit.MILLISECONDS);
-        } else if(sent==-1) { // have to give up at this point
-          GNS.getLogger().severe("Node "+myID +"->"+dest+" messenger dropping message as destination unreachable: " + msg);
+        if (sent < msg.length() && sent != -1) {
+          GNS.getLogger().severe("Node " + myID + "->" + getDest() + " messenger backing off under severe congestion, Hail Mary!");
+          Retransmitter rtx;
+          if (destID != null) {
+            rtx = new Retransmitter(destID, msg, delay * BACKOFF_FACTOR);
+          } else {
+            rtx = new Retransmitter(destAddress, msg, delay * BACKOFF_FACTOR);
+          }
+          scheduledThreadPoolExecutor.schedule(rtx, delay * BACKOFF_FACTOR, TimeUnit.MILLISECONDS);
+        } else if (sent == -1) { // have to give up at this point
+          GNS.getLogger().severe("Node " + myID + "->" + getDest() + " messenger dropping message as destination unreachable: " + msg);
         }
       }
     }

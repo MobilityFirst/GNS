@@ -46,19 +46,19 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 	//  private static final int SIZE_OF_THREAD_POOL = 100;
 	public static final String HEADER_PATTERN = "&"; // Could be an arbitrary string
 	private final HashMap<SocketChannel, String> sockStreams;
-	private final ArrayList<PacketDemultiplexer> packetDemuxes;
+	private final ArrayList<BasicPacketDemultiplexer> packetDemuxes;
 	//  private ExecutorService executor = null; // we use a thread pool to execute message handlers
 
 	Logger log = GNS.getLogger();
 
-	public JSONMessageExtractor(PacketDemultiplexer pd) {
-		packetDemuxes = new ArrayList<PacketDemultiplexer>();
+	public JSONMessageExtractor(BasicPacketDemultiplexer pd) {
+		packetDemuxes = new ArrayList<BasicPacketDemultiplexer>();
 		packetDemuxes.add(pd);
 		sockStreams = new HashMap<SocketChannel, String>();
 	}
 
 	public JSONMessageExtractor() { // default packet demux returns false
-		this.packetDemuxes = new ArrayList<PacketDemultiplexer>();
+		this.packetDemuxes = new ArrayList<BasicPacketDemultiplexer>();
 		this.packetDemuxes.add(new DefaultPacketDemultiplexer());
 		sockStreams = new HashMap<SocketChannel, String>();	  
 	}
@@ -70,10 +70,10 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 	 * synchronized because it may be invoked when NIO is using
 	 * packetDemuxes in processJSONMessage(.).
 	 */
-	public synchronized void addPacketDemultiplexer(PacketDemultiplexer pd) {
+	public synchronized void addPacketDemultiplexer(BasicPacketDemultiplexer pd) {
 		packetDemuxes.add(pd);
 	}
-	public synchronized void removePacketDemultiplexer(PacketDemultiplexer pd) {
+	public synchronized void removePacketDemultiplexer(BasicPacketDemultiplexer pd) {
 		packetDemuxes.remove(pd);
 	}
 
@@ -133,16 +133,16 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 	private class JsonMessageWorker implements Runnable {
 
 		private JSONObject json;
-		private ArrayList<PacketDemultiplexer> pedemuxs;
+		private ArrayList<BasicPacketDemultiplexer> pedemuxs;
 
-		public JsonMessageWorker(JSONObject json, ArrayList<PacketDemultiplexer> pedemuxs) {
+		public JsonMessageWorker(JSONObject json, ArrayList<BasicPacketDemultiplexer> pedemuxs) {
 			this.json = json;
 			this.pedemuxs = pedemuxs;
 		}
 
 		@Override
 		public void run() {
-			for (final PacketDemultiplexer pd : pedemuxs) {
+			for (final BasicPacketDemultiplexer pd : pedemuxs) {
 				// the handler turns true if it handled the message
 				if (pd.handleJSONObject(json)) {
 					return;

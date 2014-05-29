@@ -46,7 +46,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	public GNSNIOTransport(int id, NodeConfig nodeConfig, JSONMessageExtractor worker) throws IOException {
 		super(id, nodeConfig, worker); // Switched order of the latter two arguments
 	}
-	public void addPacketDemultiplexer(PacketDemultiplexer pd) {
+	public void addPacketDemultiplexer(BasicPacketDemultiplexer pd) {
 		((JSONMessageExtractor)this.worker).addPacketDemultiplexer(pd);
 	}
 	public int getMyID() {return this.myID;}

@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.Util;
@@ -47,7 +47,7 @@ public class TESTPaxosClient {
 	private synchronized void setPreRecoveryCount(int prc) {if(this.executedCount==0) this.preRecoveryExecutedCount=prc;}
 	private synchronized int getPreRecoveryCount() {return this.preRecoveryExecutedCount;}
 
-	private class ClientPacketDemultiplexer extends PacketDemultiplexer {
+	private class ClientPacketDemultiplexer extends BasicPacketDemultiplexer {
 		private final TESTPaxosClient client;
 		private ClientPacketDemultiplexer(TESTPaxosClient tpc) {this.client=tpc;}
 		public synchronized boolean handleJSONObject(JSONObject msg) {

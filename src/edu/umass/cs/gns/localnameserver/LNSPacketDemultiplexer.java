@@ -7,7 +7,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
@@ -18,11 +18,11 @@ import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * Implements the <code>PacketDemultiplexer</code> interface for using the {@link edu.umass.cs.gns.nio} package.
+ * Implements the <code>BasicPacketDemultiplexer</code> interface for using the {@link edu.umass.cs.gns.nio} package.
  *
  * Created by abhigyan on 2/24/14.
  */
-public class LNSPacketDemultiplexer extends PacketDemultiplexer {
+public class LNSPacketDemultiplexer extends BasicPacketDemultiplexer {
 
   ClientRequestHandlerInterface handler;
 

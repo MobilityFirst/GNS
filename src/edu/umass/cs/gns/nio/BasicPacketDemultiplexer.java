@@ -2,11 +2,11 @@ package edu.umass.cs.gns.nio;
 
 import org.json.JSONObject;
 
-public abstract class PacketDemultiplexer {
+public abstract class BasicPacketDemultiplexer {
 
   /**
    * The return value should return true if the handler
-   * handled the message and doesn't want any other PacketDemultiplexer
+   * handled the message and doesn't want any other BasicPacketDemultiplexer
    * to handle the message.
    *
    * @param jsonObject

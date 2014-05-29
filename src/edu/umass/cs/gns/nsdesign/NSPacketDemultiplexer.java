@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.PacketDemultiplexer;
+import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.commands.CommandProcessor;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * <p/>
  * Created by abhigyan on 2/26/14.
  */
-public class NSPacketDemultiplexer extends PacketDemultiplexer {
+public class NSPacketDemultiplexer extends BasicPacketDemultiplexer {
 
   private NameServer nameServer;
 
