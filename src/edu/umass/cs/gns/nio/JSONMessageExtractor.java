@@ -5,6 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,6 +129,7 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 		// if this were single-threaded. The bad things... time will tell.
 		JsonMessageWorker worker = new JsonMessageWorker(jsonMsg, packetDemuxes);
 		//    executor.execute(worker);
+                // THIS ISN'T ACTUALLY RUNNING IT IN ANOTHER THREAD.
 		worker.run();
 	}
 
@@ -245,10 +248,28 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 		ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 
 		newStr = this.extractMultipleMessages(newStr, jsonArray);
+                // stamp the senders address into the JSON objects
+                try {
+                  String address = ((InetSocketAddress) sock.getRemoteAddress()).getAddress().getHostAddress();
+                  stampAddressIntoJSONObjects(address, jsonArray);
+                } catch (IOException e) {
+                  log.severe("Problem getting client address: " + e);
+                }
 		this.sockStreams.put(sock, newStr);
 		log.finest("Parsed : [" + JSONArrayToString(jsonArray) + "], leftover = [" + newStr + "]");
 		return jsonArray;
 	}
+        
+        // fix this to be enableable
+        private void stampAddressIntoJSONObjects(String address, ArrayList<JSONObject> jsonArray) {
+          try {
+            for (JSONObject json : jsonArray) {
+	     json.put(GNSNIOTransport.DEFAULT_IP_FIELD, address);
+            }
+          } catch (JSONException e) {
+            log.severe("Unable to stamp sender address at receiver: " + e); 
+          }
+        }
 
 	// Pretty prints the JSON array, used only for debugging.
 	private String JSONArrayToString(ArrayList<JSONObject> jsonArray) {

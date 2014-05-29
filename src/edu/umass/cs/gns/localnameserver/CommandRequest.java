@@ -5,14 +5,9 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
-import static edu.umass.cs.gns.clientsupport.Defs.JSONPARSEERROR;
-import static edu.umass.cs.gns.clientsupport.Defs.OPERATIONNOTSUPPORTED;
-import static edu.umass.cs.gns.clientsupport.Defs.QUERYPROCESSINGERROR;
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.httpserver.Defs.QUERYPREFIX;
+import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
@@ -34,15 +29,41 @@ public class CommandRequest {
   // handles command processing
   private static final CommandModule commandModule = new CommandModule();
 
-  public static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler)
+  public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
+    GNS.getLogger().info("######## COMMAND PACKET RECEIVED: " + incomingJSON);
+    final CommandPacket packet = new CommandPacket(incomingJSON);
+    final JSONObject jsonFormattedCommand = packet.getCommand();
+    addMessageWithoutSignatureToCommand(jsonFormattedCommand);
+    final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+    // This makes it work better which is weird because I thought we were in a separate worker thread from 
+    // the NIO message handling thread
+    (new Thread() {
+      public void run() {
+        try {
+          String returnValue = executeCommand(command, jsonFormattedCommand);
+          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue);
+          GNS.getLogger().info("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + GNS.CLIENTPORT + ": " + returnPacket.toString());
+          handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), GNS.CLIENTPORT);
+        } catch (JSONException e) {
+          GNS.getLogger().severe("Problem  executing command: " + e);
+          e.printStackTrace();
+        }
+      }
+    }).start();
+  }
 
-    CommandPacket packet = new CommandPacket(incomingJSON);
-    JSONObject jsonFormattedCommand = packet.getCommand();
-    GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    String returnValue = executeCommand(command, jsonFormattedCommand);
-    CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue);
-    handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), GNS.CLIENTPORT);
+  // this little dance is because we need to remove the signature to get the message that was signed
+  // alternatively we could have the client do it but that just means a longer message
+  // OR we could put the signature outside the command in the packet, but some packets don't need a signature
+  private static void addMessageWithoutSignatureToCommand(JSONObject json) throws JSONException {
+    if (json.has(SIGNATURE)) {
+      String signature = json.getString(SIGNATURE);
+      json.remove(SIGNATURE);
+      String commandSansSignature = json.toString();
+      json.put(SIGNATURE, signature);
+      json.put(SIGNATUREFULLMESSAGE, commandSansSignature);
+    }
   }
 
   public static String executeCommand(GnsCommand command, JSONObject json) {
