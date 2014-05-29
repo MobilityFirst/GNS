@@ -68,14 +68,14 @@ Sample Command
 
 $ fab phost install_mongo
 
-The above command will install mongo in defaul home directory of user which is mentioned 
+The above command will install mongo in default home directory of user which is mentioned 
 in the config file. For example, if the user is set to umass_nameservice, then  the above 
 command will install mongodb in /home/umass_nameservice .
 
 
 $ fab phost install_mongo:/home/umass_nameservice/test/
 
-The above command will 	install mongo in /home/test directory instead of home directory of user.
+The above command will 	install mongo in /home/umass_nameservice/test directory instead of home directory of user.
 
 Mongodb / Java will not installed if its is already present in those hosts.
 

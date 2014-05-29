@@ -2,3 +2,6 @@ ricepl-1.cs.rice.edu
 planetlab1.cs.du.edu
 planet3.cs.ucsb.edu
 planetlab2.cs.purdue.edu
+planetlab4.inf.ethz.ch
+planetlab2.cs.uoregon.edu
+planet2.ku.edu.tr
