@@ -3,41 +3,47 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/LNSToNSCommandPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/PacketTypeStamper.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/test/tcpclient/TCPClient.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/Packet.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingClient.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/Read.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/BasicPacketDemultiplexer.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/JSONMessenger.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/BasicClientRequestHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/DNSRequestTask.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/PacketDemultiplexer.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/JSONUtils.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/GNSNodeConfig.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/DefaultPacketDemultiplexer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/Intercessor.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/LNSPacketDemultiplexer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/LNSListenerUDP.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/httpserver/GnsHttpServer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Select.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/CommandValueReturnPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/CommandProcessor.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/test/GenerateGroupChangeRequest.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RegisterAccount.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/QueryResult.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/test/GenerateLookupRequest.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/NioServer.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/ConfirmUpdatePacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/test/GenerateUpdateRequest.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/LocalNameServer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/BasicPacket.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/CommandRequest.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/ClientRequestHandlerInterface.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/main/GNS.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/JSONMessageExtractor.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/GnsMessenger.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/CommandPacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/JSONMessageExtractor.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/AccountAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/DataProcessingWorker.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/AddGuid.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/NodeConfig.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/NSResponseCode.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/GNSNIOTransport.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/FieldAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/Util.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/AddRemove.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/ByteStreamToJSONObjects.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RegisterAccountWithoutGuidOrPassword.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/ClientUtils.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/test/GenerateRemoveRequest.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/NIOTransport.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NSPacketDemultiplexer.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/test/GenerateAddRequest.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Update.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Lookup.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/GNSNIOTransportInterface.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/Lookup.java</file>
         </group>
     </open-files>
 </project-private>

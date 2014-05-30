@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
@@ -56,13 +57,14 @@ public class CommandRequest {
   // this little dance is because we need to remove the signature to get the message that was signed
   // alternatively we could have the client do it but that just means a longer message
   // OR we could put the signature outside the command in the packet, but some packets don't need a signature
-  private static void addMessageWithoutSignatureToCommand(JSONObject json) throws JSONException {
-    if (json.has(SIGNATURE)) {
-      String signature = json.getString(SIGNATURE);
-      json.remove(SIGNATURE);
-      String commandSansSignature = json.toString();
-      json.put(SIGNATURE, signature);
-      json.put(SIGNATUREFULLMESSAGE, commandSansSignature);
+  private static void addMessageWithoutSignatureToCommand(JSONObject command) throws JSONException {
+    if (command.has(SIGNATURE)) {
+      String signature = command.getString(SIGNATURE);
+      command.remove(SIGNATURE);
+      String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
+      GNS.getLogger().info("######## WITHOUT SIGNATURE: " + commandSansSignature);
+      command.put(SIGNATURE, signature);
+      command.put(SIGNATUREFULLMESSAGE, commandSansSignature);
     }
   }
 

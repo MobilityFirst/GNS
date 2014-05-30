@@ -40,19 +40,20 @@ public class NSAccessSupport {
     if (!GNS.enableSignatureVerification) {
       return true;
     }
-    byte[] encodedPublicKey = Base64.decode(guidInfo.getPublicKey());
-    if (encodedPublicKey == null) { // bogus signature
+    byte[] publickeyString = Base64.decode(guidInfo.getPublicKey());
+    if (publickeyString == null) { // bogus public key
       return false;
     }
+    //GNS.getLogger().info("NS: User " + guidInfo.getName() + " signature:" + signature + " message: " + message);
     KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
-    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
+    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyString);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
     Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
     sig.initVerify(publicKey);
     sig.update(message.getBytes());
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    GNS.getLogger().info("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;
   }
 

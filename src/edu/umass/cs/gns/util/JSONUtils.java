@@ -14,7 +14,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import java.util.TreeMap;
+import java.util.SortedMap;
 
 /**
  *
@@ -35,7 +36,7 @@ public class JSONUtils {
     }
     return list;
   }
-  
+
   public static ArrayList<String> JSONArrayToArrayListString(JSONArray jsonArray) throws JSONException {
     ArrayList<String> list = new ArrayList();
     for (int i = 0; i < jsonArray.length(); i++) {
@@ -43,7 +44,7 @@ public class JSONUtils {
     }
     return list;
   }
-  
+
   public static ResultValue JSONArrayToResultValue(JSONArray jsonArray) throws JSONException {
     ResultValue list = new ResultValue();
     for (int i = 0; i < jsonArray.length(); i++) {
@@ -122,7 +123,7 @@ public class JSONUtils {
    *
    * @param json JSONArray
    * @return ArrayList with the content of JSONArray.
-   * @throws JSONException 
+   * @throws JSONException
    **********************************************************
    */
   public static Set<String> JSONArrayToSetString(JSONArray json) throws JSONException {
@@ -149,8 +150,7 @@ public class JSONUtils {
     return result;
   }
 
-
-  public static Object getObject(ColumnField field, JSONObject jsonObject) throws JSONException{
+  public static Object getObject(ColumnField field, JSONObject jsonObject) throws JSONException {
     if (jsonObject.has(field.getName())) {
       switch (field.type()) {
         case BOOLEAN:
@@ -180,7 +180,6 @@ public class JSONUtils {
     return null;
   }
 
-
 //  public static String getString(Field field, JSONObject jsonObject) throws JSONException{
 //    if (jsonObject.has(field.getFieldName())) {
 //      switch (field.type()) {
@@ -198,56 +197,54 @@ public class JSONUtils {
 //    }
 //    return null;
 //  }
-
-
   public static void putFieldInJsonObject(ColumnField field, Object value, JSONObject jsonObject) throws JSONException {
-    try{
-    if (value == null) return;
-    switch (field.type()) {
-      case BOOLEAN:
-        jsonObject.put(field.getName(), value);
-        break;
-      case INTEGER:
-        jsonObject.put(field.getName(), value);
-        break;
-      case STRING:
-        jsonObject.put(field.getName(), value);
-        break;
-      case SET_INTEGER:
-        jsonObject.put(field.getName(), (Set<Integer>)value);
-        break;
-      case LIST_INTEGER:
-        jsonObject.put(field.getName(), (ArrayList<Integer>)value);
-        break;
-      case LIST_STRING:
-        jsonObject.put(field.getName(), (ArrayList<String>)value);
-        break;
-      case VALUES_MAP:
-        jsonObject.put(field.getName(), ((ValuesMap)value).toJSONObject());
-        break;
-      case VOTES_MAP:
-        jsonObject.put(field.getName(), ((ConcurrentMap<Integer,Integer>)value));
-        break;
-      case STATS_MAP:
-        jsonObject.put(field.getName(), ((ConcurrentMap<Integer,StatsInfo>)value));
-        break;
-      default:
-        GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
-        break;
-    }
-    }catch (Exception e) {
+    try {
+      if (value == null) {
+        return;
+      }
+      switch (field.type()) {
+        case BOOLEAN:
+          jsonObject.put(field.getName(), value);
+          break;
+        case INTEGER:
+          jsonObject.put(field.getName(), value);
+          break;
+        case STRING:
+          jsonObject.put(field.getName(), value);
+          break;
+        case SET_INTEGER:
+          jsonObject.put(field.getName(), (Set<Integer>) value);
+          break;
+        case LIST_INTEGER:
+          jsonObject.put(field.getName(), (ArrayList<Integer>) value);
+          break;
+        case LIST_STRING:
+          jsonObject.put(field.getName(), (ArrayList<String>) value);
+          break;
+        case VALUES_MAP:
+          jsonObject.put(field.getName(), ((ValuesMap) value).toJSONObject());
+          break;
+        case VOTES_MAP:
+          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, Integer>) value));
+          break;
+        case STATS_MAP:
+          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, StatsInfo>) value));
+          break;
+        default:
+          GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
+          break;
+      }
+    } catch (Exception e) {
       GNS.getLogger().fine(" Value " + value + " Field = " + field);
       e.printStackTrace();
     }
   }
 
-
-
-  /*******************************************
-   *  Utilities for converting maps to JSON objects
-   *******************************************/
-
-
+  /**
+   * *****************************************
+   * Utilities for converting maps to JSON objects
+   ******************************************
+   */
   public static ConcurrentHashMap<Integer, Integer> toIntegerMap(JSONObject json) {
     HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
     try {
@@ -291,6 +288,26 @@ public class JSONUtils {
     } catch (JSONException e) {
     }
     return json;
+  }
+
+  /**
+   * Returns a JSON Object string sorted by keys. 
+   * This is only canonical one level deep. You've been warned.
+   * @param json
+   * @return 
+   */
+  public static String getCanonicalJSONString(JSONObject json) {
+    SortedMap map = new TreeMap<String, Object>();
+    Iterator<String> nameItr = json.keys();
+    while (nameItr.hasNext()) {
+      String key = nameItr.next();
+      try {
+        map.put(key, json.get(key));
+      } catch (JSONException e) {
+        // punt on any fields that hose us
+      }
+    }
+    return map.toString();
   }
 
 }
