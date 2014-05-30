@@ -363,7 +363,7 @@ public class ReplicaControllerRecord {
    */
   public short getActiveVersion() throws FieldNotFoundException {
     if (hashMap.containsKey(ACTIVE_VERSION)) {
-      return (Short) hashMap.get(ACTIVE_VERSION);
+      return ((Integer) hashMap.get(ACTIVE_VERSION)).shortValue();
     }
     throw new FieldNotFoundException(ACTIVE_VERSION);
   }
@@ -375,7 +375,7 @@ public class ReplicaControllerRecord {
    */
   public short getOldActiveVersion() throws FieldNotFoundException {
     if (hashMap.containsKey(OLD_ACTIVE_VERSION)) {
-      return (Short) hashMap.get(OLD_ACTIVE_VERSION);
+      return ((Integer) hashMap.get(OLD_ACTIVE_VERSION)).shortValue();
     }
     throw new FieldNotFoundException(OLD_ACTIVE_VERSION);
   }
