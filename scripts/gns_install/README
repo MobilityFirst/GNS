@@ -1,6 +1,5 @@
 GNS Installer
 =============
-
 The Gns Installer, allows user to install the following 
 
 1. Java 
@@ -8,7 +7,6 @@ The Gns Installer, allows user to install the following
 3. GNS.jar
 
 in any of the hosts, which is specified in the hosts.txt file. 
-
 The Python Program  contains the following files 
 
 1. fabfile.py 
@@ -51,8 +49,6 @@ Available commands:
 
 The above is the sample output for which displays a list of commands to be run with fabric. 
 
-
-
 Step 2: To Install mongodb/java/gns
 ------------------------------------
 
@@ -78,7 +74,6 @@ $ fab phost install_mongo:/home/umass_nameservice/test/
 The above command will 	install mongo in /home/umass_nameservice/test directory instead of home directory of user.
 
 Mongodb / Java will not installed if its is already present in those hosts.
-
 
 Note
 =====
