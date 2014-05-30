@@ -145,7 +145,7 @@ public class Intercessor {
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    */
   public static QueryResult sendQuery(String name, String key, String reader, String signature, String message) {
-    GNS.getLogger().info("Sending query: " + name + " " + key);
+    GNS.getLogger().fine("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
 
     DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), reader, signature, message);
@@ -162,13 +162,13 @@ public class Intercessor {
 
     // now we wait until the correct packet comes back
     try {
-      GNS.getLogger().info("Waiting for query id: " + id);
+      GNS.getLogger().fine("Waiting for query id: " + id);
       synchronized (monitor) {
         while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
       }
-      GNS.getLogger().info("Query id response received: " + id);
+      GNS.getLogger().fine("Query id response received: " + id);
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
 
@@ -202,9 +202,9 @@ public class Intercessor {
    */
   public static NSResponseCode sendAddRecord(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
-    GNS.getLogger().info("Sending add: " + name + "->" + value);
+    GNS.getLogger().fine("Sending add: " + name + "->" + value);
     AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
-    GNS.getLogger().info("#####PACKET: " + pkt.toString());
+    GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -215,7 +215,7 @@ public class Intercessor {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().info("Add (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
+    GNS.getLogger().fine("Add (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
     return result;
   }
 

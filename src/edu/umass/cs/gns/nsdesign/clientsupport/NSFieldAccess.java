@@ -36,7 +36,7 @@ public class NSFieldAccess {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, field);
-      GNS.getLogger().info("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
+      GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       result = nameRecord.getKey(field);
     } catch (FieldNotFoundException e) {
     } catch (RecordNotFoundException e) {

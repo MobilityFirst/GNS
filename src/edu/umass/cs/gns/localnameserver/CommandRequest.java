@@ -32,7 +32,7 @@ public class CommandRequest {
 
   public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
-    GNS.getLogger().info("######## COMMAND PACKET RECEIVED: " + incomingJSON);
+    GNS.getLogger().fine("######## COMMAND PACKET RECEIVED: " + incomingJSON);
     final CommandPacket packet = new CommandPacket(incomingJSON);
     final JSONObject jsonFormattedCommand = packet.getCommand();
     addMessageWithoutSignatureToCommand(jsonFormattedCommand);
@@ -44,7 +44,7 @@ public class CommandRequest {
         try {
           String returnValue = executeCommand(command, jsonFormattedCommand);
           CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue);
-          GNS.getLogger().info("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + GNS.CLIENTPORT + ": " + returnPacket.toString());
+          GNS.getLogger().fine("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + GNS.CLIENTPORT + ": " + returnPacket.toString());
           handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), GNS.CLIENTPORT);
         } catch (JSONException e) {
           GNS.getLogger().severe("Problem  executing command: " + e);
@@ -62,7 +62,7 @@ public class CommandRequest {
       String signature = command.getString(SIGNATURE);
       command.remove(SIGNATURE);
       String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
-      GNS.getLogger().info("######## WITHOUT SIGNATURE: " + commandSansSignature);
+      GNS.getLogger().fine("######## WITHOUT SIGNATURE: " + commandSansSignature);
       command.put(SIGNATURE, signature);
       command.put(SIGNATUREFULLMESSAGE, commandSansSignature);
     }
@@ -72,7 +72,7 @@ public class CommandRequest {
     try {
       if (command != null) {
         //GNS.getLogger().info("Executing command: " + command.toString());
-        GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
+        GNS.getLogger().fine("Executing command: " + command.toString() + " with " + json);
         return command.execute(json);
       } else {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + json.toString();
