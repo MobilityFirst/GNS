@@ -210,12 +210,7 @@ def get_all_files(mydir):
                 elif os.path.exists(filename_gz):
                     cur_host_files.append(filename_gz)
                     #print filename
-                i = i - 1
-            #            xml_files = os.listdir(mydir + '/' + f)
-            #            cur_host_files = []
-            #            for xml_file in xml_files:
-            #                if xml_file.startswith(log_file_name) and not xml_file.endswith('.lck'):
-            #                    cur_host_files.append(mydir + '/' + f + '/' + xml_file)
+                i -= 1
             host_files[hostname] = cur_host_files
             # print 'Host files are: ', cur_host_files, hostname
     return host_files
@@ -541,13 +536,9 @@ def get_latencies(filecount, filename, hostname, filter=None):
                 print 'Exception parsing message', line
             host_success += 1
 
-            # add failed - update case
-    #print 'Host-Success',host_success
-    #print 'Success',success
     if host_retrans > 0:
         retrans_percent = host_retrans / host_success
 
-    #print '\tRetransmissions', host_retrans,
     return read_latencies, write_latencies, add_latencies, remove_latencies, group_change_latencies, \
            host_tuples, ping_latencies, closest_ns_latencies
 

@@ -37,9 +37,8 @@ import java.util.concurrent.TimeUnit;
  * the cached set of active replicas may not be valid; A local name server learns this upon sending a request to
  * an invalid active replica, which generates a pre-defined error code in {@link edu.umass.cs.gns.util.NSResponseCode}.
  * <p>
- * In all the above cases, a local name server obtains the set of active replicas for a name by requests the replica
- * controllers for that name. The replica controllers for a name are fixed and a local name server can compute the set of
- * replica controllers locally. This functionality is implemented in {@link edu.umass.cs.gns.localnameserver.RequestActivesTask}
+ * In all the above cases, a local name server obtains the set of active replicas for a name by requesting the (fixed)
+ * replica controllers for that name. This functionality is implemented in {@link edu.umass.cs.gns.localnameserver.RequestActivesTask}
  * and {@link edu.umass.cs.gns.localnameserver.PendingTasks}.
  * <p>
  * There is another way local name server updates the set of active replicas in its cache: the responses to lookups
@@ -48,7 +47,7 @@ import java.util.concurrent.TimeUnit;
  * in the set of active replicas, but it sends a lookup to a name server that is a common member in both sets,
  * this mechanisms helps local name server learn of a change in the set of replicas.
  *
- * @see edu.umass.cs.gns.localnameserver.DNSRequestTask
+ * @see SendDNSRequestTask
  * @see edu.umass.cs.gns.localnameserver.DNSRequestInfo
  * @see edu.umass.cs.gns.nsdesign.packet.DNSPacket
  *
@@ -61,18 +60,16 @@ public class Lookup {
   public static void handlePacketLookupRequest(JSONObject json, DNSPacket dnsPacket, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("LNS DNS Request" + json);
+    int lnsReqId = LocalNameServer.getUniqueRequestID();
+    DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, dnsPacket.getGuid(), System.currentTimeMillis(), -1,
+            dnsPacket);
+    handler.addRequestInfo(lnsReqId, requestInfo);
     handler.incrementLookupRequest(dnsPacket.getGuid()); // important: used to count votes for names.
-    DNSRequestTask queryTaskObject = new DNSRequestTask(handler,
-            dnsPacket,
-            System.currentTimeMillis(),
-            0,
-            0,
-            new HashSet<Integer>(), 0);
+    SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqId, handler, dnsPacket);
     long timeOut = handler.getParameters().getQueryTimeout();
     if (handler.getParameters().isAdaptiveTimeout()) {
       timeOut = AdaptiveRetransmission.getTimeoutInterval(0);
     }
-
     handler.getExecutorService().scheduleAtFixedRate(queryTaskObject, 0, timeOut, TimeUnit.MILLISECONDS);
   }
 
@@ -81,34 +78,31 @@ public class Lookup {
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
       //Match response to the query sent
-      DNSRequestInfo query = handler.removeDNSRequestInfo(dnsPacket.getQueryId());
-      if (query == null) {
+      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
+      if (requestInfo == null) {
         // if there is none it means we already handled this request?
         return;
       }
-
+      requestInfo.setSuccess(true);
+      requestInfo.setFinishTime();
+      requestInfo.addEventCode(LNSEventCode.SUCCESS);
       if (random.nextDouble() < handler.getParameters().getOutputSampleRate()) {
-        query.setRecvTime(System.currentTimeMillis());
-        String stats = query.getLookupStats();
-        GNS.getStatLogger().fine("Success-Lookup\t" + stats);
-        // todo make a single method for returning log message for a lookup request.
+        GNS.getStatLogger().info(requestInfo.getLogString());
       }
 
       if (handler.getParameters().isAdaptiveTimeout()) {
-        query.setRecvTime(System.currentTimeMillis());
-        long responseTimeSample = query.getResponseTime();
+        long responseTimeSample = requestInfo.getResponseLatency();
         if (responseTimeSample != -1) {
           AdaptiveRetransmission.addResponseTimeSample(responseTimeSample);
         }
       }
-      // Abhigyan: need to update cache even for TTL == 0, because active name servers are updated.
       CacheEntry cacheEntry = handler.updateCacheEntry(dnsPacket);
       if (cacheEntry == null) {
-        cacheEntry = handler.addCacheEntry(dnsPacket);
+        handler.addCacheEntry(dnsPacket);
         if (handler.getParameters().isDebugMode()) GNS.getLogger().finer("LNSListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
       }
       // send response to user right now.
-      sendReplyToUser(query, dnsPacket.getRecordValue(), dnsPacket.getTTL(), dnsPacket.getResponder(), handler);
+      sendReplyToUser(requestInfo, dnsPacket.getRecordValue(), dnsPacket.getTTL(), dnsPacket.getResponder(), handler);
     }
 
   }
@@ -116,47 +110,47 @@ public class Lookup {
   public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
 
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Recvd Lookup Error Response" + jsonObject);
-    DNSRequestInfo query = handler.removeDNSRequestInfo(dnsPacket.getQueryId());
 
-    if (query == null) {
-      GNS.getLogger().severe("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
-      return;
-    }
     // if invalid active name server error, get correct active name servers
     if (dnsPacket.containsInvalidActiveNSError()) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
       handler.invalidateActiveNameServer(dnsPacket.getGuid());
+      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(dnsPacket.getQueryId());
 
+      if (requestInfo == null) {
+        GNS.getLogger().severe("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
+        return;
+      }
+      requestInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
       // create objects to be passed to PendingTasks
-      boolean firstInvalidActiveError = (query.numInvalidActiveError == 0);
-      DNSRequestTask queryTaskObject = new DNSRequestTask(handler, query.getIncomingPacket(),
-              query.getLookupRecvdTime(), query.getId(), 0, new HashSet<Integer>(), query.numInvalidActiveError + 1);
-      String failureMsg = DNSRequestInfo.getFailureLogMessage(0, dnsPacket.getKey(), dnsPacket.getGuid(),
-              0, query.getLookupRecvdTime(), query.numInvalidActiveError + 1, -1, new HashSet<Integer>());
+      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(requestInfo.getLnsReqID(), handler, requestInfo.getIncomingPacket());
 
-      PendingTasks.addToPendingRequests(query.getqName(), queryTaskObject, handler.getParameters().getQueryTimeout(),
-              getErrorPacket(query.getIncomingPacket()), failureMsg, firstInvalidActiveError);
+      PendingTasks.addToPendingRequests(requestInfo, queryTaskObject, handler.getParameters().getQueryTimeout());
 
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine(" Scheduled lookup task.");
 
     } else { // other types of errors, forward error response to client
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Forwarding incoming error packet for query " + query.getIncomingPacket().getQueryId()
-              + ": " + dnsPacket.toJSONObject());
+      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
+      if (requestInfo == null) {
+        GNS.getLogger().severe("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
+        return;
+      }
+      requestInfo.setSuccess(false);
+      requestInfo.setFinishTime();
+      requestInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Forwarding incoming error packet for query "
+              + requestInfo.getIncomingPacket().getQueryId() + ": " + dnsPacket.toJSONObject());
       // set the correct id for the client
-      dnsPacket.getHeader().setId(query.getIncomingPacket().getQueryId());
+      dnsPacket.getHeader().setId(requestInfo.getIncomingPacket().getQueryId());
       sendDNSResponseBackToSource(dnsPacket, handler);
-      //Intercessor.handleIncomingPackets(dnsPacket.toJSONObject());
-      // this might need updating... not sure how it's used though so we'll punt
-      GNS.getStatLogger().fine(DNSRequestInfo.getFailureLogMessage(0, dnsPacket.getKey(), dnsPacket.getGuid(),
-              0, query.getLookupRecvdTime(), query.numInvalidActiveError, -1, new HashSet<Integer>()));
+      GNS.getStatLogger().fine(requestInfo.getLogString());
+
 
     }
   }
 
   /**
    * Send reply to user after DNS record is received.
-   *
-   * @param query
    */
   private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, int responder, ClientRequestHandlerInterface handler) {
 
@@ -173,7 +167,6 @@ public class Lookup {
   /**
    * Handles the returning of packets back to the appropriate source (local intercessor or another NameServer).
    *
-   * @param packet
    * @throws JSONException
    */
   public static void sendDNSResponseBackToSource(DNSPacket packet, ClientRequestHandlerInterface handler) throws JSONException {
@@ -186,16 +179,4 @@ public class Lookup {
     }
   }
 
-  // why did this totally ignore the error code that exists in the incoming packet?
-  public static JSONObject getErrorPacket(DNSPacket dnsPacketIn) {
-    try {
-      DNSPacket dnsPacketOut = new DNSPacket(dnsPacketIn.toJSONObjectQuestion());
-      dnsPacketOut.getHeader().setResponseCode(NSResponseCode.ERROR);
-      dnsPacketOut.getHeader().setQRCode(DNSRecordType.RESPONSE);
-      return dnsPacketOut.toJSONObject();
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to JSON: " + e);
-    }
-    return null;
-  }
 }

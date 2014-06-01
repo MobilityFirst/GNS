@@ -140,12 +140,7 @@ public class GNSNodeConfig implements NodeConfig {
         } else {
           localNameServerMapping.put(id, id);
         }
-//        InetAddress ipAddress = null;
-//        try {
-//          ipAddress = InetAddress.getByName(ipAddressString);
-//        } catch (UnknownHostException e) {
-//          System.err.println("Problem parsing IP address for NS " + nameServerID + " :" + e);
-//        }
+
         int startingPort;
         if (startingPortString.startsWith("-") || startingPortString.startsWith("default")) {
           startingPort = GNS.STARTINGPORT;

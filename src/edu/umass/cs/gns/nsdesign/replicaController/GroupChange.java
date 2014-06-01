@@ -104,7 +104,7 @@ public class GroupChange {
       GNS.getLogger().fine("Record Read: " + rcRecord);
       if (rcRecord == null) {
         // this is protective NULL check as we don't expect this method to return a null value.
-        // if record does not exist, it throws null pointer exception.
+        // if record does not exist, it throws RecordNotFoundException.
         return;
       }
 

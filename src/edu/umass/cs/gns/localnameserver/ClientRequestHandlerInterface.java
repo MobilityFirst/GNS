@@ -57,46 +57,11 @@ public interface ClientRequestHandlerInterface {
    */
   public int getNodeID();
 
-  // REQUEST AND UPDATE INFO METHODS
-  
-  /**
-   **
-   * Adds information of a transmitted query to a query transmitted map.
-   *
-   * @param name Host/Domain name
-   * @param recordKey
-   * @param nameserverID Name server Id
-   * @param time System time during transmission
-   * @param queryStatus
-   * @param lookupNumber
-   * @param incomingPacket
-   * @param numRestarts
-   * @return A unique id for the query
-   */
-  public int addDNSRequestInfo(String name, NameRecordKey recordKey,
-          int nameserverID, long time, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, int numRestarts);
+  // REQUEST INFO METHODS
 
-  /**
-   * Adds information of a transmitted update to a query transmitted map.
-   * 
-   * @param name
-   * @param nameserverID
-   * @param time
-   * @param numRestarts
-   * @param updateAddressPacket
-   * @return 
-   */
-  public int addUpdateInfo(String name, int nameserverID, long time,
-          int numRestarts, BasicPacket updateAddressPacket);
+  public int getUniqueRequestID();
 
-  /**
-   * Adds information of a transmitted select to a query transmitted map.
-   * @param recordKey
-   * @param incomingPacket
-   * @return 
-   */
-  public int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket);
+  public void addRequestInfo(int id, RequestInfo requestInfo);
 
   /**
    **
@@ -105,28 +70,28 @@ public interface ClientRequestHandlerInterface {
    * @param id Query Id
    * @return 
    */
-  public DNSRequestInfo removeDNSRequestInfo(int id);
-
-  /**
-   * 
-   * @param id
-   * @return 
-   */
-  public UpdateInfo removeUpdateInfo(int id);
-
-  /**
-   * 
-   * @param id
-   * @return 
-   */
-  public SelectInfo removeSelectInfo(int id);
+  public RequestInfo removeRequestInfo(int id);
 
   /**
    * Returns the update info for id.
    * @param id
+   * @return
+   */
+  public RequestInfo getRequestInfo(int id);
+
+  /**
+   * Adds information of a transmitted select to a query transmitted map.
+   * @param recordKey
+   * @param incomingPacket
+   * @return
+   */
+  public int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket);
+
+  /**
+   * @param id
    * @return 
    */
-  public UpdateInfo getUpdateInfo(int id);
+  public SelectInfo removeSelectInfo(int id);
 
   /**
    * Returns the select info for id.
@@ -136,16 +101,6 @@ public interface ClientRequestHandlerInterface {
    */
   public SelectInfo getSelectInfo(int id);
 
-  /**
-   **
-   * Returns true if the map contains the specified query id, false otherwise.
-   *
-   * @param id Query Id
-   * @return 
-   */
-  public boolean containsDNSRequestInfo(int id);
-
-  public DNSRequestInfo getDNSRequestInfo(int id);
 
   // CACHE METHODS
   

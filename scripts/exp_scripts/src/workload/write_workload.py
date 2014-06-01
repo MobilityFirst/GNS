@@ -23,6 +23,22 @@ class RequestType:
     RATE = '7'   # sends subsequent requests at given rate/sec. rate can be specified multiple
                # times during a trace to change the rate of later requests
 
+"""
+# set request rate to 100/sec
+100 7
+# send add for my_name
+my_name 3
+# add delay of 10000 ms between previous and next requests
+10000 6
+# send lookup for my_name
+my_name 1
+# send update for my_name
+my_name 2
+# send lookup for my_name
+my_name 1
+# send remove for my_name
+my_name 4
+"""
 
 class WorkloadParams:
     EXP_TYPE = 'exp_type'   # type of experiment: trace / connect_time

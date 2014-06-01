@@ -13,13 +13,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Class contains a few static methods for handling ADD, REMOVE, and UPSERT (update + insert) requests from clients
+ * Class contains a few static methods for handling ADD, and REMOVE requests from clients
  * as well responses to these requests from name servers. Most functionality for handling request sent by clients
  * is implemented in <code>SendAddRemoveUpsertTask</code>. So also refer to its documentation.
  * <p>
@@ -28,11 +27,6 @@ import java.util.concurrent.TimeUnit;
  * replica controllers locally (see method {@link edu.umass.cs.gns.util.ConsistentHashing#getReplicaControllerSet(String)}).
  * Like other requests, add/removes are also retransmitted to a different name server if no confirmation is received
  * until a timeout value.
- * <p>
- * An upsert request may create a new name record, unlike an update which modifies an existing name record.
- * Becasue addition of a name is done by replica controllers, we send an upsert to replica controllers.
- * If upsert request is for an already existing name, it is handled like an update. To this end, replica controllers
- * will forward the request to active replicas.
  * <p>
  *
  * @author abhigyan
@@ -48,26 +42,14 @@ public class AddRemove {
   static void handlePacketAddRecord(JSONObject json) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
-
-    SendAddRemoveUpsertTask addTask = new SendAddRemoveUpsertTask(addRecordPacket, addRecordPacket.getName(),
+    int lnsReqID = LocalNameServer.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), System.currentTimeMillis(), -1, addRecordPacket);
+    LocalNameServer.addRequestInfo(lnsReqID, info);
+    SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     if (StartLocalNameServer.debugMode)
     GNS.getLogger().fine(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
-  }
-
-  /**
-   *
-   * @param updateAddressPacket
-   * @throws JSONException
-   */
-  static void handleUpsert(UpdatePacket updateAddressPacket) throws JSONException {
-
-    SendAddRemoveUpsertTask upsertTask = new SendAddRemoveUpsertTask(updateAddressPacket, updateAddressPacket.getName(),
-            System.currentTimeMillis());
-    LocalNameServer.getExecutorService().scheduleAtFixedRate(upsertTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Upsert Task Scheduled: "
-            + "Name: " + updateAddressPacket.getName() + " Request: " + updateAddressPacket.getRequestID());
   }
 
   /**
@@ -81,13 +63,11 @@ public class AddRemove {
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
-    InetAddress senderAddress = null;
-    int senderPort = -1;
-    senderPort = Transport.getReturnPort(json);
-    if (Transport.getReturnAddress(json) != null) {
-      senderAddress = InetAddress.getByName(Transport.getReturnAddress(json));
-    }
-    SendAddRemoveUpsertTask task = new SendAddRemoveUpsertTask(removeRecord, removeRecord.getName(),
+    int lnsReqID = LocalNameServer.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), System.currentTimeMillis(), -1, removeRecord);
+    LocalNameServer.addRequestInfo(lnsReqID, info);
+
+    SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, removeRecord, removeRecord.getName(),
             System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
@@ -102,16 +82,18 @@ public class AddRemove {
    */
   static void handlePacketConfirmAdd(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
-    UpdateInfo addInfo = LocalNameServer.removeUpdateInfo(confirmAddPacket.getLNSRequestID());
+    UpdateInfo addInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmAddPacket.getLNSRequestID());
     GNS.getLogger().info("Confirm add packet: " + confirmAddPacket.toString() + " add info " + addInfo);
     if (addInfo == null) {
       GNS.getLogger().warning("Add confirmation return info not found.: lns request id = " + confirmAddPacket.getLNSRequestID());
     } else {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
-
-      String stats = addInfo.getUpdateStats(confirmAddPacket);
-      GNS.getStatLogger().info(stats);
+      addInfo.setSuccess(confirmAddPacket.isSuccess());
+      addInfo.setFinishTime();
+      if (confirmAddPacket.isSuccess()) addInfo.addEventCode(LNSEventCode.SUCCESS);
+      else addInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+      GNS.getStatLogger().info(addInfo.getLogString());
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket);
     }
   }
@@ -121,14 +103,18 @@ public class AddRemove {
    */
   static void handlePacketConfirmRemove(JSONObject json) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
-    UpdateInfo removeInfo = LocalNameServer.removeUpdateInfo(confirmRemovePacket.getLNSRequestID());
+    UpdateInfo removeInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
     GNS.getLogger().info("Confirm remove packet: " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     if (removeInfo == null) {
       GNS.getLogger().warning("Remove confirmation return info not found.: lns request id = " + confirmRemovePacket.getLNSRequestID());
     } else {
       // update our cache BEFORE we confirm
       LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
-      String stats = removeInfo.getUpdateStats(confirmRemovePacket);
+      removeInfo.setSuccess(confirmRemovePacket.isSuccess());
+      removeInfo.setFinishTime();
+      if (confirmRemovePacket.isSuccess()) removeInfo.addEventCode(LNSEventCode.SUCCESS);
+      else removeInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+      String stats = removeInfo.getLogString();
       GNS.getStatLogger().info(stats);
       Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket);
     }

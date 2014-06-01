@@ -29,7 +29,6 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   private final static String KEY = "dns_key";
   private final static String TIME_TO_LIVE = "ttlAddress";
   private final static String RECORD_VALUE = "recordValue";
-//  private final static String ACTIVE_NAME_SERVERS = "Active";
   private final static String LNS_ID = "lnsId";
   private final static String SOURCE_ID = "sourceId";
   private final static String RESPONDER = "rspndr";
@@ -77,10 +76,6 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * return the entire record. When it's a single key/value the key will be the same as the qrecordKey.
    */
   private ValuesMap recordValue;
-//  /**
-//   * A list of active name servers for the name *
-//   */
-//  private Set<Integer> activeNameServers;
   /**
    * For response packets this is the node that responded
    */
@@ -129,7 +124,6 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     // These will only be present in non-error response packets
     if (header.isResponse() && !header.isAnyKindOfError()) {
       this.ttl = json.getInt(TIME_TO_LIVE);
-//      this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAME_SERVERS));
       if (json.has(RECORD_VALUE)) {
         this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
       }
@@ -174,7 +168,6 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.sourceId = sourceId;
     this.recordValue = entireRecord;
     this.ttl = TTL;
-//    this.activeNameServers = activeNameServers;
     this.responder = -1;
   }
 
@@ -381,20 +374,6 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public void setSourceId(int sourceId) {
     this.sourceId = sourceId;
   }
-  
-  /**
-   * @return the activeNameServers
-   */
-//  public Set<Integer> getActiveNameServers() {
-//    return activeNameServers;
-//  }
-
-//  /**
-//   * @param activeNameServers the activeNameServers to set
-//   */
-//  public void setActiveNameServers(Set<Integer> activeNameServers) {
-//    this.activeNameServers = activeNameServers;
-//  }
 
   public int getResponder() {
     return responder;

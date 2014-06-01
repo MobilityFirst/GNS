@@ -55,7 +55,7 @@ experiment_run_time = -1    # duration of experiment (seconds)
 
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
-ns_sleep = 2      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
+ns_sleep = 0      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
 extra_wait = 10   # extra wait time after LNS sends all requests
 
 random_node_ids = None  # option to select nodeIDs randomly. If random_node_ids is not None, it takes an int value.
@@ -79,11 +79,25 @@ gen_workload = False   # if True, generate new workload,
 lookup_count = 10   # number of lookups at local name server,
 update_count = 10   # number of updates at local name server
 
+
+#
+#
+#
+# logging options
+is_debug_mode = False   #
+
+nslog = 'WARNING'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslogstat = 'FINE'  # Always set to 'FINE'
+
+
 #
 #
 # GNS parameters common to name server / local name servers
 is_experiment_mode = False  # set to True to run experiments, false otherwise.
-is_debug_mode = False   #
+
+
 primary_name_server = 3  # number of primary name servers
 
 use_gns_nio_transport = False
@@ -122,14 +136,6 @@ emulation_type = CONSTANT_DELAY
 const_latency_value = DEFAULT_CONST_DELAY
 
 load_balancing = False  # Redirect to closest name server based on (RTT + server-load)
-
-#
-# logging options
-nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslogstat = 'FINE'  # Always set to 'FINE'
-
 
 is_beehive_replication = False  # do not change
 is_location_replication = False  # do not change

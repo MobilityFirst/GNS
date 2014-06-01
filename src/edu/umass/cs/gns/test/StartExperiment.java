@@ -23,7 +23,7 @@ public class StartExperiment {
 
     if (updateTraceFile != null || params.getExpType().equals(ExpType.TRACE)) {
       GNS.getStatLogger().info("Starting trace based experiment ... ");
-      new NewRequestGenerator(new WorkloadParams(workloadFile), updateTraceFile, handler);
+      new NewRequestGenerator(params, updateTraceFile, handler);
     }
     else if (params.getExpType().equals(ExpType.CONNECT_TIME)) {
       GNS.getStatLogger().info("Starting connect time experiment ... ");
@@ -32,6 +32,7 @@ public class StartExperiment {
     else if (params.getExpType().equals(ExpType.BASICTEST)) {
       GNS.getStatLogger().info("Starting basic test ... ");
       LNSSideImplementation.startServer();
+      // Test1Name is also a test
 //      Test1Name.startTest();
     }
 

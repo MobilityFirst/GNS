@@ -36,6 +36,7 @@ public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
    */
   @Override
   public int coordinateRequest(JSONObject request) {
+    GNS.getLogger().fine(" Recvd request for coordination: " + request);
     if (this.replicable == null) return -1; // replicable app not set
     boolean noCoordinatorState = false;
     try {
@@ -57,6 +58,8 @@ public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
           Short version = nameAndGroupVersion.get(stopPacket1.getName());
           if (version == null || version != stopPacket1.getVersion()) {
             noCoordinatorState = true;
+          } else {
+            nameAndGroupVersion.remove(stopPacket1.getName());
           }
           break;
         case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
@@ -91,6 +94,7 @@ public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
         if (noCoordinatorState) {
           request.put(Config.NO_COORDINATOR_STATE_MARKER, 0);
         }
+        GNS.getLogger().fine(" Final coordination decision State: " + noCoordinatorState + "\tFinal request: " + request);
         replicable.handleDecision(null, request.toString(), false);
       }
     } catch (JSONException e) {

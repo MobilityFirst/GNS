@@ -5,170 +5,104 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.Set;
+import java.util.ArrayList;
 
-/**************************************************************
- * This class represents a data structure to store information
- * about queries (name lookup) transmitted by the local name
- * server. It contains a few fields only for logging statistics
- * related to the requests.
+
+/**
+ * Stores information about name lookups transmitted by the local name server.
+ * Extends the <code>RequestInfo</code> class.
  *
  * @author abhigyan
  *************************************************************/
-public class DNSRequestInfo {
-
-
-  /** Unique ID for each query **/
-  private int id;
-  /** Host/domain name in the query **/
-  private String qName;
-  /** System time when query was transmitted from the local name server **/
-  private long lookupRecvdTime;
-  /** System time when a response for this query was received at a local name server.**/
-  private long recvTime = -1;
+public class DNSRequestInfo extends RequestInfo{
 
   private DNSPacket incomingPacket;
-  public int numInvalidActiveError;
 
   private int nameserverID;
 
+  private boolean cacheHit = false;
+
   /**************************************************************
    * Constructs a QueryInfo object with the following parameters
-   * @param id Query id
+   * @param lnsReqId Query id
    * @param name Host/Domain name
    * @param time System time when query was transmitted
    * @param nameserverID Response name server ID
-   * @param queryStatus Query Status
    **************************************************************/
-  public DNSRequestInfo(int id, String name, NameRecordKey recordKey, long time,
-          int nameserverID, String queryStatus, int lookupNumber,
-          DNSPacket incomingPacket, int numRestarts) {
-    this.id = id;
-    this.qName = name;
-    this.lookupRecvdTime = time;
+  public DNSRequestInfo(int lnsReqId, String name, long time,
+          int nameserverID, DNSPacket incomingPacket) {
+    this.requestType = Packet.PacketType.DNS;
+    this.lnsReqID = lnsReqId;
+    this.name = name;
+    this.startTime = time;
 
     this.incomingPacket = incomingPacket;
-    this.numInvalidActiveError = numRestarts;
+    this.numLookupActives = 0;
     this.nameserverID = nameserverID;
   }
 
-  public static String getFailureLogMessage(int lookupNumber, NameRecordKey recordKey, String name,
-                                            int transmissionCount, long receivedTime, int numRestarts,
-                                            int coordinatorID, Set<Integer> nameserversQueried) {
-    String failureCode = "Failed-LookupNoActiveResponse";
-    if (nameserversQueried == null || nameserversQueried.isEmpty()) {
-      failureCode = "Failed-LookupNoPrimaryResponse";
-    }
-
-    return (failureCode + "\t"
-            + lookupNumber + "\t"
-            + recordKey + "\t"
-            + name + "\t"
-            + transmissionCount + "\t"
-            + (System.currentTimeMillis() - receivedTime) + "\t"
-            + receivedTime + "\t"
-            + numRestarts + "\t"
-            + coordinatorID + "\t"
-            + nameserversQueried);
-  }
-
-
   public synchronized void setNameserverID(int nameserverID1) {
     nameserverID = nameserverID1;
-
   }
 
   /**
-   *  
-   * @return
+   * @return the incomingPacket
    */
-  public long getLookupRecvdTime() {
-    return lookupRecvdTime;
+  public synchronized DNSPacket getIncomingPacket() {
+    return incomingPacket;
   }
 
-  /**************************************************************
-   * Returns a String representation of QueryInfo
-   **************************************************************/
   @Override
-  public String toString() {
+  public synchronized String getLogString() {
     StringBuilder str = new StringBuilder();
-    str.append("ID:" + getId());
-    str.append(" Name:" + getqName());
-    str.append(" Key:NA");// + qRecordKey.getName());str
-    str.append(" Time:" + lookupRecvdTime);
-    str.append(" Transmission:NA");
-    return str.toString();
-  }
-
-  public synchronized String getLookupStats() {
-    //Response Information: Time(ms) ActiveNS Ping(ms) Name NumTransmission LNS Timestamp(systime)
-    StringBuilder str = new StringBuilder();
+    str.append(isSuccess() ? "Success-Lookup": "Failed-Lookup");
+    if(isCacheHit()) str.append("CacheHit");
+    str.append("\t");
     str.append("0\t");
     str.append(incomingPacket.getKey().getName() + "\t");
-    str.append(getqName());
-    str.append("\t" + (getRecvTime() - lookupRecvdTime));
+    str.append(name);
+    str.append("\t" + getResponseLatency());
     str.append("\t0");
     str.append("\t0");
     str.append("\t0");
     str.append("\t0");
     str.append("\t" + nameserverID);
     str.append("\t" + LocalNameServer.getNodeID());
-    str.append("\t" + lookupRecvdTime);
-    str.append("\t" + numInvalidActiveError);
+    str.append("\t" + startTime);
+    str.append("\t" + numLookupActives);
     str.append("\t[]");
-    str.append("\t[]");
-
-    //save response time
-    String stats = str.toString();
-    return stats;
+    str.append("\t");
+    str.append(getEventCodesString());
+    return str.toString();
   }
 
-  /**
-   * 
-   * @param receiveTIme
-   * @return
-   */
-  public synchronized void setRecvTime(long receiveTIme) {
-    if (this.getRecvTime() == -1) {
-      this.recvTime = receiveTIme;
+  @Override
+  public synchronized JSONObject getErrorMessage() {
+    try {
+      DNSPacket dnsPacketOut = new DNSPacket(incomingPacket.toJSONObjectQuestion());
+      dnsPacketOut.getHeader().setResponseCode(NSResponseCode.ERROR);
+      dnsPacketOut.getHeader().setQRCode(DNSRecordType.RESPONSE);
+      return dnsPacketOut.toJSONObject();
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }
+    return null;
   }
 
-  public synchronized long getResponseTime() {
-    if (this.getRecvTime() == -1) {
-      return -1L;
-    }
-    return (this.getRecvTime() - this.lookupRecvdTime);
+  public synchronized boolean isCacheHit() {
+    return cacheHit;
   }
 
-  /**
-   * @return the id
-   */
-  public int getId() {
-    return id;
-  }
-
-  /**
-   * @return the qName
-   */
-  public String getqName() {
-    return qName;
-  }
-
-  /**
-   * @return the recvTime
-   */
-  public long getRecvTime() {
-    return recvTime;
-  }
-
-  /**
-   * @return the incomingPacket
-   */
-  public DNSPacket getIncomingPacket() {
-    return incomingPacket;
+  public synchronized void setCacheHit(boolean cacheHit) {
+    this.cacheHit = cacheHit;
   }
 }

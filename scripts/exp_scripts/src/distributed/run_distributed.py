@@ -130,8 +130,10 @@ def run_one_experiment(local_log_folder, local_config_file):
     # run local name servers ....
     run_all_lns(exp_config.user, exp_config.ssh_key, lns_ids, exp_config.remote_gns_logs, remote_config_file,
                 REMOTE_NODE_CONFIG, REMOTE_UPDATE_TRACE, remote_workload_config)
-
-    if exp_config.event_file is None:
+    if exp_config.experiment_run_time == -1:
+        print 'Experiment run time == -1. All name servers and local name servers started.'
+        return
+    elif exp_config.event_file is None:
         wait_exp_over()
     else:
         # NOTE: not sure if this works in emulation

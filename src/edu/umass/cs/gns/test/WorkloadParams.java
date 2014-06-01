@@ -44,15 +44,8 @@ public class WorkloadParams {
     if (prop.containsKey(EXP_TYPE)) {
       this.expType = ExpType.getExpType(prop.getProperty(EXP_TYPE));
     }
-
-    if (this.expType.equals(ExpType.CONNECT_TIME)) {
-      readConnectTimeExpParameters(prop);
-    }  else if (this.expType.equals(ExpType.TRACE)) {
-      readTraceExpParameters(prop);
-    }
-
-
-
+    readConnectTimeExpParameters(prop);
+    readTraceExpParameters(prop);
   }
 
   /**

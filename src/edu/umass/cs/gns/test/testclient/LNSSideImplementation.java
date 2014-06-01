@@ -23,6 +23,7 @@ import java.rmi.server.UnicastRemoteObject;
 public class LNSSideImplementation implements ClientRMIInterface {
 
   public static String LNS_NAME = "Hello";
+
   public LNSSideImplementation() {}
   @Override
   public NSResponseCode sendAddRecord(String name, String key, ResultValue value) throws RemoteException {

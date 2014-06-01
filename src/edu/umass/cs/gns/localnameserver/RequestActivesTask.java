@@ -33,6 +33,7 @@ public class RequestActivesTask extends TimerTask {
   private int requestID;
 
   private long startTime;
+
   public RequestActivesTask(String name, int requestID) {
     this.name = name;
     this.nameServersQueried = new HashSet<Integer>();
@@ -58,7 +59,7 @@ public class RequestActivesTask extends TimerTask {
           // max number of attempts have been made,
           GNS.getLogger().severe("Error: No actives received for name  " + name + " after " + numAttempts +
                   " attempts.");
-          PendingTasks.sendErrorMsgForName(name, requestID);
+          PendingTasks.sendErrorMsgForName(name, requestID, LNSEventCode.RC_NO_RESPONSE_ERROR);
           throw  new CancelExecutorTaskException();
         }
       }

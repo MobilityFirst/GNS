@@ -91,6 +91,18 @@ name_actives_local = ''
 
 max_log_name = int(output_sample_rate * (regular_workload + mobile_workload))
 
+
+##################### LOGGING #########################
+
+# if True, more detailed log messages are printed
+is_debug_mode = True
+
+nslog = 'INFO'
+nslogstat = 'FINE'  # records write propagation times
+lnslog = 'INFO'
+lnslogstat = 'FINE'
+
+
 ################ Common NS/LNS parameters #############
 
 primary_name_server = 3  # Number of primary name servers. Must be less than number of name servers.
@@ -100,8 +112,6 @@ primary_name_server = 3  # Number of primary name servers. Must be less than num
 replication_interval = 100000   # (in seconds). Intervals at which name servers compute new set of active replicas.
                                 # and local name servers sends votes to name servers
 
-# if True, more detailed log messages are printed
-is_debug_mode = True
 
 # if True, local name servers starts sending requests as per given workload
 is_experiment_mode = True
@@ -174,16 +184,9 @@ no_paxos_log = False
 quit_after_time = -1
 quit_node_id = -1
 
-dummy_gns = True
+dummy_gns = False
 
 max_req_rate = 300
-
-##################### LOGGING #########################
-
-nslog = 'INFO'
-nslogstat = 'FINE'  # records write propagation times
-lnslog = 'INFO'
-lnslogstat = 'FINE'
 
 
 #### methods for parsing options in config file

@@ -160,16 +160,12 @@ public class LocalNameServer {
     return requestHandler.getGnsNodeConfig();
   }
 
-  public static int addDNSRequestInfo(String name, NameRecordKey recordKey, int nameserverID, long time, String queryStatus, int lookupNumber, DNSPacket incomingPacket, int numRestarts) {
-    return requestHandler.addDNSRequestInfo(name, recordKey, nameserverID, time, queryStatus, lookupNumber, incomingPacket, numRestarts);
+  public static int getUniqueRequestID() {
+    return requestHandler.getUniqueRequestID();
   }
 
-  public static int addUpdateInfo(String name, int nameserverID, long time, int numRestarts, BasicPacket updateAddressPacket) {
-    return requestHandler.addUpdateInfo(name, nameserverID, time, numRestarts, updateAddressPacket);
-  }
-
-  public static int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket) {
-    return requestHandler.addSelectInfo(recordKey, incomingPacket);
+  public static void addRequestInfo(int id, RequestInfo requestInfo){
+    requestHandler.addRequestInfo(id, requestInfo);
   }
 
   /**
@@ -179,40 +175,32 @@ public class LocalNameServer {
    * @param id Query Id
    * @return
    */
-  public static DNSRequestInfo removeDNSRequestInfo(int id) {
-    return requestHandler.removeDNSRequestInfo(id);
+  public static RequestInfo removeRequestInfo(int id){
+    return requestHandler.removeRequestInfo(id);
   }
 
-  public static UpdateInfo removeUpdateInfo(int id) {
-    return requestHandler.removeUpdateInfo(id);
+
+  /**
+   * Returns the update info for id.
+   * @param id
+   * @return
+   */
+  public static RequestInfo getRequestInfo(int id){
+    return requestHandler.getRequestInfo(id);
+  }
+
+  public static int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket) {
+    return requestHandler.addSelectInfo(recordKey, incomingPacket);
   }
 
   public static SelectInfo removeSelectInfo(int id) {
     return requestHandler.removeSelectInfo(id);
   }
 
-  public static UpdateInfo getUpdateInfo(int id) {
-    return requestHandler.getUpdateInfo(id);
-  }
-
   public static SelectInfo getSelectInfo(int id) {
     return requestHandler.getSelectInfo(id);
   }
 
-  /**
-   **
-   * Returns true if the map contains the specified query id, false otherwise.
-   *
-   * @param id Query Id
-   * @return
-   */
-  public static boolean containsDNSRequestInfo(int id) {
-    return requestHandler.containsDNSRequestInfo(id);
-  }
-
-  public static DNSRequestInfo getDNSRequestInfo(int id) {
-    return requestHandler.getDNSRequestInfo(id);
-  }
 
   // CACHE METHODS
   

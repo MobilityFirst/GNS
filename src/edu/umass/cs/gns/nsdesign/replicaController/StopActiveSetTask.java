@@ -22,7 +22,7 @@ import java.util.TimerTask;
  * group between old set of active replicas. Once the STOP request is committed by coordination group, all replicas
  * would delete any coordination state, and update database to indicate they are no longer active replicas.
  * <p>
- * Note: this class is executed using a timer object and not an executor service.
+ *
  *
  * @see edu.umass.cs.gns.nsdesign.replicaController.StartActiveSetTask
  * @see edu.umass.cs.gns.nsdesign.replicaController.ReplicaController

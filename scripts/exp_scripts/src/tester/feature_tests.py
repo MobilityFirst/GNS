@@ -259,26 +259,29 @@ class FeatureTestLocal(TestSetupLocal):
         # do we log failure quickly?
         requests = []
         len_name = 20
-        num_requests = 100
+        req_rate = 100
+        num_requests = 1000
         name = 'test_name'
         requests.append([name, RequestType.ADD])  # add a name
         delay = 2000
         requests.append([delay, RequestType.DELAY])
-        #  the requests below are all expected to fail, e.g., add for an existing name.  Lookup, update, remove for
+        requests.append([req_rate, RequestType.RATE])
+        #  the requests below are all expected to fail, e.g., add for an existing name; lookup, update, and remove for
         # non-existing names.
         for i in range(num_requests):
-            requests.extend([[name, RequestType.ADD],
+            requests.extend([[name, RequestType.ADD],  # adding same name repeatedly will fail
                              [gen_random_string(len_name), RequestType.LOOKUP],
                              [gen_random_string(len_name), RequestType.UPDATE],
                              [gen_random_string(len_name), RequestType.REMOVE]])
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', 10)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', len(requests)/req_rate)
+
         output_stats = self.run_exp(requests)
-        self.assertEqual(output_stats.requests, 401, "Total number of requests mismatch")
+        self.assertEqual(output_stats.requests, 4*num_requests + 1, "Total number of requests mismatch")
         self.assertEqual(output_stats.success, 1, "Successful requests mismatch")
-        self.assertEqual(output_stats.read_failed, 100, "Failed reads mismatch")
-        self.assertEqual(output_stats.write_failed, 100, "Failed writes mismatch")
-        self.assertEqual(output_stats.add_failed, 100, "Failed adds mismatch")
-        self.assertEqual(output_stats.remove_failed, 100, "Failed removes mismatch")
+        self.assertEqual(output_stats.read_failed, num_requests, "Failed reads mismatch")
+        self.assertEqual(output_stats.write_failed, num_requests, "Failed writes mismatch")
+        self.assertEqual(output_stats.add_failed, num_requests, "Failed adds mismatch")
+        self.assertEqual(output_stats.remove_failed, num_requests, "Failed removes mismatch")
         self.assertLess(output_stats.failed_read_perc90, 100, "High latency failed reads")
         self.assertLess(output_stats.failed_write_perc90, 100, "High latency failed writes")
         self.assertLess(output_stats.failed_add_perc90, 100, "High latency failed adds")
@@ -300,7 +303,7 @@ class FeatureTestLocal(TestSetupLocal):
             version = (i + 1) + initial_version
             group = get_new_group_members_str(range(self.ns), group_size)
             grp_change_request = [name, RequestType.GROUP_CHANGE, version, group]
-            print 'New group members:', group, ' Size:', group_size
+            # print 'New group members:', group, ' Size:', group_size
             requests.extend([grp_change_request,
                              [delay_ms, RequestType.DELAY],
                              [name, RequestType.UPDATE],
@@ -330,8 +333,10 @@ class FeatureTestLocal(TestSetupLocal):
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', 5)
         # test if requests are successful
         name = 'test_name'
+        delay = 5000
         requests = [[name, RequestType.LOOKUP],
                     [name, RequestType.UPDATE],
+                    [delay, RequestType.DELAY],
                     [name, RequestType.REMOVE]]
 
         output_stats = self.run_exp(requests)
@@ -349,21 +354,23 @@ class FeatureTestLocal(TestSetupLocal):
         name = 'test_name'
         delay_ms = 2500
         requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY]]
+        req_rate = 50
+        requests.append([req_rate, RequestType.RATE])
         num_lookups = 1000
         requests.extend([[name, RequestType.LOOKUP]]*num_lookups)
 
-        exp_duration_sec = 10 + delay_ms/1000
+        exp_duration_sec = num_lookups/req_rate + delay_ms/1000
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration_sec)
 
         # with zero TTL, no reads return a cached response.
-        self.workload_conf.set(ConfigParser.DEFAULTSECT, 'ttl', 0)
-
-        output_stats = self.run_exp(requests)
-        self.assertEqual(output_stats.requests, num_lookups + 1, "Total number of requests mismatch")
-        self.assertEqual(output_stats.success, num_lookups + 1, "Successful requests mismatch")
-        self.assertEqual(output_stats.read, num_lookups, "Successful reads mismatch")
-        self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
-        self.assertEqual(output_stats.read_cached, 0, "Successful cached reads mismatch")
+        # self.workload_conf.set(ConfigParser.DEFAULTSECT, 'ttl', 0)
+        #
+        # output_stats = self.run_exp(requests)
+        # self.assertEqual(output_stats.requests, num_lookups + 1, "Total number of requests mismatch")
+        # self.assertEqual(output_stats.success, num_lookups + 1, "Successful requests mismatch")
+        # self.assertEqual(output_stats.read, num_lookups, "Successful reads mismatch")
+        # self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
+        # self.assertEqual(output_stats.read_cached, 0, "Successful cached reads mismatch")
 
         # with TTL > test duration, almost all reads return a cached response.
         self.workload_conf.set(ConfigParser.DEFAULTSECT, 'ttl', 100)
@@ -514,9 +521,9 @@ class FeatureTestLocal(TestSetupLocal):
 
     def test_l_dynamic_replication(self):
         """ Test dynamic replication in GNS based on read rate, write rate, and geo-distribution of LNS"""
-        self.config_parse.set(ConfigParser.DEFAULTSECT, "replication_interval", str(5))
+        self.config_parse.set(ConfigParser.DEFAULTSECT, "replication_interval", str(10))
         request_rate = 100
-        duration = 100
+        duration = 50
         self.run_exp_reads_writes(request_rate, duration)
 
     @unittest.expectedFailure
@@ -529,8 +536,8 @@ class FeatureTestLocal(TestSetupLocal):
 
     def test_n_read_writes_groupchanges(self):
         """ Tests a workload where reads and writes for 1 name are inter-mixed with group changes"""
-        request_rate = 1000
-        duration = 50
+        request_rate = 100
+        duration = 60
         group_change_interval = 1
         self.run_exp_reads_writes_groupchanges(request_rate, duration, group_change_interval)
 
@@ -538,20 +545,21 @@ class FeatureTestLocal(TestSetupLocal):
         """Runs an experiment with equal number of reads and writes for a name at a given request rate.
         It also checks if all requests are successful."""
 
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration)  # in seconds
         name = 'test_name'
         n = int(request_rate * exp_duration)
         requests = [[name, RequestType.ADD]]
-        delay = 10000  # ms
+        delay = 5000  # ms
         requests.append([delay, RequestType.DELAY])  # wait after an add request to ensure name is added
         requests.append([request_rate*2, RequestType.RATE])
         for i in range(n):
             requests.append([name, RequestType.LOOKUP])
             requests.append([name, RequestType.UPDATE])
         # wait before sending remove to ensure all previous requests are complete
-        delay = 10000  # ms
+        delay = 5000  # ms
         requests.append([delay, RequestType.DELAY])
         requests.append([name, RequestType.REMOVE])
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', exp_duration + delay/1000*2)  # in sec
 
         output_stats = self.run_exp(requests)
 
@@ -575,7 +583,7 @@ class FeatureTestLocal(TestSetupLocal):
         initial_version = 1
         requests = [[name, RequestType.ADD]]
         group_size = self.get_group_size()
-        delay = 2000  # ms
+        delay = 5000  # ms
         exp_duration += delay/1000
         requests.append([delay, RequestType.DELAY])  # wait after an add request to ensure name is added
         requests.append([request_rate*2, RequestType.RATE])
@@ -590,7 +598,7 @@ class FeatureTestLocal(TestSetupLocal):
             grp_change_request = [name, RequestType.GROUP_CHANGE, version, group]
             requests.append(grp_change_request)
         # wait before sending remove to ensure all previous requests are complete
-        delay = 10000
+        delay = 5000
         requests.append([delay, RequestType.DELAY])
         exp_duration += delay/1000
         requests.append([name, RequestType.REMOVE])

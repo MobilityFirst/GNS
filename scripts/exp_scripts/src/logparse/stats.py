@@ -49,6 +49,9 @@ perc75 = 'perc75'
 
 
 def get_stats_with_names(values):
+    """
+    Returns a dict with keys = statistic name, and value = value of that statistic
+    """
     values.sort()
     stat_dict = {}
 

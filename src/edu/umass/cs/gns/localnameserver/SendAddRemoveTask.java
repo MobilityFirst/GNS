@@ -20,7 +20,7 @@ import java.util.TimerTask;
 
 /**
  * Sends three types of messages (with retries): AddRecordPacket, RemoveRecordPacket, and
- * UpdateAddressPacket with upsert to replica controllers. These messages are sent one by one to all
+ * to replica controllers. These messages are sent one by one to all
  * replica controllers in order of their distance until
  * (1) local name server receives a response from one of the primary replicas.
  * (2) no response is received until {@code maxQueryWaitTime}. In this case, an error response is sent to client.
@@ -29,18 +29,19 @@ import java.util.TimerTask;
  * Date: 8/9/13
  * Time: 4:59 PM
  */
-public class SendAddRemoveUpsertTask extends TimerTask {
+public class SendAddRemoveTask extends TimerTask {
 
   private final String name;
   private final BasicPacket packet;
-  private int lnsRequestID;
+  private final int lnsRequestID;
   private final HashSet<Integer> replicaControllersQueried;
   private int timeoutCount = -1;
   private final long requestRecvdTime;
 
-  public SendAddRemoveUpsertTask(BasicPacket packet, String name, long requestRecvdTime) {
+  public SendAddRemoveTask(int lnsRequestID, BasicPacket packet, String name, long requestRecvdTime) {
     this.name = name;
     this.packet = packet;
+    this.lnsRequestID = lnsRequestID;
     this.replicaControllersQueried = new HashSet<Integer>();
     this.requestRecvdTime = requestRecvdTime;
   }
@@ -73,7 +74,7 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   }
 
   private boolean isResponseReceived() {
-    if (getTimeoutCount() > 0 && LocalNameServer.getUpdateInfo(getLnsRequestID()) == null) {
+    if (LocalNameServer.getRequestInfo(getLnsRequestID()) == null) {
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
       }
@@ -85,24 +86,25 @@ public class SendAddRemoveUpsertTask extends TimerTask {
   private boolean isMaxWaitTimeExceeded() {
 
     if (getTimeoutCount() > 0 && System.currentTimeMillis() - getRequestRecvdTime() > StartLocalNameServer.maxQueryWaitTime) {
-      UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(getLnsRequestID());
+      UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(getLnsRequestID());
 
       if (updateInfo == null) {
         GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
         return true;
       }
       GNS.getLogger().fine("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
-      ConfirmUpdatePacket confirmPkt = getConfirmFailurePacket(getPacket());
       try {
-        if (confirmPkt != null) {
-          Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
-        } else {
-          GNS.getLogger().warning("ERROR: Confirm update is NULL. Cannot sent response to client.");
-        }
+        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(updateInfo.getErrorMessage());
+        Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
       } catch (JSONException e) {
+        e.printStackTrace();
         GNS.getLogger().severe("Problem converting packet to JSON: " + e);
       }
-      String updateStats = updateInfo.getUpdateFailedStats(replicaControllersQueried, LocalNameServer.getNodeID(), getLnsRequestID(), -1);
+
+      updateInfo.setSuccess(false);
+      updateInfo.setFinishTime();
+      updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
+      String updateStats = updateInfo.getLogString();
       GNS.getStatLogger().info(updateStats);
 
       return true;
@@ -121,10 +123,11 @@ public class SendAddRemoveUpsertTask extends TimerTask {
       return;
     }
 
+    UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsRequestID);
+    if (info != null) info.addEventCode(LNSEventCode.CONTACT_RC);
     replicaControllersQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {
-      lnsRequestID = LocalNameServer.addUpdateInfo(getName(), nameServerID, getRequestRecvdTime(), 0, packet);
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
       }
@@ -150,22 +153,6 @@ public class SendAddRemoveUpsertTask extends TimerTask {
     }
   }
 
-  // This code screams for using a super class other than BasicPacket
-  private ConfirmUpdatePacket getConfirmFailurePacket(BasicPacket packet) {
-    ConfirmUpdatePacket confirm;
-    switch (packet.getType()) {
-      case ADD_RECORD:
-        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (AddRecordPacket) packet);
-        return confirm;
-      case REMOVE_RECORD:
-        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (RemoveRecordPacket) packet);
-        return confirm;
-      case UPDATE:
-        confirm = ConfirmUpdatePacket.createFailPacket((UpdatePacket) packet, NSResponseCode.ERROR);
-        return confirm;
-    }
-    return null;
-  }
 
   // This code screams for using a super class other than BasicPacket
   private void updatePacketWithRequestID(BasicPacket packet, int requestID) {
@@ -180,11 +167,6 @@ public class SendAddRemoveUpsertTask extends TimerTask {
         RemoveRecordPacket removeRecordPacket = (RemoveRecordPacket) packet;
         removeRecordPacket.setLNSRequestID(requestID);
         removeRecordPacket.setLocalNameServerID(LocalNameServer.getNodeID());
-        break;
-      case UPDATE:
-        UpdatePacket updateAddressPacket = (UpdatePacket) packet;
-        updateAddressPacket.setLNSRequestID(requestID);
-        updateAddressPacket.setLocalNameServerId(LocalNameServer.getNodeID());
         break;
     }
 

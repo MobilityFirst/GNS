@@ -55,8 +55,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    */
-  private final ConcurrentMap<Integer, DNSRequestInfo> requestTransmittedMap;
-  private final ConcurrentMap<Integer, UpdateInfo> updateTransmittedMap;
+  private final ConcurrentMap<Integer, RequestInfo> requestInfoMap;
   private final ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
 
   /**
@@ -88,12 +87,11 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     this.parameters = parameters;
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
-    this.requestTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
-    this.updateTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
-    nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
+    this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
     this.tcpTransport = initTransport();
   }
 
@@ -131,56 +129,33 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   }
 
   // REQUEST INFO METHODS
-  /**
-   **
-   * Adds information of a transmitted query to a query transmitted map.
-   *
-   * @param name Host/Domain name
-   * @param recordKey
-   * @param nameserverID Name server Id
-   * @param time System time during transmission
-   * @param queryStatus
-   * @param lookupNumber
-   * @param incomingPacket
-   * @param numRestarts
-   * @return A unique id for the query
-   */
-  @Override
-  public int addDNSRequestInfo(String name, NameRecordKey recordKey, int nameserverID, long time, String queryStatus, int lookupNumber, DNSPacket incomingPacket, int numRestarts) {
-    int id;
-    //Generate unique id for the query
-    do {
-      id = random.nextInt();
-    } while (requestTransmittedMap.containsKey(id));
-    //Add query info
-    DNSRequestInfo query = new DNSRequestInfo(id, name, recordKey, time, nameserverID, queryStatus, lookupNumber, incomingPacket, numRestarts);
-    requestTransmittedMap.put(id, query);
-    return id;
-  }
+  private int currentRequestID = 0;
 
   @Override
-  public int addUpdateInfo(String name, int nameserverID, long time, int numRestarts, BasicPacket updateAddressPacket) {
-    int id;
-    //Generate unique id for the query
-    do {
-      id = random.nextInt();
-    } while (updateTransmittedMap.containsKey(id));
-    //Add update info
-    UpdateInfo update = new UpdateInfo(id, name, time, nameserverID, updateAddressPacket, numRestarts);
-    updateTransmittedMap.put(id, update);
-    return id;
+  public synchronized int getUniqueRequestID() {
+    return currentRequestID++;
   }
+
+  public void addRequestInfo(int id, RequestInfo requestInfo) {
+    requestInfoMap.put(id, requestInfo);
+  }
+
 
   @Override
   public int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket) {
     int id;
     do {
       id = random.nextInt();
-    } while (requestTransmittedMap.containsKey(id));
+    } while (selectTransmittedMap.containsKey(id));
     //Add query info
     SelectInfo query = new SelectInfo(id);
     selectTransmittedMap.put(id, query);
     return id;
+  }
+
+  @Override
+  public RequestInfo getRequestInfo(int id) {
+    return requestInfoMap.get(id);
   }
 
   /**
@@ -191,46 +166,22 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    * @return
    */
   @Override
-  public DNSRequestInfo removeDNSRequestInfo(int id) {
-    return requestTransmittedMap.remove(id);
+  public RequestInfo removeRequestInfo(int id) {
+    return requestInfoMap.remove(id);
   }
 
-  @Override
-  public UpdateInfo removeUpdateInfo(int id) {
-    return updateTransmittedMap.remove(id);
-  }
 
   @Override
   public SelectInfo removeSelectInfo(int id) {
     return selectTransmittedMap.remove(id);
   }
 
-  @Override
-  public UpdateInfo getUpdateInfo(int id) {
-    return updateTransmittedMap.get(id);
-  }
 
   @Override
   public SelectInfo getSelectInfo(int id) {
     return selectTransmittedMap.get(id);
   }
 
-  /**
-   **
-   * Returns true if the map contains the specified query id, false otherwise.
-   *
-   * @param id Query Id
-   * @return
-   */
-  @Override
-  public boolean containsDNSRequestInfo(int id) {
-    return requestTransmittedMap.containsKey(id);
-  }
-
-  @Override
-  public DNSRequestInfo getDNSRequestInfo(int id) {
-    return requestTransmittedMap.get(id);
-  }
 
   // CACHE METHODS
   @Override
@@ -437,9 +388,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   
   /**
    * Send packet to NS
-   *
-   * @param json
-   * @param ns
    */
   @Override
   public void sendToAddress(JSONObject json, String address, int port) {

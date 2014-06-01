@@ -1,30 +1,21 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.util.NSResponseCode;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Set;
 
-/**************************************************************
+/**
  * This class stores information not just update requests, but also
  * add and remove requests transmitted by the local name
- * server. It contains a few fields only for logging statistics
- * related to the requests.
+ * server. Extends {@link edu.umass.cs.gns.localnameserver.RequestInfo}.
  *
  * @author abhigyan
- *************************************************************/
-public class UpdateInfo {
+ */
+public class UpdateInfo extends RequestInfo {
 
-  /**
-   * Unique ID for each update request *
-   */
-  private int id;
-  /**
-   * Host/domain name updated *
-   */
-  private String name;
-  /**
-   * System time when update was transmitted from the local name server *
-   */
-  private long sendTime;
   /**
    * ID of the name server where update was sent *
    */
@@ -32,108 +23,71 @@ public class UpdateInfo {
 
   private BasicPacket basicPacket;
 
-  /** number of times this request has received invalid active error */
-  private int numInvalidActiveError;
-
-  public UpdateInfo(int id, String name, long sendTime, int nameserverId,
-                    BasicPacket updateAddressPacket1, int numInvalidActiveError) {
-    this.id = id;
+  public UpdateInfo(int lnsRequestID, String name, long startTime, int nameserverId, BasicPacket packet) {
+    this.lnsReqID = lnsRequestID;
     this.name = name;
-    this.sendTime = sendTime;
+    this.startTime = startTime;
     this.nameserverID = nameserverId;
-    this.numInvalidActiveError = numInvalidActiveError;
-    this.basicPacket = updateAddressPacket1;
+    this.numLookupActives = 0;
+    this.basicPacket = packet;
+    this.requestType = packet.getType();
   }
 
-  /**
-   * Returns a String representation of QueryInfo
-   */
-  @Override
-  public synchronized String toString() {
-    StringBuilder str = new StringBuilder();
-    str.append("ID:" + id);
-    str.append(" Name:" + name);
-    str.append(" Time:" + sendTime);
-    str.append(" NS_ID:" + nameserverID);
-    return str.toString();
-  }
-
-  public synchronized int getID() {
-    return id;
-  }
-
-  public synchronized  String getName() {
-    return name;
-  }
-
-  public synchronized String getUpdateStats(ConfirmUpdatePacket confirmPkt) {
-    int latency = (int)(System.currentTimeMillis() - sendTime);
-    int numTransmissions = 0;
-    confirmPkt.getResponseCode();
-    String success = confirmPkt.isSuccess() ? "Success" : "Failed";
-    String requestType = null;
-    if (confirmPkt.getType().equals(Packet.PacketType.CONFIRM_ADD))
-      requestType = success + "-Add";
-    else if (confirmPkt.getType().equals(Packet.PacketType.CONFIRM_REMOVE))
-      requestType = success + "-Remove";
-    else if (confirmPkt.getType().equals(Packet.PacketType.CONFIRM_UPDATE))
-      requestType = success + "-Update";
-    return getFinalString(requestType, name, latency, numTransmissions, nameserverID, LocalNameServer.getNodeID(),
-            confirmPkt.getRequestID(), numInvalidActiveError, System.currentTimeMillis());
-  }
-
-  public synchronized String getUpdateFailedStats(Set<Integer> activesQueried, int lnsID, int requestID,
-                                                  int coordinatorID) {
-    // todo fix three different methods here: also include coordinator ID if needed
-    String requestType = "Update";
-    if (basicPacket.getType().equals(Packet.PacketType.ADD_RECORD)) requestType = "Add";
-    else if (basicPacket.getType().equals(Packet.PacketType.REMOVE_RECORD)) requestType = "Remove";
-    int latency = (int) (System.currentTimeMillis() - sendTime);
-    return  getFinalString("Failed-"+ requestType + "NoActiveResponse", name, latency, activesQueried.size(), -1,
-            LocalNameServer.getNodeID(), requestID, numInvalidActiveError, System.currentTimeMillis());
-  }
-
-  public static String getUpdateFailedStats(String name, Set<Integer> activesQueried, int lnsID, int requestID,
-                                            long sendTime, int numRestarts, int coordinatorID, Packet.PacketType packetType) {
-    String requestType = "Update";
-    if (packetType.equals(Packet.PacketType.ADD_RECORD)) requestType = "Add";
-    else if (packetType.equals(Packet.PacketType.REMOVE_RECORD)) requestType = "Remove";
-    String queryStatus = "Failed-"+ requestType + "NoActiveResponse";
-    if (activesQueried.size() == 0) queryStatus = "Failed-"+ requestType + "NoPrimaryResponse";
-    int latency = (int)(System.currentTimeMillis() - sendTime);
-    return  getFinalString(queryStatus, name, latency, 0, -1, LocalNameServer.getNodeID(), requestID, numRestarts,
-            System.currentTimeMillis());
-  }
-
-  private static String getFinalString(String queryStatus, String name, int latency, int numTransmissions,
-                                       int nameServerID, int lnsID, int requestID, int numInvalidActiveError,
-                                       long curTime) {
-    return queryStatus + "\t" + name  + "\t" + latency  + "\t" + numTransmissions  + "\t" + nameServerID  + "\t" +
-            lnsID  + "\t" + requestID  + "\t" + numInvalidActiveError  + "\t" + curTime;
-  }
-
-
-  public synchronized long getSendTime() {
-    return  sendTime;
-  }
 
   public synchronized void setNameserverID(int nameserverID) {
     this.nameserverID = nameserverID;
   }
 
-  public synchronized int getNumInvalidActiveError() {
-    return numInvalidActiveError;
+
+
+  @Override
+  public synchronized String getLogString() {
+    String success = isSuccess() ? "Success" : "Failed";
+    if (requestType.equals(Packet.PacketType.ADD_RECORD))
+      success += "-Add";
+    else if (requestType.equals(Packet.PacketType.REMOVE_RECORD))
+      success += "-Remove";
+    else if (requestType.equals(Packet.PacketType.UPDATE))
+      success += "-Update";
+    return getFinalString(success, name, getResponseLatency(), 0, nameserverID, LocalNameServer.getNodeID(),
+            getLnsReqID(), numLookupActives, System.currentTimeMillis(), getEventCodesString());
   }
 
-  public synchronized long getLatency() {
-    return System.currentTimeMillis() - sendTime;
+  private String getFinalString(String queryStatus, String name, long latency, int numTransmissions,
+                                int nameServerID, int lnsID, int requestID, int numInvalidActiveError,
+                                long curTime, String eventCodes) {
+    return queryStatus + "\t" + name  + "\t" + latency  + "\t" + numTransmissions  + "\t" + nameServerID  + "\t" +
+            lnsID  + "\t" + requestID  + "\t" + numInvalidActiveError  + "\t" + curTime + "\t" + eventCodes;
+  }
+
+
+  @Override
+  public synchronized JSONObject getErrorMessage() {
+    ConfirmUpdatePacket confirm = null;
+    switch (basicPacket.getType()) {
+      case ADD_RECORD:
+        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (AddRecordPacket) basicPacket);
+        break;
+      case REMOVE_RECORD:
+        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (RemoveRecordPacket) basicPacket);
+        break;
+      case UPDATE:
+        confirm = ConfirmUpdatePacket.createFailPacket((UpdatePacket) basicPacket, NSResponseCode.ERROR);
+        break;
+    }
+    try {
+      return (confirm != null)? confirm.toJSONObject(): null;
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
 
   /**
    * @return the basicPacket
    */
-  public BasicPacket getUpdatePacket() {
+  public synchronized BasicPacket getUpdatePacket() {
     return basicPacket;
   }
 

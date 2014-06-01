@@ -12,8 +12,17 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
  * LOCATION chooses replica locations for a name at those name servers that are close to the local name servers
  * sending requests for tha name.
  * RANDOM chooses replica locations randomly.
- * Both LOCATION and RANDOM choose same number of replicas for a name; this number is determined by the read-to-write
- * ratio of that name.
+ * Both LOCATION and RANDOM choose the same number of replicas for a name; this number is determined by the
+ * read-to-write ratio of that name.
+ * <p>
+ * In this package, there are two classes that implement ReplicationFrameworkInterface.
+ * These are LocationBasedReplication and RandomReplication, that are respectively used to implement LOCATION, and
+ * RANDOM schemes respectively.
+ * </p>
+ * <p>Static replication does not really need any ReplicationFrameworkInterface as it does not change replicas.
+ * So, there is no replication framework defined for it.</p>
+ *
+ * @see edu.umass.cs.gns.nsdesign.replicaController.ComputeNewActivesTask
  *
  * @author westy, Abhigyan
  */

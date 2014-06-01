@@ -8,6 +8,7 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
@@ -16,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.UnknownHostException;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -25,16 +25,12 @@ import java.util.concurrent.TimeUnit;
  * name servers. Most functionality for handling updates from clients is implemented in
  * <code>SendUpdatesTask</code>. So also refer to its documentation.
  * <p>
- * An update request is sent to an active replica of a name, except for a special type of update called upsert (update + insert).
+ * An update request is sent to an active replica of a name.
  * Refer to documentation in {@link edu.umass.cs.gns.localnameserver.Lookup} to know how a local name server obtains
  * the set of active replicas. Like other requests, updates are also retransmitted to a different name server
  * if no confirmation is received until a timeout value.
  * <p>
- * An upsert request may create a new name record, unlike an update which modifies an existing name record.
- * Becasue addition of a name is done by replica controllers, we send an upserts to replica controllers.
- * If upsert request is for an already existing name, it is handled like an update. To this end, replica controllers
- * will forward the request to active replicas.
- * <p>
+ *
  * @author abhigyan
  */
 public class Update {
@@ -44,13 +40,14 @@ public class Update {
   public static void handlePacketUpdate(JSONObject json)
           throws JSONException, UnknownHostException {
 
-    UpdatePacket updateAddressPacket = new UpdatePacket(json);
-
-    GNS.getLogger().info("UPDATE PACKET RECVD: " + json.toString());
-
-    LocalNameServer.incrementUpdateRequest(updateAddressPacket.getName()); // important: used to count votes for names.
-    SendUpdatesTask updateTask = new SendUpdatesTask(updateAddressPacket,
-            System.currentTimeMillis(), new HashSet<Integer>(), 0);
+    UpdatePacket updatePacket = new UpdatePacket(json);
+    if (Config.debugMode) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
+    int lnsReqID = LocalNameServer.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), System.currentTimeMillis(),
+            -1, updatePacket);
+    LocalNameServer.addRequestInfo(lnsReqID, info);
+    LocalNameServer.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
+    SendUpdatesTask updateTask = new SendUpdatesTask(lnsReqID, updatePacket);
     LocalNameServer.getExecutorService().scheduleAtFixedRate(updateTask, 0, StartLocalNameServer.queryTimeout,
             TimeUnit.MILLISECONDS);
   }
@@ -59,34 +56,53 @@ public class Update {
     ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json);
 
     if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt.toString());
-    }
-
-    // if update info isnt available, we cant do anything.
-    UpdateInfo updateInfo = LocalNameServer.removeUpdateInfo(confirmPkt.getLNSRequestID());
-    if (updateInfo == null) {
-      GNS.getLogger().warning("Update info not found. quitting.  " + confirmPkt);
-      return;
+      GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
     }
 
     if (confirmPkt.isSuccess()) {
+      // we are removing request info as processing for this request is complete
+      UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmPkt.getLNSRequestID());
+      // if update info isn't available, we cant do anything. probably response is overly delayed and an error response
+      // has already been sent to client.
+      if (updateInfo == null) {
+        GNS.getLogger().warning("Update info not found. quitting. SUCCESS update.  " + confirmPkt);
+        return;
+      }
       // update the cache BEFORE we send back the confirmation
       LocalNameServer.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
       // send the confirmation back to the originator of the update
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+      updateInfo.setSuccess(confirmPkt.isSuccess());
+      updateInfo.setFinishTime();
+      updateInfo.addEventCode(LNSEventCode.SUCCESS);
       // instrumentation?
       if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
-        GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt));
+        GNS.getStatLogger().info(updateInfo.getLogString());
       }
     } else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)) {
+      // NOTE: we are NOT removing request info as processing for this request is still ongoing
+      UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.getRequestInfo(confirmPkt.getLNSRequestID());
+      if (updateInfo == null) {
+        GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
+        return;
+      }
+      updateInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
       // if error type is invalid active error, we fetch a fresh set of actives from replica controllers and try again
       handleInvalidActiveError(updateInfo);
     } else { // In all other types of errors, we immediately send response to client.
-      Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
-      if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
-        GNS.getStatLogger().info(updateInfo.getUpdateStats(confirmPkt));
+      // we are removing request info as processing for this request is complete
+      UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmPkt.getLNSRequestID());
+      if (updateInfo == null) {
+        GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
+        return;
       }
-
+      Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+      updateInfo.setSuccess(confirmPkt.isSuccess());
+      updateInfo.setFinishTime();
+      updateInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+      if (r.nextDouble() <= StartLocalNameServer.outputSampleRate) {
+        GNS.getStatLogger().info(updateInfo.getLogString());
+      }
     }
   }
 
@@ -105,19 +121,11 @@ public class Update {
 
     // clear out current cache
     LocalNameServer.invalidateActiveNameServer(updateInfo.getName());
-
     // create objects that must be passed to PendingTasks
-    SendUpdatesTask task = new SendUpdatesTask(updatePacket, updateInfo.getSendTime(), new HashSet<Integer>(),
-            updateInfo.getNumInvalidActiveError() + 1);
-    String failedStats = UpdateInfo.getUpdateFailedStats(updateInfo.getName(), new HashSet<Integer>(),
-            LocalNameServer.getNodeID(), updatePacket.getRequestID(), updateInfo.getSendTime(),
-            updateInfo.getNumInvalidActiveError() + 1, -1, updatePacket.getType());
-    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
+    SendUpdatesTask task = new SendUpdatesTask(updateInfo.getLnsReqID(), updatePacket);
+//    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
 
-    boolean firstInvalidActiveError = (updateInfo.getNumInvalidActiveError() == 0);
-
-    PendingTasks.addToPendingRequests(updateInfo.getName(), task, StartLocalNameServer.queryTimeout,
-            failPacket.toJSONObject(), failedStats, firstInvalidActiveError);
+    PendingTasks.addToPendingRequests(updateInfo, task, StartLocalNameServer.queryTimeout);
   }
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet) throws JSONException {
@@ -132,10 +140,6 @@ public class Update {
       }
       try {
         LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
-//        Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(),
-//                packet.getReturnTo(), GNS.PortType.NS_TCP_PORT);
-//      } catch (IOException e) {
-//        GNS.getLogger().severe("Unable to send packet back to NS: " + e);
       } catch (JSONException e) {
         GNS.getLogger().severe("Unable to send packet back to NS: " + e);
       }

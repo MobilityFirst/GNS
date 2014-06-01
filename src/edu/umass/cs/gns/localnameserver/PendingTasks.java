@@ -52,28 +52,31 @@ public class PendingTasks {
    */
   /**
    * Request current set of actives for name, and queue this request to be executed once we receive the current actives.
-   *
-   * @param name request actives for name
+   * @param requestInfo Information for this request stored at LNS.
    * @param task TimerTask to be executed once actives are received. Request represented in form of TimerTask
    * @param period Frequency at which TimerTask is repeated
-   * @param errorMsg In case no actives received, error msg to be send to user.
-   * @param errorLog In case no actives received, error log entry to be written for this request.
-   * @param firstAttempt Is this the first time request is being queued.
    */
-  public static void addToPendingRequests(String name, TimerTask task, int period,
-          JSONObject errorMsg, String errorLog, boolean firstAttempt) {
-    PendingTask pendingTask = new PendingTask(name, task, period, errorMsg, errorLog);
-    int requestID = addRequestToQueue(name, pendingTask);
+  public static void addToPendingRequests(RequestInfo requestInfo, TimerTask task, int period) {
+    if (requestInfo != null && requestInfo.setLookupActives()) {
+      // if lookupActives is true, means this request is not already in pending request queue. so, we add this to queue
+      String name = requestInfo.getName();
+      PendingTask pendingTask = new PendingTask(name, task, period, requestInfo);
+      int requestID = addRequestToQueue(name, pendingTask);
 
-    // the first time we received invalid error for a request, we will request actives without delay.
-    // if we get invalid active error a second time or later, it means the set of active replicas is being changed
-    // therefore, we will wait for a timeout value before sending requests again.
-    long initialDelay = (firstAttempt) ? 0 : StartLocalNameServer.queryTimeout;
-    if (requestID > 0) {
-      GNS.getLogger().fine("Active request queued: " + requestID);
-      RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID);
-      LocalNameServer.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
-              StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+      // The first time we received invalid error for a request, we will request actives without delay.
+      // if we get invalid active error a second time or later, it means the set of active replicas is being changed
+      // and the new active replica has not received this information. Therefore, we will wait for a timeout value before
+      // sending requests again.
+      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout;
+      requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
+      if (requestID > 0) {
+        GNS.getLogger().fine("Active request queued: " + requestID);
+        RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID);
+        LocalNameServer.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
+                StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+      }
+    } else {
+      GNS.getLogger().info("This request already in queue so not added to pending requests again. " + requestInfo);
     }
 
   }
@@ -82,7 +85,6 @@ public class PendingTasks {
    * Received reply from primary with current actives, update the cache. If non-null set of actives received,
    * execute all pending request. Otherwise, send error messages for all requests.
    *
-   * @param json
    * @throws org.json.JSONException
    */
   public static void handleActivesRequestReply(JSONObject json) throws JSONException {
@@ -95,7 +97,7 @@ public class PendingTasks {
             || requestActivesPacket.getActiveNameServers().size() == 0) {
       GNS.getLogger().fine("Null set of actives received for name " + requestActivesPacket.getName()
               + " sending error");
-      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID());
+      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), LNSEventCode.RC_NO_RECORD_ERROR);
       return;
     }
 
@@ -120,11 +122,9 @@ public class PendingTasks {
   /**
    * After the set of active name servers is successfully received, execute all its pending requests.
    *
-   * @param name
    * @param requestID request ID of the <code>RequestActivesPacket</code>
    */
   public static void runPendingRequestsForName(String name, int requestID) {
-
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
     if (runTasks != null && runTasks.size() > 0) {
@@ -132,6 +132,8 @@ public class PendingTasks {
         GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount " + runTasks.size());
       }
       for (PendingTask task : runTasks) {
+        // update request info to reset lookup actives
+        task.requestInfo.unsetLookupActives();
         //
         if (task.period > 0) {
           if (StartLocalNameServer.debugMode) {
@@ -146,24 +148,27 @@ public class PendingTasks {
         }
       }
     }
-
   }
 
   /**
    * If the set of active name servers is null, send error messages for all requests.
    *
-   * @param name
    * @param requestID request ID of the <code>RequestActivesPacket</code>
    */
-  public static void sendErrorMsgForName(String name, int requestID) {
+  public static void sendErrorMsgForName(String name, int requestID, LNSEventCode eventCode) {
 
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
     if (runTasks != null && runTasks.size() > 0) {
       GNS.getLogger().fine("Running pending tasks. Sending error messages: Count " + runTasks.size());
       for (PendingTask task : runTasks) {
-        GNS.getStatLogger().fine(task.errorLog);
-        Intercessor.handleIncomingPackets(task.errorMsg);
+        // remove request from queue
+        if (LocalNameServer.removeRequestInfo(task.requestInfo.getLnsReqID()) != null) {
+          task.requestInfo.setFinishTime(); // set finish time for request
+          if (eventCode != null) task.requestInfo.addEventCode(eventCode);
+          GNS.getStatLogger().fine(task.requestInfo.getLogString());
+          Intercessor.handleIncomingPackets(task.requestInfo.getErrorMessage());
+        }
       }
     }
   }
@@ -182,7 +187,7 @@ public class PendingTasks {
     int requestID = -1;
     if (!allTasks.containsKey(name)) {
       allTasks.put(name, new ArrayList<PendingTask>());
-      if (requestIDCounter == Integer.MAX_VALUE / 2) {
+      if (requestIDCounter == (Integer.MAX_VALUE / 2)) {
         requestIDCounter = 0;// reset counter
       }
       requestID = ++requestIDCounter;
@@ -218,15 +223,11 @@ public class PendingTasks {
 class PendingTask {
 
   public String name;
-  /**
-   * Error message that will be sent to client in case we don't get actives for this name.
-   */
-  public JSONObject errorMsg;
 
   /**
    * Log entry at local name server in case we don't get actives for this name.
    */
-  public String errorLog;
+  public RequestInfo requestInfo;
   /**
    * Period > 0 for recurring tasks, = 0 for one time tasks.
    */
@@ -234,11 +235,10 @@ class PendingTask {
 
   public TimerTask timerTask;
 
-  public PendingTask(String name, TimerTask timerTask, int period, JSONObject errorMsg, String errorLog) {
+  public PendingTask(String name, TimerTask timerTask, int period, RequestInfo requestInfo) {
     this.name = name;
     this.timerTask = timerTask;
     this.period = period;
-    this.errorMsg = errorMsg;
-    this.errorLog = errorLog;
+    this.requestInfo = requestInfo;
   }
 }

@@ -161,7 +161,7 @@ def run_local_name_server(node_id, work_dir, update_trace_file):
     update_rate_mobile = 0      # in ms (NOT USED) Inter-Arrival Time (in ms) between update request for mobile names
 
     command = 'cd ' + work_dir + ';'
-    command += 'nohup java  -cp ' + local_name_server_jar + \
+    command += 'nohup java -ea -cp ' + local_name_server_jar + \
                ' -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:' + local_name_server_jar +\
                 ' edu.umass.cs.gns.main.StartLocalNameServer '
 

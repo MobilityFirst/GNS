@@ -14,11 +14,11 @@ sys.path.append(parent_folder)
 local_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 
 # config file for remote node
-config_file = os.path.join(parent_folder, 'resources', 'skuld_env.ini')
+config_file = os.path.join(parent_folder, 'resources', 'planetlab_env.ini')
 
 ssh_key = '/Users/abhigyan/.ssh/id_rsa'
 user = 'abhigyan'
-remote_host = 'plum.cs.umass.edu'
+remote_host = 'skuld.cs.umass.edu'
 remote_skuld_folder = '/home/abhigyan/gns/test_folder'
 
 print 'Making remote dir ... ' + remote_skuld_folder

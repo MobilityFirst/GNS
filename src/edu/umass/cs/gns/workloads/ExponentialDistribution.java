@@ -12,7 +12,6 @@ public class ExponentialDistribution implements ProbabilityDistribution {
 	
 	public ExponentialDistribution( double mean ) {
 		this.mean = mean;
-		
 		this.lambda = 1d/mean;
 	}
 	

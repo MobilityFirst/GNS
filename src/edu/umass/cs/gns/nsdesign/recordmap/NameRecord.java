@@ -92,10 +92,6 @@ public class NameRecord implements Comparable<NameRecord> {
       hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
     }
 
-//    if (jsonObject.has(ACTIVE_NAMESERVERS.getName())) {
-//      hashMap.put(ACTIVE_NAMESERVERS, JSONUtils.getObject(ACTIVE_NAMESERVERS, jsonObject));
-//    }
-
     if (jsonObject.has(PRIMARY_NAMESERVERS.getName())) {
       hashMap.put(PRIMARY_NAMESERVERS, JSONUtils.getObject(PRIMARY_NAMESERVERS, jsonObject));
     }

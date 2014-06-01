@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.util.Util;
 
 import java.io.File;
@@ -10,6 +11,9 @@ import java.util.*;
 /**
  *
  * This class does not implement {@link edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface}.
+ *
+ * To implement beehive, we first calculate the number of servers using this class and
+ * then use RandomReplication to select replicas.
  *
  * Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
  *
@@ -84,7 +88,59 @@ public class BeehiveReplication {
 //		System.out.println( name + "\t" + level + "\t" + numActives );
 		return numActives;
 	}
-	
+
+
+  /**
+   * Abhigyan: Putting this code here because it is related to the beehive replication strategy.
+   * Implements the algorithm that a local name server uses to select a name server when we experiment with beehive
+   * replication. It chooses the closest name server if available, otherwise picks a name server randomly.
+   * I think this approximates a replica that will be chosen using DHT routing.
+   *
+   */
+  public static int getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<Integer> activeNameServers, Set<Integer> nameserverQueried) {
+    ArrayList<Integer> allServers = new ArrayList<Integer>();
+    if (activeNameServers != null) {
+      for (int x : activeNameServers) {
+        if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
+          allServers.add(x);
+        }
+      }
+    }
+
+    if (allServers.size() == 0) {
+      return -1;
+    }
+
+    if (allServers.contains(gnsNodeConfig.getClosestNameServer())) {
+      return gnsNodeConfig.getClosestNameServer();
+    }
+    return beehiveNSChoose(gnsNodeConfig.getClosestNameServer(), allServers, nameserverQueried);
+
+  }
+
+
+  private static int beehiveNSChoose(int closestNS, ArrayList<Integer> nameServers, Set<Integer> nameServersQueried) {
+
+    if (nameServers.contains(closestNS) && (nameServersQueried == null || !nameServersQueried.contains(closestNS))) {
+      return closestNS;
+    }
+
+    Collections.sort(nameServers);
+    for (int x : nameServers) {
+      if (x > closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
+        return x;
+      }
+    }
+
+    for (int x : nameServers) {
+      if (x < closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
+        return x;
+      }
+    }
+
+    return -1;
+  }
+
 	public static void main(String[] args) throws IOException {
 		int nameServerCount = 97;
 		int nameCount = 11000;

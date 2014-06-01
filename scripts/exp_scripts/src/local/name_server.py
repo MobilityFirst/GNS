@@ -142,7 +142,7 @@ def run_name_server(node_id, work_dir):
     os.system('rm -rf ' + work_dir + '; mkdir -p ' + work_dir)
 
     command = 'cd ' + work_dir + ';'
-    command += 'nohup java -cp ' + name_server_jar + ' edu.umass.cs.gns.main.StartNameServer'
+    command += 'nohup java -ea -cp ' + name_server_jar + ' edu.umass.cs.gns.main.StartNameServer'
     command += ' ' + ID + ' ' + str(node_id)
     command += ' ' + NAMESERVER_FILE + ' ' + node_config
     command += ' ' + PRIMARY_NAMESERVERS + ' ' + str(primary_name_server)

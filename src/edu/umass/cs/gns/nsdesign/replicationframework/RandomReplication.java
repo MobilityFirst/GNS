@@ -11,7 +11,7 @@ import java.util.*;
  * This class implements the ReplicationFramework interface
  * and is used to randomly select new active nameservers.
  * 
- * @author Hardeep Uppal
+ * @author Hardeep Uppal, Abhigyan
  ************************************************************/
 public class RandomReplication implements ReplicationFrameworkInterface{
   int NUM_RETRY = 1000;
@@ -95,59 +95,5 @@ public class RandomReplication implements ReplicationFrameworkInterface{
     return -1;
   }
 
-  /**
-   * Abhigyan: Putting this code here because it is related to the above random replication strategy.
-   * Implements the algorithm local name server uses to select a name server when we experiment with beehive
-   * replication. It chooses the closest name server if available, otherwise picks a name server randomly.
-   * I think this approximates a replica that will be chosen using DHT routing.
-   *
-   * @param gnsNodeConfig
-   * @param nameserverQueried
-   * @param activeNameServers
-   * @return
-   */
-  public static int getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<Integer> activeNameServers, Set<Integer> nameserverQueried) {
-    ArrayList<Integer> allServers = new ArrayList<Integer>();
-    if (activeNameServers != null) {
-      for (int x : activeNameServers) {
-        if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
-          allServers.add(x);
-        }
-      }
-    }
-
-    if (allServers.size() == 0) {
-      return -1;
-    }
-
-    if (allServers.contains(gnsNodeConfig.getClosestNameServer())) {
-      return gnsNodeConfig.getClosestNameServer();
-    }
-    return beehiveNSChoose(gnsNodeConfig.getClosestNameServer(), allServers, nameserverQueried);
-
-  }
-
-
-  private static int beehiveNSChoose(int closestNS, ArrayList<Integer> nameServers, Set<Integer> nameServersQueried) {
-
-    if (nameServers.contains(closestNS) && (nameServersQueried == null || !nameServersQueried.contains(closestNS))) {
-      return closestNS;
-    }
-
-    Collections.sort(nameServers);
-    for (int x : nameServers) {
-      if (x > closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
-        return x;
-      }
-    }
-
-    for (int x : nameServers) {
-      if (x < closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
-        return x;
-      }
-    }
-
-    return -1;
-  }
 
 }
