@@ -55,17 +55,14 @@ public class Update {
   public static void handlePacketConfirmUpdate(JSONObject json) throws UnknownHostException, JSONException {
     ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json);
 
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
-    }
-
+    if (Config.debugMode) GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
     if (confirmPkt.isSuccess()) {
       // we are removing request info as processing for this request is complete
       UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmPkt.getLNSRequestID());
       // if update info isn't available, we cant do anything. probably response is overly delayed and an error response
       // has already been sent to client.
       if (updateInfo == null) {
-        GNS.getLogger().warning("Update info not found. quitting. SUCCESS update.  " + confirmPkt);
+        if (Config.debugMode) GNS.getLogger().warning("Update info not found. quitting. SUCCESS update.  " + confirmPkt);
         return;
       }
       // update the cache BEFORE we send back the confirmation
@@ -83,7 +80,7 @@ public class Update {
       // NOTE: we are NOT removing request info as processing for this request is still ongoing
       UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.getRequestInfo(confirmPkt.getLNSRequestID());
       if (updateInfo == null) {
-        GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
+        if (Config.debugMode) GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
         return;
       }
       updateInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
@@ -93,7 +90,7 @@ public class Update {
       // we are removing request info as processing for this request is complete
       UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmPkt.getLNSRequestID());
       if (updateInfo == null) {
-        GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
+        if (Config.debugMode) GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
         return;
       }
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
@@ -113,10 +110,9 @@ public class Update {
    * @throws JSONException
    */
   private static void handleInvalidActiveError(UpdateInfo updateInfo) throws JSONException {
-    if (StartLocalNameServer.debugMode) {
-      GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + updateInfo.getName() + "\tRequest new actives.\t");
-    }
-
+    if (Config.debugMode) GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + 
+            updateInfo.getName() + "\tRequest new actives.\t");
+    
     UpdatePacket updatePacket = (UpdatePacket) updateInfo.getUpdatePacket();
 
     // clear out current cache
@@ -130,14 +126,13 @@ public class Update {
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet) throws JSONException {
     if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
-      }
+      if (Config.debugMode) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      
       Intercessor.handleIncomingPackets(packet.toJSONObject());
     } else {
-      if (StartLocalNameServer.debugMode) {
-        GNS.getLogger().info("Sending back to Node " + packet.getReturnTo() + ":" + packet.toJSONObject().toString());
-      }
+      if (Config.debugMode) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + 
+              ":" + packet.toJSONObject().toString());
+      
       try {
         LocalNameServer.sendToNS(packet.toJSONObject(), packet.getReturnTo());
       } catch (JSONException e) {

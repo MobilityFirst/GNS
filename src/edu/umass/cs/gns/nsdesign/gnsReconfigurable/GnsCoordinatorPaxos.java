@@ -69,7 +69,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
     try {
       Packet.PacketType type = Packet.getPacketType(request);
       if (!type.equals(Packet.PacketType.ACTIVE_COORDINATION)) {
-        GNS.getLogger().info(" GNS recvd msg: " + request);
+        if (Config.debugMode) GNS.getLogger().fine(" GNS recvd msg: " + request);
       }
       switch (type) {
         // coordination packets internal to paxos

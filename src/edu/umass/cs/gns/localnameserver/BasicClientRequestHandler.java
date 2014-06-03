@@ -15,7 +15,6 @@ import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
@@ -136,6 +135,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return currentRequestID++;
   }
 
+  @Override
   public void addRequestInfo(int id, RequestInfo requestInfo) {
     requestInfoMap.put(id, requestInfo);
   }
@@ -361,10 +361,10 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   public int getClosestReplicaController(String name, Set<Integer> nameServersQueried) {
     try {
       Set<Integer> primary = getReplicaControllers(name);
-      GNS.getLogger().info("Primary Name Servers: " + primary.toString() + " for name: " + name);
+      if (parameters.isDebugMode()) GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
 
       int x = gnsNodeConfig.getClosestServer(primary, nameServersQueried);
-      GNS.getLogger().info("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
+      if (parameters.isDebugMode()) GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
       return x;
     } catch (Exception e) {
       return -1;

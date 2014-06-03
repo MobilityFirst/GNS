@@ -228,7 +228,7 @@ public class NIOTransport implements Runnable {
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
-		//if(DEBUG) log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
+		if(DEBUG) log.fine("Node " + this.myID + " accepted connection from " + socketChannel.getRemoteAddress());
 		NIOInstrumenter.incrAccepted();
 		socketChannel.configureBlocking(false);
 		socketChannel.socket().setKeepAlive(true);
@@ -484,7 +484,7 @@ public class NIOTransport implements Runnable {
 
 	private void putSockAddrToSockChannel(InetSocketAddress isa, SocketChannel socketChannel) {
 		synchronized (this.SockAddrToSockChannel) {
-			log.finer("Node " + myID + " inserting (" + isa + ", " + socketChannel + ")");
+			if (DEBUG) log.finer("Node " + myID + " inserting (" + isa + ", " + socketChannel + ")");
 			this.SockAddrToSockChannel.put(isa, socketChannel);
 		}
 	}
@@ -511,8 +511,9 @@ public class NIOTransport implements Runnable {
 			if (!this.isConnected(isa)) {
 				SocketChannel oldSock = this.getSockAddrToSockChannel(isa); // synchronized
 				if (oldSock != null && this.canReconnect(isa)) {
-					log.warning("Node "+this.myID+" finds channel to "+isa+" dead, probably " +
-							"because the remote end died or closed the connection"); 
+					log.log(Level.WARNING,"Node {0} finds channel to {1} dead, probably " +
+							"because the remote end died or closed the connection", 
+                                                new Object[]{this.myID, isa}); 
 				}
 				if(checkAndReconnect(isa)) sock = this.initiateConnection(isa);
 			}
@@ -543,7 +544,7 @@ public class NIOTransport implements Runnable {
 			Iterator<ChangeRequest> changes = this.pendingConnects.iterator();
 			while (changes.hasNext()) {
 				ChangeRequest change = (ChangeRequest) changes.next();
-				log.fine("Node " + myID + " processing connect event : " + change);
+				if (DEBUG) log.fine("Node " + myID + " processing connect event : " + change);
 				switch (change.type) {
 				case ChangeRequest.CHANGEOPS:
 					SelectionKey key = change.socket.keyFor(this.selector);
@@ -575,7 +576,7 @@ public class NIOTransport implements Runnable {
 		serverChannel.configureBlocking(false);
 
 		// Bind the server socket to the specified address and port
-		log.info("Node " + myID + " listening on " + this.nodeConfig.getNodeAddress(this.myID)
+		if (DEBUG) log.fine("Node " + myID + " listening on " + this.nodeConfig.getNodeAddress(this.myID)
 				+ ":" + this.nodeConfig.getNodePort(this.myID));
 		InetSocketAddress isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
 				this.nodeConfig.getNodePort(this.myID));
@@ -604,7 +605,7 @@ public class NIOTransport implements Runnable {
 		socketChannel.configureBlocking(false);
 
 		// Kick off connection establishment
-		log.finer("Node " + myID + " connecting to socket address " + isa);
+		if (DEBUG) log.finer("Node " + myID + " connecting to socket address " + isa);
 		socketChannel.connect(isa);
 		NIOInstrumenter.incrInitiated();
 		putSockAddrToSockChannel(isa, socketChannel); // synchronized
@@ -645,7 +646,7 @@ public class NIOTransport implements Runnable {
 		 * is connected as the write will block anyway.
 		 */
 		if (connected) {
-			log.fine("Node " + myID + " finished connecting " + socketChannel);
+			if (DEBUG) log.fine("Node " + myID + " finished connecting " + socketChannel);
 		}
 		if (connected) {
 			key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);

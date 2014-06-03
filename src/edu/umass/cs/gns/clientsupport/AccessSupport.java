@@ -56,7 +56,7 @@ public class AccessSupport {
     sig.initVerify(publicKey);
     sig.update(message.getBytes());
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    GNS.getLogger().info("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    //GNS.getLogger().info("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;
   }
 

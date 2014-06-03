@@ -53,7 +53,7 @@ public class NSAccessSupport {
     sig.initVerify(publicKey);
     sig.update(message.getBytes());
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    //GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     return result;
   }
 
