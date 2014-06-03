@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.PerformanceTests;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -35,13 +36,13 @@ public class RTTQuick extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json) throws JSONException {
     if (module.isAdminMode()) {
       String guidCntString = json.getString(GUIDCNT);
       int guidCnt = Integer.parseInt(guidCntString);
-      return PerformanceTests.runRttPerformanceTest(5, guidCnt, false);
+      return new CommandResponse(PerformanceTests.runRttPerformanceTest(5, guidCnt, false));
     } else {
-      return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
+      return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
     }
 
   }

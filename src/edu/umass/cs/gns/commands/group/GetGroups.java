@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -41,7 +42,7 @@ public class GetGroups extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     // reader might be same as guid
@@ -49,7 +50,7 @@ public class GetGroups extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    return new JSONArray(GroupAccess.lookupGroups(guid, reader, signature, message)).toString();
+    return new CommandResponse(new JSONArray(GroupAccess.lookupGroups(guid, reader, signature, message)).toString());
   }
 
   @Override

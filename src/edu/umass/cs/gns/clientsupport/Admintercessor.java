@@ -239,18 +239,18 @@ public class Admintercessor {
   }
 
   // DUMP
-  public static String sendDump() {
+  public static CommandResponse sendDump() {
     int id;
     if ((id = sendDumpOutputHelper(null)) == -1) {
-      return Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
     Map<Integer, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
-      return formatDumpRecords(result);
+      return new CommandResponse(formatDumpRecords(result));
     } else {
-      return Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "No response to dump command!";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "No response to dump command!");
     }
   }
 

@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -38,17 +39,17 @@ public class Admin extends GnsCommand {
   }
   
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
     if (module.getHost().equals(passkey)) {
       module.setAdminMode(true);
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     } else if ("off".equals(passkey)) {
       module.setAdminMode(false);
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     }
-    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName() + " " + passkey;
+    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName() + " " + passkey);
   }
   
   @Override

@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -39,7 +40,7 @@ public class RequestJoinGroup extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String member = json.getString(MEMBER);
@@ -47,28 +48,10 @@ public class RequestJoinGroup extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     if (!GroupAccess.requestJoinGroup(guid, member, member, signature, message).isAnError()) {
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     } else {
-      return BADRESPONSE + " " + GENERICEERROR;
+      return new CommandResponse(BADRESPONSE + " " + GENERICEERROR);
     }
-//    GuidInfo guidInfo, memberInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return BADRESPONSE + " " + BADGUID + " " + guid;
-//    }
-//    if (member.equals(guid)) {
-//      memberInfo = guidInfo;
-//    } else if ((memberInfo = AccountAccess.lookupGuidInfo(member)) == null) {
-//      return BADRESPONSE + " " + BADREADERGUID + " " + member;
-//    }
-//    if (!AccessSupport.verifySignature(memberInfo, signature, message)) {
-//      return BADRESPONSE + " " + BADSIGNATURE;
-//    } else {
-//      if (!GroupAccess.requestJoinGroup(guid, member).isAnError()) {
-//        return OKRESPONSE;
-//      } else {
-//        return BADRESPONSE + " " + GENERICEERROR;
-//      }
-//    }
   }
 
   @Override

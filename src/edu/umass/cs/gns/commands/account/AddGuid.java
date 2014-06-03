@@ -11,6 +11,7 @@ import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
@@ -48,7 +49,7 @@ public class AddGuid extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) {
       return LNSToNSCommandRequestHandler.sendCommandRequest(json);
@@ -61,32 +62,32 @@ public class AddGuid extends GnsCommand {
       String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
-        return BADRESPONSE + " " + BADGUID + " " + accountGuid;
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
       }
       if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
         if (accountInfo == null) {
-          return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
+          return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
         }
         if (!accountInfo.isVerified()) {
-          return BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified";
+          return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
         } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
-          return BADRESPONSE + " " + TOMANYGUIDS;
+          return new CommandResponse(BADRESPONSE + " " + TOMANYGUIDS);
         } else {
-          String result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey);
-          if (OKRESPONSE.equals(result)) {
+          CommandResponse result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey);
+          if (result.getReturnValue().equals(OKRESPONSE)) {
             // set up the default read access
             FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
             // give account guid read and write access to all fields in the new guid
             FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
             FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
-            return newGuid;
+            return new CommandResponse(newGuid);
           } else {
             return result;
           }
         }
       } else {
-        return BADRESPONSE + " " + BADSIGNATURE;
+        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
       }
     }
   }

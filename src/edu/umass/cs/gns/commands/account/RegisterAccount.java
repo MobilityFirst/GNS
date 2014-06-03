@@ -9,6 +9,7 @@ package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
@@ -44,7 +45,7 @@ public class RegisterAccount extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) { 
       return LNSToNSCommandRequestHandler.sendCommandRequest(json);
@@ -56,11 +57,11 @@ public class RegisterAccount extends GnsCommand {
       if (guid == null) {
         guid = ClientUtils.createGuidFromPublicKey(publicKey);
       }
-      String result = AccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password);
-      if (OKRESPONSE.equals(result)) {
+      CommandResponse result = AccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password);
+      if (result.getReturnValue().equals(OKRESPONSE)) {
         // set up the default read access
         FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
-        return guid;
+        return new CommandResponse(guid);
       } else {
         return result;
       }

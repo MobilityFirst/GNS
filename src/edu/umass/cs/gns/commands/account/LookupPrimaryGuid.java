@@ -8,6 +8,7 @@
 package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandDefs;
@@ -37,16 +38,16 @@ public class LookupPrimaryGuid extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json) throws JSONException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) {
       return LNSToNSCommandRequestHandler.sendCommandRequest(json);
     } else {
       String guid = json.getString(GUID);
       String result = AccountAccess.lookupPrimaryGuid(guid);
       if (result != null) {
-        return result;
+        return new CommandResponse(result);
       } else {
-        return BADRESPONSE + " " + BADGUID;
+        return new CommandResponse(BADRESPONSE + " " + BADGUID);
       }
     }
   }

@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.group;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -40,25 +41,13 @@ public class RetrieveGroupJoinRequests extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    return new JSONArray(GroupAccess.retrieveGroupJoinRequests(guid, guid, signature, message)).toString();
-//    GuidInfo guidInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return BADRESPONSE + " " + BADGUID + " " + guid;
-//    }
-//    if (!AccessSupport.verifySignature(guidInfo, signature, message)) {
-//      return BADRESPONSE + " " + BADSIGNATURE;
-//      // no need to verify ACL because only the GUID can access this
-//    } else {
-//      ResultValue values = GroupAccess.retrieveGroupJoinRequests(guid);
-//      JSONArray list = new JSONArray(values);
-//      return list.toString();
-//    }
+    return new CommandResponse(new JSONArray(GroupAccess.retrieveGroupJoinRequests(guid, guid, signature, message)).toString());
   }
 
   @Override

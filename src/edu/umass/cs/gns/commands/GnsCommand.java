@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.commands;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import java.security.InvalidKeyException;
@@ -54,7 +55,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
 
   public abstract String getCommandName();
 
-  public abstract String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public abstract CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException;
 
   /**

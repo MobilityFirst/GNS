@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.SystemParameter;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -39,17 +40,17 @@ public class GetParameter extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(NAME);
     if (module.isAdminMode()) {
       try {
-        return SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString();
+        return new CommandResponse(SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString());
       } catch (Exception e) {
         System.out.println("Problem getting parameter: " + e);
       }
     }
-    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + GETPARAMETER + " " + parameterString;
+    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + GETPARAMETER + " " + parameterString);
   }
 
   @Override

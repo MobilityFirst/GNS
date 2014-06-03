@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -37,13 +38,14 @@ public class CommandRequest {
     final JSONObject jsonFormattedCommand = packet.getCommand();
     addMessageWithoutSignatureToCommand(jsonFormattedCommand);
     final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    // This makes it work better which is weird because I thought we were in a separate worker thread from 
-    // the NIO message handling thread
+    // This makes it work which is weird because I thought we were in a separate worker thread from 
+    // the NIO message handling thread. Turns out not.
     (new Thread() {
+      @Override
       public void run() {
         try {
-          String returnValue = executeCommand(command, jsonFormattedCommand);
-          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue);
+          CommandResponse returnValue = executeCommand(command, jsonFormattedCommand);
+          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue.getReturnValue());
           GNS.getLogger().fine("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + GNS.CLIENTPORT + ": " + returnPacket.toString());
           handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), GNS.CLIENTPORT);
         } catch (JSONException e) {
@@ -68,26 +70,26 @@ public class CommandRequest {
     }
   }
 
-  public static String executeCommand(GnsCommand command, JSONObject json) {
+  public static CommandResponse executeCommand(GnsCommand command, JSONObject json) {
     try {
       if (command != null) {
         //GNS.getLogger().info("Executing command: " + command.toString());
         GNS.getLogger().fine("Executing command: " + command.toString() + " with " + json);
         return command.execute(json);
       } else {
-        return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + json.toString();
+        return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + json.toString());
       }
     } catch (JSONException e) {
       e.printStackTrace();
-      return BADRESPONSE + " " + JSONPARSEERROR + " " + e;
+      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e);
     } catch (NoSuchAlgorithmException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (InvalidKeySpecException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (SignatureException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (InvalidKeyException e) {
-      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     }
   }
 

@@ -10,6 +10,7 @@ package edu.umass.cs.gns.commands.admin;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.Admintercessor;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -43,7 +44,7 @@ public class ClearTagged extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
     for (String guid : Admintercessor.collectTaggedGuids(tagName)) {
@@ -52,7 +53,7 @@ public class ClearTagged extends GnsCommand {
         AccountAccess.removeAccount(accountInfo);
       }
     }
-    return OKRESPONSE;
+    return new CommandResponse(OKRESPONSE);
   }
 
   @Override

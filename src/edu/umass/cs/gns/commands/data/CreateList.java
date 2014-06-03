@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.data;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
@@ -41,7 +42,7 @@ public class CreateList extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -53,9 +54,9 @@ public class CreateList extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     NSResponseCode responseCode;
     if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message)).isAnError()) {
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     } else {
-      return BADRESPONSE + " " + responseCode.getProtocolCode();
+      return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
   }
 

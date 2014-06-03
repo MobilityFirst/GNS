@@ -8,6 +8,7 @@
 package edu.umass.cs.gns.commands.admin;
 
 import edu.umass.cs.gns.clientsupport.Admintercessor;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -39,16 +40,16 @@ public class DeleteAllRecords extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
       if (Admintercessor.sendDeleteAllRecords()) {
-        return OKRESPONSE;
+        return new CommandResponse(OKRESPONSE);
       } else {
-        return BADRESPONSE;
+        return new CommandResponse(BADRESPONSE);
       }
     }
-    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
+    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }
 
   @Override

@@ -28,73 +28,93 @@ public class FieldAccess {
   private static final String emptyJSONArrayString = new JSONArray().toString();
   private static final String emptyString = "";
 
-  public static String lookup(String guid, String key, String reader, String signature, String message) {
+  public static CommandResponse lookup(String guid, String key, String reader, String signature, String message) {
 
+    String resultString;
     QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
     if (result.isError()) {
-      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ResultValue value = result.get(key);
       if (value != null) {
-        return new JSONArray(value).toString();
+        resultString = new JSONArray(value).toString();
       } else {
-        return emptyJSONArrayString;
+        resultString = emptyJSONArrayString;
       }
     }
+    return new CommandResponse(resultString,
+            result.getErrorCode(),
+            result.getRoundTripTime(),
+            result.getResponder());
   }
 
-  public static String lookupMultipleValues(String guid, String key, String reader, String signature, String message) {
+  public static CommandResponse lookupMultipleValues(String guid, String key, String reader, String signature, String message) {
 
+    String resultString;
     QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
     if (result.isError()) {
-      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       try {
-         // pull out all the key pairs ignoring "system" (ie., non-user) fields
-        return result.getValuesMapSansInternalFields().toJSONObject().toString();
+        // pull out all the key pairs ignoring "system" (ie., non-user) fields
+        resultString = result.getValuesMapSansInternalFields().toJSONObject().toString();
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing multiple value return:" + e);
       }
-      return emptyJSONObjectString;
+      resultString = emptyJSONObjectString;
     }
+    return new CommandResponse(resultString,
+            result.getErrorCode(),
+            result.getRoundTripTime(),
+            result.getResponder());
   }
 
-  public static String lookupOne(String guid, String key, String reader, String signature, String message) {
+  public static CommandResponse lookupOne(String guid, String key, String reader, String signature, String message) {
 
+    String resultString;
     QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
     if (result.isError()) {
-      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ResultValue value = result.get(key);
       if (value != null && !value.isEmpty()) {
-        return (String) value.get(0);
+        resultString = (String) value.get(0);
       } else {
-        return emptyString;
+        resultString = emptyString;
       }
     }
+    return new CommandResponse(resultString,
+            result.getErrorCode(),
+            result.getRoundTripTime(),
+            result.getResponder());
   }
 
-  public static String lookupOneMultipleValues(String guid, String key, String reader, String signature, String message) {
+  public static CommandResponse lookupOneMultipleValues(String guid, String key, String reader, String signature, String message) {
 
+    String resultString;
     QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
     if (result.isError()) {
-      return Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       try {
         // pull out the first value of each key pair ignoring "system" (ie., non-user) fields
-        return result.getValuesMapSansInternalFields().toJSONObjectFirstOnes().toString();
+        resultString = result.getValuesMapSansInternalFields().toJSONObjectFirstOnes().toString();
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing multiple value return:" + e);
       }
-      return emptyJSONObjectString;
+      resultString = emptyJSONObjectString;
     }
+    return new CommandResponse(resultString,
+            result.getErrorCode(),
+            result.getRoundTripTime(),
+            result.getResponder());
   }
 
   public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue, int argument,
           UpdateOperation operation,
           String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, key, value, oldValue, argument, 
+    return Intercessor.sendUpdateRecord(guid, key, value, oldValue, argument,
             operation, writer, signature, message);
   }
 
@@ -103,55 +123,57 @@ public class FieldAccess {
     return Intercessor.sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.CREATE, writer, signature, message);
   }
 
-  public static String select(String key, Object value) {
+  public static CommandResponse select(String key, Object value) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, new NameRecordKey(key), value, null);
     if (result != null) {
-      return result;
+      return new CommandResponse(result);
     } else {
-      return emptyJSONArrayString;
+      return new CommandResponse(emptyJSONArrayString);
     }
   }
 
-  public static String selectWithin(String key, String value) {
+  public static CommandResponse selectWithin(String key, String value) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, new NameRecordKey(key), value, null);
     if (result != null) {
-      return result;
+      return new CommandResponse(result);
     } else {
-      return emptyJSONArrayString;
+      return new CommandResponse(emptyJSONArrayString);
     }
   }
 
-  public static String selectNear(String key, String value, String maxDistance) {
+  public static CommandResponse selectNear(String key, String value, String maxDistance) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, new NameRecordKey(key), value, maxDistance);
     if (result != null) {
-      return result;
+      return new CommandResponse(result);
     } else {
-      return emptyJSONArrayString;
+      return new CommandResponse(emptyJSONArrayString);
     }
   }
 
-  public static String selectQuery(String query) {
+  public static CommandResponse selectQuery(String query) {
     String result = SelectHandler.sendSelectQuery(query);
     if (result != null) {
-      return result;
+      return new CommandResponse(result);
     } else {
-      return emptyJSONArrayString;
+      return new CommandResponse(emptyJSONArrayString);
     }
   }
-  public static String selectGroupSetupQuery(String query, String guid) {
+
+  public static CommandResponse selectGroupSetupQuery(String query, String guid) {
     String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid);
     if (result != null) {
-      return result;
+      return new CommandResponse(result);
     } else {
-      return emptyJSONArrayString;
+      return new CommandResponse(emptyJSONArrayString);
     }
   }
-  public static String selectGroupLookupQuery(String guid) {
+
+  public static CommandResponse selectGroupLookupQuery(String guid) {
     String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid);
     if (result != null) {
-      return result;
+      return new CommandResponse(result);
     } else {
-      return emptyJSONArrayString;
+      return new CommandResponse(emptyJSONArrayString);
     }
   }
   public static String Version = "$Revision$";

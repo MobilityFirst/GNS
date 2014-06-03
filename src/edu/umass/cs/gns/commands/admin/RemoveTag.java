@@ -9,6 +9,7 @@ package edu.umass.cs.gns.commands.admin;
 
 import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -41,7 +42,7 @@ public class RemoveTag extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String tag = json.getString(NAME);
@@ -50,12 +51,12 @@ public class RemoveTag extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-      return BADRESPONSE + " " + BADGUID + " " + guid;
+      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
     }
     if (AccessSupport.verifySignature(guidInfo, signature, message)) {
       return AccountAccess.removeTag(guidInfo, tag);
     } else {
-      return BADRESPONSE + " " + BADSIGNATURE;
+      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
     }
   }
 

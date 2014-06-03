@@ -8,6 +8,7 @@
 package edu.umass.cs.gns.commands.admin;
 
 import edu.umass.cs.gns.clientsupport.Admintercessor;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -35,11 +36,11 @@ public class Dump extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json) throws JSONException {
     if (module.isAdminMode()) {
       return Admintercessor.sendDump();
     }
-    return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName();
+    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }
 
   @Override

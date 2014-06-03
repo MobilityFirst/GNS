@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -41,7 +42,7 @@ public class AclAdd extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -53,23 +54,23 @@ public class AclAdd extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
+      return new CommandResponse(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     NSResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(access, guid, field, accesser, writer, signature, message)).isAnError()) {
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     } else {
-      return responseCode.getProtocolCode();
+      return new CommandResponse(responseCode.getProtocolCode());
     }
 //    GuidInfo guidInfo;
 //    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
 //    }
 //    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
 //      FieldMetaData.add(access, guidInfo, field, accesser);
-//      return OKRESPONSE;
+//      return new CommandResponse(OKRESPONSE);
 //    } else {
-//      return BADRESPONSE + " " + BADSIGNATURE;
+//      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
 //    }
   }
 

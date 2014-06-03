@@ -192,14 +192,14 @@ public class AccountAccess {
   private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server at %s.\n"
           + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
 
-  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
-    String response;
-    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).equals(OKRESPONSE)) {
+  public static CommandResponse addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
+    CommandResponse response;
+    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).getReturnValue().equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
         String verifyCode = createVerificationCode(name);
         AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
         if (accountInfo == null) {
-          return BADRESPONSE + " " + BADACCOUNT + " " + guid;
+          return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
         }
         accountInfo.setVerificationCode(verifyCode);
         accountInfo.noteUpdate();
@@ -210,17 +210,17 @@ public class AccountAccess {
                   Email.ACCOUNT_CONTACT_EMAIL,
                   String.format(ADMIN_NOTICE, name, host, guid));
           if (emailOK) {
-            return OKRESPONSE;
+            return new CommandResponse(OKRESPONSE);
           } else {
             // if we can't send the confirmation back out of the account creation
             removeAccount(accountInfo);
-            return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send email";
+            return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send email");
           }
         } else {
           // Account info could not be updated.
           // If we're here we're probably hosed anyway, but just in case try to remove the account
           removeAccount(accountInfo);
-          return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
+          return new CommandResponse(BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
         }
       }
     }
@@ -236,30 +236,30 @@ public class AccountAccess {
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 
-  public static String verifyAccount(String guid, String code) {
+  public static CommandResponse verifyAccount(String guid, String code) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid)) == null) {
-      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
-      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified");
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
-      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code");
     }
     if ((new Date()).getTime() - accountInfo.getCreated().getTime() > TWO_HOURS_IN_MILLESECONDS) {
-      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account code no longer valid";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account code no longer valid");
     }
     if (!accountInfo.getVerificationCode().equals(code)) {
-      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct");
     }
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo)) {
-      return Defs.OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
+      return new CommandResponse(Defs.OKRESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
-      return Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info";
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
     }
 
   }
@@ -281,7 +281,7 @@ public class AccountAccess {
    * @param password
    * @return status result
    */
-  public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
+  public static CommandResponse addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
@@ -296,18 +296,18 @@ public class AccountAccess {
         if (!Intercessor.sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
-          return OKRESPONSE;
+          return new CommandResponse(OKRESPONSE);
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           Intercessor.sendRemoveRecord(name);
-          return BADRESPONSE + " " + DUPLICATEGUID;
+          return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID);
         }
       } else {
-        return BADRESPONSE + " " + DUPLICATENAME;
+        return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
       }
     } catch (JSONException e) {
-      return BADRESPONSE + " " + JSONPARSEERROR;
+      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR);
     }
   }
 
@@ -317,7 +317,7 @@ public class AccountAccess {
    * @param accountInfo
    * @return status result
    */
-  public static String removeAccount(AccountInfo accountInfo) {
+  public static CommandResponse removeAccount(AccountInfo accountInfo) {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid());
     // Then remove the HRN link
@@ -336,9 +336,9 @@ public class AccountAccess {
       }
 
       // all is well
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     } else {
-      return BADRESPONSE + " " + BADACCOUNT;
+      return new CommandResponse(BADRESPONSE + " " + BADACCOUNT);
     }
   }
 
@@ -356,11 +356,11 @@ public class AccountAccess {
    * @param publicKey - the public key to use with the new account
    * @return status result
    */
-  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
+  public static CommandResponse addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid) != null) {
-        return BADRESPONSE + " " + DUPLICATEGUID;
+        return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID);
       }
       // do this first so if there is an execption we don't have to back out of anything
       ResultValue guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
@@ -377,14 +377,14 @@ public class AccountAccess {
           // add a link the new GUID to primary GUID
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.CREATE);
-          return OKRESPONSE;
+          return new CommandResponse(OKRESPONSE);
         }
       }
       // otherwise roll it back
       accountInfo.removeGuid(guid);
-      return BADRESPONSE + " " + DUPLICATENAME;
+      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
     } catch (JSONException e) {
-      return BADRESPONSE + " " + JSONPARSEERROR;
+      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR);
     }
   }
 
@@ -395,7 +395,7 @@ public class AccountAccess {
    * @param accountInfo
    * @return
    */
-  public static String removeGuid(GuidInfo guid) {
+  public static CommandResponse removeGuid(GuidInfo guid) {
     return removeGuid(guid, null, false);
   }
 
@@ -406,7 +406,7 @@ public class AccountAccess {
    * @param guid
    * @return status result
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo) {
+  public static CommandResponse removeGuid(GuidInfo guid, AccountInfo accountInfo) {
     return removeGuid(guid, accountInfo, false);
   }
 
@@ -421,11 +421,11 @@ public class AccountAccess {
    * @param ignoreAccountGuid
    * @return
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid) {
+  public static CommandResponse removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid) {
     // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuid(guid.getGuid()) != null) {
-        return BADRESPONSE + " " + BADGUID + " " + guid.getGuid() + " is an account guid";
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid.getGuid() + " is an account guid");
       }
     }
     // Fill in a missing account info
@@ -433,10 +433,10 @@ public class AccountAccess {
       String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid());
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-        return BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " does not have a primary account guid";
+        return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " does not have a primary account guid");
       }
       if ((accountInfo = lookupAccountInfoFromGuid(accountGuid)) == null) {
-        return BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid;
+        return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid);
       }
     }
     // First remove any group links
@@ -448,19 +448,19 @@ public class AccountAccess {
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
-        return OKRESPONSE;
+        return new CommandResponse(OKRESPONSE);
       } else {
         // update the account guid to know that we deleted the guid
         accountInfo.removeGuid(guid.getGuid());
         accountInfo.noteUpdate();
         if (updateAccountInfo(accountInfo)) {
-          return OKRESPONSE;
+          return new CommandResponse(OKRESPONSE);
         } else {
-          return BADRESPONSE + " " + UPDATEERROR;
+          return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
         }
       }
     } else {
-      return BADRESPONSE + " " + BADGUID;
+      return new CommandResponse(BADRESPONSE + " " + BADGUID);
     }
   }
 
@@ -474,23 +474,23 @@ public class AccountAccess {
    * @param alias
    * @return status result
    */
-  public static String addAlias(AccountInfo accountInfo, String alias) {
+  public static CommandResponse addAlias(AccountInfo accountInfo, String alias) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
 
     // insure that that name does not already exist
     if (!Intercessor.sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       if (updateAccountInfo(accountInfo)) {
-        return OKRESPONSE;
+        return new CommandResponse(OKRESPONSE);
       } else { // back out if we got an error
         Intercessor.sendRemoveRecord(alias);
         accountInfo.removeAlias(alias);
-        return BADRESPONSE + " " + BADALIAS;
+        return new CommandResponse(BADRESPONSE + " " + BADALIAS);
       }
     }
     // roll this back
     accountInfo.removeAlias(alias);
-    return BADRESPONSE + " " + DUPLICATENAME;
+    return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
   }
 
   /**
@@ -500,21 +500,21 @@ public class AccountAccess {
    * @param alias
    * @return status result
    */
-  public static String removeAlias(AccountInfo accountInfo, String alias) {
+  public static CommandResponse removeAlias(AccountInfo accountInfo, String alias) {
 
     if (accountInfo.containsAlias(alias)) {
       // remove the NAME -> GUID record
       NSResponseCode responseCode;
       if ((responseCode = Intercessor.sendRemoveRecord(alias)).isAnError()) {
-        return BADRESPONSE + " " + responseCode.getProtocolCode();
+        return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
       }
       accountInfo.removeAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo)) {
-        return OKRESPONSE;
+        return new CommandResponse(OKRESPONSE);
       }
     }
-    return BADRESPONSE + " " + BADALIAS;
+    return new CommandResponse(BADRESPONSE + " " + BADALIAS);
   }
 
   /**
@@ -524,13 +524,13 @@ public class AccountAccess {
    * @param password
    * @return status result
    */
-  public static String setPassword(AccountInfo accountInfo, String password) {
+  public static CommandResponse setPassword(AccountInfo accountInfo, String password) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo)) {
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     }
-    return BADRESPONSE + " " + UPDATEERROR;
+    return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
   }
 
   /**
@@ -540,14 +540,14 @@ public class AccountAccess {
    * @param tag
    * @return status result
    */
-  public static String addTag(GuidInfo guidInfo, String tag) {
+  public static CommandResponse addTag(GuidInfo guidInfo, String tag) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     }
     guidInfo.removeTag(tag);
-    return BADRESPONSE + " " + UPDATEERROR;
+    return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
   }
 
   /**
@@ -557,13 +557,13 @@ public class AccountAccess {
    * @param tag
    * @return status result
    */
-  public static String removeTag(GuidInfo guidInfo, String tag) {
+  public static CommandResponse removeTag(GuidInfo guidInfo, String tag) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo)) {
-      return OKRESPONSE;
+      return new CommandResponse(OKRESPONSE);
     }
-    return BADRESPONSE + " " + UPDATEERROR;
+    return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
   }
 
   private static boolean updateAccountInfo(AccountInfo accountInfo) {

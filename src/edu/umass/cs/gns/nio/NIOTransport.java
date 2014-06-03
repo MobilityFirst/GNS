@@ -576,7 +576,7 @@ public class NIOTransport implements Runnable {
 		serverChannel.configureBlocking(false);
 
 		// Bind the server socket to the specified address and port
-		if (DEBUG) log.fine("Node " + myID + " listening on " + this.nodeConfig.getNodeAddress(this.myID)
+		log.info("Node " + myID + " listening on " + this.nodeConfig.getNodeAddress(this.myID)
 				+ ":" + this.nodeConfig.getNodePort(this.myID));
 		InetSocketAddress isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
 				this.nodeConfig.getNodePort(this.myID));

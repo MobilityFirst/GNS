@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.data;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
@@ -33,11 +34,11 @@ public class Help extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) {
-    return "Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
+  public CommandResponse execute(JSONObject json) {
+    return new CommandResponse("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
             + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
             + "Commands:" + NEWLINE
-            + module.allCommandDescriptionsForHTML();
+            + module.allCommandDescriptionsForHTML());
   }
 
   @Override

@@ -34,12 +34,12 @@ public class LNSToNSCommandRequestHandler {
    * @param command
    * @return 
    */
-  public static String sendCommandRequest(JSONObject command) {
+  public static CommandResponse sendCommandRequest(JSONObject command) {
     int id = nextRequestID();
     return sendCommandHelper(id, new LNSToNSCommandPacket(id, LocalNameServer.getNodeID(), command)); 
   }
   
-  private static String sendCommandHelper(int id, LNSToNSCommandPacket commandPacket) {
+  private static CommandResponse sendCommandHelper(int id, LNSToNSCommandPacket commandPacket) {
     try {
       GNS.getLogger().info("Sending CommandPacket #" + id + " to Intercessor");
       Intercessor.injectPacketIntoLNSQueue(commandPacket.toJSONObject());
@@ -50,7 +50,7 @@ public class LNSToNSCommandRequestHandler {
     }
     waitForResponsePacket(id);
     LNSToNSCommandPacket packet = resultsMap.get(id);
-    return packet.getReturnValue();
+    return new CommandResponse(packet.getReturnValue());
   }
   
   /**

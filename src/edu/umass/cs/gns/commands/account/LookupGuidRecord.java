@@ -8,6 +8,7 @@
 package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
@@ -38,23 +39,23 @@ public class LookupGuidRecord extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json) throws JSONException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) {
       return LNSToNSCommandRequestHandler.sendCommandRequest(json);
     } else {
       String guid = json.getString(GUID);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-        return BADRESPONSE + " " + BADGUID + " " + guid;
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
       if (guidInfo != null) {
         try {
-          return guidInfo.toJSONObject().toString();
+          return new CommandResponse(guidInfo.toJSONObject().toString());
         } catch (JSONException e) {
-          return BADRESPONSE + " " + JSONPARSEERROR;
+          return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR);
         }
       } else {
-        return BADRESPONSE + " " + BADGUID + " " + guid;
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
     }
   }

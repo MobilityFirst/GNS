@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.data;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
@@ -35,7 +36,7 @@ public class SelectGroupSetupQuery extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json) throws JSONException {
     String guid = json.getString(GUID);
     String query = json.getString(QUERY);
     return FieldAccess.selectGroupSetupQuery(query, guid);

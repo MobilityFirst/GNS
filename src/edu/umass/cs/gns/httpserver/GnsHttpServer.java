@@ -162,27 +162,7 @@ public class GnsHttpServer {
     
     // Now we execute the command
     GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    return CommandRequest.executeCommand(command, jsonFormattedCommand);
-//    try {
-//      if (command != null) {
-//        GNS.getLogger().info("Executing command: " + command.toString());
-//        //GNS.getLogger().info("Executing command: " + command.toString() + " with " + json);
-//        return command.execute(jsonFormattedCommand);
-//      } else {
-//        return BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + action + QUERYPREFIX + queryString;
-//      }
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//      return BADRESPONSE + " " + JSONPARSEERROR + " " + e;
-//    } catch (NoSuchAlgorithmException e) {
-//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-//    } catch (InvalidKeySpecException e) {
-//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-//    } catch (SignatureException e) {
-//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-//    } catch (InvalidKeyException e) {
-//      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
-//    }
+    return CommandRequest.executeCommand(command, jsonFormattedCommand).getReturnValue();
   }
  
  

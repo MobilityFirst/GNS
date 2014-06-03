@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
@@ -41,7 +42,7 @@ public class AclRetrieve extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -52,18 +53,18 @@ public class AclRetrieve extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString();
+      return new CommandResponse(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
-    return new JSONArray(FieldMetaData.lookup(access, guid, field, reader, signature, message)).toString();
+    return new CommandResponse(new JSONArray(FieldMetaData.lookup(access, guid, field, reader, signature, message)).toString());
 //    GuidInfo guidInfo;
 //    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return BADRESPONSE + " " + BADGUID + " " + guid;
+//      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
 //    }
 //    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
 //      Set<String> values = FieldMetaData.lookup(access, guidInfo, field);
 //      return new JSONArray(values).toString();
 //    } else {
-//      return BADRESPONSE + " " + BADSIGNATURE;
+//      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
 //    }
   }
 

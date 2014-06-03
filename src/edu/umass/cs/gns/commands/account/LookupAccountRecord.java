@@ -9,6 +9,7 @@ package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
+import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandDefs;
@@ -38,23 +39,23 @@ public class LookupAccountRecord extends GnsCommand {
   }
 
   @Override
-  public String execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json) throws JSONException {
     if (CommandDefs.handleAcccountCommandsAtNameServer) {
       return LNSToNSCommandRequestHandler.sendCommandRequest(json);
     } else {
       String guid = json.getString(GUID);
       AccountInfo acccountInfo;
       if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid)) == null) {
-        return BADRESPONSE + " " + BADACCOUNT + " " + guid;
+        return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
       }
       if (acccountInfo != null) {
         try {
-          return acccountInfo.toJSONObject().toString();
+          return new CommandResponse(acccountInfo.toJSONObject().toString());
         } catch (JSONException e) {
-          return BADRESPONSE + " " + JSONPARSEERROR;
+          return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR);
         }
       } else {
-        return BADRESPONSE + " " + BADGUID + " " + guid;
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
     }
   }
