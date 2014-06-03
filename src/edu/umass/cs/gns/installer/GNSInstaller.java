@@ -13,6 +13,7 @@ import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -128,7 +129,8 @@ public class GNSInstaller {
    * @param hostname
    * @param action
    */
-  public static void updateAndRunGNS(int id, String hostname, UpdateAction action, boolean removeLogs, boolean deleteDatabase, boolean firstInstall) {
+  public static void updateAndRunGNS(int id, String hostname, UpdateAction action, boolean removeLogs,
+          boolean deleteDatabase, boolean firstInstall) throws UnknownHostException {
     System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
     killAllServers(id, hostname);
     if (removeLogs) {
@@ -253,13 +255,14 @@ public class GNSInstaller {
    * @param hostname
    * @param keyFile
    */
-  private static void writeNSFile(String hostname) {
+  private static void writeNSFile(String hostname) throws UnknownHostException {
     StringBuilder result = new StringBuilder();
     //HostID IsNS? IPAddress [StartingPort | - ] Ping-Latency Latitude Longitude
     // WRITE OUT NSs
     for (HostInfo info : hostTable.values()) {
       result.append(info.getId());
       result.append(" yes ");
+      //result.append(info.getHostIP());
       result.append(info.getHostname());
       result.append(" default ");
       result.append(" 0 ");
@@ -272,6 +275,7 @@ public class GNSInstaller {
     for (HostInfo info : hostTable.values()) {
       result.append(getLNSId(info.getId()));
       result.append(" no ");
+      //result.append(info.getHostIP());
       result.append(info.getHostname());
       result.append(" default ");
       result.append(" 0 ");
@@ -287,15 +291,9 @@ public class GNSInstaller {
   // Probably unnecessary at this point.
   private static void updateNodeConfigAndSendOutServerInit() {
     GNSNodeConfig nodeConfig = new GNSNodeConfig();
-    // update the config info so know where to send stuff
-//    try {
     for (HostInfo info : hostTable.values()) {
-//        InetAddress ipAddress = InetAddress.getByName();
       nodeConfig.addHostInfo(info.getId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
     }
-//    } catch (UnknownHostException e) {
-//      System.err.println("Problem parsing IP address " + e);
-//    }
     // now we send out packets telling all the hosts where to send their status updates
     StatusListener.sendOutServerInitPackets(nodeConfig, hostTable.keySet());
   }
@@ -414,7 +412,7 @@ public class GNSInstaller {
 
       System.out.println("Config name: " + configName);
       if (configName != null) {
-        if(!loadConfig(configName)) {
+        if (!loadConfig(configName)) {
           System.exit(1);
         }
       }
@@ -474,7 +472,11 @@ public class GNSInstaller {
 
     @Override
     public void run() {
-      GNSInstaller.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, firstInstall);
+      try {
+        GNSInstaller.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, firstInstall);
+      } catch (UnknownHostException e) {
+        GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
+      }
     }
   }
 

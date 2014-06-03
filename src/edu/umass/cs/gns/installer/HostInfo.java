@@ -9,6 +9,8 @@
 package edu.umass.cs.gns.installer;
 
 import java.awt.geom.Point2D;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Information about instances that have started
@@ -30,6 +32,10 @@ class HostInfo {
 
   public String getHostname() {
     return hostname;
+  }
+  
+  public String getHostIP() throws UnknownHostException{
+    return InetAddress.getByName(hostname).getHostAddress();
   }
 
   public Point2D getLocation() {
