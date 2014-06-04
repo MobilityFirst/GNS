@@ -1,0 +1,23 @@
+#Mulitplexing of Links 
+
+set ns [new Simulator] 
+source tb_compat.tcl 
+
+set maxnodes 7
+set router [$ns node]
+tb-set-node-os $router FEDORA15-STD
+
+tb-set-vlink-emulation vlan
+
+for {set i 1} {$i <= $maxnodes} {incr i} { 
+     set node($i) [$ns node] 
+     tb-set-node-os $node($i) FEDORA15-STD
+     set link($i) [$ns duplex-link $node($i) $router 30Mb 10ms DropTail]
+     tb-set-multiplexed $link($i) 1 
+} 
+
+
+# Turn on routing.
+$ns rtproto Static
+$ns run 
+#netbuild-generated ns file ends. 
