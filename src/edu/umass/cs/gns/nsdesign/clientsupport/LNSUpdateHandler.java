@@ -65,7 +65,7 @@ public class LNSUpdateHandler {
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurableInterface activeReplica) {
-    GNS.getLogger().info("Node " + activeReplica.getNodeID() + "; Sending update: " + name + " : " + key + "->" + newValue.toString());
+    GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending update: " + name + " : " + key + "->" + newValue.toString());
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingUpdates.put(id, id);
@@ -86,7 +86,7 @@ public class LNSUpdateHandler {
             -1, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
     try {
-      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending update " + updateId + " to " + recipientId
+      GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending update " + updateId + " to " + recipientId
               + "(" + activeReplica.getGNSNodeConfig().getNodeAddress(recipientId)
               + ":" + activeReplica.getGNSNodeConfig().getNodePort(recipientId) + ")"
               + " for " + name + " / " + key + ": " + packet.toJSONObject());
@@ -103,7 +103,7 @@ public class LNSUpdateHandler {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
     int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
-    GNS.getLogger().info("++++++++++ Node " + activeReplica.getNodeID() + "; Sending add: " + name + " : " + key +"->" + value + " to LNS " + recipientId);
+    GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID() + "; Sending add: " + name + " : " + key +"->" + value + " to LNS " + recipientId);
     AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, new NameRecordKey(key), value, -1, GNS.DEFAULT_TTL_SECONDS);
     try {
       activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
@@ -122,7 +122,7 @@ public class LNSUpdateHandler {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
     int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
-    GNS.getLogger().info("----------- Node " + activeReplica.getNodeID() + "; Sending remove: " + name + " to LNS " + recipientId);
+    GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID() + "; Sending remove: " + name + " to LNS " + recipientId);
     RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, -1);
     try {
       activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
@@ -149,7 +149,7 @@ public class LNSUpdateHandler {
       //Packet is a response and does not have a response error
       synchronized (monitor) {
         if (outStandingUpdates.remove(id) != null) {
-          GNS.getLogger().info("First Update Response (" + id + ") Successful Received");
+          GNS.getLogger().fine("First Update Response (" + id + ") Successful Received");
 
           updateResultMap.put(id, packet.getResponseCode());
           monitor.notifyAll();
@@ -160,7 +160,7 @@ public class LNSUpdateHandler {
     } else {
       synchronized (monitor) {
         if (outStandingUpdates.remove(id) != null) {
-          GNS.getLogger().info("First Error Update Response (" + id + ") Error Received: " + packet.getResponseCode().toString());
+          GNS.getLogger().fine("First Error Update Response (" + id + ") Error Received: " + packet.getResponseCode().toString());
           updateResultMap.put(id, packet.getResponseCode());
           monitor.notifyAll();
         } else {

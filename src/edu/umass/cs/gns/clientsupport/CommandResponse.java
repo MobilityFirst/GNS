@@ -3,10 +3,8 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.util.NSResponseCode;
 
 /**
- * Packet format back to the client by local name server in response to a CommandPacket.
- *
- * THIS WILL BE CHANGED WHEN WE GO TO THE NEW FULLY DEEP JSON DATA REPRESENTATION.
- * IN PARTICULAR THE RETURN VALUE WILL MOST LIKELY BECOME A JSON OBJECT INSTEAD OF A STRING.
+ * Encapsulates the response values and instrumentation that we pass back from the 
+ * Local Name Server to the client.
  */
 public class CommandResponse {
 

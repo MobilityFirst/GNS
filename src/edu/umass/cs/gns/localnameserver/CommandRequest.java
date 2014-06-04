@@ -45,7 +45,7 @@ public class CommandRequest {
       public void run() {
         try {
           CommandResponse returnValue = executeCommand(command, jsonFormattedCommand);
-          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue.getReturnValue());
+          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue);
           GNS.getLogger().fine("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + GNS.CLIENTPORT + ": " + returnPacket.toString());
           handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), GNS.CLIENTPORT);
         } catch (JSONException e) {
