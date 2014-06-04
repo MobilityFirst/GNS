@@ -15,9 +15,14 @@ public class RequestHandlerParameters {
    */
   private boolean experimentMode = false;
   /**
-   * If this is true we use fake ping latencies.
+   * If this is true, we emulate wide-area latencies for packets sent between nodes. The latencies values from this
+   * node to a different node come from ping latencies that are given in the config file.
    */
   private boolean emulatePingLatencies = false;
+  /**
+   * The variation in emulated ping latencies.
+   */
+  private double variation = 0.1;
   /**
    * Whether use a fixed timeout or an adaptive timeout. By default, fixed timeout is used.
    */
@@ -47,10 +52,11 @@ public class RequestHandlerParameters {
    */
   private ReplicationFrameworkType replicationFramework;
 
-  public RequestHandlerParameters(boolean debugMode, boolean experimentMode, boolean emulatePingLatencies, boolean adaptiveTimeout, double outputSampleRate, int queryTimeout, int maxQueryWaitTime, int cacheSize, boolean loadDependentRedirection, ReplicationFrameworkType replicationFramework) {
+  public RequestHandlerParameters(boolean debugMode, boolean experimentMode, boolean emulatePingLatencies, double variation, boolean adaptiveTimeout, double outputSampleRate, int queryTimeout, int maxQueryWaitTime, int cacheSize, boolean loadDependentRedirection, ReplicationFrameworkType replicationFramework) {
     this.debugMode = debugMode;
     this.experimentMode = experimentMode;
     this.emulatePingLatencies = emulatePingLatencies;
+    this.variation = variation;
     this.adaptiveTimeout = adaptiveTimeout;
     this.outputSampleRate = outputSampleRate;
     this.queryTimeout = queryTimeout;
@@ -70,6 +76,10 @@ public class RequestHandlerParameters {
 
   public boolean isEmulatePingLatencies() {
     return emulatePingLatencies;
+  }
+
+  public double getVariation() {
+    return variation;
   }
 
   public boolean isAdaptiveTimeout() {

@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -15,14 +17,19 @@ import java.util.TimerTask;
  * TBD: Need to figure out how to use StartNameServer's emulated latencies.
  */
 public class GNSDelayEmulator {
+  public static final String DELAY_STR = "_delay";
 
 	private static boolean EMULATE_DELAYS = false;
 	private static double VARIATION = 0.1; // 10% variation in latency
 	private static boolean USE_CONFIG_FILE_INFO = false; // Enable this after figuring out how to use config file
 	private static long DEFAULT_DELAY = 100; // 100ms
 	private static GNSNodeConfig gnsNodeConfig = null; // node config object to get ping latencies for emulation.
+
+
 	private static final Timer timer = new Timer();
 
+  /* Use the putEmulatedDelay, and getEmulatedDelay methods for emulation. So, this class is not needed. */
+  @Deprecated
 	private static class DelayerTask extends TimerTask {
 
 		JSONObject json;
@@ -45,6 +52,10 @@ public class GNSDelayEmulator {
 		}
 	}
 
+  /* Use the putEmulatedDelay, and getEmulatedDelay methods for emulation.
+   * Emulating delays at sender side prevents GNSNIOTransport.sendToID from returning
+   * the correct return value. */
+  @Deprecated
 	public static int sendWithDelay(GNSNIOTransport niot, int id, JSONObject jsonData) throws IOException {
 		int written = 0;
 		if (GNSDelayEmulator.EMULATE_DELAYS) {
@@ -65,10 +76,39 @@ public class GNSDelayEmulator {
 		GNSDelayEmulator.USE_CONFIG_FILE_INFO = true;
 		GNSDelayEmulator.gnsNodeConfig = gnsNodeConfig;
 	}
+
 	public static boolean isDelayEmulated() {
 		return EMULATE_DELAYS;
 	}
-	private static long getDelay(int id) {
+
+
+  /* Sender calls this method to put delay value in the json object before json object is sent.*/
+  public static void putEmulatedDelay(int id, JSONObject jsonData) {
+    if (GNSDelayEmulator.EMULATE_DELAYS) {
+      try {
+        jsonData.put(DELAY_STR, getDelay(id));
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  /* Receiver calls this method to get delay that is to be emulated, and delays processing the packet by that amount.
+  * We put the delay to be emulated inside the json at the sender side because the receiver side does not know which
+  * node ID sent the packet, and hence cannot know how much to delay the packet */
+  public static long getEmulatedDelay(JSONObject jsonData){
+    if (GNSDelayEmulator.EMULATE_DELAYS) {
+      try {
+        return jsonData.getLong(DELAY_STR);
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    }
+    return -1;
+  }
+
+
+  private static long getDelay(int id) {
 		long delay = 0;
 		if (GNSDelayEmulator.EMULATE_DELAYS) {
 			if (GNSDelayEmulator.USE_CONFIG_FILE_INFO) {

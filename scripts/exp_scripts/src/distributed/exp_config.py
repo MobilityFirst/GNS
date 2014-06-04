@@ -26,7 +26,7 @@ db_folder = '/home/ec2-user/gnsdb/'  # remote folder where mongodb will store it
 mongo_sleep = 20
 ns_sleep = 10
 experiment_run_time = 60  # duration for which requests are sent
-extra_wait = 30
+extra_wait = 20
 
 failed_nodes = None
 
@@ -94,12 +94,12 @@ max_log_name = int(output_sample_rate * (regular_workload + mobile_workload))
 
 ##################### LOGGING #########################
 
-# if True, more detailed log messages are printed
-is_debug_mode = True
+# if True, log output is more verbose.
+is_debug_mode = False
 
-nslog = 'INFO'
+nslog = 'WARNING'
 nslogstat = 'FINE'  # records write propagation times
-lnslog = 'INFO'
+lnslog = 'WARNING'
 lnslogstat = 'FINE'
 
 

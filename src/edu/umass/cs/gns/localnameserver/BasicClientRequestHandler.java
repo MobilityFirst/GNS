@@ -11,6 +11,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
+import edu.umass.cs.gns.nio.GNSDelayEmulator;
 import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
@@ -100,7 +101,11 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
 
     GNS.getLogger().info("LNS listener started.");
     GNSNIOTransport gnsNiot = new GNSNIOTransport(nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
+    if (parameters.isEmulatePingLatencies()) {
+      GNSDelayEmulator.emulateConfigFileDelays(getGnsNodeConfig(), parameters.getVariation());
+    }
     new Thread(gnsNiot).start();
+
     return new GnsMessenger(nodeID, gnsNiot, executorService);
   }
 

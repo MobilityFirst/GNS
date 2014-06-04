@@ -232,7 +232,7 @@ class FeatureTestLocal(TestSetupLocal):
         """For 1 name, measure read and write latencies while emulating wide-area latency between nodes"""
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies', True)
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulation_type', local.exp_config.CONSTANT_DELAY)
-        request_rate = 50
+        request_rate = 100
         duration = 30
         output_stats = self.run_exp_reads_writes(request_rate, duration)
         print 'Read latency (90-percentile)', output_stats.read_perc90, 'ms', 'Write latency (90-percentile)', \
@@ -522,7 +522,7 @@ class FeatureTestLocal(TestSetupLocal):
     def test_l_dynamic_replication(self):
         """ Test dynamic replication in GNS based on read rate, write rate, and geo-distribution of LNS"""
         self.config_parse.set(ConfigParser.DEFAULTSECT, "replication_interval", str(10))
-        request_rate = 100
+        request_rate = 1000
         duration = 50
         self.run_exp_reads_writes(request_rate, duration)
 
@@ -536,8 +536,8 @@ class FeatureTestLocal(TestSetupLocal):
 
     def test_n_read_writes_groupchanges(self):
         """ Tests a workload where reads and writes for 1 name are inter-mixed with group changes"""
-        request_rate = 100
-        duration = 60
+        request_rate = 1000
+        duration = 50
         group_change_interval = 1
         self.run_exp_reads_writes_groupchanges(request_rate, duration, group_change_interval)
 
@@ -607,7 +607,6 @@ class FeatureTestLocal(TestSetupLocal):
         output_stats = self.run_exp(requests)
 
         self.assertEqual(output_stats.requests, 2 + (2*n + 1) * num_group_changes, "Total number of requests mismatch")
-        # some read and write can fail at start of test while name is being added
         self.assertEqual(output_stats.success, 2 + (2*n + 1) * num_group_changes, "Successful requests mismatch")
         self.assertEqual(output_stats.read, n*num_group_changes, "Successful reads mismatch")
         self.assertEqual(output_stats.write, n*num_group_changes, "Successful writes mismatch")

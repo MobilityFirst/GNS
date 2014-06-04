@@ -82,6 +82,7 @@ public class LocalNameServer {
     RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
             StartLocalNameServer.experimentMode,
             StartLocalNameServer.emulatePingLatencies,
+            StartLocalNameServer.variation,
             StartLocalNameServer.adaptiveTimeout,
             StartLocalNameServer.outputSampleRate,
             StartLocalNameServer.queryTimeout,

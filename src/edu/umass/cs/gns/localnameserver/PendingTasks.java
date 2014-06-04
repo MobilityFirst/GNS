@@ -67,7 +67,7 @@ public class PendingTasks {
       // if we get invalid active error a second time or later, it means the set of active replicas is being changed
       // and the new active replica has not received this information. Therefore, we will wait for a timeout value before
       // sending requests again.
-      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout;
+      long initialDelay = 0; // (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout;
       requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
         GNS.getLogger().fine("Active request queued: " + requestID);

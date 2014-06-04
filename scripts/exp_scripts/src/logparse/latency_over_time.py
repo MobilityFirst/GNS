@@ -49,6 +49,8 @@ def latency_over_time(tuples_file):
 def throughput_over_time_bin(tuples_file):
     """ List of successful requests in each time window
     """
+    print 'MESSAGE: Not calculating throughput over time, as this is buggy!!!!'
+    return
     bin_duration = 5  # seconds
     num_bins = 2000  # assuming no experiment is more than 10000 sec
     req_by_time = [0] * num_bins
@@ -61,6 +63,7 @@ def throughput_over_time_bin(tuples_file):
         tokens = line.split()
         if tokens[5] == 'w' or tokens[5] == 'r' or tokens[5] == 'a' or tokens[5] == 'd':
             t = int(float(tokens[6]) / 1000.0 / bin_duration)
+            print 'T = ', t, ' Time value:', tokens[6]
             if t >= 0:
                 assert len(req_by_time) > t
                 req_by_time[t] += 1

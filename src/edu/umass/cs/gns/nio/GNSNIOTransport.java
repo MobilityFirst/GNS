@@ -69,12 +69,10 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 	 */
 	@Override
 	public int sendToID(int id, JSONObject jsonData) throws IOException {
-		int written = 0;
 		if(GNSDelayEmulator.isDelayEmulated()) {
-			written = GNSDelayEmulator.sendWithDelay(this, id, jsonData); 
-		} 
-		else written = sendToIDActual(id, jsonData);
-		return written;
+      GNSDelayEmulator.putEmulatedDelay(id, jsonData);
+		}
+		return sendToIDActual(id, jsonData);
 	}
 
 	/**

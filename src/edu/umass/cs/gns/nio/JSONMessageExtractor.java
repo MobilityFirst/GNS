@@ -10,6 +10,8 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 /**
@@ -49,7 +51,7 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 	public static final String HEADER_PATTERN = "&"; // Could be an arbitrary string
 	private final HashMap<SocketChannel, String> sockStreams;
 	private final ArrayList<BasicPacketDemultiplexer> packetDemuxes;
-	//  private ExecutorService executor = null; // we use a thread pool to execute message handlers
+  private Timer timer = new Timer(); // timer object to schedule packets with delay if we are emulating delays
 
 	Logger log = GNS.getLogger();
 
@@ -121,19 +123,22 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 	}
 
 
-
 	private synchronized void processJSONMessage(final JSONObject jsonMsg) {
 		NIOInstrumenter.incrJSONRcvd();
 		// run these in a separate thread. One good thing about this is that it allows
 		// message handlers to waitfor the receipt of other messages which would not be possible
 		// if this were single-threaded. The bad things... time will tell.
 		JsonMessageWorker worker = new JsonMessageWorker(jsonMsg, packetDemuxes);
-		//    executor.execute(worker);
-                // THIS ISN'T ACTUALLY RUNNING IT IN ANOTHER THREAD.
-		worker.run();
+    if (GNSDelayEmulator.isDelayEmulated()) {
+      long delay = GNSDelayEmulator.getEmulatedDelay(jsonMsg);
+      timer.schedule(worker,delay);
+    } else {
+      // THIS ISN'T ACTUALLY RUNNING IT IN ANOTHER THREAD.
+      worker.run();
+    }
 	}
 
-	private class JsonMessageWorker implements Runnable {
+	private class JsonMessageWorker extends TimerTask {
 
 		private JSONObject json;
 		private ArrayList<BasicPacketDemultiplexer> pedemuxs;
