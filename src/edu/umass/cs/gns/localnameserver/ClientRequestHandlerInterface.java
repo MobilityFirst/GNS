@@ -7,7 +7,6 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
@@ -21,8 +20,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  **
  * An interface for handling of client requests, comms and cacheing.
  * Abstracts out the methods for storing of request info, caching and 
- * communication needs of
- * a node.
+ * communication needs of a node. Make the code that uses it not depend
+ * on the LocalNameServer
  * 
  * Someday maybe both NS and LNS will use this.
  *

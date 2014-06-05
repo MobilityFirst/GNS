@@ -68,12 +68,12 @@ public class LNSQueryHandler {
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + recipientId
+      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + recipientId
               + "(" + activeReplica.getGNSNodeConfig().getNodeAddress(recipientId)
               + ":" + activeReplica.getGNSNodeConfig().getNodePort(recipientId) + ")"
               + " for " + name + " / " + key + ": " + json);
-      //activeReplica.getNioServer().sendToID(recipientId, json);
-      Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), json, recipientId, GNS.PortType.LNS_TCP_PORT);
+      activeReplica.getNioServer().sendToID(recipientId, json);
+      //Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), json, recipientId, GNS.PortType.LNS_TCP_PORT);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {

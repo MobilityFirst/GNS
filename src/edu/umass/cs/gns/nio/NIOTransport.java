@@ -139,7 +139,7 @@ public class NIOTransport implements Runnable {
 	 * sent is queued in pendingWrites, which is read later by the selector thread.
 	 */
 	public int send(int id, byte[] data) throws IOException {
-		if(DEBUG) log.finest("Node " + myID + " invoked send (" + id + ", "
+		if(DEBUG) log.fine("Node " + myID + " invoked send (" + id + ", "
 				+ new String(data) + "), checking connection status..");
 		return send(new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
 				this.nodeConfig.getNodePort(id)), data);

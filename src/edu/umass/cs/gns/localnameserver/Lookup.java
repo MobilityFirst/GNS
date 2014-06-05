@@ -60,7 +60,7 @@ public class Lookup {
   public static void handlePacketLookupRequest(JSONObject json, DNSPacket dnsPacket, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("LNS DNS Request" + json);
-    int lnsReqId = LocalNameServer.getUniqueRequestID();
+    int lnsReqId = handler.getUniqueRequestID();
     DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, dnsPacket.getGuid(), System.currentTimeMillis(), -1,
             dnsPacket);
     handler.addRequestInfo(lnsReqId, requestInfo);

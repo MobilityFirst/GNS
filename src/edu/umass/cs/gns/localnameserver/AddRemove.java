@@ -40,13 +40,13 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  static void handlePacketAddRecord(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
     int lnsReqID = LocalNameServer.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), System.currentTimeMillis(), -1, addRecordPacket);
     LocalNameServer.addRequestInfo(lnsReqID, info);
-    SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, addRecordPacket, addRecordPacket.getName(),
+    SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     if (StartLocalNameServer.debugMode) {
@@ -63,7 +63,7 @@ public class AddRemove {
    * @throws NoSuchAlgorithmException
    * @throws UnsupportedEncodingException
    */
-  static void handlePacketRemoveRecord(JSONObject json)
+  static void handlePacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
@@ -71,7 +71,7 @@ public class AddRemove {
     UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), System.currentTimeMillis(), -1, removeRecord);
     LocalNameServer.addRequestInfo(lnsReqID, info);
 
-    SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, removeRecord, removeRecord.getName(),
+    SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, handler, removeRecord, removeRecord.getName(),
             System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
@@ -84,7 +84,7 @@ public class AddRemove {
   /**
    * Handles confirmation of add request from NS
    */
-  static void handlePacketConfirmAdd(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
     UpdateInfo addInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmAddPacket.getLNSRequestID());
     if (Config.debugMode) GNS.getLogger().fine("Confirm add packet: " + confirmAddPacket.toString() + " add info " + addInfo);
@@ -102,14 +102,14 @@ public class AddRemove {
         addInfo.addEventCode(LNSEventCode.OTHER_ERROR);
       }
       GNS.getStatLogger().info(addInfo.getLogString());
-      Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket);
+      Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket, handler);
     }
   }
 
   /**
    * Handles confirmation of add request from NS
    */
-  static void handlePacketConfirmRemove(JSONObject json) throws JSONException, UnknownHostException {
+  static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
     UpdateInfo removeInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
     if (Config.debugMode) GNS.getLogger().fine("Confirm remove packet: " + confirmRemovePacket.toString() + " remove info " + removeInfo);
@@ -127,7 +127,7 @@ public class AddRemove {
       }
       String stats = removeInfo.getLogString();
       GNS.getStatLogger().fine(stats);
-      Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket);
+      Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket, handler);
     }
   }
 }

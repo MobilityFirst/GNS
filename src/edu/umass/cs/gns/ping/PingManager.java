@@ -21,7 +21,7 @@ import java.net.PortUnreachableException;
  */
 public class PingManager {
 
-  private final static int TIME_BETWEEN_PINGS = 3000;
+  private final static int TIME_BETWEEN_PINGS = 30000;
   private final int nodeId;
   private PingClient pingClient;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep

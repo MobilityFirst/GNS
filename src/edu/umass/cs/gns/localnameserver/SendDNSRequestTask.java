@@ -7,17 +7,13 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
-import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.HashSet;
 import java.util.Random;
 import java.util.TimerTask;
@@ -43,11 +39,11 @@ import java.util.logging.Level;
  */
 public class SendDNSRequestTask extends TimerTask {
 
-  ClientRequestHandlerInterface handler;
-  DNSPacket incomingPacket;
+  private final ClientRequestHandlerInterface handler;
+  private final DNSPacket incomingPacket;
   private final int lnsReqID;
 
-  private HashSet<Integer> nameserversQueried= new HashSet<>();
+  private final HashSet<Integer> nameserversQueried= new HashSet<>();
 
   private int timeoutCount = -1;
 
@@ -83,6 +79,7 @@ public class SendDNSRequestTask extends TimerTask {
       // IF we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
+        GNS.getLogger().info("Requesting new actives for " + incomingPacket.getGuid());
         requestNewActives();
         // Cancel the task now. 
           // When the new actives are received, a new task in place of this task will be rescheduled.
@@ -98,7 +95,7 @@ public class SendDNSRequestTask extends TimerTask {
       if (e.getClass().equals(CancelExecutorTaskException.class)) {
         throw new RuntimeException();
       }
-      GNS.getLogger().severe("Exception Exception Exception .... ");
+      GNS.getLogger().severe("Exception in SendUpdatesTask: " + e);
       e.printStackTrace();
     }
   }
@@ -113,7 +110,7 @@ public class SendDNSRequestTask extends TimerTask {
         return true;
     } else if (info.isLookupActives() || info.getTimerTaskId() != timerTaskId) { //
       // invalid active response received in this case
-      if (StartLocalNameServer.debugMode) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + incomingPacket);
       }
       return true;
@@ -149,6 +146,7 @@ public class SendDNSRequestTask extends TimerTask {
         DNSRequestInfo info = (DNSRequestInfo) handler.removeRequestInfo(lnsReqID);
         if (info != null) {
           loggingForAddressInCache(info);
+          GNS.getLogger().info("Replying from cache " + incomingPacket.getGuid() + "/" + incomingPacket.getKey());
           sendCachedReplyToUser(value, cacheEntry.getTTL(), handler);
 
         }

@@ -89,7 +89,8 @@ public class LocalNameServer {
             StartLocalNameServer.maxQueryWaitTime,
             StartLocalNameServer.cacheSize,
             StartLocalNameServer.loadDependentRedirection,
-            StartLocalNameServer.replicationFramework);
+            StartLocalNameServer.replicationFramework
+    );
     requestHandler = new BasicClientRequestHandler(nodeID, gnsNodeConfig, parameters);
 
 //    LocalNameServer.gnsNodeConfig = gnsNodeConfig;

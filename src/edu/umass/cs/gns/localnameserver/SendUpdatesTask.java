@@ -9,12 +9,10 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
-import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,15 +44,17 @@ public class SendUpdatesTask extends TimerTask {
   private int timeoutCount = -1;
 
   private final int timerTaskID;
+  private final ClientRequestHandlerInterface handler;
 
-  public SendUpdatesTask(int lnsReqID, UpdatePacket updatePacket) {
+  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface handler, UpdatePacket updatePacket) {
     // based on request info.
     this.lnsReqID = lnsReqID;
+    this.handler = handler;
     this.name = updatePacket.getName();
     this.updatePacket = updatePacket;
     this.activesQueried = new HashSet<>();
     this.timerTaskID = new Random().nextInt();
-    UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsReqID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) info.setTimerTaskId(timerTaskID);
   }
 
@@ -64,13 +64,13 @@ public class SendUpdatesTask extends TimerTask {
   public void run() {
     try {
       timeoutCount++;
-      if (StartLocalNameServer.debugMode) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
       }
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
         throw new CancelExecutorTaskException();
       }
-      CacheEntry cacheEntry = LocalNameServer.getCacheEntry(name);
+      CacheEntry cacheEntry = handler.getCacheEntry(name);
       // IF we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
@@ -94,15 +94,15 @@ public class SendUpdatesTask extends TimerTask {
   }
 
   private boolean isResponseReceived() {
-    UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsReqID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info == null) {
-      if (StartLocalNameServer.debugMode) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("UpdateInfo not found. Update complete. Cancel task. " + lnsReqID + "\t" + updatePacket);
       }
       return true;
     } else if (info.isLookupActives() || info.getTimerTaskId() != timerTaskID) {  // set timer task ID to LNS
       // invalid active response received in this case
-      if (StartLocalNameServer.debugMode) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + updatePacket);
       }
       return true;
@@ -113,24 +113,24 @@ public class SendUpdatesTask extends TimerTask {
   }
 
   private boolean isMaxWaitTimeExceeded() {
-    UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsReqID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) {   // probably NS sent response
       // Too much time elapsed, send failed msg to user and log error
-      if (System.currentTimeMillis() - info.getStartTime() > StartLocalNameServer.maxQueryWaitTime) {
-        if (StartLocalNameServer.debugMode) {
+      if (System.currentTimeMillis() - info.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
+        if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + lnsReqID + " name = " + name);
         }
         // create a failure packet and send it back to client support
 
         try {
           ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(info.getErrorMessage());
-          Update.sendConfirmUpdatePacketBackToSource(confirmPkt);
+          Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
         } catch (JSONException e) {
           e.printStackTrace();
           GNS.getLogger().severe("Problem converting packet to JSON: " + e);
         }
 
-        UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(lnsReqID);
+        UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(lnsReqID);
         if (updateInfo != null) {
           updateInfo.setFinishTime();
           updateInfo.setSuccess(false);
@@ -146,11 +146,11 @@ public class SendUpdatesTask extends TimerTask {
 
   private void requestNewActives() {
     // remove update info from LNS
-    UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsReqID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) {   // probably NS sent response
-      SendUpdatesTask newTask = new SendUpdatesTask(lnsReqID, updatePacket);
-      PendingTasks.addToPendingRequests(info, newTask, StartLocalNameServer.queryTimeout);
-      if (StartLocalNameServer.debugMode) {
+      SendUpdatesTask newTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
+      PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout());
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
       }
 
@@ -159,14 +159,14 @@ public class SendUpdatesTask extends TimerTask {
 
   private int selectNS(CacheEntry cacheEntry) {
     int nameServerID;
-    if (StartLocalNameServer.loadDependentRedirection) {
-      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
+    if (handler.getParameters().isLoadDependentRedirection()) {
+      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
-    } else if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.BEEHIVE) {
-      nameServerID = BeehiveReplication.getBeehiveNameServer(LocalNameServer.getGnsNodeConfig(),
+    } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
+      nameServerID = BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
               cacheEntry.getActiveNameServers(), activesQueried);
     } else {
-      nameServerID = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
+      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
     }
     return nameServerID;
@@ -176,12 +176,12 @@ public class SendUpdatesTask extends TimerTask {
 
     if (nameServerID == -1) {
 
-      if (StartLocalNameServer.debugMode) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + activesQueried);
       }
       return;
     }
-    UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsReqID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) info.addEventCode(LNSEventCode.CONTACT_ACTIVE);
     activesQueried.add(nameServerID);
     // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
@@ -196,27 +196,27 @@ public class SendUpdatesTask extends TimerTask {
             updatePacket.getOldValue(),
             updatePacket.getArgument(),
             updatePacket.getOperation(),
-            LocalNameServer.getNodeID(),
+            handler.getNodeID(),
             nameServerID, updatePacket.getTTL(),
             //signature info
             updatePacket.getAccessor(),
             updatePacket.getSignature(),
             updatePacket.getMessage());
 
-    if (StartLocalNameServer.debugMode) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
     }
 
     // and send it off
     try {
       JSONObject jsonToSend = pkt.toJSONObject();
-      LocalNameServer.sendToNS(jsonToSend, nameServerID);
+      handler.sendToNS(jsonToSend, nameServerID);
       // keep track of which NS we sent it to
-      UpdateInfo updateInfo = (UpdateInfo) LocalNameServer.getRequestInfo(lnsReqID);
+      UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(lnsReqID);
       if (updateInfo != null) {
         updateInfo.setNameserverID(nameServerID);
       }
-      if (StartLocalNameServer.debugMode) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Send update to: " + nameServerID + " Name:" + name + " Id:" + lnsReqID
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }

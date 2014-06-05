@@ -61,28 +61,28 @@ public class LNSPacketDemultiplexer extends BasicPacketDemultiplexer {
               break;
           }
           break;
-        // Update // these have NOT been converted to use handler
+        // Update // some of these have been converted to use handler
         case UPDATE:
-          Update.handlePacketUpdate(json);
+          Update.handlePacketUpdate(json, handler);
           break;
         case CONFIRM_UPDATE:
-          Update.handlePacketConfirmUpdate(json);
+          Update.handlePacketConfirmUpdate(json, handler);
           break;
         case NAME_SERVER_LOAD:
           LocalNameServer.handleNameServerLoadPacket(json);
           break;
-        // Add/remove
+        // Add/remove // these have been converted to use handler
         case ADD_RECORD:
-          AddRemove.handlePacketAddRecord(json);
+          AddRemove.handlePacketAddRecord(json, handler);
           break;
         case REMOVE_RECORD:
-          AddRemove.handlePacketRemoveRecord(json);
+          AddRemove.handlePacketRemoveRecord(json, handler);
           break;
         case CONFIRM_ADD:
-          AddRemove.handlePacketConfirmAdd(json);
+          AddRemove.handlePacketConfirmAdd(json, handler);
           break;
         case CONFIRM_REMOVE:
-          AddRemove.handlePacketConfirmRemove(json);
+          AddRemove.handlePacketConfirmRemove(json, handler);
           break;
         // Others
         case REQUEST_ACTIVES:
