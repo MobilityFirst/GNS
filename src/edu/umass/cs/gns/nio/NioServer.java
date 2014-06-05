@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   public static String Version = "$Revision$";
-  public static final boolean DEBUG = true;
+  public static final boolean DEBUG = false;
   
   // The host:port combination to listen on
   private int ID;

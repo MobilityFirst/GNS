@@ -41,7 +41,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
 
   private String IPField = null;
 
-  public static final boolean DEBUG = true; // enables send monitoring
+  public static final boolean DEBUG = false; // enables send monitoring
 
   public GNSNIOTransport(int id, NodeConfig nodeConfig) throws IOException {
     super(id, nodeConfig, new JSONMessageExtractor()); // Note: Default extractor will not do any useful demultiplexing
