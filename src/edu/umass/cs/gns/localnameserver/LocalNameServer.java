@@ -76,6 +76,7 @@ public class LocalNameServer {
    * @throws IOException
    */
   public LocalNameServer(int nodeID, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
+    System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
     // set node ID first because constructor for BasicClientRequestHandler reads 'nodeID' value.
     LocalNameServer.nodeID = nodeID;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
@@ -91,24 +92,14 @@ public class LocalNameServer {
             StartLocalNameServer.loadDependentRedirection,
             StartLocalNameServer.replicationFramework
     );
+    GNS.getLogger().info("Parameter values: " + parameters.toString());
     requestHandler = new BasicClientRequestHandler(nodeID, gnsNodeConfig, parameters);
-
-//    LocalNameServer.gnsNodeConfig = gnsNodeConfig;
-//    requestTransmittedMap = new ConcurrentHashMap<Integer, DNSRequestInfo>(10, 0.75f, 3);
-//    updateTransmittedMap = new ConcurrentHashMap<Integer, UpdateInfo>(10, 0.75f, 3);
-//    selectTransmittedMap = new ConcurrentHashMap<Integer, SelectInfo>(10, 0.75f, 3);
-//    random = new Random(System.currentTimeMillis());
-//    cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(StartLocalNameServer.cacheSize).build();
-//    nameRecordStatsMap = new ConcurrentHashMap<String, NameRecordStats>(16, 0.75f, 5);
-    System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
-
     Intercessor.init(requestHandler);
     //startTransport();
-    if (!StartLocalNameServer.experimentMode) { // creates exceptions with multiple local name servers on a machine
+    if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
       GnsHttpServer.runHttp(nodeID);
     }
-
-    if (!StartLocalNameServer.emulatePingLatencies) {
+    if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
       PingServer.startServerThread(nodeID, gnsNodeConfig);
@@ -120,16 +111,16 @@ public class LocalNameServer {
     // After starting PingManager because it accesses PingManager.
     new LNSListenerAdmin().start();
 
-    if (StartLocalNameServer.replicationFramework == ReplicationFrameworkType.LOCATION) {
+    if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
       // todo commented this because locality-based replication is still under testing
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
-    if (StartLocalNameServer.experimentMode) {
+    if (parameters.isExperimentMode()) {
       GNS.getLogger().info("Starting experiment ..... ");
       new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
       // name server loads initialized.
-      if (StartLocalNameServer.loadDependentRedirection) {
+      if (parameters.isLoadDependentRedirection()) {
         initializeNameServerLoadMonitoring();
       }
     }

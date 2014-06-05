@@ -15,7 +15,7 @@ import java.util.Set;
  * Time: 10:29 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SendCurrentStatePacket2 extends Packet {
+public class SendCurrentStatePacket2 extends PaxosPacket {
 
   private static final String SENDING_NODE_ID = "sendingNodeID";
 
@@ -54,17 +54,17 @@ public class SendCurrentStatePacket2 extends Packet {
   public String dbState;
 
   public SendCurrentStatePacket2(int sendingNodeID, Ballot currentBallot, int slotNumber, String dbState,
-                                 Set<Integer> nodeIDs, int packetType) {
+                                 Set<Integer> nodeIDs, PaxosPacketType packetType) {
     this.sendingNodeID = sendingNodeID;
     this.currentBallot = currentBallot;
     this.slotNumber = slotNumber;
     this.dbState = dbState;
     this.nodeIDs = nodeIDs;
-    this.packetType =  packetType;
+    this.packetType =  packetType.getInt();
   }
 
   public SendCurrentStatePacket2(JSONObject json) throws JSONException {
-    this.packetType = json.getInt(PaxosPacketType.ptype);
+    this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
     this.sendingNodeID = json.getInt(SENDING_NODE_ID);
     if (json.has(NODE_IDS)) {
       this.nodeIDs = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(NODE_IDS));
@@ -77,7 +77,7 @@ public class SendCurrentStatePacket2 extends Packet {
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
-    json.put(PaxosPacketType.ptype, this.packetType);
+    json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
     json.put(SENDING_NODE_ID, sendingNodeID);
     if (nodeIDs != null) {
       json.put(NODE_IDS, new JSONArray(nodeIDs));

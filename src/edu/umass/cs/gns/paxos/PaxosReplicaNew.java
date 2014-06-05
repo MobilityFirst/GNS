@@ -94,47 +94,47 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
         return;
       }
       LoggingCommand logCmd = null;
-//            int incomingPacketType = json.getInt(PaxosPacketType.ptype);
+//            int incomingPacketType = json.getInt(PaxosPacketType.PACKET_TYPE_FIELD_NAME);
       // client --> replica
-      switch (packetType) {
-        case PaxosPacketType.REQUEST:
+      switch (PaxosPacketType.getPacketType(packetType)) {
+        case REQUEST:
 //                    RequestPacket req = new RequestPacket(json);
 //          GNS.getLogger().info(paxosID +"\t Request = " + json);
           handleRequest(json);
           break;
         // replica --> coordinator
-        case  PaxosPacketType.PROPOSAL:
+        case  PROPOSAL:
           ProposalPacket proposal = new ProposalPacket(json);
           handleProposal(proposal);
           break;
         // coordinator --> replica
-        case  PaxosPacketType.DECISION:
+        case  DECISION:
           proposal = new ProposalPacket(json);
           handleDecision(proposal, false);
           break;
         // coordinator --> replica
-        case PaxosPacketType.PREPARE:
+        case PREPARE:
           PreparePacket prepare = new PreparePacket(json);
           logCmd = handlePrepare(json, prepare);
           break;
         // replica --> coordinator
-        case PaxosPacketType.PREPARE_REPLY:
+        case PREPARE_REPLY:
           prepare = new PreparePacket(json);
           handlePrepareMessageReply(prepare);
           break;
         // coordinator --> replica
-        case PaxosPacketType.ACCEPT:
+        case ACCEPT:
           AcceptPacket accept = new AcceptPacket(json);
           logCmd = handleAccept(json, accept);
 
           break;
         // replica --> coordinator
-        case PaxosPacketType.ACCEPT_REPLY:
+        case ACCEPT_REPLY:
           AcceptReplyPacket acceptReply = new AcceptReplyPacket(json);
           logCmd = handleAcceptMessageReply(acceptReply);
           break;
         // replica --> replica
-        case PaxosPacketType.RESEND_ACCEPT:
+        case RESEND_ACCEPT:
           handleResendAccept(json);
 //        case PaxosPacketType.SEND_STATE:
 //        case PaxosPacketType.SEND_STATE_NO_RESPONSE:
@@ -144,7 +144,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 //          break;
 
         // local failure detector --> replica
-        case PaxosPacketType.NODE_STATUS:
+        case NODE_STATUS:
           //				GNRS.getLogger().fine("XXXRecvd node status msg");
           FailureDetectionPacket fdPacket = new FailureDetectionPacket(json);
           handleNodeStatusUpdate(fdPacket);
@@ -155,7 +155,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 //        case PaxosPacketType.SYNC_REQUEST:
 //          handleSyncRequest(new SynchronizePacket(json));
 //          break;
-        case PaxosPacketType.SYNC_REPLY:
+        case SYNC_REPLY:
           handleSyncReplyPacket(new SynchronizeReplyPacket(json));
           break;
         default:
@@ -190,7 +190,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
    * Send message p to replica {@code destID}.
    * @throws org.json.JSONException
    **/
-  private void sendMessage(int destID, Packet p) {
+  private void sendMessage(int destID, PaxosPacket p) {
     try
     {
       if (destID == nodeID) {
@@ -398,7 +398,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
 //    }
 
     json.put(ProposalPacket.SLOT, 0);
-    json.put(PaxosPacketType.ptype, PaxosPacketType.PROPOSAL);
+    json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, PaxosPacketType.PROPOSAL.getInt());
     json.put(paxosManager.PAXOS_ID, paxosID);
 
     if (temp != null && paxosManager.isNodeUp(temp.coordinatorID)) {
@@ -1411,10 +1411,7 @@ public class PaxosReplicaNew extends PaxosReplicaInterface{
       }
     }
 
-    Packet p = packet.getPrepareReplyPacket(acceptorBallot, nodeID, pValuesAccepted, slotNumber);
-//
-//      PaxosManager.addToPaxosLog(incomingJson,paxosID);
-//      sendMessage(packet.coordinatorID,p);
+    PaxosPacket p = packet.getPrepareReplyPacket(acceptorBallot, nodeID, pValuesAccepted, slotNumber);
 
     return new LoggingCommand(paxosID, incomingJson, LoggingCommand.LOG_AND_SEND_MSG,
             packet.coordinatorID, p.toJSONObject());

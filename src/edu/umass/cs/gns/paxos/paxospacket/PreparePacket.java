@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PreparePacket extends Packet {
+public class PreparePacket extends PaxosPacket {
 
   public int coordinatorID;
 
@@ -19,11 +19,11 @@ public class PreparePacket extends Packet {
   public int slotNumber;
   public Map<Integer, PValuePacket> accepted;
 
-  public PreparePacket(int coordinatorID, int receiverID, Ballot b, int packetType) {
+  public PreparePacket(int coordinatorID, int receiverID, Ballot b, PaxosPacketType packetType) {
     this.coordinatorID = coordinatorID;
     this.receiverID = receiverID;
     this.ballot = b;
-    this.packetType = packetType;
+    this.packetType = packetType.getInt();
     this.slotNumber = -1;
 
   }
@@ -45,13 +45,13 @@ public class PreparePacket extends Packet {
     return prep;
   }
 
-  public PreparePacket(JSONObject json) throws JSONException{
-    this.packetType = json.getInt(PaxosPacketType.ptype);
+  public PreparePacket(JSONObject json) throws JSONException {
+    this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
     this.coordinatorID = json.getInt("coordinatorID");
     this.receiverID = json.getInt("receiverID");
     this.ballot = new Ballot(json.getString("ballot"));
     this.slotNumber = json.getInt("slotNumber");
-    if (this.packetType == PaxosPacketType.PREPARE_REPLY) {
+    if (this.packetType == PaxosPacketType.PREPARE_REPLY.getInt()) {
       this.accepted = parseJsonForAccepted(json);
     }
   }
@@ -70,26 +70,24 @@ public class PreparePacket extends Packet {
     return accepted;
   }
 
-
   @Override
-  public JSONObject toJSONObject() throws JSONException
-  {
+  public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
-    json.put(PaxosPacketType.ptype, this.packetType);
+    json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
     json.put("coordinatorID", coordinatorID);
     json.put("receiverID", receiverID);
     json.put("ballot", ballot.toString());
     json.put("slotNumber", slotNumber);
-    if (this.packetType == PaxosPacketType.PREPARE_REPLY) {
+    if (this.packetType == PaxosPacketType.PREPARE_REPLY.getInt()) {
       addAcceptedToJSON(json);
     }
     return json;
   }
 
-  private void addAcceptedToJSON(JSONObject json) throws JSONException{
-    if (accepted != null ) {
-      JSONArray jsonArray  = new JSONArray();
-      for (PValuePacket pValues: accepted.values()) {
+  private void addAcceptedToJSON(JSONObject json) throws JSONException {
+    if (accepted != null) {
+      JSONArray jsonArray = new JSONArray();
+      for (PValuePacket pValues : accepted.values()) {
         jsonArray.put(pValues.toJSONObject());
       }
       json.put("accepted", jsonArray);

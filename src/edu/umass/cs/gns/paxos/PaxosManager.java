@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
@@ -266,7 +267,7 @@ public class PaxosManager extends AbstractPaxosManager {
     }
     try {
       if (debugMode) GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
-      replica.handleIncomingMessage(new RequestPacket(0, value, PaxosPacketType.REQUEST, true).toJSONObject(), PaxosPacketType.REQUEST);
+      replica.handleIncomingMessage(new RequestPacket(0, value, PaxosPacketType.REQUEST, true).toJSONObject(), PaxosPacketType.REQUEST.getInt());
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -283,7 +284,7 @@ public class PaxosManager extends AbstractPaxosManager {
     }
     try {
       if (debugMode) GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
-      replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST);
+      replica.handleIncomingMessage(requestPacket.toJSONObject(), PaxosPacketType.REQUEST.getInt());
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -304,19 +305,21 @@ public class PaxosManager extends AbstractPaxosManager {
    * Handle incoming message, incoming message could be of any Paxos instance.
    * @param json json object received
    */
+  @Override
   public  void handleIncomingPacket(JSONObject json) {
 
     int incomingPacketType;
     try {
-      incomingPacketType = json.getInt(PaxosPacketType.ptype);
+      incomingPacketType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
     } catch (JSONException e) {
+      GNS.getLogger().severe("Problem parsing JSON Object:" + json.toString());
       e.printStackTrace();
       return;
     }
-    switch (incomingPacketType){
+    switch (PaxosPacketType.getPacketType(incomingPacketType)){
 
-      case PaxosPacketType.FAILURE_DETECT:
-      case PaxosPacketType.FAILURE_RESPONSE:
+      case FAILURE_DETECT:
+      case FAILURE_RESPONSE:
         processMessage(new HandleFailureDetectionPacketTask(json, failureDetection));
         break;
       default:
@@ -346,10 +349,10 @@ public class PaxosManager extends AbstractPaxosManager {
         long t1 = System.currentTimeMillis();
         if (t1 - t0 > 100) {
           if (json.toString().length() < 1000) {
-            GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms. Packet: " + json);
+            GNS.getLogger().warning("Long delay " + (t1 - t0) + "ms. Packet: " + json);
           }
           else {
-            GNS.getLogger().severe("Long delay " + (t1 - t0) + "ms.");
+            GNS.getLogger().warning("Long delay " + (t1 - t0) + "ms.");
           }
         }
         break;
@@ -604,7 +607,7 @@ public class PaxosManager extends AbstractPaxosManager {
 }
 
 /**
- * Packet demultiplexer object
+ * PaxosPacket demultiplexer object
  */
 class PaxosPacketDemultiplexer extends BasicPacketDemultiplexer {
 

@@ -317,7 +317,7 @@ public class PaxosLogger extends Thread {
           // first log initial state
           logPaxosState(paxosID, initialState);
           // then append to paxos IDs
-          String logString = getLogString(paxosID, PaxosPacketType.START, setIntegerToString(nodeIDs));
+          String logString = getLogString(paxosID, PaxosPacketType.START.getInt(), setIntegerToString(nodeIDs));
           appendToFile(paxosIDsFile1, logString);
         }
       }
@@ -342,7 +342,7 @@ public class PaxosLogger extends Thread {
 
       synchronized (paxosIDsLock) {
         String logString = null;
-        logString = getLogString(paxosID, PaxosPacketType.STOP, Integer.toString(PaxosPacketType.STOP));
+        logString = getLogString(paxosID, PaxosPacketType.STOP.getInt(), Integer.toString(PaxosPacketType.STOP.getInt()));
 
         appendToFile(paxosIDsFile1, logString);
       }
@@ -566,7 +566,7 @@ public class PaxosLogger extends Thread {
             // TODO How is BufferedWriter different from FileWriter? what should we use?
             fileWriter.write(cmd.getPaxosID());
             fileWriter.write("\t");
-            fileWriter.write(Integer.toString(cmd.getLogJson().getInt(PaxosPacketType.ptype)));
+            fileWriter.write(Integer.toString(cmd.getLogJson().getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME)));
             fileWriter.write("\t");
             fileWriter.write(cmd.getLogJson().toString());
             fileWriter.write("\n");
@@ -660,7 +660,7 @@ public class PaxosLogger extends Thread {
     sb.append(paxosID);
     sb.append("\t");
 
-    sb.append(jsonObject.get(PaxosPacketType.ptype));
+    sb.append(jsonObject.get(PaxosPacket.PACKET_TYPE_FIELD_NAME));
     sb.append("\t");
     sb.append(jsonObject);
     sb.append("\n");
@@ -914,23 +914,23 @@ public class PaxosLogger extends Thread {
     boolean isPaxosIDMatched = paxosInstances.containsKey(getPaxosKey(log.getPaxosID())) &&
             paxosInstances.get(getPaxosKey(log.getPaxosID())).getPaxosID().equals(log.getPaxosID());
 
-    switch (log.getLogMessageType()) {
-      case PaxosPacketType.START:
+    switch (PaxosPacketType.getPacketType(log.getLogMessageType())) {
+      case START:
         parsePaxosStart(paxosInstances, log.getPaxosID(), log.getMessage());
         break;
-      case PaxosPacketType.STOP:
+      case STOP:
         if (isPaxosIDMatched) parsePaxosStop(paxosInstances, log.getPaxosID(), log.getMessage());
         break;
-      case PaxosPacketType.DECISION:
+      case DECISION:
 
         if (isPaxosIDMatched) parseDecision(paxosInstances.get(getPaxosKey(log.getPaxosID())),
                 log.getMessage());
         break;
-      case PaxosPacketType.ACCEPT:
+      case ACCEPT:
         if (isPaxosIDMatched) parseAccept(paxosInstances.get(getPaxosKey(log.getPaxosID())),
                 log.getMessage());
         break;
-      case PaxosPacketType.PREPARE:
+      case PREPARE:
         if (isPaxosIDMatched) parsePrepare(paxosInstances.get(getPaxosKey(log.getPaxosID())),
                 log.getMessage());
         break;
@@ -1204,22 +1204,22 @@ public class PaxosLogger extends Thread {
    */
   private boolean isStateAfterLogMessage(PaxosLogMessage logMsg, PaxosStateFileName stateFileName) {
     try {
-      switch (logMsg.getLogMessageType()) {
-        case PaxosPacketType.ACCEPT:
+      switch (PaxosPacketType.getPacketType(logMsg.getLogMessageType())) {
+        case ACCEPT:
           AcceptPacket accept = new AcceptPacket(new JSONObject(logMsg.getMessage()));
           if (stateFileName.slotNumber > accept.pValue.proposal.slot) {
             return true; // > sign is important
           } else {
             return false;
           }
-        case PaxosPacketType.PREPARE:
+        case PREPARE:
           PreparePacket prepare = new PreparePacket(new JSONObject(logMsg.getMessage()));
           if (stateFileName.ballot.compareTo(prepare.ballot) >= 0) {
             return true; // notice >= here
           } else {
             return false;
           }
-        case PaxosPacketType.DECISION:
+        case DECISION:
           ProposalPacket proposal = new ProposalPacket(new JSONObject(logMsg.getMessage()));
 
           if (stateFileName.slotNumber > proposal.slot) {

@@ -4,77 +4,76 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Random;
 
-public class RequestPacket extends Packet implements Serializable{
+public class RequestPacket extends PaxosPacket implements Serializable {
 
-	public int clientID;
+  public int clientID;
 
-	public int requestID;
+  public int requestID;
 
-	public String value;
+  public String value;
 
   private boolean stop = false;
 
-//    String CLIENT_ID = "y1";
-//    String PAXOS_REQUEST_ID = "y2";
-//    String VALUE = "y3";
-
-	public RequestPacket(int clientID,  String value, int packetType, boolean stop) {
-		Random r  = new Random();
-		this.clientID = clientID;
-		this.requestID = r.nextInt();
-		this.value = value;
-		this.packetType = packetType;
+  public RequestPacket(int clientID, String value, PaxosPacketType packetType, boolean stop) {
+    Random r = new Random();
+    this.clientID = clientID;
+    this.requestID = r.nextInt();
+    this.value = value;
+    this.packetType = packetType.getInt();
     this.stop = stop;
 
-	}
+  }
 
+  public RequestPacket(JSONObject json) throws JSONException {
+    this.packetType = PaxosPacketType.REQUEST.getInt();
+    String x = json.getString("y1");
+    String[] tokens = x.split("\\s");
+    this.clientID = Integer.parseInt(tokens[0]);
+    this.requestID = Integer.parseInt(tokens[1]);
 
-
-
-//	public RequestPacket getResponsePacket() {
-//		return new RequestPacket(clientID,  value, PaxosPacketType.RESPONSE);
-//	}
-
-
-
-	public RequestPacket(JSONObject json) throws JSONException{
-        this.packetType = PaxosPacketType.REQUEST;
-        String x = json.getString("y1");
-        String[] tokens = x.split("\\s");
-        this.clientID = Integer.parseInt(tokens[0]);
-        this.requestID = Integer.parseInt(tokens[1]);
-
-    this.stop = tokens[2].equals("1") ? true : false;
+    this.stop = tokens[2].equals("1");
     this.value = x.substring(tokens[0].length() + tokens[1].length() + tokens[2].length() + 3);
-//		this.clientID = json.getInt(CLIENT_ID);
-//		this.requestID = json.getInt(PAXOS_REQUEST_ID);
-//		this.value = json.getString(VALUE);
-	}
+  }
 
-	@Override
-	public JSONObject toJSONObject() throws JSONException {
-		JSONObject json = new JSONObject();
-		json.put(PaxosPacketType.ptype, this.packetType);
+  @Override
+  public JSONObject toJSONObject() throws JSONException {
+    JSONObject json = new JSONObject();
+    json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
     if (stop) {
       json.put("y1", clientID + " " + requestID + " " + 1 + " " + value);
     } else {
-        json.put("y1", clientID + " " + requestID + " " + 0 + " " + value);
+      json.put("y1", clientID + " " + requestID + " " + 0 + " " + value);
     }
-		return json;
-	}
+    return json;
+  }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    RequestPacket other = (RequestPacket) obj;
+    if (other.clientID == this.clientID && other.requestID == this.requestID
+            && other.value.equals(this.value)) {
+      return true;
+    }
+    return false;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		RequestPacket req2 = (RequestPacket) obj;
-		if (req2.clientID == this.clientID && req2.requestID == this.requestID 
-				&& req2.value.equals(this.value)) 
-			return true;
-
-		return false;
-	}
+  @Override
+  public int hashCode() {
+    int hash = 3;
+    hash = 79 * hash + this.clientID;
+    hash = 79 * hash + this.requestID;
+    hash = 79 * hash + Objects.hashCode(this.value);
+    return hash;
+  }
 
   public boolean isStopRequest() {
     return stop;

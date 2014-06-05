@@ -7,37 +7,29 @@ import edu.umass.cs.gns.paxos.Ballot;
 
 import java.io.Serializable;
 
-public class PValuePacket extends Packet implements Serializable {
+public class PValuePacket extends PaxosPacket implements Serializable {
 
-	
-	public Ballot ballot;
-	public ProposalPacket proposal;
-	
-	public PValuePacket(Ballot b, ProposalPacket p) {
-		this.ballot = b;
-		this.proposal = p;
-	}
+  public Ballot ballot;
+  public ProposalPacket proposal;
 
-    static String BALLOT = "b1";
+  public PValuePacket(Ballot b, ProposalPacket p) {
+    this.ballot = b;
+    this.proposal = p;
+  }
 
-	public PValuePacket(JSONObject json) throws JSONException{
-        this.proposal = new ProposalPacket(json);
-//        try{
-//
-//        } catch (Exception e) {
-//            this.proposal = null;
-//        }
-//		this.packetType = json.getInt(PaxosPacketType.ptype);
-		this.ballot = new Ballot(json.getString(BALLOT));
-	}
-	
-	@Override
-	public JSONObject toJSONObject() throws JSONException {
-        JSONObject json = this.proposal.toJSONObject();
-		json.put(BALLOT, ballot.toString());
-		json.put(PaxosPacketType.ptype, packetType);
-		return json;
-	}
-	
+  static String BALLOT = "b1";
+
+  public PValuePacket(JSONObject json) throws JSONException {
+    this.proposal = new ProposalPacket(json);
+    this.ballot = new Ballot(json.getString(BALLOT));
+  }
+
+  @Override
+  public JSONObject toJSONObject() throws JSONException {
+    JSONObject json = this.proposal.toJSONObject();
+    json.put(BALLOT, ballot.toString());
+    json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, packetType);
+    return json;
+  }
+
 }
-

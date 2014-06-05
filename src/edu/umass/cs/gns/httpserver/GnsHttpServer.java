@@ -35,12 +35,7 @@ import static edu.umass.cs.gns.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gns.httpserver.Defs.VALSEP;
 import edu.umass.cs.gns.localnameserver.CommandRequest;
 import edu.umass.cs.gns.util.Util;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -52,7 +47,6 @@ public class GnsHttpServer {
   
   private static final String GNSPATH = GNS.GNS_URL_PATH;
   private static final int port = 8080;
-  private static final String hostName = "127.0.0.1";
   private static int localNameServerID;
   
   // handles command processing

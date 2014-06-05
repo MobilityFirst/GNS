@@ -3,7 +3,7 @@ package edu.umass.cs.gns.main;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 
 /**
- * Parameters that are needed by the request handler.
+ * Encapsulate all these "global" parameters that are needed by the request handler.
  */
 public class RequestHandlerParameters {
   /**
@@ -50,9 +50,11 @@ public class RequestHandlerParameters {
   /**
    * The replicationFrameworkType we are using.
    */
-  private ReplicationFrameworkType replicationFramework;
+  private final ReplicationFrameworkType replicationFramework;
 
-  public RequestHandlerParameters(boolean debugMode, boolean experimentMode, boolean emulatePingLatencies, double variation, boolean adaptiveTimeout, double outputSampleRate, int queryTimeout, int maxQueryWaitTime, int cacheSize, boolean loadDependentRedirection, ReplicationFrameworkType replicationFramework) {
+  public RequestHandlerParameters(boolean debugMode, boolean experimentMode, boolean emulatePingLatencies, double variation, 
+          boolean adaptiveTimeout, double outputSampleRate, int queryTimeout, int maxQueryWaitTime, int cacheSize, 
+          boolean loadDependentRedirection, ReplicationFrameworkType replicationFramework) {
     this.debugMode = debugMode;
     this.experimentMode = experimentMode;
     this.emulatePingLatencies = emulatePingLatencies;
@@ -108,6 +110,11 @@ public class RequestHandlerParameters {
 
   public ReplicationFrameworkType getReplicationFramework() {
     return replicationFramework;
+  }
+
+  @Override
+  public String toString() {
+    return "RequestHandlerParameters{" + "debugMode=" + debugMode + ", experimentMode=" + experimentMode + ", emulatePingLatencies=" + emulatePingLatencies + ", variation=" + variation + ", adaptiveTimeout=" + adaptiveTimeout + ", outputSampleRate=" + outputSampleRate + ", queryTimeout=" + queryTimeout + ", maxQueryWaitTime=" + maxQueryWaitTime + ", cacheSize=" + cacheSize + ", loadDependentRedirection=" + loadDependentRedirection + ", replicationFramework=" + replicationFramework + '}';
   }
 
 }

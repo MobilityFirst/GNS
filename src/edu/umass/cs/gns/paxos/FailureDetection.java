@@ -387,7 +387,7 @@ class HandleFailureDetectionPacketTask extends TimerTask {
     try {
       if (failureDetection == null) return; // this case can happen if a packet arrives before we have
       // initialized failure detection
-      if (fdPacket != null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT) {
+      if (fdPacket != null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT.getInt()) {
 
         FailureDetectionPacket fdResponse = fdPacket.getFailureDetectionResponse();
         failureDetection.resetNodeInfo(fdPacket.senderNodeID);
@@ -397,7 +397,7 @@ class HandleFailureDetectionPacketTask extends TimerTask {
         } catch (JSONException e) {
           GNS.getLogger().severe("JSON Exception " + e.getMessage());
         }
-      } else if (fdPacket != null && fdPacket.packetType == PaxosPacketType.FAILURE_RESPONSE) {
+      } else if (fdPacket != null && fdPacket.packetType == PaxosPacketType.FAILURE_RESPONSE.getInt()) {
         GNS.getLogger().finer(failureDetection.nodeID + "FD recvd response from " + fdPacket.responderNodeID);
         failureDetection.updateNodeInfo(fdPacket.responderNodeID);
       }

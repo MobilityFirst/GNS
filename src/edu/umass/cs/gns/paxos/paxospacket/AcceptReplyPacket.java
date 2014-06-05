@@ -11,7 +11,7 @@ import edu.umass.cs.gns.paxos.Ballot;
  * Time: 8:49 AM
  * To change this template use File | Settings | File Templates.
  */
-public class AcceptReplyPacket extends Packet {
+public class AcceptReplyPacket extends PaxosPacket {
     /**
      * nodeID of the node that sent the message
      */
@@ -38,7 +38,7 @@ public class AcceptReplyPacket extends Packet {
 //    private static final  String COMMIT_SLOT = "ar4";
 
     public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
-        this.packetType = PaxosPacketType.ACCEPT_REPLY;
+        this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
         this.nodeID = nodeID;
         this.ballot = ballot;
         this.slotNumber = slotNumber;
@@ -46,7 +46,7 @@ public class AcceptReplyPacket extends Packet {
     }
 
     public AcceptReplyPacket(JSONObject jsonObject) throws  JSONException{
-        this.packetType = PaxosPacketType.ACCEPT_REPLY;
+        this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
         this.nodeID = jsonObject.getInt(NODE_ID);
         this.ballot = new Ballot(jsonObject.getString(BALLOT_NUMBER));
         this.slotNumber = jsonObject.getInt(SLOT_NUMBER);
@@ -57,7 +57,7 @@ public class AcceptReplyPacket extends Packet {
     @Override
     public JSONObject toJSONObject() throws JSONException {
         JSONObject jsonObject= new JSONObject();
-        jsonObject.put(PaxosPacketType.ptype, PaxosPacketType.ACCEPT_REPLY);
+        jsonObject.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
         jsonObject.put(NODE_ID, nodeID);
         jsonObject.put(BALLOT_NUMBER, ballot.toString());
         jsonObject.put(SLOT_NUMBER, slotNumber);

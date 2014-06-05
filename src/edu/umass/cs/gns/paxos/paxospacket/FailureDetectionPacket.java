@@ -3,7 +3,7 @@ package edu.umass.cs.gns.paxos.paxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FailureDetectionPacket extends Packet{
+public class FailureDetectionPacket extends PaxosPacket{
 	
 	/**
 	 * ID of node that sent the packet.
@@ -22,17 +22,17 @@ public class FailureDetectionPacket extends Packet{
 	
 	
 	public FailureDetectionPacket(int senderNodeID, int responderNodeID, 
-		boolean status, int packetType) {
+		boolean status, PaxosPacketType packetType) {
 		this.senderNodeID = senderNodeID;
 		this.responderNodeID = responderNodeID;
-		this.packetType = packetType;
+		this.packetType = packetType.getInt();
 		this.status = status;
 	}
 
 	public FailureDetectionPacket(JSONObject json) throws JSONException {
 		this.senderNodeID = json.getInt("sender");
 		this.responderNodeID = json.getInt("responder");
-		this.packetType = json.getInt(PaxosPacketType.ptype);
+		this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
 		this.status = json.getBoolean("status");
 	}
 	
@@ -44,7 +44,7 @@ public class FailureDetectionPacket extends Packet{
 	@Override
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(PaxosPacketType.ptype, packetType);
+		json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, packetType);
 		json.put("status", status);
 		json.put("sender", senderNodeID);
 		json.put("responder", responderNodeID);

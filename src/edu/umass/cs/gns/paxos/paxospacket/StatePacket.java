@@ -11,7 +11,7 @@ import org.json.JSONObject;
  * Time: 10:13 AM
  * To change this template use File | Settings | File Templates.
  */
-public class StatePacket extends Packet{
+public class StatePacket extends PaxosPacket {
 
   public Ballot b;
   public int slotNumber;

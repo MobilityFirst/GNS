@@ -417,48 +417,48 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
       }
 
       // client --> replica
-      switch (packetType) {
-        case PaxosPacketType.REQUEST:
+      switch (PaxosPacketType.getPacketType(packetType)) {
+        case REQUEST:
           handleRequest(json);
           break;
         // replica --> coordinator
-        case PaxosPacketType.PROPOSAL:
+        case PROPOSAL:
           ProposalPacket proposal = new ProposalPacket(json);
           handleProposal(proposal);
           break;
         // coordinator --> replica
-        case PaxosPacketType.DECISION:
+        case DECISION:
           proposal = new ProposalPacket(json);
           handleCommittedRequest(proposal, false);
           break;
         // coordinator --> replica
-        case PaxosPacketType.PREPARE:
+        case PREPARE:
           handlePrepare(json);
           break;
         // replica --> coordinator
-        case PaxosPacketType.PREPARE_REPLY:
+        case PREPARE_REPLY:
           PreparePacket prepare = new PreparePacket(json);
           handlePrepareMessageReply(prepare);
           break;
         // coordinator --> replica
-        case PaxosPacketType.ACCEPT:
+        case ACCEPT:
           handleAccept(json);
           break;
         // replica --> coordinator
-        case PaxosPacketType.ACCEPT_REPLY:
+        case ACCEPT_REPLY:
           AcceptReplyPacket acceptReply = new AcceptReplyPacket(json);
           handleAcceptMessageReply(acceptReply);
           break;
         // replica --> replica
         // local failure detector --> replica
-        case PaxosPacketType.NODE_STATUS:
+        case NODE_STATUS:
           FailureDetectionPacket fdPacket = new FailureDetectionPacket(json);
           handleNodeStatusUpdate(fdPacket);
           break;
-        case PaxosPacketType.SYNC_REQUEST:
+        case SYNC_REQUEST:
           handleSyncRequest(new SynchronizePacket(json));
           break;
-        case PaxosPacketType.SYNC_REPLY:
+        case SYNC_REPLY:
           handleSyncReplyPacket(new SynchronizeReplyPacket(json));
           break;
         default:
@@ -635,7 +635,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
    * DO NOT call this method from inside from synchronized code block, becasue
    * it could call <code>handleIncomingMessage</code>, which again tries to acquire locks on some objects in this class.
    */
-  private void sendMessage(int destID, Packet p) {
+  private void sendMessage(int destID, PaxosPacket p) {
     try {
       if (destID == nodeID) {
         handleIncomingMessage(p.toJSONObject(), p.packetType);
@@ -739,7 +739,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
     }
 
     json.put(ProposalPacket.SLOT, 0);
-    json.put(PaxosPacketType.ptype, PaxosPacketType.PROPOSAL);
+    json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, PaxosPacketType.PROPOSAL.getInt());
     json.put(PaxosManager.PAXOS_ID, paxosID);
 
     if (temp != null && paxosManager.isNodeUp(temp.coordinatorID)) {
@@ -881,7 +881,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
 
       // Log this message and send reply to coordinator
 
-      Packet p = packet.getPrepareReplyPacket(acceptorBallot, nodeID, pValuesAccepted, slotNumber);
+      PaxosPacket p = packet.getPrepareReplyPacket(acceptorBallot, nodeID, pValuesAccepted, slotNumber);
       paxosManager.paxosLogger.logMessage(new LoggingCommand(paxosID, incomingJson, LoggingCommand.LOG_AND_SEND_MSG,
               packet.coordinatorID, p.toJSONObject()));
 

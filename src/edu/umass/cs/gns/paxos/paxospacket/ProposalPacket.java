@@ -5,59 +5,56 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class ProposalPacket extends Packet implements Serializable {
-	
-	public int slot;
-	
-	public RequestPacket req;
+public class ProposalPacket extends PaxosPacket implements Serializable {
 
-	public  static String SLOT = "s1";
-    public  static String GC_SLOT = "s2";
+  public int slot;
 
-    public  int gcSlot = 0;
+  public RequestPacket req;
 
-//	public ProposalPacket(int slot, RequestPacket req, int packetType) {
-//		this.slot = slot;
-//		this.req = req;
-//		this.packetType = packetType;
-//        this.gcSlot = 0;
-//	}
+  public static String SLOT = "s1";
+  public static String GC_SLOT = "s2";
 
-    public ProposalPacket(int slot, RequestPacket req, int packetType, int gcSlot) {
-        this.slot = slot;
-        this.req = req;
-        this.packetType = packetType;
-        this.gcSlot = gcSlot;
+  public int gcSlot = 0;
+
+  public ProposalPacket(int slot, RequestPacket req, PaxosPacketType packetType, int gcSlot) {
+    this.slot = slot;
+    this.req = req;
+    this.packetType = packetType.getInt();
+    this.gcSlot = gcSlot;
+  }
+
+  public ProposalPacket(JSONObject json) throws JSONException {
+    try {
+      this.req = new RequestPacket(json);
+    } catch (JSONException e) {
+      this.req = null;
     }
+    this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
+    this.slot = json.getInt(SLOT);
+    if (json.has(GC_SLOT)) {
+      gcSlot = json.getInt(GC_SLOT);
+    }
+  }
 
-    public ProposalPacket(JSONObject json) throws JSONException {
-        try {
-		    this.req = new RequestPacket(json);
-        } catch (JSONException e) {
-            this.req = null;
-        }
-		this.packetType = json.getInt(PaxosPacketType.ptype);
-		this.slot = json.getInt(SLOT);
-        if (json.has(GC_SLOT)) gcSlot = json.getInt(GC_SLOT);
-	}
-	
-	public ProposalPacket getDecisionPacket() {
-		return new ProposalPacket(slot, req, PaxosPacketType.DECISION, gcSlot);
-	}
+  public ProposalPacket getDecisionPacket() {
+    return new ProposalPacket(slot, req, PaxosPacketType.DECISION, gcSlot);
+  }
 
-    public void makeDecisionPacket() {
-        this.packetType = PaxosPacketType.DECISION;
+  public void makeDecisionPacket() {
+    this.packetType = PaxosPacketType.DECISION.getInt();
 //        this.req = null;
 
+  }
+
+  @Override
+  public JSONObject toJSONObject() throws JSONException {
+    JSONObject json = this.req.toJSONObject();
+    json.put(SLOT, slot);
+    json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, packetType);
+    if (gcSlot > 0) {
+      json.put(GC_SLOT, gcSlot);
     }
-	
-	@Override
-	public JSONObject toJSONObject() throws JSONException {
-        JSONObject json = this.req.toJSONObject();
-		json.put(SLOT, slot);
-		json.put(PaxosPacketType.ptype, packetType);
-        if (gcSlot > 0) json.put(GC_SLOT, gcSlot);
-		return json;
-	}
+    return json;
+  }
 
 }

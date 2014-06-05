@@ -7,6 +7,8 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -16,7 +18,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,15 +29,6 @@ import java.util.Set;
  * And send them over UDP and TCP connections. And we have an enum called PacketType that we
  * use to keep track of the type of packet that it is.
  *
- * And it appears that there are two separate but equal mechanisms to keep track of packet sizes
- * during transmission (one in here and one elsewhere ... multiple authors again).
- *
- * This is our basic way of transmitting data.
- * It's a bit of a hodgepodge at this point due to multiple authors, but it works.
- *
- * One issue is that a lot of the functions that take a GNSNodeConfig object as args
- * should probably accept some interface instead.
- *
  * @author westy
  */
 public class Packet {
@@ -44,14 +36,12 @@ public class Packet {
   /**
    * Defines the type of this packet *
    */
-  public final static String TYPE = "type";
+  public final static String PACKET_TYPE = "type";
   //Type of packets
 
   public enum PacketType {
 
     // SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
-    // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
-// SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
     // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
     DNS(-1),
     DNS_RESPONSE(-2),
@@ -61,11 +51,10 @@ public class Packet {
     CONFIRM_ADD(3),
     ACTIVE_ADD(4), // on an add request replica controller sends to active replica
     ACTIVE_ADD_CONFIRM(5), // after adding name, active replica confirms to replica controller
-    
+
     // new client
     COMMAND(7),
     COMMAND_RETURN_VALUE(8),
-    
     // Remove
     REMOVE_RECORD(10),
     CONFIRM_REMOVE(11),
@@ -161,20 +150,20 @@ public class Packet {
   }
 
   public static PacketType getPacketType(JSONObject json) throws JSONException {
-    //System.out.println("*****PACKETTYPE****:: " + json.getInt(TYPE) + " : " + PacketType.getPacketType(json.getInt(TYPE)));
+    //System.out.println("*****PACKETTYPE****:: " + json.getInt(PACKET_TYPE) + " : " + PacketType.getPacketType(json.getInt(PACKET_TYPE)));
     if (Packet.hasPacketTypeField(json)) {
-      return PacketType.getPacketType(json.getInt(TYPE));
+      return getPacketType(json.getInt(PACKET_TYPE));
     }
     // why... why not just put the type in the packet like all the other ones do?
     return PacketType.DNS;
   }
 
   public static boolean hasPacketTypeField(JSONObject json) {
-    return json.has(TYPE);
+    return json.has(PACKET_TYPE);
   }
 
   public static void putPacketType(JSONObject json, PacketType type) throws JSONException {
-    json.put(TYPE, type.getInt());
+    json.put(PACKET_TYPE, type.getInt());
   }
   /**
    * Delimiter that separates size from data in each frame transmitted *
@@ -192,7 +181,7 @@ public class Packet {
    */
   public static int getDataSize(InputStream inStream) {
 
-    String input = " ";
+    String input;
     String vectorSizeStr = "";
     byte[] tempBuffer = new byte[1];
 
@@ -220,7 +209,7 @@ public class Packet {
         }
       } while (input.compareTo(HEADER_PATTERN) != 0);
 
-    } catch (Exception e) {
+    } catch (IOException e) {
       return -1;
     }
 
@@ -252,50 +241,6 @@ public class Packet {
     return json;
   }
 
-//  public static int getDataSize(ByteBuffer buffer) {
-//    String delimiter = " ";
-//    String vectorSizeStr = "";
-//    byte[] tempBuffer = new byte[1];
-//
-//    //Keep reading from input stream until we see ":". The bytes
-//    //before ":" represents the size of the frame. The bytes after
-//    //":" is the actual frame.
-//    while (delimiter.compareTo(DELIMITER) != 0) {
-//      if (!buffer.hasRemaining()) {
-//        return -1;
-//      }
-//      buffer.get(tempBuffer);
-//
-//      delimiter = new String(tempBuffer);
-//      if (delimiter.compareTo(DELIMITER) != 0) {
-//        vectorSizeStr += delimiter;
-//      }
-//    }
-//    return Integer.parseInt(vectorSizeStr.trim());
-//  }
-//  private static JSONObject getJSONObjectFrame(ByteBuffer buffer, int sizeOfFrame)
-//          throws IOException, JSONException {
-//    if (sizeOfFrame > buffer.remaining()) {
-//      return null;
-//    }
-//    byte[] jsonByte = new byte[sizeOfFrame];
-//    buffer.get(jsonByte);
-//    //System.out.println(new String(jsonByte));
-//    JSONObject json = new JSONObject(new String(jsonByte));
-//    return json;
-//  }
-//  public static JSONObject getJSONObjectFrame(ByteBuffer buffer)
-//          throws IOException, JSONException {
-//
-//    int sizeOfPacket = Packet.getDataSize(buffer);
-//
-//    if (sizeOfPacket == -1) {
-//      return null;
-//    }
-//
-//    //Read the packet from the input stream
-//    return Packet.getJSONObjectFrame(buffer, sizeOfPacket);
-//  }
   /**
    * **
    * Reads bytes from the input stream until we have read bytes equal the size of a frame (packet) and returns a JSONObject that
@@ -326,8 +271,8 @@ public class Packet {
   }
 
   /**
-   * **
-   * Send a Packet to a name server using UDP
+   * ***
+   * Send a PaxosPacket to a name server using UDP
    *
    * @param id Name server id
    * @param socket DatagramSocket over which the packet is sent
@@ -431,7 +376,7 @@ public class Packet {
   }
 
   /**
-   * Sends a Packet to a name server using TCP.
+   * Sends a PaxosPacket to a name server using TCP.
    *
    * @param json JsonObject representing the packet
    * @param nameserverId Name server id
@@ -458,7 +403,7 @@ public class Packet {
   }
 
   /**
-   * Sends a Packet to a name server using TCP.
+   * Sends a PaxosPacket to a name server using TCP.
    *
    * @param json JsonObject representing the packet //
    * @param socket Socket on which to send the packet
@@ -569,6 +514,59 @@ public class Packet {
       }
     } while (attempt < numRetry);
     return null;
+  }
+
+  //
+  // DEBUGGING AIDS: Could move them somewhere else
+  //
+  /**
+   * A debugging aid that returns true if the packet is not a Paxos packet or another "chatty" packet.
+   *
+   * @param jsonData
+   * @return
+   */
+  public static boolean filterOutChattyPackets(JSONObject jsonData) {
+    try {
+      if (PaxosPacket.hasPacketTypeField(jsonData)) {
+        // handle Paxos packets
+        PaxosPacketType packetType = PaxosPacket.getPacketType(jsonData);
+        if (packetType != PaxosPacketType.FAILURE_DETECT
+                && packetType != PaxosPacketType.FAILURE_RESPONSE) {
+          return true;
+        }
+      } else {
+        // handle Regular packets
+        PacketType packetType = getPacketType(jsonData);
+        if (packetType != PacketType.NAME_SERVER_LOAD
+                && packetType != PacketType.ACTIVE_COORDINATION
+                && packetType != PacketType.REPLICA_CONTROLLER_COORDINATION) {
+          return true;
+        }
+      }
+    } catch (JSONException e) {
+
+    }
+    return false;
+  }
+
+  /**
+   *  * A debugging aid that returns a string identifying the packet type or "Unknown" if it cannot be determined.
+   *
+   * @param json
+   * @return
+   */
+  public static String getPacketTypeStringSafe(JSONObject json) {
+    try {
+      if (PaxosPacket.hasPacketTypeField(json)) {
+        // handle Paxos packets
+        return PaxosPacket.getPacketType(json).toString();
+      } else {
+        // handle Regular packets
+        return getPacketType(json).toString();
+      }
+    } catch (JSONException e) {
+      return "Unknown";
+    }
   }
 
   /**

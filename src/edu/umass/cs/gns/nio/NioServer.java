@@ -1,17 +1,15 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nio;
 
-/**
- * Created with IntelliJ IDEA.
- * User: abhigyan
- * Date: 6/29/13
- * Time: 6:34 PM
- * To change this template use File | Settings | File Templates.
- */
 /* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -25,10 +23,12 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Deprecated
 public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   public static String Version = "$Revision$";
-
+  public static final boolean DEBUG = true;
+  
   // The host:port combination to listen on
   private int ID;
   private InetAddress myAddress;
@@ -92,8 +92,10 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
 
   }
 
-  public int getMyID() {return this.ID;}
-  
+  public int getMyID() {
+    return this.ID;
+  }
+
   /**
    * After this method is called, we emulate an additional delay in packets sent to all nodes.
    */
@@ -137,11 +139,15 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
       t.schedule(timerObject, delay);
       return 0;
     } else {
+      if (DEBUG && Packet.filterOutChattyPackets(json)) {
+        GNS.getLogger().info("##### SEND " + Packet.getPacketTypeStringSafe(json) + ""
+                + " : From " + ID + " to " + destID + ": " + json.toString());
+      }
       sendToIDActual(destID, json);
       return 0;
     }
   }
-  
+
   @Override
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
     throw new UnsupportedOperationException("Not supported yet.");
@@ -153,12 +159,6 @@ public class NioServer implements Runnable, GNSNIOTransportInterface {
       workerObject.getPacketDemux().handleJSONObject(json);
       return true;
     }
-
-//        if (!nodeConfig.containsNodeInfo(destID)) {
-//            if (StartNameServer.debugMode) GNS.getLogger().severe("ERROR: Message Not Sent. Node Config does " +
-//                    "not contain info on nodeID = " + destID);
-//            return false;
-//        }
     // append a packet length header to JSON object
     String s = json.toString();
     byte[] data = ("&" + s.length() + "&" + s).getBytes();
