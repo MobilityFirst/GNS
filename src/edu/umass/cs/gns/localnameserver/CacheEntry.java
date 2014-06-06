@@ -61,7 +61,19 @@ public class CacheEntry implements Comparable<CacheEntry> {
   private Set<Integer> activeNameServers;
 
   /**
-   * Constructs a cache entry using data from a DNS packet
+   * Constructs a cache entry for a name from a list of replica controllers and a list of active replicas.
+   * @param name
+   * @param primaryNameServers
+   * @param activeNameServers 
+   */
+   public CacheEntry(String name, HashSet<Integer> primaryNameServers, Set<Integer> activeNameServers) {
+    this.name = name;
+    this.primaryNameServers = primaryNameServers;
+    this.activeNameServers = activeNameServers;
+  }
+  
+  /**
+   * Constructs a cache entry using data from a DNS packet 
    *
    * @param packet DNS packet
    */
@@ -82,13 +94,25 @@ public class CacheEntry implements Comparable<CacheEntry> {
     this.primaryNameServers = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
 //    this.activeNameServer = packet.getActiveNameServers();
   }
-
-  public CacheEntry(RequestActivesPacket packet) {
-    this.name = packet.getName();
-    this.primaryNameServers = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
-    this.activeNameServers = packet.getActiveNameServers();
+ 
+  /**
+   * Constructs a cache entry in the case where active name servers will be the same as replica controllers.
+   * 
+   * @param name
+   * @param primaryNameServers 
+   */
+  public CacheEntry(String name, Set<Integer> primaryNameServers) {
+    this(name, (HashSet<Integer>) primaryNameServers, primaryNameServers);
   }
 
+  /**
+   * Constructs a cache entry from a RequestActivesPacket response packet.
+   * 
+   * @param packet 
+   */
+  public CacheEntry(RequestActivesPacket packet) {
+    this(packet.getName(), (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(packet.getName()), packet.getActiveNameServers());
+  }
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
 

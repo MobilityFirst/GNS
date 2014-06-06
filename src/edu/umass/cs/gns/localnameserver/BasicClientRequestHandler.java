@@ -255,10 +255,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   public void updateCacheEntry(ConfirmUpdatePacket packet, String name, NameRecordKey key) {
     switch (packet.getType()) {
       case CONFIRM_ADD:
-        // active name servers will be the same as replica controllers, so we update cache with active replica set
-        RequestActivesPacket reqActives = new RequestActivesPacket(name, nodeID, 0, -1);
-        reqActives.setActiveNameServers(ConsistentHashing.getReplicaControllerSet(name));
-        cache.put(name, new CacheEntry(reqActives));
+        cache.put(name, new CacheEntry(name, ConsistentHashing.getReplicaControllerSet(name)));
         break;
       case CONFIRM_REMOVE:
         cache.invalidate(name);
