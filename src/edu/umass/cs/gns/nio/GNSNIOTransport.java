@@ -96,7 +96,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
     int written = 0;
     stampSenderIP(jsonData);
-                // LOCAL SEND CODE BELOW IS BAD... PROBABLY NEED TO CHECK PORT AS WELL  
+    // LOCAL SEND CODE BELOW IS BAD... PROBABLY NEED TO CHECK PORT AS WELL  
     // DOESN'T WORK BECAUSE YOU MIGHT BE RUNNING MULTIPLE SERVICES ON ONE MACHINE
     //if(isa.getAddress().equals(this.getNodeAddress())) written = sendLocal(jsonData);
     //else {
