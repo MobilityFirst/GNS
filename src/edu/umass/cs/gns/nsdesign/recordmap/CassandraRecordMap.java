@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.recordmap;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.CassandraRecords;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
@@ -89,17 +89,17 @@ public class CassandraRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public BasicRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) {
+  public AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BasicRecordCursor getAllRowsIterator() {
+  public AbstractRecordCursor getAllRowsIterator() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BasicRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) {
+  public AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -233,17 +233,17 @@ public class CassandraRecordMap extends BasicRecordMap {
 //  }
 
   @Override
-  public BasicRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) {
+  public AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
+  public AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BasicRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) {
+  public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

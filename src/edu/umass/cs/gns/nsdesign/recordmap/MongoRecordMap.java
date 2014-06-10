@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.recordmap;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
@@ -98,32 +98,32 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public BasicRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) {
+  public AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) {
     return mongoRecords.getAllRowsIterator(collectionName, nameField, fields);
   }
 
   @Override
-  public BasicRecordCursor getAllRowsIterator() {
+  public AbstractRecordCursor getAllRowsIterator() {
     return mongoRecords.getAllRowsIterator(collectionName);
   }
 
   @Override
-  public BasicRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) {
+  public AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) {
     return mongoRecords.selectRecords(collectionName, valuesMapField, key, value);
   }
 
   @Override
-  public BasicRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) {
+  public AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) {
     return mongoRecords.selectRecordsWithin(collectionName, valuesMapField, key, value);
   }
 
   @Override
-  public BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
+  public AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
     return mongoRecords.selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
   }
 
   @Override
-  public BasicRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) {
+  public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) {
     return mongoRecords.selectRecordsQuery(collectionName, valuesMapField, query);
   }
 

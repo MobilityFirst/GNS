@@ -15,7 +15,7 @@ import java.util.HashMap;
  * 
  * @author westy
  */
-public abstract class BasicRecordCursor implements RecordCursorInterface {
+public abstract class AbstractRecordCursor implements RecordCursorInterface {
   
   @Override
   public JSONObject nextJSONObject() {

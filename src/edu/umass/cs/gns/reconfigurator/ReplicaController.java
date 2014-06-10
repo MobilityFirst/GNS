@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.reconfigurator;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
@@ -85,7 +85,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	/********************** Start of Replicable interface methods ***************************/
 	@Override
 	public String getState(String name) {
-		BasicRecordCursor iterator = replicaControllerDB.getAllRowsIterator();
+		AbstractRecordCursor iterator = replicaControllerDB.getAllRowsIterator();
 		StringBuilder sb = new StringBuilder();
 		int recordCount = 0;
 		while (iterator.hasNext()) {

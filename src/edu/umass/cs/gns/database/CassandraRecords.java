@@ -254,7 +254,7 @@ public class CassandraRecords implements NoSQLRecords {
 
   @Override
   public void printAllEntries(String collectionName) {
-    BasicRecordCursor cursor = getAllRowsIterator(collectionName);
+    AbstractRecordCursor cursor = getAllRowsIterator(collectionName);
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject());
     }
@@ -301,33 +301,33 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public BasicRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) {
+  public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BasicRecordCursor getAllRowsIterator(String collection) {
+  public AbstractRecordCursor getAllRowsIterator(String collection) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   
  
   @Override
-  public BasicRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) {
+  public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   
   @Override
-  public BasicRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) {
+  public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BasicRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) {
+  public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   
   @Override
-  public BasicRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) {
+  public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

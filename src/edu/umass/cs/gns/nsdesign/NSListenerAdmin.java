@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -118,7 +118,7 @@ public class NSListenerAdmin extends Thread {
             // if there is an argument it is a TAGNAME we return all the records that have that tag
             if (dumpRequestPacket.getArgument() != null) {
               String tag = dumpRequestPacket.getArgument();
-              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
+              AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.next();
@@ -144,7 +144,7 @@ public class NSListenerAdmin extends Thread {
               // OTHERWISE WE RETURN ALL THE RECORD
             } else {
               //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-              BasicRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
+              AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.next();
@@ -173,7 +173,7 @@ public class NSListenerAdmin extends Thread {
                 GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling DELETEALLRECORDS request");
                 long startTime = System.currentTimeMillis();
                 int cnt = 0;
-                BasicRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
+                AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
                 while (cursor.hasNext()) {
                   NameRecord nameRecord = new NameRecord(gnsReconfigurable.getDB(), cursor.next());
                   //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {

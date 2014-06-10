@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign.recordmap;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
@@ -642,42 +642,42 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @return
    */
-  public static BasicRecordCursor getAllRowsIterator(BasicRecordMap recordMap) {
+  public static AbstractRecordCursor getAllRowsIterator(BasicRecordMap recordMap) {
     return recordMap.getAllRowsIterator();
   }
 
   /**
-   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+   * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
    * @param key
    * @param value
    * @return
    */
-  public static BasicRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) {
+  public static AbstractRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) {
     return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
   }
 
   /**
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
-   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+ string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a AbstractRecordCursor.
    *
    * @param key
    * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return
    */
-  public static BasicRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) {
+  public static AbstractRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) {
     return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
   }
 
   /**
    * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
-   * [LONG, LAT]. maxDistance is in meters. The returned value is a BasicRecordCursor.
+   * [LONG, LAT]. maxDistance is in meters. The returned value is a AbstractRecordCursor.
    *
    * @param key
    * @param value - a string that looks like this: [LONG, LAT]
    * @param maxDistance - the distance in meters
    * @return
    */
-  public static BasicRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) {
+  public static AbstractRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) {
     return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
   }
 
@@ -687,7 +687,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param query
    * @return
    */
-  public static BasicRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) {
+  public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) {
     return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
   }
 

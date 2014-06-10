@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.reconfigurator;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -102,7 +102,7 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 		int numGroupChanges = 0;  // number of names for which group changes is started.
 
 		try {
-			BasicRecordCursor iterator = replicaController.getDB().getIterator(ReplicaControllerRecord.NAME, computeNewActivesFields);
+			AbstractRecordCursor iterator = replicaController.getDB().getIterator(ReplicaControllerRecord.NAME, computeNewActivesFields);
 			log.info("Node "+getID()+" ComputeNewActives started iterating. ");
 			long t0 = System.currentTimeMillis();
 			while (iterator.hasNext()) {

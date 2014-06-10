@@ -4,7 +4,7 @@
  */
 package edu.umass.cs.gns.nsdesign.recordmap;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
@@ -94,39 +94,39 @@ public interface RecordMapInterface {
    * @param fields
    * @return
    */
-  public abstract BasicRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields);
+  public abstract AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields);
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @return
    */
-  public abstract BasicRecordCursor getAllRowsIterator();
+  public abstract AbstractRecordCursor getAllRowsIterator();
 
   /**
-   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+   * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
    *
    * @param valuesMapField - the field in the row that contains the *user* fields
    * @param key
    * @param value
    * @return
    */
-  public abstract BasicRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value);
+  public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value);
 
   /**
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
-   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+ string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a AbstractRecordCursor.
    *
    * @param valuesMapField - the field in the row that contains the *user* fields
    * @param key
    * @param value - a string that looks like this [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return
    */
-  public abstract BasicRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value);
+  public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value);
 
   /**
    * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
-   * [LONG, LAT]. maxDistance is in radians. The returned value is a BasicRecordCursor.
+   * [LONG, LAT]. maxDistance is in radians. The returned value is a AbstractRecordCursor.
    *
    * @param valuesMapField - the field in the row that contains the *user* fields
    * @param key
@@ -134,9 +134,9 @@ public interface RecordMapInterface {
    * @param maxDistance - the distance in meters
    * @return
    */
-  public abstract BasicRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance);
+  public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance);
 
-  public abstract BasicRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query);
+  public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query);
 
   // Replica Controller
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;

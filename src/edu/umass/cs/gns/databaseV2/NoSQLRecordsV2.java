@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.databaseV2;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -52,7 +52,7 @@ public interface NoSQLRecordsV2 {
   public void update(String collection, String name, JSONObject value) throws FailedUpdateException;
 
   /**
-   * Updates the record indexed by name using the JSONObject.
+   * Updates the record indexed by name if the record matches the query criteria.
    *
    * @param collectionName
    * @param name
@@ -85,26 +85,27 @@ public interface NoSQLRecordsV2 {
   public JSONObject find(String collection, String name, JSONObject projection) throws RecordNotFoundException;
 
   /**
-   * Return all the records as a BasicRecordCursor that match query.
+   * Return all the records as a AbstractRecordCursor that match query.
    *
    * @param collectionName
    * @param query
-   * @return BasicRecordCursor
+   * @return AbstractRecordCursor
    */
-  public BasicRecordCursor find(String collectionName, JSONObject query);
+  public AbstractRecordCursor find(String collectionName, JSONObject query);
 
+  
   /**
-   * Return all the records as a BasicRecordCursor that match query. Return the fields matching the projection.
+   * Return all the records that match query as an AbstractRecordCursor. 
+   * Returns only the fields matching the projection.
    *
    * @param collectionName
    * @param query
    * @param projection
-   * @return BasicRecordCursor
+   * @return AbstractRecordCursor
    */
-  public BasicRecordCursor find(String collectionName, JSONObject query, JSONObject projection);
+  public AbstractRecordCursor find(String collectionName, JSONObject query, JSONObject projection);
 
   /**
-   * Updates the record indexed by name if the record matches the query criteria.
    * Returns true if a record with the given name exists, false otherwise.
    *
    * @param collection
@@ -133,22 +134,22 @@ public interface NoSQLRecordsV2 {
   public abstract void increment(String collection, String name, JSONObject projection) throws FailedUpdateException;
 
   /**
-   * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
-   * the NAME (AKA the primary key) is always there.
+   * Returns an iterator for all the rows in the collection with only the fields in projection returned.
+   * The name (AKA the primary key) is always included in the return value.
    *
    * @param collection
    * @param projection
    * @return
    */
-  public BasicRecordCursor getAllRowsIterator(String collection, JSONObject projection);
+  public AbstractRecordCursor getAllRowsIterator(String collection, JSONObject projection);
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @param collection
-   * @return BasicRecordCursor
+   * @return AbstractRecordCursor
    */
-  public BasicRecordCursor getAllRowsIterator(String collection);
+  public AbstractRecordCursor getAllRowsIterator(String collection);
 
   /**
    * Sets the collection back to an initial empty state with indexes also initialized.

@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
  * 
  * @author westy
  */
-public class MongoRecordCursor extends BasicRecordCursor {
+public class MongoRecordCursor extends AbstractRecordCursor {
 
   private ColumnField nameField;
   private ArrayList<ColumnField> fields;

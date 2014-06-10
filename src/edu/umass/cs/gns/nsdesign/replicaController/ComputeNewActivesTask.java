@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -83,7 +83,7 @@ public class ComputeNewActivesTask extends TimerTask {
 
     try {
       GNS.getLogger().info("ComputeNewActives before getting iterator ... ");
-      BasicRecordCursor iterator = replicaController.getDB().getIterator(ReplicaControllerRecord.NAME, computeNewActivesFields);
+      AbstractRecordCursor iterator = replicaController.getDB().getIterator(ReplicaControllerRecord.NAME, computeNewActivesFields);
       GNS.getLogger().info("ComputeNewActives started iterating. ");
       long t0 = System.currentTimeMillis();
       while (iterator.hasNext()) {

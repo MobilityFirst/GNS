@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.recordmap;
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.database.MongoRecords;
@@ -897,7 +897,7 @@ public class ReplicaControllerRecord {
     replicaControllerDB.updateNameRecordPrimary(record);
   }
 
-  public static BasicRecordCursor getAllPrimaryRowsIterator(BasicRecordMap replicaControllerDB) {
+  public static AbstractRecordCursor getAllPrimaryRowsIterator(BasicRecordMap replicaControllerDB) {
     return replicaControllerDB.getAllRowsIterator();
   }
 

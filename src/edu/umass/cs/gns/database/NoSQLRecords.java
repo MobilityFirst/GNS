@@ -251,42 +251,42 @@ public interface NoSQLRecords {
    * @param fields
    * @return
    */
-  public BasicRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields);
+  public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields);
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @param collection
-   * @return BasicRecordCursor
+   * @return AbstractRecordCursor
    */
-  public BasicRecordCursor getAllRowsIterator(String collection);
+  public AbstractRecordCursor getAllRowsIterator(String collection);
 
   /**
-   * Given a key and a value return all the records as a BasicRecordCursor that have a *user* key with that value.
+   * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
    *
    * @param collectionName
    * @param valuesMapField
    * @param key
    * @param value
-   * @return BasicRecordCursor
+   * @return AbstractRecordCursor
    */
-  public BasicRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value);
+  public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value);
 
   /**
    * If key is a GeoSpatial field returns all guids that are within value which is a bounding box specified as a nested JSONArray
-   * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a BasicRecordCursor.
+ string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a AbstractRecordCursor.
    *
    * @param collectionName
    * @param valuesMapField
    * @param key
    * @param value
-   * @return BasicRecordCursor
+   * @return AbstractRecordCursor
    */
-  public BasicRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value);
+  public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value);
 
   /**
    * If key is a GeoSpatial field returns all guids that are near value which is a point specified as a JSONArray string tuple:
-   * [LONG, LAT]. maxDistance is in meters. The returned value is a BasicRecordCursor.
+   * [LONG, LAT]. maxDistance is in meters. The returned value is a AbstractRecordCursor.
    *
    * @param collectionName
    * @param valuesMapField
@@ -295,7 +295,7 @@ public interface NoSQLRecords {
    * @param maxDistance
    * @return
    */
-  public BasicRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance);
+  public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance);
 
   /**
    * Performs a query on the database and returns all guids that satisfy the query.
@@ -305,7 +305,7 @@ public interface NoSQLRecords {
    * @param query
    * @return 
    */
-  public BasicRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query);
+  public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query);
 
   /**
    * Sets the collection back to an initial empty state with indexes also initialized.

@@ -5,7 +5,9 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
  * All Rights Reserved
  */
 
-import edu.umass.cs.gns.database.BasicRecordCursor;
+
+
+import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
@@ -230,7 +232,7 @@ public class Select {
   private static JSONArray getJSONRecordsForSelect(SelectRequestPacket request, GnsReconfigurable ar) {
     JSONArray jsonRecords = new JSONArray();
     // actually only need name and values map... fix this
-    BasicRecordCursor cursor = null;
+    AbstractRecordCursor cursor = null;
     switch (request.getSelectOperation()) {
       case EQUALS:
         cursor = NameRecord.selectRecords(ar.getDB(), request.getKey().getName(), request.getValue());
