@@ -5,7 +5,6 @@ package edu.umass.cs.gns.databaseV2;
  * University of Massachusetts
  * All Rights Reserved
  */
-import edu.umass.cs.gns.database.*;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -17,6 +16,9 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.clientsupport.Defs;
+import edu.umass.cs.gns.database.AbstractRecordCursor;
+import edu.umass.cs.gns.database.MongoCollectionSpec;
+import edu.umass.cs.gns.database.MongoRecordCursor;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
