@@ -154,10 +154,6 @@ public class StartLocalNameServer {
   public static boolean emulatePingLatencies = false;
   public static double variation = 0.1; // 10 % variation above latency in config file.
 
-
-
-
-
   private static Options commandLineOptions;
 
   private static HelpFormatter formatter = new HelpFormatter();
@@ -496,8 +492,9 @@ public class StartLocalNameServer {
       outputSampleRate = allValues.containsKey(OUTPUT_SAMPLE_RATE) ?
               Double.parseDouble(allValues.get(OUTPUT_SAMPLE_RATE)) : 1.0;
 
-
-      debugMode = allValues.containsKey(DEBUG_MODE) && Boolean.parseBoolean(allValues.get(DEBUG_MODE));
+      if (allValues.containsKey(DEBUG_MODE)) {
+        debugMode = Boolean.parseBoolean(allValues.get(DEBUG_MODE));
+      }
       if (allValues.containsKey(EXPERIMENT_MODE)) {
         experimentMode = Boolean.parseBoolean(allValues.get(EXPERIMENT_MODE));
       }

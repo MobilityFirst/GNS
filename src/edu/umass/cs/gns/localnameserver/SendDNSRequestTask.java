@@ -47,16 +47,13 @@ public class SendDNSRequestTask extends TimerTask {
 
   private int timeoutCount = -1;
 
-  private final int timerTaskId;
+  private int requestActivesCount = -1;
 
   public SendDNSRequestTask(int lnsReqID, ClientRequestHandlerInterface handler,
                             DNSPacket incomingPacket) {
     this.lnsReqID = lnsReqID;
     this.handler = handler;
     this.incomingPacket = incomingPacket;
-    this.timerTaskId = new Random().nextInt();
-    DNSRequestInfo info = (DNSRequestInfo) LocalNameServer.getRequestInfo(lnsReqID);
-    if (info != null) info.setTimerTaskId(timerTaskId);
   }
 
 
@@ -76,17 +73,17 @@ public class SendDNSRequestTask extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-      // IF we don't have one or more valid active replicas in the cache entry
+      // If we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
         GNS.getLogger().info("Requesting new actives for " + incomingPacket.getGuid());
         requestNewActives();
         // Cancel the task now. 
-          // When the new actives are received, a new task in place of this task will be rescheduled.
+        // When the new actives are received, a new task in place of this task will be rescheduled.
         throw new CancelExecutorTaskException();
       }
 
-      // the cache containts a set of valid active replicas
+      // the cache contains a set of valid active replicas
       int ns = selectNS(cacheEntry);
 
       sendLookupToNS(ns);
@@ -108,10 +105,13 @@ public class SendDNSRequestTask extends TimerTask {
                   + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + nameserversQueried + "\t");
         }
         return true;
-    } else if (info.isLookupActives() || info.getTimerTaskId() != timerTaskId) { //
+    } else if (requestActivesCount == -1) {
+      requestActivesCount = info.getNumLookupActives();
+    } else if (requestActivesCount != info.getNumLookupActives()) { //
       // invalid active response received in this case
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + incomingPacket);
+        GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + incomingPacket +
+        " Request actives count: " + requestActivesCount + " Request actives count: " + info.getNumLookupActives());
       }
       return true;
     }
@@ -122,18 +122,22 @@ public class SendDNSRequestTask extends TimerTask {
     DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (requestInfo != null) {
       if (System.currentTimeMillis() - requestInfo.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
-        // send error response to user and log error
-        if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid()
-                  + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
-                  + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
+        // remove from request info as LNS must clear all state for this request
+        requestInfo = (DNSRequestInfo) handler.removeRequestInfo(lnsReqID);
+        if (requestInfo!=null) {
+          // send error response to user and log error
+          if (handler.getParameters().isDebugMode()) {
+            GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid()
+                    + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
+                    + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
+          }
+          Lookup.sendDNSResponseBackToSource(new DNSPacket(requestInfo.getErrorMessage()), handler);
+          requestInfo.setSuccess(false);
+          requestInfo.setFinishTime();
+          requestInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
+          GNS.getStatLogger().fine(requestInfo.getLogString());
+          return true;
         }
-        Lookup.sendDNSResponseBackToSource(new DNSPacket(requestInfo.getErrorMessage()), handler);
-        requestInfo.setSuccess(false);
-        requestInfo.setFinishTime();
-        requestInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
-        GNS.getStatLogger().fine(requestInfo.getLogString());
-        return true;
       }
     }
     return false;

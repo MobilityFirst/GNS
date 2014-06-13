@@ -43,9 +43,11 @@ my_name 4
 class WorkloadParams:
     EXP_TYPE = 'exp_type'   # type of experiment: trace / connect_time
 
+    # parameters for trace based experiments
     OBJECT_SIZE = 'object_size_kb'
     TTL = 'ttl'
 
+    # parameters for connect time experiment
     MOBILE_UPDATE_INTERVAL = 'mobile_update_interval'
 
 class ExpType:

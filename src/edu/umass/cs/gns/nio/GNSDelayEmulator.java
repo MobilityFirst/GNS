@@ -98,10 +98,13 @@ public class GNSDelayEmulator {
   * node ID sent the packet, and hence cannot know how much to delay the packet */
   public static long getEmulatedDelay(JSONObject jsonData){
     if (GNSDelayEmulator.EMULATE_DELAYS) {
-      try {
-        return jsonData.getLong(DELAY_STR);
-      } catch (JSONException e) {
-        e.printStackTrace();
+      // if DELAY_STR field is not in json object, we do not emulate delay for that object
+      if (jsonData.has(DELAY_STR)) {
+        try {
+          return jsonData.getLong(DELAY_STR);
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     }
     return -1;

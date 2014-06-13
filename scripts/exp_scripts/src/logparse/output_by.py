@@ -14,7 +14,7 @@ def main():
     folder = sys.argv[1]
     name_index = int(sys.argv[2])
     value_index = int(sys.argv[3])
-    output_file = sys.argv[4] #'retrans_by_ns.txt'
+    output_file = sys.argv[4]  #'retrans_by_ns.txt'
     
     if not folder.startswith('/home/abhigyan'):
         folder = os.path.join('/home/abhigyan/gnrs', folder)
@@ -46,7 +46,7 @@ def output_stats_by_name(all_tuples_filename):
 
     folder = dirname(all_tuples_filename)
 
-    exclude_failed_reads = False
+    exclude_failed_reads = True
     if exclude_failed_reads:
         failed_reads_names = select_failed_reads_names(all_tuples_filename)
         write_array(failed_reads_names.keys(), os.path.join(folder, 'failed_reads_names.txt'))
@@ -54,15 +54,15 @@ def output_stats_by_name(all_tuples_filename):
 
     outfile1 = os.path.join(folder, 'all_by_name.txt')
     output_tuples1 = group_by(all_tuples_filename, name_index, value_index)
-    my_tuples = write_tuple_array(output_tuples1, outfile1, p = True)
+    write_tuple_array(output_tuples1, outfile1, p = True)
     
     outfile2 =os.path.join(folder, 'writes_by_name.txt')
     output_tuples2 = group_by(all_tuples_filename, name_index, value_index, filter = write_filter)
-    my_tuples = write_tuple_array(output_tuples2, outfile2, p = True)
+    write_tuple_array(output_tuples2, outfile2, p = True)
     
     outfile3 = os.path.join(folder, 'reads_by_name.txt')
     output_tuples3 = group_by(all_tuples_filename, name_index, value_index, filter = read_filter)
-    my_tuples = write_tuple_array(output_tuples3, outfile3, p = True)
+    write_tuple_array(output_tuples3, outfile3, p = True)
     
     filenames = [outfile1, outfile2, outfile3]
     schemes = ['ALL', 'WRITES', 'READS']

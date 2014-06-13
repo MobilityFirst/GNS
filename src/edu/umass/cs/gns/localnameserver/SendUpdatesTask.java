@@ -43,7 +43,7 @@ public class SendUpdatesTask extends TimerTask {
   private HashSet<Integer> activesQueried;
   private int timeoutCount = -1;
 
-  private final int timerTaskID;
+  private int requestActivesCount = -1;
   private final ClientRequestHandlerInterface handler;
 
   public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface handler, UpdatePacket updatePacket) {
@@ -53,9 +53,6 @@ public class SendUpdatesTask extends TimerTask {
     this.name = updatePacket.getName();
     this.updatePacket = updatePacket;
     this.activesQueried = new HashSet<>();
-    this.timerTaskID = new Random().nextInt();
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
-    if (info != null) info.setTimerTaskId(timerTaskID);
   }
 
   @Override
@@ -100,16 +97,16 @@ public class SendUpdatesTask extends TimerTask {
         GNS.getLogger().fine("UpdateInfo not found. Update complete. Cancel task. " + lnsReqID + "\t" + updatePacket);
       }
       return true;
-    } else if (info.isLookupActives() || info.getTimerTaskId() != timerTaskID) {  // set timer task ID to LNS
+    } else if (requestActivesCount == -1) {
+      requestActivesCount = info.getNumLookupActives();
+    } else if (requestActivesCount != info.getNumLookupActives()) {  // set timer task ID to LNS
       // invalid active response received in this case
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + updatePacket);
       }
       return true;
-    } else {
-      return false;
     }
-
+    return false;
   }
 
   private boolean isMaxWaitTimeExceeded() {
@@ -117,25 +114,25 @@ public class SendUpdatesTask extends TimerTask {
     if (info != null) {   // probably NS sent response
       // Too much time elapsed, send failed msg to user and log error
       if (System.currentTimeMillis() - info.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
-        if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + lnsReqID + " name = " + name);
-        }
-        // create a failure packet and send it back to client support
+        // remove from request info as LNS must clear all state for this request
+        info = (UpdateInfo) handler.removeRequestInfo(lnsReqID);
+        if (info != null) {
+          if (handler.getParameters().isDebugMode()) {
+            GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + lnsReqID + " name = " + name);
+          }
+          // create a failure packet and send it back to client support
 
-        try {
-          ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(info.getErrorMessage());
-          Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
-        } catch (JSONException e) {
-          e.printStackTrace();
-          GNS.getLogger().severe("Problem converting packet to JSON: " + e);
-        }
-
-        UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(lnsReqID);
-        if (updateInfo != null) {
-          updateInfo.setFinishTime();
-          updateInfo.setSuccess(false);
-          updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
-          GNS.getStatLogger().info(updateInfo.getLogString());
+          try {
+            ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(info.getErrorMessage());
+            Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
+          } catch (JSONException e) {
+            e.printStackTrace();
+            GNS.getLogger().severe("Problem converting packet to JSON: " + e);
+          }
+          info.setFinishTime();
+          info.setSuccess(false);
+          info.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
+          GNS.getStatLogger().info(info.getLogString());
         }
         return true;
       }

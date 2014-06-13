@@ -65,7 +65,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		this.niot = nioServer;
 		this.messenger = new JSONMessenger(this.niot);
 		this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
-		this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType);
+		this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 	}
 
 	@Override public ConcurrentHashMap<Integer, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or remove

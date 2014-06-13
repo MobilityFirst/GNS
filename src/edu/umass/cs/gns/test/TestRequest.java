@@ -43,10 +43,9 @@ public class TestRequest {
     String[] tokens = line.split("\\s+");
     if (Integer.parseInt(tokens[1]) == TestRequest.GROUP_CHANGE) {
       return new TestGroupChangeRequest(tokens[0], line);
-    } else if (tokens.length == 2) {
+    } else {
       return new TestRequest(tokens[0], new Integer(tokens[1]));
     }
-    return null;
   }
 
 

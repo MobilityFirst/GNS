@@ -26,7 +26,7 @@ public class Config {
 
   public static boolean debugMode = false;
 
-  public static boolean experimentMode = false;
+//  public static boolean experimentMode = false;
   
   // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?
   public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/"; 
@@ -50,6 +50,12 @@ public class Config {
   public static int nameServerVoteSize = 30;
   public static double maxReqRate = 50.0; // maximum request rate of name records
   public static final int NS_TIMEOUT_MILLIS = 5000;
+
+  // parameters specific to beehive replication (used only for running experiments)
+  public static double beehiveC = 0.5;
+  public static double beehiveAlpha = 0.91;
+  public static double beehiveBase = 16;
+  public static int beehiveWorkloadSize = 11000;
 
   // testing related parameters
   public static boolean useGNSNIOTransport = true;

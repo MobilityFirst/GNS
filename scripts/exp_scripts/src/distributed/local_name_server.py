@@ -125,6 +125,7 @@ def run_local_name_server(node_id, config_file, node_config_file, update_trace, 
 
     # Experiment duration
     is_experiment_mode = exp_config.is_experiment_mode  # Always set to True to run experiments.
+    print "LNS: is_experiment_mode = ", is_experiment_mode
     #restart=False
     is_debug_mode = exp_config.is_debug_mode  # Prints logs if True. Used for testing.
     experiment_run_time = exp_config.experiment_run_time  # in seconds

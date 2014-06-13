@@ -14,7 +14,7 @@ sys.path.append(parent_folder)
 local_jar = '/Users/abhigyan/Documents/workspace/GNS/dist/GNS.jar'
 
 # config file for remote node
-config_file = os.path.join(parent_folder, 'resources', 'skuld_env.ini')
+config_file = os.path.join(parent_folder, 'resources', 'planetlab_full_config.ini')
 ssh_key = '/Users/abhigyan/.ssh/id_rsa'
 user = 'abhigyan'
 remote_host = 'skuld.cs.umass.edu'
@@ -29,10 +29,10 @@ remote_skuld_folder = '/home/abhigyan/gns/test_folder'
 print 'Making remote dir ... ' + remote_skuld_folder
 os.system('ssh -i ' + ssh_key + ' ' + user + '@' + remote_host + ' " mkdir -p " ' + remote_skuld_folder)
 
-print 'Syncing jar ... '
+print 'Syncing jar ... ' + local_jar
 os.system('rsync -e "ssh  -i ' + ssh_key + ' " ' + local_jar + ' ' + user + '@' + remote_host + ':' + remote_skuld_folder)
 
-print 'Syncing script folder ... '
+print 'Syncing script folder ... ' + parent_folder
 # folder containing all scripts
 os.system('rsync -e "ssh  -i ' + ssh_key + ' " -r ' + parent_folder + ' ' + user + '@' + remote_host + ':' + remote_skuld_folder)
 

@@ -6,9 +6,11 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+
 /**
- * We choose the type of replication needed. The options that currently work are LOCATION, RANDOM, and STATIC.
- * STATIC keeps replicas at same locations as replica controllers.
+ * We choose the type of replication needed. The options that currently work are LOCATION, and RANDOM.
  * LOCATION chooses replica locations for a name at those name servers that are close to the local name servers
  * sending requests for tha name.
  * RANDOM chooses replica locations randomly.
@@ -19,22 +21,21 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
  * These are LocationBasedReplication and RandomReplication, that are respectively used to implement LOCATION, and
  * RANDOM schemes respectively.
  * </p>
- * <p>Static replication does not really need any ReplicationFrameworkInterface as it does not change replicas.
- * So, there is no replication framework defined for it.</p>
+ * <p>STATIC, BEEHIVE, and OPTIMAL are used only for running experiments for paper.</p>
  *
  * @see edu.umass.cs.gns.nsdesign.replicaController.ComputeNewActivesTask
+ * @see edu.umass.cs.gns.nsdesign.replicaController.Add
  *
  * @author westy, Abhigyan
  */
 public enum ReplicationFrameworkType {
-
-  STATIC,
+  LOCATION,  // Main replication algorithm
   RANDOM,
-  LOCATION,
-  BEEHIVE,
-  OPTIMAL;
+  STATIC,    // used only for experiments
+  BEEHIVE,   // used only for experiments
+  OPTIMAL;   // used only for experiments
 
-  public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type) {
+  public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type, GNSNodeConfig gnsNodeConfig) {
     ReplicationFrameworkInterface framework;
     // what type of replication?
     switch (type) {
@@ -44,18 +45,15 @@ public enum ReplicationFrameworkType {
       case RANDOM:
         framework = new RandomReplication();
         break;
-      case STATIC:
+      case STATIC: // used only for experiments
         framework = null;
         break;
-      case BEEHIVE:
-        // Abhigyan: we will enable beehive if we again need to run experiments with it.
-        throw new UnsupportedOperationException();
-//        BeehiveReplication.generateReplicationLevel(StartNameServer.C,
-//                StartNameServer.regularWorkloadSize + StartNameServer.mobileWorkloadSize,
-//                StartNameServer.alpha, StartNameServer.base);
-//        framework = new RandomReplication();
-//        break;
-      case OPTIMAL:
+      case BEEHIVE: // used only for experiments
+        BeehiveReplication.generateReplicationLevel(gnsNodeConfig.getNameServerIDs().size(), Config.beehiveC,
+                Config.beehiveWorkloadSize, Config.beehiveAlpha, Config.beehiveBase);
+        framework = null;
+        break;
+      case OPTIMAL: // used only for experiments
         throw new UnsupportedOperationException();
       default:
         throw new RuntimeException("Invalid replication framework");

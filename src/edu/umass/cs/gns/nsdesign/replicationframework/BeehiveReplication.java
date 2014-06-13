@@ -15,6 +15,9 @@ import java.util.*;
  * To implement beehive, we first calculate the number of servers using this class and
  * then use RandomReplication to select replicas.
  *
+ * This class assumes that names are positive integers represented as strings, and a name 'i' is the i-th most
+ * popular name.
+ *
  * Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
  *
  * This was Hardeep's implementation of beehive DHT routing.
@@ -26,36 +29,9 @@ public class BeehiveReplication {
 	
 	private static Map<Integer, Double> replicationLevelMap = new HashMap<Integer, Double>();
 	
-	private static double xi( int i, double C, double M, double alpha, double base, int kPrime ) {
-		double d_power = (1 - alpha) / alpha;
-		double D = Math.pow( base, d_power );
-		double CPrime = C * ( 1 - ( 1 / Math.pow(M, 1 - alpha ) ) );
-		
-		double xi_num = ( Math.pow(D, i) * ( kPrime - CPrime ) );
-		double xi_dem = 1;
-		
-		for(int j = 1; j <= (kPrime - 1); j++ ) {
-			xi_dem += Math.pow(D, j);
-		}
-		
-		double xi_power = 1/( 1-alpha );
-		return Math.pow( (xi_num / xi_dem), xi_power );
-	}
-	
-	private static int getKPrime( double C, double M, double alpha, double base ) {
-		double xkPrime = 0;
-		int kPrime = 0;
-		
-		while( xkPrime < 1 ) {
-			kPrime++;
-			xkPrime = xi( kPrime - 1, C, M, alpha, base, kPrime );
-//			System.out.println("k':" + kPrime + "\tx_" + (kPrime-1) + ":" + xkPrime );
-		}
-		
-		return kPrime -1;
-	}
-	
-	public static void generateReplicationLevel( double C, double M, double alpha, double base ) {
+
+	public static void generateReplicationLevel(int numNodes, double C, double M, double alpha, double base ) {
+    BeehiveReplication.numNodes = numNodes; //
 		BeehiveReplication.M = M;
 		BeehiveReplication.base = base;
 		
@@ -84,18 +60,46 @@ public class BeehiveReplication {
 		int numActives = Util.roundToInt( numNodes / Math.pow( base, level ) );
 		if( numActives < 1 )
 			numActives = 1;
-		
 //		System.out.println( name + "\t" + level + "\t" + numActives );
 		return numActives;
 	}
+
+  private static double xi( int i, double C, double M, double alpha, double base, int kPrime ) {
+    double d_power = (1 - alpha) / alpha;
+    double D = Math.pow( base, d_power );
+    double CPrime = C * ( 1 - ( 1 / Math.pow(M, 1 - alpha ) ) );
+
+    double xi_num = ( Math.pow(D, i) * ( kPrime - CPrime ) );
+    double xi_dem = 1;
+
+    for(int j = 1; j <= (kPrime - 1); j++ ) {
+      xi_dem += Math.pow(D, j);
+    }
+
+    double xi_power = 1/( 1-alpha );
+    return Math.pow( (xi_num / xi_dem), xi_power );
+  }
+
+  private static int getKPrime( double C, double M, double alpha, double base ) {
+    double xkPrime = 0;
+    int kPrime = 0;
+
+    while( xkPrime < 1 ) {
+      kPrime++;
+      xkPrime = xi( kPrime - 1, C, M, alpha, base, kPrime );
+//			System.out.println("k':" + kPrime + "\tx_" + (kPrime-1) + ":" + xkPrime );
+    }
+
+    return kPrime -1;
+  }
 
 
   /**
    * Abhigyan: Putting this code here because it is related to the beehive replication strategy.
    * Implements the algorithm that a local name server uses to select a name server when we experiment with beehive
-   * replication. It chooses the closest name server if available, otherwise picks a name server randomly.
-   * I think this approximates a replica that will be chosen using DHT routing.
-   *
+   * replication. It chooses the closest name server if that name server is an active replica, otherwise picks a name
+   * server whose ID is greater than current name server's ID. I think this approximates a replica that will be chosen
+   * using DHT routing.
    */
   public static int getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<Integer> activeNameServers, Set<Integer> nameserverQueried) {
     ArrayList<Integer> allServers = new ArrayList<Integer>();
@@ -147,7 +151,7 @@ public class BeehiveReplication {
 		double hopCount = 0.54;
 		double zipfAlpha = 0.63;
 
-    BeehiveReplication.numNodes = nameServerCount;
+//    BeehiveReplication.numNodes = nameServerCount;
 
     HashMap<Double,Integer> loadAuspiceReplicaCount = new HashMap<Double, Integer>();
     loadAuspiceReplicaCount.put(1.0,213332);
@@ -167,7 +171,7 @@ public class BeehiveReplication {
       int codonsTotalReplicas = 200000;
       for(double j = 0.3; j <= 2.0; j = j + 0.02) {
         hopCount = j;
-        generateReplicationLevel(hopCount, nameCount, 0.63, 16);
+        generateReplicationLevel(nameServerCount, hopCount, nameCount, 0.63, 16);
   //					System.out.println(replicationLevelMap.toString() );
         int sum = 0;
         for(int i = 1; i <= nameCount; i++) {
@@ -183,7 +187,7 @@ public class BeehiveReplication {
       }
       System.out.println("Selected hop count\t" + selectedHopCount  + "\tCodons total replicas\t" + codonsTotalReplicas);
 
-      generateReplicationLevel(selectedHopCount, nameCount, zipfAlpha, 16);
+      generateReplicationLevel(nameServerCount, selectedHopCount, nameCount, zipfAlpha, 16);
       //		System.out.println(replicationLevelMap.toString() );
       int NUM_RETRY = nameServerCount;
       FileWriter fw = new FileWriter(new File("nameActives-codons-load"  + load.intValue()));

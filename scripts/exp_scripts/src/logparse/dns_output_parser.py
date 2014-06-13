@@ -5,7 +5,10 @@ from group_by import group_by
 from write_array_to_file import write_tuple_array
 from plot_cdf import get_cdf_and_plot
 
-lns_ping_latencies_file = '/home/abhigyan/gnrs/managedDNS/ultra-dns-lns-pings'
+
+all_latencies = []
+
+
 exclude_hosts = []
 #exclude_hosts = ['planetlab2.hust.edu.cn', 'planetlab1.cs.otago.ac.nz','planetlab2.c3sl.ufpr.br','plab1.cs.msu.ru']
 #exclude_hosts = ['planetlab2.hust.edu.cn',
@@ -18,10 +21,14 @@ exclude_hosts = []
 #                 'planetlab1.cs.otago.ac.nz',
 #                 'plab1.cs.msu.ru']
 
-
 #planetlab2.c3sl.ufpr.br
 #planetlab1.cs.otago.ac.nz
 #plab1.cs.msu.ru
+
+# Subtracts latency to nearest server
+lns_latencies = {}
+lns_ping_latencies_file = None  # '/home/abhigyan/gnrs/managedDNS/ultra-dns-lns-pings'
+
 
 def main():
     log_files_dir = sys.argv[1]
@@ -35,6 +42,7 @@ def main():
         log_files_dir,output_files_dir = get_indir_outdir(log_files_dir)
     os.system('mkdir -p ' + output_files_dir)
     parse_dns_output(log_files_dir, output_files_dir)
+
 
 def get_indir_outdir(dir):
     """returns default output directory"""
@@ -54,26 +62,20 @@ def get_indir_outdir(dir):
     return prefix1, prefix2
 
 
-all_latencies = []
-
-lns_latencies = {}
 
 def read_lns_latencies():
     global lns_latencies
     lns_latencies = {}
     f = open(lns_ping_latencies_file)
-    for line in f :
+    for line in f:
         tokens = line.split()
         lns_latencies[tokens[5]] = float(tokens[4])
         #print tokens[5], tokens[4]
-    
-    
-def parse_dns_output(log_files_dir, output_dir, filter = None):
-    
-    read_lns_latencies()
-    #print lns_latencies
 
-    output_extended_tuple_file(log_files_dir, output_dir) 
+
+def parse_dns_output(log_files_dir, output_dir, filter=None):
+    
+    output_extended_tuple_file(log_files_dir, output_dir)
     
     # plot cdf across requests
     tuples_file = os.path.join(output_dir, 'all_tuples.txt')
@@ -92,13 +94,13 @@ def parse_dns_output(log_files_dir, output_dir, filter = None):
     
     # plot cdf across names
     value_index = 6
-    name_index = 1 # 0 = lns-query-id, 1 = name-id, 2 = name, 3 = ultra-dns-latency,
+    name_index = 1  # 0 = lns-query-id, 1 = name-id, 2 = name, 3 = ultra-dns-latency,
     outfile1 = os.path.join(output_dir, 'reads_by_name.txt')
     output_tuples1 = group_by(tuples_file, name_index, value_index, filter = None)
     write_tuple_array(output_tuples1, outfile1, p = True)
-    
+
     value_index = 7
-    name_index = 1 # 1 = name, 
+    name_index = 1  # 1 = name,
     outfile2 = os.path.join(output_dir, 'pings_by_name.txt')
     output_tuples2 = group_by(tuples_file, name_index, value_index, filter = None)
     write_tuple_array(output_tuples2, outfile2, p = True)
@@ -138,7 +140,6 @@ def parse_dns_output(log_files_dir, output_dir, filter = None):
     output_tuples1 = group_by(tuples_file, name_index, value_index, filter = None, numeric = False)
     write_tuple_array(output_tuples1, outfile1, p = True)
 
-    
 
 def output_extended_tuple_file(log_files_dir, output_dir):
     global all_latencies
@@ -153,14 +154,9 @@ def output_extended_tuple_file(log_files_dir, output_dir):
     files = os.listdir(log_files_dir)
     all_tuples = []
     for f in files:
-        all_tuples.extend(get_extended_tuple(
-                os.path.join(log_files_dir, f)))
-#                               get_ping_latency(f)))
+        all_tuples.extend(get_extended_tuple(os.path.join(log_files_dir, f)))
 
-    
-    write_tuple_array(all_tuples,
-                      os.path.join(output_dir, 'all_tuples.txt'),
-                      p = True)
+    write_tuple_array(all_tuples, os.path.join(output_dir, 'all_tuples.txt'), p=True)
     
 
 def get_extended_tuple(input_file):
@@ -181,8 +177,7 @@ def get_extended_tuple(input_file):
             latency = float(tokens[3])
             ping_latency_to_lns = float(tokens[4])
 
-
-            if  hostname in lns_latencies:
+            if hostname in lns_latencies:
                 ping_latency_to_lns = lns_latencies[hostname]
                 if ping_latency_to_lns == -1.0:
                     ping_latency_to_lns = 1.0

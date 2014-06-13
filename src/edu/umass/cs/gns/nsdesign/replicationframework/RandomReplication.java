@@ -24,11 +24,14 @@ public class RandomReplication implements ReplicationFrameworkInterface{
       return new ReplicationOutput(new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs()));
     }
 
-    Set<Integer> activeNameServers = rcRecord.getActiveNameservers();
+    Set<Integer> activeNameServers = new HashSet<Integer>();
+    if (count > 0) {
+      activeNameServers = rcRecord.getActiveNameservers();
+    }
 
     int numActiveNameServers = activeNameServers.size();
 
-    if (numReplica > numActiveNameServers && count > 1) {
+    if (numReplica > numActiveNameServers) {
       //Randomly add new active name server
       int add = numReplica - numActiveNameServers;
       Set<Integer> newActiveNameServerSet = new HashSet<Integer>(activeNameServers);

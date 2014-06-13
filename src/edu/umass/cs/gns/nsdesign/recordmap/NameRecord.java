@@ -54,18 +54,15 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Creates a <code>NameRecord</code> object initialized with given fields. The record is in memory and not written to DB.
    * @param name
-   * @param activeNameServers
    * @param activeVersion
    * @param values
    * @return
    */
-  public NameRecord(BasicRecordMap recordMap, String name, int activeVersion,
-          ValuesMap values, int ttl) {
+  public NameRecord(BasicRecordMap recordMap, String name, int activeVersion, ValuesMap values, int ttl) {
     this.recordMap = recordMap;
 
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
-//    hashMap.put(ACTIVE_NAMESERVERS, activeNameServers);
     hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     hashMap.put(ACTIVE_VERSION, activeVersion);
     hashMap.put(OLD_ACTIVE_VERSION, 0);

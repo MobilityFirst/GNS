@@ -232,7 +232,7 @@ class FeatureTestLocal(TestSetupLocal):
         """For 1 name, measure read and write latencies while emulating wide-area latency between nodes"""
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies', True)
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulation_type', local.exp_config.CONSTANT_DELAY)
-        request_rate = 100
+        request_rate = 20
         duration = 30
         output_stats = self.run_exp_reads_writes(request_rate, duration)
         print 'Read latency (90-percentile)', output_stats.read_perc90, 'ms', 'Write latency (90-percentile)', \
@@ -536,9 +536,9 @@ class FeatureTestLocal(TestSetupLocal):
 
     def test_n_read_writes_groupchanges(self):
         """ Tests a workload where reads and writes for 1 name are inter-mixed with group changes"""
-        request_rate = 1000
+        request_rate = 100
         duration = 50
-        group_change_interval = 1
+        group_change_interval = 5
         self.run_exp_reads_writes_groupchanges(request_rate, duration, group_change_interval)
 
     def run_exp_reads_writes(self, request_rate, exp_duration):

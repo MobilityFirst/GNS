@@ -19,17 +19,10 @@ script_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentf
 parent_folder = os.path.split(script_folder)[0]
 sys.path.append(parent_folder)
 
-import distributed.exp_config
-from logparse.read_final_stats import FinalStats
-from nodeconfig.node_config_writer import emulation_config_writer  # deployment_config_writer
-from nodeconfig.node_config_latency_calculator import default_latency_calculator, geo_latency_calculator
-from workload.write_workload import RequestType, WorkloadParams, workload_writer
-from test_utils import *
-from util.exp_events import NodeCrashEvent, write_events_to_file
-from workload.gen_add_requests import gen_add_requests
+from workload.write_workload import RequestType
+from workload.gen_add_requests import gen_add_requests, gen_add_requests_based_on_placement_file
 from workload.gen_geolocality_workload import gen_geolocality_trace
 from remote_setup import TestSetupRemote
-import local_setup
 
 
 __author__ = 'abhigyan'
@@ -39,11 +32,10 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
     """ Generates workloads with geo-locality and runs experiment on a wide-area platform"""
 
     def test_a_request_latency(self):
-        """[Sequential consistency] Test with a geo-locality based workload and measures read and write latencies"""
+        """[Sequential consistency] Test with a workload that has geo-locality and measures read and write latencies"""
 
         assert self.lns_geo_file is not None
 
-        # self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(self.ns))
         self.ns = 24
         self.lns = 24
 
@@ -139,6 +131,19 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
                                       writes_per_epoch_per_name, num_geo_locality_changes)
             names *= 10
 
+    def test_a5_latency_preconfigured_placement(self):
+        """Run experiment with a pre-configured placement."""
+        placement_file = "abcd"
+        ns = 24
+        lns = 24
+        names = 100
+        req_rate = 10
+        reads_per_epoch_per_name = 100
+        writes_per_epoch_per_name = 50
+        num_geo_locality_changes = 1
+        self.run_exp_geo_locality(ns, lns, names, int(req_rate), reads_per_epoch_per_name,
+                                  writes_per_epoch_per_name, num_geo_locality_changes, placement_file=placement_file)
+
     def test_a5_locality_replication_multiexp(self):
 
         min_names = 100000
@@ -199,13 +204,11 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
 
     def run_exp_geo_locality(self, num_ns, num_lns, num_names, read_write_req_rate,
                              reads_per_epoch_per_name, writes_per_epoch_per_name, num_geo_locality_changes,
-                             initial_delay=10):
+                             initial_delay=10, placement_file=None):
 
         assert self.lns_geo_file is not None
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies', str(True))
         self.emulation = 'geographic'
-
-        # self.config_parse.set(ConfigParser.DEFAULTSECT, 'primary_name_server', str(self.ns))
 
         self.ns = num_ns
         self.lns = num_lns
@@ -230,9 +233,12 @@ class TestWorkloadWithGeoLocality(TestSetupRemote):
 
         total_time += num_names / len(lns_ids) / add_req_rate
 
-        gen_add_requests(self.trace_folder, number_names=num_names, append_to_file=True, lns_ids=lns_ids,
-                         name_prefix=prefix)
-
+        if placement_file is None:
+            gen_add_requests(self.trace_folder, number_names=num_names, append_to_file=True, lns_ids=lns_ids,
+                             name_prefix=prefix)
+        else:
+            gen_add_requests_based_on_placement_file(self.trace_folder, placement_file, lns_ids, append_to_file=True,
+                                                     name_prefix=prefix)
         delay = 20  # sec
         append_request_to_all_files([delay * 1000, RequestType.DELAY], lns_ids, self.trace_folder)
         total_time += delay

@@ -13,6 +13,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Set;
+
 /**
  * This packet is sent by a local name server to a name server to add a name to GNS.
  *
@@ -23,11 +25,11 @@ import org.json.JSONObject;
  * A client must set the <code>requestID</code> field correctly to received a response.
  *
  * Once this packet reaches local name server, local name server sets the
- * <code>localNameServerID</code> and <code>LNSRequestID</code> field correctly before forwarding packet
+ * <code>localNameServerID</code> and <code>LNSRequestID</code> fields before forwarding packet
  * to name server.
  *
- * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
- * But it uses fields in this packet in sending the reply.
+ * When name server replies to the client after adding the record, it uses a different packet type:
+ * <code>ConfirmUpdateLNSPacket</code>. But it uses fields in this packet in sending the reply.
  *
  */
 public class AddRecordPacket extends BasicPacket {
@@ -41,6 +43,8 @@ public class AddRecordPacket extends BasicPacket {
   private final static String NAMESERVER_ID = "ns_ID";
   private final static String SOURCE_ID = "sourceId"; 
   private final static String TIME_TO_LIVE = "ttlAddress";
+  private final static String ACTIVE_NAMESERVERS = "actives";
+
   /**
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
@@ -92,6 +96,12 @@ public class AddRecordPacket extends BasicPacket {
    */
   private int sourceId;
 
+  /**
+   * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
+   * replica set.
+   */
+  private Set<Integer> activeNameSevers = null;
+
 
   /**
    * Constructs a new AddRecordPacket with the given name, value, and TTL.
@@ -118,6 +128,7 @@ public class AddRecordPacket extends BasicPacket {
     this.localNameServerID = localNameServerID;
     this.ttl = ttl;
     this.nameServerID = -1;
+    this.activeNameSevers = null;
   }
 
   /**
@@ -143,6 +154,9 @@ public class AddRecordPacket extends BasicPacket {
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.ttl = json.getInt(TIME_TO_LIVE);
     this.nameServerID = json.getInt(NAMESERVER_ID);
+    if (json.has(ACTIVE_NAMESERVERS)) {
+        this.activeNameSevers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
+    }
   }
 
   /**
@@ -164,6 +178,8 @@ public class AddRecordPacket extends BasicPacket {
     json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(TIME_TO_LIVE, getTTL());
     json.put(NAMESERVER_ID, getNameServerID());
+    if (getActiveNameSevers() != null)
+      json.put(ACTIVE_NAMESERVERS, getActiveNameSevers());
     return json;
   }
 
@@ -205,7 +221,7 @@ public class AddRecordPacket extends BasicPacket {
   }
 
   /**
-   * @return the primaryNameserverId
+   * @return the local name server ID that sent this request.
    */
   public int getLocalNameServerID() {
     return localNameServerID;
@@ -233,6 +249,13 @@ public class AddRecordPacket extends BasicPacket {
   public int getSourceId() {
     return sourceId;
   }
-  
-  
+
+  public Set<Integer> getActiveNameSevers() {
+    return activeNameSevers;
+  }
+
+  public void setActiveNameSevers(Set<Integer> activeNameSevers) {
+    this.activeNameSevers = activeNameSevers;
+  }
+
 }

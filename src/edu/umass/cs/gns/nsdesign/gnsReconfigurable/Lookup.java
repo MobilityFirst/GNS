@@ -74,8 +74,8 @@ public class Lookup {
     }
 
     if (noCoordinatorState) {
-      dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
-      dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+        dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
+        dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       if (!recovery) {
         gnsApp.getNioServer().sendToID(dnsPacket.getLnsId(), dnsPacket.toJSONObject());
       }

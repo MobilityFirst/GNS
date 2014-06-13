@@ -58,7 +58,8 @@ class TestSetupRemote(BasicSetup):
         if self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'ns_geo_file'):
             self.ns_geo_file = self.config_parse.get(ConfigParser.DEFAULTSECT, 'ns_geo_file')
 
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
+        if not self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'is_experiment_mode'):
+            self.config_parse.set(ConfigParser.DEFAULTSECT, 'is_experiment_mode', True)
 
         if not self.config_parse.has_option(ConfigParser.DEFAULTSECT, 'update_trace'):
             self.trace_folder = os.path.join(self.local_output_folder, 'trace')

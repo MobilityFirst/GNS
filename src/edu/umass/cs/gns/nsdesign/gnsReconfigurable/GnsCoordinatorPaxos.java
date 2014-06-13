@@ -110,7 +110,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           // calling handle decision before creating paxos instance to insert state for name in database.
           paxosInterface.handleDecision(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
-          paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
+          paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, recordPacket.getActiveNameSevers(), paxosInterface);
           if (Config.debugMode) GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
@@ -125,6 +125,12 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           DNSPacket dnsPacket = new DNSPacket(request);
           String name = dnsPacket.getGuid();
 
+          // Send the current set of active replicas for this name to the LNS to keep it updated of the
+          // current replica set. This message is necessary for the case when the active replica set has
+          // changed but the old and new replicas share some common members (which is actually quite common).
+          // Why is this useful? Let's say closest name server to a LNS in the previous replica set was quite far, but
+          // in the new replica set the closest name server is very near to LNS. If we do not inform the LNS of
+          // current active replica set, it will continue sending requests to the far away name server.
           Set<Integer> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
             RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsId(), 0, nodeID);

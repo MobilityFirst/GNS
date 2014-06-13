@@ -84,11 +84,11 @@ update_count = 10   # number of updates at local name server
 #
 #
 # logging options
-is_debug_mode = False   #
+is_debug_mode = True   #
 
-nslog = 'WARNING'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 
@@ -108,7 +108,7 @@ dummy_gns = False
 #lookupTrace = 'lookupTrace10'
 #updateTrace = 'updateTrace10'
 
-scheme = 'locality'         # 'locality' is for auspice
+scheme = 'static3'         # 'locality' is for auspice
 schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_all': 4}
 
 

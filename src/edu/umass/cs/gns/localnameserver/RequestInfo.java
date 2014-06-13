@@ -33,9 +33,6 @@ public abstract class RequestInfo {
    * sent only to replica controllers (and never to active replicas) */
   protected int numLookupActives = 0;
 
-  /** ID of the timer task sending requests to NS. */
-  protected int timerTaskId = 0;
-
 
   /***********
    * Fields only for collecting statistics for a request and write log entries
@@ -136,11 +133,11 @@ public abstract class RequestInfo {
     return sb.toString();
   }
 
-  public synchronized int getTimerTaskId() {
-    return timerTaskId;
-  }
-
-  public synchronized void setTimerTaskId(int timerTaskId) {
-    this.timerTaskId = timerTaskId;
-  }
+//  public synchronized int getTimerTaskId() {
+//    return timerTaskId;
+//  }
+//
+//  public synchronized void setTimerTaskId(int timerTaskId) {
+//    this.timerTaskId = timerTaskId;
+//  }
 }

@@ -9,11 +9,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
+ *
  * Created by abhigyan on 5/21/14.
  */
 public class NewRequestGenerator {
@@ -46,13 +46,13 @@ public class NewRequestGenerator {
     new Timer().schedule(new RunTask(), 0, PERIOD);
   }
 
+
   class RunTask extends TimerTask {
 
     public void run() {
       numRuns += 1;
 
       LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
-
       long firstDelay = -1;
       long lastDelay = -1;
       try {
@@ -86,8 +86,21 @@ public class NewRequestGenerator {
           }else if (r.type == TestRequest.UPDATE) {
             t = new GenerateUpdateRequest(r.name, reqCount, objectSizeBytes, lnsPacketDemultiplexer);
           } else if (r.type == TestRequest.ADD) {
-            t = new GenerateAddRequest(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
-                    lnsPacketDemultiplexer);
+            String[] tokens = line.trim().split("\\s+");
+            if (tokens.length > 2) {
+              // if an initial set of active replicas for this name is given in trace, then use those replicas
+              Set<Integer> activeReplicas = new HashSet<>();
+              for (int i = 2; i < tokens.length; i++) {
+                activeReplicas.add(Integer.parseInt(tokens[i]));
+              }
+              GNS.getLogger().fine("Name " + r.name + " Initial active replicas: " + activeReplicas);
+              t = new GenerateAddRequest(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
+                      lnsPacketDemultiplexer, activeReplicas);
+            } else {
+              t = new GenerateAddRequest(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
+                      lnsPacketDemultiplexer);
+            }
+
           } else if (r.type == TestRequest.REMOVE) {
             t = new GenerateRemoveRequest(r.name, reqCount, lnsPacketDemultiplexer);
           } else if (r.type == TestRequest.GROUP_CHANGE) {

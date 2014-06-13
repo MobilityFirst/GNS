@@ -65,7 +65,7 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   /**
-   * Creates database tables for nodeID, by connecting to mongoDB on default port.
+   * Creates database tables for nodeID, by connecting to mongoDB on given port.
    *
    * @param nodeID nodeID of name server
    * @param port port at which mongo is running. if port = -1, mongo connects to default port.

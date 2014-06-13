@@ -13,16 +13,16 @@ def write_local_config_file(filename, num_ns, num_lns, latency=100, random_ids=N
         ns_ids, lns_ids = generate_node_ids(num_ns, num_lns, random_ids)
 
     fw = open(filename, 'w')
+    localhost = 'local'   # '127.0.0.1'
     for i in ns_ids:
-        port += 10
-        values = [str(i), 'yes', '127.0.0.1', str(port), str(latency), '0.0', '0.0']
+        values = [str(i), 'yes', localhost, str(port), str(latency), '0.0', '0.0']
         fw.write(' '.join(values) + '\n')
+        port += 10
 
     for i in lns_ids:
-        port += 10
-        values = [str(i), 'no', '127.0.0.1', str(port), str(latency), '0.0', '0.0']
+        values = [str(i), 'no', localhost, str(port), str(latency), '0.0', '0.0']
         fw.write(' '.join(values) + '\n')
-
+        port += 10
     fw.close()
 
 

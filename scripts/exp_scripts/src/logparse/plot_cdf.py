@@ -37,7 +37,7 @@ def read_graph_parameters(graph_format_file):
     filenames = []
     schemes = []
     col_nos = []
-    template_file  = 'template1.gpt'
+    template_file = 'template1.gpt'
     pdf_filename = ''
     f = open(graph_format_file)
     for line in f:

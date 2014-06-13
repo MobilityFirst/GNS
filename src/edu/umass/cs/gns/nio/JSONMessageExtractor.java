@@ -125,13 +125,17 @@ public class JSONMessageExtractor implements DataProcessingWorker {
 
 	private synchronized void processJSONMessage(final JSONObject jsonMsg) {
 		NIOInstrumenter.incrJSONRcvd();
-		// run these in a separate thread. One good thing about this is that it allows
-		// message handlers to waitfor the receipt of other messages which would not be possible
-		// if this were single-threaded. The bad things... time will tell.
+
 		JsonMessageWorker worker = new JsonMessageWorker(jsonMsg, packetDemuxes);
     if (GNSDelayEmulator.isDelayEmulated()) {
       long delay = GNSDelayEmulator.getEmulatedDelay(jsonMsg);
-      timer.schedule(worker,delay);
+      if (delay >= 0) {
+        // this runs in a separate thread after scheduled delay
+        timer.schedule(worker, delay);
+      } else {
+        // THIS ISN'T ACTUALLY RUNNING IT IN ANOTHER THREAD.
+        worker.run();
+      }
     } else {
       // THIS ISN'T ACTUALLY RUNNING IT IN ANOTHER THREAD.
       worker.run();

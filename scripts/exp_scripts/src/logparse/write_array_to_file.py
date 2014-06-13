@@ -4,7 +4,6 @@ Created on Mar 5, 2012
 @author: abhigyan
 '''
 import os
-import sys
 
 
 def write_array(array,output_file, p = True):
@@ -15,10 +14,10 @@ def write_array(array,output_file, p = True):
         fw.write(str(val)+'\n')
     fw.close()
     if p : 
-        print "Output File:",output_file
+        print "Output File:", output_file
     
     
-def write_tuple_array(tuple_array,output_file, p = True):
+def write_tuple_array(tuple_array, output_file, p=True):
     
     if os.path.dirname(output_file) != '' and not os.path.exists(os.path.dirname(output_file)):
         os.system('mkdir -p ' + os.path.dirname(output_file))
@@ -29,5 +28,5 @@ def write_tuple_array(tuple_array,output_file, p = True):
             fw.write(str(val)+'\t')
         fw.write('\n')
     fw.close()
-    if p : 
-        print "Output File:",output_file
+    if p:
+        print "Output File:", output_file

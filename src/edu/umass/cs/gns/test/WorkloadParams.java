@@ -16,18 +16,22 @@ public class WorkloadParams {
 
   public static final String EXP_TYPE = "exp_type";
 
+  // parameters for trace-based experiment
   public static final String OBJECT_SIZE = "object_size_kb";
   public static final String TTL = "ttl";
 
+  // parameters for trace-based experiment
   public static final String MOBILE_ID = "mobile_id";
   public static final String CORRESPONDENT_ID = "correspondent_id";
   public static final String MOBILE_UPDATE_INTERVAL = "mobile_update_interval";
 
   private ExpType expType = ExpType.BASICTEST;
 
+  // parameters for trace-based experiment
   private int objectSizeKB;
   private int ttl;
 
+  // parameters for connect-time experiment
   private int mobileId = 3;
   private int correspondentId = 4;
   private double mobileUpdateInterval = 4;
@@ -63,11 +67,6 @@ public class WorkloadParams {
       GNS.getLogger().info("TTL value = " + ttl);
     } else this.ttl = GNS.DEFAULT_TTL_SECONDS;
 
-    if (prop.containsKey(EXP_TYPE)) {
-      this.expType = ExpType.getExpType(prop.getProperty(EXP_TYPE));
-    }  else {
-      this.expType = ExpType.TRACE;
-    }
   }
 
   /**
@@ -111,4 +110,5 @@ public class WorkloadParams {
   public double getMobileUpdateInterval() {
     return mobileUpdateInterval;
   }
+
 }

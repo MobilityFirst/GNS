@@ -133,6 +133,7 @@ public class ReplicaControllerRecord {
    * CONSTRUCTORS
    * *****************************************
    */
+
   /**
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
@@ -171,16 +172,12 @@ public class ReplicaControllerRecord {
 
   /**
    * ONLY FOR RUNNING EXPERIMENTS!!
+   * Initially, replicate a name at name servers different from those of replica controllers.
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
   public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<Integer> actives, boolean initialize) {
     this(replicaControllerDB, name, initialize);
-
-    if (Config.experimentMode == false) {
-      GNS.getLogger().severe("Exception Exception: wrong constructor being used.");
-      throw new RuntimeException();
-    }
 
     if (initialize == false) {
       return;

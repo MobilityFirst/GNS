@@ -28,7 +28,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- **
  * This class represents the functions of a Local Name Server.
  *
  * @author abhigyan
@@ -112,7 +111,6 @@ public class LocalNameServer {
     new LNSListenerAdmin().start();
 
     if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
-      // todo commented this because locality-based replication is still under testing
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
     if (parameters.isExperimentMode()) {

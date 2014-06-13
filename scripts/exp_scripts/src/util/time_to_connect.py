@@ -36,5 +36,6 @@ def get_avg_time_to_connect(lookup, timeout, update_rate, update_latency):
     return c
 
 
+
 if __name__ == '__main__':
     print_time_to_connects()

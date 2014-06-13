@@ -298,7 +298,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   //  @Override
 
   /**
-   * Used by deleteFinalState method (so not deleting this method.
+   * Used by deleteFinalState method. Therefore, not deleting this method.
    * @param name
    * @return
    */

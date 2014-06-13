@@ -114,7 +114,7 @@ replication_interval = 100000   # (in seconds). Intervals at which name servers 
 
 
 # if True, local name servers starts sending requests as per given workload
-is_experiment_mode = True
+is_experiment_mode = False
 
 # if true, we emulate wide-area latency between packets sent between nodes
 emulate_ping_latencies = False
@@ -193,6 +193,8 @@ max_req_rate = 300
 
 def initialize(filename):
     """ Initializes the parameters above based on given config file"""
+    os.system('cat ' + filename)
+
     parser = ConfigParser.ConfigParser()
     parser.read(filename)
     initialize_env_variables(parser)
@@ -243,9 +245,10 @@ def initialize_gns_parameters(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'scheme'):
         global scheme
         scheme = parser.get(ConfigParser.DEFAULTSECT, 'scheme')
-
+    print '\nExperiment mode:', is_experiment_mode
     if parser.has_option(ConfigParser.DEFAULTSECT, 'is_experiment_mode'):
         global is_experiment_mode
+        print '\nExperiment mode:', is_experiment_mode
         is_experiment_mode = bool(parser.get(ConfigParser.DEFAULTSECT, 'is_experiment_mode'))
 
     if parser.has_option(ConfigParser.DEFAULTSECT, 'is_debug_mode'):

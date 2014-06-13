@@ -24,6 +24,8 @@ public class LNSSideImplementation implements ClientRMIInterface {
 
   public static String LNS_NAME = "Hello";
 
+  public static int LNS_PORT = 42131;
+
   public LNSSideImplementation() {}
   @Override
   public NSResponseCode sendAddRecord(String name, String key, ResultValue value) throws RemoteException {
@@ -52,7 +54,7 @@ public class LNSSideImplementation implements ClientRMIInterface {
       ClientRMIInterface stub = (ClientRMIInterface) UnicastRemoteObject.exportObject(obj, 0);
 
       // Bind the remote object's stub in the registry
-      Registry registry = LocateRegistry.getRegistry();
+      Registry registry = LocateRegistry.getRegistry(LNS_PORT);
       registry.rebind(LNS_NAME, stub);
       GNS.getLogger().info("Staring server .... complete ....");
     } catch (Exception e) {
