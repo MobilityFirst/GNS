@@ -40,6 +40,10 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
  * PaxosCoordinatorState pointer. (2) Most methods require 
  * synchronization for atomicity even though PaxosCoordinatoState
  * is internally synchronized.
+ * 
+ * Testability: This class is not unit-testable as it is just as shell
+ * for PaxosCoordinatorState. Both PaxosManager and TESTPaxosMain test 
+ * this class along with PaxosInstanceStateMachine.
  */
 public class PaxosCoordinator {
 	public static final boolean DEBUG=PaxosManager.DEBUG;

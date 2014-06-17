@@ -95,6 +95,7 @@ public class TESTPaxosConfig {
 	}
 	public static void setDistributedServers() {
 		try {
+			TESTPaxosConfig.getNodeConfig().add(0, InetAddress.getByName("localhost"));
 			TESTPaxosConfig.getNodeConfig().add(TESTPaxosConfig.TEST_START_NODE_ID, InetAddress.getByName("date.cs.umass.edu"));
 			TESTPaxosConfig.getNodeConfig().add(TESTPaxosConfig.TEST_START_NODE_ID+1, InetAddress.getByName("plum.cs.umass.edu"));
 			TESTPaxosConfig.getNodeConfig().add(TESTPaxosConfig.TEST_START_NODE_ID+2, InetAddress.getByName("pear.cs.umass.edu"));

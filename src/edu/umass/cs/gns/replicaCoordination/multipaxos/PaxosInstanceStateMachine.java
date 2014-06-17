@@ -119,6 +119,9 @@ import edu.umass.cs.gns.util.MatchKeyable;
  * 
  * So can the machine still get stuck forever? Hopefully not! 
  * 
+ * Testability: This class is not unit-testable as almost all methods
+ * depend on other classes. Both PaxosManager as well as TESTPaxosMain 
+ * test this class.
  */
 public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private static final boolean PAXOS_ID_AS_STRING=false; // if false, must invoke getPaxosID() as less often as possible

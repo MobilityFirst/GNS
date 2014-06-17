@@ -33,6 +33,8 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureD
  * be static, but it is not so that we can test emulations involving
  * multiple "machines" within a JVM.
  * 
+ * Testability: This class is not yet unit-testable. Both PaxosManager 
+ * and TESTPaxosMain test this class. 
  */
 public class FailureDetection {
 	// final static 
@@ -219,6 +221,6 @@ public class FailureDetection {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println("FAILURE: I am not tested, so I am useless and should drown myself in a puddle. Try running PaxosManager's test for now.");
+		System.out.println("FAILURE: I am not testable. Try running PaxosManager's test for now.");
 	}
 }

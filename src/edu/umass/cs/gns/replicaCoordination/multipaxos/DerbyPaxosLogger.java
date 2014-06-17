@@ -987,6 +987,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 */
 	public static void main(String[] args) {
 		DerbyPaxosLogger logger = new DerbyPaxosLogger(23,null,null);
+		//DerbyPaxosLogger logger1 = new DerbyPaxosLogger(23,null,null);
 		//System.out.println("Current database state for paxos0:\n" + logger.toString("paxos0"));
 
 		int[] group = {32, 43, 54};

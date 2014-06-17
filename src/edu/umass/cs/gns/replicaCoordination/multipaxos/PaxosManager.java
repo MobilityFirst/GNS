@@ -56,6 +56,9 @@ import java.util.logging.Logger;
  * fourth is key to allowing the manager to demultiplex
  * incoming messages to the appropriate application paxos
  * instance.
+ * 
+ * Testability: This class is unit-testable by running 
+ * the main method.
  */
 public class PaxosManager extends AbstractPaxosManager {
 	public static final boolean DEBUG=NIOTransport.DEBUG;
@@ -173,7 +176,7 @@ public class PaxosManager extends AbstractPaxosManager {
 		PaxosPacketType paxosPacketType;
 		try {
 			RequestPacket.addDebugInfo(jsonMsg, ("i"+myID));
-			assert(Packet.getPacketType(jsonMsg)==PacketType.PAXOS_PACKET || Packet.hasPacketTypeField(jsonMsg)); // coz of demultiplexing hierarchy
+			assert(Packet.getPacketType(jsonMsg)==PacketType.PAXOS_PACKET /*|| Packet.hasPacketTypeField(jsonMsg)*/);
 			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg); // will throw exception if no PAXOS_PACKET_TYPE
 
 			switch (paxosPacketType){
@@ -186,6 +189,7 @@ public class PaxosManager extends AbstractPaxosManager {
 				processFindReplicaGroup(findGroup);
 				break;
 			default:
+				assert(jsonMsg.has(PaxosPacket.PAXOS_ID));
 				String paxosID = jsonMsg.getString(PaxosPacket.PAXOS_ID);
 				PaxosInstanceStateMachine pism = this.getInstance(paxosID); // exact match including version
 				if(pism!=null) pism.handlePaxosMessage(jsonMsg);
@@ -633,7 +637,7 @@ public class PaxosManager extends AbstractPaxosManager {
 	}
 
 	/************************* Testing methods below ***********************************/
-	public synchronized void waitRecover() throws InterruptedException {wait();}
+	protected synchronized void waitRecover() throws InterruptedException {wait();}
 	protected GNSNIOTransport getNIOTransport() {return this.FD.getNIOTransport();}
 
 	public static void main(String[] args) {

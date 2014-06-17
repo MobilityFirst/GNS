@@ -26,6 +26,8 @@ import edu.umass.cs.gns.util.NullIfEmptyMap;
  * the corresponding node is a coordinator, but this paxos
  * instance is not processing any requests uses about 50B
  * plus an int each for each member of nodeSlotNumbers.
+ * 
+ * Testing: It is unit-testable by running the main method.
  */
 /**
 @author V. Arun
