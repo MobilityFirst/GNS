@@ -77,7 +77,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final boolean AUTO_COMMIT = true; 
 	private static final int MAX_POOL_SIZE = 100;
 
-	private static final int PAXOS_ID_SIZE = 20; // GUID is 20 bytes
+	private static final int PAXOS_ID_SIZE = 40; // FIXME: GUID is 20 bytes, but its hex-byte representation is bloated
 	private static final int MAX_STATE_SIZE = 8192; // FIXME: Need to make this configurable
 	private static final int PAUSE_STATE_SIZE = 256;
 	private static final int MAX_GROUP_SIZE = 256; // maximum size of a paxos replica group
@@ -777,7 +777,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		props.put("password", DerbyPaxosLogger.PASSWORD);
 		System.setProperty("derby.system.home", this.logDirectory); // doesn't seem to work
 
-		String dbCreation = PROTOCOL + this.logDirectory+DATABASE + (!dbDirectoryExists() && isFirstConnect() ? ";create=true" : "");
+		String dbCreation = PROTOCOL + this.logDirectory+DATABASE + (!dbDirectoryExists() /*&& isFirstConnect()*/ ? ";create=true" : "");
 
 		try {
 			dataSource = (ComboPooledDataSource)setupDataSourceC3P0(dbCreation, props);
@@ -788,12 +788,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		while(!connected && connAttempts<maxAttempts) {
 			try {
 				connAttempts++;
+				log.info("Attempting getCursorConn() to db " + dbCreation);
 				if(getCursorConn()==null) this.cursorConn = dataSource.getConnection(); //test opening a connection
 				log.info("Connected to and created database " + DATABASE);
 				connected = true;
 				fixURI();
 			} catch(SQLException sqle) {
-				log.severe("Could not connect to the derby DB: " + sqle);
+				log.severe("Could not connect to the derby DB: " + sqle.getErrorCode()+":"+sqle.getSQLState());
+				sqle.printStackTrace();
 				try {
 					Thread.sleep(interAttemptDelay);
 				} catch(InterruptedException ie) {ie.printStackTrace();}
