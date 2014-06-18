@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,7 +20,7 @@ public class TESTPaxosReplicable implements Replicable {
 	private static final boolean DEBUG=PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null ;
-	private GNSNIOTransport niot = null;
+	private GNSNIOTransportInterface niot = null;
 
 	private HashMap<String,PaxosState> allState = new HashMap<String,PaxosState>();
 	private class PaxosState {
@@ -45,7 +46,7 @@ public class TESTPaxosReplicable implements Replicable {
 	public void shutdown() {
 		this.allState.clear();
 	}
-	public void setNIOTransport(GNSNIOTransport nio) {
+	public void setNIOTransport(GNSNIOTransportInterface nio) {
 		niot = nio;
 	}
 	@Override

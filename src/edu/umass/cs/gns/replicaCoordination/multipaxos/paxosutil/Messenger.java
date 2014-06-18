@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,12 +30,12 @@ public class Messenger {
 	private static final int BACKOFF_FACTOR=2; 
 	
 	private final int myID;
-	private final GNSNIOTransport nioTransport;
+	private final GNSNIOTransportInterface nioTransport;
 	private ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 
 	Logger log = Logger.getLogger(getClass().getName());
 
-	public Messenger(int id, GNSNIOTransport niot) {
+	public Messenger(int id, GNSNIOTransportInterface niot) {
 		myID = id; // needed only for debug printing
 		nioTransport = niot;
 	}

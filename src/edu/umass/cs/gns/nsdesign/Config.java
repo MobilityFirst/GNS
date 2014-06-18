@@ -59,7 +59,7 @@ public class Config {
 
   // testing related parameters
   public static boolean useGNSNIOTransport = true;
-  public static boolean useMultiPaxos = false; // option to use multipaxos package
+  public static boolean multiPaxos = false; // option to use multipaxos package
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
   public static boolean noPaxosLog = false;
@@ -164,6 +164,10 @@ public class Config {
 
     if (allValues.containsKey(NSParameterNames.USE_GNS_NIO_TRANSPORT)) {
       useGNSNIOTransport = Boolean.parseBoolean(allValues.get(NSParameterNames.USE_GNS_NIO_TRANSPORT));
+    }
+
+    if (allValues.containsKey(NSParameterNames.MULTI_PAXOS)) {
+      multiPaxos = Boolean.parseBoolean(allValues.get(NSParameterNames.MULTI_PAXOS));
     }
 
     if (allValues.containsKey(NSParameterNames.DUMMY_GNS)) {

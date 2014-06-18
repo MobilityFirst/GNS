@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,7 +50,7 @@ public class FailureDetection {
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 	private final int myID;
-	private final GNSNIOTransport nioTransport;
+	private final GNSNIOTransportInterface nioTransport;
 
 	// non-final 
 	private Set<Integer> monitoredNodes;  // other nodes to which keepalives will be sent
@@ -58,7 +59,7 @@ public class FailureDetection {
 
 	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
 
-	FailureDetection(int id, NodeConfig nc, GNSNIOTransport niot, PaxosConfig pc) {
+	FailureDetection(int id, NodeConfig nc, GNSNIOTransportInterface niot, PaxosConfig pc) {
 		nioTransport = niot;
 		myID = id;
 		lastHeardFrom = new HashMap<Integer,Long>();
@@ -178,9 +179,9 @@ public class FailureDetection {
 	private class PingTask implements Runnable {
 		private final int destID;
 		private final JSONObject pingJson;
-		private final GNSNIOTransport nioTransport;
+		private final GNSNIOTransportInterface nioTransport;
 
-		PingTask(int id, JSONObject fdpJson, GNSNIOTransport niot) {
+		PingTask(int id, JSONObject fdpJson, GNSNIOTransportInterface niot) {
 			destID = id;
 			pingJson = fdpJson;
 			nioTransport = niot;
@@ -214,7 +215,7 @@ public class FailureDetection {
 	}
 
 	// Used only for testing
-	protected GNSNIOTransport getNIOTransport() {
+	protected GNSNIOTransportInterface getNIOTransport() {
 		return this.nioTransport;
 	}
 	/**

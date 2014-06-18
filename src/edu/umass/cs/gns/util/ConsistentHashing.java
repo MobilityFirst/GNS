@@ -98,7 +98,7 @@ public class ConsistentHashing {
   /**
    * Returns a list of replica controller groups which includes the given node.
    * We return a hash map whose keys are groupIDs of replica controller groups, and
-   * values are list of members in that group. One of these members is the <code>nodeID</code>
+   * values are list of members in that group.
    */
   public static HashMap<String, Set<Integer>> getReplicaControllerGroupIDsForNode(int nodeID) {
 

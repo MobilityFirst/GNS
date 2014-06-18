@@ -36,7 +36,7 @@ public abstract class AbstractPaxosManager {
    */
   public abstract String propose(String paxosIDNoVersion, String value);
 
-  public abstract String proposeStop(String paxosIDNoVersion, String value, int version);
+  public abstract String proposeStop(String paxosIDNoVersion, String value, short version);
 
 
   /**

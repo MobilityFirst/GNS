@@ -108,7 +108,7 @@ dummy_gns = False
 #lookupTrace = 'lookupTrace10'
 #updateTrace = 'updateTrace10'
 
-scheme = 'static3'         # 'locality' is for auspice
+scheme = 'locality'         # 'locality' is for auspice
 schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_all': 4}
 
 

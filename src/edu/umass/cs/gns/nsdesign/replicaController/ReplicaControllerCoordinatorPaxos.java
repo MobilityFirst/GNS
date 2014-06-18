@@ -1,12 +1,9 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
-import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -33,10 +30,10 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
                                            Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
-    if (Config.useMultiPaxos) {
-      assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
-      this.paxosManager = new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID, nodeConfig,
-              (GNSNIOTransport) nioServer, paxosInterface, paxosConfig);
+    if (Config.multiPaxos) {
+//      assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
+      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID,
+              nodeConfig, nioServer, new TestReplicable(paxosInterface), paxosConfig));
     } else {
       paxosConfig.setConsistentHashCoordinatorOrder(true);
       this.paxosManager = new PaxosManager(nodeID, nodeConfig,
@@ -50,7 +47,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
     HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
-      paxosManager.createPaxosInstance(groupID, (short) 1, groupIDsMembers.get(groupID), paxosInterface);
+      paxosManager.createPaxosInstance(groupID, Config.FIRST_VERSION, groupIDsMembers.get(groupID), paxosInterface);
     }
   }
 
@@ -62,6 +59,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
       switch (type) {
         // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:
+          Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
           paxosManager.handleIncomingPacket(request);
           break;
         case ADD_RECORD:

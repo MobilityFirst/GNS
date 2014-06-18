@@ -1,18 +1,14 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
 import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
 import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
-import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
-import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,10 +43,10 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
     this.paxosInterface = paxosInterface;
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
-    if (Config.useMultiPaxos) {
-      assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
-      this.paxosManager = new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID, nodeConfig,
-      (GNSNIOTransport) nioServer, paxosInterface, paxosConfig);
+    if (Config.multiPaxos) {
+//      assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
+      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID,
+              nodeConfig, nioServer, new TestReplicable(paxosInterface), paxosConfig));
     } else {
       this.paxosManager = new PaxosManager(nodeID, nodeConfig,
               new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
@@ -74,6 +70,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
       switch (type) {
         // coordination packets internal to paxos
         case ACTIVE_COORDINATION:
+          Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
           paxosManager.handleIncomingPacket(request);
           break;
 
@@ -127,7 +124,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
           // Send the current set of active replicas for this name to the LNS to keep it updated of the
           // current replica set. This message is necessary for the case when the active replica set has
-          // changed but the old and new replicas share some common members (which is actually quite common).
+          // changed but the old and new replicas share some members (which is actually quite common).
           // Why is this useful? Let's say closest name server to a LNS in the previous replica set was quite far, but
           // in the new replica set the closest name server is very near to LNS. If we do not inform the LNS of
           // current active replica set, it will continue sending requests to the far away name server.

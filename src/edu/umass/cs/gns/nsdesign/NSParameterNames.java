@@ -83,6 +83,7 @@ public class NSParameterNames {
   public static final String NO_PAXOS_LOG = "noPaxosLog";
   public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
   public static final String EVENTUAL_CONSISTENCY = "eventualConsistency";
+  public static final String MULTI_PAXOS = "multipaxos";
 
 
   // useless test-related parameters
@@ -226,6 +227,7 @@ public class NSParameterNames {
     Option variation = new Option(VARIATION, true, "variation");
     Option noPaxosLog = new Option(NO_PAXOS_LOG, false, "noPaxosLog");
     Option useGNSNIOTransport = new Option(USE_GNS_NIO_TRANSPORT, false, "to use GNSNIOTransport or to use NioServer");
+    Option multipaxos = new Option(MULTI_PAXOS, false, "to use multipaxos package or paxos package");
     Option dummyGNS = new Option(DUMMY_GNS, false, "use a dummy GNS app");
 
     Options commandLineOptions = new Options();
@@ -287,6 +289,7 @@ public class NSParameterNames {
     commandLineOptions.addOption(readCoordination);
     commandLineOptions.addOption(noPaxosLog);
     commandLineOptions.addOption(useGNSNIOTransport);
+    commandLineOptions.addOption(multipaxos);
     commandLineOptions.addOption(dummyGNS);
     return commandLineOptions;
   }

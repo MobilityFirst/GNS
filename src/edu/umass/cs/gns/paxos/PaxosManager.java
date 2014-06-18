@@ -259,7 +259,7 @@ public class PaxosManager extends AbstractPaxosManager {
   }
 
   @Override
-  public String proposeStop(String paxosIDNoVersion, String value, int version) {
+  public String proposeStop(String paxosIDNoVersion, String value, short version) {
     PaxosReplicaInterface replica = paxosInstances.get(paxosIDNoVersion);
     String paxosIDWithVersion = getPaxosIDWithVersionNumber(paxosIDNoVersion, version);
     if (replica == null || !replica.getPaxosID().equals(paxosIDWithVersion)) {

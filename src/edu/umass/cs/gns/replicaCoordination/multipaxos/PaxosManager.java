@@ -1,11 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
-import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nio.NIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nio.SampleNodeConfig;
+import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -102,7 +97,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); //GNS.getLogger();;
 
-	public PaxosManager(int id, NodeConfig nc, GNSNIOTransport niot, Replicable pi, PaxosConfig pc) {
+	public PaxosManager(int id, NodeConfig nc, GNSNIOTransportInterface niot, Replicable pi, PaxosConfig pc) {
 		this.myID = id;
 		this.myApp = pi;
 		this.FD = new FailureDetection(id, nc, niot, pc);
@@ -117,8 +112,10 @@ public class PaxosManager extends AbstractPaxosManager {
 		if(TESTPaxosConfig.getCleanDB()) {while(!this.paxosLogger.removeAll());}
 
 		// Networking is needed for replaying messages during recovery
-		niot.addPacketDemultiplexer(new PaxosPacketDemultiplexer(this)); // so paxos packets will come to me.
-		if(!niot.isStarted()) (new Thread(niot)).start();
+    if (niot.getClass().equals(GNSNIOTransport.class)) {
+      ((GNSNIOTransport) niot).addPacketDemultiplexer(new PaxosPacketDemultiplexer(this)); // so paxos packets will come to me.
+      if (!((GNSNIOTransport) niot).isStarted()) (new Thread(((GNSNIOTransport) niot))).start();
+    }
 		initiateRecovery();
 	}
 
@@ -638,7 +635,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 	/************************* Testing methods below ***********************************/
 	protected synchronized void waitRecover() throws InterruptedException {wait();}
-	protected GNSNIOTransport getNIOTransport() {return this.FD.getNIOTransport();}
+	protected GNSNIOTransportInterface getNIOTransport() {return this.FD.getNIOTransport();}
 
 	public static void main(String[] args) {
 		int nNodes = 3;

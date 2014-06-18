@@ -133,6 +133,7 @@ public class NameServer{
     // init DB
     MongoRecords mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
 
+
     // initialize GNS
     if (Config.dummyGNS) {
       gnsReconfigurable = new DummyGnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport);
@@ -164,6 +165,7 @@ public class NameServer{
               new NSNodeConfig(gnsNodeConfig), rc, paxosConfig);
     }
     GNS.getLogger().info("Replica controller coordinator initialized");
+
 
     // start the NSListenerAdmin thread
     new NSListenerAdmin(gnsReconfigurable, appCoordinator, rc, replicaControllerCoordinator, gnsNodeConfig).start();

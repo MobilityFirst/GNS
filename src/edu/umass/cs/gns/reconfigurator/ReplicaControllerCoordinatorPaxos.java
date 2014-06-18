@@ -41,7 +41,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 			Replicable paxosInterface, PaxosConfig paxosConfig) {
 		this.myID = nodeID;
 		this.replicable = paxosInterface;
-		if (Config.useMultiPaxos) {
+		if (Config.multiPaxos) {
 			assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
 		this.paxosManager = new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID, nodeConfig,
 				(GNSNIOTransport) nioServer, paxosInterface, paxosConfig);
