@@ -166,7 +166,6 @@ public class NameServer{
     }
     GNS.getLogger().info("Replica controller coordinator initialized");
 
-
     // start the NSListenerAdmin thread
     new NSListenerAdmin(gnsReconfigurable, appCoordinator, rc, replicaControllerCoordinator, gnsNodeConfig).start();
     GNS.getLogger().info("Admin thread initialized");

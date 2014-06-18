@@ -55,7 +55,7 @@ experiment_run_time = -1    # duration of experiment (seconds)
 
 clean_start = True   # if True, we delete all previous state and start a fresh GNS instance
 
-ns_sleep = 5      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
+ns_sleep = 10      # after starting name servers, wait for ns_sleep seconds before starting local name servers.
 extra_wait = 10   # extra wait time after LNS sends all requests
 
 random_node_ids = None  # option to select nodeIDs randomly. If random_node_ids is not None, it takes an int value.
@@ -119,7 +119,7 @@ replication_interval = 10000   # interval (in sec) at which group changes are do
 failure_detection_msg_interval = 10
 failure_detection_timeout_interval = 30
 name_actives = ''  # NOT used
-
+multipaxos = False
 
 #
 #

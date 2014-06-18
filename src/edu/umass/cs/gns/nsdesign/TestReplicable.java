@@ -1,5 +1,8 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,14 +29,22 @@ public class TestReplicable implements Replicable{
 
   @Override
   public boolean handleDecision(String name, String value, boolean doNotReplyToClient) {
-    RequestPacket requestPacket;
+    boolean noop = false;
     try {
-      requestPacket = new RequestPacket(new JSONObject(value));
+
+      JSONObject json = new JSONObject(value);
+      if (Packet.getPacketType(json).equals(Packet.PacketType.PAXOS_PACKET)) {
+        GNS.getLogger().info(" Received decision: " + value);
+        RequestPacket requestPacket = new RequestPacket(json);
+        value = requestPacket.requestValue;
+        noop = value.equals(RequestPacket.NO_OP);
+      }
     } catch (JSONException e) {
+      GNS.getLogger().severe(" JSON Exception; " + value);
       e.printStackTrace();
-      return false;
     }
-    return handleDecision(name, requestPacket.requestValue, doNotReplyToClient);
+
+    return noop || replicable.handleDecision(name, value, doNotReplyToClient);
   }
 
   @Override

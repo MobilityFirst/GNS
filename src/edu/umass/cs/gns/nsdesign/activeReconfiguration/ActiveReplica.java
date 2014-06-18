@@ -82,8 +82,8 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
       this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
     }
-    SendRequestLoadTask requestLoadTask = new SendRequestLoadTask(activeReplicaApp, this);
-    scheduledThreadPoolExecutor.submit(requestLoadTask);
+//    SendRequestLoadTask requestLoadTask = new SendRequestLoadTask(activeReplicaApp, this);
+//    scheduledThreadPoolExecutor.submit(requestLoadTask);
   }
 
   public void handleIncomingPacket(JSONObject json) {

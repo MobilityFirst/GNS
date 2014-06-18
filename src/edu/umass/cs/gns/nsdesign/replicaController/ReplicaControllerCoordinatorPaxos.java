@@ -29,16 +29,18 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   public ReplicaControllerCoordinatorPaxos(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
                                            Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
-    this.paxosInterface = paxosInterface;
+
     if (Config.multiPaxos) {
-//      assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
+      this.paxosInterface = new TestReplicable(paxosInterface);
       this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID,
-              nodeConfig, nioServer, new TestReplicable(paxosInterface), paxosConfig));
+              nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
+              this.paxosInterface, paxosConfig));
     } else {
+      this.paxosInterface = paxosInterface;
       paxosConfig.setConsistentHashCoordinatorOrder(true);
       this.paxosManager = new PaxosManager(nodeID, nodeConfig,
               new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
-              paxosInterface, paxosConfig);
+              this.paxosInterface, paxosConfig);
     }
     createPrimaryPaxosInstances();
   }

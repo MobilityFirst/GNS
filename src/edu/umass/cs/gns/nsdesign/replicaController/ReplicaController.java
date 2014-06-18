@@ -280,6 +280,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
         }
         // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
       } catch (JSONException e) {
+        GNS.getLogger().severe(" Hello ... exception " + value);
         e.printStackTrace();
       } catch (IOException e) {
         e.printStackTrace();

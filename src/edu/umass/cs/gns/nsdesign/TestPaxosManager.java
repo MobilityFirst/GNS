@@ -40,13 +40,13 @@ public class TestPaxosManager extends AbstractPaxosManager {
 
   @Override
   public String propose(String paxosIDNoVersion, String value) {
-    RequestPacket requestPacket = new RequestPacket(0, 0, value, false);
+    RequestPacket requestPacket = new RequestPacket(0, value, false);
     return paxosManager.propose(paxosIDNoVersion, requestPacket.toString());
   }
 
   @Override
   public String proposeStop(String paxosIDNoVersion, String value, short version) {
-    RequestPacket requestPacket = new RequestPacket(0, 0, value, true);
+    RequestPacket requestPacket = new RequestPacket(0, value, true);
     return paxosManager.proposeStop(paxosIDNoVersion, requestPacket.toString(), version);
   }
 

@@ -40,16 +40,18 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
   public GnsCoordinatorPaxos(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
                              Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
-    this.paxosInterface = paxosInterface;
+
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
     if (Config.multiPaxos) {
-//      assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
+      this.paxosInterface = new TestReplicable(paxosInterface);
       this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID,
-              nodeConfig, nioServer, new TestReplicable(paxosInterface), paxosConfig));
+              nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
+              this.paxosInterface, paxosConfig));
     } else {
+      this.paxosInterface = paxosInterface;
       this.paxosManager = new PaxosManager(nodeID, nodeConfig,
-              new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
+              new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), this.paxosInterface, paxosConfig);
     }
   }
 

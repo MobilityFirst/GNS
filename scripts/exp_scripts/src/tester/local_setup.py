@@ -23,7 +23,7 @@ class BasicSetup(unittest.TestCase):
     """Base class for all unittests for gns. Describes the common parameters needed by all tests"""
 
     # number of name servers
-    ns = 8
+    ns = 3
     # number of local name servers
     lns = 1
     lns_id = None

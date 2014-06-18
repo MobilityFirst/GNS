@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -235,9 +236,10 @@ public class PaxosManager extends AbstractPaxosManager {
 	public String proposeStop(String paxosID, String value, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if(pism!=null && pism.getVersion()==version) {
-			this.propose(paxosID, value);
-		}
-		return null;
+			return this.propose(paxosID, value);
+		} else {
+      return null;
+    }
 	}
 
 	// FIXME: Unclear how this will be used. May cause problems with ongoing DB transactions.

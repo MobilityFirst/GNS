@@ -245,7 +245,7 @@ def initialize_gns_parameters(parser):
     if parser.has_option(ConfigParser.DEFAULTSECT, 'scheme'):
         global scheme
         scheme = parser.get(ConfigParser.DEFAULTSECT, 'scheme')
-    print '\nExperiment mode:', is_experiment_mode
+
     if parser.has_option(ConfigParser.DEFAULTSECT, 'is_experiment_mode'):
         global is_experiment_mode
         print '\nExperiment mode:', is_experiment_mode

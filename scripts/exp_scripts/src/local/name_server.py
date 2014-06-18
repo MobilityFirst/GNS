@@ -41,6 +41,7 @@ TINY_UPDATE = '-tinyUpdate'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
 USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
+MULTIPAXOS = '-multipaxos'
 DUMMY_GNS = '-dummyGNS'
 
 KMEDOIDS_REPLICATION = '-kmedoids'
@@ -196,6 +197,8 @@ def run_name_server(node_id, work_dir):
         command += ' ' + VARIATION + ' ' + str(variation)
     if exp_config.use_gns_nio_transport:
         command += ' ' + USE_GNS_NIO_TRANSPORT
+    if exp_config.multipaxos:
+        command += ' ' + MULTIPAXOS
     if exp_config.dummy_gns:
         command += ' ' + DUMMY_GNS
     if not name_actives ==  '':
