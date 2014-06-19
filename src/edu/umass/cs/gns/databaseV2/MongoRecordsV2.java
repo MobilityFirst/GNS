@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class MongoRecordsV2 implements NoSQLRecordsV2 {
 
-  private static final String DBROOTNAME = "GNS";
+  private static final String DBROOTNAME = "GNS-V2";
   public static final String DBNAMERECORD = "NameRecord";
   public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
 
