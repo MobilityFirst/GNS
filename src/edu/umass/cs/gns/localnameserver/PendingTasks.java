@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
@@ -167,7 +166,7 @@ public class PendingTasks {
           task.requestInfo.setFinishTime(); // set finish time for request
           if (eventCode != null) task.requestInfo.addEventCode(eventCode);
           GNS.getStatLogger().fine(task.requestInfo.getLogString());
-          Intercessor.handleIncomingPackets(task.requestInfo.getErrorMessage());
+          LocalNameServer.getIntercessor().handleIncomingPacket(task.requestInfo.getErrorMessage());
         }
       }
     }

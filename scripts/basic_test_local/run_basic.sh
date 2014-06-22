@@ -1,4 +1,5 @@
 gns_jar=$1
+client_port=34242
 
 if [ -z "$gns_jar" ]; then
         echo "ERROR: No GNS jar given. Give complete path to GNS jar."
@@ -32,20 +33,18 @@ nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartNameServer -id 2 -nsfile 
 cd ../../
 
 # start rmiregistry
-killall -9 rmiregistry
-rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false &
+#killall -9 rmiregistry
+#rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false &
 
 # start local name server
 cd log/lns3
-nohup java -ea -cp $gns_jar -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:$gns_jar \
-edu.umass.cs.gns.main.StartLocalNameServer -id 3 -nsfile ../../node_config  -experimentMode \
--statFileLoggingLevel FINE -statConsoleOutputLevel FINE &
+nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartLocalNameServer -id 3 -nsfile ../../node_config \
+ -experimentMode -statFileLoggingLevel FINE -statConsoleOutputLevel FINE &
 cd ../../
 
 # sleep so that LNS can startup and bind itself to rmiregistry
 sleep 2
 
 cd log/client
-java -ea -cp $gns_jar  -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:$gns_jar \
- edu.umass.cs.gns.test.testclient.TestClient
+java -ea -cp $gns_jar edu.umass.cs.gns.test.nioclient.ClientSample ../../node_config $client_port
 cd ../../

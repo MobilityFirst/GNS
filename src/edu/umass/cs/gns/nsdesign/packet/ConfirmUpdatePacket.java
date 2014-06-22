@@ -150,4 +150,8 @@ public class ConfirmUpdatePacket extends BasicPacket {
   public boolean isSuccess() {
     return responseCode == NSResponseCode.NO_ERROR;
   }
+
+  public void setRequestID(int requestID) {
+    this.requestID = requestID;
+  }
 }

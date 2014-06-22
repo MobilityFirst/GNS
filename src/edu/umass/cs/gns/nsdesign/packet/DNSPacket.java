@@ -81,6 +81,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   private int responder = -1;
 
+
   /**
    * Constructs a packet for querying a name server for name information.
    *
@@ -382,5 +383,5 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public void setResponder(int responder) {
     this.responder = responder;
   }
-  
+
 }

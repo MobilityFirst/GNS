@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
@@ -125,7 +124,7 @@ public class Update {
     if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       
-      Intercessor.handleIncomingPackets(packet.toJSONObject());
+      LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + 
               ":" + packet.toJSONObject().toString());

@@ -187,6 +187,10 @@ public class AddRecordPacket extends BasicPacket {
     return requestID;
   }
 
+  public void setRequestID(int requestID) {
+    this.requestID = requestID;
+  }
+
   public int getLNSRequestID() {
     return LNSRequestID;
   }

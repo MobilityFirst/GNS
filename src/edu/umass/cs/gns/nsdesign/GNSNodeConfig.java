@@ -354,6 +354,15 @@ public class GNSNodeConfig implements NodeConfig {
     }
   }
 
+  public int getLnsDbClientPort(int id) {
+    if (isNameServer(id)) {
+      throw new IllegalArgumentException();
+    } else {
+      HostInfo nodeInfo = hostInfoMapping.get(id);
+      return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_DBCLIENT_PORT.getOffset();
+    }
+  }
+
   /**
    * Returns the IP address of a name server.
    *

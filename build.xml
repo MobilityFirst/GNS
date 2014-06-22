@@ -31,7 +31,7 @@
                        includeantruntime="false">
             <classpath refid="classpath.base"/>
         </javac>
-        <rmic classname="edu.umass.cs.gns.test.testclient.LNSSideImplementation" base="${build}"/>
+        <rmic classname="edu.umass.cs.gns.test.rmiclient.LNSSideImplementation" base="${build}"/>
     </target>
   
     <target name="jarbuild" depends="compile" description="generate jar files">

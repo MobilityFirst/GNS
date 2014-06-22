@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
@@ -40,7 +41,7 @@ import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
  *
  * @author westy
  */
-public class Intercessor {
+public class Intercessor implements IntercessorInterface {
 
   private static int localServerID = 0;
   /* Used by the wait/notify calls */
@@ -378,5 +379,10 @@ public class Intercessor {
     if (isPacketTypeFound == false) {
       GNS.getLogger().severe("Packet type not found at demultiplexer: " + isPacketTypeFound);
     }
+  }
+
+  @Override
+  public void handleIncomingPacket(JSONObject jsonObject) {
+    handleIncomingPackets(jsonObject);
   }
 }

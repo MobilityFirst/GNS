@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.test.testclient;
+package edu.umass.cs.gns.test.rmiclient;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;

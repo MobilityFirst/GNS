@@ -16,6 +16,7 @@ import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.StartExperiment;
+import edu.umass.cs.gns.test.nioclient.DBClientIntercessor;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,12 +43,9 @@ public class LocalNameServer {
    */
   private static int nodeID;
 
-  /**
-   * Unique and random query ID *
-   */
-//  private static Random random;
-//
-//  private static GNSNIOTransportInterface tcpTransport;
+
+  /** A local name server forwards the final response for all requests to intercessor. */
+  private static IntercessorInterface intercessor;
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;
 
@@ -93,16 +91,27 @@ public class LocalNameServer {
     );
     GNS.getLogger().info("Parameter values: " + parameters.toString());
     requestHandler = new BasicClientRequestHandler(nodeID, gnsNodeConfig, parameters);
-    Intercessor.init(requestHandler);
-    //startTransport();
+
+    if (!parameters.isExperimentMode()) {
+      // intercessor for regular GNS use
+      Intercessor.init(requestHandler);
+      intercessor = new Intercessor();
+    } else {
+      // intercessor for four simple DB operations: add, remove, write, read only.
+      intercessor = new DBClientIntercessor(nodeID, gnsNodeConfig.getLnsDbClientPort(nodeID),
+              new LNSPacketDemultiplexer(requestHandler));
+    }
+
     if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
       GnsHttpServer.runHttp(nodeID);
     }
+
     if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
       PingServer.startServerThread(nodeID, gnsNodeConfig);
-      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " + gnsNodeConfig.getPingPort(nodeID));
+      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " +
+              gnsNodeConfig.getPingPort(nodeID));
       pingManager = new PingManager(nodeID, gnsNodeConfig);
       pingManager.startPinging();
     }
@@ -113,6 +122,7 @@ public class LocalNameServer {
     if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
     }
+
     if (parameters.isExperimentMode()) {
       GNS.getLogger().info("Starting experiment ..... ");
       new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
@@ -381,7 +391,11 @@ public class LocalNameServer {
   public static String getNameRecordStatsMapLogString() {
     return requestHandler.getNameRecordStatsMapLogString();
   }
-          
+
+  public static IntercessorInterface getIntercessor() {
+    return intercessor;
+  }
+
   // MONITOR NAME SERVER LOADS
   private void initializeNameServerLoadMonitoring() {
     nameServerLoads = new ConcurrentHashMap<Integer, Double>();

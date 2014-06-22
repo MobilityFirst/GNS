@@ -175,4 +175,8 @@ public class RemoveRecordPacket extends BasicPacket {
   public void changePacketTypeToRcRemove() {
     type = Packet.PacketType.RC_REMOVE;
   }
+
+  public void setRequestID(int requestID) {
+    this.requestID = requestID;
+  }
 }

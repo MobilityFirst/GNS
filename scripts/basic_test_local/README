@@ -1,5 +1,24 @@
-Running a local test with GNS.
+******************************
+Running a local test with GNS using DBClient.
+******************************
 
+DBClient is an alternate interface to use GNS, which we expect to be used only for testing purposes. This interface provides a minimal set of commands, in fact exactly four commands of read, write, add, and remove for a given name. 
+By following these instructions you can run a sample program which uses the DBClient interface. The test code which the client runs runs is in the class edu.umass.cs.gns.test.nioclient.ClientSample. You can write your own test based on the code in this class.
+
+
+NOTE:  Assuming you have built GNS.jar (Step 1 below), the subsequent steps  can be automatically run by running the script ‘run_basic.sh’ in this folder as follows:
+
+./run_basic.sh <Complete-path-to-GNS.jar>
+
+To run an unreplicated GNS (1 name server), use the following command:
+
+./run_basic_1node.sh <Complete-path-to-GNS.jar>
+
+
+
+******************************
+STEP BY STEP INSTRUCTIONS:
+******************************
 
 (1) Check out GNS from svn locally. Lets call the checkout folder GNS_FOLDER. Then, build jar file for GNS as follows:
 
@@ -21,10 +40,10 @@ rm -rf GNS_DATA
 
 (3) Now let us create a config file describing IP and ports for 3 name servers and 1 local name servers like this. Let us call this file NODE_CONFIG. A sample file is included in this folder by name: node_config
 
-0 yes 127.0.0.1 23410 0 0 0
-1 yes 127.0.0.1 23510 0 0 0
-2 yes 127.0.0.1 23610 0 0 0
-3 no 127.0.0.1 23710 0 0 0
+0 yes local 23410 0 0 0
+1 yes local 23510 0 0 0
+2 yes local 23610 0 0 0
+3 no local 23710 0 0 0
 
 The format of each line is as follows: 
 node_id    isNS?    hostname   starting_port ping_latency latitude longitude
@@ -43,36 +62,19 @@ Run name server with id = 2:
 java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id 2 -nsfile NODE_CONFIG
 
 
-(5) Next, we will start a local name server. Local name server uses java RMI to receive client requests. So, start the
-rmiregistry using following command:
+(5) Next, we will start a local name server.  To run local name server, again create a separate directory, and type the following command.
 
-# kill existing rmiregistry
-killall -9 rmiregistry
-# the options with this command are really important
-rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false &
-
-To run local name server, again create a separate directory, and type the following command.
-
-java -ea -cp GNS_FOLDER/dist/GNS.jar  -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:GNS_FOLDER/dist/GNS.jar \
-edu.umass.cs.gns.main.StartLocalNameServer -id 3 -nsfile NODE_CONFIG -experimentMode -statFileLoggingLevel FINE -statConsoleOutputLevel FINE
+java -ea -cp GNS_FOLDER/dist/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer -id 3 -nsfile NODE_CONFIG -experimentMode -statFileLoggingLevel FINE -statConsoleOutputLevel FINE
 
 
 (6) Finally run the client using following command:
 
-java -ea -cp GNS_FOLDER/dist/GNS.jar  -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:$gns_jar \
- edu.umass.cs.gns.test.testclient.TestClient
+java -ea -cp GNS_FOLDER/dist/GNS.jar  edu.umass.cs.gns.test.nioclient.SampleClient GNS_FOLDER/dist/GNS.jar CLIENT_PORT
 
 The client will terminate by printing the following message:
 
-Basic test for 1 name successful. Local name server exiting.
-
+Client received all responses ... SUCCESS.
 
 The name servers and local name servers will continue to run and you need to kill them manually.
-
-Assuming you have completed step 1, the subsequent steps  can be automatically run by running the script ‘run_basic.sh’ in this folder as follows:
-
-./run_basic.sh
-
-The test code which the client runs runs is in class edu.umass.cs.gns.test.testclient.TestClient
 
 

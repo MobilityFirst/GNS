@@ -398,4 +398,8 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
   static void printSize(Object object) {
     System.out.println("Java Size: " + SizeOf.deepSizeOf(object) + " bytes"); //this will print the object size in bytes
   }
+
+  public void setRequestID(int requestID) {
+    this.requestID = requestID;
+  }
 }

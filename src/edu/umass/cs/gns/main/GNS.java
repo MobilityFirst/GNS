@@ -35,6 +35,7 @@ public class GNS {
     LNS_ADMIN_DUMP_RESPONSE_PORT(7),
     NS_PING_PORT(8),
     LNS_PING_PORT(9),
+    LNS_DBCLIENT_PORT(10),
     PING_PORT(-1); // selects either NS_PING_PORT or LNS_PING_PORT
     
     //

@@ -5,12 +5,10 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
+
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -172,7 +170,7 @@ public class Lookup {
   public static void sendDNSResponseBackToSource(DNSPacket packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == DNSPacket.LOCAL_SOURCE_ID) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
-      Intercessor.handleIncomingPackets(packet.toJSONObject());
+      LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());

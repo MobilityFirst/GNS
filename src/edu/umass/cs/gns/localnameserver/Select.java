@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
@@ -54,7 +53,7 @@ public class Select {
     GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " recvd from NS" + packet.getNameServer());
     SelectInfo info = LocalNameServer.getSelectInfo(packet.getLnsQueryId());
     // send a response back to the client
-    Intercessor.handleIncomingPackets(packet.toJSONObject());
+    LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     LocalNameServer.removeSelectInfo(packet.getLnsQueryId());
   }
 }

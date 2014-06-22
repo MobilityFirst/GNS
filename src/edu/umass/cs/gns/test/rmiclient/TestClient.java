@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.test.testclient;
+package edu.umass.cs.gns.test.rmiclient;
 
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
@@ -18,7 +18,7 @@ import java.rmi.registry.Registry;
  * remote machine.
  *
  * Usage: java -ea -cp $gns_jar  -Djava.rmi.server.useCodebaseOnly=false -Djava.rmi.server.codebase=file:$gns_jar
- *                     edu.umass.cs.gns.test.testclient.TestClient  LNS_HOSTNAME(optional argument)
+ *                     edu.umass.cs.gns.test.rmiclient.TestClient  LNS_HOSTNAME(optional argument)
  *
  * Created by abhigyan on 5/25/14.
  */

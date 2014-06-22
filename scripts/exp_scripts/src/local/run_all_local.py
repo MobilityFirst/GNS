@@ -76,10 +76,13 @@ def run_exp():
             if first_lns is False:
                 time.sleep(exp_config.ns_sleep)  # sleep so that name servers load name records into DB
                 first_lns = True
-            local_name_server.run_local_name_server(id, log_output_folder, get_update_trace(exp_config.trace_folder, id))
+            update_trace = None
+            if exp_config.is_experiment_mode and exp_config.experiment_run_time >= 0:
+                update_trace = get_update_trace(exp_config.trace_folder, id)
+            local_name_server.run_local_name_server(id, log_output_folder, update_trace)
 
     # kill local
-    if not exp_config.is_experiment_mode:
+    if not exp_config.is_experiment_mode or exp_config.experiment_run_time < 0:
         print 'Not experiment mode. GNS running.'
         return
         
@@ -87,7 +90,6 @@ def run_exp():
     time.sleep(exp_config.experiment_run_time + exp_config.extra_wait)
 
     kill_local_gnrs()
-
 
     # if exp_config.output_folder.endswith('/'):
     #     stats_folder = exp_config.output_folder[:-1] + '_stats'

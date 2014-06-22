@@ -25,7 +25,7 @@ public class WorkloadParams {
   public static final String CORRESPONDENT_ID = "correspondent_id";
   public static final String MOBILE_UPDATE_INTERVAL = "mobile_update_interval";
 
-  private ExpType expType = ExpType.BASICTEST;
+  private ExpType expType = null;
 
   // parameters for trace-based experiment
   private int objectSizeKB;

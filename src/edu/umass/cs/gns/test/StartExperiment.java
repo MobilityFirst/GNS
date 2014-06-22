@@ -3,7 +3,7 @@ package edu.umass.cs.gns.test;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.test.connecttime.StartConnectTimeExperiment;
-import edu.umass.cs.gns.test.testclient.LNSSideImplementation;
+import edu.umass.cs.gns.test.rmiclient.LNSSideImplementation;
 
 import java.io.IOException;
 
@@ -21,15 +21,13 @@ public class StartExperiment {
     GNS.getLogger().info("Workload config file: " + workloadFile);
     WorkloadParams params = new WorkloadParams(workloadFile);
 
-    if (updateTraceFile != null || params.getExpType().equals(ExpType.TRACE)) {
+    if (updateTraceFile != null || params.getExpType() != null && params.getExpType().equals(ExpType.TRACE)) {
       GNS.getStatLogger().info("Starting trace based experiment ... ");
       new NewRequestGenerator(params, updateTraceFile, handler);
-    }
-    else if (params.getExpType().equals(ExpType.CONNECT_TIME)) {
+    } else if (params.getExpType() != null && params.getExpType().equals(ExpType.CONNECT_TIME)) {
       GNS.getStatLogger().info("Starting connect time experiment ... ");
       StartConnectTimeExperiment.startTest(nodeID, params);
-    }
-    else if (params.getExpType().equals(ExpType.BASICTEST)) {
+    } else if (params.getExpType() != null && params.getExpType().equals(ExpType.BASICTEST)) { // this is the RMI client
       GNS.getStatLogger().info("Starting basic test ... ");
       LNSSideImplementation.startServer();
       // Test1Name is also a test

@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Defs;
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
@@ -35,7 +34,7 @@ public class LNSToNSCommandRequest {
       LocalNameServer.sendToNS(incomingJSON, serverID);
     } else {
       // PACKET IS COMING BACK FROM A NAMESERVER
-      Intercessor.handleIncomingPackets(incomingJSON);
+      LocalNameServer.getIntercessor().handleIncomingPacket(incomingJSON);
     }
   }
 
