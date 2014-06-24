@@ -36,7 +36,7 @@ public class SetPassword extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, PASSWORD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
