@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.installer;
 
 import edu.umass.cs.aws.networktools.ExecuteBash;
+import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
@@ -9,11 +10,15 @@ import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import edu.umass.cs.gns.statusdisplay.StatusModel;
 import edu.umass.cs.gns.util.Format;
+import java.io.BufferedWriter;
 import org.apache.commons.cli.*;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,7 +52,7 @@ public class GNSInstaller {
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String CONF_FOLDER = FILESEPARATOR + "conf";
   private static final String LNS_CONF_FILE = CONF_FOLDER + FILESEPARATOR + "lns.conf";
-  private static final String NS_CONF_FILE = CONF_FOLDER +  FILESEPARATOR + "ns.conf";
+  private static final String NS_CONF_FILE = CONF_FOLDER + FILESEPARATOR + "ns.conf";
   private static final String PRIVATEKEYFILEEXTENSION = ".pem";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
@@ -94,10 +99,10 @@ public class GNSInstaller {
    * @param name
    * @param action
    */
-  public static void updateRunSet(String name, UpdateAction action, boolean removeLogs, boolean deleteDatabase, boolean firstInstall, String scriptFile) {
+  public static void updateRunSet(String name, UpdateAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     for (HostInfo info : hostTable.values()) {
-      threads.add(new UpdateThread(info.getHostname(), info.getId(), action, removeLogs, deleteDatabase, firstInstall, scriptFile));
+      threads.add(new UpdateThread(info.getHostname(), info.getId(), action, removeLogs, deleteDatabase, scriptFile));
     }
     for (Thread thread : threads) {
       thread.start();
@@ -132,17 +137,13 @@ public class GNSInstaller {
    * @param action
    * @param removeLogs
    * @param deleteDatabase
-   * @param firstInstall
    * @param scriptFile
    * @throws java.net.UnknownHostException
    */
   public static void updateAndRunGNS(int id, String hostname, UpdateAction action, boolean removeLogs,
-          boolean deleteDatabase, boolean firstInstall, String scriptFile) throws UnknownHostException {
+          boolean deleteDatabase, String scriptFile) throws UnknownHostException {
     System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
-    // kill all the servers even if firstInstall is true in case they use -install with
-    // a set of running servers
     killAllServers(id, hostname);
-    // do the script even if firstInstall is false for now
     if (scriptFile != null) {
       executeScriptFile(id, hostname, scriptFile);
     }
@@ -160,9 +161,7 @@ public class GNSInstaller {
         break;
     }
     // write the name-server-info
-    if (firstInstall) {
-      writeNSFile(hostname);
-    }
+    writeNSFile(hostname);
     startServers(id, hostname);
     System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
   }
@@ -210,11 +209,15 @@ public class GNSInstaller {
   private static void copyJarAndConfFiles(int id, String hostname) {
     File keyFile = getKeyFile();
     StatusModel.getInstance().queueUpdate(id, "Copying jar and conf files");
-    SSHClient.scpTo(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
-    SSHClient.scpTo(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
-    SSHClient.scpTo(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
+    RSync.upload(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
+    RSync.upload(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
+    RSync.upload(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
+//    SSHClient.scpTo(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
+//    SSHClient.scpTo(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
+//    SSHClient.scpTo(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
+
   }
-          
+
   /**
    * Runs the script file on the remote host.
    *
@@ -225,13 +228,15 @@ public class GNSInstaller {
     File keyFile = getKeyFile();
     StatusModel.getInstance().queueUpdate(id, "Copying script file");
     // copy the file to remote host
-    SSHClient.scpTo(userName, hostname, keyFile, scriptFileLocation, "installScript.sh");
+    String remoteFile = Paths.get(scriptFileLocation).getFileName().toString();
+    RSync.upload(userName, hostname, keyFile, scriptFileLocation, remoteFile);
+    //SSHClient.scpTo(userName, hostname, keyFile, scriptFileLocation, remoteFile);
     // make it executable
-    SSHClient.execWithSudoNoPass(userName, hostname, keyFile, "chmod ugo+x" + " " + "installScript.sh");
+    SSHClient.execWithSudoNoPass(userName, hostname, keyFile, "chmod ugo+x" + " " + remoteFile);
     //execute it
-    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + "installScript.sh", true, null);
+    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + remoteFile, true, null);
   }
-  
+
   //
   private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
   private static final String CassandraRecordsClass = "edu.umass.cs.gns.database.CassandraRecords";
@@ -317,7 +322,17 @@ public class GNSInstaller {
       result.append(NEWLINE);
     }
 
-    SSHClient.execWithSudoNoPass(userName, hostname, getKeyFile(), "echo \"" + result.toString() + "\" > name-server-info");
+    try {
+      File temp = File.createTempFile("name-server-info", "");
+      BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+      bw.write(result.toString());
+      bw.close();
+      RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), "name-server-info");
+      //SSHClient.execWithSudoNoPass(userName, hostname, getKeyFile(), "echo \"" + result.toString() + "\" > name-server-info");
+    } catch (IOException e) {
+      GNS.getLogger().severe("Unable to write temporary name-server-info file: " + e);
+    }
+
   }
 
   // Probably unnecessary at this point.
@@ -336,7 +351,7 @@ public class GNSInstaller {
    * @return true if it found them
    */
   private static boolean setupJarAndConfFilePaths() {
-    File jarPath = getJarPath();
+    File jarPath = getLocalJarPath();
     System.out.println("Jar path: " + jarPath);
     gnsJarFileLocation = jarPath.getPath();
     distFolderLocation = jarPath.getParent();
@@ -358,7 +373,7 @@ public class GNSInstaller {
    *
    * @return the path
    */
-  private static File getJarPath() {
+  private static File getLocalJarPath() {
     try {
       return new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     } catch (URISyntaxException e) {
@@ -382,9 +397,6 @@ public class GNSInstaller {
 
   private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
-    Option install = OptionBuilder.withArgName("runSet name").hasArg()
-            .withDescription("installs GNS files and starts servers in a runset")
-            .create("install");
     Option update = OptionBuilder.withArgName("runSet name").hasArg()
             .withDescription("updates GNS files and restarts servers in a runset")
             .create("update");
@@ -401,7 +413,6 @@ public class GNSInstaller {
             .create("scriptFile");
 
     commandLineOptions = new Options();
-    commandLineOptions.addOption(install);
     commandLineOptions.addOption(update);
     commandLineOptions.addOption(restart);
     commandLineOptions.addOption(removeLogs);
@@ -425,7 +436,6 @@ public class GNSInstaller {
         printUsage();
         System.exit(1);
       }
-      String runsetInstall = parser.getOptionValue("install");
       String runsetUpdate = parser.getOptionValue("update");
       String runsetRestart = parser.getOptionValue("restart");
       String dataStoreName = parser.getOptionValue("datastore");
@@ -442,8 +452,7 @@ public class GNSInstaller {
         }
       }
 
-      String configName = runsetInstall != null ? runsetInstall
-              : runsetUpdate != null ? runsetUpdate
+      String configName = runsetUpdate != null ? runsetUpdate
               : runsetRestart != null ? runsetRestart
               : null;
 
@@ -461,18 +470,12 @@ public class GNSInstaller {
 
       ExecuteBash.setEc2Username(userName);
       SSHClient.setVerbose(true);
-
-      boolean isFirstInstall = false;
-      // install is the same as update except we don't have to do a few things
-      if (runsetInstall != null) {
-        runsetUpdate = runsetInstall;
-        isFirstInstall = true;
-      }
+      RSync.setVerbose(true);
 
       if (runsetUpdate != null) {
-        updateRunSet(runsetUpdate, UpdateAction.UPDATE, removeLogs, deleteDatabase, isFirstInstall, scriptFile);
+        updateRunSet(runsetUpdate, UpdateAction.UPDATE, removeLogs, deleteDatabase, scriptFile);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetUpdate, UpdateAction.RESTART, removeLogs, deleteDatabase, false, scriptFile);
+        updateRunSet(runsetUpdate, UpdateAction.RESTART, removeLogs, deleteDatabase, scriptFile);
       } else {
         printUsage();
         System.exit(1);
@@ -496,23 +499,21 @@ public class GNSInstaller {
     private final UpdateAction action;
     private final boolean removeLogs;
     private final boolean deleteDatabase;
-    private final boolean firstInstall;
     private final String scriptFile;
 
-    public UpdateThread(String hostname, int id, UpdateAction action, boolean removeLogs, boolean deleteDatabase, boolean firstInstall, String scriptFile) {
+    public UpdateThread(String hostname, int id, UpdateAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
       this.hostname = hostname;
       this.id = id;
       this.action = action;
       this.removeLogs = removeLogs;
       this.deleteDatabase = deleteDatabase;
-      this.firstInstall = firstInstall;
       this.scriptFile = scriptFile;
     }
 
     @Override
     public void run() {
       try {
-        GNSInstaller.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, firstInstall, scriptFile);
+        GNSInstaller.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

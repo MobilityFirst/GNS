@@ -9,9 +9,7 @@ package edu.umass.cs.aws.networktools;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 /**
  *
@@ -19,16 +17,18 @@ import java.util.Arrays;
  */
 public class RSync {
 
-  private static final boolean verbose = true;
-
-  public static void upload(String user, String host, File keyFile, String fileToTransfer, String remoteWorkingDirectory) {
+  private static boolean verbose = true;
+  
+  public static void upload(String user, String host, File keyFile, String localFile, String remoteFile) {
     try {
-    Path paths = Paths.get(fileToTransfer);
-    String localFile = paths.getFileName().toString();
-    String[] command = new String[]{"rsync", "-e /usr/local/bin/ssh -i " + keyFile.getAbsolutePath(),
-      fileToTransfer, user + "@" + host + ":" + remoteWorkingDirectory + "/" + localFile};
+    ArrayList<String> command = new ArrayList<String>();
+    command.add("rsync");
+    command.add("-e");
+    command.add("/usr/local/bin/ssh -o StrictHostKeyChecking=no -i " + keyFile.getAbsolutePath());
+    command.add(localFile);
+    command.add(user + "@" + host + ":" + remoteFile);
     if (verbose) {
-      System.out.println("CMD: " + Arrays.toString(command));
+      System.out.println("CMD: " + command);
     }
     ProcessBuilder pb = new ProcessBuilder(command);
     Process p = pb.start();
@@ -40,14 +40,21 @@ public class RSync {
        System.out.println("Exception while uploading file:" + e);
     }
   }
+  
+  public static boolean isVerbose() {
+    return verbose;
+  }
 
+  public static void setVerbose(boolean verbose) {
+    RSync.verbose = verbose;
+  }
+  
   public static void main(String[] arg) {
     String host = "ec2-23-21-120-250.compute-1.amazonaws.com";
-    String file = "GNS.jar";
-    String localFile = "/Users/westy/Documents/Code/GNS/dist/" + file;
-    String remoteDir = "/home/ec2-user";
+    String localFile = "/Users/westy/Documents/Code/GNS/dist/GNS.jar";
+    String remoteFile = "/home/ec2-user/GNStest.jar";
     File keyFile = new File("/Users/westy/aws.pem");
-    upload("ec2-user", host, keyFile, localFile, remoteDir);
+    upload("ec2-user", host, keyFile, localFile, remoteFile);
     System.exit(0);
   }
 }

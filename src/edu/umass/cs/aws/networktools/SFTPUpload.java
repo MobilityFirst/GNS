@@ -26,7 +26,7 @@ import java.nio.file.Paths;
  */
 public class SFTPUpload {
 
-  private static final boolean verbose = true;
+  private static boolean verbose = false;
 
   public static void uploadFile(String user, String host, File keyFile, String fileToTransfer, String sftpWorkingDirectory) {
     if (verbose) {
@@ -77,6 +77,14 @@ public class SFTPUpload {
     channel = session.openChannel("sftp");
     channel.connect();
     return (ChannelSftp) channel;
+  }
+  
+  public static boolean isVerbose() {
+    return verbose;
+  }
+
+  public static void setVerbose(boolean verbose) {
+    SFTPUpload.verbose = verbose;
   }
 
   public static void main(String[] arg) {
