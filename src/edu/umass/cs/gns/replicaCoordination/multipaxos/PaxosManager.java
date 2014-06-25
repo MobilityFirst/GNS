@@ -380,7 +380,7 @@ public class PaxosManager extends AbstractPaxosManager {
 	 */
 	protected synchronized void kill(PaxosInstanceStateMachine pism) {
 		if(pism==null || this.isClosed()) return;
-		while(pism.kill()) {log.severe("Problem stopping paxos instance "+pism.getPaxosID());}
+		while(!pism.kill()) {log.severe("Problem stopping paxos instance "+pism.getPaxosID());}
 		this.pinstances.remove(pism.getPaxosID()); 
 		this.corpses.put(pism.getPaxosID(), pism);
 		timer.schedule(new Cremator(pism.getPaxosID(), this.corpses), MORGUE_DELAY);
