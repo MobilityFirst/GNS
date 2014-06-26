@@ -1,0 +1,16 @@
+6 yes ec2-54-253-252-188.ap-southeast-2.compute.amazonaws.com default  0 -33.86150 151.20550
+5 yes ec2-54-238-57-233.ap-northeast-1.compute.amazonaws.com default  0 47.63440 -122.34220
+0 yes ec2-23-21-160-80.compute-1.amazonaws.com default  0 39.04370 -77.48750
+7 yes ec2-79-125-27-206.eu-west-1.compute.amazonaws.com default  0 53.00000 -8.00000
+2 yes ec2-50-112-98-151.us-west-2.compute.amazonaws.com default  0 45.77880 -119.52900
+1 yes ec2-54-241-15-214.us-west-1.compute.amazonaws.com default  0 37.33940 -121.89500
+3 yes ec2-54-232-178-43.sa-east-1.compute.amazonaws.com default  0 -23.47330 -46.66580
+4 yes ec2-54-254-107-171.ap-southeast-1.compute.amazonaws.com default  0 1.36670 103.80000
+14 no ec2-54-253-252-188.ap-southeast-2.compute.amazonaws.com default  0 -33.86150 151.20550
+13 no ec2-54-238-57-233.ap-northeast-1.compute.amazonaws.com default  0 47.63440 -122.34220
+8 no ec2-23-21-160-80.compute-1.amazonaws.com default  0 39.04370 -77.48750
+15 no ec2-79-125-27-206.eu-west-1.compute.amazonaws.com default  0 53.00000 -8.00000
+10 no ec2-50-112-98-151.us-west-2.compute.amazonaws.com default  0 45.77880 -119.52900
+9 no ec2-54-241-15-214.us-west-1.compute.amazonaws.com default  0 37.33940 -121.89500
+11 no ec2-54-232-178-43.sa-east-1.compute.amazonaws.com default  0 -23.47330 -46.66580
+12 no ec2-54-254-107-171.ap-southeast-1.compute.amazonaws.com default  0 1.36670 103.80000

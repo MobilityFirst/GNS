@@ -112,6 +112,11 @@ public class StartNameServer {
     // initialize config options.
     Config.initialize(allValues);
     int nodeID = Integer.parseInt(allValues.get(NSParameterNames.ID));
+    
+    if (allValues.containsKey(NSParameterNames.LNS_FILE)) {
+      // new style LNS
+    }
+    
     String nodeConfigFile = allValues.get(NSParameterNames.NS_FILE);
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nodeConfigFile, nodeID);
 

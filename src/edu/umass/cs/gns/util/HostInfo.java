@@ -51,7 +51,7 @@ public class HostInfo {
    * Constructs a NameServerInfo with the give parameter
    *
    * @param id Name server id
-   * @param ipAddress Name server IP address
+   * @param ipAddressString
    * @param startingPortNumber first port number of block of ports used for TCP and UDP comms
    * @param pingLatency RTT latency between the local nameserver and this nameserver in milleseconds
    * @param latitude Latitude of the nameserver
@@ -113,7 +113,7 @@ public class HostInfo {
 
   @Override
   public String toString() {
-    return "HostInfo{" + "id=" + id + ", ipAddress=" + ipAddress + ", startingPortNumber="
+    return "HostInfo{" + "id=" + id + ", ipAddress=" + getIpAddress() + ", startingPortNumber="
             + startingPortNumber + ", pingLatency=" + pingLatency + ", latitude=" + latitude + ", longitude=" + longitude + '}';
   }
   

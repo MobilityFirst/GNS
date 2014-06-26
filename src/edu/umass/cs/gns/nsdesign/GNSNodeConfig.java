@@ -13,7 +13,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -24,40 +23,36 @@ import java.util.concurrent.ConcurrentMap;
  *
  * To use the nio package, GNS implements <code>NodeConfig</code> interface in this class.
  *
- * Earlier implementation of this class was static. We have made this class non-static to be able to test
- * with multiple nodes within a single JVM.
- *
- *
  * @author Abhigyan
- * 
- * Arun: Removed unused variable warnings and dead code. FIXME: Unclear why we
- * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable 
+ *
+ * Arun: FIXME: Unclear why we
+ * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable
  * from here.
  */
 public class GNSNodeConfig implements NodeConfig {
-	
+
   private int nodeID = -1;
 
   public static final long INVALID_PING_LATENCY = -1L;
-  
+
   public static final int INVALID_NAME_SERVER_ID = -1;
 
   /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
-  private ConcurrentMap<Integer, HostInfo> hostInfoMapping =
-          new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
+  private ConcurrentMap<Integer, HostInfo> hostInfoMapping
+          = new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
   /**
    * A subset of hostInfoMapping with just the ids of the nameservers, not the LNSs
    */
-  private ConcurrentMap<Integer, Integer> nameServerMapping =
-          new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
+  private ConcurrentMap<Integer, Integer> nameServerMapping
+          = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
   /**
    * A subset hostInfoMapping with just the ids of the Local Name Server, not the NSs
    */
-  private ConcurrentMap<Integer, Integer> localNameServerMapping =
-          new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
+  private ConcurrentMap<Integer, Integer> localNameServerMapping
+          = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
 
   /**
    * Creates an empty GNSNodeConfig
@@ -67,15 +62,41 @@ public class GNSNodeConfig implements NodeConfig {
   }
 
   /**
-   * Creates a GNSNodeConfig and initializes it from a file
-   * 
+   * Creates a GNSNodeConfig and initializes it from a name-server-info file
+   *
    * @param nodeInfoFile
-   * @param nameServerID 
+   * @param nameServerID
    */
   public GNSNodeConfig(String nodeInfoFile, int nameServerID) {
     initFromFile(nodeInfoFile, nameServerID);
   }
-  
+
+  /**
+   * Creates a GNSNodeConfig and initializes it from a pair of host files
+   *
+   * @param nsHostsFile
+   * @param lnsHostsFile
+   * @param nameServerID
+   */
+  public GNSNodeConfig(String nsHostsFile, String lnsHostsFile, int nameServerID) {
+    initFromFiles(nsHostsFile, lnsHostsFile, nameServerID);
+  }
+
+  /**
+   * Creates a GNSNodeConfig and initializes for a local installation
+   *
+   * @param nsHosts - number of NameServers created
+   * @param lnsHosts - number of Local NameServers created
+   * @param nameServerID - the id of this server
+   */
+  public GNSNodeConfig(int nsHosts, int lnsHosts, int nameServerID) {
+    this.nodeID = nameServerID;
+    initServersCount(0, nsHosts, nameServerMapping);
+    GNS.getLogger().info("Number of name servers is : " + nsHosts);
+    initServersCount(nsHosts, lnsHosts, localNameServerMapping);
+    GNS.getLogger().info("Number of local name servers is : " + lnsHosts);
+  }
+
   /**
    * **
    * Parse the host's information file to create a mapping of node information for name servers and local name severs
@@ -84,7 +105,7 @@ public class GNSNodeConfig implements NodeConfig {
    * @param nameServerID
    * @throws NumberFormatException
    */
-  public final void initFromFile(String nodeInfoFile, int nameServerID) {
+  private void initFromFile(String nodeInfoFile, int nameServerID) {
     this.nodeID = nameServerID;
     long t0 = System.currentTimeMillis();
     // Reads in data from a text file containing information about each name server
@@ -93,7 +114,7 @@ public class GNSNodeConfig implements NodeConfig {
     try {
       br = new BufferedReader(new FileReader(nodeInfoFile));
     } catch (FileNotFoundException e1) {
-       GNS.getLogger().severe("Host info file not found: " + e1);
+      GNS.getLogger().severe("Host info file not found: " + e1);
       System.exit(0);
     }
 
@@ -164,30 +185,98 @@ public class GNSNodeConfig implements NodeConfig {
     }
     GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
     long t1 = System.currentTimeMillis();
-    GNS.getStatLogger().info("Time to read all hosts info: " + (t1 - t0)/1000 + " sec");
+    GNS.getStatLogger().info("Time to read all hosts info: " + (t1 - t0) / 1000 + " sec");
+  }
+
+  /**
+   * **
+   * Parse a pair of ns, lns hosts files to create a mapping of node information for name servers and local name severs
+   *
+   * @param nsHostsFile
+   * @param lnsHostsFile
+   * @param nameServerID
+   * @throws NumberFormatException
+   */
+  private void initFromFiles(String nsHostsFile, String lnsHostsFile, int nameServerID) {
+    this.nodeID = nameServerID;
+    int numberOfNameServers = initServersFromFile(0, nsHostsFile, nameServerMapping);
+    GNS.getLogger().info("Number of name servers is : " + numberOfNameServers);
+    int totalServers = initServersFromFile(numberOfNameServers, lnsHostsFile, localNameServerMapping);
+    GNS.getLogger().info("Number of local name servers is : " + (totalServers - numberOfNameServers));
+  }
+
+  private int initServersFromFile(int startId, String hostsFile, ConcurrentMap<Integer, Integer> serverMap) {
+    BufferedReader br = null;
+    try {
+      br = new BufferedReader(new FileReader(hostsFile));
+    } catch (FileNotFoundException e1) {
+      GNS.getLogger().severe("Host info file not found: " + e1);
+      System.exit(0);
+    }
+    int id = startId;
+    try {
+      while (br.ready()) {
+        String line = br.readLine();
+        if (line == null || line.equals("") || line.equals(" ")) {
+          continue;
+        }
+        String ipAddressString = line.trim();
+        addHostInfo(id, ipAddressString);
+        serverMap.put(id, id);
+        id = id + 1;
+      }
+      br.close();
+    } catch (IOException e) {
+      System.err.println("Problem reading host config: " + e);
+    }
+    return id;
+  }
+
+  private void initServersCount(int startId, int count, ConcurrentMap<Integer, Integer> serverMap) {
+    try {
+      String ipAddressString = getLocalHostLANAddress().getHostAddress();
+      for (int id = startId; id < count + startId; id++) {
+        int port = GNS.LOCAL_FIRST_NODE_PORT + id * 10;
+        addHostInfo(id, ipAddressString, port, 0, 0, 0);
+        serverMap.put(id, id);
+      }
+    } catch (UnknownHostException e) {
+      System.err.println("Problem getting local host address: " + e);
+    }
   }
 
   /**
    * Adds a HostInfo object to the list maintained by this config instance.
-   * 
+   *
    * @param id
    * @param ipAddress
    * @param startingPort
    * @param pingLatency
    * @param latitude
-   * @param longitude 
+   * @param longitude
    */
   public void addHostInfo(int id, String ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
   }
-  
+
+  /**
+   * Adds a HostInfo object to the list maintained by this config instance.
+   *
+   * @param id
+   * @param ipAddress
+   */
+  public void addHostInfo(int id, String ipAddress) {
+    HostInfo nodeInfo = new HostInfo(id, ipAddress, GNS.STARTINGPORT, 0, 0, 0);
+    GNS.getLogger().fine(nodeInfo.toString());
+    hostInfoMapping.put(id, nodeInfo);
+  }
 
   /**
    * Returns the complete set of IDs for all servers (local and otherwise).
-   * 
-   * @return 
+   *
+   * @return
    */
   @Override
   public Set<Integer> getNodeIDs() {
@@ -196,16 +285,16 @@ public class GNSNodeConfig implements NodeConfig {
 
   /**
    * Returns the complete set of IDs for all name servers (not local name servers).
-   * 
+   *
    * @return The set of IDs.
    */
   public Set<Integer> getNameServerIDs() {
     return ImmutableSet.copyOf(nameServerMapping.keySet());
   }
-  
+
   /**
    * Returns the complete set of IDs for all local name servers.
-   * 
+   *
    * @return The set of IDs.
    */
   public Set<Integer> getLocalNameServerIDs() {
@@ -214,9 +303,9 @@ public class GNSNodeConfig implements NodeConfig {
 
   /**
    * Returns true if this is a name server (as opposed to a local name server).
-   * 
+   *
    * @param id
-   * @return 
+   * @return
    */
   public boolean isNameServer(int id) {
     if (nameServerMapping.containsKey(id)) {
@@ -320,7 +409,7 @@ public class GNSNodeConfig implements NodeConfig {
 
   /**
    * Returns the LNS ping port
-   * 
+   *
    * @param id
    * @return the port
    */
@@ -331,7 +420,7 @@ public class GNSNodeConfig implements NodeConfig {
 
   /**
    * Returns the NS ping port
-   * 
+   *
    * @param id
    * @return the port
    */
@@ -339,10 +428,10 @@ public class GNSNodeConfig implements NodeConfig {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
   }
-  
+
   /**
    * Returns the appropriate ping port for a server.
-   * 
+   *
    * @param id
    * @return the port
    */
@@ -404,7 +493,7 @@ public class GNSNodeConfig implements NodeConfig {
     }
     return this.getLNSTcpPort(ID);
   }
-  
+
   /**
    * Returns the Name Server (not including Local Name Servers) with lowest latency.
    *
@@ -413,30 +502,30 @@ public class GNSNodeConfig implements NodeConfig {
   public int getClosestNameServer() {
     return getClosestServer(getNameServerIDs());
   }
-  
+
   /**
    * Returns the Local Name Server (not including Name Servers) with lowest latency.
-   * 
+   *
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
    */
   public int getClosestLocalNameServer() {
     return getClosestServer(getLocalNameServerIDs());
   }
-  
+
   /**
    * Selects the closest Name Server from a set of Name Servers.
-   * 
+   *
    * @param servers
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
    */
   public int getClosestServer(Set<Integer> servers) {
     return GNSNodeConfig.this.getClosestServer(servers, null);
   }
-  
+
   /**
    * Selects the closest Name Server from a set of Name Servers.
    * excludeNameServers is a set of Name Servers from the first list to not consider.
-   * 
+   *
    * @param serverIds
    * @param excludeServers
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
@@ -464,7 +553,7 @@ public class GNSNodeConfig implements NodeConfig {
 
     return nameServerID;
   }
-  
+
   /**
    * Returns an <code>InetAddress</code> object encapsulating what is most likely the machine's LAN IP address.
    * <p/>
@@ -536,19 +625,18 @@ public class GNSNodeConfig implements NodeConfig {
    * Tests *
    */
   public static void main(String[] args) throws Exception {
-	String filename = Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/nodeConfig";
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, 44);
-    System.out.println(gnsNodeConfig.hostInfoMapping.toString());
+    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+    GNSNodeConfig gnsNodeConfigOldSchool = new GNSNodeConfig(filename, 44);
+    System.out.println(gnsNodeConfigOldSchool.hostInfoMapping.toString());
+    System.out.println(gnsNodeConfigOldSchool.getNameServerIDs().size());
+    
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/ns_hosts.txt",
+            Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/lns_hosts.txt", 44);
+    System.out.println("hostInfoMapping:" + gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNameServerIDs().size());
 
-    Set<Integer> nameservers = new HashSet<Integer>();
-    nameservers.add(1);
-    nameservers.add(45);
-    nameservers.add(48);
-    nameservers.add(36);
-    nameservers.add(59);
-    Set<Integer> nameserverQueried = new HashSet<Integer>();
-    nameserverQueried.add(8);
-    System.out.println(gnsNodeConfig.getClosestServer(nameservers, null));
+    GNSNodeConfig gnsNodeConfigCount = new GNSNodeConfig(3, 1, 0);
+    System.out.println("hostInfoMapping:" + gnsNodeConfigCount.hostInfoMapping.toString());
   }
+
 }

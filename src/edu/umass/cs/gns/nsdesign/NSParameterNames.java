@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign;
 
 import org.apache.commons.cli.*;
 
-
 /**
  * List of configuration parameters for a name servers. Config file and command line arguments
  * use the string constants to set the corresponding parameters.
@@ -17,19 +16,16 @@ import org.apache.commons.cli.*;
 public class NSParameterNames {
 
   public static final String CONFIG_FILE = "configFile";
-
   public static final String HELP = "help";
-
   public static final String ID = "id";
-
   public static final String NS_FILE = "nsfile";
-
+  public static final String LNS_FILE = "lnsfile";
+  public static final String LOCAL_NS_COUNT = "localnscount";
+  public static final String LOCAL_LNS_COUNT = "locallnscount";
   public static final String PRIMARY_REPLICAS = "primary";
-
   public static final String TTL_CONSTANT = "ttlconstant";
 
   // replication-related parameters
-
   public static final String LOCATION = "location";
   public static final String STATIC = "static";
   public static final String RANDOM = "random";
@@ -53,10 +49,8 @@ public class NSParameterNames {
   // other parameters
   public static final String WORKER_THREAD_COUNT = "workerThreadCount";
 
-
   public static final String DATA_STORE = "dataStore";
   public static final String MONGO_PORT = "mongoPort";
-
 
   // logging related
   public static final String DEBUG_MODE = "debugMode";
@@ -66,12 +60,10 @@ public class NSParameterNames {
   public static final String STAT_FILE_LOGGING_LEVEL = "statFileLoggingLevel";
   public static final String STAT_CONSOLE_OUTPUT_LEVEL = "statConsoleOutputLevel";
 
-
   // paxos parameters
   public static final String PAXOS_LOG_FOLDER = "paxosLogFolder";
   public static final String FAILURE_DETECTION_MSG_INTERVAL = "failureDetectionMsgInterval";
   public static final String FAILURE_DETECTION_TIMEOUT_INTERVAL = "failureDetectionTimeoutInterval";
-
 
   // Test-related parameters
   public static final String EXPERIMENT_MODE = "experimentMode";
@@ -85,9 +77,7 @@ public class NSParameterNames {
   public static final String EVENTUAL_CONSISTENCY = "eventualConsistency";
   public static final String MULTI_PAXOS = "multipaxos";
 
-
   // useless test-related parameters
-
   public static final String TTL_REGULAR_NAMES = "rttl";
   public static final String TTL_MOBILE_NAMES = "mttl";
   public static final String SIGNATURE_CHECK = "signatureCheck";
@@ -99,12 +89,11 @@ public class NSParameterNames {
   public static final String DATA_FOLDER = "dataFolder";
   public static final String NO_LOAD_DB = "noLoadDB";
 
-
   /**
    * Returns the list of command line options recognized by a name servers.
    * Method returns a {@link org.apache.commons.cli.Options} object which includes all command line options.
    */
-  public static Options getAllOptions(){
+  public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints Usage");
     Option configFile = new Option(CONFIG_FILE, true, "File containing configuration parameters");
     Option staticReplication = new Option(STATIC, "Fixed number of active nameservers per name");
@@ -135,7 +124,6 @@ public class NSParameterNames {
 
     Option workerThreadCount = new Option(WORKER_THREAD_COUNT, true, "Number of worker threads");
 
-
     Option debugMode = new Option(DEBUG_MODE, "Run in debug mode");
     Option experimentMode = new Option(EXPERIMENT_MODE, "Run in experiment mode");
     Option noLoadDB = new Option(NO_LOAD_DB, "Load items in database or not");
@@ -158,8 +146,20 @@ public class NSParameterNames {
             .create(ID);
 
     Option nsFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Name server file")
+            .withDescription("Name server hosts file")
             .create(NS_FILE);
+
+    Option lnsFile = OptionBuilder.withArgName("file").hasArg()
+            .withDescription("Local name server hosts file")
+            .create(LNS_FILE);
+    
+     Option localNsCount = OptionBuilder.withArgName("file").hasArg()
+            .withDescription("Number of Name Servers to create on a local hosts")
+            .create(LOCAL_NS_COUNT);
+
+    Option localLnsCount = OptionBuilder.withArgName("file").hasArg()
+            .withDescription("Number of Local Name Servers to create on a local host")
+            .create(LOCAL_LNS_COUNT);
 
     Option regularWorkload = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Regular workload size")
@@ -167,8 +167,8 @@ public class NSParameterNames {
     Option mobileWorkload = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Mobile workload size")
             .create(MOBILE_WORKLOAD);
-    Option syntheticWorkloadSleepTimeBetweenAddingNames =
-            new Option("syntheticWorkloadSleepTimeBetweenAddingNames", true, "syntheticWorkloadSleepTimeBetweenAddingNames");
+    Option syntheticWorkloadSleepTimeBetweenAddingNames
+            = new Option("syntheticWorkloadSleepTimeBetweenAddingNames", true, "syntheticWorkloadSleepTimeBetweenAddingNames");
 
     Option primaryReplicas = OptionBuilder.withArgName("#primaries").hasArg()
             .withDescription("Number of primary nameservers")
@@ -183,7 +183,6 @@ public class NSParameterNames {
     Option paxosStartMinDelaySec = new Option("paxosStartMinDelaySec", true, "paxos starts at least this many seconds after start of experiment");
 
     Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec", true, "paxos starts at most this many seconds after start of experiment");
-
 
     Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Size of window to calculate the "
@@ -234,6 +233,9 @@ public class NSParameterNames {
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
+    commandLineOptions.addOption(lnsFile);
+    commandLineOptions.addOption(localNsCount);
+    commandLineOptions.addOption(localLnsCount);
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(syntheticWorkloadSleepTimeBetweenAddingNames);
@@ -256,7 +258,6 @@ public class NSParameterNames {
     commandLineOptions.addOption(ttlConstant);
     commandLineOptions.addOption(defaultTTLRegularNames);
     commandLineOptions.addOption(defaultTTLMobileNames);
-
 
     commandLineOptions.addOption(debugMode);
     commandLineOptions.addOption(experimentMode);

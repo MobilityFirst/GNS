@@ -16,6 +16,7 @@ public class GNS {
 
   public static final int DEFAULT_TTL_SECONDS = 0;
   public static final int STARTINGPORT = 24400;
+  public static final int LOCAL_FIRST_NODE_PORT = 35000;
   public static final String GNS_URL_PATH = "GNS";
   
   public static final int CLIENTPORT = 24399;
