@@ -9,5 +9,6 @@ import java.nio.channels.SocketChannel;
  * byte stream data.
  */
 public interface DataProcessingWorker {
-	public void processData(SocketChannel socket, byte[] data, int count);
+	// only abstract method
+	public abstract void processData(SocketChannel socket, byte[] data, int count);
 }

@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nio;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -55,7 +54,8 @@ public class SampleNodeConfig implements NodeConfig {
 
   @Override
   public Set<Integer> getNodeIDs() {
-    throw  new UnsupportedOperationException();
+    //throw  new UnsupportedOperationException();
+	  return this.nmap.keySet();
   }
 
   @Override

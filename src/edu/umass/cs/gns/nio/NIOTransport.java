@@ -788,7 +788,7 @@ public class NIOTransport implements Runnable {
 			 * **********************************************************************
 			 */
 			int load = nNodes * 60;
-			ScheduledFuture<TX>[] futures = new ScheduledFuture[load];
+			ScheduledFuture<?>[] futures = new ScheduledFuture[load];
 			for (int i = 0; i < load; i++) {
 				int k = (int) (Math.random() * nNodes);
 				if (k >= nNodes) {
@@ -801,7 +801,7 @@ public class NIOTransport implements Runnable {
 				}
 				TX task = new TX(k, j, niots);
 				System.out.println("Scheduling random message " + i + " from " + k + " to " + j);
-				futures[i] = (ScheduledFuture<TX>) execpool.schedule(task, millis, TimeUnit.MILLISECONDS);
+				futures[i] = (ScheduledFuture<?>) execpool.schedule(task, millis, TimeUnit.MILLISECONDS);
 			}
 			int numExceptions = 0;
 			for (int i = 0; i < load; i++) {

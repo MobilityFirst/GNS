@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.nio;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,6 +48,12 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
   public GNSNIOTransport(int id, NodeConfig nodeConfig, JSONMessageExtractor worker) throws IOException {
     super(id, nodeConfig, worker); // Switched order of the latter two arguments
   }
+  // common case usage, hence created a constructor
+  public GNSNIOTransport(int id, NodeConfig nodeConfig, BasicPacketDemultiplexer pd, boolean start) throws IOException {
+	    super(id, nodeConfig, new JSONMessageExtractor()); // Switched order of the latter two arguments
+	    addPacketDemultiplexer(pd);
+	    if(start && !isStarted()) (new Thread(this)).start();
+  }
 
   public void addPacketDemultiplexer(BasicPacketDemultiplexer pd) {
     ((JSONMessageExtractor) this.worker).addPacketDemultiplexer(pd);
@@ -96,13 +100,9 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
     int written = 0;
     stampSenderIP(jsonData);
-    // LOCAL SEND CODE BELOW IS BAD... PROBABLY NEED TO CHECK PORT AS WELL  
-    // DOESN'T WORK BECAUSE YOU MIGHT BE RUNNING MULTIPLE SERVICES ON ONE MACHINE
-    //if(isa.getAddress().equals(this.getNodeAddress())) written = sendLocal(jsonData);
-    //else {
     String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-    written = this.sendUnderlying(isa, headeredMsg.getBytes());
-    //}
+    written = this.sendUnderlying(isa, headeredMsg.getBytes()) - 
+    		(headeredMsg.length() - jsonData.toString().length()); // subtract header length
     return written;
   }
 
@@ -110,16 +110,14 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
    * a remote node, otherwise it hands over the message directly to the worker.
    */
   protected int sendToIDActual(int destID, JSONObject jsonData) throws IOException {
-    if (DEBUG && Packet.filterOutChattyPackets(jsonData)) {
-        GNS.getLogger().info("##### SEND " + Packet.getPacketTypeStringSafe(jsonData) + " : From " + myID + " to " + destID + ": " + jsonData.toString());
-    }
     int written = 0;
     stampSenderIP(jsonData);
     if (destID == this.myID) {
       written = sendLocal(jsonData);
     } else {
       String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-      written = this.sendUnderlying(destID, headeredMsg.getBytes());
+      written = this.sendUnderlying(destID, headeredMsg.getBytes()) - 
+    		  (headeredMsg.length() - jsonData.toString().length()); // subtract header length
     }
     return written;
   }
@@ -157,7 +155,7 @@ public class GNSNIOTransport extends NIOTransport implements GNSNIOTransportInte
     jsonArray.add(jsonData);
     NIOInstrumenter.incrSent(); // instrumentation
     ((JSONMessageExtractor) worker).processJSONMessages(jsonArray);
-    return jsonData.length();
+    return jsonData.toString().length();
   }
 
   /**
