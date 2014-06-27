@@ -41,7 +41,8 @@ public class GNSInstallerForArun {
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   public static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final String DEFAULT_USERNAME = "ec2-user";
-  private static final String DEFAULT_KEYNAME = "aws";
+  private static final String DEFAULT_KEYNAME = "id_rsa";
+  private static final String DEFAULT_INSTALL_PATH = "gns";
   /**
    * Stores information about the hosts we're using.
    */
@@ -51,7 +52,7 @@ public class GNSInstallerForArun {
   private static String hostType = "linux";
   private static String userName = DEFAULT_USERNAME;
   private static String keyName = DEFAULT_KEYNAME;
-  private static String installPath = null;
+  private static String installPath = DEFAULT_INSTALL_PATH;
 
   private static String distFolderLocation;
   private static String gnsJarFileLocation;
@@ -76,6 +77,9 @@ public class GNSInstallerForArun {
       hostType = parser.getHostType();
       System.out.println("Host Type: " + hostType);
       installPath = parser.getInstallPath();
+      if (installPath == null) {
+        installPath = DEFAULT_INSTALL_PATH;
+      }
       System.out.println("Install Path: " + installPath);
       return true;
     } catch (HostConfigParseException e) {
@@ -90,7 +94,7 @@ public class GNSInstallerForArun {
    * @param name
    * @param action
    */
-  public static void updateRunSet(String name, UpdateAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
+  public static void updateRunSet(String name, InstallerAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     for (HostInfo info : hostTable.values()) {
       threads.add(new UpdateThread(info.getHostname(), info.getId(), action, removeLogs, deleteDatabase, scriptFile));
@@ -109,10 +113,11 @@ public class GNSInstallerForArun {
     updateNodeConfigAndSendOutServerInit();
   }
 
-  public enum UpdateAction {
+  public enum InstallerAction {
 
     UPDATE,
     RESTART,
+    STOP,
   };
 
   /**
@@ -131,35 +136,39 @@ public class GNSInstallerForArun {
    * @param scriptFile
    * @throws java.net.UnknownHostException
    */
-  public static void updateAndRunGNS(int id, String hostname, UpdateAction action, boolean removeLogs,
+  public static void updateAndRunGNS(int id, String hostname, InstallerAction action, boolean removeLogs,
           boolean deleteDatabase, String scriptFile) throws UnknownHostException {
-    System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
-    makeInstallDir(hostname);
-    killAllServers(hostname);
-    if (scriptFile != null) {
-      executeScriptFile(id, hostname, scriptFile);
+    if (!action.equals(InstallerAction.STOP)) {
+      System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
+      makeInstallDir(hostname);
+      killAllServers(hostname);
+      if (scriptFile != null) {
+        executeScriptFile(id, hostname, scriptFile);
+      }
+      if (removeLogs) {
+        removeLogFiles(hostname);
+      }
+      if (deleteDatabase) {
+        deleteDatabase(hostname);
+      }
+      switch (action) {
+        case UPDATE:
+          copyJarAndConfFiles(hostname);
+          break;
+        case RESTART:
+          break;
+      }
+      // write the name-server-info
+      writeNSFile(hostname);
+      startServers(id, hostname);
+      System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
+    } else {
+      System.out.println("#### Node " + id + " running on " + hostname + " has been stopped ####");
     }
-    if (removeLogs) {
-      removeLogFiles(hostname);
-    }
-    if (deleteDatabase) {
-      deleteDatabase(hostname);
-    }
-    switch (action) {
-      case UPDATE:
-        copyJarAndConfFiles(hostname);
-        break;
-      case RESTART:
-        break;
-    }
-    // write the name-server-info
-    writeNSFile(hostname);
-    startServers(id, hostname);
-    System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
   }
-  
-  private static final String CHANGETOINSTALLDIR = 
-          "# make current directory the directory this script is in\n"
+
+  private static final String CHANGETOINSTALLDIR
+          = "# make current directory the directory this script is in\n"
           + "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"\n"
           + "cd $DIR\n";
 
@@ -173,7 +182,7 @@ public class GNSInstallerForArun {
     System.out.println("Starting local name servers");
     File keyFile = getKeyFile();
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, buildInstallFilePath("runLNS.sh"),
-            "#!/bin/bash\n" 
+            "#!/bin/bash\n"
             + CHANGETOINSTALLDIR
             + "if [ -f LNSlogfile ]; then\n"
             + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
@@ -273,9 +282,10 @@ public class GNSInstallerForArun {
    * @param hostname
    */
   private static void killAllServers(String hostname) {
-    System.out.println("Killing servers");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("killAllServers.sh"), 
-            "#!/bin/bash\nkillall java");
+    System.out.println("Killing GNS servers");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("killAllServers.sh"),
+            "kill `ps -ef | grep GNS.jar | grep -v grep | awk '{print $2}'`");
+    //"#!/bin/bash\nkillall java");
   }
 
   /**
@@ -288,7 +298,7 @@ public class GNSInstallerForArun {
     System.out.println("Removing log files");
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("removelogs.sh"),
             "#!/bin/bash\n"
-            + CHANGETOINSTALLDIR    
+            + CHANGETOINSTALLDIR
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm -rf log\n"
@@ -427,10 +437,14 @@ public class GNSInstallerForArun {
     Option scriptFile = OptionBuilder.withArgName("install script file").hasArg()
             .withDescription("specifies the location of a bash script file that will install MongoDB and Java 1.7")
             .create("scriptFile");
+    Option stop = OptionBuilder.withArgName("runSet name").hasArg()
+            .withDescription("stops GNS servers in a runset")
+            .create("stop");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(update);
     commandLineOptions.addOption(restart);
+    commandLineOptions.addOption(stop);
     commandLineOptions.addOption(removeLogs);
     commandLineOptions.addOption(deleteDatabase);
     commandLineOptions.addOption(dataStore);
@@ -454,6 +468,7 @@ public class GNSInstallerForArun {
       }
       String runsetUpdate = parser.getOptionValue("update");
       String runsetRestart = parser.getOptionValue("restart");
+      String runsetStop = parser.getOptionValue("stop");
       String dataStoreName = parser.getOptionValue("datastore");
       boolean removeLogs = parser.hasOption("removeLogs");
       boolean deleteDatabase = parser.hasOption("deleteDatabase");
@@ -470,6 +485,7 @@ public class GNSInstallerForArun {
 
       String configName = runsetUpdate != null ? runsetUpdate
               : runsetRestart != null ? runsetRestart
+              : runsetStop != null ? runsetStop
               : null;
 
       System.out.println("Config name: " + configName);
@@ -488,9 +504,11 @@ public class GNSInstallerForArun {
       RSync.setVerbose(true);
 
       if (runsetUpdate != null) {
-        updateRunSet(runsetUpdate, UpdateAction.UPDATE, removeLogs, deleteDatabase, scriptFile);
+        updateRunSet(runsetUpdate, InstallerAction.UPDATE, removeLogs, deleteDatabase, scriptFile);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetUpdate, UpdateAction.RESTART, removeLogs, deleteDatabase, scriptFile);
+        updateRunSet(runsetUpdate, InstallerAction.RESTART, removeLogs, deleteDatabase, scriptFile);
+      } else if (runsetStop != null) {
+        updateRunSet(runsetUpdate, InstallerAction.STOP, false, false, null);
       } else {
         printUsage();
         System.exit(1);
@@ -511,12 +529,12 @@ public class GNSInstallerForArun {
 
     private final String hostname;
     private final int id;
-    private final UpdateAction action;
+    private final InstallerAction action;
     private final boolean removeLogs;
     private final boolean deleteDatabase;
     private final String scriptFile;
 
-    public UpdateThread(String hostname, int id, UpdateAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
+    public UpdateThread(String hostname, int id, InstallerAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
       this.hostname = hostname;
       this.id = id;
       this.action = action;
