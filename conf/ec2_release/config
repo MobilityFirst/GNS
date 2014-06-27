@@ -1,5 +1,0 @@
-username=ec2-user
-keyfile=aws.pem
-hosttype=linux
-datastorename=MONGO
-#installpath=/home/westy

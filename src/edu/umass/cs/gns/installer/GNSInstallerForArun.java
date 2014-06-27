@@ -6,9 +6,7 @@ import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
-import edu.umass.cs.gns.statusdisplay.StatusModel;
 import edu.umass.cs.gns.util.Format;
 import java.io.BufferedWriter;
 import org.apache.commons.cli.*;
@@ -27,26 +25,12 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Typical use:
  *
- * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -install gns_dev
+ * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -update gns_dev
  *
- * Where gns_dev is an xml formatted configuration file that looks something like this:
- * <code>
- * <root>
- * <username name="ec2-user"/>
- * <keyname name="aws"/>
- * <hosttype name="linux"/>
- * <datastore name="MONGO"/>
- * <host id="0" hostname="ec2-54-87-145-248.compute-1.amazonaws.com" />
- * <host id="1" hostname="ec2-204-236-139-195.us-west-1.compute.amazonaws.com" />
- * <host id="2" hostname="ec2-54-188-39-102.us-west-2.compute.amazonaws.com" />
- * <host id="3" hostname="ec2-54-73-42-157.eu-west-1.compute.amazonaws.com" />
- * <host id="4" hostname="ec2-54-248-3-101.ap-northeast-1.compute.amazonaws.com" />
- * </root>
- * </code>
  *
  * @author westy
  */
-public class GNSInstaller {
+public class GNSInstallerForArun {
 
   private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
@@ -72,13 +56,9 @@ public class GNSInstaller {
   private static String gnsJarFileLocation;
   private static String nsConfFileLocation;
   private static String lnsConfFileLocation;
-  private static String nsHostFileLocation;
-  private static String lnsHostFileLocation;
   private static String gnsFileName;
   private static String lnsConfFileName;
   private static String nsConfFileName;
-  private static String nsHostFileName;
-  private static String lnsHostFileName;
 
   private static boolean loadConfig(String configName) {
     try {
@@ -177,11 +157,10 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void startServers(int id, String hostname) {
-    StatusModel.getInstance().queueUpdate(id, "Starting local name servers");
+    System.out.println("Starting local name servers");
     File keyFile = getKeyFile();
-    ExecuteBash.executeBashScript(userName, hostname, keyFile, "runLNS.sh",
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, "runLNS.sh",
             "#!/bin/bash\n"
-            + "cd /home/ec2-user\n"
             + "if [ -f LNSlogfile ]; then\n"
             + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
             + "fi\n"
@@ -190,10 +169,9 @@ public class GNSInstaller {
             + " -configFile lns.conf "
             + "> LNSlogfile 2>&1 &");
 
-    StatusModel.getInstance().queueUpdate(id, "Starting name servers");
-    ExecuteBash.executeBashScript(userName, hostname, keyFile, "runNS.sh",
+    System.out.println("Starting name servers");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, "runNS.sh",
             "#!/bin/bash\n"
-            + "cd /home/ec2-user\n"
             + "if [ -f NSlogfile ]; then\n"
             + "mv --backup=numbered NSlogfile NSlogfile.save\n"
             + "fi\n"
@@ -201,7 +179,7 @@ public class GNSInstaller {
             + " -id " + id
             + " -configFile ns.conf "
             + "> NSlogfile 2>&1 &");
-    StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING, "All servers started");
+    System.out.println("All servers started");
   }
 
   /**
@@ -212,7 +190,7 @@ public class GNSInstaller {
    */
   private static void copyJarAndConfFiles(int id, String hostname) {
     File keyFile = getKeyFile();
-    StatusModel.getInstance().queueUpdate(id, "Copying jar and conf files");
+    System.out.println("Copying jar and conf files");
     RSync.upload(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
     RSync.upload(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
     RSync.upload(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
@@ -230,15 +208,15 @@ public class GNSInstaller {
    */
   private static void executeScriptFile(int id, String hostname, String scriptFileLocation) {
     File keyFile = getKeyFile();
-    StatusModel.getInstance().queueUpdate(id, "Copying script file");
+    System.out.println("Copying script file");
     // copy the file to remote host
     String remoteFile = Paths.get(scriptFileLocation).getFileName().toString();
     RSync.upload(userName, hostname, keyFile, scriptFileLocation, remoteFile);
     //SSHClient.scpTo(userName, hostname, keyFile, scriptFileLocation, remoteFile);
     // make it executable
-    SSHClient.execWithSudoNoPass(userName, hostname, keyFile, "chmod ugo+x" + " " + remoteFile);
+    SSHClient.exec(userName, hostname, keyFile, "chmod ugo+x" + " " + remoteFile);
     //execute it
-    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + remoteFile, true, null);
+    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + remoteFile);
   }
 
   //
@@ -252,7 +230,7 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void deleteDatabase(int id, String hostname) {
-    ExecuteBash.executeBashScript(userName, hostname, getKeyFile(), "deleteDatabase.sh",
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), "deleteDatabase.sh",
             "#!/bin/bash\n"
             + "java -cp " + gnsFileName + " " + MongoRecordsClass + " -clear");
   }
@@ -271,8 +249,8 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void killAllServers(int id, String hostname) {
-    StatusModel.getInstance().queueUpdate(id, "Killing servers");
-    ExecuteBash.executeBashScript(userName, hostname, getKeyFile(), "killAllServers.sh", "#!/bin/bash\nkillall java");
+    System.out.println("Killing servers");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), "killAllServers.sh", "#!/bin/bash\nkillall java");
   }
 
   /**
@@ -282,8 +260,8 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void removeLogFiles(int id, String hostname) {
-    StatusModel.getInstance().queueUpdate(id, "Removing log files");
-    ExecuteBash.executeBashScript(userName, hostname, getKeyFile(), "removelogs.sh", "#!/bin/bash\n"
+    System.out.println("Removing log files");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), "removelogs.sh", "#!/bin/bash\n"
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm -rf log\n"
@@ -332,7 +310,6 @@ public class GNSInstaller {
       bw.write(result.toString());
       bw.close();
       RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), "name-server-info");
-      //SSHClient.execWithSudoNoPass(userName, hostname, getKeyFile(), "echo \"" + result.toString() + "\" > name-server-info");
     } catch (IOException e) {
       GNS.getLogger().severe("Unable to write temporary name-server-info file: " + e);
     }
@@ -471,7 +448,7 @@ public class GNSInstaller {
         System.out.println("Can't locate needed config files. LNS conf: " + lnsConfFileLocation + " NS conf: " + nsConfFileLocation);
         System.exit(1);
       }
-
+      
       SSHClient.setVerbose(true);
       RSync.setVerbose(true);
 
@@ -516,7 +493,7 @@ public class GNSInstaller {
     @Override
     public void run() {
       try {
-        GNSInstaller.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, scriptFile);
+        GNSInstallerForArun.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

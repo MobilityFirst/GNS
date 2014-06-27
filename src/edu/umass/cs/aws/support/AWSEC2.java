@@ -764,7 +764,7 @@ public class AWSEC2 {
       }
       if (script != null) {
         File keyFile = new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
-        ExecuteBash.executeBashScript(hostname, keyFile, true, "installScript.sh", script);
+        ExecuteBash.executeBashScript("ec2-user", hostname, keyFile, true, "installScript.sh", script);
       }
       return instance;
 

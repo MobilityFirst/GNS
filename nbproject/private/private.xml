@@ -3,20 +3,35 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/EC2Runner.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/aws/networktools/SSHClient.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/aws/support/AWSEC2.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/aws/networktools/RSync.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/mongo_java_install.bash</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/gnsInstaller/example.xml</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/aws/networktools/SFTPUpload.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/build.properties</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/Config.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/singleNStest/gns-lns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/ec2_release/ns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/ec2_dev/lns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/testCodeResources/testConfig</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/singleNStest/node_config_1ns_1lns</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/multiNStest/node_config_3ns_1lns</file>
+            <file>file:/Users/westy/Documents/Code/GNS/scripts/3nodeslocal/name-server-info</file>
+            <file>file:/Users/westy/Documents/Code/GNS/scripts/gns_install/hosts.txt</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/GNSNodeConfig.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostFileLoader.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/main/StartNameServer.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/gnsConfig/gns-ns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NameServer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostConfigParser.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/testCodeResources/nodeConfig</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/gnsConfig/sample_nsfile</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/gnsConfig/gns-lns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/main/GNS.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/NodeConfig.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/HostInfo.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/ec2_dev/ns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/ec2_release/lns.conf</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/GNSInstaller.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/aws/networktools/ExecuteBash.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/gnsInstaller/installTest.xml</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/SetPassword.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/aws/support/examples/Sudo.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NSParameterNames.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/lns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/release.xml</file>
+            <file>file:/Users/westy/Documents/Code/GNS/conf/ns.conf</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostInfo.java</file>
         </group>
     </open-files>
 </project-private>

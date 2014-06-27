@@ -44,7 +44,7 @@ public class SSHClient {
 
   public static void exec(String user, String host, File keyFile, String command, boolean useSudo, String sudoPasswd) {
     if (verbose) {
-      System.out.println("Remote execute command on " + host + (useSudo ? " as root user: " : " : ") + command);
+      System.out.println("Remote execute command on " + host + (useSudo ? " as root user: " : " as user " + user + ": ") + command);
     }
     try {
       JSch jsch = new JSch();

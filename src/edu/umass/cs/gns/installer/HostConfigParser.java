@@ -40,6 +40,7 @@ public class HostConfigParser {
   private static final String KEYNAME = "keyname";
   private static final String HOSTTYPE = "hosttype";
   private static final String DATASTORE = "datastore";
+  private static final String INSTALLPATH = "installpath";
   private static final String ID = "id";
   private static final String HOSTNAME = "hostname";
   private static final String LON = "lon";
@@ -52,6 +53,7 @@ public class HostConfigParser {
   private String username;
   private String hostType;
   private DataStoreType dataStoreType;
+  private String installPath;
   private List<HostInfo> hosts = new ArrayList<HostInfo>();
 
   public String getKeyname() {
@@ -68,6 +70,10 @@ public class HostConfigParser {
 
   public DataStoreType getDataStoreType() {
     return dataStoreType;
+  }
+
+  public String getInstallPath() {
+    return installPath;
   }
 
   public List<HostInfo> getHosts() {
@@ -134,6 +140,7 @@ public class HostConfigParser {
     keyname = getSingleElementAttribute(doc, KEYNAME, "name");
     username = getSingleElementAttribute(doc, USERNAME, "name");
     hostType = getSingleElementAttribute(doc, HOSTTYPE, "name");
+    installPath = getSingleElementAttribute(doc, INSTALLPATH, "name");
     String dataStoreTypeName = getSingleElementAttribute(doc, DATASTORE, "name");
     if (username == null) { // for backwards compatibility
       username = getSingleElementAttribute(doc, USERNAME_OLD, "name");

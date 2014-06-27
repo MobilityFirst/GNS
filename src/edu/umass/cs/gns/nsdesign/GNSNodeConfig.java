@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign;
 
 import com.google.common.collect.ImmutableSet;
+import edu.umass.cs.gns.installer.HostFileLoader;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.NodeConfig;
 import edu.umass.cs.gns.util.HostInfo;
@@ -13,6 +14,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -206,28 +208,18 @@ public class GNSNodeConfig implements NodeConfig {
   }
 
   private int initServersFromFile(int startId, String hostsFile, ConcurrentMap<Integer, Integer> serverMap) {
-    BufferedReader br = null;
+    List<String> hosts = null;
     try {
-      br = new BufferedReader(new FileReader(hostsFile));
-    } catch (FileNotFoundException e1) {
-      GNS.getLogger().severe("Host info file not found: " + e1);
-      System.exit(0);
+      hosts = HostFileLoader.loadHostFile(hostsFile);
+    } catch (FileNotFoundException e) {
+      GNS.getLogger().severe("Hosts file not found: " + e);
+      return -1;
     }
     int id = startId;
-    try {
-      while (br.ready()) {
-        String line = br.readLine();
-        if (line == null || line.equals("") || line.equals(" ")) {
-          continue;
-        }
-        String ipAddressString = line.trim();
-        addHostInfo(id, ipAddressString);
-        serverMap.put(id, id);
-        id = id + 1;
-      }
-      br.close();
-    } catch (IOException e) {
-      System.err.println("Problem reading host config: " + e);
+    for (String ipAddressString : hosts) {
+      addHostInfo(id, ipAddressString);
+      serverMap.put(id, id);
+      id = id + 1;
     }
     return id;
   }
@@ -629,7 +621,7 @@ public class GNSNodeConfig implements NodeConfig {
     GNSNodeConfig gnsNodeConfigOldSchool = new GNSNodeConfig(filename, 44);
     System.out.println(gnsNodeConfigOldSchool.hostInfoMapping.toString());
     System.out.println(gnsNodeConfigOldSchool.getNameServerIDs().size());
-    
+
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/ns_hosts.txt",
             Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/lns_hosts.txt", 44);
     System.out.println("hostInfoMapping:" + gnsNodeConfig.hostInfoMapping.toString());
