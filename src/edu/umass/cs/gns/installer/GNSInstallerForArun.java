@@ -110,7 +110,9 @@ public class GNSInstallerForArun {
     } catch (InterruptedException e) {
       System.out.println("Problem joining threads: " + e);
     }
-    updateNodeConfigAndSendOutServerInit();
+    if (action != InstallerAction.STOP) {
+      updateNodeConfigAndSendOutServerInit();
+    }
   }
 
   public enum InstallerAction {
@@ -163,6 +165,7 @@ public class GNSInstallerForArun {
       startServers(id, hostname);
       System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
     } else {
+      killAllServers(hostname);
       System.out.println("#### Node " + id + " running on " + hostname + " has been stopped ####");
     }
   }
@@ -284,7 +287,7 @@ public class GNSInstallerForArun {
   private static void killAllServers(String hostname) {
     System.out.println("Killing GNS servers");
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("killAllServers.sh"),
-            "kill `ps -ef | grep GNS.jar | grep -v grep | awk '{print $2}'`");
+            "pkill -f \"java -cp GNS.jar\"");
     //"#!/bin/bash\nkillall java");
   }
 
@@ -489,6 +492,7 @@ public class GNSInstallerForArun {
               : null;
 
       System.out.println("Config name: " + configName);
+      System.out.println("Current directory: " + System.getProperty("user.dir"));
       if (configName != null) {
         if (!loadConfig(configName)) {
           System.exit(1);
