@@ -51,6 +51,7 @@ public class GNSInstallerForArun {
   private static String hostType = "linux";
   private static String userName = DEFAULT_USERNAME;
   private static String keyName = DEFAULT_KEYNAME;
+  private static String installPath = null;
 
   private static String distFolderLocation;
   private static String gnsJarFileLocation;
@@ -67,9 +68,15 @@ public class GNSInstallerForArun {
         hostTable.put(hostInfo.getId(), hostInfo);
       }
       keyName = parser.getKeyname();
+      System.out.println("Key Name: " + keyName);
       userName = parser.getUsername();
+      System.out.println("User Name: " + userName);
       dataStoreType = parser.getDataStoreType();
+      System.out.println("Data Store Type: " + dataStoreType);
       hostType = parser.getHostType();
+      System.out.println("Host Type: " + hostType);
+      installPath = parser.getInstallPath();
+      System.out.println("Install Path: " + installPath);
       return true;
     } catch (HostConfigParseException e) {
       System.out.println("Problem loading config file: " + e);
@@ -127,19 +134,20 @@ public class GNSInstallerForArun {
   public static void updateAndRunGNS(int id, String hostname, UpdateAction action, boolean removeLogs,
           boolean deleteDatabase, String scriptFile) throws UnknownHostException {
     System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
-    killAllServers(id, hostname);
+    makeInstallDir(hostname);
+    killAllServers(hostname);
     if (scriptFile != null) {
       executeScriptFile(id, hostname, scriptFile);
     }
     if (removeLogs) {
-      removeLogFiles(id, hostname);
+      removeLogFiles(hostname);
     }
     if (deleteDatabase) {
-      deleteDatabase(id, hostname);
+      deleteDatabase(hostname);
     }
     switch (action) {
       case UPDATE:
-        copyJarAndConfFiles(id, hostname);
+        copyJarAndConfFiles(hostname);
         break;
       case RESTART:
         break;
@@ -149,6 +157,11 @@ public class GNSInstallerForArun {
     startServers(id, hostname);
     System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
   }
+  
+  private static final String CHANGETOINSTALLDIR = 
+          "# make current directory the directory this script is in\n"
+          + "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"\n"
+          + "cd $DIR\n";
 
   /**
    * Starts an LNS, NS server on the remote host.
@@ -159,8 +172,9 @@ public class GNSInstallerForArun {
   private static void startServers(int id, String hostname) {
     System.out.println("Starting local name servers");
     File keyFile = getKeyFile();
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, "runLNS.sh",
-            "#!/bin/bash\n"
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, buildInstallFilePath("runLNS.sh"),
+            "#!/bin/bash\n" 
+            + CHANGETOINSTALLDIR
             + "if [ -f LNSlogfile ]; then\n"
             + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
             + "fi\n"
@@ -170,8 +184,9 @@ public class GNSInstallerForArun {
             + "> LNSlogfile 2>&1 &");
 
     System.out.println("Starting name servers");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, "runNS.sh",
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, buildInstallFilePath("runNS.sh"),
             "#!/bin/bash\n"
+            + CHANGETOINSTALLDIR
             + "if [ -f NSlogfile ]; then\n"
             + "mv --backup=numbered NSlogfile NSlogfile.save\n"
             + "fi\n"
@@ -188,12 +203,12 @@ public class GNSInstallerForArun {
    * @param id
    * @param hostname
    */
-  private static void copyJarAndConfFiles(int id, String hostname) {
+  private static void copyJarAndConfFiles(String hostname) {
     File keyFile = getKeyFile();
     System.out.println("Copying jar and conf files");
-    RSync.upload(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
-    RSync.upload(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
-    RSync.upload(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
+    RSync.upload(userName, hostname, keyFile, gnsJarFileLocation, buildInstallFilePath(gnsFileName));
+    RSync.upload(userName, hostname, keyFile, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
+    RSync.upload(userName, hostname, keyFile, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
 //    SSHClient.scpTo(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
 //    SSHClient.scpTo(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
 //    SSHClient.scpTo(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
@@ -211,12 +226,20 @@ public class GNSInstallerForArun {
     System.out.println("Copying script file");
     // copy the file to remote host
     String remoteFile = Paths.get(scriptFileLocation).getFileName().toString();
-    RSync.upload(userName, hostname, keyFile, scriptFileLocation, remoteFile);
+    RSync.upload(userName, hostname, keyFile, scriptFileLocation, buildInstallFilePath(remoteFile));
     //SSHClient.scpTo(userName, hostname, keyFile, scriptFileLocation, remoteFile);
     // make it executable
-    SSHClient.exec(userName, hostname, keyFile, "chmod ugo+x" + " " + remoteFile);
+    SSHClient.exec(userName, hostname, keyFile, "chmod ugo+x" + " " + buildInstallFilePath(remoteFile));
     //execute it
-    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + remoteFile);
+    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + buildInstallFilePath(remoteFile));
+  }
+
+  private static void makeInstallDir(String hostname) {
+    System.out.println("Creating install directory");
+    if (installPath != null) {
+      File keyFile = getKeyFile();
+      SSHClient.exec(userName, hostname, keyFile, "mkdir -p " + installPath);
+    }
   }
 
   //
@@ -229,9 +252,10 @@ public class GNSInstallerForArun {
    * @param id
    * @param hostname
    */
-  private static void deleteDatabase(int id, String hostname) {
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), "deleteDatabase.sh",
+  private static void deleteDatabase(String hostname) {
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("deleteDatabase.sh"),
             "#!/bin/bash\n"
+            + CHANGETOINSTALLDIR
             + "java -cp " + gnsFileName + " " + MongoRecordsClass + " -clear");
   }
   private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
@@ -248,9 +272,10 @@ public class GNSInstallerForArun {
    * @param id
    * @param hostname
    */
-  private static void killAllServers(int id, String hostname) {
+  private static void killAllServers(String hostname) {
     System.out.println("Killing servers");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), "killAllServers.sh", "#!/bin/bash\nkillall java");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("killAllServers.sh"), 
+            "#!/bin/bash\nkillall java");
   }
 
   /**
@@ -259,9 +284,11 @@ public class GNSInstallerForArun {
    * @param id
    * @param hostname
    */
-  private static void removeLogFiles(int id, String hostname) {
+  private static void removeLogFiles(String hostname) {
     System.out.println("Removing log files");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), "removelogs.sh", "#!/bin/bash\n"
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("removelogs.sh"),
+            "#!/bin/bash\n"
+            + CHANGETOINSTALLDIR    
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm -rf log\n"
@@ -309,7 +336,7 @@ public class GNSInstallerForArun {
       BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
       bw.write(result.toString());
       bw.close();
-      RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), "name-server-info");
+      RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), buildInstallFilePath("name-server-info"));
     } catch (IOException e) {
       GNS.getLogger().severe("Unable to write temporary name-server-info file: " + e);
     }
@@ -370,6 +397,14 @@ public class GNSInstallerForArun {
    */
   private static File getKeyFile() {
     return new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
+  }
+
+  private static String buildInstallFilePath(String filename) {
+    if (installPath == null) {
+      return filename;
+    } else {
+      return installPath + FILESEPARATOR + filename;
+    }
   }
 
   // COMMAND LINE STUFF
@@ -448,7 +483,7 @@ public class GNSInstallerForArun {
         System.out.println("Can't locate needed config files. LNS conf: " + lnsConfFileLocation + " NS conf: " + nsConfFileLocation);
         System.exit(1);
       }
-      
+
       SSHClient.setVerbose(true);
       RSync.setVerbose(true);
 

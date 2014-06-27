@@ -141,6 +141,13 @@ public class HostConfigParser {
     username = getSingleElementAttribute(doc, USERNAME, "name");
     hostType = getSingleElementAttribute(doc, HOSTTYPE, "name");
     installPath = getSingleElementAttribute(doc, INSTALLPATH, "name");
+    // if last character is a / remove it
+    if (installPath != null && !installPath.isEmpty()) {
+      installPath = installPath.trim();
+      if (installPath.endsWith(System.getProperty("file.separator"))) {
+        installPath = installPath.substring(0, installPath.length() - 1);
+      }
+    }
     String dataStoreTypeName = getSingleElementAttribute(doc, DATASTORE, "name");
     if (username == null) { // for backwards compatibility
       username = getSingleElementAttribute(doc, USERNAME_OLD, "name");

@@ -30,7 +30,7 @@ public class ExecuteBash {
    * @param arguments 
    */
   public static void executeBashScript(String username, String host, File keyFile, boolean withSudo, String scriptName, String command, Object... arguments) {
-    SSHClient.execWithSudoNoPass(username, host, keyFile, "echo \"" + command + "\" > " + scriptName);
+    SSHClient.execWithSudoNoPass(username, host, keyFile, "echo \'" + command + "\' > " + scriptName);
     SSHClient.execWithSudoNoPass(username, host, keyFile, CHMODCOMMAND + " " + scriptName);
     StringBuilder argumentList = new StringBuilder();
     for (Object arg : arguments) {
@@ -41,7 +41,7 @@ public class ExecuteBash {
   }
   
   public static void executeBashScriptNoSudo(String username, String host, File keyFile, String scriptName, String command, Object... arguments) {
-    SSHClient.exec(username, host, keyFile, "echo \"" + command + "\" > " + scriptName);
+    SSHClient.exec(username, host, keyFile, "echo \'" + command + "\' > " + scriptName);
     SSHClient.exec(username, host, keyFile, CHMODCOMMAND + " " + scriptName);
     StringBuilder argumentList = new StringBuilder();
     for (Object arg : arguments) {

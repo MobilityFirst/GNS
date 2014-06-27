@@ -1,4 +1,8 @@
 #!/bin/bash
+# make current directory the directory this script is in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+#
 yum --quiet --assumeyes update
 yum --quiet --assumeyes install java-1.7.0-openjdk 
 echo "[MongoDB]

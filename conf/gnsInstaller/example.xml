@@ -4,7 +4,8 @@
   <keyname name="aws"/>
   <hosttype name="linux"/>
   <datastore name="MONGO"/>
+  <installpath name="gns"/>
   <host id="0" hostname="plum.cs.umass.edu" />
   <host id="1" hostname="date.cs.umass.edu" />
-<!--  <host id="2" hostname="pear.cs.umass.edu" />-->
+  <host id="2" hostname="pear.cs.umass.edu" />
 </root>
