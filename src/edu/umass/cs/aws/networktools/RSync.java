@@ -28,7 +28,7 @@ public class RSync {
     command.add(localFile);
     command.add(user + "@" + host + ":" + remoteFile);
     if (verbose) {
-      System.out.println("CMD: " + command);
+      System.out.println("rsync command: " + command);
     }
     ProcessBuilder pb = new ProcessBuilder(command);
     Process p = pb.start();
