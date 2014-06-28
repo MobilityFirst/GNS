@@ -15,7 +15,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.Proposal
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.WaitForUtility;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.WaitforUtility;
 import edu.umass.cs.gns.util.NullIfEmptyMap;
 
 /* This class manages paxos coordinator state.
@@ -46,7 +46,7 @@ public class PaxosCoordinatorState  {
 	private final int myBallotCoord;
 
 	// List of replicas who have accepted my ballot
-	private WaitForUtility waitforMyBallot=null; // non-null only until the coordinator becomes active
+	private WaitforUtility waitforMyBallot=null; // non-null only until the coordinator becomes active
 
 	/* List of proposals carried over from lower ballots to be re-proposed or committed in my ballot.
 	 * Non-null only untul the coordinator becomes active.
@@ -116,10 +116,10 @@ public class PaxosCoordinatorState  {
 	// Used in myProposals map above and nowhere else
 	private class ProposalStateAtCoordinator {
 		final PValuePacket pValuePacket;
-		final WaitForUtility waitfor;
+		final WaitforUtility waitfor;
 		ProposalStateAtCoordinator(int[] members, PValuePacket pValuePacket) {
 			this.pValuePacket = pValuePacket;
-			this.waitfor = new WaitForUtility(members);
+			this.waitfor = new WaitforUtility(members);
 		}
 		public String toString() {return  this.pValuePacket + this.waitfor.toString();}
 	}
@@ -160,7 +160,7 @@ public class PaxosCoordinatorState  {
 	 */
 	protected synchronized Ballot prepare(int[] members) {
 		if(this.active==true) return null; // I am already an active coordinator 
-		if(this.waitforMyBallot==null) this.waitforMyBallot = new WaitForUtility(members);
+		if(this.waitforMyBallot==null) this.waitforMyBallot = new WaitforUtility(members);
 		this.waitforMyBallot.setInitTime();
 		return new Ballot(this.myBallotNum, this.myBallotCoord);
 	}
@@ -437,7 +437,7 @@ public class PaxosCoordinatorState  {
 
 		boolean acceptedByMajority=false;
 		ProposalStateAtCoordinator pstate = this.myProposals.get(acceptReply.slotNumber);
-		WaitForUtility waitfor=null;
+		WaitforUtility waitfor=null;
 		PValuePacket decision=null;
 		/* If I proposed it and it is not yet preempted or committed, then 
 		 * I must have some waitfor state for it.

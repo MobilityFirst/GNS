@@ -1,11 +1,11 @@
 package edu.umass.cs.gns.reconfigurator;
 
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
@@ -37,14 +37,14 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 
 	private Logger log = Logger.getLogger(getClass().getName()); //log;
 
-	public ReplicaControllerCoordinatorPaxos(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
+	public ReplicaControllerCoordinatorPaxos(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
 			Replicable paxosInterface, PaxosConfig paxosConfig) {
 		this.myID = nodeID;
 		this.replicable = paxosInterface;
 		if (Config.multiPaxos) {
 			assert false: "Not working yet. Known Issue: we need to fix packet demultiplexing";
 		this.paxosManager = new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID, nodeConfig,
-				(GNSNIOTransport) nioServer, paxosInterface, paxosConfig);
+				(JSONNIOTransport) nioServer, paxosInterface, paxosConfig);
 		} else {
 			paxosConfig.setConsistentHashCoordinatorOrder(true);
 			this.paxosManager = new PaxosManager(nodeID, nodeConfig,
@@ -137,7 +137,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 100);
 		PaxosConfig paxosConfig = new PaxosConfig();
 		try {
-			GNSNIOTransport niot = new GNSNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new DefaultPacketDemultiplexer())); 
+			JSONNIOTransport niot = new JSONNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new PacketDemultiplexerDefault())); 
 			MongoRecords mongoRecords = new MongoRecords(id, Config.mongoPort);
 			ReplicaController rc = new ReplicaController(id, configParameters, gnsNodeConfig, niot, mongoRecords);
 			ConsistentHashing.initialize(faultTolerance, gnsNodeConfig.getNameServerIDs());

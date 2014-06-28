@@ -2,6 +2,8 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
+import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -98,7 +100,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); //GNS.getLogger();;
 
-	public PaxosManager(int id, NodeConfig nc, GNSNIOTransportInterface niot, Replicable pi, PaxosConfig pc) {
+	public PaxosManager(int id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, Replicable pi, PaxosConfig pc) {
 		this.myID = id;
 		this.myApp = pi;
 		this.FD = new FailureDetection(id, nc, niot, pc);
@@ -113,9 +115,9 @@ public class PaxosManager extends AbstractPaxosManager {
 		if(TESTPaxosConfig.getCleanDB()) {while(!this.paxosLogger.removeAll());}
 
 		// Networking is needed for replaying messages during recovery
-    if (niot.getClass().equals(GNSNIOTransport.class)) {
-      ((GNSNIOTransport) niot).addPacketDemultiplexer(new PaxosPacketDemultiplexer(this)); // so paxos packets will come to me.
-      if (!((GNSNIOTransport) niot).isStarted()) (new Thread(((GNSNIOTransport) niot))).start();
+    if (niot.getClass().equals(JSONNIOTransport.class)) {
+      ((JSONNIOTransport) niot).addPacketDemultiplexer(new PaxosPacketDemultiplexer(this)); // so paxos packets will come to me.
+      if (!((JSONNIOTransport) niot).isStarted()) (new Thread(((JSONNIOTransport) niot))).start();
     }
 		initiateRecovery();
 	}
@@ -637,7 +639,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 	/************************* Testing methods below ***********************************/
 	protected synchronized void waitRecover() throws InterruptedException {wait();}
-	protected GNSNIOTransportInterface getNIOTransport() {return this.FD.getNIOTransport();}
+	protected InterfaceJSONNIOTransport getNIOTransport() {return this.FD.getNIOTransport();}
 
 	public static void main(String[] args) {
 		int nNodes = 3;
@@ -652,7 +654,7 @@ public class PaxosManager extends AbstractPaxosManager {
 		SampleNodeConfig snc = new SampleNodeConfig(2000);
 		snc.localSetup(gms);
 		JSONMessageExtractor[] jmws = new JSONMessageExtractor[nNodes];
-		GNSNIOTransport[] niots = new GNSNIOTransport[nNodes];
+		JSONNIOTransport[] niots = new JSONNIOTransport[nNodes];
 		PaxosManager[] pms = new PaxosManager[nNodes];
 		TESTPaxosReplicable[] apps = new TESTPaxosReplicable[nNodes];
 		TESTPaxosConfig.crash(members[0]);
@@ -661,8 +663,8 @@ public class PaxosManager extends AbstractPaxosManager {
 		try {
 			for(int i=0; i<nNodes; i++) {
 				System.out.println("Testing: initiating node " + i);
-				jmws[i] = new JSONMessageExtractor(new DefaultPacketDemultiplexer());
-				niots[i] = new GNSNIOTransport(members[i], snc, jmws[i]);
+				jmws[i] = new JSONMessageExtractor(new PacketDemultiplexerDefault());
+				niots[i] = new JSONNIOTransport(members[i], snc, jmws[i]);
 				new Thread(niots[i]).start();
 
 				for(int j=0; j<apps.length; j++) apps[i] = new TESTPaxosReplicable(niots[i]);

@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign;
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.installer.HostFileLoader;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.util.HostInfo;
 
 import java.io.BufferedReader;
@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
  * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable
  * from here.
  */
-public class GNSNodeConfig implements NodeConfig {
+public class GNSNodeConfig implements InterfaceNodeConfig {
 
   private int nodeID = -1;
 

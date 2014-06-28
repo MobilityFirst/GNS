@@ -2,9 +2,9 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import java.io.IOException;
 
-import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
+import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.util.Util;
 
@@ -29,8 +29,8 @@ public class TESTPaxosNodeMultipleManagers {
 	public PaxosManager startPaxosManager(int id, Replicable app) {
 		try {
 			this.pm1 = new PaxosManager(id, TESTPaxosConfig.getNodeConfig(), 
-					new GNSNIOTransport(id, TESTPaxosConfig.getNodeConfig(), 
-							new JSONMessageExtractor(new DefaultPacketDemultiplexer())), app, null);
+					new JSONNIOTransport(id, TESTPaxosConfig.getNodeConfig(), 
+							new JSONMessageExtractor(new PacketDemultiplexerDefault())), app, null);
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}

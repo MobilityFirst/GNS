@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +14,7 @@ public class CommandPacket extends BasicPacket {
   private final static String REQUESTID = "reqID";
   // later this might get done by the NIO send mechanism so
   // the field name might change
-  private final static String SENDERADDRESS = GNSNIOTransport.DEFAULT_IP_FIELD;
+  private final static String SENDERADDRESS = JSONNIOTransport.DEFAULT_IP_FIELD;
   private final static String COMMAND = "command";
 
   /**

@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
@@ -26,7 +26,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 
   private Replicable paxosInterface;
 
-  public ReplicaControllerCoordinatorPaxos(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
+  public ReplicaControllerCoordinatorPaxos(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                                            Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
 

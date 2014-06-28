@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -19,7 +19,7 @@ import java.util.Set;
  * Time: 7:48 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PaxosNodeConfig implements NodeConfig {
+public class PaxosNodeConfig implements InterfaceNodeConfig {
 
   private  HashMap<Integer, NodeInfo> nodesInfo;
 

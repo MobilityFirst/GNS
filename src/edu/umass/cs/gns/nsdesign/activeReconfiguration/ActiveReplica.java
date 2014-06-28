@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsCoordinatorUnreplicated;
@@ -33,7 +33,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   private int nodeID;
 
   /** nio server*/
-  private GNSNIOTransportInterface nioServer;
+  private InterfaceJSONNIOTransport nioServer;
 
   /** executor service for handling tasks */
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
@@ -57,7 +57,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
    * can't this class use an internal executor of its own? 
    */
   public ActiveReplica(int nodeID, GNSNodeConfig gnsNodeConfig,
-                       GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+                       InterfaceJSONNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                        AppType reconfigurableApp) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -136,7 +136,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
     return nodeID;
   }
 
-  public GNSNIOTransportInterface getNioServer() {
+  public InterfaceJSONNIOTransport getNioServer() {
     return nioServer;
   }
 

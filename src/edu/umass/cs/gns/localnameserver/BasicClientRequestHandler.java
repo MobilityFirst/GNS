@@ -11,9 +11,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
-import edu.umass.cs.gns.nio.GNSDelayEmulator;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.JSONDelayEmulator;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
@@ -74,7 +74,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    */
   private final GNSNodeConfig gnsNodeConfig;
 
-  private final GNSNIOTransportInterface tcpTransport;
+  private final InterfaceJSONNIOTransport tcpTransport;
 
   private final Random random;
 
@@ -95,14 +95,14 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     this.tcpTransport = initTransport();
   }
 
-  private GNSNIOTransportInterface initTransport() throws IOException {
+  private InterfaceJSONNIOTransport initTransport() throws IOException {
 
     new LNSListenerUDP(gnsNodeConfig, this).start();
 
     GNS.getLogger().info("LNS listener started.");
-    GNSNIOTransport gnsNiot = new GNSNIOTransport(nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
     if (parameters.isEmulatePingLatencies()) {
-      GNSDelayEmulator.emulateConfigFileDelays(getGnsNodeConfig(), parameters.getVariation());
+      JSONDelayEmulator.emulateConfigFileDelays(getGnsNodeConfig(), parameters.getVariation());
     }
     new Thread(gnsNiot).start();
 

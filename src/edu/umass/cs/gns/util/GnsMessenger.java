@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONObject;
 
@@ -21,16 +21,16 @@ import org.json.JSONException;
  *
  * Created by abhigyan on 5/3/14.
  */
-public class GnsMessenger implements GNSNIOTransportInterface {
+public class GnsMessenger implements InterfaceJSONNIOTransport {
 
   private static final long RTX_DELAY = 1000; //ms
   private static final int BACKOFF_FACTOR = 2;
 
-  private final GNSNIOTransport gnsnioTransport;
+  private final JSONNIOTransport gnsnioTransport;
   private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
   private final int myID;
 
-  public GnsMessenger(int myID, GNSNIOTransport gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+  public GnsMessenger(int myID, JSONNIOTransport gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
     this.myID = myID;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
     this.gnsnioTransport = gnsnioTransport;

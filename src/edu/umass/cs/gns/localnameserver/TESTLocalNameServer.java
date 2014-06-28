@@ -3,8 +3,8 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class TESTLocalNameServer {
 
-  private static HashMap<Integer, GNSNIOTransport> nsNiots = new HashMap<>();
+  private static HashMap<Integer, JSONNIOTransport> nsNiots = new HashMap<>();
 
   private static Timer t = new Timer();
 
@@ -39,7 +39,7 @@ public class TESTLocalNameServer {
 
     for (int nameServerID: gnsNodeConfig.getNameServerIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
-      GNSNIOTransport gnsnioTransport = new GNSNIOTransport(nameServerID, new GNSNodeConfig(configFile, nameServerID), worker);
+      JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, new GNSNodeConfig(configFile, nameServerID), worker);
       new Thread(gnsnioTransport).start();
       nsNiots.put(nameServerID, gnsnioTransport);
     }
@@ -121,7 +121,7 @@ public class TESTLocalNameServer {
   }
 }
 
-class TestPacketDemux extends BasicPacketDemultiplexer {
+class TestPacketDemux extends AbstractPacketDemultiplexer {
   private int nodeID;
   public TestPacketDemux(int nodeID) {
     this.nodeID = nodeID;

@@ -56,7 +56,7 @@ public class GroupChange {
 
 	/********************   BEGIN: methods executed at old active replicas. *********************/
 
-	public static void handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica<?> replica)
+	protected static void handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica<?> replica)
 			throws JSONException{
 		replica.getCoordinator().coordinateRequest(stopPacket.toJSONObject());
 		// do the check and propose to replica controller.
@@ -65,7 +65,7 @@ public class GroupChange {
 	/**
 	 * Send confirmation to replica controller that actives have stopped.
 	 */
-	public static MessagingTask handleStopProcessed(OldActiveSetStopPacket stopPacket, ActiveReplica<?> activeReplica) {
+	protected static MessagingTask handleStopProcessed(OldActiveSetStopPacket stopPacket, ActiveReplica<?> activeReplica) {
 		MessagingTask confirmToRC = null;
 		try {
 			// confirm to primary name server that this set of actives has stopped
@@ -90,7 +90,7 @@ public class GroupChange {
 	/**
 	 * Responds to a request from a new active replica regarding transferring state for a name.
 	 */
-	public static MessagingTask handlePrevValueRequest(NewActiveSetStartupPacket packet, String finalState, int activeID)
+	protected static MessagingTask handlePrevValueRequest(NewActiveSetStartupPacket packet, String finalState, int activeID)
 			throws JSONException, IOException {
 		MessagingTask sendOldActiveState = null;
 		if (Config.debugMode) log.info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
@@ -123,7 +123,7 @@ public class GroupChange {
 	 *  node informs all new active replicas (including itself) of their membership in the new set.
 	 *  This method also creates book-keeping state at active replica to records response from active replicas.
 	 */
-	public static MessagingTask handleNewActiveStart(NewActiveSetStartupPacket packet, int arID, HashMap<Integer,NewActiveStartInfo> activeStartups,
+	protected static MessagingTask handleNewActiveStart(NewActiveSetStartupPacket packet, int arID, HashMap<Integer,NewActiveStartInfo> activeStartups,
 			ARProtocolTask[] protocolTask)
 					throws JSONException, IOException{
 
@@ -135,11 +135,10 @@ public class GroupChange {
 		}
 		// create name server
 		NewActiveStartInfo activeStartInfo = new NewActiveStartInfo(new NewActiveSetStartupPacket(packet.toJSONObject()));
-		int requestID = (int)Math.random()*Integer.MAX_VALUE;
-		activeStartups.put(requestID, activeStartInfo);
+		activeStartups.put(activeStartInfo.hashCode(), activeStartInfo);
 		// send to all nodes, except self
 		packet.changePacketTypeToForward();
-		packet.setUniqueID(requestID); // this ID is set by active replica for identifying this packet.
+		packet.setUniqueID(activeStartInfo.hashCode()); // this ID is set by active replica for identifying this packet.
 		if (Config.debugMode) log.info("NEW_ACTIVE_START: forwarded msg to nodes; "
 				+ packet.getNewActiveNameServers());
 		for (int nodeID: packet.getNewActiveNameServers()) {
@@ -158,7 +157,7 @@ public class GroupChange {
 	 * This active replica learns that it one of the new active replica, upon which it creates a task to copy
 	 * state from one of the old active replicas who have executed the stop request.
 	 */
-	public static void handleNewActiveStartForward(NewActiveSetStartupPacket packet, ARProtocolTask[] protocolTasks)
+	protected static void handleNewActiveStartForward(NewActiveSetStartupPacket packet, ARProtocolTask[] protocolTasks)
 			throws JSONException, IOException {
 
 		CopyStateFromOldActiveTask copyTask = new CopyStateFromOldActiveTask(packet);
@@ -171,7 +170,7 @@ public class GroupChange {
 	 * response is valid, this node becomes functional as a new active replica and confirms back to that active replica
 	 * who informed it of its membership in new group.
 	 */
-	public static MessagingTask handlePrevValueResponse(NewActiveSetStartupPacket originalPacket, int activeID)
+	protected static MessagingTask handlePrevValueResponse(NewActiveSetStartupPacket originalPacket, int activeID)
 			throws JSONException, IOException{
 		MessagingTask replyToActive = null;
 		
@@ -196,7 +195,7 @@ public class GroupChange {
 	 * received such messages from a majority of new replicas. If so, it confirms to the replica controller
 	 * that the new active replica set is functional.
 	 */
-	public static MessagingTask handleNewActiveStartResponse(NewActiveSetStartupPacket packet, HashMap<Integer,NewActiveStartInfo> activeStartups)
+	protected static MessagingTask handleNewActiveStartResponse(NewActiveSetStartupPacket packet, HashMap<Integer,NewActiveStartInfo> activeStartups)
 			throws JSONException, IOException {
 		MessagingTask replyToRC = null;
 		NewActiveStartInfo info = (NewActiveStartInfo) activeStartups.get(packet.getUniqueID());

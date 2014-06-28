@@ -10,12 +10,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
 
@@ -50,7 +50,7 @@ public class FailureDetection {
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 	private final int myID;
-	private final GNSNIOTransportInterface nioTransport;
+	private final InterfaceJSONNIOTransport nioTransport;
 
 	// non-final 
 	private Set<Integer> monitoredNodes;  // other nodes to which keepalives will be sent
@@ -59,7 +59,7 @@ public class FailureDetection {
 
 	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
 
-	FailureDetection(int id, NodeConfig nc, GNSNIOTransportInterface niot, PaxosConfig pc) {
+	FailureDetection(int id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, PaxosConfig pc) {
 		nioTransport = niot;
 		myID = id;
 		lastHeardFrom = new HashMap<Integer,Long>();
@@ -179,9 +179,9 @@ public class FailureDetection {
 	private class PingTask implements Runnable {
 		private final int destID;
 		private final JSONObject pingJson;
-		private final GNSNIOTransportInterface nioTransport;
+		private final InterfaceJSONNIOTransport nioTransport;
 
-		PingTask(int id, JSONObject fdpJson, GNSNIOTransportInterface niot) {
+		PingTask(int id, JSONObject fdpJson, InterfaceJSONNIOTransport niot) {
 			destID = id;
 			pingJson = fdpJson;
 			nioTransport = niot;
@@ -215,7 +215,7 @@ public class FailureDetection {
 	}
 
 	// Used only for testing
-	protected GNSNIOTransportInterface getNIOTransport() {
+	protected InterfaceJSONNIOTransport getNIOTransport() {
 		return this.nioTransport;
 	}
 	/**

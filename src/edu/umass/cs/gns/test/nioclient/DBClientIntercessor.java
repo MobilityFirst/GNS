@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Created by abhigyan on 6/19/14.
  */
-public class DBClientIntercessor extends BasicPacketDemultiplexer implements IntercessorInterface {
+public class DBClientIntercessor extends AbstractPacketDemultiplexer implements IntercessorInterface {
 
   private ConcurrentHashMap<Integer, JSONObject> reqIDToJSON = new ConcurrentHashMap<>(); // map from request ID to packets
 
@@ -36,12 +36,12 @@ public class DBClientIntercessor extends BasicPacketDemultiplexer implements Int
 
   private NIOTransport nioTransport;
 
-  private BasicPacketDemultiplexer lnsDemux;
+  private AbstractPacketDemultiplexer lnsDemux;
 
-  public DBClientIntercessor(int ID, final int port, BasicPacketDemultiplexer lnsDemux) throws IOException {
+  public DBClientIntercessor(int ID, final int port, AbstractPacketDemultiplexer lnsDemux) throws IOException {
     this.lnsDemux = lnsDemux;
 
-    this.nioTransport  = new NIOTransport(ID, new NodeConfig() {
+    this.nioTransport  = new NIOTransport(ID, new InterfaceNodeConfig() {
       @Override
       public boolean containsNodeInfo(int ID) {
         throw new UnsupportedOperationException();
@@ -151,7 +151,7 @@ public class DBClientIntercessor extends BasicPacketDemultiplexer implements Int
       }
 
       if (origJson != null && outgoingJson != null) {
-        String ip = origJson.getString(GNSNIOTransport.DEFAULT_IP_FIELD);
+        String ip = origJson.getString(JSONNIOTransport.DEFAULT_IP_FIELD);
         int port = origJson.getInt(DBClient.DEFAULT_PORT_FIELD);
         sendJSONToClient(InetAddress.getByName(ip), port, outgoingJson);
       }

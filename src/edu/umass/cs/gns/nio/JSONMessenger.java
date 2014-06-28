@@ -16,33 +16,38 @@ import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
 /**
  * @author V. Arun
  */
-/* This class is separate in order to separate communication from the 
+/*
+ * This class is separate in order to separate communication from the
  * paxos protocol. It has support for retransmissions with exponential
  * backoff. But you can't rely on this backoff for anything other than
  * ephemeral traffic bursts. If you are overloaded, you are overloaded.
- * 
  */
-public class JSONMessenger implements GNSNIOTransportInterface {
+public class JSONMessenger implements InterfaceJSONNIOTransport {
 
-	private static final long RTX_DELAY = 1000; //ms
+	private static final long RTX_DELAY = 1000; // ms
 	private static final int BACKOFF_FACTOR = 2;
 
 	private final int myID;
-	private final GNSNIOTransportInterface nioTransport;
-	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
+	private final InterfaceJSONNIOTransport nioTransport;
+	private final ScheduledExecutorService execpool =
+			Executors.newScheduledThreadPool(5);
 
-	private Logger log = (NIOTransport.DEBUG ? Logger.getLogger(getClass().getName()) : GNS.getLogger());
+	private Logger log =
+			(NIOTransport.DEBUG ? Logger.getLogger(getClass().getName())
+					: GNS.getLogger());
 
-	public JSONMessenger(GNSNIOTransportInterface niot) {
+	public JSONMessenger(InterfaceJSONNIOTransport niot) {
+		assert (niot != null);
 		myID = niot.getMyID(); // needed only for debug printing
 		nioTransport = niot;
 	}
 
-	/* send returns void because it is the "ultimate" send. It will retransmit
-	 * if necessary. It is inconvenient for senders to worry about 
-	 * retransmission anyway. We may need to retransmit despite using 
-	 * TCP-based NIO because NIO is designed to be non-blocking, so it may 
-	 * sometimes drop messages when asked to send but the channel is congested. 
+	/*
+	 * send returns void because it is the "ultimate" send. It will retransmit
+	 * if necessary. It is inconvenient for senders to worry about
+	 * retransmission anyway. We may need to retransmit despite using
+	 * TCP-based NIO because NIO is designed to be non-blocking, so it may
+	 * sometimes drop messages when asked to send but the channel is congested.
 	 * We use the return value of NIO send to decide whether to retransmit.
 	 */
 	public void send(MessagingTask mtask) throws JSONException, IOException {
@@ -50,7 +55,10 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 			return;
 		}
 		for (Object msg : mtask.msgs) {
-			if (msg == null) {assert (false);continue;}
+			if (msg == null) {
+				assert (false);
+				continue;
+			}
 			for (int r = 0; r < mtask.recipients.length; r++) {
 				JSONObject jsonMsg = null;
 				if (msg instanceof JSONObject) {
@@ -65,24 +73,37 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 				int length = jsonMsg.toString().length();
 				int sent = nioTransport.sendToID(mtask.recipients[r], jsonMsg);
 				if (sent == length) {
-					log.finest("Node " + this.myID + " sent " + " to node " + mtask.recipients[r] + ": " + jsonMsg);
+					log.finest("Node " + this.myID + " sent " + " to node " +
+							mtask.recipients[r] + ": " + jsonMsg);
 				} else if (sent < length) {
 					if (NIOTransport.sampleLog()) {
-						log.warning("Node " + this.myID + " messenger experiencing congestion, this is bad but not disastrous (yet)");
+						log.warning("Node " + this.myID +
+								" messenger experiencing congestion, this is bad but not disastrous (yet)");
 					}
-					Retransmitter rtxTask = new Retransmitter(mtask.recipients[r], jsonMsg, RTX_DELAY);
-					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
-				} else {log.severe("Node "+this.myID +" sent " + sent + " bytes out of a "+length +" byte message");}
+					Retransmitter rtxTask =
+							new Retransmitter(mtask.recipients[r], jsonMsg,
+									RTX_DELAY);
+					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned
+																					// future
+				} else {
+					log.severe("Node " + this.myID + " sent " + sent +
+							" bytes out of a " + length + " byte message");
+				}
 			}
 		}
+	}
+
+	public void stop() {
+		this.execpool.shutdown();
 	}
 
 	/**
 	 * ************************* Start of retransmitter module ********************
 	 */
-	/* We need this because NIO may drop messages when congested. Thankfully, 
+	/*
+	 * We need this because NIO may drop messages when congested. Thankfully,
 	 * it tells us when it does that. The task below exponentially backs
-	 * off with each retransmission. We are probably doomed anyway if this 
+	 * off with each retransmission. We are probably doomed anyway if this
 	 * class is invoked except rarely.
 	 */
 	private class Retransmitter implements Runnable {
@@ -106,11 +127,19 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 				ioe.printStackTrace();
 			} finally {
 				if (sent < msg.toString().length() && sent != -1) {
-					log.severe("Node " + myID + "->" + dest + " messenger backing off under severe congestion, Hail Mary!");
-					Retransmitter rtx = new Retransmitter(dest, msg, delay * BACKOFF_FACTOR);
-					execpool.schedule(rtx, delay * BACKOFF_FACTOR, TimeUnit.MILLISECONDS);
+					log.severe("Node " + myID + "->" + dest +
+							" messenger backing off under severe congestion, Hail Mary!");
+					Retransmitter rtx =
+							new Retransmitter(dest, msg, delay * BACKOFF_FACTOR);
+					execpool.schedule(rtx, delay * BACKOFF_FACTOR,
+							TimeUnit.MILLISECONDS);
 				} else if (sent == -1) { // have to give up at this point
-					log.severe("Node " + myID + "->" + dest + " messenger dropping message as destination unreachable: " + msg);
+					log.severe("Node " +
+							myID +
+							"->" +
+							dest +
+							" messenger dropping message as destination unreachable: " +
+							msg);
 				}
 			}
 		}
@@ -128,7 +157,7 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 	/**
 	 * @param id
 	 * @param jsonData
-	 * @return 
+	 * @return
 	 * @throws java.io.IOException
 	 */
 	@Override
@@ -141,16 +170,17 @@ public class JSONMessenger implements GNSNIOTransportInterface {
 	 * @param address
 	 * @param jsonData
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	@Override
-	public int sendToAddress(InetSocketAddress address, JSONObject jsonData) throws IOException {
+	public int sendToAddress(InetSocketAddress address, JSONObject jsonData)
+			throws IOException {
 		return this.nioTransport.sendToAddress(address, jsonData);
 	}
 
 	/**
 	 * 
-	 * @return 
+	 * @return
 	 */
 	@Override
 	public int getMyID() {

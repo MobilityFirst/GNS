@@ -2,9 +2,9 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 //import edu.umass.cs.gns.main.StartNameServer;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.Config;
 import org.json.JSONObject;
 
@@ -106,7 +106,7 @@ public class UnreplicatedServer {
 /**
  * {@code tcpTransport} in {@code UnreplicatedServer} will forward received messages to this class.
  */
-class SimplePacketDemultiplexer extends BasicPacketDemultiplexer {
+class SimplePacketDemultiplexer extends AbstractPacketDemultiplexer {
 
 
   public boolean handleJSONObject(JSONObject jsonObject) {

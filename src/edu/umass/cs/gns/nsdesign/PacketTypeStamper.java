@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,11 +17,11 @@ import java.net.InetSocketAddress;
  * the name to StampAndSend or something to reflect that this class is 
  * actually sending the packet.
  */
-public class PacketTypeStamper implements GNSNIOTransportInterface {
-  private GNSNIOTransportInterface nio;
+public class PacketTypeStamper implements InterfaceJSONNIOTransport {
+  private InterfaceJSONNIOTransport nio;
   private Packet.PacketType type;
 
-  public PacketTypeStamper(GNSNIOTransportInterface nio, Packet.PacketType type) {
+  public PacketTypeStamper(InterfaceJSONNIOTransport nio, Packet.PacketType type) {
     this.nio = nio;
     this.type = type;
   }

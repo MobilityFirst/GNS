@@ -2,6 +2,8 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
@@ -36,7 +38,7 @@ public class PaxosManager extends AbstractPaxosManager {
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
    */
-  private  GNSNIOTransportInterface nioServer;
+  private  InterfaceJSONNIOTransport nioServer;
 
   /**
    * Object stores all paxos instances.
@@ -106,7 +108,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
   /********************BEGIN: public methods for paxos manager********************/
 
-  public PaxosManager(int nodeID, NodeConfig nodeConfig, GNSNIOTransportInterface nioServer,
+  public PaxosManager(int nodeID, InterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport nioServer,
                               Replicable outputHandler, PaxosConfig paxosConfig) {
 
     this.executorService = new ScheduledThreadPoolExecutor(2);
@@ -609,7 +611,7 @@ public class PaxosManager extends AbstractPaxosManager {
 /**
  * PaxosPacket demultiplexer object
  */
-class PaxosPacketDemultiplexer extends BasicPacketDemultiplexer {
+class PaxosPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   PaxosManager paxosManager;
 

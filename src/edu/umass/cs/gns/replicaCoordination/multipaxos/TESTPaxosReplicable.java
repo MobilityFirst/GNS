@@ -5,11 +5,11 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 
@@ -20,7 +20,7 @@ public class TESTPaxosReplicable implements Replicable {
 	private static final boolean DEBUG=PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null ;
-	private GNSNIOTransportInterface niot = null;
+	private InterfaceJSONNIOTransport niot = null;
 
 	private HashMap<String,PaxosState> allState = new HashMap<String,PaxosState>();
 	private class PaxosState {
@@ -32,7 +32,7 @@ public class TESTPaxosReplicable implements Replicable {
 	}
 	private static Logger log = Logger.getLogger(TESTPaxosReplicable.class.getName()); // GNS.getLogger();
 
-	TESTPaxosReplicable(GNSNIOTransport nio) { // app uses nio only to send, not receive, so it doesn't care to set a PacketDemultiplexer
+	TESTPaxosReplicable(JSONNIOTransport nio) { // app uses nio only to send, not receive, so it doesn't care to set a PacketDemultiplexer
 		try {
 			md = MessageDigest.getInstance("SHA");
 			setNIOTransport(nio);
@@ -46,7 +46,7 @@ public class TESTPaxosReplicable implements Replicable {
 	public void shutdown() {
 		this.allState.clear();
 	}
-	public void setNIOTransport(GNSNIOTransportInterface nio) {
+	public void setNIOTransport(InterfaceJSONNIOTransport nio) {
 		niot = nio;
 	}
 	@Override

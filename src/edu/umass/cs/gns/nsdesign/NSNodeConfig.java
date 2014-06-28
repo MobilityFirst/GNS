@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
 import java.net.InetAddress;
 import java.util.Set;
@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 3/30/14.
  */
-public class NSNodeConfig implements NodeConfig {
+public class NSNodeConfig implements InterfaceNodeConfig {
 
   GNSNodeConfig gnsNodeConfig;
 

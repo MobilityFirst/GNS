@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.activereplica;
 
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
-
-import java.util.HashSet;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.WaitforUtility;
+import edu.umass.cs.gns.util.Util;
 
 /**
  * @author V. Arun
@@ -15,24 +15,24 @@ import java.util.HashSet;
  */
 public class NewActiveStartInfo {
 
-  public NewActiveSetStartupPacket originalPacket;
-  private HashSet<Integer> activesResponded = new HashSet<Integer>();
-  boolean sent = false;
+	protected final NewActiveSetStartupPacket originalPacket;
+	private final WaitforUtility waitfor;
+	boolean sent = false;
 
-  public NewActiveStartInfo(NewActiveSetStartupPacket originalPacket) {
-    this.originalPacket = originalPacket;
-  }
+	public NewActiveStartInfo(NewActiveSetStartupPacket originalPacket) {
+		this.originalPacket = originalPacket;
+		this.waitfor = new WaitforUtility(Util.setToArray(originalPacket.getNewActiveNameServers()));
+	}
 
-  public synchronized void receivedResponseFromActive(int ID) {
-    activesResponded.add(ID);
-  }
+	public synchronized boolean receivedResponseFromActive(int ID) {
+		return this.waitfor.updateHeardFrom(ID);
+	}
 
-  public synchronized boolean haveMajorityActivesResponded() {
-
-    if (sent == false && activesResponded.size()*2 > originalPacket.getNewActiveNameServers().size()) {
-      sent = true;
-      return true;
-    }
-    return false;
-  }
+	public synchronized boolean haveMajorityActivesResponded() {
+		if (sent == false && waitfor.heardFromMajority()) {
+			sent = true;
+			return true;
+		}
+		return false;
+	}
 }

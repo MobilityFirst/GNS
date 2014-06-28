@@ -12,7 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
@@ -59,13 +59,13 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 
 	private final ScheduledFuture<?> reportingFuture;
 
-	private HashMap<Integer,NewActiveSetStartupPacket> ongoingStateTransferRequests = new HashMap<Integer,NewActiveSetStartupPacket>();
+	private final HashMap<Integer,NewActiveSetStartupPacket> ongoingStateTransferRequests = new HashMap<Integer,NewActiveSetStartupPacket>();
 
-	private HashMap<Integer,NewActiveStartInfo> activeStartupInProgress = new HashMap<Integer,NewActiveStartInfo>();
+	private final HashMap<Integer,NewActiveStartInfo> activeStartupInProgress = new HashMap<Integer,NewActiveStartInfo>();
 
 	private static Logger log = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(Add.class.getName()) : GNS.getLogger();
 
-	public ActiveReplica(int id, GNSNodeConfig nc, GNSNIOTransport niot, AppType app) {
+	public ActiveReplica(int id, GNSNodeConfig nc, JSONNIOTransport niot, AppType app) {
 		this.myID = id;
 		this.gnsNodeConfig = nc;
 		this.app = app;
@@ -89,19 +89,19 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 			switch (type) {
 			// replica controller to active replica
 			case NEW_ACTIVE_START:
-				GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket(json), getNodeID(), 
+				mtask = GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket(json), getNodeID(), 
 						getActiveStartupInProgress(), protocolTasks/*return value*/);
 				break;
 			case NEW_ACTIVE_START_FORWARD:
 				GroupChange.handleNewActiveStartForward(new NewActiveSetStartupPacket(json), protocolTasks);
 				break;
 			case NEW_ACTIVE_START_RESPONSE:
-				GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket(json), 
+				mtask = GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket(json), 
 						getActiveStartupInProgress());
 				break;
 			case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
 				NewActiveSetStartupPacket request = new NewActiveSetStartupPacket(json);
-				GroupChange.handlePrevValueRequest(request, this.app.getFinalState(request.getName(), 
+				mtask = GroupChange.handlePrevValueRequest(request, this.app.getFinalState(request.getName(), 
 						request.getOldActiveVersion()), getNodeID());
 				break;
 			case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
@@ -233,9 +233,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 		} catch(JSONException je) {je.printStackTrace();}
 		return stats;
 	}
-	public Set<Integer> getRecipients() {
-		return this.gnsNodeConfig.getNameServerIDs();
-	}
+	public Set<Integer> getRecipients() {return this.gnsNodeConfig.getNameServerIDs();}
 
 	/* Value of a specific subset of stats. We may need
 	 * to send different stats to different sets of nodes. 

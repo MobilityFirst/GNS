@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -33,7 +33,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
   private final int nodeID;
 
   /*** nio server */
-  private final GNSNIOTransportInterface nioServer;
+  private final InterfaceJSONNIOTransport nioServer;
 
   /** Configuration for all nodes in GNS **/
   private final GNSNodeConfig gnsNodeConfig;
@@ -45,7 +45,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
   private PingManager pingManager;
 
   public DummyGnsReconfigurable(int nodeID, GNSNodeConfig gnsNodeConfig,
-                           GNSNIOTransportInterface nioServer) {
+                           InterfaceJSONNIOTransport nioServer) {
     GNS.getLogger().info("Starting DUMMY gns .... NodeID: " + nodeID);
     this.nodeID = nodeID;
 
@@ -215,7 +215,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   @Override
-  public GNSNIOTransportInterface getNioServer() {
+  public InterfaceJSONNIOTransport getNioServer() {
     throw new UnsupportedOperationException();
   }
 

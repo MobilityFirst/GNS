@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
@@ -38,9 +38,9 @@ public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
   // if true, reads are coordinated as well.
   private boolean readCoordination = false;
 
-  private GNSNIOTransportInterface nioTransport;
+  private InterfaceJSONNIOTransport nioTransport;
 
-  public GnsCoordinatorEventual(int nodeID, GNSNIOTransportInterface nioServer, NodeConfig nodeConfig,
+  public GnsCoordinatorEventual(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                                 Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;

@@ -86,6 +86,14 @@ public class MessagingTask {
 		mtasks[0] = this;
 		return mtasks;
 	}
+	public static boolean isEmpty(MessagingTask[] mtasks) {
+		if(mtasks==null || mtasks.length==0) return true;
+		boolean empty = true;
+		for(MessagingTask mtask : mtasks) {
+			empty = empty && mtask.isEmpty();
+		}
+		return empty;
+	}
 
 	// Mostly just pretty printing
 	public String toString() {

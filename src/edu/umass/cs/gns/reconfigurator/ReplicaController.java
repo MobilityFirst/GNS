@@ -4,12 +4,12 @@ import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
-import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.MessagingTask;
+import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
@@ -45,7 +45,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	private static final long UNDOCUMENTED_DELAY_PARAMETER = 9000L;
 
 	private final int myID; 
-	private final GNSNIOTransportInterface niot; // used for all transport including helper classes
+	private final InterfaceJSONNIOTransport niot; // used for all transport including helper classes
 	private final JSONMessenger messenger;
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
 	private final BasicRecordMap replicaControllerDB; 
@@ -58,7 +58,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	private Logger log = Logger.getLogger(getClass().getName()); //GNS.getLogger();
 
 	public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-			GNSNIOTransportInterface nioServer, MongoRecords mongoRecords) {
+			InterfaceJSONNIOTransport nioServer, MongoRecords mongoRecords) {
 		Config.initialize(configParameters);
 		this.myID = nodeID;
 		this.gnsNodeConfig = gnsNodeConfig;
@@ -73,7 +73,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
 	protected int getNodeID() {return myID;}
 	protected BasicRecordMap getDB() {return replicaControllerDB;}
-	protected GNSNIOTransportInterface getNioServer() {return niot;}
+	protected InterfaceJSONNIOTransport getNioServer() {return niot;}
 	protected UniqueIDHashMap getOngoingStopActiveRequests() {return ongoingStopActiveRequests;}
 	protected UniqueIDHashMap getOngoingStartActiveRequests() {return ongoingStartActiveRequests;}
 	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {return executor;} // FIXME: This should be unnecessary.
@@ -275,7 +275,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 100);
 		System.out.println(gnsNodeConfig.getNodePort(id));
 		try {
-			GNSNIOTransport niot = new GNSNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new DefaultPacketDemultiplexer())); 
+			JSONNIOTransport niot = new JSONNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new PacketDemultiplexerDefault())); 
 			MongoRecords mongoRecords = new MongoRecords(id, Config.mongoPort);
 			ReplicaController rc = new ReplicaController(id, configParameters, gnsNodeConfig, niot, mongoRecords);
 			System.out.println("SUCCESS: ReplicaController " + rc.getNodeID() + " started without exceptions." +

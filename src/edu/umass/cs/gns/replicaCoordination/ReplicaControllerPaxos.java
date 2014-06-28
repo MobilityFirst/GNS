@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
@@ -20,11 +20,11 @@ public class ReplicaControllerPaxos {
 
 
   PaxosManager paxosManager=null;
-  NodeConfig nodeConfig=null;
-  GNSNIOTransport nioTransport=null;
+  InterfaceNodeConfig nodeConfig=null;
+  JSONNIOTransport nioTransport=null;
   ReplicaController replicaController=null;
 
-  public ReplicaControllerPaxos(GNSNIOTransport niot, NodeConfig nc, ReplicaController replicaController) {
+  public ReplicaControllerPaxos(JSONNIOTransport niot, InterfaceNodeConfig nc, ReplicaController replicaController) {
     this.nioTransport = niot;
     this.nodeConfig = nc;
     this.replicaController = replicaController;

@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
@@ -16,11 +16,11 @@ import org.json.JSONObject;
 public class ActiveReplicaPaxos {
 
 	PaxosManager paxosManager=null;
-	NodeConfig nodeConfig=null;
-	GNSNIOTransport nioTransport=null;
+	InterfaceNodeConfig nodeConfig=null;
+	JSONNIOTransport nioTransport=null;
   GnsReconfigurable activeReplica=null;
 	
-	public ActiveReplicaPaxos(GNSNIOTransport niot, NodeConfig nc, GnsReconfigurable activeReplica) {
+	public ActiveReplicaPaxos(JSONNIOTransport niot, InterfaceNodeConfig nc, GnsReconfigurable activeReplica) {
 		this.nioTransport = niot;
 		this.nodeConfig = nc;
     this.activeReplica = activeReplica;

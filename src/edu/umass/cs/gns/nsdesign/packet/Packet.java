@@ -105,7 +105,11 @@ public class Packet {
     // deprecated packet types:
     UPDATE_NAMESERVER(201),
     ACTIVE_NAMESERVER_UPDATE(202),
-    NAME_SERVER_LOAD(203);
+    NAME_SERVER_LOAD(203),
+    
+    // for finite ping pong protocol task example
+    TEST_PING(222),
+    TEST_PONG(223);
 
     private int number;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();

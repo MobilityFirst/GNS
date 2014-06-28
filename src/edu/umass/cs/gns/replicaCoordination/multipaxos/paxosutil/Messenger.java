@@ -6,11 +6,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
@@ -30,12 +30,12 @@ public class Messenger {
 	private static final int BACKOFF_FACTOR=2; 
 	
 	private final int myID;
-	private final GNSNIOTransportInterface nioTransport;
+	private final InterfaceJSONNIOTransport nioTransport;
 	private ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 
 	Logger log = Logger.getLogger(getClass().getName());
 
-	public Messenger(int id, GNSNIOTransportInterface niot) {
+	public Messenger(int id, InterfaceJSONNIOTransport niot) {
 		myID = id; // needed only for debug printing
 		nioTransport = niot;
 	}

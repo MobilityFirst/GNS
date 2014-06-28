@@ -7,7 +7,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
@@ -45,7 +45,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   /**
    * nio server
    */
-  private GNSNIOTransportInterface nioServer;
+  private InterfaceJSONNIOTransport nioServer;
 
 
   /**
@@ -61,7 +61,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   private PingManager pingManager;
 
   /*** Constructor object */
-  public GnsReconfigurable(int nodeID, GNSNodeConfig gnsNodeConfig, GNSNIOTransportInterface nioServer,
+  public GnsReconfigurable(int nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
                            MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
@@ -94,7 +94,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   @Override
-  public GNSNIOTransportInterface getNioServer() {
+  public InterfaceJSONNIOTransport getNioServer() {
     return nioServer;
   }
 

@@ -1,10 +1,10 @@
 package edu.umass.cs.gns.test.nioclient;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.NIOTransport;
-import edu.umass.cs.gns.nio.NodeConfig;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,12 +44,12 @@ class DBClient {
    * @param demux the callback object for responses from LNS.
    * @throws IOException
    */
-  public DBClient(InetAddress lnsAddress, final int lnsPort, final int myPort, BasicPacketDemultiplexer demux)
+  public DBClient(InetAddress lnsAddress, final int lnsPort, final int myPort, AbstractPacketDemultiplexer demux)
           throws IOException {
     this.lnsAddress = lnsAddress;
     this.lnsPort = lnsPort;
     this.myPort = myPort;
-    this.nioTransport = new NIOTransport(0, new NodeConfig() {
+    this.nioTransport = new NIOTransport(0, new InterfaceNodeConfig() {
       @Override
       public boolean containsNodeInfo(int ID) {
         throw new UnsupportedOperationException();

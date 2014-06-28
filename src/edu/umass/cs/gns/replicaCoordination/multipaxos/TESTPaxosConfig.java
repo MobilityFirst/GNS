@@ -13,7 +13,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import edu.umass.cs.gns.nio.SampleNodeConfig;
+import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 
 /**
 @author V. Arun

@@ -9,7 +9,7 @@ package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
  * each instance as it will simply be a pointer to the 
  * corresponding array in the paxos instance that created it.
  */
-public class WaitForUtility {
+public class WaitforUtility {
 
 	private final int[] members;
 	private final boolean[] responded;
@@ -17,7 +17,7 @@ public class WaitForUtility {
 	private int initTime=0; // to calculate how long we have been waiting
 	private int retransmissionCount=0;
 	
-	public WaitForUtility(int[] m) {
+	public WaitforUtility(int[] m) {
 		this.members = m;
 		this.initTime = (int)System.currentTimeMillis(); // Warning: we have to cast to int throughout
 		responded = new boolean[m.length];
@@ -50,11 +50,21 @@ public class WaitForUtility {
 		}
 		return false;
 	}
+	public int getHeardCount() {return this.heardCount;}
+	
 	public boolean contains(int node) {
 		return getIndex(node) >= 0;
 	}
 	public int[] getMembers() {
 		return this.members;
+	}
+	public int[] getMembersHeardFrom() {
+		int[] membersHF = new int[this.heardCount];
+		int i=0;
+		for(int member : this.getMembers()) {
+			if(alreadyHeardFrom(member)) membersHF[i++] = member;
+		}
+		return membersHF;
 	}
 	public long totalWaitTime() {
 		return (int)System.currentTimeMillis() - this.initTime;
@@ -91,7 +101,7 @@ public class WaitForUtility {
 	 */
 	public static void main(String[] args) {
 		int[] members = {0, 9, 4, 23};
-		WaitForUtility wfor = new WaitForUtility(members);
+		WaitforUtility wfor = new WaitforUtility(members);
 		assert(!wfor.contains(32));
 		assert(wfor.contains(9));
 		assert(wfor.getMembers()==members);

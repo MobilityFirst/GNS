@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import org.json.JSONException;
@@ -29,10 +29,10 @@ public class DefaultPaxosInterface implements Replicable {
   /**
    * Transport object. It is needed to send responses to client.
    */
-  GNSNIOTransportInterface nioServer;
+  InterfaceJSONNIOTransport nioServer;
 
 
-  public DefaultPaxosInterface(int nodeID, GNSNIOTransportInterface nioServer) {
+  public DefaultPaxosInterface(int nodeID, InterfaceJSONNIOTransport nioServer) {
     this.nodeID = nodeID;
     this.nioServer = nioServer;
   }

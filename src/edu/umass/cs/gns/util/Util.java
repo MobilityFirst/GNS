@@ -83,7 +83,7 @@ public class Util {
 	}
 	public static int[] setToArray(Set<Integer> set) {
 		int[] array = new int[set.size()];
-		int i=0; for(int id : set) array[i] = id;
+		int i=0; for(int id : set) array[i++] = id;
 		return array;
 	}
 	public static int[] stringToArray(String string) {

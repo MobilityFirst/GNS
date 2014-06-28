@@ -1,10 +1,10 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.NioServer;
-import edu.umass.cs.gns.nio.NodeConfig;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import org.json.JSONException;
@@ -28,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 11:34 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewClient  extends BasicPacketDemultiplexer{
+public class NewClient  extends AbstractPacketDemultiplexer{
 
   /**
    * Non-blocking tcp connection object
@@ -122,7 +122,7 @@ public class NewClient  extends BasicPacketDemultiplexer{
 
     try {
 //      System.out.println(" ID is " + ID);
-      NodeConfig nodeConfig = new PaxosNodeConfig(testConfig1.numPaxosReplicas + 1, testConfig1.startingPort);
+      InterfaceNodeConfig nodeConfig = new PaxosNodeConfig(testConfig1.numPaxosReplicas + 1, testConfig1.startingPort);
       InetAddress add = nodeConfig.getNodeAddress(ID);
 //      System.out.println(" Address  is " + add);
       nioServer = new NioServer(ID, new ByteStreamToJSONObjects(this), nodeConfig);

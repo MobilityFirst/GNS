@@ -7,10 +7,10 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.DefaultPacketDemultiplexer;
-import edu.umass.cs.gns.nio.GNSNIOTransport;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.Util;
@@ -23,7 +23,7 @@ public class TESTPaxosClient {
 	private static final long createTime = System.currentTimeMillis();
 	private static final int random = (int)(Math.random()*TESTPaxosConfig.NUM_GROUPS);
 
-	private final GNSNIOTransport niot;
+	private final JSONNIOTransport niot;
 	private final int myID;
 	private int reqCount=0;
 	private int replyCount=0;
@@ -47,7 +47,7 @@ public class TESTPaxosClient {
 	private synchronized void setPreRecoveryCount(int prc) {if(this.executedCount==0) this.preRecoveryExecutedCount=prc;}
 	private synchronized int getPreRecoveryCount() {return this.preRecoveryExecutedCount;}
 
-	private class ClientPacketDemultiplexer extends BasicPacketDemultiplexer {
+	private class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer {
 		private final TESTPaxosClient client;
 		private ClientPacketDemultiplexer(TESTPaxosClient tpc) {this.client=tpc;}
 		public synchronized boolean handleJSONObject(JSONObject msg) {
@@ -69,8 +69,8 @@ public class TESTPaxosClient {
 
 	protected TESTPaxosClient(int id) throws IOException {
 		this.myID = id;
-		niot = new GNSNIOTransport(myID, TESTPaxosConfig.getNodeConfig(), 
-				new JSONMessageExtractor(new DefaultPacketDemultiplexer()));
+		niot = new JSONNIOTransport(myID, TESTPaxosConfig.getNodeConfig(), 
+				new JSONMessageExtractor(new PacketDemultiplexerDefault()));
 		niot.addPacketDemultiplexer(new ClientPacketDemultiplexer(this));
 		new Thread(niot).start();
 	}

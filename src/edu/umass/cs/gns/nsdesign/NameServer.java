@@ -8,6 +8,8 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
@@ -112,13 +114,13 @@ public class NameServer{
     // init transport
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this, nodeID);
     if (Config.emulatePingLatencies) {
-      GNSDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
+      JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
       GNS.getLogger().info("Emulating delays ... ");
     }
-    GNSNIOTransportInterface tcpTransport;
+    InterfaceJSONNIOTransport tcpTransport;
     if (Config.useGNSNIOTransport) {
       JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
-      GNSNIOTransport gnsnioTransport = new GNSNIOTransport(nodeID, gnsNodeConfig, worker);
+      JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nodeID, gnsNodeConfig, worker);
       new Thread(gnsnioTransport).start();
       tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, threadPoolExecutor);
     } else {

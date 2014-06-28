@@ -32,10 +32,10 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 	
 	private static Logger log = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(Add.class.getName()) : GNS.getLogger();
 
-	public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet) throws JSONException {
+	protected CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet) throws JSONException {
 		this.oldActivesQueried = new HashSet<Integer>();
 		// first, store the original packet in hash map
-		this.requestID = (int)(Math.random()*Integer.MAX_VALUE);
+		this.requestID = packet.hashCode();
 		activeReplica.getOngoingStateTransferRequests().put(requestID, packet);
 		// next, create a copy as which we will modify
 		this.packet = new NewActiveSetStartupPacket(packet.toJSONObject());
@@ -48,7 +48,7 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 		this.activeReplica = ar;
 	}
 
-	private static void makeFakeResponse(NewActiveSetStartupPacket packet) {
+	protected static void makeFakeResponse(NewActiveSetStartupPacket packet) {
 		packet.changePreviousValueCorrect(true);
 		ValuesMap valuesMap = new ValuesMap();
 		ResultValue rv = new ResultValue();
@@ -58,7 +58,7 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 		packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
 	}
 
-	public void run_alt() {
+	private void run_alt() {
 		makeFakeResponse(packet);
 		try {
 			activeReplica.send(new MessagingTask(activeReplica.getNodeID(), packet.toJSONObject()));

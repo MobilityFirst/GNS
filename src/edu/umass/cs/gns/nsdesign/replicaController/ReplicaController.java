@@ -5,7 +5,7 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedUpdateException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
@@ -44,7 +44,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
   /**
    * nio server
    */
-  private final GNSNIOTransportInterface nioServer;
+  private final InterfaceJSONNIOTransport nioServer;
 
   /**
    * executor service for handling timer tasks
@@ -72,7 +72,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
    * constructor object
    */
   public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-          GNSNIOTransportInterface nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+          InterfaceJSONNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
           MongoRecords mongoRecords) {
     Config.initialize(configParameters);
     this.nodeID = nodeID;
@@ -101,7 +101,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
     return replicaControllerDB;
   }
 
-  public GNSNIOTransportInterface getNioServer() {
+  public InterfaceJSONNIOTransport getNioServer() {
     return nioServer;
   }
 

@@ -2,7 +2,7 @@ package edu.umass.cs.gns.test.nioclient;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NameRecordKey;
@@ -21,7 +21,7 @@ import java.net.InetAddress;
  * responses.
  * Created by abhigyan on 6/21/14.
  */
-public class ClientSample extends BasicPacketDemultiplexer {
+public class ClientSample extends AbstractPacketDemultiplexer {
 
   private final InetAddress lnsAddress;
   private final int lnsPort;

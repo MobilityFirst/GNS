@@ -7,7 +7,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
@@ -22,7 +22,7 @@ import java.security.NoSuchAlgorithmException;
  *
  * Created by abhigyan on 2/24/14.
  */
-public class LNSPacketDemultiplexer extends BasicPacketDemultiplexer {
+public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   ClientRequestHandlerInterface handler;
 

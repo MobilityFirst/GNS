@@ -2,7 +2,7 @@ package edu.umass.cs.gns.test.nioclient;
 
 import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.BasicPacketDemultiplexer;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -24,7 +24,7 @@ import java.util.TimerTask;
  *
  * Created by abhigyan on 6/20/14.
  */
-public class TestPacketDemultiplexer extends BasicPacketDemultiplexer{
+public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer{
 
   private Timer t = new Timer();
   private IntercessorInterface intercessor;

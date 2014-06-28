@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
-import edu.umass.cs.gns.nio.GNSNIOTransportInterface;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
@@ -22,7 +22,7 @@ public interface GnsReconfigurableInterface extends Replicable, Reconfigurable{
 
   GNSNodeConfig getGNSNodeConfig();
 
-  GNSNIOTransportInterface getNioServer();
+  InterfaceJSONNIOTransport getNioServer();
 
   void reset();
 
