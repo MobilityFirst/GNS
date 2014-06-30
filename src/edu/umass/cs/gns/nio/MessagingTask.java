@@ -14,7 +14,7 @@ package edu.umass.cs.gns.nio;
  * This is a utility class as it is really just
  * a container for two arrays.
  */
-public class MessagingTask {
+public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 
 	public final int[] recipients;
 	public final Object[] msgs;
@@ -60,21 +60,6 @@ public class MessagingTask {
 		return this.msgs==null || this.msgs.length==0 || this.recipients==null || this.recipients.length==0;
 	}
 	
-	/* Converts an object array to a Object array because there is
-	 * annoyingly no easy way to convert a collection of a child
-	 * type to an array of a parent type. Yuck.
-	 */
-	public static Object[] toObjectArray(Object[] ppChildArray) {
-		assert(ppChildArray!=null && ppChildArray.length>0);
-		for(int i=0; i<ppChildArray.length; i++) assert(ppChildArray[i]!=null) : "Incorrect usage: MessagingTask should " +
-				"not be instantiated with null messages, msg " + i + " out of " + ppChildArray.length + " is null";
-		Object[] ppArray = new Object[ppChildArray.length];
-		for(int i=0; i<ppChildArray.length; i++) {
-			assert(ppChildArray[i] instanceof Object) : "Incorrect usage: MessagingTask can only take Object objects";
-			ppArray[i] = (Object)ppChildArray[i];
-		}
-		return ppArray;
-	}
 	
 	public static MessagingTask[] toArray(MessagingTask mtask1, MessagingTask mtask2) {
 		MessagingTask[] mtasks = new MessagingTask[2];

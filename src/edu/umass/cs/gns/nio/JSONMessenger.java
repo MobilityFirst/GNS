@@ -51,9 +51,7 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 	 * We use the return value of NIO send to decide whether to retransmit.
 	 */
 	public void send(MessagingTask mtask) throws JSONException, IOException {
-		if (mtask == null || mtask.recipients == null || mtask.msgs == null) {
-			return;
-		}
+		if (mtask == null || mtask.recipients == null || mtask.msgs == null) { return; }
 		for (Object msg : mtask.msgs) {
 			if (msg == null) {
 				assert (false);
@@ -63,9 +61,11 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 				JSONObject jsonMsg = null;
 				if (msg instanceof JSONObject) {
 					jsonMsg = (JSONObject) (msg);
-				} else if (msg instanceof PacketInterface) {
+				}
+				else if (msg instanceof PacketInterface) {
 					jsonMsg = ((PacketInterface) (msg)).toJSONObject();
-				} else {
+				}
+				else {
 					log.warning("Messenger received non-JSON object: " + msg);
 					assert (false);
 					continue;
@@ -75,7 +75,8 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 				if (sent == length) {
 					log.finest("Node " + this.myID + " sent " + " to node " +
 							mtask.recipients[r] + ": " + jsonMsg);
-				} else if (sent < length) {
+				}
+				else if (sent < length) {
 					if (NIOTransport.sampleLog()) {
 						log.warning("Node " + this.myID +
 								" messenger experiencing congestion, this is bad but not disastrous (yet)");
@@ -83,9 +84,9 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 					Retransmitter rtxTask =
 							new Retransmitter(mtask.recipients[r], jsonMsg,
 									RTX_DELAY);
-					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned
-																					// future
-				} else {
+					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore future
+				}
+				else {
 					log.severe("Node " + this.myID + " sent " + sent +
 							" bytes out of a " + length + " byte message");
 				}
@@ -132,8 +133,9 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 					Retransmitter rtx =
 							new Retransmitter(dest, msg, delay * BACKOFF_FACTOR);
 					execpool.schedule(rtx, delay * BACKOFF_FACTOR,
-							TimeUnit.MILLISECONDS);
-				} else if (sent == -1) { // have to give up at this point
+						TimeUnit.MILLISECONDS);
+				}
+				else if (sent == -1) { // have to give up at this point
 					log.severe("Node " +
 							myID +
 							"->" +
@@ -151,7 +153,6 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 
 	/**
 	 * ******************* Start of GNSNIOTransportInterface methods ********************
-	 * 
 	 */
 
 	/**
