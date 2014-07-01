@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.installer.GNSInstaller;
+import edu.umass.cs.gns.installer.GNSInstallerV1;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

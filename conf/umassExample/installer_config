@@ -1,0 +1,5 @@
+userName=westy
+keyFile=aws.pem
+hostType=linux
+dataStoreName=MONGO
+installPath=gns

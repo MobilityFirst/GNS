@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author westy
  */
-public class GNSInstallerForArun {
+public class GNSInstallerV2 {
 
   private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
@@ -221,10 +221,6 @@ public class GNSInstallerForArun {
     RSync.upload(userName, hostname, keyFile, gnsJarFileLocation, buildInstallFilePath(gnsFileName));
     RSync.upload(userName, hostname, keyFile, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
     RSync.upload(userName, hostname, keyFile, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
-//    SSHClient.scpTo(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
-//    SSHClient.scpTo(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
-//    SSHClient.scpTo(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
-
   }
 
   /**
@@ -239,7 +235,6 @@ public class GNSInstallerForArun {
     // copy the file to remote host
     String remoteFile = Paths.get(scriptFileLocation).getFileName().toString();
     RSync.upload(userName, hostname, keyFile, scriptFileLocation, buildInstallFilePath(remoteFile));
-    //SSHClient.scpTo(userName, hostname, keyFile, scriptFileLocation, remoteFile);
     // make it executable
     SSHClient.exec(userName, hostname, keyFile, "chmod ugo+x" + " " + buildInstallFilePath(remoteFile));
     //execute it
@@ -550,7 +545,7 @@ public class GNSInstallerForArun {
     @Override
     public void run() {
       try {
-        GNSInstallerForArun.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, scriptFile);
+        GNSInstallerV2.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

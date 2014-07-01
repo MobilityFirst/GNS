@@ -6,58 +6,54 @@ import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
-import edu.umass.cs.gns.statusdisplay.StatusModel;
 import edu.umass.cs.gns.util.Format;
 import java.io.BufferedWriter;
-import org.apache.commons.cli.*;
-
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  * Installs n instances of the GNS Jars and executes them.
  *
  * Typical use:
  *
- * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -install gns_dev
+ * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -update gns_dev
  *
- * Where gns_dev is an xml formatted configuration file that looks something like this:
- * <code>
- * <root>
- * <username name="ec2-user"/>
- * <keyname name="aws"/>
- * <hosttype name="linux"/>
- * <datastore name="MONGO"/>
- * <host id="0" hostname="ec2-54-87-145-248.compute-1.amazonaws.com" />
- * <host id="1" hostname="ec2-204-236-139-195.us-west-1.compute.amazonaws.com" />
- * <host id="2" hostname="ec2-54-188-39-102.us-west-2.compute.amazonaws.com" />
- * <host id="3" hostname="ec2-54-73-42-157.eu-west-1.compute.amazonaws.com" />
- * <host id="4" hostname="ec2-54-248-3-101.ap-northeast-1.compute.amazonaws.com" />
- * </root>
- * </code>
  *
  * @author westy
  */
-public class GNSInstaller {
+public class GNSInstallerV3 {
 
   private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String CONF_FOLDER = FILESEPARATOR + "conf";
-  private static final String LNS_CONF_FILE = CONF_FOLDER + FILESEPARATOR + "lns.conf";
-  private static final String NS_CONF_FILE = CONF_FOLDER + FILESEPARATOR + "ns.conf";
-  private static final String PRIVATEKEYFILEEXTENSION = ".pem";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   public static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final String DEFAULT_USERNAME = "ec2-user";
-  private static final String DEFAULT_KEYNAME = "aws";
+  private static final String DEFAULT_KEYNAME = "id_rsa";
+  private static final String DEFAULT_INSTALL_PATH = "gns";
+  private static final String INSTALLER_CONFIG_FILENAME = "installer_config";
+  private static final String LNS_CONF_FILENAME = "lns.conf";
+  private static final String NS_CONF_FILENAME = "ns.conf";
+  private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
+  private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
+
   /**
    * Stores information about the hosts we're using.
    */
@@ -66,35 +62,73 @@ public class GNSInstaller {
   private static DataStoreType dataStoreType = DEFAULT_DATA_STORE_TYPE;
   private static String hostType = "linux";
   private static String userName = DEFAULT_USERNAME;
-  private static String keyName = DEFAULT_KEYNAME;
-
-  private static String distFolderLocation;
+  private static String keyFile = DEFAULT_KEYNAME;
+  private static String installPath = DEFAULT_INSTALL_PATH;
+  // calculated from the Jar location
+  private static String distFolderPath;
   private static String gnsJarFileLocation;
+  private static String confFolderPath;
+  // these are mostly for convienence; could compute the when needed
   private static String nsConfFileLocation;
   private static String lnsConfFileLocation;
-  private static String nsHostFileLocation;
-  private static String lnsHostFileLocation;
-  private static String gnsFileName;
+  private static String gnsJarFileName;
   private static String lnsConfFileName;
   private static String nsConfFileName;
-  private static String nsHostFileName;
-  private static String lnsHostFileName;
 
-  private static boolean loadConfig(String configName) {
-    try {
-      HostConfigParser parser = new HostConfigParser(configName);
-      for (HostInfo hostInfo : parser.getHosts()) {
-        hostTable.put(hostInfo.getId(), hostInfo);
-      }
-      keyName = parser.getKeyname();
-      userName = parser.getUsername();
-      dataStoreType = parser.getDataStoreType();
-      hostType = parser.getHostType();
-      return true;
-    } catch (HostConfigParseException e) {
-      System.out.println("Problem loading config file: " + e);
-      return false;
+  private static void loadConfig(String configName) {
+
+    File configFile = fileSomewhere(configName + FILESEPARATOR + INSTALLER_CONFIG_FILENAME, confFolderPath);
+    InstallConfig installConfig = new InstallConfig(configFile.toString());
+
+    keyFile = installConfig.getKeyFile();
+    System.out.println("Key File: " + keyFile);
+    userName = installConfig.getUsername();
+    System.out.println("User Name: " + userName);
+    dataStoreType = installConfig.getDataStoreType();
+    System.out.println("Data Store Type: " + dataStoreType);
+    hostType = installConfig.getHostType();
+    System.out.println("Host Type: " + hostType);
+    installPath = installConfig.getInstallPath();
+    if (installPath == null) {
+      installPath = DEFAULT_INSTALL_PATH;
     }
+    System.out.println("Install Path: " + installPath);
+  }
+
+  // THIS WILL NEED TO CHANGE WHEN WE GO TO IDLESS LNS HOSTS
+  private static void loadHostsFiles(String configName) {
+    List<String> nsHosts = null;
+    // UNUSED - CURRENTLY ASSUMES AN LNS HOST ON EACH MACHINE
+    List<String> lnsHosts = null;
+    File hostsFile = null;
+    try {
+      hostsFile = fileSomewhere(configName + FILESEPARATOR + NS_HOSTS_FILENAME, confFolderPath);
+      nsHosts = HostFileLoader.loadHostFile(hostsFile.toString());
+    } catch (FileNotFoundException e) {
+      // should not happen as we've already verified this above
+      System.out.println("Problem loading the NS host file " + hostsFile + "; exiting.");
+      System.exit(1);
+    }
+
+    try {
+      hostsFile = fileSomewhere(configName + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath);
+      lnsHosts = HostFileLoader.loadHostFile(hostsFile.toString());
+      // should not happen as we've already verified this above
+    } catch (FileNotFoundException e) {
+      System.out.println("Problem loading the LNS host file " + hostsFile + "; exiting.");
+      System.exit(1);
+    }
+    int hostCounter = 0;
+    for (String hostname : nsHosts) {
+      hostTable.put(hostCounter, new HostInfo(hostCounter, hostname, null));
+      hostCounter = hostCounter + 1;
+    }
+    // CURRENTLY ASSUMES AN LNS HOST ON EACH MACHINE
+//    
+//    for (String hostname : lnsHosts) {
+//      hostTable.put(hostCounter, new HostInfo(hostCounter, hostname, null));
+//      hostCounter = hostCounter + 1;
+//    }
   }
 
   /**
@@ -103,7 +137,7 @@ public class GNSInstaller {
    * @param name
    * @param action
    */
-  public static void updateRunSet(String name, UpdateAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
+  public static void updateRunSet(String name, InstallerAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     for (HostInfo info : hostTable.values()) {
       threads.add(new UpdateThread(info.getHostname(), info.getId(), action, removeLogs, deleteDatabase, scriptFile));
@@ -119,13 +153,16 @@ public class GNSInstaller {
     } catch (InterruptedException e) {
       System.out.println("Problem joining threads: " + e);
     }
-    updateNodeConfigAndSendOutServerInit();
+    if (action != InstallerAction.STOP) {
+      updateNodeConfigAndSendOutServerInit();
+    }
   }
 
-  public enum UpdateAction {
+  public enum InstallerAction {
 
     UPDATE,
     RESTART,
+    STOP,
   };
 
   /**
@@ -144,31 +181,42 @@ public class GNSInstaller {
    * @param scriptFile
    * @throws java.net.UnknownHostException
    */
-  public static void updateAndRunGNS(int id, String hostname, UpdateAction action, boolean removeLogs,
+  public static void updateAndRunGNS(int id, String hostname, InstallerAction action, boolean removeLogs,
           boolean deleteDatabase, String scriptFile) throws UnknownHostException {
-    System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
-    killAllServers(id, hostname);
-    if (scriptFile != null) {
-      executeScriptFile(id, hostname, scriptFile);
+    if (!action.equals(InstallerAction.STOP)) {
+      System.out.println("**** Node " + id + " running on " + hostname + " starting update ****");
+      makeInstallDir(hostname);
+      killAllServers(hostname);
+      if (scriptFile != null) {
+        executeScriptFile(id, hostname, scriptFile);
+      }
+      if (removeLogs) {
+        removeLogFiles(hostname);
+      }
+      if (deleteDatabase) {
+        deleteDatabase(hostname);
+      }
+      switch (action) {
+        case UPDATE:
+          copyJarAndConfFiles(hostname);
+          break;
+        case RESTART:
+          break;
+      }
+      // write the name-server-info
+      writeNSFile(hostname);
+      startServers(id, hostname);
+      System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
+    } else {
+      killAllServers(hostname);
+      System.out.println("#### Node " + id + " running on " + hostname + " has been stopped ####");
     }
-    if (removeLogs) {
-      removeLogFiles(id, hostname);
-    }
-    if (deleteDatabase) {
-      deleteDatabase(id, hostname);
-    }
-    switch (action) {
-      case UPDATE:
-        copyJarAndConfFiles(id, hostname);
-        break;
-      case RESTART:
-        break;
-    }
-    // write the name-server-info
-    writeNSFile(hostname);
-    startServers(id, hostname);
-    System.out.println("#### Node " + id + " running on " + hostname + " finished update ####");
   }
+
+  private static final String CHANGETOINSTALLDIR
+          = "# make current directory the directory this script is in\n"
+          + "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"\n"
+          + "cd $DIR\n";
 
   /**
    * Starts an LNS, NS server on the remote host.
@@ -177,31 +225,31 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void startServers(int id, String hostname) {
-    StatusModel.getInstance().queueUpdate(id, "Starting local name servers");
+    System.out.println("Starting local name servers");
     File keyFile = getKeyFile();
-    ExecuteBash.executeBashScript(userName, hostname, keyFile, "runLNS.sh",
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, buildInstallFilePath("runLNS.sh"),
             "#!/bin/bash\n"
-            + "cd /home/ec2-user\n"
+            + CHANGETOINSTALLDIR
             + "if [ -f LNSlogfile ]; then\n"
             + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
             + "fi\n"
-            + "nohup java -cp " + gnsFileName + " " + StartLNSClass + " "
+            + "nohup java -cp " + gnsJarFileName + " " + StartLNSClass + " "
             + "-id " + getLNSId(id)
             + " -configFile lns.conf "
             + "> LNSlogfile 2>&1 &");
 
-    StatusModel.getInstance().queueUpdate(id, "Starting name servers");
-    ExecuteBash.executeBashScript(userName, hostname, keyFile, "runNS.sh",
+    System.out.println("Starting name servers");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFile, buildInstallFilePath("runNS.sh"),
             "#!/bin/bash\n"
-            + "cd /home/ec2-user\n"
+            + CHANGETOINSTALLDIR
             + "if [ -f NSlogfile ]; then\n"
             + "mv --backup=numbered NSlogfile NSlogfile.save\n"
             + "fi\n"
-            + "nohup java -cp " + gnsFileName + " " + StartNSClass + " "
+            + "nohup java -cp " + gnsJarFileName + " " + StartNSClass + " "
             + " -id " + id
             + " -configFile ns.conf "
             + "> NSlogfile 2>&1 &");
-    StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING, "All servers started");
+    System.out.println("All servers started");
   }
 
   /**
@@ -210,16 +258,12 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void copyJarAndConfFiles(int id, String hostname) {
+  private static void copyJarAndConfFiles(String hostname) {
     File keyFile = getKeyFile();
-    StatusModel.getInstance().queueUpdate(id, "Copying jar and conf files");
-    RSync.upload(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
-    RSync.upload(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
-    RSync.upload(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
-//    SSHClient.scpTo(userName, hostname, keyFile, gnsJarFileLocation, gnsFileName);
-//    SSHClient.scpTo(userName, hostname, keyFile, lnsConfFileLocation, lnsConfFileName);
-//    SSHClient.scpTo(userName, hostname, keyFile, nsConfFileLocation, nsConfFileName);
-
+    System.out.println("Copying jar and conf files");
+    RSync.upload(userName, hostname, keyFile, gnsJarFileLocation, buildInstallFilePath(gnsJarFileName));
+    RSync.upload(userName, hostname, keyFile, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
+    RSync.upload(userName, hostname, keyFile, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
   }
 
   /**
@@ -230,15 +274,22 @@ public class GNSInstaller {
    */
   private static void executeScriptFile(int id, String hostname, String scriptFileLocation) {
     File keyFile = getKeyFile();
-    StatusModel.getInstance().queueUpdate(id, "Copying script file");
+    System.out.println("Copying script file");
     // copy the file to remote host
     String remoteFile = Paths.get(scriptFileLocation).getFileName().toString();
-    RSync.upload(userName, hostname, keyFile, scriptFileLocation, remoteFile);
-    //SSHClient.scpTo(userName, hostname, keyFile, scriptFileLocation, remoteFile);
+    RSync.upload(userName, hostname, keyFile, scriptFileLocation, buildInstallFilePath(remoteFile));
     // make it executable
-    SSHClient.execWithSudoNoPass(userName, hostname, keyFile, "chmod ugo+x" + " " + remoteFile);
+    SSHClient.exec(userName, hostname, keyFile, "chmod ugo+x" + " " + buildInstallFilePath(remoteFile));
     //execute it
-    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + remoteFile, true, null);
+    SSHClient.exec(userName, hostname, keyFile, "." + FILESEPARATOR + buildInstallFilePath(remoteFile));
+  }
+
+  private static void makeInstallDir(String hostname) {
+    System.out.println("Creating install directory");
+    if (installPath != null) {
+      File keyFile = getKeyFile();
+      SSHClient.exec(userName, hostname, keyFile, "mkdir -p " + installPath);
+    }
   }
 
   //
@@ -251,10 +302,11 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void deleteDatabase(int id, String hostname) {
-    ExecuteBash.executeBashScript(userName, hostname, getKeyFile(), "deleteDatabase.sh",
+  private static void deleteDatabase(String hostname) {
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("deleteDatabase.sh"),
             "#!/bin/bash\n"
-            + "java -cp " + gnsFileName + " " + MongoRecordsClass + " -clear");
+            + CHANGETOINSTALLDIR
+            + "java -cp " + gnsJarFileName + " " + MongoRecordsClass + " -clear");
   }
   private static final String StartLNSClass = "edu.umass.cs.gns.main.StartLocalNameServer";
   private static final String StartNSClass = "edu.umass.cs.gns.main.StartNameServer";
@@ -270,9 +322,11 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void killAllServers(int id, String hostname) {
-    StatusModel.getInstance().queueUpdate(id, "Killing servers");
-    ExecuteBash.executeBashScript(userName, hostname, getKeyFile(), "killAllServers.sh", "#!/bin/bash\nkillall java");
+  private static void killAllServers(String hostname) {
+    System.out.println("Killing GNS servers");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("killAllServers.sh"),
+            "pkill -f \"java -cp GNS.jar\"");
+    //"#!/bin/bash\nkillall java");
   }
 
   /**
@@ -281,9 +335,11 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void removeLogFiles(int id, String hostname) {
-    StatusModel.getInstance().queueUpdate(id, "Removing log files");
-    ExecuteBash.executeBashScript(userName, hostname, getKeyFile(), "removelogs.sh", "#!/bin/bash\n"
+  private static void removeLogFiles(String hostname) {
+    System.out.println("Removing log files");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("removelogs.sh"),
+            "#!/bin/bash\n"
+            + CHANGETOINSTALLDIR
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm -rf log\n"
@@ -331,8 +387,7 @@ public class GNSInstaller {
       BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
       bw.write(result.toString());
       bw.close();
-      RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), "name-server-info");
-      //SSHClient.execWithSudoNoPass(userName, hostname, getKeyFile(), "echo \"" + result.toString() + "\" > name-server-info");
+      RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), buildInstallFilePath("name-server-info"));
     } catch (IOException e) {
       GNS.getLogger().severe("Unable to write temporary name-server-info file: " + e);
     }
@@ -354,19 +409,55 @@ public class GNSInstaller {
    *
    * @return true if it found them
    */
-  private static boolean setupJarAndConfFilePaths() {
+  private static void setupJarPath() {
     File jarPath = getLocalJarPath();
     System.out.println("Jar path: " + jarPath);
     gnsJarFileLocation = jarPath.getPath();
-    distFolderLocation = jarPath.getParent();
-    lnsConfFileLocation = distFolderLocation + LNS_CONF_FILE;
-    nsConfFileLocation = distFolderLocation + NS_CONF_FILE;
-    System.out.println("LNS conf: " + lnsConfFileLocation);
-    System.out.println("NS conf: " + nsConfFileLocation);
-    if (!new File(lnsConfFileLocation).exists() && !new File(nsConfFileLocation).exists()) {
-      return false;
+    distFolderPath = jarPath.getParent();
+    confFolderPath = distFolderPath + CONF_FOLDER;
+    System.out.println("Conf folder path: " + confFolderPath);
+    gnsJarFileName = new File(gnsJarFileLocation).getName();
+  }
+
+  // checks for an absolute or relative path, then checks for a path in "blessed" location.
+  private static boolean fileExistsSomewhere(String filename, String fileInConfigFolder) {
+    return fileSomewhere(filename, fileInConfigFolder) != null;
+  }
+
+  private static File fileSomewhere(String filename, String blessedPath) {
+
+    File file = new File(filename);
+    if (file.exists()) {
+      return file;
     }
-    gnsFileName = new File(gnsJarFileLocation).getName();
+    file = new File(blessedPath + FILESEPARATOR + filename);
+    if (file.exists()) {
+      return file;
+    }
+    System.out.println("Failed to find: " + filename);
+    System.out.println("Also failed to find: " + blessedPath + FILESEPARATOR + filename);
+    return null;
+  }
+
+  private static boolean checkAndSetConfFilePaths(String configNameOrFolder) {
+
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + INSTALLER_CONFIG_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + INSTALLER_CONFIG_FILENAME);
+    }
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_CONF_FILENAME);
+    }
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_CONF_FILENAME);
+    }
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_HOSTS_FILENAME);
+    }
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_HOSTS_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_HOSTS_FILENAME);
+    }
+    lnsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath).toString();
+    nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath).toString();
     lnsConfFileName = new File(lnsConfFileLocation).getName();
     nsConfFileName = new File(nsConfFileLocation).getName();
     return true;
@@ -392,7 +483,19 @@ public class GNSInstaller {
    * @return
    */
   private static File getKeyFile() {
-    return new File(KEYHOME + FILESEPARATOR + keyName + PRIVATEKEYFILEEXTENSION);
+    // check using full path
+    return new File(keyFile).exists() ? new File(keyFile)
+            : // also check in blessed location
+            new File(KEYHOME + FILESEPARATOR + keyFile).exists() ? new File(KEYHOME + FILESEPARATOR + keyFile) : null;
+
+  }
+
+  private static String buildInstallFilePath(String filename) {
+    if (installPath == null) {
+      return filename;
+    } else {
+      return installPath + FILESEPARATOR + filename;
+    }
   }
 
   // COMMAND LINE STUFF
@@ -415,10 +518,14 @@ public class GNSInstaller {
     Option scriptFile = OptionBuilder.withArgName("install script file").hasArg()
             .withDescription("specifies the location of a bash script file that will install MongoDB and Java 1.7")
             .create("scriptFile");
+    Option stop = OptionBuilder.withArgName("runSet name").hasArg()
+            .withDescription("stops GNS servers in a runset")
+            .create("stop");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(update);
     commandLineOptions.addOption(restart);
+    commandLineOptions.addOption(stop);
     commandLineOptions.addOption(removeLogs);
     commandLineOptions.addOption(deleteDatabase);
     commandLineOptions.addOption(dataStore);
@@ -436,12 +543,13 @@ public class GNSInstaller {
   public static void main(String[] args) {
     try {
       CommandLine parser = initializeOptions(args);
-      if (parser.hasOption("help")) {
+      if (parser.hasOption("help") || args.length == 0) {
         printUsage();
         System.exit(1);
       }
       String runsetUpdate = parser.getOptionValue("update");
       String runsetRestart = parser.getOptionValue("restart");
+      String runsetStop = parser.getOptionValue("stop");
       String dataStoreName = parser.getOptionValue("datastore");
       boolean removeLogs = parser.hasOption("removeLogs");
       boolean deleteDatabase = parser.hasOption("deleteDatabase");
@@ -458,27 +566,34 @@ public class GNSInstaller {
 
       String configName = runsetUpdate != null ? runsetUpdate
               : runsetRestart != null ? runsetRestart
+              : runsetStop != null ? runsetStop
               : null;
 
       System.out.println("Config name: " + configName);
-      if (configName != null) {
-        if (!loadConfig(configName)) {
-          System.exit(1);
-        }
-      }
+      System.out.println("Current directory: " + System.getProperty("user.dir"));
 
-      if (!setupJarAndConfFilePaths()) {
-        System.out.println("Can't locate needed config files. LNS conf: " + lnsConfFileLocation + " NS conf: " + nsConfFileLocation);
+      setupJarPath();
+      if (!checkAndSetConfFilePaths(configName)) {
         System.exit(1);
       }
+
+      if (getKeyFile() == null) {
+        System.out.println("Can't find keyfile: " + keyFile + "; exiting.");
+        System.exit(1);
+      }
+
+      loadConfig(configName);
+      loadHostsFiles(configName);
 
       SSHClient.setVerbose(true);
       RSync.setVerbose(true);
 
       if (runsetUpdate != null) {
-        updateRunSet(runsetUpdate, UpdateAction.UPDATE, removeLogs, deleteDatabase, scriptFile);
+        updateRunSet(runsetUpdate, InstallerAction.UPDATE, removeLogs, deleteDatabase, scriptFile);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetUpdate, UpdateAction.RESTART, removeLogs, deleteDatabase, scriptFile);
+        updateRunSet(runsetUpdate, InstallerAction.RESTART, removeLogs, deleteDatabase, scriptFile);
+      } else if (runsetStop != null) {
+        updateRunSet(runsetUpdate, InstallerAction.STOP, false, false, null);
       } else {
         printUsage();
         System.exit(1);
@@ -499,12 +614,12 @@ public class GNSInstaller {
 
     private final String hostname;
     private final int id;
-    private final UpdateAction action;
+    private final InstallerAction action;
     private final boolean removeLogs;
     private final boolean deleteDatabase;
     private final String scriptFile;
 
-    public UpdateThread(String hostname, int id, UpdateAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
+    public UpdateThread(String hostname, int id, InstallerAction action, boolean removeLogs, boolean deleteDatabase, String scriptFile) {
       this.hostname = hostname;
       this.id = id;
       this.action = action;
@@ -516,7 +631,7 @@ public class GNSInstaller {
     @Override
     public void run() {
       try {
-        GNSInstaller.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, scriptFile);
+        GNSInstallerV3.updateAndRunGNS(id, hostname, action, removeLogs, deleteDatabase, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

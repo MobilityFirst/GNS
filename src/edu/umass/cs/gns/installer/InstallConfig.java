@@ -30,7 +30,7 @@ public class InstallConfig {
   private static final String INSTALL_PATH = "installPath";
 
   private String username;
-  private String keyname;
+  private String keyFile;
   private String hostType;
   private DataStoreType dataStoreType;
   private String installPath;
@@ -39,8 +39,8 @@ public class InstallConfig {
     return username;
   }
 
-  public String getKeyname() {
-    return keyname;
+  public String getKeyFile() {
+    return keyFile;
   }
 
   public String getHostType() {
@@ -78,15 +78,15 @@ public class InstallConfig {
     // datastorename=MONGO
     //#installpath=/home/westy
     this.username = properties.getProperty(USER_NAME, System.getProperty("user.name"));
-    this.keyname = properties.getProperty(KEY_FILE);
+    this.keyFile = properties.getProperty(KEY_FILE);
     this.hostType = properties.getProperty(HOST_TYPE, "linux");
-    this.dataStoreType = DataStoreType.valueOf(properties.getProperty(DATA_STORE_NAME, GNSInstaller.DEFAULT_DATA_STORE_TYPE.name()).toUpperCase());
+    this.dataStoreType = DataStoreType.valueOf(properties.getProperty(DATA_STORE_NAME, GNSInstallerV1.DEFAULT_DATA_STORE_TYPE.name()).toUpperCase());
     this.installPath = properties.getProperty(INSTALL_PATH);
   }
 
   @Override
   public String toString() {
-    return "InstallConfigParser{" + "username=" + username + ", keyname=" + keyname + ", hostType=" + hostType + ", dataStoreType=" + dataStoreType + ", installPath=" + installPath + '}';
+    return "InstallConfigParser{" + "username=" + username + ", keyfile=" + keyFile + ", hostType=" + hostType + ", dataStoreType=" + dataStoreType + ", installPath=" + installPath + '}';
   }
 
   public static void main(String[] args) {
