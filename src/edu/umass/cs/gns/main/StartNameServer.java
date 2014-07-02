@@ -13,8 +13,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Properties;
 
-
-
 /**
  * Combines options given in config file and via command line arguments and starts a name server.
  * Options given via command line override those given in config file. Unlike previous implementation,
@@ -25,20 +23,20 @@ import java.util.Properties;
  */
 public class StartNameServer {
 
-
   /**
    * Returns a hash map with all options including options in config file and the command line arguments
+   *
    * @param args command line arguments given to JVM
    * @return hash map with KEY = parameter names, VALUE = values of parameters in String form
    * @throws IOException
    */
-  public static HashMap<String, String> getParametersAsHashMap(String ... args) throws IOException {
+  public static HashMap<String, String> getParametersAsHashMap(String... args) throws IOException {
 
     CommandLine parser = null;
     Options commandLineOptions = NSParameterNames.getAllOptions();
 
     try {
-      parser =  new GnuParser().parse(commandLineOptions, args);
+      parser = new GnuParser().parse(commandLineOptions, args);
     } catch (ParseException e) {
       e.printStackTrace();
       printUsage(commandLineOptions);
@@ -54,7 +52,7 @@ public class StartNameServer {
     // load options given in config file in a java properties object
     Properties prop = new Properties();
 
-    if (parser.hasOption(NSParameterNames.CONFIG_FILE))  {
+    if (parser.hasOption(NSParameterNames.CONFIG_FILE)) {
       String value = parser.getOptionValue(NSParameterNames.CONFIG_FILE);
       File f = new File(value);
       if (f.exists() == false) {
@@ -71,18 +69,20 @@ public class StartNameServer {
     HashMap<String, String> allValues = new HashMap<String, String>();
 
     // add options given in config file to hash map
-    for (String propertyName: prop.stringPropertyNames()) {
+    for (String propertyName : prop.stringPropertyNames()) {
       allValues.put(propertyName, prop.getProperty(propertyName));
     }
 
     // add options given via command line to hashmap. these options can override options given in config file.
-    for (Option option: parser.getOptions()) {
+    for (Option option : parser.getOptions()) {
       String argName = option.getOpt();
       String value = option.getValue();
       // if an option has a boolean value, the command line arguments do not say true/false for some of these options
       // if option name is given as argument on the command line, it means the value is true. therefore, the hashmap
       // will also assign the value true for these options.
-      if (value == null) value = "true";
+      if (value == null) {
+        value = "true";
+      }
       allValues.put(argName, value);
 //        System.out.println("adding: " + argName + "\t" + value);
     }
@@ -106,19 +106,20 @@ public class StartNameServer {
    * @param args Command line arguments
    * @throws ParseException
    */
-  public static void main(String[] args) throws IOException{
+  public static void main(String[] args) throws IOException {
 
     HashMap<String, String> allValues = getParametersAsHashMap(args);
     // initialize config options.
     Config.initialize(allValues);
     int nodeID = Integer.parseInt(allValues.get(NSParameterNames.ID));
+
+    GNSNodeConfig gnsNodeConfig = null;
     
     if (allValues.containsKey(NSParameterNames.LNS_FILE)) {
-      // new style LNS
+      gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), allValues.get(NSParameterNames.LNS_FILE), nodeID);
+    } else {
+      gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), nodeID);
     }
-    
-    String nodeConfigFile = allValues.get(NSParameterNames.NS_FILE);
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nodeConfigFile, nodeID);
 
     new NameServer(nodeID, allValues, gnsNodeConfig);
   }

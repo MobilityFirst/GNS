@@ -26,6 +26,7 @@ public class StartLocalNameServer {
   public static final String CONFIG_FILE = "configFile";
   public static final String ID = "id";
   public static final String NS_FILE = "nsfile";
+  public static final String LNS_FILE = "lnsfile";
   public static final String CACHE_SIZE = "cacheSize";
   public static final String PRIMARY = "primary";
   public static final String LOCATION = "location";
@@ -78,10 +79,14 @@ public class StartLocalNameServer {
 
   public static int replicationInterval = 0;
 
-  /*** Set to true for more verbose logging level. */
+  /**
+   * * Set to true for more verbose logging level.
+   */
   public static boolean debugMode = false;
 
-  /*** Used for running experiments for Auspice paper. */
+  /**
+   * * Used for running experiments for Auspice paper.
+   */
   public static boolean experimentMode = false;
 
   // parameters related to experiments that are actually used.
@@ -104,7 +109,6 @@ public class StartLocalNameServer {
 
 //  Abhigyan: parameters related to retransmissions.
 //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
-
   /**
    *
    * Maximum number of transmission of a query *
@@ -171,7 +175,6 @@ public class StartLocalNameServer {
     Option debugMode = new Option(DEBUG_MODE, "Run in debug mode");
     Option experimentMode = new Option(EXPERIMENT_MODE, "Mode to run experiments for Auspice paper");
 
-
     Option syntheticWorkload = new Option(ZIPF, "Use Zipf distribution to generate worklaod");
 
     Option locationBasedReplication = new Option(LOCATION, "Location Based selection of active nameserervs");
@@ -213,6 +216,9 @@ public class StartLocalNameServer {
     Option nsFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("Name server file")
             .create(NS_FILE);
+    Option lnsFile = OptionBuilder.withArgName("file").hasArg()
+            .withDescription("Local Name server file")
+            .create(LNS_FILE);
 
     Option regularWorkload = OptionBuilder.withArgName("size").hasArg()
             .withDescription("Regular workload size")
@@ -275,6 +281,7 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
+    commandLineOptions.addOption(lnsFile);
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(workloadFile);
@@ -344,12 +351,10 @@ public class StartLocalNameServer {
    */
   public static void main(String[] args) {
     int id = 0;						//node id
-    String nsFile = "";  //Nameserver file
-    startLNS(id, nsFile, args);
+    startLNS(id, null, null, args);
   }
 
-
-  public static void startLNS(int id, String nsFile, String... args) {
+  public static void startLNS(int id, String nsFile, String lnsFile, String... args) {
     try {
       CommandLine parser = null;
       try {
@@ -366,11 +371,12 @@ public class StartLocalNameServer {
         System.exit(1);
       }
       String configFile = null;
-      if (parser.hasOption(CONFIG_FILE))
+      if (parser.hasOption(CONFIG_FILE)) {
         configFile = parser.getOptionValue(CONFIG_FILE);
+      }
 
-      startLNSConfigFile(id, nsFile, configFile, parser);
-    }  catch (Exception e1) {
+      startLNSConfigFile(id, nsFile, lnsFile, configFile, parser);
+    } catch (Exception e1) {
       e1.printStackTrace();
       printUsage();
       System.exit(1);
@@ -383,12 +389,12 @@ public class StartLocalNameServer {
    * sufficient to start local name server; <code>CommandLine</code> can be null. Values of id and nsFile will not be
    * used, if config file also contains values of these parameters.
    *
-   * @param id  ID of local name server
+   * @param id ID of local name server
    * @param nsFile node config file (can be null)
    * @param configFile config file with parameters (can be null)
    * @param parser command line arguments (can be null)
    */
-  public static void startLNSConfigFile(int id, String nsFile, String configFile, CommandLine parser) {
+  public static void startLNSConfigFile(int id, String nsFile, String lnsFile, String configFile, CommandLine parser) {
     try {
 
       // create a hash map with all options including options in config file and the command line arguments
@@ -406,32 +412,41 @@ public class StartLocalNameServer {
         prop.load(input);
 
         // add options given in config file to hash map
-        for (String propertyName: prop.stringPropertyNames()) {
+        for (String propertyName : prop.stringPropertyNames()) {
           allValues.put(propertyName, prop.getProperty(propertyName));
         }
 
       }
 
       // add options given via command line to hashmap. these options can override options given in config file.
-      if (parser!= null) {
-        for (Option option: parser.getOptions()) {
+      if (parser != null) {
+        for (Option option : parser.getOptions()) {
           String argName = option.getOpt();
           String value = option.getValue();
           // if an option has a boolean value, the command line arguments do not say true/false for some of these options
           // if option name is given as argument on the command line, it means the value is true. therefore, the hashmap
           // will also assign the value true for these options.
-          if (value == null) value = "true";
+          if (value == null) {
+            value = "true";
+          }
           allValues.put(argName, value);
         }
       }
 
-      if (allValues.containsKey(ID)) id = Integer.parseInt(allValues.get(ID));
-      if (allValues.containsKey(NS_FILE))  nsFile = allValues.get(NS_FILE);
+      if (allValues.containsKey(ID)) {
+        id = Integer.parseInt(allValues.get(ID));
+      }
+      if (allValues.containsKey(NS_FILE)) {
+        nsFile = allValues.get(NS_FILE);
+      }
+      if (allValues.containsKey(LNS_FILE)) {
+        lnsFile = allValues.get(LNS_FILE);
+      }
 
       cacheSize = (allValues.containsKey(CACHE_SIZE)) ? Integer.parseInt(allValues.get(CACHE_SIZE)) : 10000;
 
-      GNS.numPrimaryReplicas = allValues.containsKey(PRIMARY) ?
-              Integer.parseInt(allValues.get(PRIMARY)) : GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
+      GNS.numPrimaryReplicas = allValues.containsKey(PRIMARY)
+              ? Integer.parseInt(allValues.get(PRIMARY)) : GNS.DEFAULT_NUM_PRIMARY_REPLICAS;
 
       if (allValues.containsKey(LOCATION) && Boolean.parseBoolean(allValues.get(LOCATION))) {
         replicationFramework = ReplicationFrameworkType.LOCATION;
@@ -448,10 +463,10 @@ public class StartLocalNameServer {
         replicationFramework = GNS.DEFAULT_REPLICATION_FRAMEWORK;
       }
 
-      loadDependentRedirection = allValues.containsKey(LOAD_DEPENDENT_REDIRECTION) &&
-              Boolean.parseBoolean(allValues.get(LOAD_DEPENDENT_REDIRECTION));
-      nameServerLoadMonitorIntervalSeconds = (loadDependentRedirection) ?
-              Integer.parseInt(allValues.get(LOAD_MONITOR_INTERVAL)) : 60;
+      loadDependentRedirection = allValues.containsKey(LOAD_DEPENDENT_REDIRECTION)
+              && Boolean.parseBoolean(allValues.get(LOAD_DEPENDENT_REDIRECTION));
+      nameServerLoadMonitorIntervalSeconds = (loadDependentRedirection)
+              ? Integer.parseInt(allValues.get(LOAD_MONITOR_INTERVAL)) : 60;
 
       maxQueryWaitTime = (allValues.containsKey(MAX_QUERY_WAIT_TIME))
               ? Integer.parseInt(allValues.get(MAX_QUERY_WAIT_TIME)) : GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
@@ -460,7 +475,7 @@ public class StartLocalNameServer {
       queryTimeout = (allValues.containsKey(QUERY_TIMEOUT))
               ? Integer.parseInt(allValues.get(QUERY_TIMEOUT)) : GNS.DEFAULT_QUERY_TIMEOUT;
 
-      adaptiveTimeout = allValues.containsKey(ADAPTIVE_TIMEOUT)  && Boolean.parseBoolean(allValues.get(ADAPTIVE_TIMEOUT));
+      adaptiveTimeout = allValues.containsKey(ADAPTIVE_TIMEOUT) && Boolean.parseBoolean(allValues.get(ADAPTIVE_TIMEOUT));
       if (adaptiveTimeout) {
         if (allValues.containsKey(DELTA)) {
           AdaptiveRetransmission.delta = Float.parseFloat(allValues.get(DELTA));
@@ -475,7 +490,7 @@ public class StartLocalNameServer {
 
       // lookup and update tace files
       updateTraceFile = allValues.containsKey(UPDATE_TRACE) ? allValues.get(UPDATE_TRACE) : null;
-      workloadFile = allValues.containsKey(WORKLOAD_FILE) ? allValues.get(WORKLOAD_FILE): null;
+      workloadFile = allValues.containsKey(WORKLOAD_FILE) ? allValues.get(WORKLOAD_FILE) : null;
 
       // all parameters related to synthetic workload
       isSyntheticWorkload = allValues.containsKey(ZIPF) && Boolean.parseBoolean(allValues.get(ZIPF));
@@ -483,14 +498,13 @@ public class StartLocalNameServer {
       regularWorkloadSize = (isSyntheticWorkload) ? Integer.parseInt(allValues.get(REGULAR_WORKLOAD)) : 0;
       mobileWorkloadSize = (isSyntheticWorkload) ? Integer.parseInt(allValues.get(MOBILE_WORKLOAD)) : 0;
 
-      name = (isSyntheticWorkload) ?  allValues.get("name") : null;
+      name = (isSyntheticWorkload) ? allValues.get("name") : null;
       // made these optional for non-experimental use
       numQuery = allValues.containsKey(NUM_QUERY) ? Integer.parseInt(allValues.get(NUM_QUERY)) : 0;
       numUpdate = allValues.containsKey(NUM_UPDATE) ? Integer.parseInt(allValues.get(NUM_UPDATE)) : 0;
 
-
-      outputSampleRate = allValues.containsKey(OUTPUT_SAMPLE_RATE) ?
-              Double.parseDouble(allValues.get(OUTPUT_SAMPLE_RATE)) : 1.0;
+      outputSampleRate = allValues.containsKey(OUTPUT_SAMPLE_RATE)
+              ? Double.parseDouble(allValues.get(OUTPUT_SAMPLE_RATE)) : 1.0;
 
       if (allValues.containsKey(DEBUG_MODE)) {
         debugMode = Boolean.parseBoolean(allValues.get(DEBUG_MODE));
@@ -517,8 +531,8 @@ public class StartLocalNameServer {
         useGNSNIOTransport = Boolean.parseBoolean(allValues.get(USE_GNS_NIO_TRANSPORT));
       }
 
-      emulatePingLatencies = allValues.containsKey(EMULATE_PING_LATENCIES) &&
-              Boolean.parseBoolean(allValues.get(EMULATE_PING_LATENCIES));
+      emulatePingLatencies = allValues.containsKey(EMULATE_PING_LATENCIES)
+              && Boolean.parseBoolean(allValues.get(EMULATE_PING_LATENCIES));
 
       if (emulatePingLatencies && allValues.containsKey(VARIATION)) {
         variation = Double.parseDouble(allValues.get(VARIATION));
@@ -532,27 +546,32 @@ public class StartLocalNameServer {
 
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     Date date = new Date();
-    GNS.getLogger().fine("Date: " + dateFormat.format(date));
-    GNS.getLogger().fine("Id: " + id);
-    GNS.getLogger().fine("NS File: " + nsFile);
-    GNS.getLogger().fine("Regular Workload Size: " + regularWorkloadSize);
-    GNS.getLogger().fine("Mobile Workload Size: " + mobileWorkloadSize);
-    GNS.getLogger().fine("Workload File: " + workloadFile);
-    GNS.getLogger().fine("Update Trace File: " + updateTraceFile);
-    GNS.getLogger().fine("Primary: " + GNS.numPrimaryReplicas);
-    GNS.getLogger().fine("Alpha: " + alpha);
-    GNS.getLogger().fine("Lookups: " + numQuery);
-    GNS.getLogger().fine("Updates: " + numUpdate);
-    GNS.getLogger().fine("Zipf Workload: " + isSyntheticWorkload);
-    GNS.getLogger().fine("Replication: " + replicationFramework.toString());
-    GNS.getLogger().fine("Vote Interval: " + voteIntervalMillis + "ms");
-    GNS.getLogger().fine("Cache Size: " + cacheSize);
-    GNS.getLogger().fine("Experiment Mode: " + experimentMode);
-    GNS.getLogger().fine("Debug Mode: " + debugMode);
+    GNS.getLogger().info("Date: " + dateFormat.format(date));
+    GNS.getLogger().info("Id: " + id);
+    GNS.getLogger().info("NS File: " + nsFile);
+    GNS.getLogger().info("LNS File: " + lnsFile);
+    GNS.getLogger().info("Regular Workload Size: " + regularWorkloadSize);
+    GNS.getLogger().info("Mobile Workload Size: " + mobileWorkloadSize);
+    GNS.getLogger().info("Workload File: " + workloadFile);
+    GNS.getLogger().info("Update Trace File: " + updateTraceFile);
+    GNS.getLogger().info("Primary: " + GNS.numPrimaryReplicas);
+    GNS.getLogger().info("Alpha: " + alpha);
+    GNS.getLogger().info("Lookups: " + numQuery);
+    GNS.getLogger().info("Updates: " + numUpdate);
+    GNS.getLogger().info("Zipf Workload: " + isSyntheticWorkload);
+    GNS.getLogger().info("Replication: " + replicationFramework.toString());
+    GNS.getLogger().info("Vote Interval: " + voteIntervalMillis + "ms");
+    GNS.getLogger().info("Cache Size: " + cacheSize);
+    GNS.getLogger().info("Experiment Mode: " + experimentMode);
+    GNS.getLogger().info("Debug Mode: " + debugMode);
 
     try {
-//      ConfigFileInfo.readHostInfo(nsFile, id);
-      GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nsFile, id);
+      GNSNodeConfig gnsNodeConfig = null;
+      if (lnsFile != null) {
+        gnsNodeConfig = new GNSNodeConfig(nsFile, lnsFile, id);
+      } else {
+        gnsNodeConfig = new GNSNodeConfig(nsFile, id);
+      }
       ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
 
       //Start local name server

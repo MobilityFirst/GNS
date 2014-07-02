@@ -33,7 +33,7 @@ public class TESTLocalNameServer {
     GNS.fileLoggingLevel = GNS.consoleOutputLevel = "SEVERE";
     StartLocalNameServer.experimentMode = false;
     StartLocalNameServer.debugMode = false;
-    StartLocalNameServer.startLNSConfigFile(8, configFile, null, null);
+    StartLocalNameServer.startLNSConfigFile(8, configFile, null, null, null);
 
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, 0);
 
