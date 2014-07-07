@@ -96,7 +96,7 @@ public class CommandModule {
     return null;
   }
 
-  public String allCommandDescriptionsForHTML() {
+  public String allCommandDescriptions(boolean html) {
     StringBuffer result = new StringBuffer();
     int cnt = 1;
     List<GnsCommand> commandList = new ArrayList(commands);
@@ -114,9 +114,10 @@ public class CommandModule {
         result.append(lastPackageName);
         result.append(NEWLINE);
       }
+      //result.append(NEWLINE);
+      //result.append(cnt++ + ": ");
+      result.append(command.getUsage(html));
       result.append(NEWLINE);
-      result.append(cnt++ + ": ");
-      result.append(command.getUsage());
       result.append(NEWLINE);
     }
     return result.toString();

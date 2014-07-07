@@ -73,6 +73,6 @@ public class RemoveAccount extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return " Removes the account GUID associated with the human readable name. Must be signed by the guid.";
+    return "Removes the account GUID associated with the human readable name. Must be signed by the guid.";
   }
 }

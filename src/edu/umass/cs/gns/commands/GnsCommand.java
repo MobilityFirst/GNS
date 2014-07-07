@@ -25,7 +25,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
 
   /**
    * Creates a new <code>ConsoleCommand</code> object
-   * 
+   *
    * @param module
    */
   public GnsCommand(CommandModule module) {
@@ -60,20 +60,24 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
 
   /**
    * Get the description of the command
-   * 
+   *
    * @return <code>String</code> of the command description
    */
   public abstract String getCommandDescription();
 
   /**
    * Get the usage of the command.
-   * 
+   *
    * @return <code>String</code> of the command usage ()
    */
-  public String getUsage() {
-    String usage = "HTML Form: " + getHTMLForm() + NEWLINE
-            + getCommandDescription();
-    return usage;
+  public String getUsage(boolean html) {
+    if (html) {
+      return "HTML Form: " + getHTMLForm() + NEWLINE
+              + getCommandDescription();
+    } else {
+      return getTCPForm() + NEWLINE
+              + getCommandDescription();
+    }
   }
 
   public String getHTMLForm() {
@@ -89,6 +93,23 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
         result.append(VALSEP);
         result.append("<" + parameters[i] + ">");
         prefix = KEYSEP;
+      }
+    }
+    return result.toString();
+  }
+
+  public String getTCPForm() {
+    StringBuilder result = new StringBuilder();
+    result.append("Command: ");
+    result.append(getCommandName());
+    String[] parameters = getCommandParameters();
+    result.append(" Parameters: ");
+    String prefix = "";
+    for (int i = 0; i < parameters.length; i++) {
+      if (!SIGNATUREFULLMESSAGE.equals(parameters[i])) {
+        result.append(prefix);
+        result.append(parameters[i]);
+        prefix = ", ";
       }
     }
     return result.toString();

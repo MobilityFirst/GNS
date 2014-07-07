@@ -32,7 +32,7 @@ public class AclRemoveSelf extends AclRemove {
 
   @Override
   public String getCommandDescription() {
-    return " Updates the access control list of the given GUID's field to remove the accesser guid."
+    return "Updates the access control list of the given GUID's field to remove the accesser guid."
             + "See below for description of ACL type and signature.";
 
   }

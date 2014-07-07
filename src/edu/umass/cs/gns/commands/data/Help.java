@@ -35,10 +35,17 @@ public class Help extends GnsCommand {
 
   @Override
   public CommandResponse execute(JSONObject json) {
-    return new CommandResponse("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
-            + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
-            + "Commands:" + NEWLINE
-            + module.allCommandDescriptionsForHTML());
+    if (json.has("tcp")) {
+      return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
+              + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
+              + "Commands:" + NEWLINE
+              + module.allCommandDescriptions(false));
+    } else {
+      return new CommandResponse("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
+              + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
+              + "Commands:" + NEWLINE
+              + module.allCommandDescriptions(true));
+    }
   }
 
   @Override
