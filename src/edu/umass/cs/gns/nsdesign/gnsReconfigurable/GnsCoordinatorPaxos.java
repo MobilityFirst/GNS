@@ -25,6 +25,7 @@ import java.util.Set;
  * Created by abhigyan on 3/28/14.
  */
 public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
+  private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
   private int nodeID;
   // this is the app object
@@ -66,9 +67,6 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
     boolean noCoordinatorState = false;
     try {
       Packet.PacketType type = Packet.getPacketType(request);
-      if (!type.equals(Packet.PacketType.ACTIVE_COORDINATION)) {
-        if (Config.debugMode) GNS.getLogger().fine(" GNS recvd msg: " + request);
-      }
       switch (type) {
         // coordination packets internal to paxos
         case ACTIVE_COORDINATION:
@@ -107,7 +105,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
         // call createPaxosInstance
         case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
           // calling handle decision before creating paxos instance to insert state for name in database.
-          paxosInterface.handleDecision(null, request.toString(), false);
+          callHandleDecisionWithRetry(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
           paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, recordPacket.getActiveNameSevers(), paxosInterface);
           if (Config.debugMode) GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
@@ -166,7 +164,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
         if (noCoordinatorState) {
           callHandleDecision.put(Config.NO_COORDINATOR_STATE_MARKER, 0);
         }
-        paxosInterface.handleDecision(null, callHandleDecision.toString(), false);
+        callHandleDecisionWithRetry(null, callHandleDecision.toString(), false);
       }
     } catch (JSONException e) {
       e.printStackTrace();
@@ -174,6 +172,20 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
       e.printStackTrace();
     }
     return 0;
+  }
+
+  /**
+   * Retries a request at period interval until successfully executed by application.
+   */
+  private void callHandleDecisionWithRetry(String name, String value, boolean doNotReplyToClient) {
+    while (!paxosInterface.handleDecision(name, value, doNotReplyToClient)) {
+      try {
+        Thread.sleep(HANDLE_DECISION_RETRY_INTERVAL_MILLIS);
+      } catch (InterruptedException e1) {
+        e1.printStackTrace();
+      }
+      GNS.getLogger().severe("Failed to execute decision. Retry. name = " + name + " value = " + value);
+    }
   }
 
   @Override

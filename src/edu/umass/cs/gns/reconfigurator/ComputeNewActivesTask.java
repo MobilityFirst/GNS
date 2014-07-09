@@ -2,7 +2,7 @@ package edu.umass.cs.gns.reconfigurator;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
@@ -191,7 +191,7 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 	 * @return set of active replicas for this name
 	 */
 	private Set<Integer> getNewActiveNameServers(ReplicaControllerRecord rcRecord, Set<Integer> oldActiveNameServers,
-			int count) throws FieldNotFoundException, FailedUpdateException {
+			int count) throws FieldNotFoundException, FailedDBOperationException {
 
 		Set<Integer> newActiveNameServers;
 
@@ -231,7 +231,7 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 	 ***********************************************************
 	 */
 	// FIXME: Arun: Hard-coded values must be defined as macros with documentation on what are reasonable values.
-	private int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException, FailedUpdateException {
+	private int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException, FailedDBOperationException {
 
 		double[] readWrites = rcRecord.updateMovingWindowReadsWrites();
 		double lookup = readWrites[0];

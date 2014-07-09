@@ -81,7 +81,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_STATE_SIZE = 8192; // FIXME: Need to make this configurable
 	private static final int PAUSE_STATE_SIZE = 256;
 	private static final int MAX_GROUP_SIZE = 256; // maximum size of a paxos replica group
-	private static final int MAX_LOG_MESSAGE_SIZE = 512; // maximum size of a log message
+	private static final int MAX_LOG_MESSAGE_SIZE = 1024; // maximum size of a log message
 	private static final int MAX_OLD_DECISIONS = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 
 	private ComboPooledDataSource dataSource=null;

@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
@@ -171,7 +171,7 @@ public class ComputeNewActivesTask extends TimerTask {
    * @return set of active replicas for this name
    */
   private Set<Integer> getNewActiveNameServers(ReplicaControllerRecord rcRecord, Set<Integer> oldActiveNameServers,
-                                               int count) throws FieldNotFoundException, FailedUpdateException {
+                                               int count) throws FieldNotFoundException, FailedDBOperationException {
 
     Set<Integer> newActiveNameServers;
 
@@ -211,7 +211,7 @@ public class ComputeNewActivesTask extends TimerTask {
    * @param rcRecord ReplicaControllerRecord for this name
    ***********************************************************
    */
-  private int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException, FailedUpdateException {
+  private int numberOfReplica(ReplicaControllerRecord rcRecord) throws FieldNotFoundException, FailedDBOperationException {
 
     double[] readWrites = rcRecord.updateMovingWindowReadsWrites();
     double lookup = readWrites[0];

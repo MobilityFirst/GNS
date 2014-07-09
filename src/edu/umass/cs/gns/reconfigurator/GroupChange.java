@@ -2,7 +2,7 @@ package edu.umass.cs.gns.reconfigurator;
 
 
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -139,7 +139,7 @@ public class GroupChange {
 		} catch (RecordNotFoundException e) {
 			// this could happen in rare cases when remove request for a name arrives at the same time as a group change
 			log.warning("GROUP CHANGE DECISION: BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
-		} catch (FailedUpdateException e) {
+		} catch (FailedDBOperationException e) {
 			log.severe("Unexpected Error!" + e.getMessage());
 			e.printStackTrace();
 		}
@@ -151,8 +151,8 @@ public class GroupChange {
 			GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
 					+ activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
 			// todo could use failure detector here
-			// todo if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
-			// todo then proposing node has failed, so I will start group change
+			// if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
+			// then proposing node has failed, so I will start group change
 			if (Config.debugMode) log.fine("Node "+rcID+" : stop oldActiveSet name = " + activeProposalPacket.getName());
 			StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
 					rcRecord.getOldActiveNameservers(), rcRecord.getOldActiveVersion(),
@@ -188,7 +188,7 @@ public class GroupChange {
 	 * Old set of active replicas have stopped, and therefore new set of active replicas can be started.
 	 */
 	public static void handleOldActiveStop(OldActiveSetStopPacket oldActiveSetStop, BasicRecordMap DB, 
-			int rcID, UniqueIDHashMap ongoingStops, RCProtocolTask[] protocolTasks/*return value*/) {
+			int rcID, UniqueIDHashMap ongoingStops, RCProtocolTask[] protocolTasks/*return value*/) throws FailedDBOperationException {
 		if (ongoingStops.remove(oldActiveSetStop.getRequestID()) != null) {
 			createStartActiveSetTask(oldActiveSetStop, DB, rcID, protocolTasks/*return value*/);
 		} else {
@@ -200,11 +200,12 @@ public class GroupChange {
 	 * Old actives have stopped, create a task to start new actives for name.
 	 */
 	private static void createStartActiveSetTask(OldActiveSetStopPacket packet, BasicRecordMap DB, int rcID, 
-			RCProtocolTask[] protocolTasks/*return value*/) {
+			RCProtocolTask[] protocolTasks/*return value*/) throws FailedDBOperationException {
 		try {
-			ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
-					DB, packet.getName(), startActiveSetFields);
-			if (Config.debugMode) {
+      ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
+              DB, packet.getName(), startActiveSetFields);
+
+      if (Config.debugMode) {
 				log.info("Old active stopped. write to nameRecord: " + packet.getName());
 			}
 			if (!rcRecord.isActiveRunning()) {
@@ -308,7 +309,7 @@ public class GroupChange {
 		} catch (FieldNotFoundException e) {
 			log.severe("Field not found exception. " + e.getMessage() + "\tName\t" + packet.getName());
 			e.printStackTrace();
-		} catch (FailedUpdateException e) {
+		} catch (FailedDBOperationException e) {
 			log.severe("Failed update exception. " + e.getMessage() + "\tName\t" + packet.getName());
 			e.printStackTrace();
 		}

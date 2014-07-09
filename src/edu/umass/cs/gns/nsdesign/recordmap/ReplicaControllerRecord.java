@@ -4,7 +4,7 @@ import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -12,7 +12,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
-import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.util.StatsInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -556,7 +555,7 @@ public class ReplicaControllerRecord {
    * On update, it checks if active name servers are running, i. e., a group change is not happening at same time.
    * If group change is happening simultaneously, update is not applied.
    */
-  public void setMarkedForRemoval() throws FieldNotFoundException, FailedUpdateException {
+  public void setMarkedForRemoval() throws FieldNotFoundException, FailedDBOperationException {
     int markedForRemoval = getMarkedForRemoval();
     if (markedForRemoval == 0) {
       ArrayList<ColumnField> fields = getSetMarkedForRemoval();
@@ -608,7 +607,7 @@ public class ReplicaControllerRecord {
    * @param newActiveVersion
    */
   public void updateActiveNameServers(Set<Integer> newActiveNameServers, int newActiveVersion)
-          throws FieldNotFoundException, FailedUpdateException {
+          throws FieldNotFoundException, FailedDBOperationException {
 
 //    boolean activeRunning = isActiveRunning();
     Set<Integer> actives = getActiveNameservers();
@@ -654,7 +653,7 @@ public class ReplicaControllerRecord {
    * @param newActiveID
    * @return
    */
-  public boolean setNewActiveRunning(int newActiveID) throws FieldNotFoundException, FailedUpdateException {
+  public boolean setNewActiveRunning(int newActiveID) throws FieldNotFoundException, FailedDBOperationException {
     if (newActiveID == this.getActiveVersion()) {
 
       ArrayList<ColumnField> updateFields = getSetNewActiveRunningFields();
@@ -672,7 +671,7 @@ public class ReplicaControllerRecord {
    * Returns a 2-element array whose first (second) element is total number of lookups (updates)
    * in recent time window.
    */
-  public double[] updateMovingWindowReadsWrites() throws FieldNotFoundException, FailedUpdateException {
+  public double[] updateMovingWindowReadsWrites() throws FieldNotFoundException, FailedDBOperationException {
     int previousTotalReads = getPreviousAggregateReadFrequency();
     int previousTotalWrites = getPreviousAggregateWriteFrequency();
     MovingAverage lookups = new MovingAverage(getMovingAvgAggregateLookupFrequency(), Config.movingAverageWindowSize);
@@ -713,7 +712,7 @@ public class ReplicaControllerRecord {
    *
    * @param id Name server id receiving the vote
    */
-  public void addReplicaSelectionVote(int id, int vote, int update) throws FieldNotFoundException, FailedUpdateException { //
+  public void addReplicaSelectionVote(int id, int vote, int update) throws FieldNotFoundException, FailedDBOperationException { //
     replicaControllerDB.increment(getName(),
             ColumnField.keys(PREV_TOTAL_READ, PREV_TOTAL_WRITE),
             //incrementFields,
@@ -732,7 +731,7 @@ public class ReplicaControllerRecord {
    * @param writeFrequency
    */
   public void addNameServerStats(int id, int readFrequency, int writeFrequency)
-          throws FieldNotFoundException, FailedUpdateException {
+          throws FieldNotFoundException, FailedDBOperationException {
     ConcurrentMap<Integer, StatsInfo> statsMap = getNameServerStatsMap();
 
     if (statsMap != null) {
@@ -820,7 +819,7 @@ public class ReplicaControllerRecord {
   /**
    * @param keepAliveTime set keep alive time
    */
-  public void setKeepAliveTime(long keepAliveTime) throws FieldNotFoundException, FailedUpdateException {
+  public void setKeepAliveTime(long keepAliveTime) throws FieldNotFoundException, FailedDBOperationException {
     ArrayList<ColumnField> fields = new ArrayList<ColumnField>();
     fields.add(KEEP_ALIVE_TIME);
 
@@ -842,13 +841,13 @@ public class ReplicaControllerRecord {
    * @return
    */
   public static ReplicaControllerRecord getNameRecordPrimary(BasicRecordMap replicaControllerDB, String name)
-          throws RecordNotFoundException {
+          throws RecordNotFoundException, FailedDBOperationException {
     return replicaControllerDB.getNameRecordPrimary(name);
   }
 
   public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB,
           String name, ColumnField... fields)
-          throws RecordNotFoundException {
+          throws RecordNotFoundException, FailedDBOperationException {
     return getNameRecordPrimaryMultiField(replicaControllerDB, name, new ArrayList<ColumnField>(Arrays.asList(fields)));
   }
 
@@ -861,7 +860,7 @@ public class ReplicaControllerRecord {
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
   public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB, String name,
-          ArrayList<ColumnField> fields) throws RecordNotFoundException {
+          ArrayList<ColumnField> fields) throws RecordNotFoundException, FailedDBOperationException {
     return new ReplicaControllerRecord(replicaControllerDB, replicaControllerDB.lookup(name, ReplicaControllerRecord.NAME, fields));
   }
 
@@ -871,7 +870,7 @@ public class ReplicaControllerRecord {
    * @param record
    */
   public static void addNameRecordPrimary(BasicRecordMap replicaControllerDB, ReplicaControllerRecord record)
-          throws FailedUpdateException, RecordExistsException {
+          throws FailedDBOperationException, RecordExistsException {
     replicaControllerDB.addNameRecordPrimary(record);
   }
 
@@ -880,7 +879,7 @@ public class ReplicaControllerRecord {
    *
    * @param name
    */
-  public static void removeNameRecordPrimary(BasicRecordMap replicaControllerDB, String name) throws FailedUpdateException {
+  public static void removeNameRecordPrimary(BasicRecordMap replicaControllerDB, String name) throws FailedDBOperationException {
     replicaControllerDB.removeNameRecord(name);
   }
 
@@ -890,16 +889,16 @@ public class ReplicaControllerRecord {
    * @param record
    */
   public static void updateNameRecordPrimary(BasicRecordMap replicaControllerDB, ReplicaControllerRecord record)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     replicaControllerDB.updateNameRecordPrimary(record);
   }
 
-  public static AbstractRecordCursor getAllPrimaryRowsIterator(BasicRecordMap replicaControllerDB) {
+  public static AbstractRecordCursor getAllPrimaryRowsIterator(BasicRecordMap replicaControllerDB) throws FailedDBOperationException {
     return replicaControllerDB.getAllRowsIterator();
   }
 
   //  the nuclear option
-  public static void resetDB(BasicRecordMap replicaControllerDB) {
+  public static void resetDB(BasicRecordMap replicaControllerDB) throws FailedDBOperationException {
     replicaControllerDB.reset();
   }
 
@@ -933,7 +932,7 @@ public class ReplicaControllerRecord {
     System.out.println(record.toJSONObject().toString());
     try {
       replicaController.addNameRecordPrimary(record);
-    } catch (FailedUpdateException e) {
+    } catch (FailedDBOperationException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
     // create the lazy record

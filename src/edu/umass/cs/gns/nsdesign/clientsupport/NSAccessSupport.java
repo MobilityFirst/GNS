@@ -10,6 +10,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -65,7 +66,7 @@ public class NSAccessSupport {
    * @param readerInfo
    * @return
    */
-  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo, GnsReconfigurable activeReplica) {
+  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     return verifyAccess(access, contectInfo, ALLFIELDS, readerInfo, activeReplica);
   }
 
@@ -79,7 +80,7 @@ public class NSAccessSupport {
    * @param accessorInfo
    * @return
    */
-  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) {
+  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     GNS.getLogger().fine("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
@@ -93,7 +94,7 @@ public class NSAccessSupport {
     }
   }
 
-  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) {
+  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
       return true;
@@ -117,7 +118,7 @@ public class NSAccessSupport {
 
   }
 
-  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers, GnsReconfigurable activeReplica) {
+  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     if (allowedusers.contains(accesserGuid)) {
       return true;
     } else if (allowedusers.contains(EVERYONE)) {
@@ -141,7 +142,7 @@ public class NSAccessSupport {
     return result;
   }
 
-  public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field, GnsReconfigurable activeReplica) {
+  public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     try {
       return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica).contains(EVERYONE)
               || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALLFIELDS, activeReplica).contains(EVERYONE);

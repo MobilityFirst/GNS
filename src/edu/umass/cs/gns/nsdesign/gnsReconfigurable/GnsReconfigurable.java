@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -46,7 +46,6 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
    * nio server
    */
   private InterfaceJSONNIOTransport nioServer;
-
 
   /**
    * Object provides interface to the database table storing name records
@@ -104,7 +103,8 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
    */
   @Override
   public boolean handleDecision(String name, String value, boolean recovery) {
-//    GNSMessagingTask msgTask = null;
+    //
+    boolean executed = false;
     try {
       JSONObject json = new JSONObject(value);
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
@@ -141,8 +141,8 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);
           break;
-
       }
+      executed = true;
     } catch (JSONException e) {
       e.printStackTrace();
     } catch (NoSuchAlgorithmException e) {
@@ -155,8 +155,15 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (FailedDBOperationException e) {
+      // all database operations throw this exception, therefore we keep throwing this exception upwards and catch this
+      // here.
+      // A database operation error would imply that the application hasn't been able to successfully execute
+      // the request. therefore, this method returns 'false', hoping that whoever calls handleDecision would retry
+      // the request.
+      e.printStackTrace();
     }
-    return true;
+    return executed;
   }
 
   private static ArrayList<ColumnField> activeStopFields = new ArrayList<ColumnField>();
@@ -167,6 +174,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   public boolean stopVersion(String name, short version) {
+    boolean executed = false;
     if (Config.debugMode) GNS.getLogger().fine("executing stop version: " + name + "\t" + version);
     NameRecord nameRecord;
     try {
@@ -175,9 +183,10 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, activeStopFields);
       int activeVersion = nameRecord.getActiveVersion();
       nameRecord.handleCurrentActiveStop();
+      executed = true;
       // also inform
 //      activeReplica.stopProcessed(name, activeVersion, true);
-    } catch (FailedUpdateException e) {
+    } catch (FailedDBOperationException e) {
       GNS.getLogger().warning("Field update exception. Message = " + e.getMessage());
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("Record not found exception. Message = " + e.getMessage());
@@ -185,7 +194,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       GNS.getLogger().warning("FieldNotFoundException. " + e.getMessage());
       e.printStackTrace();
     }
-    return true;
+    return executed;
   }
 
   private static ArrayList<ColumnField> prevValueRequestFields = new ArrayList<ColumnField>();
@@ -209,6 +218,10 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       GNS.getLogger().severe("Field not found exception.");
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found exception. name = " + name + " version = " + version);
+    } catch (FailedDBOperationException e) {
+      GNS.getLogger().severe("Failed DB Operation. Final state not read: name " + name + " version " + version);
+      e.printStackTrace();
+      return null;
     }
     if (value == null) {
       return null;
@@ -227,38 +240,41 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       e.printStackTrace();
       return;
     }
-    try {
-      NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl);
-      NameRecord.addNameRecord(nameRecordDB, nameRecord);
-      if (Config.debugMode) {
-        GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
-      }
-    } catch (RecordExistsException e) {
-      NameRecord nameRecord;
+    // Keep retrying until we can store the initial state for a name in DB. Unless this step completes, future operations
+    // e.g., lookup, update, cannot succeed anyway.
+    while (true) {
       try {
-        nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
-        nameRecord.handleNewActiveStart(version, state1.valuesMap, state1.ttl);
-
-      } catch (FailedUpdateException e1) {
-        GNS.getLogger().severe("Failed update execption: " + e.getMessage());
-        e1.printStackTrace();
-      } catch (FieldNotFoundException e1) {
-        GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-        e1.printStackTrace();
-      } catch (RecordNotFoundException e1) {
-        GNS.getLogger().severe("Not possible because record just existed.");
-        e1.printStackTrace();
-      }
-      if (Config.debugMode) {
         try {
-          GNS.getLogger().fine(" NAME RECORD UPDATED AT ACTIVE  NODE. Name record = " + NameRecord.getNameRecord(nameRecordDB, name));
-        } catch (RecordNotFoundException e1) {
+          NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl);
+          NameRecord.addNameRecord(nameRecordDB, nameRecord);
+          if (Config.debugMode) {
+            GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
+          }
+        } catch (RecordExistsException e) {
+          NameRecord nameRecord;
+          try {
+            nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
+            nameRecord.handleNewActiveStart(version, state1.valuesMap, state1.ttl);
+
+          } catch (FieldNotFoundException e1) {
+            GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+            e1.printStackTrace();
+          } catch (RecordNotFoundException e1) {
+            GNS.getLogger().severe("Not possible because record just existed.");
+            e1.printStackTrace();
+          }
+        }
+      } catch (FailedDBOperationException e) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e1) {
           e1.printStackTrace();
         }
+        GNS.getLogger().severe("Failed DB exception. Retry: " + e.getMessage());
+        e.printStackTrace();
+        continue;
       }
-    } catch (FailedUpdateException e) {
-      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-      e.printStackTrace();
+      break;
     }
   }
 
@@ -313,6 +329,8 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       e.printStackTrace();
+    } catch (FailedDBOperationException e) {
+      e.printStackTrace();
     }
     return null;
   }
@@ -337,34 +355,39 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       e.printStackTrace();
+    } catch (FailedDBOperationException e) {
+      GNS.getLogger().severe("State not read from DB: " + e.getMessage());
+      e.printStackTrace();
     }
     return null;
   }
 
   @Override
   public boolean updateState(String name, String state) {
+    boolean stateUpdated = false;
     try {
       TransferableNameRecordState state1 = new TransferableNameRecordState(state);
       NameRecord nameRecord = new NameRecord(nameRecordDB, name);
       nameRecord.updateState(state1.valuesMap, state1.ttl);
+      stateUpdated = true;
       // todo handle the case if record does not exist. for this update state should return record not found exception.
     } catch (JSONException e) {
       e.printStackTrace();
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       e.printStackTrace();
-    } catch (FailedUpdateException e) {
+    } catch (FailedDBOperationException e) {
       GNS.getLogger().severe("Failed update exception: " + e.getMessage());
       e.printStackTrace();
     }
-    return true;
+    return stateUpdated;
   }
 
   /**
    * Nuclear option for clearing out all state at GNS.
    */
   @Override
-  public void reset() {
+  public void reset() throws FailedDBOperationException {
     nameRecordDB.reset();
   }
 

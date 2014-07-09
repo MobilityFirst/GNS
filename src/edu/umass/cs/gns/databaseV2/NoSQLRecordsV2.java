@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.databaseV2;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import org.json.JSONObject;
@@ -26,20 +26,20 @@ public interface NoSQLRecordsV2 {
    * @param collection
    * @param name
    * @param value
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
-  public void insert(String collection, String name, JSONObject value) throws FailedUpdateException, RecordExistsException;
+  public void insert(String collection, String name, JSONObject value) throws FailedDBOperationException, RecordExistsException;
 
   /**
    * Do a bulk insert of a bunch of documents into the database.
    *
    * @param collection collection to be inserted into.
    * @param values list of records to be inserted
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
-  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException, RecordExistsException;
+  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedDBOperationException, RecordExistsException;
 
   /**
    * Update the record with the given name using the JSONObject.
@@ -47,9 +47,9 @@ public interface NoSQLRecordsV2 {
    * @param collection
    * @param name
    * @param value
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public void update(String collection, String name, JSONObject value) throws FailedUpdateException;
+  public void update(String collection, String name, JSONObject value) throws FailedDBOperationException;
 
   /**
    * Updates the record indexed by name if the record matches the query criteria.
@@ -59,9 +59,9 @@ public interface NoSQLRecordsV2 {
    * @param value
    * @param query
    * @return Returns true if the update happened, false otherwise.
-   * @throws FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public boolean update(String collectionName, String name, JSONObject value, JSONObject query) throws FailedUpdateException;
+  public boolean update(String collectionName, String name, JSONObject value, JSONObject query) throws FailedDBOperationException;
 
   /**
    * For the record with given name, return the entire record as a JSONObject.
@@ -119,9 +119,9 @@ public interface NoSQLRecordsV2 {
    *
    * @param collection
    * @param name
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public void remove(String collection, String name) throws FailedUpdateException;
+  public void remove(String collection, String name) throws FailedDBOperationException;
 
   /**
    * For the record with given name, increment the values of field that match projection.
@@ -129,9 +129,9 @@ public interface NoSQLRecordsV2 {
    * @param collection
    * @param name
    * @param projection
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public abstract void increment(String collection, String name, JSONObject projection) throws FailedUpdateException;
+  public abstract void increment(String collection, String name, JSONObject projection) throws FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with only the fields in projection returned.
@@ -149,7 +149,7 @@ public interface NoSQLRecordsV2 {
    * @param collection
    * @return AbstractRecordCursor
    */
-  public AbstractRecordCursor getAllRowsIterator(String collection);
+  public AbstractRecordCursor getAllRowsIterator(String collection) throws FailedDBOperationException;
 
   /**
    * Sets the collection back to an initial empty state with indexes also initialized.
@@ -166,6 +166,6 @@ public interface NoSQLRecordsV2 {
    *
    * @param collection
    */
-  public void printAllEntries(String collection);
+  public void printAllEntries(String collection) throws FailedDBOperationException;
 
 }

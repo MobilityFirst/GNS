@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.reconfigurator;
 
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -30,7 +31,7 @@ public class LookupActives {
 	private static Logger log = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(Add.class.getName()) : GNS.getLogger();
 
 	public static MessagingTask[] executeLookupActives(RequestActivesPacket packet, BasicRecordMap DB, int rcID, boolean recovery)
-			throws JSONException, IOException {
+          throws JSONException, IOException, FailedDBOperationException {
 
 		if (recovery || packet.getNsID() != rcID) return null;
 		MessagingTask replyToLNS = null;

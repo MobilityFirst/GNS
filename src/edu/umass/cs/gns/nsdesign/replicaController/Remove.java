@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -63,7 +63,7 @@ public class Remove {
    * @param recovery  true if we are replaying logs during recovery
    */
   public static void executeMarkRecordForRemoval(RemoveRecordPacket removeRecord, ReplicaController rc,
-          boolean recovery) throws JSONException, IOException {
+          boolean recovery) throws JSONException, IOException, FailedDBOperationException {
     boolean sendError = false;
     NSResponseCode respCode = NSResponseCode.ERROR;
     try {
@@ -94,9 +94,9 @@ public class Remove {
           sendError = true;
         }
       }
-    } catch (FailedUpdateException e) {
-      sendError = true;
-      GNS.getLogger().info("Error during update. Sent failure confirmation to client. Name = " + removeRecord.getName());
+//    } catch (FailedDBOperationException e) {
+//      sendError = true;
+//      GNS.getLogger().info("Error during update. Sent failure confirmation to client. Name = " + removeRecord.getName());
     } catch (RecordNotFoundException e) {
       sendError = true;
       GNS.getLogger().info("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
@@ -139,7 +139,7 @@ public class Remove {
    *
    */
   public static void executeRemoveRecord(RemoveRecordPacket removeRecordPacket, ReplicaController rc,
-          boolean recovery) throws JSONException, FailedUpdateException, IOException {
+          boolean recovery) throws JSONException, FailedDBOperationException, IOException {
     if (Config.debugMode) GNS.getLogger().fine("DECISION executing remove record at RC: " + removeRecordPacket);
     rc.getDB().removeNameRecord(removeRecordPacket.getName());
 

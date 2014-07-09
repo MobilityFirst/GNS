@@ -19,7 +19,7 @@ import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.MongoCollectionSpec;
 import edu.umass.cs.gns.database.MongoRecordCursor;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -129,7 +129,7 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
   }
 
   @Override
-  public void insert(String collectionName, String guid, JSONObject value) throws FailedUpdateException, RecordExistsException {
+  public void insert(String collectionName, String guid, JSONObject value) throws FailedDBOperationException, RecordExistsException {
     db.requestStart();
     try {
       db.requestEnsureConnection();
@@ -141,7 +141,7 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
       } catch (DuplicateKeyException e) {
         throw new RecordExistsException(collectionName, guid);
       } catch (MongoException e) {
-        throw new FailedUpdateException(collectionName, dbObject.toString());
+        throw new FailedDBOperationException(collectionName, dbObject.toString());
       }
     } finally {
       db.requestDone();
@@ -149,7 +149,7 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
   }
 
   @Override
-  public void bulkInsert(String collectionName, ArrayList<JSONObject> values) throws FailedUpdateException, RecordExistsException {
+  public void bulkInsert(String collectionName, ArrayList<JSONObject> values) throws FailedDBOperationException, RecordExistsException {
 
     DBCollection collection = db.getCollection(collectionName);
     ArrayList<DBObject> dbObjects = new ArrayList<DBObject>();
@@ -161,17 +161,17 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
     } catch (DuplicateKeyException e) {
       throw new RecordExistsException(collectionName, "MultiInsert");
     } catch (MongoException e) {
-      throw new FailedUpdateException(collectionName, dbObjects.toString());
+      throw new FailedDBOperationException(collectionName, dbObjects.toString());
     }
   }
 
   @Override
-  public void update(String collectionName, String guid, JSONObject value) throws FailedUpdateException {
+  public void update(String collectionName, String guid, JSONObject value) throws FailedDBOperationException {
     update(collectionName, guid, value, null);
   }
 
   @Override
-  public boolean update(String collectionName, String name, JSONObject value, JSONObject query) throws FailedUpdateException {
+  public boolean update(String collectionName, String name, JSONObject value, JSONObject query) throws FailedDBOperationException {
     String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
     DBObject dbQuery = parseMongoQuery(collectionName, name, query);
@@ -180,7 +180,7 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
     try {
       writeResult = collection.update(dbQuery, dbObject);
     } catch (MongoException e) {
-      throw new FailedUpdateException(collectionName, dbObject.toString());
+      throw new FailedDBOperationException(collectionName, dbObject.toString());
     }
     return writeResult.isUpdateOfExisting();
   }
@@ -298,20 +298,20 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
   }
 
   @Override
-  public void remove(String collectionName, String guid) throws FailedUpdateException {
+  public void remove(String collectionName, String guid) throws FailedDBOperationException {
     String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
     BasicDBObject query = new BasicDBObject(primaryKey, guid);
     try {
       collection.remove(query);
     } catch (MongoException e) {
-      throw new FailedUpdateException(collectionName, query.toString());
+      throw new FailedDBOperationException(collectionName, query.toString());
     }
   }
 
   @Override
   public void increment(String collectionName, String name, JSONObject updates)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
     BasicDBObject query = new BasicDBObject(primaryKey, name);
@@ -320,18 +320,18 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
       try {
         collection.update(query, new BasicDBObject("$inc", updatesDb));
       } catch (MongoException e) {
-        throw new FailedUpdateException(collectionName, updates.toString());
+        throw new FailedDBOperationException(collectionName, updates.toString());
       }
     }
   }
 
   @Override
-  public MongoRecordCursor getAllRowsIterator(String collectionName) {
+  public MongoRecordCursor getAllRowsIterator(String collectionName) throws FailedDBOperationException {
     return new MongoRecordCursor(db, collectionName, MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey());
   }
 
   @Override
-  public void printAllEntries(String collectionName) {
+  public void printAllEntries(String collectionName) throws FailedDBOperationException {
     MongoRecordCursor cursor = getAllRowsIterator(collectionName);
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject());
@@ -410,7 +410,7 @@ public class MongoRecordsV2 implements NoSQLRecordsV2 {
     cursor = instance.find(DBNAMERECORD, new JSONObject());
     while (cursor.hasNext()) {
       try {
-        JSONObject json = cursor.next();
+        JSONObject json = cursor.nextJSONObject();
         System.out.println(json.getString(NameRecord.NAME.getName()) + " -> " + json.toString());
       } catch (Exception e) {
         System.out.println("Exception: " + e);

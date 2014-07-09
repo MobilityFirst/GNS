@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.database;
 
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.util.ResultValue;
@@ -34,20 +34,20 @@ public interface NoSQLRecords {
    * @param collection
    * @param name
    * @param value
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
-  public void insert(String collection, String name, JSONObject value) throws FailedUpdateException, RecordExistsException;
+  public void insert(String collection, String name, JSONObject value) throws FailedDBOperationException, RecordExistsException;
 
   /**
    * Do a bulk insert of a bunch of documents into the database.
    *
    * @param collection collection to be inserted into.
    * @param values list of records to be inserted
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
-  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException, RecordExistsException;
+  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedDBOperationException, RecordExistsException;
 
   /**
    * For the record with given name, return the entire record as a JSONObject.
@@ -57,7 +57,7 @@ public interface NoSQLRecords {
    * @return
    * @throws RecordNotFoundException
    */
-  public JSONObject lookup(String collection, String name) throws RecordNotFoundException;
+  public JSONObject lookup(String collection, String name) throws FailedDBOperationException,RecordNotFoundException;
 
   /**
    * In the record with given name, return the value of the field (column) with the given key.
@@ -68,7 +68,7 @@ public interface NoSQLRecords {
    * @return
    * @throws RecordNotFoundException
    */
-  public String lookup(String collection, String name, String key) throws RecordNotFoundException;
+  public String lookup(String collection, String name, String key) throws FailedDBOperationException, RecordNotFoundException;
 
   /**
    * In the record with given name, return the value of the fields (columns) with the given keys.
@@ -78,46 +78,7 @@ public interface NoSQLRecords {
    * @param key
    * @return Returns a ResultValue which is basically a list of Objects.
    */
-  public ResultValue lookup(String collection, String name, ArrayList<String> key);
-
-  /**
-   * Update the record (row) with the given name using the JSONObject.
-   *
-   * @param collection
-   * @param name
-   * @param value
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
-   */
-  public void update(String collection, String name, JSONObject value) throws FailedUpdateException;
-
-  /**
-   * Update one field indexed by the key in the record (row) with the given name using the object.
-   *
-   * @param collection
-   * @param name
-   * @param key
-   * @param object
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
-   */
-  public void updateField(String collection, String name, String key, Object object) throws FailedUpdateException;
-
-  /**
-   * Returns true if a record with the given name exists, false otherwise.
-   *
-   * @param collection
-   * @param name
-   * @return
-   */
-  public boolean contains(String collection, String name);
-
-  /**
-   * Remove the record with the given name.
-   *
-   * @param collection
-   * @param name
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
-   */
-  public void remove(String collection, String name) throws FailedUpdateException;
+  public ResultValue lookup(String collection, String name, ArrayList<String> key) throws FailedDBOperationException;
 
   /**
    * For the record with given name, return the values of given fields in form of a HashMap.
@@ -128,8 +89,8 @@ public interface NoSQLRecords {
    * @param fields
    * @return
    */
-  public abstract HashMap<ColumnField, Object> lookup(String collection, String name, 
-          ColumnField nameField, ArrayList<ColumnField> fields) throws RecordNotFoundException;
+  public abstract HashMap<ColumnField, Object> lookup(String collection, String name,
+                                                      ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException, RecordNotFoundException;
 
   /**
    * For record with given name, return the values of given fields and from the values map field of the record,
@@ -145,7 +106,49 @@ public interface NoSQLRecords {
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
   public abstract HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException;
+                                                      ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws FailedDBOperationException, RecordNotFoundException;
+
+  /**
+   * Returns true if a record with the given name exists, false otherwise.
+   *
+   * @param collection
+   * @param name
+   * @return
+   */
+  public boolean contains(String collection, String name) throws FailedDBOperationException;
+
+
+  /**
+   * Remove the record with the given name.
+   *
+   * @param collection
+   * @param name
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
+   */
+  public void remove(String collection, String name) throws FailedDBOperationException;
+
+
+  /**
+   * Update the record (row) with the given name using the JSONObject.
+   *
+   * @param collection
+   * @param name
+   * @param value
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
+   */
+  public void update(String collection, String name, JSONObject value) throws FailedDBOperationException;
+
+  /**
+   * Update one field indexed by the key in the record (row) with the given name using the object.
+   *
+   * @param collection
+   * @param name
+   * @param key
+   * @param object
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
+   */
+  public void updateField(String collection, String name, String key, Object object) throws FailedDBOperationException;
+
 
   /**
    * For the record with given name, replace the values of given fields to the given values.
@@ -155,10 +158,10 @@ public interface NoSQLRecords {
    * @param nameField
    * @param fields
    * @param values
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
-          ArrayList<Object> values) throws FailedUpdateException;
+          ArrayList<Object> values) throws FailedDBOperationException;
 
   /**
    * For the record with given name, replace the values of given fields to the given values,
@@ -172,11 +175,11 @@ public interface NoSQLRecords {
    * @param valuesMapField
    * @param valuesMapKeys
    * @param valuesMapValues
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
           ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws FailedUpdateException;
+          ArrayList<Object> valuesMapValues) throws FailedDBOperationException;
 
   /**
    * Updates the record indexed by name conditionally. The condition specified by 
@@ -194,12 +197,12 @@ public interface NoSQLRecords {
    * @param valuesMapKeys
    * @param valuesMapValues
    * @return Returns true if the update happened, false otherwise.
-   * @throws FailedUpdateException 
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract boolean updateConditional(String collectionName, String guid, ColumnField nameField,
           ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws FailedUpdateException;
+          ArrayList<Object> valuesMapValues) throws FailedDBOperationException;
 
   /**
    * For the record with given name, increment the values of given fields by given values. (Another form of update).
@@ -208,10 +211,10 @@ public interface NoSQLRecords {
    * @param name
    * @param fields
    * @param values
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract void increment(String collection, String name, ArrayList<ColumnField> fields,
-          ArrayList<Object> values) throws FailedUpdateException;
+          ArrayList<Object> values) throws FailedDBOperationException;
 
   /**
    * For the record with given name, increment the values of given fields by given values.
@@ -224,11 +227,11 @@ public interface NoSQLRecords {
    * @param votesMapField
    * @param votesMapKeys
    * @param votesMapValues
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void increment(String collectionName, String name, ArrayList<ColumnField> fields, ArrayList<Object> values,
           ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   /**
    * For record with name, removes (unset) keys in list <code>mapKeys</code> from the map <code>mapField</code>.
@@ -237,10 +240,10 @@ public interface NoSQLRecords {
    * @param name
    * @param mapField
    * @param mapKeys
-   * @throws edu.umass.cs.gns.exceptions.FailedUpdateException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
@@ -251,7 +254,7 @@ public interface NoSQLRecords {
    * @param fields
    * @return
    */
-  public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields);
+  public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
@@ -259,7 +262,7 @@ public interface NoSQLRecords {
    * @param collection
    * @return AbstractRecordCursor
    */
-  public AbstractRecordCursor getAllRowsIterator(String collection);
+  public AbstractRecordCursor getAllRowsIterator(String collection) throws FailedDBOperationException;
 
   /**
    * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
@@ -270,7 +273,7 @@ public interface NoSQLRecords {
    * @param value
    * @return AbstractRecordCursor
    */
-  public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value);
+  public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field returns all guids that are within value which is a bounding box specified as a nested JSONArray
@@ -282,7 +285,7 @@ public interface NoSQLRecords {
    * @param value
    * @return AbstractRecordCursor
    */
-  public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value);
+  public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) throws FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field returns all guids that are near value which is a point specified as a JSONArray string tuple:
@@ -295,7 +298,7 @@ public interface NoSQLRecords {
    * @param maxDistance
    * @return
    */
-  public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance);
+  public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException;
 
   /**
    * Performs a query on the database and returns all guids that satisfy the query.
@@ -305,14 +308,14 @@ public interface NoSQLRecords {
    * @param query
    * @return 
    */
-  public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query);
+  public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) throws FailedDBOperationException;
 
   /**
    * Sets the collection back to an initial empty state with indexes also initialized.
    *
    * @param collection
    */
-  public void reset(String collection);
+  public void reset(String collection) throws FailedDBOperationException;
 
   @Override
   public String toString();
@@ -322,6 +325,6 @@ public interface NoSQLRecords {
    *
    * @param collection
    */
-  public void printAllEntries(String collection);
+  public void printAllEntries(String collection) throws FailedDBOperationException;
 
 }

@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -96,7 +96,7 @@ public class GroupChange {
    * @param activeProposalPacket Actives proposed to primary replicas
    */
   public static void executeNewActivesProposed(NewActiveProposalPacket activeProposalPacket,
-                                               ReplicaController replicaController, boolean recovery) {
+                                               ReplicaController replicaController, boolean recovery) throws FailedDBOperationException {
 
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
@@ -166,9 +166,9 @@ public class GroupChange {
     } catch (RecordNotFoundException e) {
       // this could happen in rare cases when remove request for a name arrives at the same time as a group change
       GNS.getLogger().warning("GROUP CHANGE DECISION: BUT PRIMARY NAME RECORD DELETED Name = " + activeProposalPacket.getName());
-    } catch (FailedUpdateException e) {
-      GNS.getLogger().severe("Unexpected Error!" + e.getMessage());
-      e.printStackTrace();
+//    } catch (FailedDBOperationException e) {
+//      GNS.getLogger().severe("Unexpected Error!" + e.getMessage());
+//      e.printStackTrace();
     } catch (JSONException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -179,7 +179,7 @@ public class GroupChange {
   /**
    * Old set of active replicas have stopped, and therefore new set of active replicas can be started.
    */
-  public static void handleOldActiveStop(OldActiveSetStopPacket oldActiveSetStop, ReplicaController replicaController) {
+  public static void handleOldActiveStop(OldActiveSetStopPacket oldActiveSetStop, ReplicaController replicaController) throws FailedDBOperationException {
     if (replicaController.getOngoingStopActiveRequests().remove(oldActiveSetStop.getRequestID()) != null) {
       createStartActiveSetTask(oldActiveSetStop, replicaController);
     } else {
@@ -190,10 +190,11 @@ public class GroupChange {
   /**
    * Old actives have stopped, create a task to start new actives for name.
    */
-  private static void createStartActiveSetTask(OldActiveSetStopPacket packet, ReplicaController replicaController) {
+  private static void createStartActiveSetTask(OldActiveSetStopPacket packet, ReplicaController replicaController) throws FailedDBOperationException {
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
               replicaController.getDB(), packet.getName(), startActiveSetFields);
+
       if (Config.debugMode) {
         GNS.getLogger().info("Old active stopped. write to nameRecord: " + packet.getName());
       }
@@ -262,7 +263,7 @@ public class GroupChange {
    */
   public static void executeActiveNameServersRunning(GroupChangeCompletePacket packet,
                                                      ReplicaController replicaController, boolean recovery)
-          throws JSONException {
+          throws JSONException, FailedDBOperationException {
     if (Config.debugMode) {
       GNS.getLogger().info("Execute: New active started. write to database: " + packet);
     }
@@ -296,9 +297,9 @@ public class GroupChange {
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. " + e.getMessage() + "\tName\t" + packet.getName());
       e.printStackTrace();
-    } catch (FailedUpdateException e) {
-      GNS.getLogger().severe("Failed update exception. " + e.getMessage() + "\tName\t" + packet.getName());
-      e.printStackTrace();
+//    } catch (FailedDBOperationException e) {
+//      GNS.getLogger().severe("Failed update exception. " + e.getMessage() + "\tName\t" + packet.getName());
+//      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }

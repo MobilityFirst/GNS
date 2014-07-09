@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign.recordmap;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -29,7 +29,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException {
+  public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException, FailedDBOperationException {
     if (!containsName(name)) {
       try {
         MongoRecords records = mongoRecords;
@@ -45,27 +45,27 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException, FailedDBOperationException {
     return mongoRecords.lookup(collectionName, name, nameField, fields1);
 //    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
   public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
     return mongoRecords.lookup(collectionName, name, nameField, fields1, valuesMapField, valuesMapKeys);
   }
 
   @Override
   public void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     mongoRecords.update(collectionName, name, nameField, fields1, values1);
   }
 
   @Override
   public void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     mongoRecords.update(collectionName, name, nameField, fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
@@ -73,62 +73,62 @@ public class MongoRecordMap extends BasicRecordMap {
   public boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
           ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField,
           ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     return mongoRecords.updateConditional(collectionName, name, nameField, conditionField, conditionValue,
             fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
   @Override
   public void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     mongoRecords.increment(collectionName, name, fields1, values1);
   }
 
   @Override
   public void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField votesMapField,
           ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     mongoRecords.increment(collectionName, name, fields1, values1, votesMapField, votesMapKeys, votesMapValues);
   }
 
   @Override
   public void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
-          throws FailedUpdateException {
+          throws FailedDBOperationException {
     mongoRecords.removeMapKeys(collectionName, name, mapField, mapKeys);
   }
 
   @Override
-  public AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) {
+  public AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException {
     return mongoRecords.getAllRowsIterator(collectionName, nameField, fields);
   }
 
   @Override
-  public AbstractRecordCursor getAllRowsIterator() {
+  public AbstractRecordCursor getAllRowsIterator() throws FailedDBOperationException {
     return mongoRecords.getAllRowsIterator(collectionName);
   }
 
   @Override
-  public AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) {
+  public AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException {
     return mongoRecords.selectRecords(collectionName, valuesMapField, key, value);
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) {
+  public AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) throws FailedDBOperationException {
     return mongoRecords.selectRecordsWithin(collectionName, valuesMapField, key, value);
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) {
+  public AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException {
     return mongoRecords.selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) {
+  public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException {
     return mongoRecords.selectRecordsQuery(collectionName, valuesMapField, query);
   }
 
   @Override
-  public NameRecord getNameRecord(String name) throws RecordNotFoundException {
+  public NameRecord getNameRecord(String name) throws RecordNotFoundException, FailedDBOperationException {
     try {
       JSONObject json = mongoRecords.lookup(collectionName, name);
       if (json == null) {
@@ -143,7 +143,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(NameRecord recordEntry) throws FailedUpdateException, RecordExistsException {
+  public void addNameRecord(NameRecord recordEntry) throws FailedDBOperationException, RecordExistsException {
     try {
       addNameRecord(recordEntry.toJSONObject());
     } catch (JSONException e) {
@@ -154,7 +154,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(JSONObject json) throws FailedUpdateException, RecordExistsException {
+  public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException {
     MongoRecords records = mongoRecords;
     try {
       String name = json.getString(NameRecord.NAME.getName());
@@ -166,14 +166,14 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException, RecordExistsException {
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException {
     MongoRecords records = mongoRecords;
     records.bulkInsert(collectionName, jsons);
     GNS.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
   }
 
   @Override
-  public void updateNameRecord(NameRecord recordEntry) throws FailedUpdateException {
+  public void updateNameRecord(NameRecord recordEntry) throws FailedDBOperationException {
     try {
       mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
@@ -183,12 +183,12 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void removeNameRecord(String name) throws FailedUpdateException {
+  public void removeNameRecord(String name) throws FailedDBOperationException {
     mongoRecords.remove(collectionName, name);
   }
 
   @Override
-  public boolean containsName(String name) {
+  public boolean containsName(String name) throws FailedDBOperationException {
     return mongoRecords.contains(collectionName, name);
   }
 
@@ -196,12 +196,12 @@ public class MongoRecordMap extends BasicRecordMap {
    * Clears the database and reinitializes all indices.
    */
   @Override
-  public void reset() {
+  public void reset() throws FailedDBOperationException {
     mongoRecords.reset(collectionName);
   }
 
   @Override
-  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException {
+  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException {
     try {
       JSONObject json = mongoRecords.lookup(collectionName, name);
       if (json == null) {
@@ -216,7 +216,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException, RecordExistsException {
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException {
     try {
       mongoRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
@@ -229,7 +229,7 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException {
+  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException {
     try {
       mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {

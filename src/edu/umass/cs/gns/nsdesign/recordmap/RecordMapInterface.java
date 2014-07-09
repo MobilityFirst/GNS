@@ -6,7 +6,7 @@ package edu.umass.cs.gns.nsdesign.recordmap;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import org.json.JSONObject;
@@ -21,38 +21,40 @@ import java.util.Set;
  */
 public interface RecordMapInterface {
 
-  public void addNameRecord(NameRecord recordEntry) throws FailedUpdateException, RecordExistsException;
+  public void addNameRecord(NameRecord recordEntry) throws FailedDBOperationException, RecordExistsException;
 
-  public NameRecord getNameRecord(String name) throws RecordNotFoundException;
+  public NameRecord getNameRecord(String name) throws RecordNotFoundException, FailedDBOperationException;
 
-  public void updateNameRecord(NameRecord recordEntry) throws FailedUpdateException;
+  public void updateNameRecord(NameRecord recordEntry) throws FailedDBOperationException;
 
-  public void addNameRecord(JSONObject json) throws FailedUpdateException, RecordExistsException;
+  public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException;
 
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException, RecordExistsException;
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException;
 
-  public void removeNameRecord(String name) throws FailedUpdateException;
+  public void removeNameRecord(String name) throws FailedDBOperationException;
 
-  public boolean containsName(String name);
+  public boolean containsName(String name) throws FailedDBOperationException;
 
-  public Set<String> getAllColumnKeys(String key) throws RecordNotFoundException;
+  public Set<String> getAllColumnKeys(String key) throws RecordNotFoundException, FailedDBOperationException;
 
   /**
    * Clears the database and reinitializes all indices.
    */
-  public void reset();
+  public void reset() throws FailedDBOperationException;
 
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException;
+  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws
+          FailedDBOperationException, RecordNotFoundException;
 
   public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException;
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws
+          FailedDBOperationException, RecordNotFoundException;
 
   public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   /**
    * Updates the record indexed by name conditionally. The condition specified by 
@@ -69,22 +71,22 @@ public interface RecordMapInterface {
    * @param valuesMapKeys
    * @param valuesMapValues
    * @return Returns true if the update was applied false otherwise.
-   * @throws FailedUpdateException 
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
           ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField,
           ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   public abstract void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   public abstract void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1,
           ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   public abstract void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
-          throws FailedUpdateException;
+          throws FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
@@ -94,14 +96,14 @@ public interface RecordMapInterface {
    * @param fields
    * @return
    */
-  public abstract AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields);
+  public abstract AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @return
    */
-  public abstract AbstractRecordCursor getAllRowsIterator();
+  public abstract AbstractRecordCursor getAllRowsIterator() throws FailedDBOperationException;
 
   /**
    * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
@@ -111,7 +113,7 @@ public interface RecordMapInterface {
    * @param value
    * @return
    */
-  public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value);
+  public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
@@ -122,7 +124,7 @@ public interface RecordMapInterface {
    * @param value - a string that looks like this [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return
    */
-  public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value);
+  public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) throws FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
@@ -134,14 +136,14 @@ public interface RecordMapInterface {
    * @param maxDistance - the distance in meters
    * @return
    */
-  public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance);
+  public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException;
 
-  public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query);
+  public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException;
 
   // Replica Controller
-  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException;
+  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException;
 
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException, RecordExistsException;
+  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException;
 
-  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedUpdateException;
+  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException;
 }

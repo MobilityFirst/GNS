@@ -9,7 +9,7 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
@@ -253,7 +253,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void printAllEntries(String collectionName) {
+  public void printAllEntries(String collectionName) throws FailedDBOperationException {
     AbstractRecordCursor cursor = getAllRowsIterator(collectionName);
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject());
@@ -386,7 +386,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedUpdateException {
+  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedDBOperationException {
         // todo
   }
 

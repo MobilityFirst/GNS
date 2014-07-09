@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -69,7 +69,7 @@ public class Remove {
    * record from this active replica.
    */
   public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable gnsApp,
-                                                     boolean noCoordinationState, boolean recovery) throws IOException {
+                                                     boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
 //    GNSMessagingTask msgTask = null;
     if (noCoordinationState == false) { // normal case:
       try {
@@ -83,10 +83,11 @@ public class Remove {
         e.printStackTrace();
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
-      } catch (FailedUpdateException e) {
-        GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-        e.printStackTrace();
       }
+//      catch (FailedDBOperationException e) {
+//        GNS.getLogger().severe("Failed update exception: " + e.getMessage());
+//        e.printStackTrace();
+//      }
     } else {  // exceptional case: either request is retransmitted by RC. or this replica never received any state for
     // this name.
       try {

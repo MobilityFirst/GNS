@@ -9,6 +9,7 @@ package edu.umass.cs.gns.nsdesign.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.commands.NSCommand;
@@ -48,7 +49,7 @@ public class RetrieveAliases extends NSCommand {
 
   @Override
   public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);

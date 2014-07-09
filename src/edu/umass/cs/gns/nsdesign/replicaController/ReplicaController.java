@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  * Class implements all functionality of a replica controller.
  * We keep a single instance of this class for all names for whom this name server is a replica controller.
  * Created by abhigyan on 2/26/14.
- * 
+ *
  */
 public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
@@ -72,8 +72,8 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
    * constructor object
    */
   public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-          InterfaceJSONNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
-          MongoRecords mongoRecords) {
+                           InterfaceJSONNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+                           MongoRecords mongoRecords) {
     Config.initialize(configParameters);
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -153,21 +153,27 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
   @Override
   public String getState(String name) {
-    AbstractRecordCursor iterator = replicaControllerDB.getAllRowsIterator();
-    StringBuilder sb = new StringBuilder();
-    int recordCount = 0;
-    while (iterator.hasNext()) {
-      try {
-        JSONObject jsonObject = iterator.next();
-        sb.append(jsonObject.toString());
-        sb.append("\n");
-        recordCount += 1;
-      } catch (Exception e) {
-        GNS.getLogger().severe("Problem creating ReplicaControllerRecord from JSON" + e);
+    try {
+      AbstractRecordCursor iterator = replicaControllerDB.getAllRowsIterator();
+      StringBuilder sb = new StringBuilder();
+      int recordCount = 0;
+      while (iterator.hasNext()) {
+        try {
+          JSONObject jsonObject = iterator.nextJSONObject();
+          sb.append(jsonObject.toString());
+          sb.append("\n");
+          recordCount += 1;
+        } catch (Exception e) {
+          GNS.getLogger().severe("Problem creating ReplicaControllerRecord from JSON" + e);
+        }
       }
+      GNS.getLogger().info("Number of records whose state is read from DB: " + recordCount);
+      return sb.toString();
+    } catch (FailedDBOperationException e) {
+      GNS.getLogger().severe("Failed DB Operation. State could not be read from DB. Name: " + name);
+      e.printStackTrace();
+      return null;
     }
-    GNS.getLogger().info("Number of records whose state is read from DB: " + recordCount);
-    return sb.toString();
   }
 
   /**
@@ -198,7 +204,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
           GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
           try {
             ReplicaControllerRecord.addNameRecordPrimary(replicaControllerDB, rcr);
-          } catch (FailedUpdateException e) {
+          } catch (FailedDBOperationException e) {
             ReplicaControllerRecord.updateNameRecordPrimary(replicaControllerDB, rcr);
           }
           startIndex = endIndex;
@@ -208,7 +214,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
       }
     } catch (JSONException e) {
       e.printStackTrace();
-    } catch (FailedUpdateException e) {
+    } catch (FailedDBOperationException e) {
       GNS.getLogger().severe("Failed update exception: " + e.getMessage());
       e.printStackTrace();
     } catch (RecordExistsException e) {
@@ -221,75 +227,74 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
   @Override
   public boolean handleDecision(String name, String value, boolean recovery) {
+    // if the request isn't executed
+    boolean executed = false;
+//    try {
     try {
-      try {
-        JSONObject json = new JSONObject(value);
-        Packet.PacketType packetType = Packet.getPacketType(json);
-        switch (packetType) {
+      JSONObject json = new JSONObject(value);
+      Packet.PacketType packetType = Packet.getPacketType(json);
+      switch (packetType) {
 
-          // add name to GNS
-          case ADD_RECORD:
-            Add.executeAddRecord(new AddRecordPacket(json), this, recovery);
-            break;
-          case ACTIVE_ADD_CONFIRM:
-            Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
-            break;
-          case UPDATE: // TO BE REMOVED - THIS WAS BASED ON AN ERRONEOUS INTERPRETATION OF WHAT UPSERT MEANS
-            Upsert.handleUpsert(new UpdatePacket(json), this);
-            break;
+        // add name to GNS
+        case ADD_RECORD:
+          Add.executeAddRecord(new AddRecordPacket(json), this, recovery);
+          break;
+        case ACTIVE_ADD_CONFIRM:
+          Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
+          break;
 
-          // lookup actives for name
-          case REQUEST_ACTIVES:
-            LookupActives.executeLookupActives(new RequestActivesPacket(json), this, recovery);
-            break;
+        // lookup actives for name
+        case REQUEST_ACTIVES:
+          LookupActives.executeLookupActives(new RequestActivesPacket(json), this, recovery);
+          break;
 
-          // remove
-          case REMOVE_RECORD:
-            Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this, recovery);
-            break;
-          case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-            Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this, recovery);
-            break;
-          case RC_REMOVE:
-            Remove.executeRemoveRecord(new RemoveRecordPacket(json), this, recovery);
-            break;
+        // remove
+        case REMOVE_RECORD:
+          Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this, recovery);
+          break;
+        case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
+          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this, recovery);
+          break;
+        case RC_REMOVE:
+          Remove.executeRemoveRecord(new RemoveRecordPacket(json), this, recovery);
+          break;
 
-          // group change
-          case NEW_ACTIVE_PROPOSE:
-            GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this, recovery);
-            break;
-          case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
-            GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
-            break;
-          case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
-            GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
-            break;
-          case GROUP_CHANGE_COMPLETE:
-            GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, recovery);
-            break;
-          case NAMESERVER_SELECTION:
-            NameStats.handleLNSVotesPacket(json, this);
-            break;
-          case NAME_RECORD_STATS_RESPONSE:
-            // todo this packets related to stats reporting are not implemented yet.
-            throw new UnsupportedOperationException();
-          case NAME_SERVER_LOAD:
-            updateNSLoad(json);
-          default:
-            break;
-        }
-        // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
-      } catch (JSONException e) {
-        GNS.getLogger().severe(" Hello ... exception " + value);
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
+        // group change
+        case NEW_ACTIVE_PROPOSE:
+          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this, recovery);
+          break;
+        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
+          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
+          break;
+        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
+          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
+          break;
+        case GROUP_CHANGE_COMPLETE:
+          GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, recovery);
+          break;
+        case NAMESERVER_SELECTION:
+          NameStats.handleLNSVotesPacket(json, this);
+          break;
+        case NAME_RECORD_STATS_RESPONSE:
+          // todo this packets related to stats reporting are not implemented yet.
+          throw new UnsupportedOperationException();
+        case NAME_SERVER_LOAD:
+          updateNSLoad(json);
+        default:
+          break;
       }
-    } catch (Exception e) {
-      GNS.getLogger().severe("Exception in handling decisions: " + e.getMessage());
+      executed = true;
+      // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
+    } catch (JSONException | IOException | FailedDBOperationException e) {
+      GNS.getLogger().severe(" Hello ... exception " + value);
       e.printStackTrace();
+      // all database operations throw this exception, therefore we keep throwing this exception upwards and catch this
+      // here.
+      // A database operation error would imply that the application hasn't been able to successfully execute
+      // the request. therefore, this method returns 'false', hoping that whoever calls handleDecision would retry
+      // the request.
     }
-    return true;
+    return executed;
   }
 
   private void updateNSLoad(JSONObject json) throws JSONException {
@@ -307,7 +312,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
   /**
    * Nuclear option for clearing out all state at GNS.
    */
-  public void reset() {
+  public void reset() throws FailedDBOperationException {
     replicaControllerDB.reset();
   }
 

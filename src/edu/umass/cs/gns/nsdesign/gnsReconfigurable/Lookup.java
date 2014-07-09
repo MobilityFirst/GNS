@@ -4,6 +4,7 @@ import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -56,7 +57,7 @@ public class Lookup {
   public static void executeLookupLocal(DNSPacket dnsPacket, GnsReconfigurable gnsApp,
                                                     boolean noCoordinatorState, boolean recovery)
           throws IOException, JSONException, InvalidKeyException,
-          InvalidKeySpecException, NoSuchAlgorithmException, SignatureException {
+          InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
 
     GNS.getLogger().fine("Node " + gnsApp.getNodeID() + "; DNS Packet: " + dnsPacket.toString());
 //    GNSMessagingTask msgTask;
@@ -101,8 +102,6 @@ public class Lookup {
         if (!recovery) {
           gnsApp.getNioServer().sendToID(dnsPacket.getLnsId(), dnsPacket.toJSONObjectForErrorResponse());
         }
-//        msgTask = new GNSMessagingTask(dnsPacket.getLnsId(), dnsPacket.toJSONObjectForErrorResponse());
-//      NameServer.returnToSender(dnsPacket.toJSONObjectForErrorResponse(), dnsPacket.getSenderId());
       } else {
         // All signature and ACL checks passed see if we can find the field to return;
         NameRecord nameRecord = null;
@@ -132,7 +131,7 @@ public class Lookup {
 
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, String message, MetaDataTypeName access,
                                                     GnsReconfigurable gnsApp)
-          throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException {
+          throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, FailedDBOperationException {
     GuidInfo guidInfo, readerGuidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, gnsApp)) == null) {
       if (Config.debugMode) GNS.getLogger().fine("Name " + guid + " key = " + field + ": BAD_GUID_ERROR");

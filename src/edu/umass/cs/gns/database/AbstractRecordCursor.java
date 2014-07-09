@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.database;
 
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -18,12 +19,12 @@ import java.util.HashMap;
 public abstract class AbstractRecordCursor implements RecordCursorInterface {
   
   @Override
-  public JSONObject nextJSONObject() {
+  public JSONObject nextJSONObject() throws FailedDBOperationException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   
   @Override
-  public HashMap<ColumnField, Object> nextHashMap() {
+  public HashMap<ColumnField, Object> nextHashMap() throws FailedDBOperationException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   

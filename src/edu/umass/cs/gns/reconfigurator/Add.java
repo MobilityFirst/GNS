@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.reconfigurator;
 
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
@@ -46,7 +46,7 @@ public class Add {
 	 * @param replicaController ReplicaController object calling this method.
 	 */
 	public static MessagingTask[] executeAddRecord(AddRecordPacket addRecordPacket, BasicRecordMap DB, int rcID,
-			boolean recovery) throws JSONException, FailedUpdateException, IOException {
+			boolean recovery) throws JSONException, FailedDBOperationException, IOException {
 
 		MessagingTask activeMTask=null, LNSMTask=null;  // send add at active, confirmation or error to LNS
 		boolean addedAtReplicaController= false;
@@ -62,7 +62,7 @@ public class Add {
 			ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(DB, addRecordPacket.getName(), true);
 			ReplicaControllerRecord.addNameRecordPrimary(DB, rcRecord); // only line that can throw exceptions
 			addedAtReplicaController = true;
-		} catch (FailedUpdateException e) {
+		} catch (FailedDBOperationException e) {
 			// send ERROR to LNS
 			ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
 			if (colocatedActiveAndReplicaController(addRecordPacket, rcID)) {

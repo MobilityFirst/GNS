@@ -10,6 +10,7 @@ package edu.umass.cs.gns.nsdesign.commands.account;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.httpserver.Defs;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
@@ -47,7 +48,7 @@ public class AddAlias extends NSCommand {
 
   @Override
   public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String guid = json.getString(GUID);
     String name = json.getString(NAME);
     String signature = json.getString(SIGNATURE);

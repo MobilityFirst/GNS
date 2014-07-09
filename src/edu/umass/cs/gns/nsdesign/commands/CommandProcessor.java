@@ -8,6 +8,7 @@
 
 package edu.umass.cs.gns.nsdesign.commands;
 
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
@@ -60,6 +61,8 @@ public class CommandProcessor {
     } catch (SignatureException e) {
       return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
     } catch (InvalidKeyException e) {
+      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+    } catch (FailedDBOperationException e) {
       return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
     }
   }

@@ -21,10 +21,15 @@ import java.util.Set;
  * Created by abhigyan on 3/30/14.
  */
 public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator {
+
+  private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
+
   private final int nodeID;
   private AbstractPaxosManager paxosManager;
 
   private Replicable paxosInterface;
+
+
 
   public ReplicaControllerCoordinatorPaxos(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                                            Replicable paxosInterface, PaxosConfig paxosConfig) {
@@ -96,7 +101,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
         case NAME_SERVER_LOAD:
           // no coordination needed for these packet types.
-          paxosInterface.handleDecision(null, request.toString(), false);
+          callHandleDecisionWithRetry(null, request.toString(), false);
           break;
         default:
           GNS.getLogger().severe("Packet type not found in coordination: " + type);
@@ -106,6 +111,20 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
       e.printStackTrace();
     }
     return 0;
+  }
+
+  /**
+   * Retries a request at period interval until successfully executed by application.
+   */
+  private void callHandleDecisionWithRetry(String name, String value, boolean doNotReplyToClient) {
+    while (!paxosInterface.handleDecision(name, value, doNotReplyToClient)) {
+      try {
+        Thread.sleep(HANDLE_DECISION_RETRY_INTERVAL_MILLIS);
+      } catch (InterruptedException e1) {
+        e1.printStackTrace();
+      }
+      GNS.getLogger().severe("Failed to execute decision. Retry. name = " + name + " value = " + value);
+    }
   }
 
   @Override

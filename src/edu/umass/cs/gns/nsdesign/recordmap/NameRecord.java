@@ -4,7 +4,7 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -17,7 +17,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -315,7 +314,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /********************************************
    * WRITE methods, these methods change one or more fields in database.
    * ******************************************/
-  public void incrementLookupRequest() throws FieldNotFoundException, FailedUpdateException {
+  public void incrementLookupRequest() throws FieldNotFoundException, FailedDBOperationException {
     ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
     incrementFields.add(TOTAL_LOOKUP_REQUEST);
 
@@ -326,7 +325,7 @@ public class NameRecord implements Comparable<NameRecord> {
     // TODO implement batching
   }
 
-  public void incrementUpdateRequest() throws FieldNotFoundException, FailedUpdateException {
+  public void incrementUpdateRequest() throws FieldNotFoundException, FailedDBOperationException {
     ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
     incrementFields.add(TOTAL_UPDATE_REQUEST);
 
@@ -347,7 +346,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
   public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues, int argument,
-          UpdateOperation operation) throws FieldNotFoundException, FailedUpdateException {
+          UpdateOperation operation) throws FieldNotFoundException, FailedDBOperationException {
 
     // handle special case for REMOVE_FIELD operation
     
@@ -415,7 +414,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * @throws FieldNotFoundException
    */
-  public void handleCurrentActiveStop() throws FieldNotFoundException, FailedUpdateException {
+  public void handleCurrentActiveStop() throws FieldNotFoundException, FailedDBOperationException {
 
     ValuesMap valuesMap = getValuesMap();
 
@@ -440,7 +439,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * @throws FieldNotFoundException
    */
-  public void deleteOldState(int oldVersion) throws FieldNotFoundException, FailedUpdateException {
+  public void deleteOldState(int oldVersion) throws FieldNotFoundException, FailedDBOperationException {
 
     ArrayList<ColumnField> updateFields  = new ArrayList<ColumnField>();
     updateFields.add(OLD_ACTIVE_VERSION);
@@ -473,7 +472,7 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   public void handleNewActiveStart(int version, ValuesMap currentValue, int ttl)
-          throws FieldNotFoundException, FailedUpdateException {
+          throws FieldNotFoundException, FailedDBOperationException {
 
     ArrayList<ColumnField> updateFields = getNewActiveStartFields();
 
@@ -492,7 +491,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
   }
 
-  public void updateState(ValuesMap currentValue, int ttl) throws FieldNotFoundException, FailedUpdateException {
+  public void updateState(ValuesMap currentValue, int ttl) throws FieldNotFoundException, FailedDBOperationException {
 
     ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
     updateFields.add(VALUES_MAP);
@@ -556,7 +555,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
-  public static NameRecord getNameRecord(BasicRecordMap recordMap, String name) throws RecordNotFoundException {
+  public static NameRecord getNameRecord(BasicRecordMap recordMap, String name) throws RecordNotFoundException, FailedDBOperationException {
     return recordMap.getNameRecord(name);
   }
 
@@ -569,7 +568,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields)
-          throws RecordNotFoundException {
+          throws RecordNotFoundException, FailedDBOperationException {
     return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
   }
 
@@ -583,7 +582,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
-          throws RecordNotFoundException {
+          throws RecordNotFoundException, FailedDBOperationException {
     return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
   }
 
@@ -597,7 +596,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
-          throws RecordNotFoundException {
+          throws RecordNotFoundException, FailedDBOperationException {
     return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
   }
 
@@ -614,7 +613,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param record
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
-  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedUpdateException, RecordExistsException {
+  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException, RecordExistsException {
     recordMap.addNameRecord(record);
   }
 
@@ -622,7 +621,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Replace the name record in DB with this copy of name record
    * @param record
    */
-  public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedUpdateException {
+  public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException {
     recordMap.updateNameRecord(record);
   }
 
@@ -630,7 +629,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Remove name record from DB
    * @param name
    */
-  public static void removeNameRecord(BasicRecordMap recordMap, String name) throws FailedUpdateException {
+  public static void removeNameRecord(BasicRecordMap recordMap, String name) throws FailedDBOperationException {
     recordMap.removeNameRecord(name);
   }
 
@@ -639,7 +638,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @return
    */
-  public static AbstractRecordCursor getAllRowsIterator(BasicRecordMap recordMap) {
+  public static AbstractRecordCursor getAllRowsIterator(BasicRecordMap recordMap) throws FailedDBOperationException {
     return recordMap.getAllRowsIterator();
   }
 
@@ -649,7 +648,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param value
    * @return
    */
-  public static AbstractRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) {
+  public static AbstractRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) throws FailedDBOperationException {
     return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
   }
 
@@ -661,7 +660,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return
    */
-  public static AbstractRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) {
+  public static AbstractRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) throws FailedDBOperationException {
     return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
   }
 
@@ -674,7 +673,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param maxDistance - the distance in meters
    * @return
    */
-  public static AbstractRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) {
+  public static AbstractRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) throws FailedDBOperationException {
     return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
   }
 
@@ -684,7 +683,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param query
    * @return
    */
-  public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) {
+  public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) throws FailedDBOperationException {
     return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
   }
 

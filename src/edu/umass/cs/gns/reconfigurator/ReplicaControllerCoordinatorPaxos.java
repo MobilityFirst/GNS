@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.reconfigurator;
 
 import edu.umass.cs.gns.database.MongoRecords;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
@@ -31,6 +32,7 @@ import java.util.logging.Logger;
  * 
  */
 public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator {
+  private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 	private final int myID;
 	private final AbstractPaxosManager paxosManager;
 	private final Replicable replicable;
@@ -107,7 +109,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 			case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
 			case NAME_SERVER_LOAD:
 				// no coordination needed for these packet types.
-				replicable.handleDecision(null, request.toString(), false);
+        callHandleDecisionWithRetry(null, request.toString(), false);
 				break;
 			default:
 				log.severe("Packet type not found in coordination: " + type);
@@ -129,8 +131,22 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 		paxosManager.resetAll();
 		createPrimaryPaxosInstances(); // FIXME: Check if this could cause problems after resetAll()
 	}
-	
-	public static void main(String[] args) {
+
+  /**
+   * Retries a request at period interval until successfully executed by application.
+   */
+  private void callHandleDecisionWithRetry(String name, String value, boolean doNotReplyToClient) {
+    while (!replicable.handleDecision(name, value, doNotReplyToClient)) {
+      try {
+        Thread.sleep(HANDLE_DECISION_RETRY_INTERVAL_MILLIS);
+      } catch (InterruptedException e1) {
+        e1.printStackTrace();
+      }
+      log.severe("Failed to execute decision. Retry. name = " + name + " value = " + value);
+    }
+  }
+
+  public static void main(String[] args) {
 		int id = 100;
 		int faultTolerance = 3;
 		HashMap<String,String> configParameters = new HashMap<String,String>();

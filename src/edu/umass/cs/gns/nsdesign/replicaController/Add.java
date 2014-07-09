@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
@@ -43,7 +43,7 @@ public class Add {
    */
   public static void executeAddRecord(AddRecordPacket addRecordPacket, ReplicaController replicaController,
                                                   boolean recovery)
-          throws JSONException, FailedUpdateException, IOException {
+          throws JSONException, FailedDBOperationException, IOException {
 
     if (Config.debugMode) GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket +
             " Local name server ID = " + addRecordPacket.getLocalNameServerID());
@@ -82,12 +82,12 @@ public class Add {
           replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
         }
       }
-    } catch (FailedUpdateException e) {
-      // send error to client
-      ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
-      if (!recovery && addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
-        replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
-      }
+//    } catch (FailedDBOperationException e) {
+//      // send error to client
+//      ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
+//      if (!recovery && addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
+//        replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+//      }
     } catch (RecordExistsException e) {
       if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
         // send error to client

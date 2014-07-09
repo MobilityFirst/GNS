@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.reconfigurator;
 
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -94,7 +94,7 @@ public class Remove {
 			} else if (removeRecord.getNameServerID() != rcID){
 				if (Config.debugMode) log.info("SKIP: remove record request does not not contain node ID " + rcRecord.getName());
 			}
-		} catch (FailedUpdateException e) {
+		} catch (FailedDBOperationException e) {
 			sendError = true;
 			log.info("Error during update. Sent failure confirmation to client. Name = " + removeRecord.getName());
 		} catch (RecordNotFoundException e) {
@@ -142,7 +142,7 @@ public class Remove {
 	 *
 	 */
 	protected static MessagingTask[] executeRemoveRecord(RemoveRecordPacket removeRecordPacket, BasicRecordMap DB, int rcID,
-			boolean recovery) throws JSONException, FailedUpdateException, IOException {
+			boolean recovery) throws JSONException, FailedDBOperationException, IOException {
 		if (Config.debugMode) log.fine("DECISION executing remove record at RC: " + removeRecordPacket);
 		DB.removeNameRecord(removeRecordPacket.getName());
 

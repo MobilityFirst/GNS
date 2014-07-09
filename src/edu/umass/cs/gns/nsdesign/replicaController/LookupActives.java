@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -20,7 +21,7 @@ import java.io.IOException;
 public class LookupActives {
 
   public static void executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController, boolean recovery)
-          throws JSONException, IOException {
+          throws JSONException, IOException, FailedDBOperationException {
 
     if (recovery || packet.getNsID() != replicaController.getNodeID()) return;
 

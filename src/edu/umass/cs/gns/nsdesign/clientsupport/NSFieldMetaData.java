@@ -9,6 +9,7 @@ import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
@@ -34,7 +35,7 @@ public class NSFieldMetaData {
    * @return
    */
   public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
-          GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
+          GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     return lookupOnThisNameServer(type, guidInfo.getGuid(), key, activeReplica);
   }
 
@@ -47,7 +48,7 @@ public class NSFieldMetaData {
    * @return
    */
   public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
-          GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException {
+          GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     ResultValue result = NSFieldAccess.lookupFieldOnThisServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
     if (result != null) {
       return new HashSet(result);

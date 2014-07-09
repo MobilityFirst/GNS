@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.commands;
 
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,7 +56,7 @@ public abstract class NSCommand implements Comparable<NSCommand> {
   public abstract String getCommandName();
 
   public abstract String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException;
+          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException;
 
   /**
    * Get the description of the command

@@ -10,6 +10,8 @@ package edu.umass.cs.gns.nsdesign.commands.account;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSFieldMetaData;
 import edu.umass.cs.gns.nsdesign.commands.NSCommand;
@@ -46,7 +48,7 @@ public class RegisterAccount extends NSCommand {
 
   @Override
   public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String name = json.getString(NAME);
     String guid = json.optString(GUID, null);
     String publicKey = json.getString(PUBLICKEY);
@@ -54,7 +56,9 @@ public class RegisterAccount extends NSCommand {
     if (guid == null) {
       guid = ClientUtils.createGuidFromPublicKey(publicKey);
     }
-    String result = NSAccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password, activeReplica);
+    String result = null;
+    result = NSAccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password, activeReplica);
+
     if (OKRESPONSE.equals(result)) {
       // set up the default read access
       NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, activeReplica);

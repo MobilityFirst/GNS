@@ -86,9 +86,9 @@ update_count = 10   # number of updates at local name server
 # logging options
 is_debug_mode = True   #
 
-nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'WARNING'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 

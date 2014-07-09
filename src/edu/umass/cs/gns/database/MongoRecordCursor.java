@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.database;
 
 import com.mongodb.*;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;
@@ -36,16 +37,19 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * @param collectionName
    * @param nameField 
    */
-  public MongoRecordCursor(DB db, String collectionName, ColumnField nameField) {
+  public MongoRecordCursor(DB db, String collectionName, ColumnField nameField) throws FailedDBOperationException {
     this.nameField = nameField;
     this.allFields = true;
+    try {
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      // get all documents that have a name field (all doesn't work because of extra stuff mongo adds to the database)
+      BasicDBObject query = new BasicDBObject(nameField.getName(), new BasicDBObject("$exists", true));
 
-    db.requestEnsureConnection();
-    DBCollection collection = db.getCollection(collectionName);
-    // get all documents that have a name field (all doesn't work because of extra stuff mongo adds to the database)
-    BasicDBObject query = new BasicDBObject(nameField.getName(), new BasicDBObject("$exists", true));
-
-    cursor = collection.find(query);
+      cursor = collection.find(query);
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, nameField.toString());
+    }
   }
 
   /**
@@ -56,23 +60,27 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * @param nameField
    * @param fields 
    */
-  public MongoRecordCursor(DB db, String collectionName, ColumnField nameField, ArrayList<ColumnField> fields) {
+  public MongoRecordCursor(DB db, String collectionName, ColumnField nameField, ArrayList<ColumnField> fields)
+          throws FailedDBOperationException {
     this.nameField = nameField;
     this.fields = fields;
     this.allFields = false;
-
-    db.requestEnsureConnection();
-    DBCollection collection = db.getCollection(collectionName);
-    // get all documents that have a name field (all doesn't work because of extra stuff mongo adds to the database)
-    BasicDBObject query = new BasicDBObject(nameField.getName(), new BasicDBObject("$exists", true));
-    BasicDBObject projection = new BasicDBObject().append("_id", 0);
-    projection.append(nameField.getName(), 1); // name field must be returned.
-    if (fields != null) { // add other fields requested
-      for (ColumnField f : fields) {
-        projection.append(f.getName(), 1);
+    try {
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      // get all documents that have a name field (all doesn't work because of extra stuff mongo adds to the database)
+      BasicDBObject query = new BasicDBObject(nameField.getName(), new BasicDBObject("$exists", true));
+      BasicDBObject projection = new BasicDBObject().append("_id", 0);
+      projection.append(nameField.getName(), 1); // name field must be returned.
+      if (fields != null) { // add other fields requested
+        for (ColumnField f : fields) {
+          projection.append(f.getName(), 1);
+        }
       }
+      cursor = collection.find(query, projection);
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, nameField.toString());
     }
-    cursor = collection.find(query, projection);
   }
   
   /**
@@ -92,19 +100,23 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * 
    * @return JSONObject
    */
-  private JSONObject nextAllFieldsJSON() {
-    if (cursor.hasNext()) {
-      DBObject dbObject = cursor.next();
-      try {
-        return new JSONObject(dbObject.toString());
-      } catch (JSONException e) {
-        // Since next can't throw anything which isn't a runtime exception.
+  private JSONObject nextAllFieldsJSON() throws FailedDBOperationException {
+    try {
+      if (cursor.hasNext()) {
+        DBObject dbObject = cursor.next();
+        try {
+          return new JSONObject(dbObject.toString());
+        } catch (JSONException e) {
+          // Since next can't throw anything which isn't a runtime exception.
+          // replace these with not a runtime exception?
+          throw new GnsRuntimeException("Error parsing JSON object.");
+        }
+      } else {
         // replace these with not a runtime exception?
-        throw new GnsRuntimeException("Error parsing JSON object.");
+        throw new NoSuchElementException();
       }
-    } else {
-      // replace these with not a runtime exception?
-      throw new NoSuchElementException();
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(cursor.getCollection().getName(), cursor.toString());
     }
   }
 
@@ -135,7 +147,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * @return JSONObject
    */
   @Override
-  public JSONObject nextJSONObject() {
+  public JSONObject nextJSONObject() throws FailedDBOperationException{
     if (allFields) {
       return nextAllFieldsJSON();
     } else {
@@ -181,35 +193,28 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * Returns true if the iteration has more elements.
    */
   @Override
-  public boolean hasNext() {
-    return cursor.hasNext();
-  }
-
-  /**
-   * Returns the next row as a JSONObject.
-   */
-  @Override
-  public JSONObject next() {
-    return nextJSONObject();
-  }
-
-  /**
-   * Not supported!
-   */
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
-  private JSONObject hashMapWithFieldsToJSONObject(HashMap<ColumnField, Object> map) {
-    JSONObject json = new JSONObject();
-    for (Entry<ColumnField, Object> entry : map.entrySet()) {
-      try {
-        json.put(entry.getKey().getName(), entry.getValue());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem putting object in JSONObject: " + e);
-      }
+  public boolean hasNext() throws FailedDBOperationException{
+    try {
+      return cursor.hasNext();
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(cursor.getCollection().getName(), cursor.toString());
     }
-    return json;
+  }
+
+  private JSONObject hashMapWithFieldsToJSONObject(HashMap<ColumnField, Object> map) throws FailedDBOperationException{
+    try {
+      JSONObject json = new JSONObject();
+      for (Entry<ColumnField, Object> entry : map.entrySet()) {
+        try {
+          json.put(entry.getKey().getName(), entry.getValue());
+        } catch (JSONException e) {
+          GNS.getLogger().severe("Problem putting object in JSONObject: " + e);
+        }
+      }
+      return json;
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(cursor.getCollection().getName(), cursor.toString());
+    }
+
   }
 }

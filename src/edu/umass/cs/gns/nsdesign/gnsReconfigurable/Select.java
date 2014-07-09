@@ -8,6 +8,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
@@ -68,7 +69,7 @@ public class Select {
   private static Random randomID = new Random();
   private static ConcurrentMap<Integer, NSSelectInfo> queriesInProgress = new ConcurrentHashMap<Integer, NSSelectInfo>(10, 0.75f, 3);
 
-  public static void handleSelectRequest(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException {
+  public static void handleSelectRequest(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
       handleSelectRequestFromNS(incomingJSON, replica);
@@ -79,7 +80,7 @@ public class Select {
 
   // handle a select request from an LNS
   // this node is the broadcaster and selector
-  private static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException {
+  private static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
@@ -229,7 +230,7 @@ public class Select {
     return id;
   }
 
-  private static JSONArray getJSONRecordsForSelect(SelectRequestPacket request, GnsReconfigurable ar) {
+  private static JSONArray getJSONRecordsForSelect(SelectRequestPacket request, GnsReconfigurable ar) throws FailedDBOperationException {
     JSONArray jsonRecords = new JSONArray();
     // actually only need name and values map... fix this
     AbstractRecordCursor cursor = null;
@@ -262,7 +263,7 @@ public class Select {
     // think about returning a cursor that has prefetched a limited (100 which is like mongo limit)
     // number of records in it and the ability to fetch more
     while (cursor.hasNext()) {
-      jsonRecords.put(cursor.next());
+      jsonRecords.put(cursor.nextJSONObject());
     }
     return jsonRecords;
   }

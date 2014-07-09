@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.InternalField;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.main.GNS;
@@ -26,7 +27,7 @@ public class NSGroupAccess {
   public static final String GROUP_LAST_UPDATE = InternalField.makeInternalFieldString("groupLastUpdate");
   public static final String GROUP_QUERY_STRING = InternalField.makeInternalFieldString("groupQueryString");
 
-  public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+  public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     return NSFieldAccess.lookupField(guid, GroupAccess.GROUP, allowQueryToOtherNSs, activeReplica);
   }
   
@@ -41,7 +42,7 @@ public class NSGroupAccess {
    * @param guid
    * @return
    */
-  public static ResultValue lookupGroups(String guid, GnsReconfigurableInterface activeReplica) {
+  public static ResultValue lookupGroups(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     return NSFieldAccess.lookupField(guid, GroupAccess.GROUPS, true, activeReplica);
   }
   
@@ -62,7 +63,7 @@ public class NSGroupAccess {
    * 
    * @param guid 
    */
-  public static void cleanupGroupsForDelete(String guid, GnsReconfigurableInterface activeReplica) {
+  public static void cleanupGroupsForDelete(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     // just so you know all the nulls mean we're ignoring signatures and authentication
     for (String groupGuid : lookupGroups(guid, activeReplica).toStringSet()) {
       removeFromGroup(groupGuid, guid, activeReplica);
@@ -84,7 +85,7 @@ public class NSGroupAccess {
             UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
   }
 
-  public static Date getLastUpdate(String guid, GnsReconfigurable activeReplica) {
+  public static Date getLastUpdate(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_LAST_UPDATE, true, activeReplica);
     GNS.getLogger().fine("++++ResultValue = " +resultValue);
     if (!resultValue.isEmpty()) {
@@ -94,7 +95,7 @@ public class NSGroupAccess {
     }
   }
 
-  public static int getMinRefresh(String guid, GnsReconfigurable activeReplica) {
+  public static int getMinRefresh(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica);
     GNS.getLogger().fine("++++ResultValue = " +resultValue);
     if (!resultValue.isEmpty()) {
@@ -104,7 +105,7 @@ public class NSGroupAccess {
     }
   }
   
-  public static String getQueryString(String guid, GnsReconfigurable activeReplica) {
+  public static String getQueryString(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_QUERY_STRING, true, activeReplica);
     GNS.getLogger().fine("++++ResultValue = " +resultValue);
     if (!resultValue.isEmpty()) {

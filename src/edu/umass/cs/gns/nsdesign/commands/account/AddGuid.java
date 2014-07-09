@@ -11,6 +11,7 @@ import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.httpserver.Defs;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
@@ -50,7 +51,7 @@ public class AddGuid extends NSCommand {
 
   @Override
   public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String name = json.getString(NAME);
     String accountGuid = json.getString(GUID);
     String publicKey = json.getString(PUBLICKEY);

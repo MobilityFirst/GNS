@@ -10,6 +10,7 @@ package edu.umass.cs.gns.nsdesign.commands.account;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.commands.NSCommand;
@@ -46,7 +47,7 @@ public class RemoveGuid extends NSCommand {
 
   @Override
   public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String guidToRemove = json.getString(GUID);
     String accountGuid = json.optString(ACCOUNT_GUID, null);
     String signature = json.getString(SIGNATURE);

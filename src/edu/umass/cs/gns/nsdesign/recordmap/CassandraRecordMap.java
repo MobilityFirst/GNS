@@ -3,9 +3,8 @@ package edu.umass.cs.gns.nsdesign.recordmap;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.CassandraRecords;
 import edu.umass.cs.gns.database.ColumnField;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -146,7 +145,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedUpdateException {
+  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException {
 
   }
 

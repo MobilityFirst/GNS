@@ -10,6 +10,7 @@ import edu.umass.cs.gns.clientsupport.AccountInfo;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.SHA1HashFunction;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
@@ -38,7 +39,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurableInterface activeReplica) {
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     return lookupAccountInfoFromGuid(guid, false, activeReplica);
   }
 
@@ -52,7 +53,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) {
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     ResultValue accountResult = NSFieldAccess.lookupField(guid, AccountAccess.ACCOUNT_INFO, allowQueryToOtherNSs, activeReplica);
     if (!accountResult.isEmpty()) {
       try {
@@ -77,7 +78,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuidOrParent(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) {
+  public static AccountInfo lookupAccountInfoFromGuidOrParent(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     AccountInfo info = lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica);
     if (info != null) {
       return info;
@@ -100,7 +101,7 @@ public class NSAccountAccess {
    * @param guid
    * @return a GUID
    */
-  public static String lookupPrimaryGuid(String guid, GnsReconfigurableInterface activeReplica) {
+  public static String lookupPrimaryGuid(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     return NSFieldAccess.lookupSingletonFieldOnThisServer(guid, AccountAccess.PRIMARY_GUID, activeReplica);
   }
 
@@ -113,7 +114,7 @@ public class NSAccountAccess {
    * @param name
    * @return a GUID
    */
-  public static String lookupGuid(String name, GnsReconfigurableInterface activeReplica) {
+  public static String lookupGuid(String name, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     return NSFieldAccess.lookupSingletonFieldOnThisServer(name, AccountAccess.HRN_GUID, activeReplica);
   }
 
@@ -126,7 +127,7 @@ public class NSAccountAccess {
    * @param guid
    * @return an {@link edu.umass.cs.gns.clientsupport.GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurableInterface activeReplica) {
+  public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica);
   }
 
@@ -139,7 +140,7 @@ public class NSAccountAccess {
    * @param allowQueryToOtherNSs
    * @return
    */
-  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) {
+  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
     if (!guidResult.isEmpty()) {
       try {
@@ -161,7 +162,7 @@ public class NSAccountAccess {
    * @param name
    * @return an {@link edu.umass.cs.gns.clientsupport.AccountInfo} instance
    */
-  public static AccountInfo lookupAccountInfoFromName(String name, GnsReconfigurableInterface activeReplica) {
+  public static AccountInfo lookupAccountInfoFromName(String name, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     String guid = lookupGuid(name, activeReplica);
     if (guid != null) {
       return lookupAccountInfoFromGuid(guid, activeReplica);
@@ -195,7 +196,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return 
    */
-  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password, GnsReconfigurableInterface activeReplica) {
+  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     String response;
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication, activeReplica)).equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
@@ -248,7 +249,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return 
    */
-  public static String verifyAccount(String guid, String code, GnsReconfigurableInterface activeReplica) {
+  public static String verifyAccount(String guid, String code, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, activeReplica)) == null) {
       return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to read account info";
@@ -329,7 +330,7 @@ public class NSAccountAccess {
    * @param accountInfo
    * @return status result
    */
-  public static String removeAccount(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) {
+  public static String removeAccount(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     // First remove any group links
     NSGroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), activeReplica);
     // Then remove the HRN link
@@ -368,7 +369,7 @@ public class NSAccountAccess {
    * @param publicKey - the public key to use with the new account
    * @return status result
    */
-  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey, GnsReconfigurableInterface activeReplica) {
+  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid, activeReplica) != null) {
@@ -404,10 +405,9 @@ public class NSAccountAccess {
    * Remove a GUID. Guid should not be an account GUID.
    *
    * @param guid
-   * @param accountInfo
    * @return
    */
-  public static String removeGuid(GuidInfo guid, GnsReconfigurable activeReplica) {
+  public static String removeGuid(GuidInfo guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     return removeGuid(guid, null, false, activeReplica);
   }
 
@@ -418,7 +418,7 @@ public class NSAccountAccess {
    * @param guid
    * @return status result
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) {
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     return removeGuid(guid, accountInfo, false, activeReplica);
   }
 
@@ -433,7 +433,7 @@ public class NSAccountAccess {
    * @param ignoreAccountGuid
    * @return
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid, GnsReconfigurableInterface activeReplica) {
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuid(guid.getGuid(), activeReplica) != null) {

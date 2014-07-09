@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
@@ -20,7 +20,7 @@ import java.io.IOException;
 public class Add {
 
   public static void handleActiveAdd(AddRecordPacket addRecordPacket, GnsReconfigurable gnsApp)
-          throws JSONException, IOException {
+          throws JSONException, IOException, FailedDBOperationException {
 
     if (Config.debugMode) GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() +
             " node id: " + gnsApp.getNodeID());
@@ -31,28 +31,18 @@ public class Add {
             valuesMap, addRecordPacket.getTTL());
     try {
       NameRecord.addNameRecord(gnsApp.getDB(), nameRecord);
-      try {
-        String val = NameRecord.getNameRecord(gnsApp.getDB(), addRecordPacket.getName()).toString();
-        if (Config.debugMode) GNS.getLogger().fine("Name record read: " + val);
-      } catch (RecordNotFoundException e) {
-        e.printStackTrace();
-      }
-    } catch (FailedUpdateException e) {
-      GNS.getLogger().severe("Failed update exception:" + e.getMessage());
-      e.printStackTrace();
+
     } catch (RecordExistsException e) {
       // todo this case should happen rarely if we actually delete record at the end of remove operation
       try {
         NameRecord.removeNameRecord(gnsApp.getDB(), addRecordPacket.getName());
         NameRecord.addNameRecord(gnsApp.getDB(), nameRecord);
-      } catch (FailedUpdateException e1) {
-        GNS.getLogger().severe("Failed update exception:" + e.getMessage());
-        e1.printStackTrace();
       } catch (RecordExistsException e1) {
         GNS.getLogger().severe("Name record exists when we just deleted it!!! - " + e.getMessage());
         e1.printStackTrace();
       }
-      if (Config.debugMode) GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
+      if (Config.debugMode)
+        GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
     }
     sendConfirmMsg(addRecordPacket, gnsApp);
   }

@@ -121,7 +121,7 @@ public class NSListenerAdmin extends Thread {
               AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
-                JSONObject json = cursor.next();
+                JSONObject json = cursor.nextJSONObject();
                 try {
                   nameRecord = new NameRecord(gnsReconfigurable.getDB(), json);
                 } catch (JSONException e) {
@@ -147,7 +147,7 @@ public class NSListenerAdmin extends Thread {
               AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
-                JSONObject json = cursor.next();
+                JSONObject json = cursor.nextJSONObject();
                 try {
                   nameRecord = new NameRecord(gnsReconfigurable.getDB(), json);
                 } catch (JSONException e) {
@@ -175,7 +175,7 @@ public class NSListenerAdmin extends Thread {
                 int cnt = 0;
                 AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
                 while (cursor.hasNext()) {
-                  NameRecord nameRecord = new NameRecord(gnsReconfigurable.getDB(), cursor.next());
+                  NameRecord nameRecord = new NameRecord(gnsReconfigurable.getDB(), cursor.nextJSONObject());
                   //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                   try {
                     NameRecord.removeNameRecord(gnsReconfigurable.getDB(), nameRecord.getName());

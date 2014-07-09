@@ -2,8 +2,9 @@ package edu.umass.cs.gns.reconfigurator;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.exceptions.FailedUpdateException;
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
@@ -85,21 +86,27 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	/********************** Start of Replicable interface methods ***************************/
 	@Override
 	public String getState(String name) {
-		AbstractRecordCursor iterator = replicaControllerDB.getAllRowsIterator();
-		StringBuilder sb = new StringBuilder();
-		int recordCount = 0;
-		while (iterator.hasNext()) {
-			try {
-				JSONObject jsonObject = iterator.next();
-				sb.append(jsonObject.toString());
-				sb.append("\n");
-				recordCount += 1;
-			} catch (Exception e) {
-				log.severe("Problem creating ReplicaControllerRecord from JSON" + e);
-			}
-		}
-		log.info("Number of records whose state is read from DB: " + recordCount);
-		return sb.toString();
+    try {
+      AbstractRecordCursor iterator = replicaControllerDB.getAllRowsIterator();
+      StringBuilder sb = new StringBuilder();
+      int recordCount = 0;
+      while (iterator.hasNext()) {
+        try {
+          JSONObject jsonObject = iterator.nextJSONObject();
+          sb.append(jsonObject.toString());
+          sb.append("\n");
+          recordCount += 1;
+        } catch (Exception e) {
+          log.severe("Problem creating ReplicaControllerRecord from JSON" + e);
+        }
+      }
+      log.info("Number of records whose state is read from DB: " + recordCount);
+      return sb.toString();
+    } catch (FailedDBOperationException e) {
+      log.severe("Failed DB Operation. State could not be read from DB. Name: " + name);
+      e.printStackTrace();
+      return null;
+    }
 	}
 
 	/**
@@ -131,7 +138,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 					log.fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
 					try {
 						ReplicaControllerRecord.addNameRecordPrimary(replicaControllerDB, rcr);
-					} catch (FailedUpdateException e) {
+					} catch (FailedDBOperationException e) {
 						ReplicaControllerRecord.updateNameRecordPrimary(replicaControllerDB, rcr);
 					}
 					startIndex = endIndex;
@@ -141,7 +148,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-		} catch (FailedUpdateException e) {
+		} catch (FailedDBOperationException e) {
 			log.severe("Failed update exception: " + e.getMessage());
 			e.printStackTrace();
 		} catch (RecordExistsException e) {

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
@@ -24,7 +25,7 @@ public interface GnsReconfigurableInterface extends Replicable, Reconfigurable{
 
   InterfaceJSONNIOTransport getNioServer();
 
-  void reset();
+  void reset() throws FailedDBOperationException;
 
   PingManager getPingManager();
 }
