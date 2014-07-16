@@ -324,8 +324,6 @@ public class StartLocalNameServer {
    *  ***********************************************************
    */
   public static void main(String[] args) {
-    printUsage();
-    System.exit(2);
     int id = 0;						//node id
     startLNS(id, null, null, args);
   }
