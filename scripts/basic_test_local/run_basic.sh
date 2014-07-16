@@ -48,3 +48,5 @@ sleep 10
 cd log/client
 java -ea -cp $gns_jar edu.umass.cs.gns.test.nioclient.ClientSample ../../node_config $client_port
 cd ../../
+killall -9 java
+echo "Debug logs are available in folder: log"

@@ -2,6 +2,7 @@ package edu.umass.cs.gns.test.nioclient;
 
 import edu.umass.cs.gns.localnameserver.*;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
@@ -112,7 +113,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
   // incoming packets from LNS
   @Override
   public void handleIncomingPacket(JSONObject incomingJson) {
-    GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
+    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
     int origReqID;
     JSONObject origJson = null; // json sent by client
     JSONObject outgoingJson = null;
@@ -120,6 +121,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
       switch (Packet.getPacketType(incomingJson)) {
         case CONFIRM_ADD:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
+          if (origJson==null) break;
           origReqID = new AddRecordPacket(origJson).getRequestID();
           ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
@@ -127,6 +129,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           break;
         case CONFIRM_REMOVE:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
+          if (origJson==null) break;
           origReqID = new RemoveRecordPacket(origJson).getRequestID();
           confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
@@ -134,6 +137,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           break;
         case CONFIRM_UPDATE:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
+          if (origJson==null) break;
           origReqID = new UpdatePacket(origJson).getRequestID();
           confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
@@ -141,6 +145,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           break;
         case DNS:
           origJson = (JSONObject) uniqueIDHashMap.remove(new DNSPacket(incomingJson).getQueryId());
+          if (origJson==null) break;
           origReqID = new DNSPacket(origJson).getQueryId();
           DNSPacket dnsPacket = new DNSPacket(incomingJson);
           dnsPacket.getHeader().setId(origReqID);
@@ -166,7 +171,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
     GNS.getLogger().fine("NIO sent response to client ...");
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, JSONException, InterruptedException {
     /** This is a test for DBClientIntercessor and DBClient using a fake local name server. **/
 
     // restrict logging level to INFO to see only meaningful messages

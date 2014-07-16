@@ -71,14 +71,7 @@ num_lns = 1  # must be set to 1
 # parameters for workload generator
 wfile = None
 
-regular_workload = 0     # number of names in the workload (GNS also read this parameter to load names into database)
-mobile_workload = 0         # NOT used
-
 gen_workload = False   # if True, generate new workload,
-
-lookup_count = 10   # number of lookups at local name server,
-update_count = 10   # number of updates at local name server
-
 
 #
 #
@@ -86,9 +79,9 @@ update_count = 10   # number of updates at local name server
 # logging options
 is_debug_mode = True   #
 
-nslog = 'WARNING'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 
@@ -97,20 +90,13 @@ lnslogstat = 'FINE'  # Always set to 'FINE'
 # GNS parameters common to name server / local name servers
 is_experiment_mode = False  # set to True to run experiments, false otherwise.
 
-
 primary_name_server = 3  # number of primary name servers
-
-use_gns_nio_transport = False
 
 no_paxos_log = False
 dummy_gns = False
 
-#lookupTrace = 'lookupTrace10'
-#updateTrace = 'updateTrace10'
-
 scheme = 'locality'         # 'locality' is for auspice
 schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_all': 4}
-
 
 #
 #
@@ -118,8 +104,7 @@ schemes = {'beehive': 0, 'locality': 1, 'uniform': 2, 'static3': 3, 'replicate_a
 replication_interval = 10000   # interval (in sec) at which group changes are done.
 failure_detection_msg_interval = 10
 failure_detection_timeout_interval = 30
-name_actives = ''  # NOT used
-multipaxos = False
+multipaxos = True
 
 #
 #

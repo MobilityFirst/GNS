@@ -348,7 +348,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
       if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
-      return new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive()).toString();
+      TransferableNameRecordState state = new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
+      GNS.getLogger().fine("Getting state: " + state.toString());
+      return state.toString();
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found for name: " + name);
       e.printStackTrace();
@@ -364,6 +366,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
 
   @Override
   public boolean updateState(String name, String state) {
+    GNS.getLogger().fine("Updating state: " + state);
     boolean stateUpdated = false;
     try {
       TransferableNameRecordState state1 = new TransferableNameRecordState(state);

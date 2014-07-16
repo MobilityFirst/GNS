@@ -32,14 +32,15 @@ class ThroughputTestDistributed(TestSetupRemote):
     def test_a_latency(self):
         """ Measures read and write latency for varying number of replicas at moderate load"""
 
-        num_replica_set = range(3, self.ns + 1, 2)
+        # num_replica_set = range(3, self.ns + 1, 2)
+        num_replica_set = [3]
         print "Replica set: ", num_replica_set
         for num_replica in num_replica_set:
             output_dir = 'read_write_latency/replica_' + str(num_replica)
             # output from experiment will go in this folder
             self.exp_output_folder = os.path.join(self.local_output_folder, output_dir)
             print 'Testing read/write latency with replicas =', num_replica, 'Folder =', self.exp_output_folder
-            self.run_latency_test(num_replica, num_names=10000, req_rate=500, num_requests=100000)
+            self.run_latency_test(num_replica, num_names=1000, req_rate=100, num_requests=1000)
 
     def test_a1_latency_low_rate(self):
         """ Measures read and write latency for varying number of replicas at very low load (used on planetlab)"""

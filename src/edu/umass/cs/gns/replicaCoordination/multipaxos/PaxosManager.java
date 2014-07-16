@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
@@ -23,12 +22,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -144,12 +138,7 @@ public class PaxosManager extends AbstractPaxosManager {
 	}
 
   public Set<Integer> getPaxosNodeIDs(String paxosID) {
-    Set<Integer> hashSet = new HashSet<>();
-    PaxosInstanceStateMachine p = pinstances.get(paxosID);
-    if (p != null) {
-      for (int nodeID : p.getMembers()) hashSet.add(nodeID);
-    }
-    return hashSet;
+    return null;
   }
 
   protected boolean createPaxosInstance(String paxosID, short version, int id, Set<Integer> gms, Replicable app,

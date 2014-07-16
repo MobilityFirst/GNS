@@ -65,16 +65,16 @@ class FeatureTestLocal(TestSetupLocal):
         n = 5
 
         name = 'test_name'
-        delay_ms = 2500
+        delay_ms = 6000
         requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY],
                     [name, RequestType.LOOKUP],
                     [name, RequestType.UPDATE],
-                    [name, RequestType.LOOKUP],
+                    [name, RequestType.LOOKUP], [delay_ms, RequestType.DELAY],
                     [name, RequestType.REMOVE], [delay_ms, RequestType.DELAY]]
         request_n_times = []
         for i in range(n):
             request_n_times.extend(requests)
-        exp_duration = int(n * (1 + 2*delay_ms/1000))
+        exp_duration = int(n * (1 + 3*delay_ms/1000))
 
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration))  # in seconds
         output_stats = self.run_exp(request_n_times)

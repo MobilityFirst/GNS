@@ -16,32 +16,24 @@ LOCAL_EXP = '-local'
 REGULAR_WORLOAD = '-rworkload'
 MOBILE_WORLOAD = '-mworkload'
 WORKLOAD_FILE = '-wfile'
-LOOKUP_TRACE_FILE = '-lookupTrace'
 UPDATE_TRACE_FILE = '-updateTrace'
 PRIMARY_NAMESERVERS = '-primary'
 ALPHA = '-alpha'
 CACHE_SIZE = '-cacheSize'
 ZIPF_WORKLOAD = '-zipf'
 LOCATION_REPLICATION = '-location'
-OPTIMAL_REPLICATION = '-optimal'
-REPLICATION_INTERVAL = '-rInterval'
-OPTIMAL_TRACE = '-optimalTrace'
 NAME = '-name'
 NUM_LOOKUP = '-nlookup'
 NUM_Update = '-nUpdate'
 VOTE_INTERVAL = '-vInterval'
-#CHOOSE_FROM_CLOSEST_K = '-chooseFromClosestK'
-LOOKUP_RATE = '-lookupRate'
 UPDATE_RATE_MOBILE = '-updateRateMobile'
 UPDATE_RATE_REGULAR = '-updateRateRegular'
 DEBUG_MODE = '-debugMode'
 EXPERIMENT_MODE = '-experimentMode'
 HELP = '-help'
 
-
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
-USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 
 BEEHIVE_REPLICATION = '-beehive'
 BEEHIVEDHTBASE = '-beehiveBase'
@@ -50,7 +42,6 @@ BEEHIVELEAFSET = '-leafSet'
 LOAD_BALANCING = '-loadDependentRedirection'
 LOAD_MONITOR_INTERVAL = '-nsLoadMonitorIntervalSeconds'
 
-NUMER_OF_TRANSMISSIONS = '-numberOfTransmissions'
 MAX_QUERY_WAIT_TIME = '-maxQueryWaitTime'
 QUERY_TIMEOUT = '-queryTimeout'
 ADAPTIVE_TIMEOUT = '-adaptiveTimeout'
@@ -97,9 +88,6 @@ load_balancing = exp_config.load_balancing                 # local name servers 
 load_monitor_interval = exp_config.replication_interval    # interval of monitoring load at every nameserver (seconds)
 
 # Optimal Replication
-is_optimal_replication = False
-optimal_trace_file = ''
-replication_interval = 300                          # In seconds. Should be the same as replication interval in name-server.py
 
 # Beehive replication
 is_beehive_replication = exp_config.is_beehive_replication                       # Beehive replication
@@ -172,10 +160,6 @@ def run_local_name_server(node_id, work_dir, update_trace_file):
     if is_location_replication:
         command += ' ' + LOCATION_REPLICATION
         command += ' ' + VOTE_INTERVAL + ' ' + str(vote_interval)
-    if is_optimal_replication:
-        command += ' ' + OPTIMAL_REPLICATION
-        command += ' ' + REPLICATION_INTERVAL + ' ' + str(replication_interval)
-        command += ' ' + OPTIMAL_TRACE + ' ' + optimal_trace_file
 
     if is_beehive_replication:
         command += ' ' + BEEHIVE_REPLICATION
@@ -199,16 +183,12 @@ def run_local_name_server(node_id, work_dir, update_trace_file):
     if workload_file is not None and workload_file != '':
         command += ' ' + WORKLOAD_FILE + ' ' + workload_file
 
-    command += ' ' + NUMER_OF_TRANSMISSIONS + ' ' + str(numberOfTransmissions)
     command += ' ' + MAX_QUERY_WAIT_TIME + ' ' + str(maxQueryWaitTime)
     command += ' ' + QUERY_TIMEOUT + ' ' + str(queryTimeout)
 
     if emulate_ping_latencies:
         command += ' ' + EMULATE_PING_LATENCIES
         command += ' ' + VARIATION + ' ' + str(variation)
-
-    if exp_config.use_gns_nio_transport:
-        command += ' ' + USE_GNS_NIO_TRANSPORT
 
     if adaptiveTimeout:
         command += ' ' + ADAPTIVE_TIMEOUT

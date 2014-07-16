@@ -125,7 +125,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           // Send the current set of active replicas for this name to the LNS to keep it updated of the
           // current replica set. This message is necessary for the case when the active replica set has
           // changed but the old and new replicas share some members (which is actually quite common).
-          // Why is this useful? Let's say closest name server to a LNS in the previous replica set was quite far, but
+          // Why is this necessary? Let's say closest name server to a LNS in the previous replica set was quite far, but
           // in the new replica set the closest name server is very near to LNS. If we do not inform the LNS of
           // current active replica set, it will continue sending requests to the far away name server.
           Set<Integer> nodeIds = paxosManager.getPaxosNodeIDs(name);
@@ -134,19 +134,17 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
             requestActives.setActiveNameServers(nodeIds);
             nioTransport.sendToID(dnsPacket.getLnsId(), requestActives.toJSONObject());
           }
-          if (readCoordination) {
-
-            if (dnsPacket.isQuery()) {
-              dnsPacket.setResponder(nodeID);
-              paxosID = paxosManager.propose(dnsPacket.getGuid(), dnsPacket.toString());
-              if (paxosID == null) {
-                callHandleDecision = dnsPacket.toJSONObjectQuestion();
-                noCoordinatorState = true;
-              }
-              break;
+          if (readCoordination && dnsPacket.isQuery()) {
+            dnsPacket.setResponder(nodeID);
+            paxosID = paxosManager.propose(dnsPacket.getGuid(), dnsPacket.toString());
+            if (paxosID == null) {
+              callHandleDecision = dnsPacket.toJSONObjectQuestion();
+              noCoordinatorState = true;
             }
-
+          } else {
+            callHandleDecision = request;
           }
+          break;
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
         case CONFIRM_UPDATE:

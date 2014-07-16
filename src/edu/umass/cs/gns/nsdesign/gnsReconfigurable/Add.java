@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
@@ -41,8 +40,9 @@ public class Add {
         GNS.getLogger().severe("Name record exists when we just deleted it!!! - " + e.getMessage());
         e1.printStackTrace();
       }
-      if (Config.debugMode)
-        GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted.");
+      if (Config.debugMode) {
+        GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted. Here is the inserted record: " + nameRecord);
+      }
     }
     sendConfirmMsg(addRecordPacket, gnsApp);
   }

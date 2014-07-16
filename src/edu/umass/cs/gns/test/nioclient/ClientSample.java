@@ -47,70 +47,72 @@ public class ClientSample extends AbstractPacketDemultiplexer {
     this.noAssert = noAssert;
   }
 
-  void startClient() {
+  void startClient() throws JSONException, IOException, InterruptedException {
     try {
       DBClient dbClient = new DBClient(lnsAddress, lnsPort, clientPort, this);
 
       int reqCount = 0; // counter to assign request IDs
 
       GNS.getLogger().info("Client starting to send requests ....");
-      // send add request
-      String name = "testName";
-      NameRecordKey key = new NameRecordKey("testKey");
-      String firstValue = "firstValue";
-      ResultValue rv = new ResultValue();
-      rv.add(firstValue);
-      AddRecordPacket addRecordPacket = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv,
-              -1, 0);
-      dbClient.sendRequest(addRecordPacket.toJSONObject());
-      waitForResponse();
-      ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
-      if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess();
-      GNS.getLogger().info("SUCCESS: Name added to GNS");
+      int repeatCycles = 10;
+      for (int i = 0; i < repeatCycles; i++) {
+        // send add request
+        String name = "testName";
+        NameRecordKey key = new NameRecordKey("testKey");
+        String firstValue = "firstValue";
+        ResultValue rv = new ResultValue();
+        rv.add(firstValue);
+        AddRecordPacket addRecordPacket = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv,
+                -1, 0);
+        dbClient.sendRequest(addRecordPacket.toJSONObject());
+        waitForResponse();
+        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
+        if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess();
+        GNS.getLogger().info("SUCCESS: Name added to GNS");
 
-      // send lookup for name
-      DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID,  ++reqCount, name, key, null, null, null);
-      dbClient.sendRequest(dnsPacket.toJSONObject());
-      waitForResponse();
-      DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);
-      if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
-              !dnsResponse.containsAnyError() &&
-              dnsResponse.getRecordValue().get(key.getName()).get(0).equals(firstValue);
-      GNS.getLogger().info("SUCCESS: Name lookup returned initial value");
+        // send lookup for name
+        DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
+        dbClient.sendRequest(dnsPacket.toJSONObject());
+        waitForResponse();
+        DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);
+        if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
+                !dnsResponse.containsAnyError() &&
+                dnsResponse.getRecordValue().get(key.getName()).get(0).equals(firstValue);
+        GNS.getLogger().info("SUCCESS: Name lookup returned initial value");
 
-      // send update
-      String secondValue = "secondValue";
-      rv.clear();
-      rv.add(secondValue);
-      UpdatePacket updatePacket = new UpdatePacket(UpdatePacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv, null, 0, UpdateOperation.REPLACE_ALL,
-              -1, 0, null, null, null);
-      dbClient.sendRequest(updatePacket.toJSONObject());
-      waitForResponse();
-      confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
-      if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess();
-      GNS.getLogger().info("SUCCESS: Name updated in GNS");
+        // send update
+        String secondValue = "secondValue";
+        rv.clear();
+        rv.add(secondValue);
+        UpdatePacket updatePacket = new UpdatePacket(UpdatePacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv, null, 0, UpdateOperation.REPLACE_ALL,
+                -1, 0, null, null, null);
+        dbClient.sendRequest(updatePacket.toJSONObject());
+        waitForResponse();
+        confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
+        if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess(): confirmPkt;
+        GNS.getLogger().info("SUCCESS: Name updated in GNS");
 
-      // read and test if updated value is received
-      dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID,   ++reqCount, name, key, null, null, null);
-      dbClient.sendRequest(dnsPacket.toJSONObject());
-      waitForResponse();
-      dnsResponse = new DNSPacket(mostRecentResponse);
-      if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
-              !dnsResponse.containsAnyError() &&
-              dnsResponse.getRecordValue().get(key.getName()).get(0).equals(secondValue);
-      GNS.getLogger().info("SUCCESS: Name lookup returned updated value");
+        // read and test if updated value is received
+        dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
+        dbClient.sendRequest(dnsPacket.toJSONObject());
+        waitForResponse();
+        dnsResponse = new DNSPacket(mostRecentResponse);
+        if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
+                !dnsResponse.containsAnyError() &&
+                dnsResponse.getRecordValue().get(key.getName()).get(0).equals(secondValue);
+        GNS.getLogger().info("SUCCESS: Name lookup returned updated value");
 
-      // remove name
-      RemoveRecordPacket removePacket = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, ++reqCount, name, -1);
-      dbClient.sendRequest(removePacket.toJSONObject());
-      waitForResponse();
-      confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
-      if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess();
-      GNS.getLogger().info("SUCCESS: Name removed from GNS");
+        // remove name
+        RemoveRecordPacket removePacket = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, ++reqCount, name, -1);
+        dbClient.sendRequest(removePacket.toJSONObject());
+        waitForResponse();
+        confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
+        if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess();
+        GNS.getLogger().info("SUCCESS: Name removed from GNS");
 
-      GNS.getLogger().info("Client received all responses ... SUCCESS.");
-
-    } catch (IOException | JSONException | InterruptedException e) {
+        GNS.getLogger().info("Client received all responses ... SUCCESS.");
+      }
+    } catch (AssertionError e) {
       e.printStackTrace();
     }
     System.exit(2);
@@ -132,7 +134,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
     return true;
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, JSONException, InterruptedException {
     GNS.consoleOutputLevel = GNS.statConsoleOutputLevel = GNS.fileLoggingLevel = GNS.statFileLoggingLevel = "INFO";
 
     // A client only needs to know IP/port of a local name server.
