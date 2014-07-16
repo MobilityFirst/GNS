@@ -70,13 +70,17 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    *
    * @return <code>String</code> of the command usage ()
    */
-  public String getUsage(boolean html) {
-    if (html) {
-      return "HTML Form: " + getHTMLForm() + NEWLINE
-              + getCommandDescription();
-    } else {
-      return getTCPForm() + NEWLINE
-              + getCommandDescription();
+  public String getUsage(CommandModule.CommandDescriptionFormat format) {
+    switch (format) {
+      case HTML:
+        return "HTML Form: " + getHTMLForm() + NEWLINE
+                + getCommandDescription();
+      case TCP:
+        return getTCPForm() + NEWLINE + getCommandDescription();
+      case TCP_Wiki:
+        return getTCPWikiForm() + "||" + getCommandDescription();
+      default:
+        return "Unknown command description format!";
     }
   }
 
@@ -115,6 +119,31 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     return result.toString();
   }
 
+  /**
+   * Outputs the command information in a format that can be used on a Media Wiki page.
+   * 
+   * @return 
+   */
+  public String getTCPWikiForm() {
+    StringBuilder result = new StringBuilder();
+    result.append("|- "); // start row
+    result.append(NEWLINE);
+     result.append("|");
+    result.append(getCommandName());
+    String[] parameters = getCommandParameters();
+    result.append(" || ");
+    String prefix = "";
+    for (int i = 0; i < parameters.length; i++) {
+      if (!SIGNATUREFULLMESSAGE.equals(parameters[i])) {
+        result.append(prefix);
+        result.append(parameters[i]);
+        prefix = ", ";
+      }
+    }
+    return result.toString();
+  }
+  
+  
   public String getCommandParametersString() {
     StringBuilder result = new StringBuilder();
     String[] parameters = getCommandParameters();

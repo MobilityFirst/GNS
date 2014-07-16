@@ -38,6 +38,7 @@ public class ReplaceList extends AbstractUpdateList {
 
   @Override
   public String getCommandDescription() {
-    return "Replaces the current value key value pair from the GNS for the given guid with the given values.";
+    return "Replaces the current value key value pair from the GNS for the given guid with the given values."
+             + " Field must be writeable by the WRITER guid.";
   }
 }

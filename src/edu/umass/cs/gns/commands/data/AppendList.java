@@ -38,6 +38,7 @@ public class AppendList extends AbstractUpdateList {
 
   @Override
   public String getCommandDescription() {
-    return "Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list.";
+    return "Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list."
+            + " Field must be writeable by the WRITER guid.";
   }
 }

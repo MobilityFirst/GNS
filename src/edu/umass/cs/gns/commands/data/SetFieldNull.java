@@ -31,7 +31,7 @@ public class SetFieldNull extends AbstractUpdate {
   public SetFieldNull(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SETFIELDNULL;
@@ -47,9 +47,9 @@ public class SetFieldNull extends AbstractUpdate {
     return new String[]{GUID, FIELD, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-
   @Override
   public String getCommandDescription() {
-    return "Sets the field to contain a null value.";        
+    return "Sets the field to contain a null value."
+            + " Field must be writeable by the WRITER guid.";
   }
 }

@@ -39,6 +39,6 @@ public class RemoveField extends AbstractUpdate {
   @Override
   public String getCommandDescription() {
     return "Removes the key value pair from the GNS for the given guid "
-            + "after authenticating that GUID making request has access authority.";
+            + "after authenticating that WRITER making request has access authority.";
   }
 }

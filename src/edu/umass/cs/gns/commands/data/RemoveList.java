@@ -39,6 +39,7 @@ public class RemoveList extends AbstractUpdateList {
   @Override
   public String getCommandDescription() {
     return "Removes all the values from the key value pair for the given GUID. "
-            + "Value is a list of items formated as a JSON list.";
+            + "Value is a list of items formated as a JSON list."
+            + " Field must be writeable by the WRITER guid.";
   }
 }

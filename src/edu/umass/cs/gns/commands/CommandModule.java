@@ -95,28 +95,43 @@ public class CommandModule {
     GNS.getLogger().warning("***COMMAND SEARCH***: Unable to find " + json);
     return null;
   }
+  
+  public enum CommandDescriptionFormat {
+    HTML, TCP, TCP_Wiki
+  }
+  
+  public static final String standardPreamble = "COMMAND PACKAGE: %s";
+  
+  public static final String wikiPreamble = "{| class=\"wikitable\"\n" +
+"|+ Commands in %s\n" +
+"! scope=\"col\" | Command Name\n" +
+"! scope=\"col\" | Parameters\n" +
+"! scope=\"col\" | Description";
 
-  public String allCommandDescriptions(boolean html) {
-    StringBuffer result = new StringBuffer();
+  public String allCommandDescriptions(CommandDescriptionFormat format) {
+    StringBuilder result = new StringBuilder();
     int cnt = 1;
     List<GnsCommand> commandList = new ArrayList(commands);
     // First sort by name
     Collections.sort(commandList, CommandNameComparator);
     // The sort them by package
     Collections.sort(commandList, CommandPackageComparator);
-    String lastPackageName = null;
+    String lastPackageName = null; 
     for (GnsCommand command : commandList) {
       String packageName = command.getClass().getPackage().getName();
       if (!packageName.equals(lastPackageName)) {
+         if (format.equals(CommandDescriptionFormat.TCP_Wiki) && lastPackageName != null) {
+          // finish last table
+          result.append("|}");
+        }
         lastPackageName = packageName;
         result.append(NEWLINE);
-        result.append("COMMAND PACKAGE: ");
-        result.append(lastPackageName);
+        result.append(String.format(format.equals(CommandDescriptionFormat.TCP_Wiki) ? wikiPreamble : standardPreamble, lastPackageName));
         result.append(NEWLINE);
       }
       //result.append(NEWLINE);
       //result.append(cnt++ + ": ");
-      result.append(command.getUsage(html));
+      result.append(command.getUsage(format));
       result.append(NEWLINE);
       result.append(NEWLINE);
     }

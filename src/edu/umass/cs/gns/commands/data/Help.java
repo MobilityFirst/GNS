@@ -39,12 +39,17 @@ public class Help extends GnsCommand {
       return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(false));
+              + module.allCommandDescriptions(CommandModule.CommandDescriptionFormat.TCP));
+    } else if (json.has("tcpwiki")) {
+      return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
+              + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
+              + "Commands:" + NEWLINE
+              + module.allCommandDescriptions(CommandModule.CommandDescriptionFormat.TCP_Wiki));
     } else {
       return new CommandResponse("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(true));
+              + module.allCommandDescriptions(CommandModule.CommandDescriptionFormat.HTML));
     }
   }
 

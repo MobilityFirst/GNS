@@ -62,6 +62,7 @@ public class CreateList extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID. Value is a list of items formated as a JSON list.";
+    return "Adds a key value pair to the GNS for the given GUID. Value is a list of items formated as a JSON list."
+             + " Field must be writeable by the WRITER guid.";
   }
 }

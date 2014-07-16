@@ -38,6 +38,7 @@ public class AppendUnsigned extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Appends the value onto the key value pair for the given GUID. Treats the list as a set, removing duplicates";
+    return "Appends the value onto the key value pair for the given GUID. Treats the list as a set, removing duplicates"
+            + " Field must be world writeable as this command does not specify the writer and is not signed.";
   }
 }

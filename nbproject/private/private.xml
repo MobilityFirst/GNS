@@ -3,30 +3,18 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/EC2Runner.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/CommandProcessor.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/GNSInstallerV1.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/umassExample/lns.conf</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/umassExample/lns_hosts.txt</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/InstallConfig.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/linux_mongo_java8_install.bash</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/GNSNodeConfig.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/main/StartNameServer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostFileLoader.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/umassExample/ns_hosts.txt</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/linux_mongo_java7_install.bash</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/GNSInstallerV3.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostConfigParser.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/umassExample/ns.conf</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/main/StartLocalNameServer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/umassExample/installer_config</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/TESTLocalNameServer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/lns.conf</file>
-            <file>file:/Users/westy/Documents/Code/GNS/conf/name-server-info</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/NIOTransport.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/NSPacketDemultiplexer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/GNSInstallerV2.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/installer/HostInfo.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/acl/AclRemoveSelf.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/admin/PingTable.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RemoveAccount.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/HelpTcp.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/acl/AclRemove.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/admin/ChangeLogLevel.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/CommandPacket.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/Help.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/GnsCommand.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/CommandModule.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/Append.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/CommandValueReturnPacket.java</file>
         </group>
     </open-files>
 </project-private>

@@ -39,7 +39,8 @@ public class AppendOrCreate extends AbstractUpdate {
   @Override
   public String getCommandDescription() {
     return "Adds a key value pair to the GNS for the given GUID if it doesn't not exist "
-            + "otherwise append value onto existing value.";
+            + "otherwise append value onto existing value."
+            + " Field must be writeable by the WRITER guid.";
            
   }
 }

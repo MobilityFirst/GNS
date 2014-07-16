@@ -39,6 +39,7 @@ public class ReplaceOrCreateUnsigned extends AbstractUpdate {
   @Override
   public String getCommandDescription() {
     return "Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise "
-            + "replaces the value of this key value pair for the given GUID.";
+            + "replaces the value of this key value pair for the given GUID."
+            + " Field must be world writeable as this command does not specify the writer and is not signed.";
   }
 }

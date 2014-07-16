@@ -38,6 +38,7 @@ public class SubstituteUnsigned extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Replaces oldvalue with newvalue in the key value pair for the given GUID. See below for more on the signature.";
+    return "Replaces oldvalue with newvalue in the key value pair for the given GUID. See below for more on the signature."
+            + " Field must be world writeable as this command does not specify the writer and is not signed.";
   }
 }

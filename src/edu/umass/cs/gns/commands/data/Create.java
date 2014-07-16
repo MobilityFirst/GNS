@@ -65,6 +65,7 @@ public class Create extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID.";
+    return "Adds a key value pair to the GNS for the given GUID."
+             + " Field must be writeable by the WRITER guid.";
   }
 }

@@ -39,7 +39,8 @@ public class SubstituteList extends AbstractUpdateList {
   @Override
   public String getCommandDescription() {
     return "Replaces oldvalue with newvalue in the key value pair for the given GUID. "
-            + "Value is a list of items formated as a JSON list.";
-            
+            + "Value is a list of items formated as a JSON list."
+            + " Field must be writeable by the WRITER guid.";
+
   }
 }

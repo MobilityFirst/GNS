@@ -45,7 +45,7 @@ public class SelectGroupSetupQuery extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Intializes the group guid to automatically update and maintain all records that satisfy the query."
-            + "For details see http://mobilityfirst.cs.umass.edu/wiki/index.php/Query_Syntax "
+            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
             + "Values are returned as a JSON array of JSON Objects.";
   }
 }

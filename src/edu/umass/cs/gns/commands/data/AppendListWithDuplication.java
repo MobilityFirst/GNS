@@ -39,6 +39,7 @@ public class AppendListWithDuplication extends AbstractUpdateList {
   @Override
   public String getCommandDescription() {
     return  "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates. "
-            + "Value is a list of items formated as a JSON list.";          
+            + "Value is a list of items formated as a JSON list."
+            + " Field must be writeable by the WRITER guid.";
   }
 }

@@ -38,7 +38,7 @@ public class Remove extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
+    return "Returns one key value pair from the GNS for the given guid after authenticating that WRITER making request has access authority."
             + " Values are always returned as a JSON list."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
   }

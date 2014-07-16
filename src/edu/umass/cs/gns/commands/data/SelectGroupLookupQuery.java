@@ -44,7 +44,7 @@ public class SelectGroupLookupQuery extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Returns all records for a group guid that was previously setup with a query. "
-            + "For details see http://mobilityfirst.cs.umass.edu/wiki/index.php/Query_Syntax "
+            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
             + "Values are returned as a JSON array of JSON Objects.";
   }
 }

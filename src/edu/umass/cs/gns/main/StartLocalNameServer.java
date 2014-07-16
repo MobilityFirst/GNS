@@ -324,10 +324,12 @@ public class StartLocalNameServer {
    *  ***********************************************************
    */
   public static void main(String[] args) {
-    int id = 0;						//node id
-    startLNS(id, null, null, args);
+    // all parameters will be specified in the arg list
+    startLNS(0, null, null, args);
   }
 
+  // supports old style single name-server-info style as nsFile with lnsFile being null
+  // as well as new format where the NSs are in nsFile and the LNSs are in lnsFile
   public static void startLNS(int id, String nsFile, String lnsFile, String... args) {
     try {
       CommandLine parser = null;

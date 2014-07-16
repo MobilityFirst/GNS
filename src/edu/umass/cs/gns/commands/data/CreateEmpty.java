@@ -33,6 +33,7 @@ public class CreateEmpty extends Create {
   
   @Override
   public String getCommandDescription() {
-    return "Adds an empty field to the GNS for the given GUID.";
+    return "Adds an empty field to the GNS for the given GUID."
+             + " Field must be writeable by the WRITER guid.";
   }
 }

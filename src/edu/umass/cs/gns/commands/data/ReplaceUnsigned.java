@@ -38,6 +38,7 @@ public class ReplaceUnsigned extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Replaces the current value key value pair from the GNS for the given guid.";
+    return "Replaces the current value key value pair from the GNS for the given guid."
+            + " Field must be world writeable as this command does not specify the writer and is not signed.";
   }
 }

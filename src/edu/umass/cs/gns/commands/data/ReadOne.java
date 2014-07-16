@@ -32,7 +32,7 @@ public class ReadOne extends Read {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that the readerguid (GUID making request) has access authority. "
+    return "Returns one key value pair from the GNS for the given guid after authenticating that the READER has access authority. "
             + "Treats the value of key value pair as a singleton item and returns that item."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields. ";
   }

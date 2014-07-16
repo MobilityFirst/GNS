@@ -38,6 +38,7 @@ public class AppendWithDuplication extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates.";
+    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates."
+             + " Field must be writeable by the WRITER guid.";
   }
 }

@@ -39,6 +39,7 @@ public class SubstituteListUnsigned extends AbstractUpdateList {
   @Override
   public String getCommandDescription() {
     return "Replaces oldvalue with newvalue in the key value pair for the given GUID. "
-            + "Value is a list of items formated as a JSON list.";
+            + "Value is a list of items formated as a JSON list."
+            + " Field must be world writeable as this command does not specify the writer and is not signed.";
   }
 }

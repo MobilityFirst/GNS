@@ -44,7 +44,7 @@ public class SelectQuery extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Returns all records that satisfy the query. "
-            + "For details see http://mobilityfirst.cs.umass.edu/wiki/index.php/Query_Syntax "
+            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
             + "Values are returned as a JSON array of JSON Objects.";
   }
 }
