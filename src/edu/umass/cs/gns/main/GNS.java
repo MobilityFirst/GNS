@@ -77,10 +77,6 @@ public class GNS {
    */
   public static int DEFAULT_MAX_QUERY_WAIT_TIME = 10000; // currently 10 seconds
   /**
-   * default number of transmissions
-   */
-  public static int DEFAULT_NUMBER_OF_TRANSMISSIONS = 3;
-  /**
    * Logging level for main logger
    */
   public static String fileLoggingLevel = "FINE";

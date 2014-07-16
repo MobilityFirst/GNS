@@ -96,7 +96,10 @@ public class StartNameServer {
    * Prints command line usage
    */
   private static void printUsage(Options commandLineOptions) {
-    new HelpFormatter().printHelp("StartNameServer", commandLineOptions);
+    HelpFormatter helpFormatter = new HelpFormatter();
+    helpFormatter.setWidth(135);
+    helpFormatter.printHelp(StartNameServer.class.getCanonicalName(), NSParameterNames.HELP_HEADER, commandLineOptions,
+            NSParameterNames.HELP_FOOTER);
   }
 
   /**
@@ -107,10 +110,14 @@ public class StartNameServer {
    * @throws ParseException
    */
   public static void main(String[] args) throws IOException {
-
     HashMap<String, String> allValues = getParametersAsHashMap(args);
     // initialize config options.
     Config.initialize(allValues);
+    if (!allValues.containsKey(NSParameterNames.ID)) {
+      System.out.println("EXIT. Node ID not given. Use this option to specify nodeID: " + NSParameterNames.ID);
+      printUsage(NSParameterNames.getAllOptions());
+      System.exit(2);
+    }
     int nodeID = Integer.parseInt(allValues.get(NSParameterNames.ID));
 
     GNSNodeConfig gnsNodeConfig = null;

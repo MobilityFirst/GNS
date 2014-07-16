@@ -30,15 +30,17 @@ public class Config {
   public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/"; 
   
   public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS"; 
-  
+
+  public static int workerThreadCount = 5;
+
+  public static DataStoreType dataStore = DataStoreType.MONGO;
+  public static int mongoPort = 27017;
 
   // paxos parameters
   public static int failureDetectionTimeoutSec = 30000;
   public static int failureDetectionPingSec = 10000;
   public static String paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
 
-  public static DataStoreType dataStore = DataStoreType.MONGO;
-  public static int mongoPort = 27017;
 
   // parameter related to replication of records
   public static double normalizingConstant = 0.5;
@@ -49,7 +51,7 @@ public class Config {
   public static int movingAverageWindowSize = 20;
   public static int nameServerVoteSize = 30;
   public static double maxReqRate = 50.0; // maximum request rate of name records
-  public static final int NS_TIMEOUT_MILLIS = 5000;
+  public static final int NS_TIMEOUT_MILLIS = 5000; // timeout value for retransmission during group changes
 
   // parameters specific to beehive replication (used only for running experiments)
   public static double beehiveC = 0.5;
@@ -58,7 +60,6 @@ public class Config {
   public static int beehiveWorkloadSize = 11000;
 
   // testing related parameters
-  public static boolean useGNSNIOTransport = true;
   public static boolean multiPaxos = false; // option to use multipaxos package
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
@@ -90,11 +91,19 @@ public class Config {
       GNS.statConsoleOutputLevel = allValues.get(NSParameterNames.STAT_CONSOLE_OUTPUT_LEVEL);
     }
 
+    if (allValues.containsKey(NSParameterNames.WORKER_THREAD_COUNT)) {
+      workerThreadCount = Integer.parseInt(allValues.get(NSParameterNames.WORKER_THREAD_COUNT));
+    }
+
+
+    if (allValues.containsKey(NSParameterNames.NORMALIZING_CONSTANT)) {
+      normalizingConstant = Double.parseDouble(allValues.get(NSParameterNames.NORMALIZING_CONSTANT));
+    }
+
+
     // paxos parameters
     if (allValues.containsKey(NSParameterNames.PAXOS_LOG_FOLDER)) {
       paxosLogFolder = allValues.get(NSParameterNames.PAXOS_LOG_FOLDER);
-    } else {
-      paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
     }
 
     if (allValues.containsKey(NSParameterNames.FAILURE_DETECTION_MSG_INTERVAL)) {
@@ -135,6 +144,17 @@ public class Config {
     }
 
     // data-store parameters
+    if (allValues.containsKey(NSParameterNames.DATA_STORE)) {
+      String ds = allValues.get(NSParameterNames.DATA_STORE);
+      if (DataStoreType.IN_CORE_JSON.getClassName().equals(ds))
+        dataStore = DataStoreType.IN_CORE_JSON;
+      else if (DataStoreType.MONGO.getClassName().equals(ds))
+        dataStore = DataStoreType.MONGO;
+      else if (DataStoreType.CASSANDRA.getClassName().equals(ds))
+        dataStore = DataStoreType.CASSANDRA;
+      else throw new IllegalArgumentException();
+    }
+
     if (allValues.containsKey(NSParameterNames.MONGO_PORT)) {
       mongoPort = Integer.parseInt(allValues.get(NSParameterNames.MONGO_PORT));
     }
@@ -160,10 +180,6 @@ public class Config {
 
     if (allValues.containsKey(NSParameterNames.DEBUG_MODE)) {
       debugMode = Boolean.parseBoolean(allValues.get(NSParameterNames.DEBUG_MODE));
-    }
-
-    if (allValues.containsKey(NSParameterNames.USE_GNS_NIO_TRANSPORT)) {
-      useGNSNIOTransport = Boolean.parseBoolean(allValues.get(NSParameterNames.USE_GNS_NIO_TRANSPORT));
     }
 
     if (allValues.containsKey(NSParameterNames.MULTI_PAXOS)) {

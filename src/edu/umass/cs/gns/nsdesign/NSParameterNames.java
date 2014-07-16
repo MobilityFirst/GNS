@@ -23,15 +23,12 @@ public class NSParameterNames {
   public static final String LOCAL_NS_COUNT = "localnscount";
   public static final String LOCAL_LNS_COUNT = "locallnscount";
   public static final String PRIMARY_REPLICAS = "primary";
-  public static final String TTL_CONSTANT = "ttlconstant";
 
   // replication-related parameters
   public static final String LOCATION = "location";
   public static final String STATIC = "static";
   public static final String RANDOM = "random";
   public static final String BEEHIVE = "beehive";
-  public static final String KMEDIODS = "kmediods";
-  public static final String OPTIMAL = "optimal";
 
   public static final String AGGREGATE_INTERVAL = "aInterval";
   public static final String REPLICATION_INTERVAL = "rInterval";
@@ -73,106 +70,73 @@ public class NSParameterNames {
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
   public static final String VARIATION = "variation";
   public static final String NO_PAXOS_LOG = "noPaxosLog";
-  public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
   public static final String EVENTUAL_CONSISTENCY = "eventualConsistency";
   public static final String MULTI_PAXOS = "multipaxos";
-
-  // useless test-related parameters
-  public static final String TTL_REGULAR_NAMES = "rttl";
-  public static final String TTL_MOBILE_NAMES = "mttl";
-  public static final String SIGNATURE_CHECK = "signatureCheck";
-  public static final String QUIT_AFTER_TIME = "quitAfterTime";
-  public static final String NAME_ACTIVES = "nameActives";
-  public static final String REGULAR_WORKLOAD = "rworkload";
-  public static final String MOBILE_WORKLOAD = "mworkload";
-  public static final String SIMPLE_DISK_STORE = "simpleDiskStore";
-  public static final String DATA_FOLDER = "dataFolder";
-  public static final String NO_LOAD_DB = "noLoadDB";
+  public static final String HELP_HEADER = "NOTE: Options whose description starts with [EXP] are needed only during " +
+          "experiments and can be ignored otherwise.";
+  public static final String HELP_FOOTER = "";
 
   /**
    * Returns the list of command line options recognized by a name servers.
    * Method returns a {@link org.apache.commons.cli.Options} object which includes all command line options.
    */
   public static Options getAllOptions() {
-    Option help = new Option(HELP, "Prints Usage");
-    Option configFile = new Option(CONFIG_FILE, true, "File containing configuration parameters");
-    Option staticReplication = new Option(STATIC, "Fixed number of active nameservers per name");
-    Option randomReplication = new Option(RANDOM, "Randomly select new active nameservers");
-    Option locationBasedReplication = new Option(LOCATION, "Location Based selection of active nameserervs");
-    Option beehiveReplication = new Option(BEEHIVE, "Beehive Replication");
-    Option kmediodsReplication = new Option(KMEDIODS, "K-Mediods Replication");
-    Option optimalReplication = new Option(OPTIMAL, "Optimal Replication");
+    Option help = new Option(HELP, "Prints usage");
+    Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
+    Option staticReplication = new Option(STATIC, "Replicate name at fixed set of name servers");
+    Option randomReplication = new Option(RANDOM, "[EXP] Randomly select new active name servers");
+    Option locationBasedReplication = new Option(LOCATION, "Locality-based selection of active name serervs for a name (Default replication policy)");
+    Option beehiveReplication = new Option(BEEHIVE, "[EXP]  Beehive replication");
     OptionGroup replication = new OptionGroup().addOption(staticReplication)
             .addOption(randomReplication)
             .addOption(locationBasedReplication)
-            .addOption(beehiveReplication)
-            .addOption(kmediodsReplication)
-            .addOption(optimalReplication);
+            .addOption(beehiveReplication);
 
-    Option aggregateInterval = OptionBuilder.withArgName("seconds").hasArg()
-            .withDescription("Interval between collecting stats")
-            .create(AGGREGATE_INTERVAL);
+    Option aggregateInterval = new Option(AGGREGATE_INTERVAL, true, "Interval between collecting stats");
+    aggregateInterval.setArgName("seconds");
 
-    Option replicationInterval = OptionBuilder.withArgName("seconds").hasArg()
-            .withDescription("Interval between replication")
-            .create(REPLICATION_INTERVAL);
+    Option replicationInterval = new Option(REPLICATION_INTERVAL, true, "Interval between computing new replicas");
+    aggregateInterval.setArgName("seconds");
 
-    Option normalizingConstant = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("Normalizing constant")
-            .create(NORMALIZING_CONSTANT);
-    Option maxReqRate = new Option(MAX_REQ_RATE, true, "Maximum request rate that a NS can sustain");
+
+    Option normalizingConstant = new Option(NORMALIZING_CONSTANT, true, "Constant for deciding number of replicas as follows. #replicas = (read rate)/(write rate)/(nconstant)");
+    normalizingConstant.setArgName("#");
+
+    Option maxReqRate = new Option(MAX_REQ_RATE, true, "Maximum request rate that a name server can sustain");
 
     Option workerThreadCount = new Option(WORKER_THREAD_COUNT, true, "Number of worker threads");
 
-    Option debugMode = new Option(DEBUG_MODE, "Run in debug mode");
-    Option experimentMode = new Option(EXPERIMENT_MODE, "Run in experiment mode");
-    Option noLoadDB = new Option(NO_LOAD_DB, "Load items in database or not");
-    Option eventualConsistency = new Option(EVENTUAL_CONSISTENCY, "Eventual consistency or paxos");
+    Option debugMode = new Option(DEBUG_MODE, "Debug mode to print more verbose logs. Set to true only if log level is FINE or more verbose.");
+    Option experimentMode = new Option(EXPERIMENT_MODE, "[EXP] Run in experiment mode. May execute some code that is needed only during experiments");
 
-    Option dataStore = new Option(DATA_STORE, true, "Which persistent data store to use for name records");
+    Option eventualConsistency = new Option(EVENTUAL_CONSISTENCY, "[EXP] Eventual consistency or paxos");
 
-    //Option persistentDataStore = new Option("persistentDataStore", "Use a persistent data store for name records");
-    Option simpleDiskStore = new Option(SIMPLE_DISK_STORE, "Use a simple disk store for name records");
-    Option dataFolder = new Option(DATA_FOLDER, true, "dataFolder");
-    Option mongoPort = new Option(MONGO_PORT, true, "Which port number to use for MongoDB.");
+    Option dataStore = new Option(DATA_STORE, true, "Persistent data store to use for name records");
 
-    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "fileLoggingLevel");
-    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "consoleOutputLevel");
-    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "statFileLoggingLevel");
-    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "statConsoleOutputLevel");
+    Option mongoPort = new Option(MONGO_PORT, true, "Port number to use for MongoDB.");
 
-    Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
-            .withDescription("Node id")
-            .create(ID);
+    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file");
+    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output");
+    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "Verbosity level of log file for experiment related statistics");
+    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output for experiment related statistics");
 
-    Option nsFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Name server hosts file")
-            .create(NS_FILE);
+    Option nodeId = new Option(ID, true, "Node ID");
+    nodeId.setArgName("NodeID");
 
-    Option lnsFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Local name server hosts file")
-            .create(LNS_FILE);
-    
-     Option localNsCount = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Number of Name Servers to create on a local hosts")
-            .create(LOCAL_NS_COUNT);
+    Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
+    nsFile.setArgName("file");
 
-    Option localLnsCount = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Number of Local Name Servers to create on a local host")
-            .create(LOCAL_LNS_COUNT);
+    Option lnsFile = new Option(LNS_FILE, true, "File with node configuration of all local name servers");
+    nsFile.setArgName("file");
 
-    Option regularWorkload = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Regular workload size")
-            .create(REGULAR_WORKLOAD);
-    Option mobileWorkload = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Mobile workload size")
-            .create(MOBILE_WORKLOAD);
-    Option syntheticWorkloadSleepTimeBetweenAddingNames
-            = new Option("syntheticWorkloadSleepTimeBetweenAddingNames", true, "syntheticWorkloadSleepTimeBetweenAddingNames");
+    Option localNsCount = new Option(LOCAL_NS_COUNT, true, "Number of name servers to create on a local hosts");
+    localNsCount.setArgName("file");
 
-    Option primaryReplicas = OptionBuilder.withArgName("#primaries").hasArg()
-            .withDescription("Number of primary nameservers")
-            .create(PRIMARY_REPLICAS);
+    Option localLnsCount = new Option(LOCAL_LNS_COUNT, true, "Number of local name servers to create on a local host");
+    localNsCount.setArgName("file");
+
+    Option primaryReplicas = new Option(PRIMARY_REPLICAS, true, "Number of replica controllers for a name");
+    primaryReplicas.setArgName("#primaries");
 
     Option paxosLogFolder = new Option(PAXOS_LOG_FOLDER, true, "Folder where paxos logs are stored in a persistent manner.");
     Option failureDetectionMsgInterval = new Option(FAILURE_DETECTION_MSG_INTERVAL, true,
@@ -180,54 +144,34 @@ public class NSParameterNames {
     Option failureDetectionTimeoutInterval = new Option(FAILURE_DETECTION_TIMEOUT_INTERVAL, true,
             "Interval (in sec) after which a node is declared as failed");
 
-    Option paxosStartMinDelaySec = new Option("paxosStartMinDelaySec", true, "paxos starts at least this many seconds after start of experiment");
+    Option movingAverageWindowSize = new Option(MOVING_AVERAGE_WINDOW_SIZE, true, "Size of window to calculate the "
+            + "moving average of update inter-arrival time");
+    movingAverageWindowSize.setArgName("size");
 
-    Option paxosStartMaxDelaySec = new Option("paxosStartMaxDelaySec", true, "paxos starts at most this many seconds after start of experiment");
 
-    Option movingAverageWindowSize = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Size of window to calculate the "
-                    + "moving average of update inter-arrival time")
-            .create(MOVING_AVERAGE_WINDOW_SIZE);
+    Option nameServerVoteSize = new Option(NAME_SERVER_VOTE_SIZE, true, "Maximum number of replicas selected based on locality");
+    nameServerVoteSize.setArgName("count");
 
-    Option ttlConstant = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("TTL constant")
-            .create(TTL_CONSTANT);
-    Option defaultTTLRegularNames = OptionBuilder.withArgName("#seconds").hasArg()
-            .withDescription("Default TTL value for regular names")
-            .create(TTL_REGULAR_NAMES);
-    Option defaultTTLMobileNames = OptionBuilder.withArgName("#seconds").hasArg()
-            .withDescription("Default TTL value for mobile names")
-            .create(TTL_MOBILE_NAMES);
-    Option nameServerVoteSize = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Size of name server selection vote")
-            .create(NAME_SERVER_VOTE_SIZE);
+    Option minReplica = new Option(MIN_REPLICA, true, "Minimum number of replicas");
+    Option maxReplica = new Option(MAX_REPLICA, true, "Maximum number of replicas");
 
-    Option minReplica = new Option(MIN_REPLICA, true, "Minimum number of replica");
-    Option maxReplica = new Option(MAX_REPLICA, true, "Maximum number of replica");
+    Option C = new Option(BEEHIVE_C, true, "[EXP] Beehive average hop count");
+    C.setArgName("hop");
 
-    Option C = OptionBuilder.withArgName("hop").hasArg()
-            .withDescription("Average hop count")
-            .create(BEEHIVE_C);
-    Option base = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("Base of DHT")
-            .create(BASE);
-    Option alpha = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("Zipf distribution")
-            .create(ALPHA);
+    Option base = new Option(BASE, true, "[EXP] Beehive base of DHT");
+    base.setArgName("#");
 
-    Option signatureCheck = new Option(SIGNATURE_CHECK, "whether an update operation checks signature or not");
+    Option alpha = new Option(ALPHA, true, "[EXP] Beehive zipf distribution parameter");
+    alpha.setArgName("#");
 
     // used for testing only
-    Option quitAfterTime = new Option(QUIT_AFTER_TIME, true, "name server will quit after this time");
-    Option nameActives = new Option(NAME_ACTIVES, false, "list of name actives provided to this file");
-    Option singleNS = new Option(SINGLE_NS, false, "If true, run a single name server");
-    Option readCoordination = new Option(READ_COORDINATION, false, "If true, coordinate on read requests also");
-    Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "add packet delay equal to ping delay between two servers (used for emulation).");
-    Option variation = new Option(VARIATION, true, "variation");
-    Option noPaxosLog = new Option(NO_PAXOS_LOG, false, "noPaxosLog");
-    Option useGNSNIOTransport = new Option(USE_GNS_NIO_TRANSPORT, false, "to use GNSNIOTransport or to use NioServer");
-    Option multipaxos = new Option(MULTI_PAXOS, false, "to use multipaxos package or paxos package");
-    Option dummyGNS = new Option(DUMMY_GNS, false, "use a dummy GNS app");
+    Option singleNS = new Option(SINGLE_NS, false, "Run an un-replicated single name server");
+    Option readCoordination = new Option(READ_COORDINATION, false, "[EXP] Coordinate with all replicas of a name on read requests as well");
+    Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "[EXP] Emulate a packet delay equal to ping delay in between two servers");
+    Option variation = new Option(VARIATION, true, "[EXP] During emulation, what fraction of random variation to add to delay");
+    Option noPaxosLog = new Option(NO_PAXOS_LOG, false, "[EXP] Do not create paxos logs (supported by paxos package, not by multipaxos package)");
+    Option multipaxos = new Option(MULTI_PAXOS, false, "Use multipaxos package (otherwise paxos package is used)");
+    Option dummyGNS = new Option(DUMMY_GNS, false, "[EXP] Use a dummy GNS app instead of actual GNS");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -236,9 +180,6 @@ public class NSParameterNames {
     commandLineOptions.addOption(lnsFile);
     commandLineOptions.addOption(localNsCount);
     commandLineOptions.addOption(localLnsCount);
-    commandLineOptions.addOption(regularWorkload);
-    commandLineOptions.addOption(mobileWorkload);
-    commandLineOptions.addOption(syntheticWorkloadSleepTimeBetweenAddingNames);
     commandLineOptions.addOption(primaryReplicas);
 
     commandLineOptions.addOptionGroup(replication);
@@ -255,24 +196,16 @@ public class NSParameterNames {
     commandLineOptions.addOption(alpha);
 
     commandLineOptions.addOption(movingAverageWindowSize);
-    commandLineOptions.addOption(ttlConstant);
-    commandLineOptions.addOption(defaultTTLRegularNames);
-    commandLineOptions.addOption(defaultTTLMobileNames);
 
     commandLineOptions.addOption(debugMode);
     commandLineOptions.addOption(experimentMode);
-    commandLineOptions.addOption(noLoadDB);
     commandLineOptions.addOption(eventualConsistency);
     commandLineOptions.addOption(dataStore);
-    commandLineOptions.addOption(simpleDiskStore);
-    commandLineOptions.addOption(dataFolder);
     commandLineOptions.addOption(mongoPort);
 
     commandLineOptions.addOption(paxosLogFolder);
     commandLineOptions.addOption(failureDetectionMsgInterval);
     commandLineOptions.addOption(failureDetectionTimeoutInterval);
-    commandLineOptions.addOption(paxosStartMinDelaySec);
-    commandLineOptions.addOption(paxosStartMaxDelaySec);
     commandLineOptions.addOption(emulatePingLatencies);
     commandLineOptions.addOption(variation);
 
@@ -283,13 +216,9 @@ public class NSParameterNames {
     commandLineOptions.addOption(consoleOutputLevel);
     commandLineOptions.addOption(statConsoleOutputLevel);
     commandLineOptions.addOption(statFileLoggingLevel);
-    commandLineOptions.addOption(signatureCheck);
-    commandLineOptions.addOption(quitAfterTime);
-    commandLineOptions.addOption(nameActives);
     commandLineOptions.addOption(singleNS);
     commandLineOptions.addOption(readCoordination);
     commandLineOptions.addOption(noPaxosLog);
-    commandLineOptions.addOption(useGNSNIOTransport);
     commandLineOptions.addOption(multipaxos);
     commandLineOptions.addOption(dummyGNS);
     return commandLineOptions;

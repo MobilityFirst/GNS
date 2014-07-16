@@ -105,8 +105,7 @@ public class NameServer{
   private void init(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
     // create nio server
     // init worker thread pool
-    int numThreads = 5;
-    ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(numThreads);
+    ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(Config.workerThreadCount);
 
 //    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
@@ -118,21 +117,14 @@ public class NameServer{
       GNS.getLogger().info("Emulating delays ... ");
     }
     InterfaceJSONNIOTransport tcpTransport;
-    if (Config.useGNSNIOTransport) {
-      JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
-      JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nodeID, gnsNodeConfig, worker);
-      new Thread(gnsnioTransport).start();
-      tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, threadPoolExecutor);
-    } else {
-      ByteStreamToJSONObjects byteToJson = new ByteStreamToJSONObjects(nsDemultiplexer);
-      NioServer nioServer= new NioServer(nodeID, byteToJson, gnsNodeConfig);
-      new Thread(nioServer).start();
-      tcpTransport = nioServer;
-    }
-
+    JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
+    JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nodeID, gnsNodeConfig, worker);
+    new Thread(gnsnioTransport).start();
+    tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, threadPoolExecutor);
     // be careful to give same 'nodeID' to everyone
-
+    
     // init DB
+
     MongoRecords mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
 
 

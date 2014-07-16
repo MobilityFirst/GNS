@@ -32,8 +32,7 @@ public enum ReplicationFrameworkType {
   LOCATION,  // Main replication algorithm
   RANDOM,
   STATIC,    // used only for experiments
-  BEEHIVE,   // used only for experiments
-  OPTIMAL;   // used only for experiments
+  BEEHIVE;   // used only for experiments
 
   public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type, GNSNodeConfig gnsNodeConfig) {
     ReplicationFrameworkInterface framework;
@@ -53,8 +52,6 @@ public enum ReplicationFrameworkType {
                 Config.beehiveWorkloadSize, Config.beehiveAlpha, Config.beehiveBase);
         framework = null;
         break;
-      case OPTIMAL: // used only for experiments
-        throw new UnsupportedOperationException();
       default:
         throw new RuntimeException("Invalid replication framework");
     }

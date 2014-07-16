@@ -23,6 +23,9 @@ import java.util.Properties;
 public class StartLocalNameServer {
 
   public static final String HELP = "help";
+  public static final String HELP_HEADER = "NOTE: Options whose description starts with [EXP] are needed only during " +
+          "experiments and can be ignored otherwise.";
+  public static final String HELP_FOOTER = "";
   public static final String CONFIG_FILE = "configFile";
   public static final String ID = "id";
   public static final String NS_FILE = "nsfile";
@@ -34,9 +37,6 @@ public class StartLocalNameServer {
   public static final String BEEHIVE = "beehive";
   public static final String BEEHIVE_BASE = "beehiveBase";
   public static final String LEAF_SET = "leafSet";
-  public static final String OPTIMAL = "optimal";
-  public static final String OPTIMAL_TRACE = "optimalTrace";
-  public static final String REPLICATION_INTERVAL = "rInterval";
   public static final String LOAD_DEPENDENT_REDIRECTION = "loadDependentRedirection";
   public static final String LOAD_MONITOR_INTERVAL = "nsLoadMonitorIntervalSeconds";
   public static final String MAX_QUERY_WAIT_TIME = "maxQueryWaitTime";
@@ -65,7 +65,6 @@ public class StartLocalNameServer {
   public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
   public static final String STAT_FILE_LOGGING_LEVEL = "statFileLoggingLevel";
   public static final String STAT_CONSOLE_OUTPUT_LEVEL = "statConsoleOutputLevel";
-  public static final String USE_GNS_NIO_TRANSPORT = "useGNSNIOTransport";
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
   public static final String VARIATION = "variation";
 
@@ -76,8 +75,6 @@ public class StartLocalNameServer {
   public static ReplicationFrameworkType replicationFramework = ReplicationFrameworkType.LOCATION;
 
   public static long voteIntervalMillis = 1000000000;
-
-  public static int replicationInterval = 0;
 
   /**
    * * Set to true for more verbose logging level.
@@ -101,7 +98,6 @@ public class StartLocalNameServer {
   public static double alpha;
   public static boolean isSyntheticWorkload = false;
   public static String name;
-  public static String optimalTrace = null;
   public static double outputSampleRate = 1.0;
   public static boolean replicateAll = false;
 
@@ -109,11 +105,6 @@ public class StartLocalNameServer {
 
 //  Abhigyan: parameters related to retransmissions.
 //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
-  /**
-   *
-   * Maximum number of transmission of a query *
-   */
-  public static int numberOfTransmissions = GNS.DEFAULT_NUMBER_OF_TRANSMISSIONS;
 
   /**
    * Maximum time a local name server waits for a response from name server query is logged as failed after this.
@@ -148,134 +139,110 @@ public class StartLocalNameServer {
 
   // nio parameters
   /**
-   * Use the new nio implementation: nio/GNSNIOTransport.java
-   */
-  public static boolean useGNSNIOTransport = true;
-
-  /**
    * emulates ping latency given in config file
    */
   public static boolean emulatePingLatencies = false;
   public static double variation = 0.1; // 10 % variation above latency in config file.
 
   private static Options commandLineOptions;
+  static {
+    Option help = new Option("help", "Prints usage");
 
-  private static HelpFormatter formatter = new HelpFormatter();
+    Option configFile = new Option(CONFIG_FILE, true, "Config file with all parameters and values (an alternative to command-line options)");
 
-  @SuppressWarnings("static-access")
-  /**
-   * ************************************************************
-   * Initialized a command line parser ***********************************************************
-   */
-  private static CommandLine initializeOptions(String[] args) throws ParseException {
-    Option help = new Option("help", "Prints Usage");
+    Option debugMode = new Option(DEBUG_MODE, "Debug mode to print more verbose logs. Set to true only if log level is FINE or more verbose.");
+    Option experimentMode = new Option(EXPERIMENT_MODE, "[EXP] Run in experiment mode. May execute some code that is needed only during experiments");
 
-    Option configFile = new Option(CONFIG_FILE, true, "Config file with all parameters");
+    Option syntheticWorkload = new Option(ZIPF, "[EXP] Use Zipf distribution to generate workload");
 
-    Option debugMode = new Option(DEBUG_MODE, "Run in debug mode");
-    Option experimentMode = new Option(EXPERIMENT_MODE, "Mode to run experiments for Auspice paper");
-
-    Option syntheticWorkload = new Option(ZIPF, "Use Zipf distribution to generate worklaod");
-
-    Option locationBasedReplication = new Option(LOCATION, "Location Based selection of active nameserervs");
-    Option optimalReplication = new Option(OPTIMAL, "Optimal replication");
-    Option beehiveReplication = new Option(BEEHIVE, "Beehive replication");
+    Option locationBasedReplication = new Option(LOCATION, "Locality-based selection of active nameserervs (default option)");
+    Option beehiveReplication = new Option(BEEHIVE, "[EXP] Beehive replication");
     OptionGroup replication = new OptionGroup()
             .addOption(locationBasedReplication)
-            .addOption(beehiveReplication)
-            .addOption(optimalReplication);
+            .addOption(beehiveReplication);
 
-    Option beehiveDHTbase = new Option(BEEHIVE_BASE, true, "Beehive DHT base, default 16");
-    Option beehiveLeafset = new Option(LEAF_SET, true, "Beehive Leaf set size, must be less thant number of name servers, default 24");
+    Option beehiveDHTbase = new Option(BEEHIVE_BASE, true, "[EXP] Beehive DHT base, default 16");
+    Option beehiveLeafset = new Option(LEAF_SET, true, "[EXP] Beehive Leaf set size, must be less thant number of name servers, default 24");
 
-    Option loadDependentRedirection = new Option(LOAD_DEPENDENT_REDIRECTION, "local name servers start load balancing among name servers");
-    Option nsLoadMonitorIntervalSeconds = new Option(LOAD_MONITOR_INTERVAL, true, "interval of monitoring load at every nameserver (seconds)");
+    Option loadDependentRedirection = new Option(LOAD_DEPENDENT_REDIRECTION, "[EXP] Local name servers start load balancing among name servers");
+    Option nsLoadMonitorIntervalSeconds = new Option(LOAD_MONITOR_INTERVAL, true, "[EXP] Interval of monitoring load at every nameserver (seconds)");
 
-    Option maxQueryWaitTime = new Option(MAX_QUERY_WAIT_TIME, true, "maximum  Wait Time before query is  declared failed (milli-seconds)");
-    Option numberOfTransmissions = new Option(NUMBER_OF_TRANSMISSIONS, true, "maximum number of times a query is transmitted.");
-    Option queryTimeout = new Option(QUERY_TIMEOUT, true, "query timeout interval (milli-seconds)");
-    Option adaptiveTimeout = new Option(ADAPTIVE_TIMEOUT, "Whether to use an adaptive timeout or a fixed timeout");
-    Option delta = new Option(DELTA, true, "Adaptive Retransmission: Weight assigned to latest sample in calculating moving average.");
-    Option mu = new Option(MU, true, "Adaptive Retransmission: Co-efficient of estimated RTT in calculating timeout.");
-    Option phi = new Option(PHI, true, "Adaptive Retransmission: Co-efficient of deviation in calculating timeout.");
+    Option maxQueryWaitTime = new Option(MAX_QUERY_WAIT_TIME, true, "Maximum  wait time before query is  declared failed (milli-seconds)");
+    Option queryTimeout = new Option(QUERY_TIMEOUT, true, "Request timeout interval (milli-seconds) before retransmission");
+    Option adaptiveTimeout = new Option(ADAPTIVE_TIMEOUT, "[EXP] Whether to use an adaptive timeout instead a fixed timeout");
+    Option delta = new Option(DELTA, true, "[EXP] Adaptive Retransmission: Weight assigned to latest sample in calculating moving average.");
+    Option mu = new Option(MU, true, "[EXP] Adaptive Retransmission: Co-efficient of estimated RTT in calculating timeout.");
+    Option phi = new Option(PHI, true, "[EXP] Adaptive Retransmission: Co-efficient of deviation in calculating timeout.");
 
-    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "fileLoggingLevel");
-    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "consoleOutputLevel");
-    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "statFileLoggingLevel");
-    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "statConsoleOutputLevel");
+    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file");
+    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output");
+    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "Verbosity level of log file for experiment related statistics");
+    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output for experiment related statistics");
 
-    Option useGNSNIOTransport = new Option(USE_GNS_NIO_TRANSPORT, "if true, we use class GNSNIOTransport.java, else use NioServer.java");
 
-    Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "add packet delay equal to ping delay between two servers (used for emulation).");
-    Option variation = new Option(VARIATION, true, "variation");
+    Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "[EXP] Emulate a packet delay equal to ping delay in between two servers");
+    Option variation = new Option(VARIATION, true, "[EXP] During emulation, what fraction of random variation to add to delay");
 
     Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
             .withDescription("Node id")
             .create(ID);
 
     Option nsFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Name server file")
+            .withDescription("File with node configuration of all name servers")
             .create(NS_FILE);
     Option lnsFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Local Name server file")
+            .withDescription("File with node configuration of all local name servers")
             .create(LNS_FILE);
 
     Option regularWorkload = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Regular workload size")
+            .withDescription("[EXP] Regular workload size")
             .create(REGULAR_WORKLOAD);
     Option mobileWorkload = OptionBuilder.withArgName("size").hasArg()
-            .withDescription("Mobile workload size")
+            .withDescription("[EXP] Mobile workload size")
             .create(MOBILE_WORKLOAD);
 
     Option workloadFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("List of names that are queried by the local name server")
+            .withDescription("[EXP] List of names that are queried by the local name server")
             .create(WORKLOAD_FILE);
 
     Option updateTraceFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Update Trace")
+            .withDescription("[EXP] Update Trace")
             .create(UPDATE_TRACE);
 
     Option outputSampleRate = new Option(OUTPUT_SAMPLE_RATE, true,
-            "fraction of requests whose response time will be sampled");
+            "[EXP] Fraction of requests whose response time will be sampled");
 
     Option primaryReplicas = OptionBuilder.withArgName("#primaries").hasArg()
-            .withDescription("Number of primary nameservers")
+            .withDescription("Number of replica controllers for a name")
             .create(PRIMARY);
 
     Option alpha = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("Value of alpha in the Zipf Distribution")
+            .withDescription("[EXP] Beehive replication. Value of alpha in the Zipf distribution")
             .create(ALPHA);
 
     Option numLookups = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("Number of lookups")
+            .withDescription("[EXP] Number of lookups")
             .create(NUM_QUERY);
     Option numUpdates = OptionBuilder.withArgName("#").hasArg()
-            .withDescription("Number of Updates")
+            .withDescription("[EXP] Number of Updates")
             .create(NUM_UPDATE);
 
     Option name = OptionBuilder.withArgName("name").hasArg()
-            .withDescription("Name of host/domain/device queried")
+            .withDescription("[EXP] Name of host/domain/device queried")
             .create(NAME);
 
     Option cacheSize = OptionBuilder.withArgName("#").hasArg()
             .withDescription("Size of cache at the local name server"
-                    + ".Default 1000")
+                    + ". Default = " + StartLocalNameServer.cacheSize)
             .create(CACHE_SIZE);
 
     Option voteInterval = OptionBuilder.withArgName("seconds").hasArg()
-            .withDescription("Interval between nameserver votes")
+            .withDescription("Interval between votes sent by a local name server to replica controllers")
             .create(VOTE_INTERVAL);
 
     Option updateRateRegular = OptionBuilder.withArgName("ms").hasArg()
-            .withDescription("Inter-arrival time between updates for regular names")
+            .withDescription("[EXP] Inter-arrival time between updates for regular names")
             .create(UPDATE_RATE_REGULAR);
-
-    Option replicationInverval = OptionBuilder.withArgName("seconds").hasArg()
-            .withDescription("Interval between replication")
-            .create(REPLICATION_INTERVAL);
-    Option optimalTrace = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("Optimal trace file")
-            .create(OPTIMAL_TRACE);
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -296,8 +263,6 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(voteInterval);
     commandLineOptions.addOption(cacheSize);
     commandLineOptions.addOption(updateRateRegular);
-    commandLineOptions.addOption(replicationInverval);
-    commandLineOptions.addOption(optimalTrace);
     commandLineOptions.addOption(debugMode);
     commandLineOptions.addOption(experimentMode);
     commandLineOptions.addOption(help);
@@ -307,7 +272,6 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(loadDependentRedirection);
     commandLineOptions.addOption(nsLoadMonitorIntervalSeconds);
     commandLineOptions.addOption(maxQueryWaitTime);
-    commandLineOptions.addOption(numberOfTransmissions);
     commandLineOptions.addOption(queryTimeout);
     commandLineOptions.addOption(adaptiveTimeout);
     commandLineOptions.addOption(delta);
@@ -317,11 +281,20 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(consoleOutputLevel);
     commandLineOptions.addOption(statConsoleOutputLevel);
     commandLineOptions.addOption(statFileLoggingLevel);
-    commandLineOptions.addOption(useGNSNIOTransport);
     commandLineOptions.addOption(emulatePingLatencies);
     commandLineOptions.addOption(variation);
+  }
 
+  private static HelpFormatter formatter = new HelpFormatter();
+
+  @SuppressWarnings("static-access")
+  /**
+   * ************************************************************
+   * Initialized a command line parser ***********************************************************
+   */
+  private static CommandLine initializeOptions(String[] args) throws ParseException {
     CommandLineParser parser = new GnuParser();
+
     return parser.parse(commandLineOptions, args);
   }
 
@@ -330,7 +303,8 @@ public class StartLocalNameServer {
    * Prints command line usage ***********************************************************
    */
   private static void printUsage() {
-    formatter.printHelp("StartLocalNameServer", commandLineOptions);
+    formatter.setWidth(135);
+    formatter.printHelp(StartLocalNameServer.class.getCanonicalName(), HELP_HEADER, commandLineOptions, HELP_FOOTER);
   }
 
   /*
@@ -338,7 +312,7 @@ public class StartLocalNameServer {
    * 
    java -Xmx2g -cp ../../build/jars/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer  -id 3 -nsfile name-server-info 
    -cacheSize 10000 -primary 3 -location -vInterval 1000 -chooseFromClosestK 1 -lookupRate 10000 
-   -updateRateMobile 0 -updateRateRegular 10000 -numberOfTransmissions 3 -maxQueryWaitTime 100000 -queryTimeout 100
+   -updateRateMobile 0 -updateRateRegular 10000 -maxQueryWaitTime 100000 -queryTimeout 100
    -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO
    -debugMode
    */
@@ -347,9 +321,11 @@ public class StartLocalNameServer {
    * Main method that starts the local name server with the given command line options.
    *
    * @param args Command line arguments
-   * @throws ParseException ***********************************************************
+   *  ***********************************************************
    */
   public static void main(String[] args) {
+    printUsage();
+    System.exit(2);
     int id = 0;						//node id
     startLNS(id, null, null, args);
   }
@@ -455,10 +431,6 @@ public class StartLocalNameServer {
         replicationFramework = ReplicationFrameworkType.BEEHIVE;
         BeehiveDHTRouting.beehive_DHTbase = Integer.parseInt(allValues.get(BEEHIVE_BASE));
         BeehiveDHTRouting.beehive_DHTleafsetsize = Integer.parseInt(allValues.get(LEAF_SET));
-      } else if (allValues.containsKey(OPTIMAL) && Boolean.parseBoolean(allValues.get(OPTIMAL))) {
-        replicationFramework = ReplicationFrameworkType.OPTIMAL;
-        optimalTrace = allValues.get(OPTIMAL_TRACE);
-        replicationInterval = Integer.parseInt(allValues.get(REPLICATION_INTERVAL)) * 1000;
       } else {
         replicationFramework = GNS.DEFAULT_REPLICATION_FRAMEWORK;
       }
@@ -470,8 +442,7 @@ public class StartLocalNameServer {
 
       maxQueryWaitTime = (allValues.containsKey(MAX_QUERY_WAIT_TIME))
               ? Integer.parseInt(allValues.get(MAX_QUERY_WAIT_TIME)) : GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
-      numberOfTransmissions = (allValues.containsKey(NUMBER_OF_TRANSMISSIONS))
-              ? Integer.parseInt(allValues.get(NUMBER_OF_TRANSMISSIONS)) : GNS.DEFAULT_NUMBER_OF_TRANSMISSIONS;
+
       queryTimeout = (allValues.containsKey(QUERY_TIMEOUT))
               ? Integer.parseInt(allValues.get(QUERY_TIMEOUT)) : GNS.DEFAULT_QUERY_TIMEOUT;
 
@@ -527,10 +498,6 @@ public class StartLocalNameServer {
         GNS.statConsoleOutputLevel = allValues.get(STAT_CONSOLE_OUTPUT_LEVEL);
       }
 
-      if (allValues.containsKey(USE_GNS_NIO_TRANSPORT)) {
-        useGNSNIOTransport = Boolean.parseBoolean(allValues.get(USE_GNS_NIO_TRANSPORT));
-      }
-
       emulatePingLatencies = allValues.containsKey(EMULATE_PING_LATENCIES)
               && Boolean.parseBoolean(allValues.get(EMULATE_PING_LATENCIES));
 
@@ -566,7 +533,7 @@ public class StartLocalNameServer {
     GNS.getLogger().info("Debug Mode: " + debugMode);
 
     try {
-      GNSNodeConfig gnsNodeConfig = null;
+      GNSNodeConfig gnsNodeConfig;
       if (lnsFile != null) {
         gnsNodeConfig = new GNSNodeConfig(nsFile, lnsFile, id);
       } else {
