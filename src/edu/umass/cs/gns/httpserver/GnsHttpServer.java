@@ -33,7 +33,7 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import static edu.umass.cs.gns.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gns.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gns.httpserver.Defs.VALSEP;
-import edu.umass.cs.gns.localnameserver.CommandRequest;
+import edu.umass.cs.gns.clientsupport.CommandRequest;
 import edu.umass.cs.gns.util.Util;
 import java.util.Map;
 import org.json.JSONObject;

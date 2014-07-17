@@ -31,13 +31,18 @@ import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
  * The intercessor is the primary liason class between the servers (HTTP and new
  * TCP) and the Command Module which handles incoming requests from the servers
  * and the the Local Name Server.
- * It provides support for the AccountAccess, Field Access,
+ * 
+ * Provides support for the AccountAccess, Field Access,
  * FieldMetaData, GroupAccess, and SelectHandler classes.
  *
  * Provides basic methods for reading and writing fields in the GNS. Used
  * by the various classes in the client package to implement writing of fields
  * (for both user data and system data), meta data, groups and perform more
  * sophisticated queries (the select queries).
+ * 
+ * The Intercessor maintains maps of all the read and write queries coming in to the
+ * Local Name Server in order to direct incoming responses back to the appropriate sender.
+ * Intstrumentation of query response times is also done here.
  *
  * @author westy
  */

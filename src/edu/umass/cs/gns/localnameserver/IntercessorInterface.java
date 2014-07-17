@@ -15,5 +15,10 @@ import org.json.JSONObject;
  */
 public interface IntercessorInterface {
 
+  /**
+   * Handle packets coming in to the Local Name Server.
+   * 
+   * @param jsonObject
+   */
   public void handleIncomingPacket(JSONObject jsonObject);
 }

@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.clientsupport.CommandRequest;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;

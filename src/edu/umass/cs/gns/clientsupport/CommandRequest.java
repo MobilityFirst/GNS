@@ -3,12 +3,12 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
@@ -36,9 +36,11 @@ public class CommandRequest {
     GNS.getLogger().fine("######## COMMAND PACKET RECEIVED: " + incomingJSON);
     final CommandPacket packet = new CommandPacket(incomingJSON);
     final JSONObject jsonFormattedCommand = packet.getCommand();
+    // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand);
     final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    // This makes it work which is weird because I thought we were in a separate worker thread from 
+    // This separate thread  makes it actually work.
+    // I thought we were in a separate worker thread from 
     // the NIO message handling thread. Turns out not.
     (new Thread() {
       @Override
