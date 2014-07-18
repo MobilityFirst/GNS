@@ -559,10 +559,11 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * Removes all state for paxosID.
 	 */
 	public synchronized boolean remove(String paxosID) {
-		boolean removedCP=false, removedM=false;
+		boolean removedCP=false, removedM=false, removedP=false;
 		Statement stmt=null; 
 		String cmdC = "delete from " + getCTable() + (paxosID!=null ? " where paxos_id='" + paxosID + "'" : " where true");
 		String cmdM = "delete from " + getMTable() + (paxosID!=null ? " where paxos_id='" + paxosID + "'" : " where true");
+		String cmdP = "delete from " + getPTable() + (paxosID!=null ? " where paxos_id='" + paxosID + "'" : " where true");
 		Connection conn=null;
 		try {
 			conn = this.getDefaultConn();
@@ -571,8 +572,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			removedCP=true;
 			stmt.execute(cmdM);
 			removedM=true;
+			stmt.execute(cmdP);
+			removedP=true;
+			conn.commit();
 		} catch(SQLException sqle) {
-			log.severe("Could not remove table " +(removedCP?getMTable():getCTable())); sqle.printStackTrace();
+			if(!removedP) log.severe("Could not remove table " +(removedCP?(removedM?getPTable():
+				getMTable()):getCTable())); sqle.printStackTrace();
 		} finally{cleanup(stmt);cleanup(conn);}
 		return removedCP && removedM;
 	}

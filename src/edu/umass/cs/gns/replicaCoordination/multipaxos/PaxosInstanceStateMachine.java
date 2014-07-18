@@ -209,6 +209,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	protected boolean kill() {  // removes all database state and can not be recovered anymore
 		this.forceStop();
 		this.paxosManager.getPaxosLogger().remove(getPaxosID()); // drop all log state
+		if(DEBUG) assert(this.paxosManager.getPaxosLogger().getSlotBallotState(getPaxosID())==null);
 		return true;
 	}
 
@@ -308,6 +309,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private boolean initiateRecovery(AbstractPaxosLogger paxosLogger) {
 		String pid=this.getPaxosID();
 		SlotBallotState slotBallot = paxosLogger.getSlotBallotState(pid);
+		// FIXME: Need to check for correct version number here.
 		if(!TESTPaxosConfig.MEMORY_TESTING) log.info(this.getNodeState()+
 				" recovered state: "+ (slotBallot!=null ? slotBallot.state:"NULL"));
 
