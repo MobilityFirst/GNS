@@ -35,7 +35,7 @@ import edu.umass.cs.gns.util.MatchKeyable;
 @author V. Arun
  */
 
-/* This class is the top-level paxos class per application or paxos group
+/* This class is the top-level paxos class per instance or paxos group
  * on a machine. This is the only class that exposes public methods. 
  * Actually even this class will soon become "protected" as the only way 
  * to use it will be through the corresponding PaxosManager even if there 
@@ -45,8 +45,8 @@ import edu.umass.cs.gns.util.MatchKeyable;
  * PaxosAcceptorState and PaxosCoordinator. It delegates all messaging
  * to PaxosManager's PaxosMessenger. It is "managed", i.e., its paxos
  * group is created and its incoming packets are demultiplexed, by
- * its PaxosManager. It's logging (not yet implemented) will be handled
- * by PaxosManager's logging agent.
+ * its PaxosManager. It's logging is handled by an implementation of
+ * AbstractPaxosLogger.
  * 
  * The high-level organization is best reflected in handlePaxosMessage, 
  * a method that delegates processing to the acceptor or coordinator
@@ -80,7 +80,7 @@ import edu.umass.cs.gns.util.MatchKeyable;
  * the number of active requests at that machine.
  *  
  * Can this state machine get stuck permanently? Hopefully not coz here
- * is we deal with loss. Under high load, messages to an unreachable 
+ * is how we deal with loss. Under high load, messages to an unreachable 
  * destination can get dropped. NIO will buffer up to a threshold limit 
  * and keep trying to reconnect and send to the destination, and Messenger 
  * will keep trying to retransmit with exponential backoff, but if a 
@@ -141,8 +141,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private final Replicable clientRequestHandler;
 
 	/************ Non-final paxos state that is changeable after creation *******************/
-	PaxosAcceptor paxosState=null;	// uses ~125B of empty space when not actively processing requests
-	PaxosCoordinator coordinator=null; // uses just a single pointer's worth of space unless I am a coordinator
+	private PaxosAcceptor paxosState=null;	// uses ~125B of empty space when not actively processing requests
+	private PaxosCoordinator coordinator=null; // uses just a single pointer's worth of space unless I am a coordinator
 	/************ End of non-final paxos state ***********************************************/
 
 	// static, so does not count towards space.
@@ -208,7 +208,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 	protected boolean kill() {  // removes all database state and can not be recovered anymore
 		this.forceStop();
-		this.paxosManager.getPaxosLogger().remove(getPaxosID()); // drop all log state
+		AbstractPaxosLogger.kill(this.paxosManager.getPaxosLogger(), getPaxosID()); // drop all log state
 		if(DEBUG) assert(this.paxosManager.getPaxosLogger().getSlotBallotState(getPaxosID())==null);
 		return true;
 	}
@@ -308,8 +308,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 */
 	private boolean initiateRecovery(AbstractPaxosLogger paxosLogger) {
 		String pid=this.getPaxosID();
-		SlotBallotState slotBallot = paxosLogger.getSlotBallotState(pid);
-		// FIXME: Need to check for correct version number here.
+		SlotBallotState slotBallot = paxosLogger.getSlotBallotState(pid, this.getVersion(), true); // only place where version is checked
 		if(!TESTPaxosConfig.MEMORY_TESTING) log.info(this.getNodeState()+
 				" recovered state: "+ (slotBallot!=null ? slotBallot.state:"NULL"));
 
@@ -619,7 +618,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 	private boolean checkIfTrapped(JSONObject incoming, MessagingTask mtask) {
 		if(this.isStopped()) {
-			log.severe(this.getNodeState() + " DROPPING message trapped inside stopped " +
+			log.warning(this.getNodeState() + " DROPPING message trapped inside stopped " +
 					"instance: " + incoming + " ; " + mtask);
 			return true;
 		}
@@ -658,7 +657,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			} execCount++;
 
 			// checkpoint if needed, must be atomic with the execution 
-			if(shouldCheckpoint(inorderDecision) && !inorderDecision.isRecovery()) { 
+			if(shouldCheckpoint(inorderDecision) && !inorderDecision.isRecovery() && !inorderDecision.isStopRequest()) { 
 				AbstractPaxosLogger.checkpoint(this.paxosManager.getPaxosLogger(), pid, this.version, 
 						this.groupMembers, inorderDecision.slot, this.paxosState.getBallot(), 
 						this.clientRequestHandler.getState(pid), this.paxosState.getGCSlot());
@@ -685,11 +684,11 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		}
 		return extractExecuteAndCheckpoint(null); // coz otherwise we can get stuck as assertSlotInvariant() may not hold here
 	}
-	/* Note this method is called by PaxosManager but initiated from inside
-	 * extractExecuteAndCheckpoint above that is itself called by the 
-	 * PaxosLogTask scheduled task. So PaxosManager is not blocking on this 
-	 * checkpoint operation, and is therefore not being prevented from 
-	 * processing other incoming packets).
+	/* This method is called by PaxosManager.hibernate that blocks on the
+	 * checkpoint operation to finish (unlike regular checkpoints that are 
+	 * asynchronously handled by a helper thread). But hibernate is currently
+	 * not really used as pause suffices. And PaxosManager methods are likely
+	 * called by an executor task anyway, so blocking should be harmless.
 	 */
 	protected boolean tryForcedCheckpointAndStop() {
 		boolean checkpointed=false;
@@ -723,7 +722,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				this.forceStop();
 				if(!TESTPaxosConfig.MEMORY_TESTING) log.info(this.getNodeState()+" pausing " + hri);
 				paused = this.paxosManager.getPaxosLogger().pause(getPaxosID(), hri.toString());
-				if(!paused) {this.paxosState = A; this.coordinator = C;}
+				if(!paused) {this.paxosState = A; this.coordinator = C;} // revert back if pause failed
 			}
 		}}
 		return paused;

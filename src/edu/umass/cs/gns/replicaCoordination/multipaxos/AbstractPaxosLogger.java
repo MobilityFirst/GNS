@@ -118,6 +118,14 @@ public abstract class AbstractPaxosLogger {
 			}
 		}
 	}
+	
+	/* Needed in order to first remove the (at most one) pending checkpoint
+	 * and then invoke the child's remove method.
+	 */
+	public static final boolean kill(AbstractPaxosLogger logger, String paxosID) {
+		logger.collapsingCheckpointer.dequeue(paxosID);
+		return logger.remove(paxosID);
+	}
 
 	public static void waitToFinishAll() {
 		for(AbstractPaxosLogger logger : AbstractPaxosLogger.instances) {
@@ -171,6 +179,7 @@ public abstract class AbstractPaxosLogger {
 	public abstract Ballot getCheckpointBallot(String paxosID);
 	public abstract int getCheckpointSlot(String paxosID);
 	public abstract SlotBallotState getSlotBallotState(String paxosID);
+	public abstract SlotBallotState getSlotBallotState(String paxosID, short version, boolean matchVersion);
 	public abstract void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int gcSlot);
 	public abstract  StatePacket getStatePacket(String paxosID);
 
@@ -339,6 +348,16 @@ public abstract class AbstractPaxosLogger {
 					this.checkpoints.put(newCP.paxosID, newCP);
 					this.checkpoints.notify();
 				}
+			}
+		}
+		/* A dequeue is explicitly needed to remove any pending checkpoint when a 
+		 * paxos instance is killed. Otherwise, because checkpointing is an 
+		 * asynchronous operation, a checkpoint can get created after a paxos
+		 * instance has been stopped and all other state has been removed.
+		 */
+		private void dequeue(String paxosID) {
+			synchronized(checkpoints) {
+				checkpoints.remove(paxosID);
 			}
 		}
 		private CheckpointTask dequeue() {

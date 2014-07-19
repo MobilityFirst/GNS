@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -40,8 +39,6 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState
  */
 public class DummyPaxosLogger extends AbstractPaxosLogger {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
-	private static Timer timer=null;
-
 
 	// The two maps below are needed only for the fake, memory-based logger
 	private ConcurrentHashMap<String,PaxosCheckpoint> checkpoints=null; // most recent checkpoint
@@ -69,7 +66,6 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 		super(id, logDir, messenger);
 		checkpoints = new ConcurrentHashMap<String,PaxosCheckpoint>();
 		messages = new ConcurrentHashMap<String,ArrayList<PaxosPacket>>();
-		timer = new Timer();
 	}
 
 	/************* Start of non-extensible methods **********************/
@@ -105,6 +101,9 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 		PaxosCheckpoint checkpoint = this.checkpoints.get(paxosID);
 		SlotBallotState sb = new SlotBallotState(checkpoint.slot, checkpoint.ballot.ballotNumber, checkpoint.ballot.coordinatorID);
 		return sb;
+	}
+	public SlotBallotState getSlotBallotState(String paxosID, short version, boolean versionMatch) {
+		return getSlotBallotState(paxosID);
 	}
 	public String getCheckpointState(String paxosID) {
 		PaxosCheckpoint checkpoint = this.checkpoints.get(paxosID);

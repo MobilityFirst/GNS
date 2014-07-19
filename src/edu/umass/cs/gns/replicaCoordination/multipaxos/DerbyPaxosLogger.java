@@ -86,7 +86,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	private ComboPooledDataSource dataSource=null;
 	private Connection defaultConn = null;
-	private Connection cursorConn = null; // FIXME: We should really use a connection pool
+	private Connection cursorConn = null; 
 
 	private boolean closed = true;
 	private boolean processing = false;
@@ -312,16 +312,17 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return state;
 	}
 	/* Methods to get slot, ballotnum, and coordinator of checkpoint */
-	public synchronized SlotBallotState getSlotBallotState(String paxosID) {
+	public synchronized SlotBallotState getSlotBallotState(String paxosID, short version, boolean matchVersion) {
 		if(isClosed()) return null;
 
 		SlotBallotState sb=null;
 		ResultSet stateRS=null;
 		Connection conn=null;
+		boolean versionMismatch=false;
 		try {
 			conn = this.getDefaultConn(); assert(conn!=null);
 			if(this.checkpointStmt==null || this.checkpointStmt.isClosed()) this.checkpointStmt = 
-					this.getPreparedStatement(conn, getCTable(), paxosID, "slot, ballotnum, coordinator, state");
+					this.getPreparedStatement(conn, getCTable(), paxosID, "slot, ballotnum, coordinator, state, version");
 			this.checkpointStmt.setString(1, paxosID);
 			stateRS = this.checkpointStmt.executeQuery();
 			while(stateRS.next()) {
@@ -331,11 +332,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 						stateRS.getInt(2),
 						stateRS.getInt(3), 
 						stateRS.getString(4));
+				versionMismatch = (matchVersion && version!=stateRS.getShort(5));
 			}
 		} catch(SQLException sqle) {
 			log.severe("SQLException while getting slot " + " : " + sqle); sqle.printStackTrace();
 		} finally {cleanup(stateRS);cleanup(conn);}
-		return sb;
+		return versionMismatch ? null : sb;
+	}
+	public synchronized SlotBallotState getSlotBallotState(String paxosID) {
+		return this.getSlotBallotState(paxosID, (short)0, false);
 	}
 	public int getCheckpointSlot(String paxosID) {
 		SlotBallotState sb = getSlotBallotState(paxosID);
