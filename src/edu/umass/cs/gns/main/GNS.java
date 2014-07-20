@@ -76,22 +76,28 @@ public class GNS {
    * maximum query wait time in milliseconds
    */
   public static int DEFAULT_MAX_QUERY_WAIT_TIME = 10000; // currently 10 seconds
+  
+  // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
+  // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE
+  // OR IN A CONFIG FILE
   /**
    * Logging level for main logger
    */
-  public static String fileLoggingLevel = "FINE";
+  public static String fileLoggingLevel = "INFO"; // should be INFO for production use
   /**
    * Console output level for main logger
    */
-  public static String consoleOutputLevel = "FINE";
+  public static String consoleOutputLevel = "INFO"; //should be INFO for production use
   /**
    * Logging level for stat logger
    */
-  public static String statFileLoggingLevel = "FINE";
+  public static String statFileLoggingLevel = "FINE"; // leave this at a more verbose level, but really should be INFO for production use
   /**
    * Console output level for stat logger
    */
-  public static String statConsoleOutputLevel = "FINE";  // don't send these to the console normally
+  public static String statConsoleOutputLevel = "WARNING";  // don't send these to the console normally
+  //
+  //
   private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
   public static boolean initRun = false;
 
