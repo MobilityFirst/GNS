@@ -39,6 +39,7 @@ public class JSONNIOTransport extends NIOTransport implements
 		InterfaceJSONNIOTransport {
 
 	public static final String DEFAULT_IP_FIELD = "_IP_ADDRESS";
+        public static final String DEFAULT_PORT_FIELD = "_TCP_PORT"; // didn't add this to "stamping" code below
 
 	private String IPField = null;
 

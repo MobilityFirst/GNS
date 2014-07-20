@@ -300,13 +300,12 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 
 		newStr = this.extractMultipleMessages(newStr, jsonArray);
-		// stamp the senders address into the JSON objects
+		// stamp the senders address and port into the JSON objects
 		try {
-			String address =
-					((InetSocketAddress) sock.getRemoteAddress()).getAddress().getHostAddress();
+			String address = ((InetSocketAddress) sock.getRemoteAddress()).getAddress().getHostAddress();
 			stampAddressIntoJSONObjects(address, jsonArray);
 		} catch (IOException e) {
-			log.severe("Problem getting client address: " + e);
+			log.severe("Problem getting client address or port: " + e);
 		}
 		this.sockStreams.put(sock, newStr);
 		log.finest("Parsed : [" + JSONArrayToString(jsonArray) +
@@ -315,14 +314,16 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	}
 
 	// fix this to be enableable
-	private void stampAddressIntoJSONObjects(String address,
-			ArrayList<JSONObject> jsonArray) {
+	private void stampAddressIntoJSONObjects(String address, ArrayList<JSONObject> jsonArray) {
 		try {
 			for (JSONObject json : jsonArray) {
+                          // only put the IP field in if it doesn't exist already
+                          if (!json.has(JSONNIOTransport.DEFAULT_IP_FIELD)) {
 				json.put(JSONNIOTransport.DEFAULT_IP_FIELD, address);
+                          }
 			}
 		} catch (JSONException e) {
-			log.severe("Unable to stamp sender address at receiver: " + e);
+			log.severe("Unable to stamp sender address and port at receiver: " + e);
 		}
 	}
 

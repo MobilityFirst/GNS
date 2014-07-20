@@ -12,9 +12,8 @@ import org.json.JSONObject;
 public class CommandPacket extends BasicPacket {
 
   private final static String REQUESTID = "reqID";
-  // later this might get done by the NIO send mechanism so
-  // the field name might change
   private final static String SENDERADDRESS = JSONNIOTransport.DEFAULT_IP_FIELD;
+  private final static String SENDERPORT = JSONNIOTransport.DEFAULT_PORT_FIELD;
   private final static String COMMAND = "command";
 
   /**
@@ -25,6 +24,10 @@ public class CommandPacket extends BasicPacket {
    * The IP address of the sender as a string
    */
   private final String senderAddress;
+  /**
+   * The TCP port of the sender as an int
+   */
+  private final int senderPort;
   /**
    * The JSON form of the command. Always includes a COMMANDNAME field.
    * Almost always has a GUID field or NAME (for HRN records) field.
@@ -37,10 +40,11 @@ public class CommandPacket extends BasicPacket {
    * @param requestId
    * @param command
    */
-  public CommandPacket(int requestId, String senderAddress, JSONObject command) {
+  public CommandPacket(int requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.requestId = requestId;
     this.senderAddress = senderAddress;
+    this.senderPort = senderPort;
     this.command = command;
   }
 
@@ -48,6 +52,7 @@ public class CommandPacket extends BasicPacket {
     this.type = Packet.getPacketType(json);
     this.requestId = json.getInt(REQUESTID);
     this.senderAddress = json.getString(SENDERADDRESS);
+    this.senderPort = json.getInt(SENDERPORT);
     this.command = json.getJSONObject(COMMAND);
   }
 
@@ -64,6 +69,7 @@ public class CommandPacket extends BasicPacket {
     json.put(REQUESTID, this.requestId);
     json.put(COMMAND, this.command);
     json.put(SENDERADDRESS, this.senderAddress);
+    json.put(SENDERPORT, this.senderPort);
     return json;
   }
 
@@ -73,6 +79,10 @@ public class CommandPacket extends BasicPacket {
 
   public String getSenderAddress() {
     return senderAddress;
+  }
+
+  public int getSenderPort() {
+    return senderPort;
   }
 
   public JSONObject getCommand() {
