@@ -1,0 +1,79 @@
+This README explains the following: (1) Testing gigapaxos on a single machine; (2) Testing
+gigapaxos in a distributed setting; (3) Writing a simple application using gigapaxos. The
+terms "gigapxos" and "multipaxos" mean the same thing in this package.
+
+For all of the steps below, you first need to either check out the GNS code from the 
+repository and compile it using "ant" in the top-level directory so as to create "GNS.jar"
+(in the dist/ subdirectory by default) or otherwise obtain a copy of GNS.jar.
+
+(1) Testing gigapaxos on a single machine
+
+Run the following command: 
+
+$ java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.replicaCoordination.multipaxos.TESTPaxosMain 2>/tmp/run1
+
+The above command will try to create a sub-directory called "paxos_logs" from wherever it
+is run, so you need to have write permissions in that directory. Running it again will 
+continue from where the first run left off as crash recovery is enabled by default. In 
+order to wipe out all pre-existing logs (effectively disabling recovery) and run it
+from scratch, simply 'rm -r paxos_logs/'.
+
+If successful, you should see a sequence of "SUCCESS" messages on the console at the end of 
+the test run. The test will dump debug logs in /tmp/run1. If the test appears to be stuck
+with no console output and without returning control to the command-line prompt, or if it
+throws exceptions on the console, it has likely failed.
+ 
+(2) Testing gigapaxos in a distributed setting
+
+A distributed test requires two or more machines to run servers and clients. The 4-node 
+example described below is currently hard-coded in the package, but should make it clear 
+how to run it in other settings with different numbers of client and server machines.
+
+In this example, the servers will run on the following three machines that are respectively
+numbered 100, 101, and 102.
+ date.cs.umass.edu
+ plum.cs.umass.edu
+ pear.cs.umass.edu
+The clients will all run on the following machine numbered 200 onwards.
+ fig.cs.umass.edu
+ 
+The servers must be started first in any order as follows:
+
+[date$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.replicaCoordination.multipaxos.TESTPaxosNode 100 2>/tmp/run1
+[plum$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.replicaCoordination.multipaxos.TESTPaxosNode 101 2>/tmp/run1
+[pear$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.replicaCoordination.multipaxos.TESTPaxosNode 102 2>/tmp/run1
+
+The client must be started after at least two of the above servers are up. A server is
+up after it has stopped printing console output for more than a few seconds. The clients
+are started as follows:
+
+[fig$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.replicaCoordination.multipaxos.TESTPaxosClient 200 2>/tmp/run1
+
+If the test is successful, the console output should print a sequence of "SUCCESS" just as 
+in the single machine test.
+
+The names of the servers and client above are currently hardcoded in TESTPaxosConfig.java
+in the methods setDistributedServers() and setDistributedClients() respectively. It should
+be fairly straightforward at this point to change the set of server or client machines.
+
+FIXME: Take the list of server client machines from a config file, and write a script
+to automate the distributed testing.
+
+(3) Writing a simple application using gigapaxos
+
+FIXME: To be detailed further. Refer TESTPaxosClient for now to get an idea of how to make 
+and send a request from a remote client. 
+
+An application may also be co-located in the same JVM as the servers and can explicitly 
+invoke PaxosManager.propose(.) instead of transmitting the request as above from a client 
+to a server across a network. For the co-located case, each application node must first
+start PaxosManager and then create the corresponding paxos instances, as exemplified in
+TESTPaxosNode.java.
+
+The application itself must be an instance of Replicable. See TESTReplicable.java for a
+simple example that simply echoes back the request (with some instrumentation additions).  
+
+
+
+
+
