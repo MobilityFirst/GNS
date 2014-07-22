@@ -108,6 +108,7 @@ public class NameRecord implements Comparable<NameRecord> {
       hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
     }
 
+    // is this correct or is it a typo and should be OLD_VALUES_MAP in the other two places?
     if (jsonObject.has(OLD_VALUES_MAP.getName())) {
       hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
     }
