@@ -29,6 +29,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   public LNSPacketDemultiplexer(ClientRequestHandlerInterface handler) {
     this.handler = handler;
+    register(Packet.PacketType.DNS);
     register(Packet.PacketType.ADD_RECORD);
     register(Packet.PacketType.COMMAND);
     register(Packet.PacketType.CONFIRM_ADD);
