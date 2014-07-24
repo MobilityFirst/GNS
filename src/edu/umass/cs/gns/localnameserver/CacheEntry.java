@@ -13,6 +13,7 @@ import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.ConsistentHashing;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,10 +84,12 @@ public class CacheEntry implements Comparable<CacheEntry> {
     // UPDATE: NEVER LET IT BE -1 which means infinite
     this.timeToLiveInSeconds = packet.getTTL() == -1 ? GNS.DEFAULT_TTL_SECONDS : packet.getTTL();
     // pull all the keys and values out of the returned value and cache them
-    for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
-      String fieldKey = entry.getKey();
-      ResultValue fieldValue = entry.getValue();
-      this.valuesMap.put(fieldKey, fieldValue);
+    ValuesMap packetRecordValue = packet.getRecordValue();
+    Iterator<String> keyIter = packetRecordValue.keys();
+    while (keyIter.hasNext()) {
+      String fieldKey = keyIter.next();
+      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
+      this.valuesMap.putAsArray(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }
@@ -120,10 +123,12 @@ public class CacheEntry implements Comparable<CacheEntry> {
     if (valuesMap == null) {
       valuesMap = new ValuesMap();
     }
-    for (Entry<String, ResultValue> entry : packet.getRecordValue().entrySet()) {
-      String fieldKey = entry.getKey();
-      ResultValue fieldValue = entry.getValue();
-      valuesMap.put(fieldKey, fieldValue);
+    ValuesMap packetRecordValue = packet.getRecordValue();
+    Iterator<String> keyIter = packetRecordValue.keys();
+    while (keyIter.hasNext()) {
+      String fieldKey = keyIter.next();
+      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
+      valuesMap.putAsArray(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }
@@ -168,7 +173,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   public synchronized ResultValue getValue(NameRecordKey key) {
     if (isValidValue(key.getName())) {
-      return valuesMap.get(key.getName());
+      return valuesMap.getAsArray(key.getName());
     }
     return null;
   }
@@ -181,7 +186,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    */
   private synchronized boolean isValidValue(String key) {
     // NULL MEANS THE VALUE IS INVALID
-    if (valuesMap == null || valuesMap.containsKey(key) == false) {
+    if (valuesMap == null || valuesMap.has(key) == false) {
       return false;
     }
     int keyTimeToLiveInSeconds = getKeyTTL(key);

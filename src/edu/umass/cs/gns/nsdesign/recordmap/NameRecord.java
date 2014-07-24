@@ -170,8 +170,8 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
 //  public Set<Integer> getActiveNameServers() throws FieldNotFoundException {
-//    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
-//      return (Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS);
+//    if (hashMap.has(ACTIVE_NAMESERVERS)) {
+//      return (Set<Integer>) hashMap.getAsArray(ACTIVE_NAMESERVERS);
 //    }
 //    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
 //  }
@@ -246,7 +246,7 @@ public class NameRecord implements Comparable<NameRecord> {
   public boolean containsKey(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
       ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
-      return valuesMap.containsKey(key);
+      return valuesMap.has(key);
     }
     throw new FieldNotFoundException(VALUES_MAP);
   }
@@ -256,7 +256,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Throws FieldNotFoundException if (1) key has not been read from database
    * or (2) key does not exist for this name record.
    *
-   * Call this method only if <code>containsKey</code> returns true, otherwise return false.
+   * Call this method only if <code>has</code> returns true, otherwise return false.
    *
    * @param key
    * @return
@@ -265,16 +265,16 @@ public class NameRecord implements Comparable<NameRecord> {
   public ResultValue getKey(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
       ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
-      if (valuesMap.containsKey(key)) {
-        return valuesMap.get(key);
+      if (valuesMap.has(key)) {
+        return valuesMap.getAsArray(key);
       }
     }
     throw new FieldNotFoundException(VALUES_MAP);
   }
 
 //  public boolean containsActiveNameServer(int id) throws FieldNotFoundException {
-//    if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
-//      return ((Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS)).contains(id);
+//    if (hashMap.has(ACTIVE_NAMESERVERS)) {
+//      return ((Set<Integer>) hashMap.getAsArray(ACTIVE_NAMESERVERS)).contains(id);
 //    }
 //    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
 //  }
@@ -388,10 +388,10 @@ public class NameRecord implements Comparable<NameRecord> {
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();
       updatedFields.add(new ColumnField(key, ColumnFieldType.LIST_STRING));
       ArrayList<Object> updatedValues = new ArrayList<Object>();
-      updatedValues.add(valuesMap.get(key));
+      updatedValues.add(valuesMap.getAsArray(key));
 
       recordMap.update(getName(), NAME, null, null, VALUES_MAP, updatedFields, updatedValues);
-//      valuesMap.get();
+//      valuesMap.getAsArray();
     }
     return updated;
   }
@@ -485,7 +485,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
     recordMap.update(getName(), NAME, updateFields, updateValues);
 
-//    hashMap.put(ACTIVE_NAMESERVERS, actives);
+//    hashMap.putAsArray(ACTIVE_NAMESERVERS, actives);
     hashMap.put(ACTIVE_VERSION, version);
     hashMap.put(VALUES_MAP, currentValue);
     hashMap.put(TIME_TO_LIVE, ttl);

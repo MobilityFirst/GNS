@@ -205,7 +205,7 @@ public class JSONUtils {
           jsonObject.put(field.getName(), (ArrayList<String>) value);
           break;
         case VALUES_MAP:
-          jsonObject.put(field.getName(), ((ValuesMap) value).toJSONObject());
+          jsonObject.put(field.getName(), ((ValuesMap) value));
           break;
         case VOTES_MAP:
           jsonObject.put(field.getName(), ((ConcurrentMap<Integer, Integer>) value));

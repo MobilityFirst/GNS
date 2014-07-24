@@ -48,7 +48,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
     ValuesMap valuesMap = new ValuesMap();
     ResultValue rv = new ResultValue();
     rv.add("pqrst");
-    valuesMap.put(NameRecordKey.EdgeRecord.getName(), rv);
+    valuesMap.putAsArray(NameRecordKey.EdgeRecord.getName(), rv);
     packet.changePacketTypeToPreviousValueResponse();
     packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
   }

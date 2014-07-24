@@ -145,7 +145,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public DNSPacket(int sourceId, int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
     this(sourceId, id, name, key, new ValuesMap(), TTL, activeNameServers);
     // slide that baby in...
-    this.recordValue.put(key.getName(), fieldValue);
+    this.recordValue.putAsArray(key.getName(), fieldValue);
   }
 
   /**
@@ -240,7 +240,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     if (includeReponseSection) {
       json.put(TIME_TO_LIVE, getTTL());
       if (recordValue != null) {
-        json.put(RECORD_VALUE, recordValue.toJSONObject());
+        json.put(RECORD_VALUE, recordValue);
       }
     }
   }
@@ -356,7 +356,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     if (this.recordValue == null) {
       this.recordValue = new ValuesMap();
     }
-    this.recordValue.put(key.getName(), data);
+    this.recordValue.putAsArray(key.getName(), data);
   }
 
   public int getLnsId() {

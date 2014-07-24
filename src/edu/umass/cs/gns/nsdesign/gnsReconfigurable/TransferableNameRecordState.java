@@ -26,8 +26,9 @@ public class TransferableNameRecordState {
     this.valuesMap = new ValuesMap(new JSONObject(state.substring(ttlIndex + 1)));
   }
 
+  @Override
   public String toString() {
-    return ttl + ":" + valuesMap.toJSONObject(); // need to convert to json as it will be reinserted into database.
+    return ttl + ":" + valuesMap; // need to convert to json as it will be reinserted into database.
   }
 
 }

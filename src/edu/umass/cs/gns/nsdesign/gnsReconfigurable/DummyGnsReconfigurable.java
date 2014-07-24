@@ -195,7 +195,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
     ValuesMap valuesMap = new ValuesMap();
     fakeResultValue = new ResultValue();
     fakeResultValue.add("pqrst");
-    valuesMap.put(NameRecordKey.EdgeRecord.getName(), fakeResultValue);
+    valuesMap.putAsArray(NameRecordKey.EdgeRecord.getName(), fakeResultValue);
     fakeState = new TransferableNameRecordState(valuesMap, 0).toString();
   }
 

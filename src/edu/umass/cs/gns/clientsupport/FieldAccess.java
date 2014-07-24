@@ -56,7 +56,7 @@ public class FieldAccess {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       // pull out all the key pairs ignoring "system" (ie., non-user) fields
-      resultString = result.getValuesMapSansInternalFields().toJSONObject().toString();
+      resultString = result.getValuesMapSansInternalFields().toString();
       resultString = emptyJSONObjectString;
     }
     return new CommandResponse(resultString,

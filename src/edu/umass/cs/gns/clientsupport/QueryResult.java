@@ -12,6 +12,7 @@ import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.util.NSResponseCode;
 
 import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * Either a ValuesMap or an Error. Also
@@ -85,7 +86,7 @@ public class QueryResult implements Serializable{
    */
   public ResultValue get(String key) {
     if (valuesMap != null) {
-      return valuesMap.get(key);
+      return valuesMap.getAsArray(key);
     } else {
       return null;
     }
@@ -98,9 +99,13 @@ public class QueryResult implements Serializable{
    * @return 
    */
   private static ValuesMap removeInternalFields(ValuesMap valuesMap) {
-    for (String key : valuesMap.keySet()) {
+    Iterator<String> keyIter = valuesMap.keys();
+    //Iterator<String> keyIter = newContent.keys();
+    while (keyIter.hasNext()) {
+      String key = keyIter.next();
       if (InternalField.isInternalField(key)) {
-        valuesMap.remove(key);
+        keyIter.remove();
+        //valuesMap.remove(key);
       }
     }
 

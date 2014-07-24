@@ -77,7 +77,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);
         if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
                 !dnsResponse.containsAnyError() &&
-                dnsResponse.getRecordValue().get(key.getName()).get(0).equals(firstValue);
+                dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(firstValue);
         GNS.getLogger().info("SUCCESS: Name lookup returned initial value");
 
         // send update
@@ -99,7 +99,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         dnsResponse = new DNSPacket(mostRecentResponse);
         if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
                 !dnsResponse.containsAnyError() &&
-                dnsResponse.getRecordValue().get(key.getName()).get(0).equals(secondValue);
+                dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(secondValue);
         GNS.getLogger().info("SUCCESS: Name lookup returned updated value");
 
         // remove name

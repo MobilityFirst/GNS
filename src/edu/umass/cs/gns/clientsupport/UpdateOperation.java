@@ -80,12 +80,12 @@ public enum UpdateOperation {
   public static boolean updateValuesMap(ValuesMap valuesMap, String key,
           ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) {
-    ResultValue valuesList = valuesMap.get(key);
+    ResultValue valuesList = valuesMap.getAsArray(key);
     if (valuesList == null) {
       valuesList = new ResultValue();
     }
     if (updateValuesList(valuesList, key, newValues, oldValues, argument, operation)) {
-      valuesMap.put(key, valuesList);
+      valuesMap.putAsArray(key, valuesList);
       return true;
     } else {
       return false;

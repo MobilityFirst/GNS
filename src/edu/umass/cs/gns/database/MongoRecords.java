@@ -330,7 +330,7 @@ public class MongoRecords implements NoSQLRecords {
         throw new RecordNotFoundException(guid);
       }
       HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
-      hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
+      hashMap.put(nameField, guid);// putAsArray the name in the hashmap!! very important!!
       ColumnFieldType.populateHashMap(hashMap, dbObject, fields1);
       if (valuesMapField != null && valuesMapKeys != null) {
         BSONObject bson = (BSONObject) dbObject.get(valuesMapField.getName());
@@ -350,7 +350,7 @@ public class MongoRecords implements NoSQLRecords {
           }
           if (valuesMapKeys.get(i).type().equals(ColumnFieldType.LIST_STRING)) {
             try {
-              valuesMap.put(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(fieldValue));
+              valuesMap.putAsArray(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(fieldValue));
             } catch (JSONException e) {
               GNS.getLogger().fine("Error parsing json");
               e.printStackTrace();
@@ -631,8 +631,8 @@ public class MongoRecords implements NoSQLRecords {
         if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
           // convert the JSONObject value of the ValuesMap into a string that we then parse into
           // a BSON object (ugly, but necessary)
-          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toJSONObject().toString());
-          //newValue = ((ValuesMap) values.get(i)).getMap();
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
+          //newValue = ((ValuesMap) values.getAsArray(i)).getMap();
         } else {
           newValue = values.get(i);
         }
@@ -679,7 +679,7 @@ public class MongoRecords implements NoSQLRecords {
         if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
           // convert the JSONObject value of the ValuesMap into a string that we then parse into
           // a BSON object (ugly, but necessary)
-          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toJSONObject().toString());
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
         } else {
           newValue = values.get(i);
         }
@@ -740,7 +740,7 @@ public class MongoRecords implements NoSQLRecords {
         if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
           // convert the JSONObject value of the ValuesMap into a string that we then parse into
           // a BSON object (ugly, but necessary)
-          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toJSONObject().toString());
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
         } else {
           newValue = values.get(i);
         }
