@@ -29,6 +29,19 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   public LNSPacketDemultiplexer(ClientRequestHandlerInterface handler) {
     this.handler = handler;
+    register(Packet.PacketType.ADD_RECORD);
+    register(Packet.PacketType.COMMAND);
+    register(Packet.PacketType.CONFIRM_ADD);
+    register(Packet.PacketType.CONFIRM_REMOVE);
+    register(Packet.PacketType.CONFIRM_UPDATE);
+    register(Packet.PacketType.GROUP_CHANGE_COMPLETE);
+    register(Packet.PacketType.LNS_TO_NS_COMMAND);
+    register(Packet.PacketType.NAME_SERVER_LOAD);
+    register(Packet.PacketType.NEW_ACTIVE_PROPOSE);
+    register(Packet.PacketType.REMOVE_RECORD);
+    register(Packet.PacketType.REQUEST_ACTIVES);
+    register(Packet.PacketType.SELECT_REQUEST);
+    register(Packet.PacketType.SELECT_RESPONSE);
   }
 
   /**
