@@ -5,138 +5,171 @@
  */
 package edu.umass.cs.gns.util;
 
-//import edu.umass.cs.gns.packet.QueryResultValue;
-import org.json.JSONArray;
+// NEW
+//
+import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.AbstractMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
- * 
- * This is essentially a Map of keys and values, but we made a class for this (as opposed to just using a
- * Map) so we can dispatch off it in methods and also more easily instrument it.
- * 
- * It also now handles error codes coming back from the NameServer.
  *
- * Keys are strings and values are always a list (see also QueryResultValue).
+ * This is really just a JSONObject, but we made a class for this (as opposed to just using a
+ * JSONObject) so we can dispatch off it in methods and also more easily instrument it. This might change soon.
+ *
+ * Keys are strings and CURRENTLY values are always a list (see also ResultValue), but this
+ * restriction will be going away.
  *
  * @author westy
  */
-public class ValuesMap implements Serializable{
+public class ValuesMap {
 
-  private Map<String, ResultValue> content;
-  
+  private JSONObject newContent;
+
   public ValuesMap() {
-    this.content = new HashMap<String, ResultValue>();
+    this.newContent = new JSONObject();
   }
 
-  public ValuesMap(JSONObject json) throws JSONException {
-    this();
+  public ValuesMap(JSONObject json) {
+    // makes a fresh JSONObject
+    this.newContent = new JSONObject();
     Iterator<String> keyIter = json.keys();
     while (keyIter.hasNext()) {
       String key = keyIter.next();
-      this.content.put(key, new ResultValue(JSONUtils.JSONArrayToResultValue(json.getJSONArray(key))));
+      try {
+        this.newContent.put(key, json.get(key));
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Unable to parse JSON: " + e);
+      }
     }
   }
 
   public ValuesMap(ValuesMap map) {
-    this.content = new HashMap<String, ResultValue>(map.content);
+    this(map.newContent);
   }
 
-  public JSONObject toJSONObject() throws JSONException {
-    JSONObject json = new JSONObject();
-    addToJSONObject(json);
-    return json;
+  /**
+   * Returns a JSONObject representing this value.
+   * 
+   * @return a JSONObject 
+   */
+  public JSONObject toJSONObject() {
+    return this.newContent;
   }
 
-  public void addToJSONObject(JSONObject json) throws JSONException {
-    for (Map.Entry<String, ResultValue> entry : content.entrySet()) {
-      json.put(entry.getKey(), new JSONArray(entry.getValue()));
-    }
-  }
-
-  // For the READONE command we just pull out the first item in each value of the key / values[list]
+  /**
+   * Returns a JSONObject that contains just the first element of each JSONArray of the values list.
+   * Currently assumes each element of the JSONObject is a key / values[list].
+   * Used by the  READONE command.
+   * 
+   * @return a JSONObject
+   * @throws JSONException 
+   */
+  //
   public JSONObject toJSONObjectFirstOnes() throws JSONException {
     JSONObject json = new JSONObject();
     addFirstOneToJSONObject(json);
     return json;
   }
 
-  public void addFirstOneToJSONObject(JSONObject json) throws JSONException {
-    for (Map.Entry<String, ResultValue> entry : content.entrySet()) {
-      if (!entry.getValue().isEmpty()) {
-        json.put(entry.getKey(), entry.getValue().get(0));
-      }
+  private void addFirstOneToJSONObject(JSONObject json) throws JSONException {
+    Iterator<String> keyIter = json.keys();
+    while (keyIter.hasNext()) {
+      String key = keyIter.next();
+      json.put(key, newContent.getJSONArray(key).get(0));
     }
   }
 
   /**
    * Returns the value to which the specified key is mapped, or null if this valuesmap contains no mapping for the key.
-   * 
+   *
    * @param key
-   * @return 
+   * @return
    */
   public ResultValue get(String key) {
-    return content.get(key);
+    try {
+      if (containsKey(key)) {
+        return new ResultValue(JSONUtils.JSONArrayToArrayList(newContent.getJSONArray(key)));
+      } else {
+        return null;
+      }
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to parse JSON array: " + e);
+      return new ResultValue();
+    }
   }
 
   /**
    * Associates the specified value with the specified key in this valuesmap.
+   *
    * @param key
-   * @param value 
+   * @param value
    */
   public void put(String key, ResultValue value) {
-    content.put(key, value);
+    try {
+      newContent.put(key, value);
+      //GNS.getLogger().severe("@@@@@AFTER PUT (key =" + key + " value=" + value + "): " + newContent.toString());
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to add JSON array to JSON Object: " + e);
+    }
   }
 
   /**
    * Removes the mapping for a key from this valuesmap if it is present.
-   * 
-   * @param key 
+   *
+   * @param key
    */
   public void remove(String key) {
-    content.remove(key);
+    newContent.remove(key);
   }
 
   /**
    * Returns true if this valuesmap contains a mapping for the specified key.
-   * 
+   *
    * @param key
-   * @return 
+   * @return
    */
   public boolean containsKey(String key) {
-    return content.containsKey(key);
+    return newContent.has(key);
   }
 
   /**
    * Returns true if this valuesmap contains no key-value mappings.
-   * @return 
+   *
+   * @return
    */
   public boolean isEmpty() {
-    return content.isEmpty();
+    return newContent.length() == 0;
   }
 
   public Set<String> keySet() {
-    return content.keySet();
+    Set<String> result = new HashSet<String>();
+    Iterator<String> keyIter = newContent.keys();
+    while (keyIter.hasNext()) {
+      result.add(keyIter.next());
+    }
+    return result;
   }
 
   public Set<Entry<String, ResultValue>> entrySet() {
-    return content.entrySet();
-  }
-
-  public Map getMap() {
-    return content;
+    Set<Entry<String, ResultValue>> result = new HashSet<Entry<String, ResultValue>>();
+    Iterator<String> keyIter = newContent.keys();
+    while (keyIter.hasNext()) {
+      String key = keyIter.next();
+      result.add(new AbstractMap.SimpleImmutableEntry<String, ResultValue>(key, get(key)));
+    }
+    return result;
   }
 
   @Override
   public String toString() {
-    return content.toString();
+    return newContent.toString();
   }
+
 }

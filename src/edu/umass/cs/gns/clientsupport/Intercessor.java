@@ -121,13 +121,13 @@ public class Intercessor implements IntercessorInterface {
             //Packet is a response and does not have a response error
             if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
-                    + " Successful Received");//  + nameRecordPacket.toJSONObject().toString());
+                    + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
             synchronized (monitor) {
               queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), dnsResponsePacket.getResponder()));
               monitor.notifyAll();
             }
           } else {
-            if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Intercessor: Query (" + id + "): "
+            if (StartLocalNameServer.debugMode) GNS.getLogger().info("Intercessor: Query (" + id + "): "
                     + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                     + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             synchronized (monitor) {

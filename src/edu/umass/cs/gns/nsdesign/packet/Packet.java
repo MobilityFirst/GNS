@@ -554,7 +554,7 @@ public class Packet {
   }
 
   /**
-   *  * A debugging aid that returns a string identifying the packet type or "Unknown" if it cannot be determined.
+   * A debugging aid that returns a string identifying the packet type or "Unknown" if it cannot be determined.
    *
    * @param json
    * @return

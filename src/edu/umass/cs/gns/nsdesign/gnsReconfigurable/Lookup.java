@@ -193,7 +193,7 @@ public class Lookup {
             if (Config.debugMode) GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid);
           } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
-            if (Config.debugMode) GNS.getLogger().finer("NS sending multiple value DNS lookup response: Name = " + guid);
+            if (Config.debugMode) GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + guid);
             // or we don't actually have the field
           } else { // send error msg.
             if (Config.debugMode) GNS.getLogger().fine("Record doesn't contain field: " + key + " name  = " + guid + " :: RECORD: " + nameRecord.toString());

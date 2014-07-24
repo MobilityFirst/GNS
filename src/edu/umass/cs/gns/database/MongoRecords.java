@@ -54,6 +54,8 @@ public class MongoRecords implements NoSQLRecords {
 
   private DB db;
   private String dbName;
+  
+  private boolean debuggingEnabled = false;
 
   /**
    * Creates database tables for nodeID, by connecting to mongoDB on default port.
@@ -625,8 +627,12 @@ public class MongoRecords implements NoSQLRecords {
     if (fields != null) {
       for (int i = 0; i < fields.size(); i++) {
         Object newValue;
+        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
         if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          newValue = ((ValuesMap) values.get(i)).getMap();
+          // convert the JSONObject value of the ValuesMap into a string that we then parse into
+          // a BSON object (ugly, but necessary)
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toJSONObject().toString());
+          //newValue = ((ValuesMap) values.get(i)).getMap();
         } else {
           newValue = values.get(i);
         }
@@ -661,27 +667,37 @@ public class MongoRecords implements NoSQLRecords {
     boolean actuallyUpdatedTheRecord = false;
     String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
+    // build the query part
     BasicDBObject query = new BasicDBObject(primaryKey, guid);
     query.append(conditionField.getName(), conditionValue);
+    // build the updates part
     BasicDBObject updates = new BasicDBObject();
     if (fields != null) {
       for (int i = 0; i < fields.size(); i++) {
         Object newValue;
+        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
         if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          newValue = ((ValuesMap) values.get(i)).getMap();
+          // convert the JSONObject value of the ValuesMap into a string that we then parse into
+          // a BSON object (ugly, but necessary)
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toJSONObject().toString());
         } else {
           newValue = values.get(i);
         }
         updates.append(fields.get(i).getName(), newValue);
       }
     }
+   
     if (valuesMapField != null && valuesMapKeys != null) {
       for (int i = 0; i < valuesMapKeys.size(); i++) {
         String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
         updates.append(fieldName, valuesMapValues.get(i));
       }
     }
-    if (updates.keySet().size() > 0) {
+    
+    if (debuggingEnabled) GNS.getLogger().info("UPDATES: " + updates.toString());
+    
+    
+    if (updates.keySet().size() > 0) { // only if there are some things to update
       long startTime = System.currentTimeMillis();
       WriteResult writeResult;
       try {
@@ -695,6 +711,7 @@ public class MongoRecords implements NoSQLRecords {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
       }
     }
+    if (debuggingEnabled) GNS.getLogger().info(actuallyUpdatedTheRecord ? "ACTUALLY UPDATED " : "DIDN'T UPDATE " + guid);
     return actuallyUpdatedTheRecord;    
   }
 
@@ -710,13 +727,20 @@ public class MongoRecords implements NoSQLRecords {
           throws FailedDBOperationException {
     String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
+    // The query part is the "name" field in our document
     BasicDBObject query = new BasicDBObject(primaryKey, guid);
+    // Build the updates part
     BasicDBObject updates = new BasicDBObject();
     if (fields != null) {
       for (int i = 0; i < fields.size(); i++) {
         Object newValue;
+        // NOT SURE IN WHAT SITUATION WE'RE GOING TO BE INCREMENTING THE WHOLE VALUES MAP PART OF THIS
+        // BUT THIS IS WHAT WAS WRITTEN SO WE'LL GO WITH IT - Westy
+        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
         if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          newValue = ((ValuesMap) values.get(i)).getMap();
+          // convert the JSONObject value of the ValuesMap into a string that we then parse into
+          // a BSON object (ugly, but necessary)
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toJSONObject().toString());
         } else {
           newValue = values.get(i);
         }
@@ -729,6 +753,7 @@ public class MongoRecords implements NoSQLRecords {
         updates.append(fieldName, votesMapValues.get(i));
       }
     }
+    // only execute the call if we have some actual updates
     if (updates.keySet().size() > 0) {
       try {
         collection.update(query, new BasicDBObject("$inc", updates));
@@ -786,7 +811,7 @@ public class MongoRecords implements NoSQLRecords {
     return "DB " + dbName;
   }
 
-  //THIS ISN'T TEST CODE
+  //THIS ISN'T JUST TEST CODE - DO NOT REMOVE
   // the -clear option is currently used by the EC2 installer so keep it working
   // this use will probably go away at some point
   public static void main(String[] args) throws Exception, RecordNotFoundException {

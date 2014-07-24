@@ -55,12 +55,8 @@ public class FieldAccess {
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      try {
-        // pull out all the key pairs ignoring "system" (ie., non-user) fields
-        resultString = result.getValuesMapSansInternalFields().toJSONObject().toString();
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem parsing multiple value return:" + e);
-      }
+      // pull out all the key pairs ignoring "system" (ie., non-user) fields
+      resultString = result.getValuesMapSansInternalFields().toJSONObject().toString();
       resultString = emptyJSONObjectString;
     }
     return new CommandResponse(resultString,

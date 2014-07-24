@@ -135,11 +135,11 @@ public class Remove {
       if (!recovery) {
         gnsApp.getNioServer().sendToID(oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
       }
-      GNS.getLogger().info("Active removed: Name Record updated. Sent confirmation to replica controller. Packet = " +
+      GNS.getLogger().fine("Active removed: Name Record updated. Sent confirmation to replica controller. Packet = " +
               oldActiveStopPacket);
     } else {
       // other nodes do nothing.
-      GNS.getLogger().info("Active removed: Name Record updated. OldVersion = " + oldActiveStopPacket.getVersion());
+      GNS.getLogger().fine("Active removed: Name Record updated. OldVersion = " + oldActiveStopPacket.getVersion());
     }
   }
 

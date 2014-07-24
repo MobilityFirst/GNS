@@ -76,7 +76,7 @@ public class SendDNSRequestTask extends TimerTask {
       // If we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
-        GNS.getLogger().info("Requesting new actives for " + incomingPacket.getGuid());
+        GNS.getLogger().fine("Requesting new actives for " + incomingPacket.getGuid());
         requestNewActives();
         // Cancel the task now. 
         // When the new actives are received, a new task in place of this task will be rescheduled.

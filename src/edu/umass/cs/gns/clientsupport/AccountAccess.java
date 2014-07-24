@@ -79,6 +79,7 @@ public class AccountAccess {
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowSubGuids) {
     QueryResult accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+    //GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
     if (accountResult.isError()) {
       if (allowSubGuids) {
         // if allowSubGuids is true assume this is a guid that is "owned" by an account guid so

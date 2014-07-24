@@ -180,23 +180,6 @@ public class JSONUtils {
     return null;
   }
 
-//  public static String getString(Field field, JSONObject jsonObject) throws JSONException{
-//    if (jsonObject.has(field.getFieldName())) {
-//      switch (field.type()) {
-//        case INTEGER:
-//          return jsonObject.getInt(field.getFieldName());
-//        case STRING:
-//          return jsonObject.getString(field.getFieldName());
-//        case SET_INTEGER:
-//          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getFieldName()));
-//        case LIST_STRING:
-//          return JSONUtils.JSONArrayToArrayList(jsonObject.getJSONArray(field.getFieldName()));
-//        case MAP:
-//          return new ValuesMap(jsonObject.getJSONObject(field.getFieldName()));
-//      }
-//    }
-//    return null;
-//  }
   public static void putFieldInJsonObject(ColumnField field, Object value, JSONObject jsonObject) throws JSONException {
     try {
       if (value == null) {

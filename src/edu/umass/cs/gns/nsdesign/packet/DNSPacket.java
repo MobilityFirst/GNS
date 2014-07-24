@@ -239,7 +239,6 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     // response section
     if (includeReponseSection) {
       json.put(TIME_TO_LIVE, getTTL());
-//      json.put(ACTIVE_NAME_SERVERS, new JSONArray(getActiveNameServers()));
       if (recordValue != null) {
         json.put(RECORD_VALUE, recordValue.toJSONObject());
       }

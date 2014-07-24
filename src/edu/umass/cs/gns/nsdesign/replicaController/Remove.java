@@ -74,7 +74,7 @@ public class Remove {
       if (!recovery) {
         if (rcRecord.isMarkedForRemoval()) {  // check if record marked as removed, it may not be if a group change for
           //  this name is in progress concurrently.
-          if (Config.debugMode) GNS.getLogger().info("Name Record marked for removal " + removeRecord);
+          if (Config.debugMode) GNS.getLogger().fine("Name Record marked for removal " + removeRecord);
 
           if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
             // so it will inform actives
