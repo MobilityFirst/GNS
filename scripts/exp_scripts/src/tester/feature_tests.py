@@ -60,185 +60,185 @@ class FeatureTestLocal(TestSetupLocal):
         self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
         self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
 
-    # def test_b_1name_n_times(self):
-    #     """Repeat N times the test for add, remove, lookup, and delete operations for a single name"""
-    #     n = 5
-    #
-    #     name = 'test_name'
-    #     delay_ms = 3000
-    #     requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY],
-    #                 [name, RequestType.LOOKUP],
-    #                 [name, RequestType.UPDATE],
-    #                 [name, RequestType.LOOKUP], [delay_ms, RequestType.DELAY],
-    #                 [name, RequestType.REMOVE], [delay_ms, RequestType.DELAY]]
-    #     request_n_times = []
-    #     for i in range(n):
-    #         request_n_times.extend(requests)
-    #     exp_duration = int(n * (1 + 3*delay_ms/1000))
-    #
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration))  # in seconds
-    #     output_stats = self.run_exp(request_n_times)
-    #
-    #     self.assertEqual(output_stats.requests, 5 * n, "Total number of requests mismatch")
-    #     self.assertEqual(output_stats.success, 5 * n, "Successful requests mismatch")
-    #     self.assertEqual(output_stats.read, 2 * n, "Successful reads mismatch")
-    #     self.assertEqual(output_stats.write, 1 * n, "Successful writes mismatch")
-    #     self.assertEqual(output_stats.add, 1 * n, "Successful adds mismatch")
-    #     self.assertEqual(output_stats.remove, 1 * n, "Successful removes mismatch")
-    #
-    # def test_c0_1name_restart(self):
-    #     """Add a name to GNS, restart GNS, and test if we can perform requests for the name.
-    #     This tests if log recovery works correctly."""
-    #
-    #     name = 'test_name'
-    #
-    #     # run first experiment
-    #     delay_ms = 2500
-    #     requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY],
-    #                 [name, RequestType.LOOKUP],
-    #                 [name, RequestType.UPDATE]]
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(5))  # in seconds
-    #     output_stats = self.run_exp(requests)
-    #
-    #     self.assertEqual(output_stats.requests, 3, "Total number of requests mismatch")
-    #     self.assertEqual(output_stats.success, 3, "Successful requests mismatch")
-    #     self.assertEqual(output_stats.read, 1, "Successful reads mismatch")
-    #     self.assertEqual(output_stats.write, 1, "Successful writes mismatch")
-    #     self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
-    #     self.assertEqual(output_stats.remove, 0, "Successful removes mismatch")
-    #
-    #     # run second experiment: restart GNS without deleting state
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)  # in seconds
-    #     # sleep after starting NS to give ns time to recover
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
-    #     requests = [[name, RequestType.LOOKUP],
-    #                 [name, RequestType.UPDATE], [delay_ms, RequestType.DELAY],
-    #                 [name, RequestType.REMOVE]]
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(5))  # in seconds
-    #     output_stats = self.run_exp(requests)
-    #     self.assertEqual(output_stats.requests, 3, "Total number of requests mismatch")
-    #     self.assertEqual(output_stats.success, 3, "Successful requests mismatch")
-    #     self.assertEqual(output_stats.read, 1, "Successful reads mismatch")
-    #     self.assertEqual(output_stats.write, 1, "Successful writes mismatch")
-    #     self.assertEqual(output_stats.add, 0, "Successful adds mismatch")
-    #     self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
-    #
-    # def test_c1_1name_remove_restart(self):
-    #     """Add and remove a name to GNS, restart GNS, and test if we can again add and remove it.
-    #     This check if name is cleanly removed on log recovery as well.."""
-    #     self.test_a_1name()
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
-    #     self.test_a_1name()
+    def test_b_1name_n_times(self):
+        """Repeat N times the test for add, remove, lookup, and delete operations for a single name"""
+        n = 5
 
-    # def test_c2_name_special_characters(self):
-    #     """ Test if we can handle special characters in name field"""
-    #
-    #     delay_ms = 2500
-    #     requests = []
-    #     for ch in self.special_char_set:
-    #         requests.append([self.get_special_character_name(ch), RequestType.ADD])
-    #     requests.append([delay_ms, RequestType.DELAY])
-    #     for ch in self.special_char_set:
-    #         requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
-    #         requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
-    #         requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
-    #         requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
-    #     requests.append([delay_ms, RequestType.DELAY])
-    #     for ch in self.special_char_set:
-    #         requests.append([self.get_special_character_name(ch), RequestType.REMOVE])
-    #
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', 20)  # in seconds
-    #     output_stats = self.run_exp(requests)
-    #     self.assertEqual(output_stats.requests, 6 * len(self.special_char_set), "Total number of requests mismatch")
-    #     self.assertEqual(output_stats.success, 6 * len(self.special_char_set), "Successful requests mismatch")
-    #     self.assertEqual(output_stats.read, 2 * len(self.special_char_set), "Successful reads mismatch")
-    #     self.assertEqual(output_stats.write, 2 * len(self.special_char_set), "Successful writes mismatch")
-    #     self.assertEqual(output_stats.add, len(self.special_char_set), "Successful adds mismatch")
-    #     self.assertEqual(output_stats.remove, len(self.special_char_set), "Successful removes mismatch")
-    #
-    # def test_c3_name_special_characters_restart(self):
-    #     """ Test if log recovery works correctly for special characters"""
-    #
-    #     # add names with special characters and do some write operations for each name
-    #     delay_ms = 2500
-    #     requests = []
-    #     for ch in self.special_char_set:
-    #         requests.append([self.get_special_character_name(ch), RequestType.ADD])
-    #     requests.append([delay_ms, RequestType.DELAY])
-    #     for ch in self.special_char_set:
-    #         requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
-    #         requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', 10 + delay_ms/1000)  # in seconds
-    #     output_stats = self.run_exp(requests)
-    #     self.assertEqual(output_stats.add, len(self.special_char_set), "Successful adds mismatch")
-    #     self.assertEqual(output_stats.write, 2 * len(self.special_char_set), "Successful writes mismatch")
-    #
-    #     # now restart nodes and do some more operations
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
-    #     requests = []
-    #     for ch in self.special_char_set:
-    #         requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
-    #         requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
-    #         requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
-    #         requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
-    #     requests.append([delay_ms, RequestType.DELAY])
-    #     for ch in self.special_char_set:
-    #         requests.append([self.get_special_character_name(ch), RequestType.REMOVE])
-    #
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', 20)  # in seconds
-    #     output_stats = self.run_exp(requests)
-    #     self.assertEqual(output_stats.requests, 5 * len(self.special_char_set), "Total number of requests mismatch")
-    #     self.assertEqual(output_stats.success, 5 * len(self.special_char_set), "Successful requests mismatch")
-    #     self.assertEqual(output_stats.read, 2 * len(self.special_char_set), "Successful reads mismatch")
-    #     self.assertEqual(output_stats.write, 2 * len(self.special_char_set), "Successful writes mismatch")
-    #     self.assertEqual(output_stats.add, 0, "Successful adds mismatch")
-    #     self.assertEqual(output_stats.remove, len(self.special_char_set), "Successful removes mismatch")
-    #
-    # @staticmethod
-    # def get_special_character_name(ch):
-    #     return 'test' + ch + 'name'
-    #
-    # def test_d0_1name_read_write_latency(self):
-    #     """For 1 name, measure read and write latencies on a local machine"""
-    #     request_rate = 50
-    #     duration = 100
-    #     output_stats = self.run_exp_reads_writes(request_rate, duration)
-    #     print 'Read latency (90-percentile)', output_stats.read_perc90, 'ms', 'Write latency (90-percentile)', \
-    #         output_stats.write_perc90, 'ms',
-    #     self.assertLess(output_stats.read_perc90, 20.0, "High latency reads")
-    #     self.assertLess(output_stats.write_perc90, 50.0, "High latency writes")
-    #
-    # def test_d1_medium_objects_read_write_latency(self):
-    #     """For objects of medium size (1K, 10K, 100K), check if we can perform requests"""
-    #     medium_sizes_kb = [1, 10, 100]  #
-    #     for size in medium_sizes_kb:
-    #         print 'Testing object size: ', size, 'KB'
-    #         self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size)
-    #         self.test_a_1name()
-    #
-    # @unittest.expectedFailure
-    # def test_d2_large_objects_test(self):
-    #     """Stress test to check if we can handle large object of several MBs. This test is expected to fail when the
-    #     response latency becomes greater than the max wait time for a request at LNS (usually 10 sec) """
-    #     large_sizes_kb = [1000, 2000, 4000, 8000, 16000, 32000]  #
-    #     for size in large_sizes_kb:
-    #         print 'Testing object size: ', size/1000, 'MB'
-    #         self.config_parse.set(ConfigParser.DEFAULTSECT, "is_debug_mode", False)
-    #         self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size)
-    #         self.test_a_1name()
-    #
-    # def test_e_1name_read_write_emulated_latency(self):
-    #     """For 1 name, measure read and write latencies while emulating wide-area latency between nodes"""
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies', True)
-    #     self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulation_type', local.exp_config.CONSTANT_DELAY)
-    #     request_rate = 20
-    #     duration = 30
-    #     output_stats = self.run_exp_reads_writes(request_rate, duration)
-    #     print 'Read latency (90-percentile)', output_stats.read_perc90, 'ms', 'Write latency (90-percentile)', \
-    #         output_stats.write_perc90, 'ms',
-    #     self.assertLess(output_stats.read_perc90, 2 * local.exp_config.DEFAULT_CONST_DELAY, "High latency reads")
-    #     self.assertLess(output_stats.write_perc90, 5 * local.exp_config.DEFAULT_CONST_DELAY, "High latency writes")
+        name = 'test_name'
+        delay_ms = 3000
+        requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY],
+                    [name, RequestType.LOOKUP],
+                    [name, RequestType.UPDATE],
+                    [name, RequestType.LOOKUP], [delay_ms, RequestType.DELAY],
+                    [name, RequestType.REMOVE], [delay_ms, RequestType.DELAY]]
+        request_n_times = []
+        for i in range(n):
+            request_n_times.extend(requests)
+        exp_duration = int(n * (1 + 3*delay_ms/1000))
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(exp_duration))  # in seconds
+        output_stats = self.run_exp(request_n_times)
+
+        self.assertEqual(output_stats.requests, 5 * n, "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, 5 * n, "Successful requests mismatch")
+        self.assertEqual(output_stats.read, 2 * n, "Successful reads mismatch")
+        self.assertEqual(output_stats.write, 1 * n, "Successful writes mismatch")
+        self.assertEqual(output_stats.add, 1 * n, "Successful adds mismatch")
+        self.assertEqual(output_stats.remove, 1 * n, "Successful removes mismatch")
+
+    def test_c0_1name_restart(self):
+        """Add a name to GNS, restart GNS, and test if we can perform requests for the name.
+        This tests if log recovery works correctly."""
+
+        name = 'test_name'
+
+        # run first experiment
+        delay_ms = 2500
+        requests = [[name, RequestType.ADD], [delay_ms, RequestType.DELAY],
+                    [name, RequestType.LOOKUP],
+                    [name, RequestType.UPDATE]]
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(5))  # in seconds
+        output_stats = self.run_exp(requests)
+
+        self.assertEqual(output_stats.requests, 3, "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, 3, "Successful requests mismatch")
+        self.assertEqual(output_stats.read, 1, "Successful reads mismatch")
+        self.assertEqual(output_stats.write, 1, "Successful writes mismatch")
+        self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
+        self.assertEqual(output_stats.remove, 0, "Successful removes mismatch")
+
+        # run second experiment: restart GNS without deleting state
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)  # in seconds
+        # sleep after starting NS to give ns time to recover
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
+        requests = [[name, RequestType.LOOKUP],
+                    [name, RequestType.UPDATE], [delay_ms, RequestType.DELAY],
+                    [name, RequestType.REMOVE]]
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', str(5))  # in seconds
+        output_stats = self.run_exp(requests)
+        self.assertEqual(output_stats.requests, 3, "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, 3, "Successful requests mismatch")
+        self.assertEqual(output_stats.read, 1, "Successful reads mismatch")
+        self.assertEqual(output_stats.write, 1, "Successful writes mismatch")
+        self.assertEqual(output_stats.add, 0, "Successful adds mismatch")
+        self.assertEqual(output_stats.remove, 1, "Successful removes mismatch")
+
+    def test_c1_1name_remove_restart(self):
+        """Add and remove a name to GNS, restart GNS, and test if we can again add and remove it.
+        This check if name is cleanly removed on log recovery as well.."""
+        self.test_a_1name()
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
+        self.test_a_1name()
+
+    def test_c2_name_special_characters(self):
+        """ Test if we can handle special characters in name field"""
+
+        delay_ms = 2500
+        requests = []
+        for ch in self.special_char_set:
+            requests.append([self.get_special_character_name(ch), RequestType.ADD])
+        requests.append([delay_ms, RequestType.DELAY])
+        for ch in self.special_char_set:
+            requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
+            requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
+            requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
+            requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
+        requests.append([delay_ms, RequestType.DELAY])
+        for ch in self.special_char_set:
+            requests.append([self.get_special_character_name(ch), RequestType.REMOVE])
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', 20)  # in seconds
+        output_stats = self.run_exp(requests)
+        self.assertEqual(output_stats.requests, 6 * len(self.special_char_set), "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, 6 * len(self.special_char_set), "Successful requests mismatch")
+        self.assertEqual(output_stats.read, 2 * len(self.special_char_set), "Successful reads mismatch")
+        self.assertEqual(output_stats.write, 2 * len(self.special_char_set), "Successful writes mismatch")
+        self.assertEqual(output_stats.add, len(self.special_char_set), "Successful adds mismatch")
+        self.assertEqual(output_stats.remove, len(self.special_char_set), "Successful removes mismatch")
+
+    def test_c3_name_special_characters_restart(self):
+        """ Test if log recovery works correctly for special characters"""
+
+        # add names with special characters and do some write operations for each name
+        delay_ms = 2500
+        requests = []
+        for ch in self.special_char_set:
+            requests.append([self.get_special_character_name(ch), RequestType.ADD])
+        requests.append([delay_ms, RequestType.DELAY])
+        for ch in self.special_char_set:
+            requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
+            requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', 10 + delay_ms/1000)  # in seconds
+        output_stats = self.run_exp(requests)
+        self.assertEqual(output_stats.add, len(self.special_char_set), "Successful adds mismatch")
+        self.assertEqual(output_stats.write, 2 * len(self.special_char_set), "Successful writes mismatch")
+
+        # now restart nodes and do some more operations
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
+        requests = []
+        for ch in self.special_char_set:
+            requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
+            requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
+            requests.append([self.get_special_character_name(ch), RequestType.LOOKUP])
+            requests.append([self.get_special_character_name(ch), RequestType.UPDATE])
+        requests.append([delay_ms, RequestType.DELAY])
+        for ch in self.special_char_set:
+            requests.append([self.get_special_character_name(ch), RequestType.REMOVE])
+
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'experiment_run_time', 20)  # in seconds
+        output_stats = self.run_exp(requests)
+        self.assertEqual(output_stats.requests, 5 * len(self.special_char_set), "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, 5 * len(self.special_char_set), "Successful requests mismatch")
+        self.assertEqual(output_stats.read, 2 * len(self.special_char_set), "Successful reads mismatch")
+        self.assertEqual(output_stats.write, 2 * len(self.special_char_set), "Successful writes mismatch")
+        self.assertEqual(output_stats.add, 0, "Successful adds mismatch")
+        self.assertEqual(output_stats.remove, len(self.special_char_set), "Successful removes mismatch")
+
+    @staticmethod
+    def get_special_character_name(ch):
+        return 'test' + ch + 'name'
+
+    def test_d0_1name_read_write_latency(self):
+        """For 1 name, measure read and write latencies on a local machine"""
+        request_rate = 50
+        duration = 100
+        output_stats = self.run_exp_reads_writes(request_rate, duration)
+        print 'Read latency (90-percentile)', output_stats.read_perc90, 'ms', 'Write latency (90-percentile)', \
+            output_stats.write_perc90, 'ms',
+        self.assertLess(output_stats.read_perc90, 20.0, "High latency reads")
+        self.assertLess(output_stats.write_perc90, 50.0, "High latency writes")
+
+    def test_d1_medium_objects_read_write_latency(self):
+        """For objects of medium size (1K, 10K, 100K), check if we can perform requests"""
+        medium_sizes_kb = [1, 10, 100]  #
+        for size in medium_sizes_kb:
+            print 'Testing object size: ', size, 'KB'
+            self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size)
+            self.test_a_1name()
+
+    @unittest.expectedFailure
+    def test_d2_large_objects_test(self):
+        """Stress test to check if we can handle large object of several MBs. This test is expected to fail when the
+        response latency becomes greater than the max wait time for a request at LNS (usually 10 sec) """
+        large_sizes_kb = [1000, 2000, 4000, 8000, 16000, 32000]  #
+        for size in large_sizes_kb:
+            print 'Testing object size: ', size/1000, 'MB'
+            self.config_parse.set(ConfigParser.DEFAULTSECT, "is_debug_mode", False)
+            self.workload_conf.set(ConfigParser.DEFAULTSECT, WorkloadParams.OBJECT_SIZE, size)
+            self.test_a_1name()
+
+    def test_e_1name_read_write_emulated_latency(self):
+        """For 1 name, measure read and write latencies while emulating wide-area latency between nodes"""
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulate_ping_latencies', True)
+        self.config_parse.set(ConfigParser.DEFAULTSECT, 'emulation_type', local.exp_config.CONSTANT_DELAY)
+        request_rate = 20
+        duration = 30
+        output_stats = self.run_exp_reads_writes(request_rate, duration)
+        print 'Read latency (90-percentile)', output_stats.read_perc90, 'ms', 'Write latency (90-percentile)', \
+            output_stats.write_perc90, 'ms',
+        self.assertLess(output_stats.read_perc90, 2 * local.exp_config.DEFAULT_CONST_DELAY, "High latency reads")
+        self.assertLess(output_stats.write_perc90, 5 * local.exp_config.DEFAULT_CONST_DELAY, "High latency writes")
 
     def test_f_single_node_failure(self):
         """Fail all name servers one by one and check if requests are successful"""
@@ -384,8 +384,7 @@ class FeatureTestLocal(TestSetupLocal):
         self.assertGreater(output_stats.read_cached, 0.9*num_lookups, "Successful cached reads mismatch")
 
     def test_j1_ttl_caching_group_change(self):
-        """ Test if TTL values are correctly transferred on a group change of replicas of a name.
-        """
+        """ Test if TTL values are correctly transferred on a group change of replicas of a name."""
 
         name = 'test_name'
         delay_ms = 2500
@@ -417,12 +416,13 @@ class FeatureTestLocal(TestSetupLocal):
         self.workload_conf.set(ConfigParser.DEFAULTSECT, 'ttl', 100)
 
         output_stats = self.run_exp(requests)
-        self.assertEqual(output_stats.requests, num_lookups + 1, "Total number of requests mismatch")
-        self.assertEqual(output_stats.success, num_lookups + 1, "Successful requests mismatch")
+        self.assertEqual(output_stats.requests, num_lookups + 2, "Total number of requests mismatch")
+        self.assertEqual(output_stats.success, num_lookups + 2, "Successful requests mismatch")
         self.assertEqual(output_stats.read, num_lookups, "Successful reads mismatch")
         self.assertEqual(output_stats.add, 1, "Successful adds mismatch")
         # almost all lookups will be cached
         self.assertGreater(output_stats.read_cached, 0.9*num_lookups, "Successful cached reads mismatch")
+        self.assertEqual(output_stats.group_change, 1, "Successful group change mismatch")
 
     def test_j2_ttl_caching_restarts(self):
         """ Are TTL values recovered correctly on restarting the system?"""
@@ -536,9 +536,9 @@ class FeatureTestLocal(TestSetupLocal):
 
     def test_n_read_writes_groupchanges(self):
         """ Tests a workload where reads and writes for 1 name are inter-mixed with group changes"""
-        request_rate = 100
+        request_rate = 50
         duration = 50
-        group_change_interval = 5
+        group_change_interval = 10
         self.run_exp_reads_writes_groupchanges(request_rate, duration, group_change_interval)
 
     def run_exp_reads_writes(self, request_rate, exp_duration):

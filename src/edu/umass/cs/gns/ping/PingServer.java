@@ -66,16 +66,12 @@ public class PingServer extends Thread{
     } catch (Exception e) {
       e.printStackTrace();
       GNS.getLogger().severe("Error creating DatagramSocket " + e);
-
     }
   }
 
   public void shutdown() {
-    GNS.getLogger().info("Shutting down .. " + nodeID);
     setShutdown();
     serverSocket.close();
-    GNS.getLogger().info("Shutdown complete");
-//    super.interrupt();
   }
 
   private synchronized void setShutdown() {

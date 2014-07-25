@@ -65,7 +65,7 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
    * TEST CODE
    */
   public static void main(String[] args) throws JSONException, IOException {
-    System.out.println("Test if the send methods mark outgoing packets as expected:");
+    System.out.println("Test if the send methods mark outgoing packets with correct packet types:");
     final Packet.PacketType type1 = Packet.PacketType.PAXOS_PACKET;
     InterfaceJSONNIOTransport jsonnioTransport = new InterfaceJSONNIOTransport() {
       @Override

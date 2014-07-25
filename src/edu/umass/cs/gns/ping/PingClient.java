@@ -80,7 +80,6 @@ public class PingClient {
   public void shutdown() {
     this.setShutdown();
     this.clientSocket.close();
-//    this.receiveThread.interrupt();
   }
 
   // handles ping responses
@@ -169,6 +168,9 @@ public class PingClient {
     return id;
   }
 
+  /**
+   * 'synchronized' only for access to the boolean variable. There are no other synchronized methods in the class.
+   */
   private synchronized void setShutdown() {
     shutdown = true;
   }

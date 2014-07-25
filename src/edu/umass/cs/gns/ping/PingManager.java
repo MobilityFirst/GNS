@@ -169,8 +169,10 @@ public class PingManager implements Shutdownable{
   public final static String NEWLINE = System.getProperty("line.separator");
 
   public void shutdown() {
+    GNS.getLogger().warning("Ping shutting down .. ");
     this.managerThread.interrupt();
     this.pingServer.shutdown();
     this.pingClient.shutdown();
+    GNS.getLogger().warning("Ping shutdown  complete.");
   }
 }
