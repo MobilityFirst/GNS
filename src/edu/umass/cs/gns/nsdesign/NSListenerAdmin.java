@@ -32,7 +32,7 @@ import java.util.logging.Level;
  * A separate thread that runs in the NameServer that handles administrative (AKA non-data related, non-user)
  * type operations. All of the things in here are for server administration and debugging.
  */
-public class NSListenerAdmin extends Thread {
+public class NSListenerAdmin extends Thread implements Shutdownable{
 
   /**
    * Socket over which active name server request arrive *
@@ -45,7 +45,7 @@ public class NSListenerAdmin extends Thread {
 
   private ReplicaController replicaController;
 
-  private ReplicaControllerCoordinator rcCooordinator;
+  private ReplicaControllerCoordinator rcCoordinator;
 
   private GNSNodeConfig gnsNodeConfig;
 
@@ -55,12 +55,13 @@ public class NSListenerAdmin extends Thread {
    * @throws IOException
    */
   public NSListenerAdmin(GnsReconfigurableInterface gnsReconfigurable, ActiveReplicaCoordinator appCoordinator,
-          ReplicaController replicaController, ReplicaControllerCoordinator rcCooordinator,
+          ReplicaController replicaController, ReplicaControllerCoordinator rcCoordinator,
           GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
     this.gnsReconfigurable = gnsReconfigurable;
     this.appCoordinator = appCoordinator;
     this.replicaController = replicaController;
+    this.rcCoordinator = rcCoordinator;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
       this.serverSocket = new ServerSocket(gnsNodeConfig.getNSAdminRequestPort(gnsReconfigurable.getNodeID()));
@@ -193,7 +194,7 @@ public class NSListenerAdmin extends Thread {
               case RESETDB:
                 GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling RESETDB request");
                 replicaController.reset();
-                rcCooordinator.reset();
+                rcCoordinator.reset();
                 appCoordinator.reset();
                 gnsReconfigurable.reset();
 
@@ -241,11 +242,16 @@ public class NSListenerAdmin extends Thread {
 
         socket.close();
       } catch (Exception e) {
+        if (serverSocket.isClosed())  {
+          GNS.getLogger().warning("NS Admin shutting down.");
+          return; // close this thread
+        }
         e.printStackTrace();
       }
     }
 
   }
+
 
   /**
    * Sends active name server information to the sender
@@ -262,5 +268,18 @@ public class NSListenerAdmin extends Thread {
     activeNSInfoPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
     Packet.sendTCPPacket(activeNSInfoPacket.toJSONObject(), socket);
     GNS.getLogger().fine("NSListenrAdmin: Response RequestNum:" + numRequest + " --> " + activeNSInfoPacket.toString());
+  }
+
+  /**
+   * Closes the server socket in process of shutting down name server.
+   * This unblocks the listening thread and and the listening thread shuts down.
+   */
+  @Override
+  public void shutdown() {
+    try {
+      this.serverSocket.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination;
 
+import edu.umass.cs.gns.nsdesign.Shutdownable;
 import org.json.JSONObject;
 
 /**
@@ -7,7 +8,7 @@ import org.json.JSONObject;
  */
 /* Work in progress. Inactive code.
  */
-public abstract class ActiveReplicaCoordinator {
+public abstract class ActiveReplicaCoordinator implements Shutdownable{
 
 	/* coordinateRequest will look into the request type, e.g.,
 	 * read, write, add, etc. and decide what kind of replica

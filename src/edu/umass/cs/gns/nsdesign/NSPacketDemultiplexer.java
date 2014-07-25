@@ -98,9 +98,11 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
    */
   @Override
   public boolean handleJSONObject(final JSONObject json) {
+
     incrementMsgCount();
     try {
       final Packet.PacketType type = Packet.getPacketType(json);
+
       // return value should be true if packet type matches these packets:
       if (Config.debugMode) GNS.getLogger().fine(" MsgType " + type + " Msg " + json);
       nameServer.getExecutorService().submit(new Runnable() {
@@ -171,7 +173,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
                 }
                 break;
               default:
-                GNS.getLogger().severe("Packet type not found: " + json);
+                GNS.getLogger().severe("Packet type not found: " + type + " JSON: " + json);
                 break;
             }
           } catch (JSONException e) {

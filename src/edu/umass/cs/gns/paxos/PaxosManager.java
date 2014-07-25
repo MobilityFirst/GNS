@@ -1,16 +1,14 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
+import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
-import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
-import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
-import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
+import edu.umass.cs.gns.paxos.paxospacket.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,7 +36,7 @@ public class PaxosManager extends AbstractPaxosManager {
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
    */
-  private  InterfaceJSONNIOTransport nioServer;
+  private InterfaceJSONNIOTransport nioServer;
 
   /**
    * Object stores all paxos instances.
@@ -112,7 +110,10 @@ public class PaxosManager extends AbstractPaxosManager {
                               Replicable outputHandler, PaxosConfig paxosConfig) {
 
     this.executorService = new ScheduledThreadPoolExecutor(2);
+    // set to false to cancel non-periodic delayed tasks upon shutdown
+    this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     this.nodeID = nodeID;
+    assert nioServer instanceof PacketTypeStamper;
     this.nioServer = nioServer;
     this.clientRequestHandler = outputHandler;
     this.debugMode = paxosConfig.isDebugMode();
@@ -253,7 +254,8 @@ public class PaxosManager extends AbstractPaxosManager {
   void startResendPendingMessages() {
     ResendPendingMessagesTask task = new ResendPendingMessagesTask(this);
     // single time execution
-    executorService.schedule(task, RESEND_PENDING_MSG_INTERVAL_MILLIS,TimeUnit.MILLISECONDS);
+    executorService.scheduleAtFixedRate(task, RESEND_PENDING_MSG_INTERVAL_MILLIS,
+            RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
   }
 
   PaxosReplicaInterface createPaxosReplicaObject(String paxosID, int nodeID, Set<Integer> nodeIDs1) {
@@ -553,40 +555,39 @@ public class PaxosManager extends AbstractPaxosManager {
     try
     {
       if (!test) {
-        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
-
+//        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
 //      GNS.getLogger().fine("Sending message to " + destID + "\t" + json);
       if (initialized) nioServer.sendToID(destID, json);
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to ID. " + destID);
-    } catch (JSONException e)
-    {
-      GNS.getLogger().severe("JSON Exception in sending to ID. " + destID);
+//    } catch (JSONException e)
+//    {
+//      GNS.getLogger().severe("JSON Exception in sending to ID. " + destID);
     }
   }
 
   private  void sendMessage(Set<Integer> destIDs, JSONObject json) {
     try {
-      if (!test) {
-        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
-      }
+//      if (!test) {
+//        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
+//      }
       if (initialized) {
         for (int x: destIDs)
           nioServer.sendToID(x, json);
       }
     } catch (IOException e) {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. " + destIDs);
-    } catch (JSONException e) {
-      GNS.getLogger().severe("JSON Exception in sending to IDs. " + destIDs);
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("JSON Exception in sending to IDs. " + destIDs);
     }
   }
 
   private void sendMessage(short[] destIDs, JSONObject json, int excludeID) {
     try {
       if (!test) {
-        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
+//        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
       if (initialized) {
         for (int x : destIDs) {
@@ -597,14 +598,27 @@ public class PaxosManager extends AbstractPaxosManager {
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. ");
-    } catch (JSONException e)
-    {
-      GNS.getLogger().severe("JSON Exception in sending to IDs. ");
+//    } catch (JSONException e)
+//    {
+//      GNS.getLogger().severe("JSON Exception in sending to IDs. ");
     }
   }
 
   public boolean isConsistentHashCoordinatorOrder() {
     return consistentHashCoordinatorOrder;
+  }
+
+  public void shutdown() {
+    this.executorService.shutdownNow();
+    try {
+      executorService.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    assert executorService.isTerminated();
+    GNS.getLogger().warning("Paxos internal executor thread shutting down.");
+    this.paxosLogger.shutdown();
+    GNS.getLogger().warning("Paxos logger shut down");
   }
 }
 
@@ -678,11 +692,7 @@ class ResendPendingMessagesTask extends TimerTask{
           GNS.getLogger().warning("\tResendingMessage\t" + propState.paxosReplica.getPaxosID() + "\t" +
                   propState.pValuePacket.proposal.slot + "\t");
         }
-
-
       }
-      paxosManager.startResendPendingMessages();
-
     }catch (Exception e) {
       GNS.getLogger().severe("Exception in sending pending messages." + e.getMessage());
       e.printStackTrace();

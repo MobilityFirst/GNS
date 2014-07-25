@@ -171,6 +171,10 @@ public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
     paxosManager.resetAll();
   }
 
+  @Override
+  public void shutdown() {
+
+  }
 }
 
 

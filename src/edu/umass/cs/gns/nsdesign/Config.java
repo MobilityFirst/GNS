@@ -74,6 +74,7 @@ public class Config {
     if (initialized) return;
 
     initialized = true;
+    if (allValues == null) return;
 
     if (allValues.containsKey(NSParameterNames.PRIMARY_REPLICAS)) {
       GNS.numPrimaryReplicas = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));

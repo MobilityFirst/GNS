@@ -7,12 +7,12 @@ package edu.umass.cs.gns.nio.deprecated;
 
 /* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.deprecated.ChangeRequest;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -97,6 +97,11 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport {
 
   public int getMyID() {
     return this.ID;
+  }
+
+  @Override
+  public void stop() {
+
   }
 
   /**

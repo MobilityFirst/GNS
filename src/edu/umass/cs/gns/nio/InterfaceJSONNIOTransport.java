@@ -20,4 +20,5 @@ public interface InterfaceJSONNIOTransport{
   
   public int getMyID();
 
+  public void stop();
 }

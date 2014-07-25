@@ -23,7 +23,7 @@ import org.json.JSONObject;
 public class ConfirmUpdatePacket extends BasicPacket {
 
   private final static String REQUESTID = "reqid";
-  private final static String LNSREQUESTID = "lnreqsid";
+  private final static String LNSREQUESTID = "lnsreqid";
   private final static String RESPONSECODE = "code";
   private final static String RETURNTO = "returnTo";
   /**

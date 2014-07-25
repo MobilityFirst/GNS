@@ -7,7 +7,6 @@ import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
@@ -55,7 +54,6 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
 
     if (!Config.emulatePingLatencies) {
       // when emulating ping latencies we do not
-      PingServer.startServerThread(nodeID, gnsNodeConfig);
       this.pingManager = new PingManager(nodeID, gnsNodeConfig);
       this.pingManager.startPinging();
     }
@@ -227,5 +225,10 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
   @Override
   public PingManager getPingManager() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void shutdown() {
+    // nothing to do here currently, may need updating if we create a thread inside this module
   }
 }

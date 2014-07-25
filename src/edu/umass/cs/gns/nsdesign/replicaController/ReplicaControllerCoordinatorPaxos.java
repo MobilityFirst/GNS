@@ -66,7 +66,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
       switch (type) {
         // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:
-          Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
+//          Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
           paxosManager.handleIncomingPacket(request);
           break;
         case ADD_RECORD:
@@ -136,5 +136,13 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   public void reset() {
     paxosManager.resetAll();
     createPrimaryPaxosInstances();
+  }
+
+  @Override
+  public void shutdown() {
+    // todo how to shutdown multipaxos's PaxosManager?
+    if (paxosManager instanceof PaxosManager) {
+      ((PaxosManager)paxosManager).shutdown();
+    }
   }
 }

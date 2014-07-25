@@ -177,6 +177,15 @@ public class PaxosLogger extends Thread {
    */
   private  String paxosStateFolder = null;
 
+  // shutdown related variables
+
+  private final Object shutdownLock = new Object();
+
+  private boolean shutdown = false;
+
+  private boolean shutdownComplete = false;
+
+
   /**
    * This variable is always set to true except during post-processing of paxos logs
    * that are collected during a test run of GNS. See class {@code edu.umass.cs.gns.paxos.PaxosLogAnalyzer} for the
@@ -526,6 +535,23 @@ public class PaxosLogger extends Thread {
     return paxosInstances;
   }
 
+  /**
+   * Shuts down the logging thread
+   */
+  void shutdown() {
+    // set flag so that logging thread knows to shutoff
+    setShutdown();
+    while (!isShutdownComplete()) { // check if logging thread has received the signal to shutdown
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    GNS.getLogger().warning("Shutting down paxos logger.");
+  }
+
+
 
   /************************END OF PUBLIC METHODS IN PAXOS LOGGER********************************/
 
@@ -539,7 +565,7 @@ public class PaxosLogger extends Thread {
    * log the current msgs in queue
    */
   private void doLogging() {
-    while (true) {
+    while (!isShutdown()) {    // check if signal to shutdown
       ArrayList<LoggingCommand> logCmdCopy = null;
 
       synchronized (logQueueLock) {
@@ -595,6 +621,7 @@ public class PaxosLogger extends Thread {
         handleLoggedMessage(cmd);
       }
     }
+    setShutdownComplete();// inform that logging thread has shutdown.
   }
 
   private void handleLoggedMessage(LoggingCommand cmd) {
@@ -668,6 +695,32 @@ public class PaxosLogger extends Thread {
   }
 
   /************************End of private methods for doing logging********************************/
+
+  /************************Start of private methods for shutdown********************************/
+
+  private boolean isShutdown() {
+    synchronized(shutdownLock) {
+      return shutdown;
+    }
+  }
+
+  private void setShutdown() {
+    this.shutdown = true;
+  }
+
+  private boolean isShutdownComplete() {
+    synchronized(shutdownLock) {
+      return shutdownComplete;
+    }
+  }
+
+  private void setShutdownComplete() {
+    synchronized(shutdownLock) {
+      shutdownComplete  = true;
+    }
+  }
+
+  /************************End of private methods for shutdown********************************/
 
 
   /************************Start of private methods for log recovery********************************/
@@ -1457,6 +1510,7 @@ public class PaxosLogger extends Thread {
     }
 
   }
+
 
 }
 

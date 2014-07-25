@@ -25,15 +25,15 @@ rm -rf log
 mkdir -p log/ns0 log/ns1 log/ns2 log/lns3 log/client
 
 cd log/ns0
-nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartNameServer -multipaxos -id 0 -nsfile ../../node_config &
+nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartNameServer -id 0 -nsfile ../../node_config &
 cd ../../
 
 cd log/ns1
-nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartNameServer -multipaxos -id 1 -nsfile ../../node_config &
+nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartNameServer -id 1 -nsfile ../../node_config &
 cd ../../
 
 cd log/ns2
-nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartNameServer -multipaxos -id 2 -nsfile ../../node_config &
+nohup java -ea -cp $gns_jar edu.umass.cs.gns.main.StartNameServer -id 2 -nsfile ../../node_config &
 cd ../../
 
 

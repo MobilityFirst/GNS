@@ -41,7 +41,6 @@ public class Lookup {
     dnsFields.add(NameRecord.TIME_TO_LIVE);
   }
 
-
   /**
    *
    * @param dnsPacket
@@ -60,7 +59,6 @@ public class Lookup {
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
 
     GNS.getLogger().fine("Node " + gnsApp.getNodeID() + "; DNS Packet: " + dnsPacket.toString());
-//    GNSMessagingTask msgTask;
     // the only dns response we should see are coming in response to LNSQueryHandler requests
     if (!dnsPacket.isQuery()) {
       LNSQueryHandler.handleDNSResponsePacket(dnsPacket, gnsApp);

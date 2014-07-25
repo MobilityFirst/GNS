@@ -54,7 +54,8 @@ public class MongoRecords implements NoSQLRecords {
 
   private DB db;
   private String dbName;
-  
+
+  private MongoClient mongoClient;
   private boolean debuggingEnabled = false;
 
   /**
@@ -87,13 +88,14 @@ public class MongoRecords implements NoSQLRecords {
     try {
       // use a unique name in case we have more than one on a machine
       dbName = DBROOTNAME + "-" + nodeID;
-      MongoClient mongoClient;
+//      MongoClient mongoClient;
       if (mongoPort > 0) {
         mongoClient = new MongoClient("localhost", mongoPort);
       } else {
         mongoClient = new MongoClient("localhost");
       }
       db = mongoClient.getDB(dbName);
+
       initializeIndexes();
     } catch (UnknownHostException e) {
       GNS.getLogger().severe("Unable to open Mongo DB: " + e);
@@ -896,6 +898,14 @@ public class MongoRecords implements NoSQLRecords {
     while (cursor.hasNext()) {
       System.out.println(cursor.nextJSONObject().toString());
     }
+  }
+
+  /***
+   * Close mongo client before shutting down name server. As per mongo doc:
+   * "to dispose of an instance, make sure you call MongoClient.close() to clean up resources."
+   */
+  public void close() {
+    mongoClient.close();
   }
 
   public static String Version = "$Revision$";

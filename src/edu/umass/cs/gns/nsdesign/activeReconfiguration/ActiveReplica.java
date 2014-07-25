@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  *
  * Created by abhigyan on 3/27/14.
  */
-public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
+public class ActiveReplica<AppType extends Reconfigurable & Replicable> implements Shutdownable {
 
   private ActiveReplicaApp activeReplicaApp;
 
@@ -157,4 +157,8 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> {
   }
 
 
+  @Override
+  public void shutdown() {
+    // nothing to do here currently, may need updating if we create a thread inside this module
+  }
 }

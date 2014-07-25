@@ -8,8 +8,6 @@ import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  *
  * Trivial coordinator for a single name server GNS, which executes requests without any coordination.
@@ -78,5 +76,10 @@ public class DefaultGnsCoordinator extends ActiveReplicaCoordinator {
   @Override
   public void reset() {
     // no action needed because there is no coordination state.
+  }
+
+  @Override
+  public void shutdown() {
+    // nothing to do here currently, may need updating if we create a thread inside this module
   }
 }

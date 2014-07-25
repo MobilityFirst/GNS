@@ -9,6 +9,7 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -32,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * Created by abhigyan on 2/26/14.
  *
  */
-public class ReplicaController implements Replicable, ReconfiguratorInterface {
+public class ReplicaController implements Replicable, ReconfiguratorInterface, Shutdownable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 
@@ -71,10 +72,9 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
   /**
    * constructor object
    */
-  public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
-                           InterfaceJSONNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+  public ReplicaController(int nodeID,GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+                           ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                            MongoRecords mongoRecords) {
-    Config.initialize(configParameters);
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
     this.nioServer = nioServer;
@@ -85,8 +85,10 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
     this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 
     if (replicationFrameworkInterface != null) {
-      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this),
-              new Random(nodeID*1000).nextInt(Config.analysisIntervalSec), Config.analysisIntervalSec, TimeUnit.SECONDS);
+      int initialDelay = new Random(nodeID*1000).nextInt(Config.analysisIntervalSec);
+      GNS.getLogger().info("Starting task to compute new actives ... initial delay: " + initialDelay);
+      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this), initialDelay,
+              Config.analysisIntervalSec, TimeUnit.SECONDS);
     }
   }
 
@@ -314,6 +316,11 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
    */
   public void reset() throws FailedDBOperationException {
     replicaControllerDB.reset();
+  }
+
+  @Override
+  public void shutdown() {
+
   }
 
   /**

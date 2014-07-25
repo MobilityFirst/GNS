@@ -1,16 +1,13 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
 
 /**
  * Based on {@link edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger} class.
@@ -26,11 +23,11 @@ public class GnsMessenger implements InterfaceJSONNIOTransport {
   private static final long RTX_DELAY = 1000; //ms
   private static final int BACKOFF_FACTOR = 2;
 
-  private final JSONNIOTransport gnsnioTransport;
+  private final InterfaceJSONNIOTransport gnsnioTransport;
   private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
   private final int myID;
 
-  public GnsMessenger(int myID, JSONNIOTransport gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+  public GnsMessenger(int myID, InterfaceJSONNIOTransport gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
     this.myID = myID;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
     this.gnsnioTransport = gnsnioTransport;
@@ -39,6 +36,11 @@ public class GnsMessenger implements InterfaceJSONNIOTransport {
   @Override
   public int getMyID() {
     return this.myID;
+  }
+
+  @Override
+  public void stop() {
+    gnsnioTransport.stop();
   }
 
   @Override

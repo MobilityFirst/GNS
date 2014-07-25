@@ -10,6 +10,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import org.json.JSONException;
@@ -70,6 +71,7 @@ public class Remove {
    */
   public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable gnsApp,
                                                      boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
+    if (Config.debugMode) GNS.getLogger().fine("Executing remove: " + oldActiveStopPacket);
 //    GNSMessagingTask msgTask = null;
     if (noCoordinationState == false) { // normal case:
       try {

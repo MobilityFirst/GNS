@@ -78,4 +78,9 @@ public class DefaultRcCoordinator implements ReplicaControllerCoordinator{
   public void reset() {
     // no action needed as there is no state.
   }
+
+  @Override
+  public void shutdown() {
+
+  }
 }

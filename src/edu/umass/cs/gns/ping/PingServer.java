@@ -9,12 +9,11 @@ package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.util.ThreadUtils;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 
 /**
  * The PingServer class handles the client side of the GNS ping protocol.
@@ -22,25 +21,24 @@ import java.net.SocketException;
  * 
  * @author westy
  */
-public class PingServer {
+public class PingServer extends Thread{
 
-  /**
-   * Starts a thread which handles ping requests sent from the client.
-   * 
-   * @param nodeID 
-   */
-  public static void startServerThread(final int nodeID, final GNSNodeConfig gnsNodeConfig) {
-    (new Thread() {
-      @Override
-      public void run() {
-        startServer(nodeID, gnsNodeConfig);
-      }
-    }).start();
+  private final int nodeID;
+  private final GNSNodeConfig gnsNodeConfig;
+  private DatagramSocket serverSocket;
+  private boolean shutdown = false;
+
+  public PingServer(final int nodeID, final GNSNodeConfig gnsNodeConfig) {
+    this.nodeID = nodeID;
+    this.gnsNodeConfig = gnsNodeConfig;
   }
 
-  private static void startServer(int nodeID, GNSNodeConfig gnsNodeConfig) {
+
+  @Override
+  public void run() {
+
     try {
-      DatagramSocket serverSocket = new DatagramSocket(gnsNodeConfig.getPingPort(nodeID));
+      serverSocket = new DatagramSocket(gnsNodeConfig.getPingPort(nodeID));
       byte[] receiveData = new byte[1024];
       byte[] sendData;
       while (true) {
@@ -57,19 +55,45 @@ public class PingServer {
           DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
           serverSocket.send(sendPacket);
         } catch (IOException e) {
+          if (isShutdown()) {
+            GNS.getLogger().warning("Ping server closing down.");
+            return;
+          }
           GNS.getLogger().severe("Error receiving ping packet " + e);
-          ThreadUtils.sleep(2000);
+          Thread.sleep(2000);
         }
       }
-    } catch (SocketException e) {
+    } catch (Exception e) {
+      e.printStackTrace();
       GNS.getLogger().severe("Error creating DatagramSocket " + e);
+
     }
+  }
+
+  public void shutdown() {
+    GNS.getLogger().info("Shutting down .. " + nodeID);
+    setShutdown();
+    serverSocket.close();
+    GNS.getLogger().info("Shutdown complete");
+//    super.interrupt();
+  }
+
+  private synchronized void setShutdown() {
+    shutdown = true;
+  }
+
+  private synchronized boolean isShutdown() {
+    return shutdown;
   }
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     int nodeID = 0;
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
-    startServer(nodeID, gnsNodeConfig);
+    PingServer pingServer = new PingServer(nodeID, gnsNodeConfig);
+    new Thread(pingServer).start();
+//    startServer();
   }
+
+
 }

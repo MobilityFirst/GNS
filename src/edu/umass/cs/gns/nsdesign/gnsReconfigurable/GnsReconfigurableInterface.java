@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 
@@ -16,7 +17,7 @@ import edu.umass.cs.gns.ping.PingManager;
  *
  * Created by abhigyan on 5/19/14.
  */
-public interface GnsReconfigurableInterface extends Replicable, Reconfigurable{
+public interface GnsReconfigurableInterface extends Replicable, Reconfigurable, Shutdownable{
   int getNodeID();
 
   BasicRecordMap getDB();

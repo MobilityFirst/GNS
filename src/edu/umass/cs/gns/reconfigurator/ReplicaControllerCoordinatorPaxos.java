@@ -1,11 +1,10 @@
 package edu.umass.cs.gns.reconfigurator;
 
 import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nio.JSONMessageExtractor;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
@@ -164,4 +163,9 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 			e.printStackTrace();
 		}
 	}
+
+  @Override
+  public void shutdown() {
+
+  }
 }

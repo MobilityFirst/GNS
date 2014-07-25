@@ -180,4 +180,9 @@ public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
     paxosManager.resetAll();
     createNodePaxosInstances();
   }
+
+  @Override
+  public void shutdown() {
+
+  }
 }

@@ -7,9 +7,10 @@ package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.*;
-import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.deprecated.NioServer;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nio.JSONDelayEmulator;
+import edu.umass.cs.gns.nio.JSONMessageExtractor;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
@@ -30,6 +31,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -42,17 +44,26 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * <p>
  * Created by abhigyan on 2/26/14.
  */
-public class NameServer{
+public class NameServer implements Shutdownable{
 
   private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(10); // worker thread pool
+
 
   private ActiveReplicaCoordinator  appCoordinator; // coordinates app's requests
  
   private ActiveReplica<?> activeReplica; // reconfiguration logic
  
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
-  
+
+  private ReplicaController replicaController;
+
+  private NSListenerAdmin admin;
+
   private GnsReconfigurableInterface gnsReconfigurable;
+
+  private InterfaceJSONNIOTransport tcpTransport;
+
+  private MongoRecords mongoRecords;
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -61,6 +72,7 @@ public class NameServer{
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
   public NameServer(int nodeID, String configFile, GNSNodeConfig gnsNodeConfig) throws IOException{
+
     // load options given in config file in a java properties object
     Properties prop = new Properties();
 
@@ -105,10 +117,11 @@ public class NameServer{
   private void init(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
     // create nio server
     // init worker thread pool
-    ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(Config.workerThreadCount);
 
 //    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
+    // set to false to cancel non-periodic delayed tasks upon shutdown
+    this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
     // init transport
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this, nodeID);
@@ -116,17 +129,15 @@ public class NameServer{
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
       GNS.getLogger().info("Emulating delays ... ");
     }
-    InterfaceJSONNIOTransport tcpTransport;
     JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
     JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nodeID, gnsNodeConfig, worker);
     new Thread(gnsnioTransport).start();
-    tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, threadPoolExecutor);
+    tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, executorService);
     // be careful to give same 'nodeID' to everyone
     
     // init DB
 
-    MongoRecords mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
-
+    mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
 
     // initialize GNS
     if (Config.dummyGNS) {
@@ -136,19 +147,19 @@ public class NameServer{
     }
     GNS.getLogger().info("GNS initialized");
     // initialize active replica with the app
-    activeReplica  = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, threadPoolExecutor, gnsReconfigurable);
+    activeReplica  = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, executorService, gnsReconfigurable);
     GNS.getLogger().info("Active replica initialized");
 
     // we create app coordinator inside constructor for activeReplica because of cyclic dependency between them
     appCoordinator  = activeReplica.getCoordinator();
     GNS.getLogger().info("App (GNS) coordinator initialized");
 
-    ReplicaController rc = new ReplicaController(nodeID, configParameters, gnsNodeConfig, tcpTransport,
-            threadPoolExecutor, mongoRecords);
+    replicaController = new ReplicaController(nodeID, gnsNodeConfig, tcpTransport,
+            executorService, mongoRecords);
     GNS.getLogger().info("Replica controller initialized");
 
     if (Config.singleNS) {
-      replicaControllerCoordinator = new DefaultRcCoordinator(nodeID, rc);
+      replicaControllerCoordinator = new DefaultRcCoordinator(nodeID, replicaController);
     } else {
       PaxosConfig paxosConfig = new PaxosConfig();
       paxosConfig.setDebugMode(Config.debugMode);
@@ -156,12 +167,14 @@ public class NameServer{
       paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
       paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);
       replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
-              new NSNodeConfig(gnsNodeConfig), rc, paxosConfig);
+              new NSNodeConfig(gnsNodeConfig), replicaController, paxosConfig);
     }
     GNS.getLogger().info("Replica controller coordinator initialized");
 
     // start the NSListenerAdmin thread
-    new NSListenerAdmin(gnsReconfigurable, appCoordinator, rc, replicaControllerCoordinator, gnsNodeConfig).start();
+    admin = new NSListenerAdmin(gnsReconfigurable, appCoordinator, replicaController, replicaControllerCoordinator, gnsNodeConfig);
+    admin.start();
+
     GNS.getLogger().info("Admin thread initialized");
   }
 
@@ -177,7 +190,6 @@ public class NameServer{
     return replicaControllerCoordinator;
   }
 
-
   public ScheduledThreadPoolExecutor getExecutorService() {
     return executorService;
   }
@@ -185,5 +197,24 @@ public class NameServer{
   public GnsReconfigurableInterface getGnsReconfigurable() {
     return gnsReconfigurable;
   }
-  
+
+  /*** Shutdown a name server by closing different components in. */
+  public void shutdown() {
+    tcpTransport.stop();
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    assert executorService.isTerminated();
+    gnsReconfigurable.shutdown();
+    appCoordinator.shutdown();
+    activeReplica.shutdown();
+    replicaControllerCoordinator.shutdown();
+    replicaController.shutdown();
+    admin.shutdown();
+    mongoRecords.close();
+
+  }
 }

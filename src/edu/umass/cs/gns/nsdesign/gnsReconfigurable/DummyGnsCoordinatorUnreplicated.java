@@ -107,4 +107,9 @@ public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
   public void reset() {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public void shutdown() {
+    // nothing to do here currently, may need updating if we create a thread inside this module
+  }
 }

@@ -11,10 +11,12 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.test.StartExperiment;
 import edu.umass.cs.gns.test.nioclient.DBClientIntercessor;
 import edu.umass.cs.gns.util.NameRecordKey;
@@ -109,7 +111,6 @@ public class LocalNameServer {
     if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      PingServer.startServerThread(nodeID, gnsNodeConfig);
       GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " +
               gnsNodeConfig.getPingPort(nodeID));
       pingManager = new PingManager(nodeID, gnsNodeConfig);

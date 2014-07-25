@@ -16,7 +16,6 @@ import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.ping.PingServer;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,8 +68,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
     this.nioServer = nioServer;
 
     if (!Config.emulatePingLatencies) {
-      // when emulating ping latencies we do not
-      PingServer.startServerThread(nodeID, gnsNodeConfig);
+      // when emulating ping latencies we do not measure ping latencies but instead emulate ping latencies given
+      // in config file.
+      // Abhigyan: Move pingmanager object in NameServer.java?
       this.pingManager = new PingManager(nodeID, gnsNodeConfig);
       this.pingManager.startPinging();
     }
@@ -349,7 +349,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
       if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
       TransferableNameRecordState state = new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
-      GNS.getLogger().fine("Getting state: " + state.toString());
+      if (Config.debugMode) GNS.getLogger().fine("Getting state: " + state.toString());
       return state.toString();
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found for name: " + name);
@@ -366,7 +366,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
 
   @Override
   public boolean updateState(String name, String state) {
-    GNS.getLogger().fine("Updating state: " + state);
+    if (Config.debugMode) GNS.getLogger().fine("Updating state: " + state);
+    Thread.dumpStack();
+
     boolean stateUpdated = false;
     try {
       TransferableNameRecordState state1 = new TransferableNameRecordState(state);
@@ -406,4 +408,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
     return pingManager;
   }
 
+  @Override
+  public void shutdown() {
+    // ping manager created here. so this class calls shutdown.
+    pingManager.shutdown();
+  }
 }

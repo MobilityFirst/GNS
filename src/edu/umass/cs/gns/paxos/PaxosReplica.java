@@ -699,7 +699,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
    * order with the first node as the node whose consistent hash is greater or equal to the paxos ID.
    */
   private ArrayList<Integer> getConsistentHashCoordinatorOrder() {
-    GNS.getLogger().info("Using consistent-hash based coordinator");
+    GNS.getLogger().fine("Using consistent-hash based coordinator");
     TreeMap<String, Integer> sorted = new TreeMap<String, Integer>();
     for (int x : nodeIDs) {
       String hashVal = ConsistentHashing.getConsistentHash(Integer.toString(x));

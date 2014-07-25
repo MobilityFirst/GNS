@@ -21,7 +21,7 @@ public class Add {
   public static void handleActiveAdd(AddRecordPacket addRecordPacket, GnsReconfigurable gnsApp)
           throws JSONException, IOException, FailedDBOperationException {
 
-    if (Config.debugMode) GNS.getLogger().fine("Add record at Active replica. name = " + addRecordPacket.getName() +
+    if (Config.debugMode) GNS.getLogger().fine("Add record at active replica. name = " + addRecordPacket.getName() +
             " node id: " + gnsApp.getNodeID());
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.putAsArray(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());

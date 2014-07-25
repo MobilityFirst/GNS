@@ -18,8 +18,8 @@ import java.net.InetSocketAddress;
  * actually sending the packet.
  */
 public class PacketTypeStamper implements InterfaceJSONNIOTransport {
-  private InterfaceJSONNIOTransport nio;
-  private Packet.PacketType type;
+  private final InterfaceJSONNIOTransport nio;
+  private final Packet.PacketType type;
 
   public PacketTypeStamper(InterfaceJSONNIOTransport nio, Packet.PacketType type) {
     this.nio = nio;
@@ -27,6 +27,11 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
   }
   
   public int getMyID() {return this.nio.getMyID();}
+
+  @Override
+  public void stop() {
+    nio.stop();
+  }
 
 
   @Override

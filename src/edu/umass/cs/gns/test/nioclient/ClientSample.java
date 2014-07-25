@@ -7,6 +7,7 @@ import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,16 +51,17 @@ public class ClientSample extends AbstractPacketDemultiplexer {
   void startClient() throws JSONException, IOException, InterruptedException {
     try {
       DBClient dbClient = new DBClient(lnsAddress, lnsPort, clientPort, this);
-
-      int reqCount = 0; // counter to assign request IDs
-
       GNS.getLogger().info("Client starting to send requests ....");
-      int repeatCycles = 10;
+      final int repeatCycles = 10000; // number of times sequence of ADD, REMOVE, etc is repeated.
+      final int maxTries = 5; // number of times a lookup is retried.
+      int reqCount = 0; // counter to assign request IDs
+      int retriedLookups = 0;
+      int retriedUpdates = 0;
       for (int i = 0; i < repeatCycles; i++) {
         // send add request
         String name = "testName";
-        NameRecordKey key = new NameRecordKey("testKey");
-        String firstValue = "firstValue";
+        NameRecordKey key = new NameRecordKey("testKey" + i);
+        String firstValue = "firstValue-"+ Util.randomString(10) ;
         ResultValue rv = new ResultValue();
         rv.add(firstValue);
         AddRecordPacket addRecordPacket = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv,
@@ -67,39 +69,80 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         dbClient.sendRequest(addRecordPacket.toJSONObject());
         waitForResponse();
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
-        if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess();
+        if (!noAssert) {
+          assert confirmPkt.getRequestID() == reqCount : "Add operation failed: Request ID mismatch." + confirmPkt;
+          assert confirmPkt.isSuccess() : "Add operation failed: Failure return code. " + confirmPkt;
+        }
         GNS.getLogger().info("SUCCESS: Name added to GNS");
 
         // send lookup for name
-        DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
-        dbClient.sendRequest(dnsPacket.toJSONObject());
-        waitForResponse();
-        DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);
-        if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
-                !dnsResponse.containsAnyError() &&
-                dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(firstValue);
+
+        int tryCount = 0;
+        while (tryCount < maxTries) {
+          try {
+            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
+            dbClient.sendRequest(dnsPacket.toJSONObject());
+            waitForResponse();
+            DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);
+            if (!noAssert) {
+              assert dnsResponse.getQueryId() == reqCount : "Lookup failure: Request ID mismatch. " + dnsResponse;
+              assert !dnsResponse.containsAnyError() : "Lookup failure: Error. " + dnsResponse;
+              assert dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(firstValue) : "Lookup failure: Value mismatch. Initial value not found. " + dnsResponse;
+            }
+          } catch (AssertionError e) {
+            GNS.getLogger().info("Retrying lookup to read initial value ... ");
+            Thread.sleep(1000);
+            tryCount ++;
+            continue;
+          }
+          break;
+        }
+        if (tryCount > 0) retriedLookups++;
+        assert tryCount < maxTries: "Lookup failure: Initial value not found after retries";
+
         GNS.getLogger().info("SUCCESS: Name lookup returned initial value");
 
         // send update
-        String secondValue = "secondValue";
-        rv.clear();
+        String secondValue = "secondValue" + Util.randomString(10);
+        rv = new ResultValue();
         rv.add(secondValue);
         UpdatePacket updatePacket = new UpdatePacket(UpdatePacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv, null, 0, UpdateOperation.REPLACE_ALL,
                 -1, 0, null, null, null);
         dbClient.sendRequest(updatePacket.toJSONObject());
         waitForResponse();
         confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
-        if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess(): confirmPkt;
-        GNS.getLogger().info("SUCCESS: Name updated in GNS");
+        if (!noAssert) {
+          assert confirmPkt.getRequestID() == reqCount : "Update operation failed: Request ID mismatch " + confirmPkt;
+          assert confirmPkt.isSuccess() : "Update operation failed: Error " + confirmPkt;
+        }
+        GNS.getLogger().info("SUCCESS: Name updated in GNS: " + confirmPkt);
 
         // read and test if updated value is received
-        dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
-        dbClient.sendRequest(dnsPacket.toJSONObject());
-        waitForResponse();
-        dnsResponse = new DNSPacket(mostRecentResponse);
-        if (!noAssert) assert dnsResponse.getQueryId() == reqCount &&
-                !dnsResponse.containsAnyError() &&
-                dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(secondValue);
+
+        tryCount = 0;
+        String valueRead = null;
+        while (tryCount < maxTries) {
+          try {
+            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
+            dbClient.sendRequest(dnsPacket.toJSONObject());
+            waitForResponse();
+            DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);
+            if (!noAssert) {
+              assert dnsResponse.getQueryId() == reqCount : "Lookup failure: Request ID mismatch. " + dnsResponse;
+              assert !dnsResponse.containsAnyError() : "Lookup failure: Error. " + dnsResponse;
+              assert dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(secondValue) : "Lookup failure: Value mismatch. Updated value not found. " + dnsResponse;
+              valueRead = (String) dnsResponse.getRecordValue().getAsArray(key.getName()).get(0);
+            }
+          } catch (AssertionError e) {
+            GNS.getLogger().info("Retrying lookup to read updated value ... " + "First: " + firstValue + " Updated: " + secondValue + " Read: " + valueRead);
+            Thread.sleep(1000);
+            tryCount ++;
+            continue;
+          }
+          break;
+        }
+        if (tryCount > 0) retriedLookups++;
+        assert tryCount < maxTries: "Lookup failure: Updated value not found after retries";
         GNS.getLogger().info("SUCCESS: Name lookup returned updated value");
 
         // remove name
@@ -107,11 +150,17 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         dbClient.sendRequest(removePacket.toJSONObject());
         waitForResponse();
         confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
-        if (!noAssert) assert confirmPkt.getRequestID() == reqCount && confirmPkt.isSuccess();
+        if (!noAssert) {
+          assert confirmPkt.getRequestID() == reqCount: "Remove operation failed: Request ID mismatch. " + confirmPkt;
+          assert confirmPkt.isSuccess(): "Remove operation failed. Error. " + confirmPkt;
+        }
         GNS.getLogger().info("SUCCESS: Name removed from GNS");
 
-        GNS.getLogger().info("Client received all responses ... SUCCESS.");
+        GNS.getLogger().info("Client received all responses ... SUCCESS. Iteration: " + i);
+        Thread.sleep(1000);
       }
+      GNS.getLogger().info("Number of lookups retried: " + retriedLookups);
+      GNS.getLogger().info("Test Complete ... SUCCESS.");
     } catch (AssertionError e) {
       e.printStackTrace();
     }

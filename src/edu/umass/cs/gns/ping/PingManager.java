@@ -9,9 +9,13 @@ package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
-import edu.umass.cs.gns.util.ThreadUtils;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
+
+
 import java.io.IOException;
 import java.net.PortUnreachableException;
+
+
 
 /**
  * Handles the updating of ping latencies for Local and Name Servers.
@@ -19,42 +23,53 @@ import java.net.PortUnreachableException;
  *
  * @author westy
  */
-public class PingManager {
+public class PingManager implements Shutdownable{
 
   private final static int TIME_BETWEEN_PINGS = 30000;
   private final int nodeId;
   private PingClient pingClient;
+  private PingServer pingServer;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
   private SparseMatrix<Long> pingTable; // the place we store all the sampled rtt values
   private final GNSNodeConfig gnsNodeConfig;
+  private Thread managerThread;
 
   private boolean debug = false;
 
   public PingManager(int nodeId, GNSNodeConfig gnsNodeConfig) {
     this.nodeId = nodeId;
     this.gnsNodeConfig = gnsNodeConfig;
+    this.pingClient = new PingClient(gnsNodeConfig);
+    this.pingServer = new PingServer(nodeId, gnsNodeConfig);
+    new Thread(pingServer).start();
+    this.pingTable = new SparseMatrix(GNSNodeConfig.INVALID_PING_LATENCY);
+
   }
 
   /**
    * Starts the pinging thread for the given node.
    */
   public void startPinging() {
-    pingClient = new PingClient(gnsNodeConfig);
-    pingTable = new SparseMatrix(GNSNodeConfig.INVALID_PING_LATENCY);
+
     // make a thread to run the pinger
-    (new Thread() {
+    this.managerThread = new Thread() {
       @Override
       public void run() {
-        doPinging();
+        try {
+          doPinging();
+        } catch (InterruptedException e) {
+          GNS.getLogger().warning("Ping manager closing down.");
+        }
       }
-    }).start();
+    };
+    this.managerThread.start();
   }
 
-  private void doPinging() {
+  private void doPinging() throws InterruptedException {
     GNS.getLogger().fine("Waiting for a bit before we start pinging.");
     int windowSlot = 0;
     while (true) {
-      ThreadUtils.sleep(TIME_BETWEEN_PINGS);
+      Thread.sleep(TIME_BETWEEN_PINGS);
       long t0 = System.currentTimeMillis();
       for (int id : gnsNodeConfig.getNodeIDs()) {
         try {
@@ -142,7 +157,6 @@ public class PingManager {
       result.append(gnsNodeConfig.getNodeAddress(i).getHostName());
       result.append(NEWLINE);
     }
-
     return result.toString();
   }
 
@@ -150,8 +164,13 @@ public class PingManager {
     String configFile = args[0];
     int nodeID = 0;
     GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
-//    ConfigFileInfo.readHostInfo(configFile, NameServer.getNodeID());
     new PingManager(nodeID, gnsNodeConfig1).startPinging();
   }
   public final static String NEWLINE = System.getProperty("line.separator");
+
+  public void shutdown() {
+    this.managerThread.interrupt();
+    this.pingServer.shutdown();
+    this.pingClient.shutdown();
+  }
 }
