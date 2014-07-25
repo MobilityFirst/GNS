@@ -44,6 +44,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
+
     if (Config.multiPaxos) {
       this.paxosInterface = new TestReplicable(paxosInterface);
       this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID,
@@ -70,7 +71,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
       switch (type) {
         // coordination packets internal to paxos
         case ACTIVE_COORDINATION:
-//          Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
+          Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
           paxosManager.handleIncomingPacket(request);
           break;
         // call propose

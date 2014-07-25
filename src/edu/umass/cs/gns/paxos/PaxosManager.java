@@ -8,6 +8,7 @@ import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -555,39 +556,39 @@ public class PaxosManager extends AbstractPaxosManager {
     try
     {
       if (!test) {
-//        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
+        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
 //      GNS.getLogger().fine("Sending message to " + destID + "\t" + json);
       if (initialized) nioServer.sendToID(destID, json);
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to ID. " + destID);
-//    } catch (JSONException e)
-//    {
-//      GNS.getLogger().severe("JSON Exception in sending to ID. " + destID);
+    } catch (JSONException e)
+    {
+      GNS.getLogger().severe("JSON Exception in sending to ID. " + destID);
     }
   }
 
   private  void sendMessage(Set<Integer> destIDs, JSONObject json) {
     try {
-//      if (!test) {
-//        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
-//      }
+      if (!test) {
+        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
+      }
       if (initialized) {
         for (int x: destIDs)
           nioServer.sendToID(x, json);
       }
     } catch (IOException e) {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. " + destIDs);
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("JSON Exception in sending to IDs. " + destIDs);
+    } catch (JSONException e) {
+      GNS.getLogger().severe("JSON Exception in sending to IDs. " + destIDs);
     }
   }
 
   private void sendMessage(short[] destIDs, JSONObject json, int excludeID) {
     try {
       if (!test) {
-//        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
+        Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
       if (initialized) {
         for (int x : destIDs) {
@@ -598,9 +599,9 @@ public class PaxosManager extends AbstractPaxosManager {
     } catch (IOException e)
     {
       GNS.getLogger().severe("Paxos: IO Exception in sending to IDs. ");
-//    } catch (JSONException e)
-//    {
-//      GNS.getLogger().severe("JSON Exception in sending to IDs. ");
+    } catch (JSONException e)
+    {
+      GNS.getLogger().severe("JSON Exception in sending to IDs. ");
     }
   }
 

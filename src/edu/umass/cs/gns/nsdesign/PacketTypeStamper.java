@@ -33,12 +33,14 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
     nio.stop();
   }
 
-
   @Override
   public int sendToID(int id, JSONObject jsonData) throws IOException {
     try {
-      Packet.putPacketType(jsonData, type);
-      return nio.sendToID(id, jsonData);
+      // Creating a copy of json so that modifications to the original object does not modify the outgoing packet.
+      // This was created to fix a bug we were seeing.
+      JSONObject jsonCopy = new JSONObject(jsonData.toString());
+      Packet.putPacketType(jsonCopy, type);
+      return nio.sendToID(id, jsonCopy);
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -48,12 +50,63 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
   @Override
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
     try {
-      Packet.putPacketType(jsonData, type);
-      return nio.sendToAddress(isa, jsonData);
+      // Creating a copy of json so that modifications to the original object does not modify the outgoing packet.
+      // This was created to fix a bug we were seeing.
+      JSONObject jsonCopy = new JSONObject(jsonData.toString());
+      Packet.putPacketType(jsonCopy, type);
+      return nio.sendToAddress(isa, jsonCopy);
     } catch (JSONException e) {
       e.printStackTrace();
     }
     return -1;
   }
 
+  /**
+   * TEST CODE
+   */
+  public static void main(String[] args) throws JSONException, IOException {
+    System.out.println("Test if the send methods mark outgoing packets as expected:");
+    final Packet.PacketType type1 = Packet.PacketType.PAXOS_PACKET;
+    InterfaceJSONNIOTransport jsonnioTransport = new InterfaceJSONNIOTransport() {
+      @Override
+      public int sendToID(int id, JSONObject jsonData) throws IOException {
+        System.out.println("Sending Packet: " + jsonData);
+        try {
+          assert Packet.getPacketType(jsonData).equals(type1): "Packet type not matched";
+
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
+        return 0;
+      }
+
+      @Override
+      public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
+        System.out.println("Sending Packet: " + jsonData);
+        try {
+          assert Packet.getPacketType(jsonData).equals(type1): "Packet type not matched";
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
+        return 0;
+      }
+
+      @Override
+      public int getMyID() {
+        return 0;
+      }
+
+      @Override
+      public void stop() {
+
+      }
+    };
+
+    PacketTypeStamper packetTypeStamper = new PacketTypeStamper(jsonnioTransport, type1);
+    JSONObject sample = new JSONObject();
+    sample.put("Apple" , "Banana");
+    packetTypeStamper.sendToID(100, sample);
+    packetTypeStamper.sendToAddress(null, sample);
+    System.out.println("TEST SUCCESS.");
+  }
 }
