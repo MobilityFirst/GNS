@@ -116,7 +116,7 @@ public class FieldAccess {
 
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.CREATE, writer, signature, message);
+    return Intercessor.sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
   }
 
   public static CommandResponse select(String key, Object value) {

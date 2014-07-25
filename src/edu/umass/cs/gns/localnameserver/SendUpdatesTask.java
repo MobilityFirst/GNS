@@ -192,6 +192,7 @@ public class SendUpdatesTask extends TimerTask {
             updatePacket.getUpdateValue(),
             updatePacket.getOldValue(),
             updatePacket.getArgument(),
+            updatePacket.getUserJSON(),
             updatePacket.getOperation(),
             handler.getNodeID(),
             nameServerID, updatePacket.getTTL(),

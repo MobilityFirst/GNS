@@ -23,7 +23,7 @@ public class ClearUnsigned extends AbstractUpdate {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.CLEAR;
+    return UpdateOperation.SINGLE_FIELD_CLEAR;
   }
 
   @Override

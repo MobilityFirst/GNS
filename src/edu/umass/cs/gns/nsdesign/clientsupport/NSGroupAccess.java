@@ -33,7 +33,7 @@ public class NSGroupAccess {
   
   public static void updateMembers(String guid, Set<String> members, GnsReconfigurable activeReplica) {
     LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
-            UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
+            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
   }
   
   /**
@@ -48,12 +48,12 @@ public class NSGroupAccess {
   
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, GnsReconfigurableInterface activeReplica) {
     NSResponseCode groupResponse =  LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(Arrays.asList(memberGuid)),
-            UpdateOperation.REMOVE, activeReplica);
+            UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about this when we get transactions working.
     if (!groupResponse.isAnError()) {
        LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(guid)),
-              UpdateOperation.REMOVE, activeReplica);
+              UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
     }
     return groupResponse;
   }
@@ -72,17 +72,17 @@ public class NSGroupAccess {
 
   public static void updateLastUpdate(String guid, Date lastUpdate, GnsReconfigurable activeReplica) {
     LNSUpdateHandler.sendUpdate(guid, GROUP_LAST_UPDATE, new ResultValue(Arrays.asList(Long.toString(lastUpdate.getTime()))),
-            UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
+            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
   }
 
   public static void updateMinRefresh(String guid, int minRefresh, GnsReconfigurable activeReplica) {
     LNSUpdateHandler.sendUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, new ResultValue(Arrays.asList(Integer.toString(minRefresh))),
-            UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
+            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
   }
   
   public static void updateQueryString(String guid, String queryString, GnsReconfigurable activeReplica) {
     LNSUpdateHandler.sendUpdate(guid, GROUP_QUERY_STRING, new ResultValue(Arrays.asList(queryString)),
-            UpdateOperation.REPLACE_ALL_OR_CREATE, activeReplica);
+            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
   }
 
   public static Date getLastUpdate(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {

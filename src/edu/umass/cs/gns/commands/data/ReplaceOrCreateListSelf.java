@@ -23,7 +23,7 @@ public class ReplaceOrCreateListSelf extends AbstractUpdateList {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.REPLACE_ALL_OR_CREATE;
+    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE;
   }
 
   @Override

@@ -60,12 +60,12 @@ public class NSFieldMetaData {
   public static void add(MetaDataTypeName type, String guid, String key, String value, GnsReconfigurableInterface activeReplica) {
 
     String metaDataKey = FieldMetaData.makeFieldMetaDataKey(type, key);
-    LNSUpdateHandler.sendUpdate(guid, metaDataKey, new ResultValue(Arrays.asList(value)), UpdateOperation.APPEND_OR_CREATE, activeReplica);
+    LNSUpdateHandler.sendUpdate(guid, metaDataKey, new ResultValue(Arrays.asList(value)), UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica);
   }
 
   public static void remove(MetaDataTypeName type, String guid, String key, String value, GnsReconfigurable activeReplica) {
 
     String metaDataKey = FieldMetaData.makeFieldMetaDataKey(type, key);
-    LNSUpdateHandler.sendUpdate(guid, metaDataKey, new ResultValue(Arrays.asList(value)), UpdateOperation.REMOVE, activeReplica);
+    LNSUpdateHandler.sendUpdate(guid, metaDataKey, new ResultValue(Arrays.asList(value)), UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
   }
 }

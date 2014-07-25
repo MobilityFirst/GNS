@@ -34,7 +34,7 @@ public class SetFieldNull extends AbstractUpdate {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SETFIELDNULL;
+    return UpdateOperation.SINGLE_FIELD_SET_FIELD_NULL;
   }
 
   @Override

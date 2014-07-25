@@ -23,7 +23,7 @@ public class AppendOrCreateListSelf extends AbstractUpdateList {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.APPEND_OR_CREATE;
+    return UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE;
   }
 
   @Override

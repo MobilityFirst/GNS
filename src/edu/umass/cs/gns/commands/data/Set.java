@@ -23,7 +23,7 @@ public class Set extends AbstractUpdate {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SET;
+    return UpdateOperation.SINGLE_FIELD_SET;
   }
 
   @Override

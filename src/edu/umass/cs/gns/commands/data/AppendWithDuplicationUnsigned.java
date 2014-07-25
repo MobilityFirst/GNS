@@ -23,7 +23,7 @@ public class AppendWithDuplicationUnsigned extends AbstractUpdate {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.APPEND_WITH_DUPLICATION;
+    return UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION;
   }
 
   @Override

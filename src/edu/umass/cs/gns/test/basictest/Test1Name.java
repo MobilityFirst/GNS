@@ -38,7 +38,7 @@ public class Test1Name extends Thread {
     // do an update
     String value = "PQRS";
     response = Intercessor.sendUpdateRecordBypassingAuthentication(name, key,
-            value, null, UpdateOperation.REPLACE_ALL);
+            value, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL);
     assert response == NSResponseCode.NO_ERROR: "Error in updating record";
 
     // check if same value is returned

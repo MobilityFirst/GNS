@@ -23,7 +23,7 @@ public class ReplaceOrCreate extends AbstractUpdate {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.REPLACE_ALL_OR_CREATE;
+    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE;
   }
 
   @Override

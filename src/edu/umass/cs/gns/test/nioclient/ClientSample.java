@@ -52,7 +52,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
     try {
       DBClient dbClient = new DBClient(lnsAddress, lnsPort, clientPort, this);
       GNS.getLogger().info("Client starting to send requests ....");
-      final int repeatCycles = 10000; // number of times sequence of ADD, REMOVE, etc is repeated.
+      final int repeatCycles = 10000; // number of times sequence of ADD, SINGLE_FIELD_REMOVE, etc is repeated.
       final int maxTries = 5; // number of times a lookup is retried.
       int reqCount = 0; // counter to assign request IDs
       int retriedLookups = 0;
@@ -106,7 +106,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         String secondValue = "secondValue" + Util.randomString(10);
         rv = new ResultValue();
         rv.add(secondValue);
-        UpdatePacket updatePacket = new UpdatePacket(UpdatePacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv, null, 0, UpdateOperation.REPLACE_ALL,
+        UpdatePacket updatePacket = new UpdatePacket(UpdatePacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv, null, 0, UpdateOperation.SINGLE_FIELD_REPLACE_ALL,
                 -1, 0, null, null, null);
         dbClient.sendRequest(updatePacket.toJSONObject());
         waitForResponse();

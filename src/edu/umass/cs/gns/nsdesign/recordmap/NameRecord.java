@@ -346,12 +346,12 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return True if the update does anything, false otherwise.
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
-  public boolean updateKey(String key, ResultValue newValues, ResultValue oldValues, int argument,
-          UpdateOperation operation) throws FieldNotFoundException, FailedDBOperationException {
+  public boolean updateNameRecord(String key, ResultValue newValues, ResultValue oldValues, int argument,
+          ValuesMap userJSON, UpdateOperation operation) throws FieldNotFoundException, FailedDBOperationException {
 
-    // handle special case for REMOVE_FIELD operation
-    
-    if (operation.equals(UpdateOperation.REMOVE_FIELD)) { // remove the field with name = key from values map.
+    // Handle special case for SINGLE_FIELD_REMOVE_FIELD operation
+    // whose purpose is to remove the field with name = key from values map.
+    if (operation.equals(UpdateOperation.SINGLE_FIELD_REMOVE_FIELD)) { 
 
       ArrayList<ColumnField> keys = new ArrayList<ColumnField>();
       keys.add(new ColumnField(key,ColumnFieldType.LIST_STRING));
@@ -361,28 +361,28 @@ public class NameRecord implements Comparable<NameRecord> {
     }
 
     /*
-     * Some update operations e.g., SUBSTITUTE, require that record is first read from DB, modified, and then written.
-     * That is 1 DB read + 1 DB write. REPLACE_ALL does not require record to be read, but we can directly do a write.
+     * Some update operations require that record is first read from DB, modified, and then written.
+     * That is 1 DB read + 1 DB write. Others do not require record to be read, but we can directly do a write.
      * This saves us a database read.
      *
-     * To implement this, we require some changes to both ClientRequestWorker.updateAdddressNS and NameRecord.updateKey.
+     * To implement this, we require some changes to both ClientRequestWorker.updateAdddressNS and NameRecord.updateNameRecord.
      * Abhigyan had made both these changes but unknowingly commented out the change in ClientRequestWorker.updateAdddressNS.
-     * I will uncomment it, so that a REPLACE_ALL can proceed without doing a database read.
-     * There could be other operations like REPLACE_ALL which could proceed without DB read,
-     * and should be handled similar to REPLACE_ALL. In my experiments, I was using REPLACE_ALL so I have
+     * I will uncomment it, so that a SINGLE_FIELD_REPLACE_ALL can proceed without doing a database read.
+     * There could be other operations like SINGLE_FIELD_REPLACE_ALL which could proceed without DB read,
+     * and should be handled similar to SINGLE_FIELD_REPLACE_ALL. In my experiments, I was using SINGLE_FIELD_REPLACE_ALL so I have
      * included it as a special case for it.
      *
      * We should augment the UpdateOperation class with some notion of operations that don't require a read before
-     * the write and then use that to redo the "if (operation.equals(UpdateOperation.REPLACE_ALL))" clause.
+     * the write and then use that to redo the "if (operation.equals(UpdateOperation.SINGLE_FIELD_REPLACE_ALL))" clause.
      */
     ValuesMap valuesMap;
-    if (operation.equals(UpdateOperation.REPLACE_ALL)) {
+    if (operation.isAbleToSkipRead()) {
       valuesMap = new ValuesMap();
       hashMap.put(VALUES_MAP, valuesMap);
     } else {
       valuesMap = getValuesMap(); // this will throw an exception if field is not read.
     }
-    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, argument, operation); //this updates the values map as well
+    boolean updated = UpdateOperation.updateValuesMap(valuesMap, key, newValues, oldValues, argument, userJSON, operation);
     if (updated) {
       // commit update to database
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();
@@ -391,7 +391,6 @@ public class NameRecord implements Comparable<NameRecord> {
       updatedValues.add(valuesMap.getAsArray(key));
 
       recordMap.update(getName(), NAME, null, null, VALUES_MAP, updatedFields, updatedValues);
-//      valuesMap.getAsArray();
     }
     return updated;
   }

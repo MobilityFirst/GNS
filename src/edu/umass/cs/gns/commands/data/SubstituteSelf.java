@@ -23,7 +23,7 @@ public class SubstituteSelf extends AbstractUpdate {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SUBSTITUTE;
+    return UpdateOperation.SINGLE_FIELD_SUBSTITUTE;
   }
 
   @Override

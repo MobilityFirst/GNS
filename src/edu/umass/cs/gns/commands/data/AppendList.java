@@ -23,7 +23,7 @@ public class AppendList extends AbstractUpdateList {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.APPEND;
+    return UpdateOperation.SINGLE_FIELD_APPEND;
   }
 
   @Override

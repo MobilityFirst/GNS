@@ -66,7 +66,7 @@ public class Update {
 
     NameRecord nameRecord;
 
-    if (updatePacket.getOperation().equals(UpdateOperation.REPLACE_ALL)) { // we don't need to read for replace-all
+    if (updatePacket.getOperation().isAbleToSkipRead()) { // some operations don't require a read first
       nameRecord = new NameRecord(replica.getDB(), updatePacket.getName());
     } else {
       try {
@@ -87,8 +87,9 @@ public class Update {
     if (Config.debugMode) GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
     boolean result;
     try {
-      result = nameRecord.updateKey(updatePacket.getRecordKey().getName(),
+      result = nameRecord.updateNameRecord(updatePacket.getRecordKey().getName(),
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
+              updatePacket.getUserJSON(),
               updatePacket.getOperation());
       if (Config.debugMode) GNS.getLogger().fine("Update operation result = " + result + "\t"
               + updatePacket.getUpdateValue());

@@ -43,12 +43,12 @@ public class GroupAccess {
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
     NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
-            UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
       Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-              UpdateOperation.APPEND_OR_CREATE);
+              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
     }
     return groupResponse;
   }
@@ -65,13 +65,13 @@ public class GroupAccess {
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message) {
     NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
         Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-                UpdateOperation.APPEND_OR_CREATE);
+                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
       }
     }
     return groupResponse;
@@ -89,12 +89,12 @@ public class GroupAccess {
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message) {
     NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
-            UpdateOperation.REMOVE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
       Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-              UpdateOperation.REMOVE);
+              UpdateOperation.SINGLE_FIELD_REMOVE);
     }
     return groupResponse;
   }
@@ -111,13 +111,13 @@ public class GroupAccess {
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message) {
     NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.REMOVE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
         Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-                UpdateOperation.REMOVE);
+                UpdateOperation.SINGLE_FIELD_REMOVE);
       }
     }
     return groupResponse;
@@ -174,13 +174,13 @@ public class GroupAccess {
   public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
     return Intercessor.sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
-            UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
   public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
     return Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
-            UpdateOperation.APPEND_OR_CREATE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
   public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message) {
@@ -204,9 +204,9 @@ public class GroupAccess {
   public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
     if (!addToGroup(guid, requests, writer, signature, message).isAnError()) {
-      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.APPEND_OR_CREATE, writer, signature, message).isAnError()) {
+      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message).isAnError()) {
       if (!Intercessor.sendUpdateRecord(guid, JOINREQUESTS, requests, null, -1,
-              UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
+              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
         return true;
       }
     }
@@ -216,9 +216,9 @@ public class GroupAccess {
   public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
     if (!removeFromGroup(guid, requests, writer, signature, message).isAnError()) {
-      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
+      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
       if (!Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, -1,
-              UpdateOperation.REMOVE, writer, signature, message).isAnError()) {
+              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
         return true;
       }
     }

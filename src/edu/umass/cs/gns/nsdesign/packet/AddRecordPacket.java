@@ -67,7 +67,7 @@ public class AddRecordPacket extends BasicPacket {
   private String name;
 
   /**
-   * The key of the value key pair. For GNS this will be EdgeRecord, CoreRecord or GroupRecord. *
+   * The key of the value key pair. *
    */
   private NameRecordKey recordKey;
 

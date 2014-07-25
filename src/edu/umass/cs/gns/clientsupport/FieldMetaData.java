@@ -80,7 +80,7 @@ public class FieldMetaData {
    * @param value 
    */
   public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.APPEND_OR_CREATE,
+    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
             writer, signature, message);
   }
 
@@ -88,7 +88,7 @@ public class FieldMetaData {
   public static void add(MetaDataTypeName type, String guid, String key, String value) {
 
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.APPEND_OR_CREATE);
+    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }
 
   @Deprecated
@@ -97,14 +97,14 @@ public class FieldMetaData {
   }
 
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.REMOVE, writer, signature, message);
+    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
   @Deprecated
   public static void remove(MetaDataTypeName type, String guid, String key, String value) {
 
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.REMOVE);
+    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.SINGLE_FIELD_REMOVE);
   }
   //
   public static String Version = "$Revision$";

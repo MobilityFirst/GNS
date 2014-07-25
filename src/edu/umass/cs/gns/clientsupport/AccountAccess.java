@@ -296,7 +296,7 @@ public class AccountAccess {
         }
         if (!Intercessor.sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.CREATE);
+          Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
         } else {
           // delete the record we added above
@@ -377,7 +377,7 @@ public class AccountAccess {
           Intercessor.sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
-                  null, UpdateOperation.CREATE);
+                  null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
         }
       }
@@ -573,7 +573,7 @@ public class AccountAccess {
       ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
       if (!Intercessor.sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-              newvalue, null, UpdateOperation.REPLACE_ALL).isAnError()) {
+              newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
         return true;
       }
     } catch (JSONException e) {
@@ -588,7 +588,7 @@ public class AccountAccess {
       ResultValue newvalue;
       newvalue = guidInfo.toDBFormat();
       if (!Intercessor.sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
-              newvalue, null, UpdateOperation.REPLACE_ALL).isAnError()) {
+              newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
         return true;
       }
     } catch (JSONException e) {

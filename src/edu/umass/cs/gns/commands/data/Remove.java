@@ -23,7 +23,7 @@ public class Remove extends AbstractUpdate {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.REMOVE;
+    return UpdateOperation.SINGLE_FIELD_REMOVE;
   }
 
   @Override

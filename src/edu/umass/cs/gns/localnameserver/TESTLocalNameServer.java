@@ -52,7 +52,7 @@ public class TESTLocalNameServer {
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
       UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd", NameRecordKey.EdgeRecord,
-              newValue, null, -1, UpdateOperation.REPLACE_ALL, i, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
+              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, i, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
     }
@@ -65,7 +65,7 @@ public class TESTLocalNameServer {
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
       UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd"+i, NameRecordKey.EdgeRecord,
-              newValue, null, -1, UpdateOperation.REPLACE_ALL, i, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
+              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, i, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
     }

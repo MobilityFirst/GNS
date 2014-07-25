@@ -23,7 +23,7 @@ public class ReplaceList extends AbstractUpdateList {
 
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.REPLACE_ALL;
+    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;
   }
 
   @Override

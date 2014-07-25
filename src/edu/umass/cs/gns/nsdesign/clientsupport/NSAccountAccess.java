@@ -308,7 +308,7 @@ public class NSAccountAccess {
         }
         if (!LNSUpdateHandler.sendAddRecord(guid, AccountAccess.ACCOUNT_INFO, accountInfo.toDBFormat(), activeReplica).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          LNSUpdateHandler.sendUpdate(guid, AccountAccess.GUID_INFO, guidInfo.toDBFormat(), UpdateOperation.CREATE, activeReplica);
+          LNSUpdateHandler.sendUpdate(guid, AccountAccess.GUID_INFO, guidInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_CREATE, activeReplica);
           return OKRESPONSE;
         } else {
           // delete the record we added above
@@ -389,7 +389,7 @@ public class NSAccountAccess {
           LNSUpdateHandler.sendAddRecord(guid, AccountAccess.GUID_INFO, guidInfoFormatted, activeReplica);
           // add a link the new GUID to primary GUID
           LNSUpdateHandler.sendUpdate(guid, AccountAccess.PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
-                  UpdateOperation.CREATE, activeReplica);
+                  UpdateOperation.SINGLE_FIELD_CREATE, activeReplica);
           return OKRESPONSE;
         }
       }
@@ -581,7 +581,7 @@ public class NSAccountAccess {
   private static boolean updateAccountInfo(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) {
     try {
       if (!LNSUpdateHandler.sendUpdate(accountInfo.getPrimaryGuid(), AccountAccess.ACCOUNT_INFO,
-              accountInfo.toDBFormat(), UpdateOperation.REPLACE_ALL, activeReplica).isAnError()) {
+              accountInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_REPLACE_ALL, activeReplica).isAnError()) {
         return true;
       }
     } catch (JSONException e) {
@@ -593,7 +593,7 @@ public class NSAccountAccess {
   private static boolean updateGuidInfo(GuidInfo guidInfo, GnsReconfigurable activeReplica) {
     try {
       if (!LNSUpdateHandler.sendUpdate(guidInfo.getGuid(), AccountAccess.GUID_INFO,
-              guidInfo.toDBFormat(), UpdateOperation.REPLACE_ALL, activeReplica).isAnError()) {
+              guidInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_REPLACE_ALL, activeReplica).isAnError()) {
         return true;
       }
     } catch (JSONException e) {
