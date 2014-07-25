@@ -8,3 +8,5 @@
  * sophisticated queries (the select queries).
  * 
  */
+
+package edu.umass.cs.gns.clientsupport;
