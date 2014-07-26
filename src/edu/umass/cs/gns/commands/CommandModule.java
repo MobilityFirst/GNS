@@ -83,11 +83,11 @@ public class CommandModule {
     GNS.getLogger().fine("Searching " + commands.size() + " commands:");
     // for now a linear search is fine
     for (GnsCommand command : commands) {
-      GNS.getLogger().info("Search: " + command.toString());
+      //GNS.getLogger().info("Search: " + command.toString());
       if (command.getCommandName().equals(action)) {
-        GNS.getLogger().info("Found action: " + action);
+        //GNS.getLogger().info("Found action: " + action);
         if (JSONContains(json, command.getCommandParameters())) {
-          GNS.getLogger().info("Matched parameters: " + json);
+          //GNS.getLogger().info("Matched parameters: " + json);
           return command;
         }
       }
