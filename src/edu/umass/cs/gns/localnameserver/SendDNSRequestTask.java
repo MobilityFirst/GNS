@@ -145,7 +145,7 @@ public class SendDNSRequestTask extends TimerTask {
 
   private boolean maybeSendReplyFromCache(CacheEntry cacheEntry, ClientRequestHandlerInterface handler) {
     if (cacheEntry != null) {
-      ResultValue value = cacheEntry.getValue(incomingPacket.getKey());
+      ResultValue value = cacheEntry.getValueAsArray(incomingPacket.getKey());
       if (value != null) {
         DNSRequestInfo info = (DNSRequestInfo) handler.removeRequestInfo(lnsReqID);
         if (info != null) {

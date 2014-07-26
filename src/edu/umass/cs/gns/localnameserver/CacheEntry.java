@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.json.JSONException;
 
 /**
  * Represents the cache entry used at the local name server to cache DNS records.
@@ -63,18 +64,19 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Constructs a cache entry for a name from a list of replica controllers and a list of active replicas.
+   *
    * @param name
    * @param primaryNameServers
-   * @param activeNameServers 
+   * @param activeNameServers
    */
-   public CacheEntry(String name, HashSet<Integer> primaryNameServers, Set<Integer> activeNameServers) {
+  public CacheEntry(String name, HashSet<Integer> primaryNameServers, Set<Integer> activeNameServers) {
     this.name = name;
     this.primaryNameServers = primaryNameServers;
     this.activeNameServers = activeNameServers;
   }
-  
+
   /**
-   * Constructs a cache entry using data from a DNS packet 
+   * Constructs a cache entry using data from a DNS packet
    *
    * @param packet DNS packet
    */
@@ -88,8 +90,14 @@ public class CacheEntry implements Comparable<CacheEntry> {
     Iterator<String> keyIter = packetRecordValue.keys();
     while (keyIter.hasNext()) {
       String fieldKey = keyIter.next();
-      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
-      this.valuesMap.putAsArray(fieldKey, fieldValue);
+      try {
+        Object fieldValue = packetRecordValue.get(fieldKey);
+        this.valuesMap.put(fieldKey, fieldValue);
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Unabled to create cache entry for key " + fieldKey + ":" + e);
+      }
+//      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
+//      this.valuesMap.putAsArray(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }
@@ -97,12 +105,12 @@ public class CacheEntry implements Comparable<CacheEntry> {
     this.primaryNameServers = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
 //    this.activeNameServer = packet.getActiveNameServers();
   }
- 
+
   /**
    * Constructs a cache entry in the case where active name servers will be the same as replica controllers.
-   * 
+   *
    * @param name
-   * @param primaryNameServers 
+   * @param primaryNameServers
    */
   public CacheEntry(String name, Set<Integer> primaryNameServers) {
     this(name, (HashSet<Integer>) primaryNameServers, primaryNameServers);
@@ -110,16 +118,15 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Constructs a cache entry from a RequestActivesPacket response packet.
-   * 
-   * @param packet 
+   *
+   * @param packet
    */
   public CacheEntry(RequestActivesPacket packet) {
     this(packet.getName(), (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(packet.getName()), packet.getActiveNameServers());
   }
-
+  
   public synchronized void updateCacheEntry(DNSPacket packet) {
 
-//    activeNameServer = packet.getActiveNameServers();
     if (valuesMap == null) {
       valuesMap = new ValuesMap();
     }
@@ -127,24 +134,29 @@ public class CacheEntry implements Comparable<CacheEntry> {
     Iterator<String> keyIter = packetRecordValue.keys();
     while (keyIter.hasNext()) {
       String fieldKey = keyIter.next();
-      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
-      valuesMap.putAsArray(fieldKey, fieldValue);
+      try {
+        Object fieldValue = packetRecordValue.get(fieldKey);
+        this.valuesMap.put(fieldKey, fieldValue);
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Unabled to update cache entry for key " + fieldKey + ":" + e);
+      }
+//      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
+//      valuesMap.putAsArray(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }
     timeToLiveInSeconds = packet.getTTL();
   }
-
+  
   public synchronized void updateCacheEntry(RequestActivesPacket packet) {
     activeNameServers = packet.getActiveNameServers();
   }
-
+  
   public synchronized void updateCacheEntry(ConfirmUpdatePacket packet) {
     // invalidate the valuesMap part of the cache... best we can do since the packet has no info
     // it will be refreshed on next read
     valuesMap = null;
   }
-
 
   /**
    * @return the name
@@ -166,12 +178,21 @@ public class CacheEntry implements Comparable<CacheEntry> {
   public synchronized int getTTL() {
     return timeToLiveInSeconds;
   }
-
+  
   public synchronized Set<Integer> getActiveNameServers() {
     return activeNameServers;
   }
-
-  public synchronized ResultValue getValue(NameRecordKey key) {
+  
+  // FIXME: Handle returning cache values for non-array keys as well
+  // as the entire record.
+  /**
+   * Returns the value in the cache for this key as an array.
+   * If it's not an array an exception will be thrown and ignored, basically.
+   * 
+   * @param key
+   * @return 
+   */
+  public synchronized ResultValue getValueAsArray(NameRecordKey key) {
     if (isValidValue(key.getName())) {
       return valuesMap.getAsArray(key.getName());
     }
@@ -180,7 +201,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns true if the contains the key and the ttl associated with key has not expired in the cache.
-   * 
+   *
    * @param key
    * @return true or false value regarding cache being valid
    */
@@ -208,6 +229,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Allow special case handling of TTLs for certain keys
+   *
    * @param key
    */
   private int getKeyTTL(String key) {
@@ -216,13 +238,13 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns true if a non-empty set of active name servers is stored in cache.
-   * 
+   *
    * @return true if a non-empty set of active name servers is stored in cache
    */
   public synchronized boolean isValidNameserver() {
     return activeNameServers != null && activeNameServers.size() != 0;
   }
-
+  
   public synchronized int timeSinceAddressCached(NameRecordKey nameRecordKey) {
     Long ts = timestampAddress.get(nameRecordKey.getName());
     if (ts == null) {
@@ -230,21 +252,20 @@ public class CacheEntry implements Comparable<CacheEntry> {
     }
     return (int) (System.currentTimeMillis() - ts);
   }
-
+  
   public synchronized void invalidateActiveNameServer() {
     activeNameServers = null;
   }
 
-
   /**
    * Attempts to come up with a pretty string representation of the cache entry.
-   * 
+   *
    * @return string representation of the cache entry
    */
   @Override
   public synchronized String toString() {
     StringBuilder entry = new StringBuilder();
-
+    
     entry.append("Name:" + getName());
     //entry.append(" Key: " + getRecordKey().getName());
     entry.append("\n    TTLAddress:" + timeToLiveInSeconds);
@@ -260,7 +281,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
       }
     }
     entry.append("]");
-
+    
     entry.append("\n    ActiveNS:[");
     if (activeNameServers != null) {
       first = true;
@@ -278,7 +299,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     entry.append("\n    Value:" + (valuesMap == null ? "INVALID" : valuesMap.toString()));
     return entry.toString();
   }
-
+  
   private String timeStampHashToString(ConcurrentHashMap<String, Long> map, long ttlInMilleseconds) {
     long currentTime = System.currentTimeMillis();
     StringBuilder result = new StringBuilder();
@@ -298,13 +319,13 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * So we can sort them when we display them.
-   * 
+   *
    * @param d CacheEntry
-   * @return 
+   * @return
    */
   @Override
   public int compareTo(CacheEntry d) {
     return (this.getName()).compareTo(d.getName());
   }
-
+  
 }

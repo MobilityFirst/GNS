@@ -299,7 +299,7 @@ public class MongoRecords implements NoSQLRecords {
 
   @Override
   public HashMap<ColumnField, Object> lookup(String collectionName, String guid, ColumnField nameField,
-                                             ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+                                             ArrayList<ColumnField> fields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
     long t0 = System.currentTimeMillis();
     if (guid == null) {
@@ -314,8 +314,8 @@ public class MongoRecords implements NoSQLRecords {
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject projection = new BasicDBObject().append("_id", 0);
-      if (fields1 != null) {
-        for (ColumnField f : fields1) {
+      if (fields != null) {
+        for (ColumnField f : fields) {
           projection.append(f.getName(), 1);
         }
       }
@@ -332,8 +332,8 @@ public class MongoRecords implements NoSQLRecords {
         throw new RecordNotFoundException(guid);
       }
       HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
-      hashMap.put(nameField, guid);// putAsArray the name in the hashmap!! very important!!
-      ColumnFieldType.populateHashMap(hashMap, dbObject, fields1);
+      hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
+      ColumnFieldType.populateHashMap(hashMap, dbObject, fields);
       if (valuesMapField != null && valuesMapKeys != null) {
         BSONObject bson = (BSONObject) dbObject.get(valuesMapField.getName());
 

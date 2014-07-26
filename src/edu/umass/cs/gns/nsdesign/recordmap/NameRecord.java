@@ -409,9 +409,7 @@ public class NameRecord implements Comparable<NameRecord> {
         while (keyIter.hasNext()) {
           String key = keyIter.next();
           try {
-            // FIXME: NOTE THIS ColumnFieldType IS WRONG BUT IT DOESN'T MATTER AS THE
-            // CALLED FUNCTION DOESN'T USE IT
-            updatedFields.add(new ColumnField(key, ColumnFieldType.LIST_STRING));
+            updatedFields.add(new ColumnField(key, ColumnFieldType.USER_JSON));
             Object value = userJSON.get(key);
             updatedValues.add(value);
           } catch (JSONException e) {

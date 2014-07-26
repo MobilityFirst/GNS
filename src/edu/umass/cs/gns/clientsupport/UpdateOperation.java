@@ -45,8 +45,8 @@ public enum UpdateOperation {
   SINGLE_FIELD_SET(true, false, false),
   SINGLE_FIELD_SET_FIELD_NULL(true, false, false),
   //
-  USER_JSON_REPLACE(false, false, false),
-  USER_JSON_REPLACE_OR_CREATE(false, false, true, USER_JSON_REPLACE);
+  USER_JSON_REPLACE(false, true, false),
+  USER_JSON_REPLACE_OR_CREATE(false, true, true, USER_JSON_REPLACE);
   //
   boolean singleFieldOperation;
   boolean ableToSkipRead;

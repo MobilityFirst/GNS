@@ -57,7 +57,6 @@ public class FieldAccess {
     } else {
       // pull out all the key pairs ignoring "system" (ie., non-user) fields
       resultString = result.getValuesMapSansInternalFields().toString();
-      resultString = emptyJSONObjectString;
     }
     return new CommandResponse(resultString,
             result.getErrorCode(),

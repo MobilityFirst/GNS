@@ -26,8 +26,9 @@ public enum ColumnFieldType {
   LIST_STRING,
   VALUES_MAP,
   VOTES_MAP,
-  STATS_MAP;
-  
+  STATS_MAP,
+  USER_JSON // NOT FULLY SUPPORTED YET
+  ;
   // THIS COULD PROBABLY ALSO BE DONE USING THE JSON LIB.
   /**
    *
@@ -41,7 +42,7 @@ public enum ColumnFieldType {
       for (ColumnField field : fields) {
         Object fieldValue = dbObject.get(field.getName());
         if (fieldValue == null) {
-          hashMap.put(field, null); //.add(null);
+          hashMap.put(field, null);
         } else {
           String value = fieldValue.toString();
           switch (field.type()) {

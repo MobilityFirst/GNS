@@ -317,7 +317,7 @@ public class Intercessor implements IntercessorInterface {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().info("Update userJSON (" + id + "): " + name + "\n  Returning: " + result);
+    GNS.getLogger().fine("Update userJSON (" + id + "): " + name + "\n  Returning: " + result);
     return result;
   }
 
@@ -358,7 +358,7 @@ public class Intercessor implements IntercessorInterface {
           String writer, String signature, String message) {
 
     if (userJSON != null) {
-      GNS.getLogger().info("Sending userJSON update: " + name + " : " + userJSON);
+      GNS.getLogger().finer("Sending userJSON update: " + name + " : " + userJSON);
     } else {
       GNS.getLogger().finer("Sending single field update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
     }

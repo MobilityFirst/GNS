@@ -88,6 +88,7 @@ public class ValuesMap extends JSONObject {
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("Unable to parse JSON array: " + e);
+      e.printStackTrace();
       return new ResultValue();
     }
   }
