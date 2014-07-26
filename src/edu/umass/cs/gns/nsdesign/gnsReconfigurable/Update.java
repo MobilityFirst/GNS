@@ -36,22 +36,27 @@ public class Update {
   public static void executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
           boolean noCoordinatonState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
-    if (Config.debugMode) GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
+    if (Config.debugMode) {
+      GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
+    }
 
     if (noCoordinatonState) {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
-      if (!recovery) replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+      if (!recovery) {
+        replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+      }
       return;
     }
 
     // First we do signature and ACL checks
     String guid = updatePacket.getName();
-    String field = updatePacket.getRecordKey().getName();
+    String field = updatePacket.getRecordKey() != null ? updatePacket.getRecordKey().getName() : null;
     String writer = updatePacket.getAccessor();
     String signature = updatePacket.getSignature();
     String message = updatePacket.getMessage();
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
-    if (writer != null) { // writer will be null for internal system reads
+    // FIXME : handle ACL checks for full JSON user updates
+    if (writer != null && field != null) { // writer will be null for internal system reads
       errorCode = Lookup.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, replica);
     }
     // return an error packet if one of the checks doesn't pass
@@ -67,12 +72,16 @@ public class Update {
     NameRecord nameRecord;
 
     if (updatePacket.getOperation().isAbleToSkipRead()) { // some operations don't require a read first
-      nameRecord = new NameRecord(replica.getDB(), updatePacket.getName());
+      nameRecord = new NameRecord(replica.getDB(), guid);
     } else {
       try {
-        nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), updatePacket.getName(), null, updatePacket.getRecordKey().getName());
+        if (field == null) {
+          nameRecord = NameRecord.getNameRecord(replica.getDB(), guid);
+        } else {
+          nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), guid, null, field);
+        }
       } catch (RecordNotFoundException e) {
-        GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + updatePacket.getName());
+        GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid);
         e.printStackTrace();
         ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
         if (!recovery) {
@@ -84,31 +93,41 @@ public class Update {
     }
 
     // Apply update
-    if (Config.debugMode) GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
+    if (Config.debugMode) {
+      GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
+    }
     boolean result;
     try {
-      result = nameRecord.updateNameRecord(updatePacket.getRecordKey().getName(),
+      result = nameRecord.updateNameRecord(field,
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
               updatePacket.getUserJSON(),
               updatePacket.getOperation());
-      if (Config.debugMode) GNS.getLogger().fine("Update operation result = " + result + "\t"
-              + updatePacket.getUpdateValue());
+      if (Config.debugMode) {
+        GNS.getLogger().fine("Update operation result = " + result + "\t"
+                + updatePacket.getUpdateValue());
+      }
 
       if (!result) { // update failed
-        if (Config.debugMode) GNS.getLogger().fine("Update operation failed " + updatePacket);
+        if (Config.debugMode) {
+          GNS.getLogger().fine("Update operation failed " + updatePacket);
+        }
         if (updatePacket.getNameServerId() == replica.getNodeID()) { //if this node proposed this update
           // send error message to client
           ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
-          if (Config.debugMode) GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
+          if (Config.debugMode) {
+            GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
+          }
           if (!recovery) {
             replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());
           }
         }
 
       } else {
-        if (Config.debugMode) GNS.getLogger().fine("Update applied" + updatePacket);
+        if (Config.debugMode) {
+          GNS.getLogger().fine("Update applied" + updatePacket);
+        }
 
         // Abhigyan: commented this because we are using lns votes for this calculation.
         // this should be uncommented once active replica starts to send read/write statistics for name.
@@ -117,8 +136,9 @@ public class Update {
           ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-          if (Config.debugMode)
+          if (Config.debugMode) {
             GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
+          }
           if (!recovery) {
             replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), confirmPacket.toJSONObject());
           }

@@ -358,8 +358,7 @@ public class MongoRecords implements NoSQLRecords {
               e.printStackTrace();
             }
           } else {
-            GNS.getLogger().fine("ERROR: Error: User keys field is not of type " + ColumnFieldType.LIST_STRING);
-            System.exit(2);
+            GNS.getLogger().severe("ERROR: Error: User keys field is not of type " + ColumnFieldType.LIST_STRING);
           }
         }
         hashMap.put(valuesMapField, valuesMap);

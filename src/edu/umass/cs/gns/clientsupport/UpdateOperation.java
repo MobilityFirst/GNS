@@ -66,18 +66,41 @@ public enum UpdateOperation {
     this.nonUpsertEquivalent = nonUpsertEquivalent;
   }
 
+  /**
+   * Indicates that this operation only operates on a single field (key/value) in the given record.
+   * 
+   * @return a boolean
+   */
   public boolean isSingleFieldOperation() {
     return singleFieldOperation;
   }
 
+  /**
+   * Indicates that this operation can proceed without having to first read the record from the database.
+   * 
+   * In other words, whatever this operation does it ignores the current contents of the database - say
+   * maybe something like am "overwrite all the contents of the given field" operation.
+   * 
+   * @return a boolean
+   */
   public boolean isAbleToSkipRead() {
     return ableToSkipRead;
   }
 
+  /**
+   * Indicates that this operation will attempt to create a field that does not already exist.
+   * 
+   * @return 
+   */
   public boolean isUpsert() {
     return upsert;
   }
 
+  /**
+   * Returns the operation similar to an upsert operation that is not an upsert operation.
+   * 
+   * @return 
+   */
   public UpdateOperation getNonUpsertEquivalent() {
     return nonUpsertEquivalent;
   }
@@ -92,6 +115,8 @@ public enum UpdateOperation {
    * @param key
    * @param newValues
    * @param oldValues
+   * @param argument
+   * @param userJSON - mutually exclusive of newValues, oldValues and argument (and only for non-SingleFieldOperations)
    * @param operation
    * @return false if the value was not updated true otherwise
    */
@@ -103,14 +128,18 @@ public enum UpdateOperation {
       if (valuesList == null) {
         valuesList = new ResultValue();
       }
-      if (updateValuesList(valuesList, key, newValues, oldValues, argument, operation)) {
+      if (UpdateSingleField(valuesList, key, newValues, oldValues, argument, operation)) {
         valuesMap.putAsArray(key, valuesList);
         return true;
       } else {
         return false;
       }
     } else {
-      return true;
+      assert userJSON != null;
+      // the valuesMap read from the database has user fields and hidden "systems" fields so we
+      // have to update it field-by-field using writeToValuesMap so as not to clobber 
+      // any of the systems fields
+      return userJSON.writeToValuesMap(valuesMap); 
     }
   }
 
@@ -118,7 +147,7 @@ public enum UpdateOperation {
     return !valuesList.isEmpty() && valuesList.get(0).equals(Defs.NULLRESPONSE);
   }
 
-  private static boolean updateValuesList(ResultValue valuesList, String key,
+  private static boolean UpdateSingleField(ResultValue valuesList, String key,
           ResultValue newValues, ResultValue oldValues, int argument,
           UpdateOperation operation) {
     switch (operation) {

@@ -178,6 +178,32 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
     this(sourceId, requestID, -1, name, null, null, null, -1, userJSON, operation, localNameServerId, -1, ttl,
             writer, signature, message);
   }
+  
+  /**
+   * Constructs a new UpdateAddressPacket with the given parameters.
+   * Used by client support to create a packet to send to the LNS.
+   *
+   * @param sourceId
+   * @param requestID
+   * @param name
+   * @param recordKey
+   * @param newValue
+   * @param oldValue
+   * @param argument
+   * @param userJSON - if this is specified newValue and oldValue will be null
+   * @param operation
+   * @param localNameServerId
+   * @param ttl
+   * @param writer
+   * @param signature
+   * @param message
+   */
+  public UpdatePacket(int sourceId, int requestID, String name, NameRecordKey recordKey,
+          ResultValue newValue, ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation, int localNameServerId, int ttl,
+          String writer, String signature, String message) {
+    this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, userJSON, operation, localNameServerId, -1, ttl,
+            writer, signature, message);
+  }
 
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.

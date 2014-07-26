@@ -54,6 +54,7 @@ public class Defs {
   public final static String QUERY = "query";
   public final static String MAXDISTANCE = "maxDistance";
   public final static String REMOVEFIELD = "removeField";
+  public final static String REPLACEUSERJSON = "replaceUserJSON";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";
@@ -143,6 +144,7 @@ public class Defs {
   public final static String FIELD = "field";
   public final static String VALUE = "value";
   public final static String OLDVALUE = "oldvalue";
+  public final static String USERJSON = "userjson";
   public final static String ARGUMENT = "argument";
   public final static String MEMBER = "member";
   public final static String MEMBERS = "members";

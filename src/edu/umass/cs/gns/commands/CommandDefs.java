@@ -72,6 +72,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.data.ReplaceOrCreateUnsigned",
     "edu.umass.cs.gns.commands.data.ReplaceSelf",
     "edu.umass.cs.gns.commands.data.ReplaceUnsigned",
+    "edu.umass.cs.gns.commands.data.ReplaceUserJSON",
     "edu.umass.cs.gns.commands.data.Select",
     "edu.umass.cs.gns.commands.data.SelectNear",
     "edu.umass.cs.gns.commands.data.SelectWithin",

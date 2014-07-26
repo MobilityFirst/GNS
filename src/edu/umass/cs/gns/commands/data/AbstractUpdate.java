@@ -12,9 +12,11 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
+import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.ValuesMap;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -39,26 +41,38 @@ public abstract class AbstractUpdate extends GnsCommand {
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
-    String field = json.getString(FIELD);
-    String value = json.optString(VALUE, null); // will be null for removeField op
+    String field = json.optString(FIELD, null);
+    String value = json.optString(VALUE, null);
     String oldValue = json.optString(OLDVALUE, null);
     int index = json.optInt(N, -1);
+    JSONObject userJSON = json.has(USERJSON) ? new JSONObject(json.getString(USERJSON)) : null;
     // writer might be unspecified so we use the guid
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-     NSResponseCode responseCode;
-    if (!(responseCode = FieldAccess.update(guid, field,
-            value != null ? new ResultValue(Arrays.asList(value)) 
-                    // special case for the ops which doesn't need a value
-                    : new ResultValue(),
-            oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
-            index,
-            getUpdateOperation(), 
-            writer, signature, message)).isAnError()) {
-      return new CommandResponse(OKRESPONSE);
+    NSResponseCode responseCode;
+    if (field == null) {
+      // full JSON object update
+      if (!(responseCode = Intercessor.sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
+              getUpdateOperation(), writer, signature, message)).isAnError()) {
+         return new CommandResponse(OKRESPONSE);
+      } else {
+        return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+      }
     } else {
-      return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+      // single field update 
+      if (!(responseCode = FieldAccess.update(guid, field,
+              value != null ? new ResultValue(Arrays.asList(value))
+              // special case for the ops which doesn't need a value
+              : new ResultValue(),
+              oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
+              index,
+              getUpdateOperation(),
+              writer, signature, message)).isAnError()) {
+        return new CommandResponse(OKRESPONSE);
+      } else {
+        return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+      }
     }
   }
 }

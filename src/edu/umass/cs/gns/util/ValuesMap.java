@@ -15,7 +15,7 @@ import java.util.Iterator;
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
  *
- * We maintain this class for backwards compatability with older code. In particular, in some older 
+ * We maintain this class for backwards compatability with older code. In particular, in some older
  * code values are always a list (a ResultValue).
  *
  * @author westy
@@ -107,4 +107,18 @@ public class ValuesMap extends JSONObject {
     }
   }
 
+  public boolean writeToValuesMap(ValuesMap destination) {
+    boolean somethingChanged = false;
+    Iterator<String> keyIter = keys();
+    while (keyIter.hasNext()) {
+      String key = keyIter.next();
+      try {
+        destination.put(key, super.get(key));
+        somethingChanged = true;
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
+      }
+    }
+    return somethingChanged;
+  }
 }
