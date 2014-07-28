@@ -90,8 +90,8 @@ public class NSFieldAccess {
    */
   public static ResultValue lookupField(String guid, String field, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     ResultValue result = lookupFieldOnThisServer(guid, field, activeReplica);
-    // and if we're allowed, send a query to the LNS
-    if (result.isEmpty() && allowQueryToOtherNSs) {
+    // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
+    if (result.isEmpty() && !activeReplica.getDB().containsName(guid) && allowQueryToOtherNSs) {
       result = lookupFieldQueryLNS(guid, field, activeReplica);
       if (!result.isEmpty()) {
         GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru LNS query.");
