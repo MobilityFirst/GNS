@@ -10,6 +10,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
@@ -39,28 +40,35 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   /**
    * ID of this node
    */
-  private int nodeID;
+  private final int nodeID;
 
   /**
    * nio server
    */
-  private InterfaceJSONNIOTransport nioServer;
+  private final InterfaceJSONNIOTransport nioServer;
 
   /**
    * Object provides interface to the database table storing name records
    */
-  private BasicRecordMap nameRecordDB;
+  private final BasicRecordMap nameRecordDB;
 
   /**
    * Configuration for all nodes in GNS *
    */
-  private GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig gnsNodeConfig;
 
   private PingManager pingManager;
 
-  /*** Constructor object */
+  /**
+   * Construct the GnsReconfigurable object.
+   *
+   * @param nodeID
+   * @param gnsNodeConfig
+   * @param nioServer
+   * @param mongoRecords
+   */
   public GnsReconfigurable(int nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
-                           MongoRecords mongoRecords) {
+          MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
     this.gnsNodeConfig = gnsNodeConfig;
@@ -100,6 +108,11 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   /**
    * ActiveReplicaCoordinator calls this method to locally execute a decision.
    * Depending on request type, this method will call a private method to execute request.
+   *
+   * @param name
+   * @param value
+   * @param recovery
+   * @return
    */
   @Override
   public boolean handleDecision(String name, String value, boolean recovery) {
@@ -111,7 +124,14 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
         case DNS:
-          Lookup.executeLookupLocal(new DNSPacket(json), this, noCoordinationState, recovery);
+          // the only dns response we should see are coming in response to LNSQueryHandler requests
+          DNSPacket dnsPacket = new DNSPacket(json);
+          if (!dnsPacket.isQuery()) {
+            LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
+          } else {
+            // otherwise it's a query
+            GnsReconLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, recovery);
+          }
           break;
         case UPDATE:
           GnsReconUpdate.executeUpdateLocal(new UpdatePacket(json), this, noCoordinationState, recovery);
@@ -132,7 +152,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
           Remove.executeActiveRemove(new OldActiveSetStopPacket(json), this, noCoordinationState, recovery);
           break;
-          // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
+        // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:
@@ -175,7 +195,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
 
   public boolean stopVersion(String name, short version) {
     boolean executed = false;
-    if (Config.debugMode) GNS.getLogger().fine("executing stop version: " + name + "\t" + version);
+    if (Config.debugMode) {
+      GNS.getLogger().fine("executing stop version: " + name + "\t" + version);
+    }
     NameRecord nameRecord;
     try {
       // we copy the active version field to old active version field,
@@ -312,9 +334,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   //  @Override
-
   /**
    * Used by deleteFinalState method. Therefore, not deleting this method.
+   *
    * @param name
    * @return
    */
@@ -335,7 +357,6 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
     return null;
   }
 
-
   private static ArrayList<ColumnField> curValueRequestFields = new ArrayList<ColumnField>();
 
   static {
@@ -347,9 +368,13 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   public String getState(String name) {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-      if (Config.debugMode) GNS.getLogger().fine(nameRecord.toString());
+      if (Config.debugMode) {
+        GNS.getLogger().fine(nameRecord.toString());
+      }
       TransferableNameRecordState state = new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
-      if (Config.debugMode) GNS.getLogger().fine("Getting state: " + state.toString());
+      if (Config.debugMode) {
+        GNS.getLogger().fine("Getting state: " + state.toString());
+      }
       return state.toString();
     } catch (RecordNotFoundException e) {
       GNS.getLogger().severe("Record not found for name: " + name);
@@ -366,7 +391,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
 
   @Override
   public boolean updateState(String name, String state) {
-    if (Config.debugMode) GNS.getLogger().fine("Updating state: " + state);
+    if (Config.debugMode) {
+      GNS.getLogger().fine("Updating state: " + state);
+    }
     Thread.dumpStack();
 
     boolean stateUpdated = false;

@@ -6,6 +6,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
@@ -53,7 +54,7 @@ public class GnsReconUpdate {
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     // FIXME : handle ACL checks for full JSON user updates
     if (writer != null && field != null) { // writer will be null for internal system reads
-      errorCode = Lookup.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, replica);
+      errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, replica);
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {

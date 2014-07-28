@@ -11,6 +11,7 @@ import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -42,17 +43,26 @@ public class NSGroupAccess {
    * @param guid
    * @return
    */
-  public static ResultValue lookupGroups(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
-    return NSFieldAccess.lookupField(guid, GroupAccess.GROUPS, true, activeReplica);
+  public static Set<String> lookupGroups(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+    // this guid could be on another NS hence the true below
+    return NSFieldAccess.lookupField(guid, GroupAccess.GROUPS, true, activeReplica).toStringSet();
   }
   
-  public static NSResponseCode removeFromGroup(String guid, String memberGuid, GnsReconfigurableInterface activeReplica) {
-    NSResponseCode groupResponse =  LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(Arrays.asList(memberGuid)),
+  /**
+   * Removes from the groupGuid the memberGuid.
+   * 
+   * @param groupGuid
+   * @param memberGuid
+   * @param activeReplica
+   * @return 
+   */
+  public static NSResponseCode removeFromGroup(String groupGuid, String memberGuid, GnsReconfigurableInterface activeReplica) {
+    NSResponseCode groupResponse =  LNSUpdateHandler.sendUpdate(groupGuid, GroupAccess.GROUP, new ResultValue(Arrays.asList(memberGuid)),
             UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about this when we get transactions working.
     if (!groupResponse.isAnError()) {
-       LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(guid)),
+       LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(groupGuid)),
               UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
     }
     return groupResponse;
@@ -64,8 +74,7 @@ public class NSGroupAccess {
    * @param guid 
    */
   public static void cleanupGroupsForDelete(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
-    // just so you know all the nulls mean we're ignoring signatures and authentication
-    for (String groupGuid : lookupGroups(guid, activeReplica).toStringSet()) {
+    for (String groupGuid : lookupGroups(guid, activeReplica)) {
       removeFromGroup(groupGuid, guid, activeReplica);
     }
   }

@@ -18,7 +18,7 @@ import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
 
 /**
- * Methods for reading field information in guids from this NameServer.
+ * Methods for reading field information in guids on NameServers.
  *
  * @author westy
  */

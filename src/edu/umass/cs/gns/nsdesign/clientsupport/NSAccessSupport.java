@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.nsdesign.clientsupport;
 
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
@@ -118,20 +120,23 @@ public class NSAccessSupport {
 
   }
 
-  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedusers, GnsReconfigurable activeReplica) throws FailedDBOperationException {
-    if (allowedusers.contains(accesserGuid)) {
+  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedUsers, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+    if (allowedUsers.contains(accesserGuid)) {
       return true;
-    } else if (allowedusers.contains(EVERYONE)) {
+    } else if (allowedUsers.contains(EVERYONE)) {
       return true;
     } else {
-      // map over the allowedusers and see if any of them are groups that the user belongs to
-      for (String potentialGroupGuid : allowedusers) {
-        // Fix this to use the reverse group lookup because the info we want will be on this host then.
-        if (NSGroupAccess.lookupMembers(potentialGroupGuid, true, activeReplica).contains(accesserGuid)) {
-          return true;
-        }
-      }
-      return false;
+     // see if allowed users (the list of guids and group guids that is in the ACL) intersects with the groups that this
+     // guid is a member of (which is stored with this guid)
+     return !Sets.intersection(allowedUsers, NSGroupAccess.lookupGroups(accesserGuid, activeReplica)).isEmpty();
+//      // map over the allowedusers and see if any of them are groups that the user belongs to
+//      for (String potentialGroupGuid : allowedUsers) {
+//        // Fix this to use the reverse group lookup because the info we want will be on this host then.
+//        if (NSGroupAccess.lookupMembers(potentialGroupGuid, true, activeReplica).contains(accesserGuid)) {
+//          return true;
+//        }
+//      }
+//      return false;
     }
   }
 
