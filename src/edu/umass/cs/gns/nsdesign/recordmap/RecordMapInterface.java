@@ -39,6 +39,7 @@ public interface RecordMapInterface {
 
   /**
    * Clears the database and reinitializes all indices.
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void reset() throws FailedDBOperationException;
 
@@ -95,6 +96,7 @@ public interface RecordMapInterface {
    * @param nameField - the field in the row that contains the name field
    * @param fields
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException;
 
@@ -102,6 +104,7 @@ public interface RecordMapInterface {
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor getAllRowsIterator() throws FailedDBOperationException;
 
@@ -112,6 +115,7 @@ public interface RecordMapInterface {
    * @param key
    * @param value
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException;
 
@@ -123,6 +127,7 @@ public interface RecordMapInterface {
    * @param key
    * @param value - a string that looks like this [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) throws FailedDBOperationException;
 
@@ -135,6 +140,7 @@ public interface RecordMapInterface {
    * @param value - a string that looks like this [LONG, LAT]
    * @param maxDistance - the distance in meters
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException;
 

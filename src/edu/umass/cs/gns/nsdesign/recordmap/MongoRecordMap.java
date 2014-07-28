@@ -45,50 +45,50 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException, FailedDBOperationException {
-    return mongoRecords.lookup(collectionName, name, nameField, fields1);
+  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
+    return mongoRecords.lookup(collectionName, name, nameField, systemFields);
 //    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
+  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> systemFields,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
-    return mongoRecords.lookup(collectionName, name, nameField, fields1, valuesMapField, valuesMapKeys);
+    return mongoRecords.lookup(collectionName, name, nameField, systemFields, valuesMapField, valuesMapKeys);
   }
 
   @Override
-  public void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
+  public void update(String name, ColumnField nameField, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues)
           throws FailedDBOperationException {
-    mongoRecords.update(collectionName, name, nameField, fields1, values1);
+    mongoRecords.update(collectionName, name, nameField, systemFields, systemValues);
   }
 
   @Override
-  public void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1,
+  public void update(String name, ColumnField nameField, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException {
-    mongoRecords.update(collectionName, name, nameField, fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
+    mongoRecords.update(collectionName, name, nameField, systemFields, systemValues, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
   @Override
   public boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
-          ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField,
+          ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues, ColumnField valuesMapField,
           ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException {
     return mongoRecords.updateConditional(collectionName, name, nameField, conditionField, conditionValue,
-            fields1, values1, valuesMapField, valuesMapKeys, valuesMapValues);
+            systemFields, systemValues, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
   @Override
-  public void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
+  public void increment(String name, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues)
           throws FailedDBOperationException {
-    mongoRecords.increment(collectionName, name, fields1, values1);
+    mongoRecords.increment(collectionName, name, systemFields, systemValues);
   }
 
   @Override
-  public void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField votesMapField,
+  public void increment(String name, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues, ColumnField votesMapField,
           ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
           throws FailedDBOperationException {
-    mongoRecords.increment(collectionName, name, fields1, values1, votesMapField, votesMapKeys, votesMapValues);
+    mongoRecords.increment(collectionName, name, systemFields, systemValues, votesMapField, votesMapKeys, votesMapValues);
   }
 
   @Override

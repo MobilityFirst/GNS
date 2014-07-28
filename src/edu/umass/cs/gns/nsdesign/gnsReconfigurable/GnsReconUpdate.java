@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -21,9 +20,6 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 /**
- * * DONT not use any class in package edu.umass.cs.gns.nsdesign **
- */
-/**
  *
  * Contains code for executing an address update locally at each active replica. If name servers are replicated,
  * then methods in this class will be executed after the coordination among active replicas at name servers
@@ -31,7 +27,7 @@ import java.security.spec.InvalidKeySpecException;
  *
  * Created by abhigyan on 2/27/14.
  */
-public class Update {
+public class GnsReconUpdate {
 
   public static void executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
           boolean noCoordinatonState, boolean recovery)

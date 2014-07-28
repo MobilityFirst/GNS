@@ -114,7 +114,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
           Lookup.executeLookupLocal(new DNSPacket(json), this, noCoordinationState, recovery);
           break;
         case UPDATE:
-          Update.executeUpdateLocal(new UpdatePacket(json), this, noCoordinationState, recovery);
+          GnsReconUpdate.executeUpdateLocal(new UpdatePacket(json), this, noCoordinationState, recovery);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);

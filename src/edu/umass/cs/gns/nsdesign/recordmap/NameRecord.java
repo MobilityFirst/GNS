@@ -381,15 +381,10 @@ public class NameRecord implements Comparable<NameRecord> {
      * That is 1 DB read + 1 DB write. Others do not require record to be read, but we can directly do a write.
      * This saves us a database read.
      *
-     * To implement this, we require some changes to both ClientRequestWorker.updateAdddressNS and NameRecord.updateNameRecord.
-     * Abhigyan had made both these changes but unknowingly commented out the change in ClientRequestWorker.updateAdddressNS.
-     * I will uncomment it, so that a SINGLE_FIELD_REPLACE_ALL can proceed without doing a database read.
+     * To implement this, we changed both ClientRequestWorker.updateAdddressNS and NameRecord.updateNameRecord.
      * There could be other operations like SINGLE_FIELD_REPLACE_ALL which could proceed without DB read,
      * and should be handled similar to SINGLE_FIELD_REPLACE_ALL. In my experiments, I was using SINGLE_FIELD_REPLACE_ALL so I have
      * included it as a special case for it.
-     *
-     * We should augment the UpdateOperation class with some notion of operations that don't require a read before
-     * the write and then use that to redo the "if (operation.equals(UpdateOperation.SINGLE_FIELD_REPLACE_ALL))" clause.
      */
     ValuesMap valuesMap;
     if (operation.isAbleToSkipRead()) {
@@ -410,8 +405,7 @@ public class NameRecord implements Comparable<NameRecord> {
           String key = keyIter.next();
           try {
             updatedFields.add(new ColumnField(key, ColumnFieldType.USER_JSON));
-            Object value = userJSON.get(key);
-            updatedValues.add(value);
+            updatedValues.add(userJSON.get(key));
           } catch (JSONException e) {
             GNS.getLogger().severe("Unable to get " + key + " from userJSON:" + e);
           }

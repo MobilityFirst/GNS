@@ -32,9 +32,9 @@ public enum UpdateOperation {
 
   //  Args:         singleField, skipread, upsert
   SINGLE_FIELD_CREATE(true, false, false),
-  SINGLE_FIELD_REMOVE_FIELD(true, false, false),
+  SINGLE_FIELD_REMOVE_FIELD(true, true, false), // doesn't require a read
   SINGLE_FIELD_CLEAR(true, false, false),
-  SINGLE_FIELD_REPLACE_ALL(true, true, false), // currently the only skipRead op
+  SINGLE_FIELD_REPLACE_ALL(true, true, false), // doesn't require a read
   SINGLE_FIELD_REMOVE(true, false, false),
   SINGLE_FIELD_REPLACE_SINGLETON(true, false, false),
   SINGLE_FIELD_APPEND(true, false, false),
@@ -45,8 +45,8 @@ public enum UpdateOperation {
   SINGLE_FIELD_SET(true, false, false),
   SINGLE_FIELD_SET_FIELD_NULL(true, false, false),
   //
-  USER_JSON_REPLACE(false, true, false),
-  USER_JSON_REPLACE_OR_CREATE(false, true, true, USER_JSON_REPLACE);
+  USER_JSON_REPLACE(false, true, false), // doesn't require a read
+  USER_JSON_REPLACE_OR_CREATE(false, true, true, USER_JSON_REPLACE); // doesn't require a read
   //
   boolean singleFieldOperation;
   boolean ableToSkipRead;
