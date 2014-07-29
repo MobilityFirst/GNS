@@ -35,6 +35,8 @@ public class CommandRequest {
           throws JSONException, UnknownHostException {
     GNS.getLogger().fine("######## COMMAND PACKET RECEIVED: " + incomingJSON);
     final CommandPacket packet = new CommandPacket(incomingJSON);
+    // Set the host field. Used by the help command and email module.
+    commandModule.setHost(packet.getSenderAddress());
     final JSONObject jsonFormattedCommand = packet.getCommand();
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand);

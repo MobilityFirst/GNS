@@ -29,12 +29,6 @@ public class FieldMetaData {
     } else {
       return false;
     }
-
-  }
-
-  @Deprecated
-  public static Set<String> lookup(MetaDataTypeName type, GuidInfo guidInfo, String key) {
-    return lookup(type, guidInfo.getGuid(), key);
   }
 
   /**
@@ -55,22 +49,6 @@ public class FieldMetaData {
     }
   }
 
-  @Deprecated
-  public static Set<String> lookup(MetaDataTypeName type, String guid, String key) {
-    String metaDataKey = makeFieldMetaDataKey(type, key);
-    QueryResult result = Intercessor.sendQueryBypassingAuthentication(guid, metaDataKey);
-    if (!result.isError()) {
-      return new HashSet<String>(result.get(metaDataKey).toStringSet());
-    } else {
-      return new HashSet<String>();
-    }
-  }
-
-  @Deprecated
-  public static void add(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
-    add(type, userInfo.getGuid(), key, value);
-  }
-
   /**
    * Adds a value to the metadata of the field in the guid.
    * 
@@ -84,6 +62,8 @@ public class FieldMetaData {
             writer, signature, message);
   }
 
+  // Deprecated because it doesn't require use authentication
+  // Still used in account registration
   @Deprecated
   public static void add(MetaDataTypeName type, String guid, String key, String value) {
 
@@ -91,21 +71,10 @@ public class FieldMetaData {
     Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }
 
-  @Deprecated
-  public static void remove(MetaDataTypeName type, GuidInfo userInfo, String key, String value) {
-    remove(type, userInfo.getGuid(), key, value);
-  }
-
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
     return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
-  @Deprecated
-  public static void remove(MetaDataTypeName type, String guid, String key, String value) {
-
-    String metaDataKey = makeFieldMetaDataKey(type, key);
-    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.SINGLE_FIELD_REMOVE);
-  }
   //
   public static String Version = "$Revision$";
 }
