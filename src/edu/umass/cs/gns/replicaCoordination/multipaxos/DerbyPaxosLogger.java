@@ -1,42 +1,23 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.*;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.*;
+import edu.umass.cs.gns.util.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
-
-import javax.sql.DataSource;
-
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PreparePacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.StatePacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Ballot;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.HotRestoreInfo;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.RecoveryInfo;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState;
-import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
@@ -78,10 +59,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_POOL_SIZE = 100;
 
 	private static final int PAXOS_ID_SIZE = 40; // FIXME: GUID is 20 bytes, but its hex-byte representation is bloated
-	private static final int MAX_STATE_SIZE = 8192; // FIXME: Need to make this configurable
+//	private static final int MAX_STATE_SIZE = 8192; // FIXME: Need to make this configurable
 	private static final int PAUSE_STATE_SIZE = 256;
 	private static final int MAX_GROUP_SIZE = 256; // maximum size of a paxos replica group
-	private static final int MAX_LOG_MESSAGE_SIZE = 1024; // maximum size of a log message
+	private static final int MAX_LOG_MESSAGE_SIZE = 4096; // maximum size of a log message
 	private static final int MAX_OLD_DECISIONS = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 
 	private ComboPooledDataSource dataSource=null;
@@ -140,7 +121,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			insertCP.setInt(3, slot);
 			insertCP.setInt(4, ballot.ballotNumber);
 			insertCP.setInt(5, ballot.coordinatorID);
-			insertCP.setString(6, state);
+//			insertCP.setString(6, state);
+      insertCP.setBytes(6, state.getBytes());
 			insertCP.setString(7, paxosID);
 			insertCP.executeUpdate(); 
 			conn.commit();
@@ -302,8 +284,9 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			stateRS = pstmt.executeQuery();
 			while(stateRS.next()) {
 				assert(state==null); // single result
-				state = stateRS.getString(1);
-			}
+//				state = stateRS.getString(1);
+        state = new String(stateRS.getBytes(1));
+      }
 
 		} catch(SQLException sqle) {
 			log.severe("SQLException while getting state " + " : " + sqle);
@@ -711,7 +694,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		boolean createdCheckpoint=false, createdMessages=false, createdPTable=false;
 		String cmdC = "create table " + getCTable() + " (paxos_id varchar(" + PAXOS_ID_SIZE + 
 				") not null, version smallint, members varchar(" + MAX_GROUP_SIZE +  "), slot int, " + 
-				"ballotnum int, coordinator int, state varchar(" + MAX_STATE_SIZE + "), " +
+				"ballotnum int, coordinator int, state blob, " +
 				"primary key (paxos_id))";
 		String cmdM = "create table " + getMTable() + " (paxos_id varchar(" + PAXOS_ID_SIZE + ") not null, " +
 				"version smallint, slot int, ballotnum int, coordinator int, packet_type int, message varchar(" +

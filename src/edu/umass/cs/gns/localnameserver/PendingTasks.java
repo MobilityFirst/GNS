@@ -64,8 +64,8 @@ public class PendingTasks {
 
       // The first time we received invalid error for a request, we will request actives without delay.
       // if we get invalid active error a second time or later, it means the set of active replicas is being changed
-      // and the new active replica has not received this information. Therefore, we will wait for a timeout value before
-      // sending requests again.
+      // and the new active replica has not received this information. Therefore, we will wait for a timeout value
+      // before sending requests again.
       long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout/10;
       requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
