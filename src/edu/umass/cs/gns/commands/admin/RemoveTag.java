@@ -26,21 +26,21 @@ import org.json.JSONObject;
  * @author westy
  */
 public class RemoveTag extends GnsCommand {
-
+  
   public RemoveTag(CommandModule module) {
     super(module);
   }
-
+  
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-
+  
   @Override
   public String getCommandName() {
     return REMOVETAG;
   }
-
+  
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
@@ -53,13 +53,19 @@ public class RemoveTag extends GnsCommand {
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
       return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
     }
-    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-      return AccountAccess.removeTag(guidInfo, tag);
-    } else {
-      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
-    }
-  }
+    return AccountAccess.removeTag(guidInfo, tag, guid, signature, message);
 
+//    GuidInfo guidInfo;
+//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+//    }
+//    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+//      return AccountAccess.removeTag(guidInfo, tag);
+//    } else {
+//      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+//    }
+  }
+  
   @Override
   public String getCommandDescription() {
     return "Removes a tag from the guid. Must be signed by the guid. "

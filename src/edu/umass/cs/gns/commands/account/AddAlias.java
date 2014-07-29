@@ -59,8 +59,7 @@ public class AddAlias extends GnsCommand {
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
-      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
         if (accountInfo == null) {
           return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
         }
@@ -69,11 +68,28 @@ public class AddAlias extends GnsCommand {
         } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
           return new CommandResponse(BADRESPONSE + " " + TOMANYALIASES);
         } else {
-          return AccountAccess.addAlias(accountInfo, name);
+          return AccountAccess.addAlias(accountInfo, name, guid, signature, message);
         }
-      } else {
-        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
-      }
+    
+//      GuidInfo guidInfo;
+//      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+//      }
+//      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+//        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+//        if (accountInfo == null) {
+//          return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+//        }
+//        if (!accountInfo.isVerified()) {
+//          return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+//        } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
+//          return new CommandResponse(BADRESPONSE + " " + TOMANYALIASES);
+//        } else {
+//          return AccountAccess.addAlias(accountInfo, name);
+//        }
+//      } else {
+//        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+//      }
     }
   }
 

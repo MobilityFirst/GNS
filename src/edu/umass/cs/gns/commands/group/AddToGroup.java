@@ -56,24 +56,6 @@ public class AddToGroup extends GnsCommand {
     } else {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
-//    GuidInfo guidInfo, writerInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
-//    }
-//    if (writer.equals(guid)) {
-//      writerInfo = guidInfo;
-//    } else if ((writerInfo = AccountAccess.lookupGuidInfo(writer)) == null) {
-//      return new CommandResponse(BADRESPONSE + " " + BADWRITERGUID + " " + writer);
-//    }
-//    if (!AccessSupport.verifySignature(writerInfo, signature, message)) {
-//      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
-//    } else if (!AccessSupport.verifyAccess(MetaDataTypeName.WRITE_WHITELIST, guidInfo, GROUP_ACL, writerInfo)) {
-//      return new CommandResponse(BADRESPONSE + " " + ACCESSDENIED);
-//    } else if (!GroupAccess.addToGroup(guid, member).isAnError()) {
-//      return new CommandResponse(OKRESPONSE);
-//    } else {
-//      return new CommandResponse(BADRESPONSE + " " + GENERICEERROR);
-//    }
   }
 
   @Override

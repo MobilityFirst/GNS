@@ -7,7 +7,9 @@ import edu.umass.cs.gns.util.NSResponseCode;
 /**
  * GroupAccess provides an interface to the group information in the GNS.
  *
- * The members of a group are stored in a record whose key is the GROUP string.
+ * The members of a group are stored in a record in each guid whose key is the GROUP string.
+ * There is also a "reverse" link stored in each guid which is the groups that the guid is a member of.
+ * The reverse link means that we can check for membership of a guid without going to a different NS.
  *
  * @author westy
  */
@@ -24,10 +26,12 @@ public class GroupAccess {
   /**
    * Hidden field that stores group member join requests
    */
+  @Deprecated
   public static final String JOINREQUESTS = InternalField.makeInternalFieldString("groupJoinRequests");
   /**
    * Hidden field that stores group member quit requests
    */
+   @Deprecated
   public static final String LEAVEREQUESTS = InternalField.makeInternalFieldString("groupLeaveRequests");
 
   /**
@@ -171,18 +175,21 @@ public class GroupAccess {
     }
   }
 
+  @Deprecated
   public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
     return Intercessor.sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
+  @Deprecated
   public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
     return Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
+   @Deprecated
   public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, JOINREQUESTS, reader, signature, message);
     if (!result.isError()) {
@@ -192,6 +199,7 @@ public class GroupAccess {
     }
   }
 
+  @Deprecated
   public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, LEAVEREQUESTS, reader, signature, message);
     if (!result.isError()) {
@@ -200,7 +208,8 @@ public class GroupAccess {
       return new ResultValue();
     }
   }
-
+  
+  @Deprecated
   public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
     if (!addToGroup(guid, requests, writer, signature, message).isAnError()) {
@@ -213,6 +222,7 @@ public class GroupAccess {
     return false;
   }
 
+  @Deprecated
   public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
     if (!removeFromGroup(guid, requests, writer, signature, message).isAnError()) {

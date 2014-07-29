@@ -212,7 +212,7 @@ public class Intercessor implements IntercessorInterface {
    */
   public static NSResponseCode sendAddRecord(String name, String key, ResultValue value) {
     int id = nextUpdateRequestID();
-    GNS.getLogger().fine("Sending add: " + name + "->" + value);
+    GNS.getLogger().fine("Sending add: " + name + " / " + key + "->" + value);
     AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
     GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     try {
@@ -293,7 +293,7 @@ public class Intercessor implements IntercessorInterface {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().finer("Update (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
+    GNS.getLogger().fine("Update (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
     return result;
   }
 

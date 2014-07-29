@@ -58,12 +58,21 @@ public class SetPassword extends GnsCommand {
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
-      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
-        return AccountAccess.setPassword(accountInfo, password);
-      } else {
-        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      if (accountInfo == null) {
+        return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
       }
+      return AccountAccess.setPassword(accountInfo, password, guid, signature, message);
+//      GuidInfo guidInfo;
+//      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+//        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+//      }
+//      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+//        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+//        return AccountAccess.setPassword(accountInfo, password);
+//      } else {
+//        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+//      }
     }
   }
 

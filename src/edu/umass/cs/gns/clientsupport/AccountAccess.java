@@ -204,7 +204,7 @@ public class AccountAccess {
         }
         accountInfo.setVerificationCode(verifyCode);
         accountInfo.noteUpdate();
-        if (updateAccountInfo(accountInfo)) {
+        if (updateAccountInfoNoAuthentication(accountInfo)) {
           boolean emailOK = Email.email("GNS Account Verification", name,
                   String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
           boolean adminEmailOK = Email.email("GNS Account Notification",
@@ -257,7 +257,7 @@ public class AccountAccess {
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo)) {
+    if (updateAccountInfoNoAuthentication(accountInfo)) {
       return new CommandResponse(Defs.OKRESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
@@ -372,7 +372,7 @@ public class AccountAccess {
       // First try to create the HRN to insure that that name does not already exist
       if (!Intercessor.sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // update the account info
-        if (updateAccountInfo(accountInfo)) {
+        if (updateAccountInfoNoAuthentication(accountInfo)) {
           // add the GUID_INFO link
           Intercessor.sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
           // add a link the new GUID to primary GUID
@@ -454,7 +454,7 @@ public class AccountAccess {
         // update the account guid to know that we deleted the guid
         accountInfo.removeGuid(guid.getGuid());
         accountInfo.noteUpdate();
-        if (updateAccountInfo(accountInfo)) {
+        if (updateAccountInfoNoAuthentication(accountInfo)) {
           return new CommandResponse(OKRESPONSE);
         } else {
           return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
@@ -473,25 +473,28 @@ public class AccountAccess {
    *
    * @param accountInfo
    * @param alias
+   * @param writer
+   * @param signature
+   * @param message
    * @return status result
    */
-  public static CommandResponse addAlias(AccountInfo accountInfo, String alias) {
+  public static CommandResponse addAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message) {
+    // insure that that name does not already exist
+    if (Intercessor.sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
+      // roll this back
+      accountInfo.removeAlias(alias);
+      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
+    }
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
-
-    // insure that that name does not already exist
-    if (!Intercessor.sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
-      if (updateAccountInfo(accountInfo)) {
-        return new CommandResponse(OKRESPONSE);
-      } else { // back out if we got an error
-        Intercessor.sendRemoveRecord(alias);
-        accountInfo.removeAlias(alias);
-        return new CommandResponse(BADRESPONSE + " " + BADALIAS);
-      }
+    if (updateAccountInfo(accountInfo, writer, signature, message).isAnError()) {
+      // back out if we got an error
+      Intercessor.sendRemoveRecord(alias);
+      accountInfo.removeAlias(alias);
+      return new CommandResponse(BADRESPONSE + " " + BADALIAS);
+    } else {
+      return new CommandResponse(OKRESPONSE);
     }
-    // roll this back
-    accountInfo.removeAlias(alias);
-    return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
   }
 
   /**
@@ -501,21 +504,22 @@ public class AccountAccess {
    * @param alias
    * @return status result
    */
-  public static CommandResponse removeAlias(AccountInfo accountInfo, String alias) {
+  public static CommandResponse removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message) {
 
-    if (accountInfo.containsAlias(alias)) {
-      // remove the NAME -> GUID record
-      NSResponseCode responseCode;
-      if ((responseCode = Intercessor.sendRemoveRecord(alias)).isAnError()) {
-        return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
-      }
-      accountInfo.removeAlias(alias);
-      accountInfo.noteUpdate();
-      if (updateAccountInfo(accountInfo)) {
-        return new CommandResponse(OKRESPONSE);
-      }
+    if (!accountInfo.containsAlias(alias)) {
+      return new CommandResponse(BADRESPONSE + " " + BADALIAS);
     }
-    return new CommandResponse(BADRESPONSE + " " + BADALIAS);
+    // remove the NAME -> GUID record
+    NSResponseCode responseCode;
+    if ((responseCode = Intercessor.sendRemoveRecord(alias)).isAnError()) {
+      return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+    }
+    accountInfo.removeAlias(alias);
+    accountInfo.noteUpdate();
+    if ((responseCode = updateAccountInfo(accountInfo, writer, signature, message)).isAnError()) {
+      return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+    }
+    return new CommandResponse(OKRESPONSE);
   }
 
   /**
@@ -525,13 +529,13 @@ public class AccountAccess {
    * @param password
    * @return status result
    */
-  public static CommandResponse setPassword(AccountInfo accountInfo, String password) {
+  public static CommandResponse setPassword(AccountInfo accountInfo, String password, String writer, String signature, String message) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo)) {
-      return new CommandResponse(OKRESPONSE);
+    if (updateAccountInfo(accountInfo, writer, signature, message).isAnError()) {
+      return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
     }
-    return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
+    return new CommandResponse(OKRESPONSE);
   }
 
   /**
@@ -541,14 +545,13 @@ public class AccountAccess {
    * @param tag
    * @return status result
    */
-  public static CommandResponse addTag(GuidInfo guidInfo, String tag) {
+  public static CommandResponse addTag(GuidInfo guidInfo, String tag, String writer, String signature, String message) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo)) {
-      return new CommandResponse(OKRESPONSE);
+    if (updateGuidInfo(guidInfo, writer, signature, message).isAnError()) {
+      return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
     }
-    guidInfo.removeTag(tag);
-    return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
+    return new CommandResponse(OKRESPONSE);
   }
 
   /**
@@ -558,17 +561,27 @@ public class AccountAccess {
    * @param tag
    * @return status result
    */
-  public static CommandResponse removeTag(GuidInfo guidInfo, String tag) {
+  public static CommandResponse removeTag(GuidInfo guidInfo, String tag, String writer, String signature, String message) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo)) {
-      return new CommandResponse(OKRESPONSE);
+    if (updateGuidInfo(guidInfo, writer, signature, message).isAnError()) {
+      return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
     }
-    return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
+    return new CommandResponse(OKRESPONSE);
   }
 
-  private static boolean updateAccountInfo(AccountInfo accountInfo) {
+  private static NSResponseCode updateAccountInfo(AccountInfo accountInfo, String writer, String signature, String message) {
+    try {
+      NSResponseCode response = Intercessor.sendUpdateRecord(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+              accountInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
+      return response;
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem parsing account info:" + e);
+      return NSResponseCode.ERROR;
+    }
+  }
 
+  private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo) {
     try {
       ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
@@ -582,7 +595,19 @@ public class AccountAccess {
     return false;
   }
 
-  private static boolean updateGuidInfo(GuidInfo guidInfo) {
+  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message) {
+
+    try {
+      NSResponseCode response = Intercessor.sendUpdateRecord(guidInfo.getGuid(), GUID_INFO,
+              guidInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
+      return response;
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem parsing guid info:" + e);
+      return NSResponseCode.ERROR;
+    }
+  }
+
+  private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo) {
 
     try {
       ResultValue newvalue;
