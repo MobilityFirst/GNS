@@ -13,13 +13,7 @@ AGGREGATE_INTERVAL = '-aInterval'
 REPLICATION_INTERVAL = '-rInterval'
 NORMALIZING_CONSTANT = '-nconstant'
 MOVING_AVG_WINDOW_SIZE = '-mavg'
-TTL_CONSTANT = '-ttlconstant'
-DEFAULT_TTL_REGULAR_NAME = '-rttl'
-DEFAULT_TTL_MOBILE_NAME = '-mttl'
-REGULAR_WORLOAD = '-rworkload'
-MOBILE_WORLOAD = '-mworkload'
 STATIC_REPLICATION = '-static'
-OPTIMAL_REPLICATION = '-optimal'
 RANDOM_REPLICATION = '-random'
 LOCATION_REPLICATION = '-location'
 NAMESERVER_SELECTION_VOTE_SIZE = '-nsVoteSize'
@@ -34,43 +28,28 @@ BASE = '-base'
 DEBUG_MODE = '-debugMode'
 EXPERIMENT_MODE = '-experimentMode'
 HELP = '-help'
-TINY_UPDATE = '-tinyUpdate'
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
 SINGLE_NS = '-singleNS'
-USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 DUMMY_GNS = '-dummyGNS'
 
 READ_COORDINATION = '-readCoordination'
 EVENTUAL_CONSISTENCY = '-eventualConsistency'
 NO_PAXOS_LOG = '-noPaxosLog'
 NO_LOAD_DB = '-noLoadDB'
-#PRIMARY_PAXOS = '-primaryPaxos'
-PAXOS_DISK_BACKUP = '-paxosDiskBackup'
 PAXOS_LOG_FOLDER = '-paxosLogFolder'
 FAILURE_DETECTION_MSG_INTERVAL = '-failureDetectionMsgInterval'
 FAILURE_DETECTION_TIMEOUT_INTERVAL = '-failureDetectionTimeoutInterval'
-PAXOS_START_MIN_DELAY = '-paxosStartMinDelaySec'
-PAXOS_START_MAX_DELAY = '-paxosStartMaxDelaySec'
 MONGO_PORT = '-mongoPort'
-QUIT_AFTER_TIME = '-quitAfterTime'
+MULTIPAXOS = '-multipaxos'
 
-KMEDOIDS_REPLICATION = '-kmedoids'
-NUM_LNS = '-numLNS'
-LNSNSPING_FILE = '-lnsnsping'
-NSNSPING_FILE = '-nsnsping'
 
 FILE_LOGGING_LEVEL = '-fileLoggingLevel'
 CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
 STAT_FILE_LOGGING_LEVEL = '-statFileLoggingLevel'
 STAT_CONSOLE_OUTPUT_LEVEL = '-statConsoleOutputLevel'
 
-GEN_WORKLOAD_SLEEP_TIME = '-syntheticWorkloadSleepTimeBetweenAddingNames'
-
 WORKER_THREAD_COUNT = '-workerThreadCount'
-
-MAX_LOG_NAME = '-maxLogName'
-
 
 def run_name_server(node_id, config_file, node_config_file):
     """ Executes an instance of Name Server with the give parameters """
@@ -91,16 +70,6 @@ def run_name_server(node_id, config_file, node_config_file):
     # NumReplicas = lookupRate / (updateRate * normalizing_constant)
     normalizing_constant = exp_config.normalizing_constant
     moving_avg_window_size = 1  # Used for calculating inter-arrival update time and ttl value
-
-    ttl_constant = 0.0  # Multiplied by inter-arrival update time to calculate ttl value of a name
-
-    default_ttl_regular_name = 0  # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
-    default_ttl_mobile_name = 0  # TTL = 0 means no TTL, TTL = -1 means infinite TTL, else, TTL = TTL value in sec
-
-    regular_workload = exp_config.regular_workload
-    mobile_workload = exp_config.mobile_workload
-
-    is_optimal_replication = False  # Optimal
 
     is_static_replication = exp_config.is_static_replication  # Static3
 
@@ -124,13 +93,7 @@ def run_name_server(node_id, config_file, node_config_file):
     # Interval (in sec) after which a node is declared failed is no response is recvd for failure detection messages
     failure_detection_timeout_interval = exp_config.failure_detection_timeout_interval
 
-    paxos_start_min_delay_sec = 0
-    paxos_start_max_delay_sec = 0
-
     mongo_port = exp_config.mongo_port
-
-    quit_after_time = exp_config.quit_after_time
-    quit_node_id = exp_config.quit_node_id  # which node will quit
 
     is_debug_mode = exp_config.is_debug_mode
     is_experiment_mode = exp_config.is_experiment_mode  # Always set to True to run experiments
@@ -161,11 +124,6 @@ def run_name_server(node_id, config_file, node_config_file):
     command += ' ' + REPLICATION_INTERVAL + ' ' + str(replication_interval)
     command += ' ' + NORMALIZING_CONSTANT + ' ' + str(normalizing_constant)
     command += ' ' + MOVING_AVG_WINDOW_SIZE + ' ' + str(moving_avg_window_size)
-    command += ' ' + TTL_CONSTANT + ' ' + str(ttl_constant)
-    command += ' ' + DEFAULT_TTL_REGULAR_NAME + ' ' + str(default_ttl_regular_name)
-    command += ' ' + DEFAULT_TTL_MOBILE_NAME + ' ' + str(default_ttl_mobile_name)
-    command += ' ' + REGULAR_WORLOAD + ' ' + str(regular_workload)
-    command += ' ' + MOBILE_WORLOAD + ' ' + str(mobile_workload)
 
     if is_static_replication:
         command += ' ' + STATIC_REPLICATION
@@ -179,8 +137,6 @@ def run_name_server(node_id, config_file, node_config_file):
         command += ' ' + C + ' ' + str(c_hop)
         command += ' ' + BASE + ' ' + str(base)
         command += ' ' + ALPHA + ' ' + str(alpha)
-    elif is_optimal_replication:
-        command += ' ' + OPTIMAL_REPLICATION
     else:
         print 'Error: No replication model selected'
         sys.exit(2)
@@ -213,17 +169,11 @@ def run_name_server(node_id, config_file, node_config_file):
     command += ' ' + FAILURE_DETECTION_TIMEOUT_INTERVAL + ' ' + str(failure_detection_timeout_interval)
 
     command += ' ' + MONGO_PORT + ' ' + str(mongo_port)
+    if exp_config.multipaxos:
+        command += ' ' + MULTIPAXOS
 
-    if quit_node_id == node_id and quit_after_time >= 0:
-        command += ' ' + QUIT_AFTER_TIME + ' ' + str(quit_after_time)
-
-    if paxos_start_min_delay_sec > 0:
-        command += ' ' + PAXOS_START_MIN_DELAY + ' ' + str(paxos_start_min_delay_sec)
-        command += ' ' + PAXOS_START_MAX_DELAY + ' ' + str(paxos_start_max_delay_sec)
     if exp_config.no_paxos_log:
         command += ' ' + NO_PAXOS_LOG
-    if exp_config.use_gns_nio_transport:
-        command += ' ' + USE_GNS_NIO_TRANSPORT
     if exp_config.dummy_gns:
         command += ' ' + DUMMY_GNS
 

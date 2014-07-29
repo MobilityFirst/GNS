@@ -24,7 +24,7 @@ paxos_log_folder = '/home/ec2-user/paxos_log/'  # remote folder where paxos logs
 db_folder = '/home/ec2-user/gnsdb/'  # remote folder where mongodb will store its logs
 
 mongo_sleep = 20
-ns_sleep = 10
+ns_sleep = 20
 experiment_run_time = 60  # duration for which requests are sent
 extra_wait = 20
 
@@ -46,7 +46,6 @@ node_config_folder = '/home/abhigyan/gnrs/ec2_data/ec2_config/'
 gen_node_config = False
 
 # Folder where workload is generated
-lookup_trace = ''
 update_trace = ''
 
 # Options below are not supported currently.
@@ -71,7 +70,6 @@ update_trace_url = ''  # 'https://s3.amazonaws.com/update100m/lookup_'
 lookup_trace_url = ''  # 'https://s3.amazonaws.com/lookup100m/update_'
 
 load = 1  # used for cluster to generate workload
-loads = [1]
 
 #  Data collected from planetlab used for generating workload    
 pl_latency_folder = '/home/abhigyan/gnrs/ec2_data/pl_data_new/ping_new_local/'
@@ -80,16 +78,8 @@ pl_lns_workload = '/home/abhigyan/gnrs/ec2_data/pl_data_new/nodes/pl_lns'
 pl_lns_geo_workload = '/home/abhigyan/gnrs/ec2_data/pl_data_new/nodes/pl_lns_geo'
 
 # other options
-reducequeryratefactor = 1.0
 
 output_sample_rate = 1.0    # fraction of requests that are logged
-
-download_name_actives = False
-name_actives_remote = ''  # location of remote name actives file
-name_actives_url = ''  # match with name of name_actives_remote
-name_actives_local = ''
-
-max_log_name = int(output_sample_rate * (regular_workload + mobile_workload))
 
 
 ##################### LOGGING #########################
@@ -140,10 +130,8 @@ is_static_replication = False
 
 wfile = None   # contains workload parameters (simulated by local name servers)
 
-run_http_server = False
 load_balancing = False
 
-numberOfTransmissions = 3
 maxQueryWaitTime = 20100
 queryTimeout = 5000           # query timeout interval
 adaptiveTimeout = False
@@ -181,13 +169,11 @@ read_coordination = False
 
 no_paxos_log = False
 
-quit_after_time = -1
-quit_node_id = -1
-
 dummy_gns = False
 
 max_req_rate = 300
 
+multipaxos = True
 
 #### methods for parsing options in config file
 

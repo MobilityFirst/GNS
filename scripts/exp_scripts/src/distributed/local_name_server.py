@@ -12,26 +12,18 @@ NAMESERVER_FILE = '-nsfile'
 REGULAR_WORLOAD = '-rworkload'
 MOBILE_WORLOAD = '-mworkload'
 WORKLOAD_FILE = '-wfile'
-LOOKUP_TRACE_FILE = '-lookupTrace'
 UPDATE_TRACE_FILE = '-updateTrace'
 PRIMARY_NAMESERVERS = '-primary'
 ALPHA = '-alpha'
 CACHE_SIZE = '-cacheSize'
 ZIPF_WORKLOAD = '-zipf'
 LOCATION_REPLICATION = '-location'
-OPTIMAL_REPLICATION = '-optimal'
 REPLICATION_INTERVAL = '-rInterval'
-OPTIMAL_TRACE = '-optimalTrace'
 NAME = '-name'
-NUM_LOOKUP = '-nlookup'
-NUM_Update = '-nUpdate'
 VOTE_INTERVAL = '-vInterval'
-CHOOSE_FROM_CLOSEST_K = '-chooseFromClosestK'
 LOOKUP_RATE = '-lookupRate'
-UPDATE_RATE_MOBILE = '-updateRateMobile'
 UPDATE_RATE_REGULAR = '-updateRateRegular'
 OUTPUT_SAMPLE_RATE = '-outputSampleRate'
-MAX_LOG_NAME = '-maxLogName'
 DEBUG_MODE = '-debugMode'
 EXPERIMENT_MODE = '-experimentMode'
 HELP = '-help'
@@ -43,7 +35,6 @@ BEEHIVELEAFSET = '-leafSet'
 LOAD_BALANCING = '-loadDependentRedirection'
 LOAD_MONITOR_INTERVAL = '-nsLoadMonitorIntervalSeconds'
 
-NUMER_OF_TRANSMISSIONS = '-numberOfTransmissions'
 MAX_QUERY_WAIT_TIME = '-maxQueryWaitTime'
 QUERY_TIMEOUT = '-queryTimeout'
 ADAPTIVE_TIMEOUT = '-adaptiveTimeout'
@@ -53,7 +44,6 @@ PHI = '-phi'
 
 EMULATE_PING_LATENCIES = '-emulatePingLatencies'
 VARIATION = '-variation'
-USE_GNS_NIO_TRANSPORT = '-useGNSNIOTransport'
 
 FILE_LOGGING_LEVEL = '-fileLoggingLevel'
 CONSOLE_OUTPUT_LEVEL = '-consoleOutputLevel'
@@ -128,10 +118,8 @@ def run_local_name_server(node_id, config_file, node_config_file, update_trace, 
     print "LNS: is_experiment_mode = ", is_experiment_mode
     #restart=False
     is_debug_mode = exp_config.is_debug_mode  # Prints logs if True. Used for testing.
-    experiment_run_time = exp_config.experiment_run_time  # in seconds
 
     # retransmission parameters
-    number_of_transmissions = exp_config.numberOfTransmissions  # maximum number of times a query is transmitted
     max_query_wait_time = exp_config.maxQueryWaitTime  # max wait time before query is declared failed (milli-seconds)
     query_timeout = exp_config.queryTimeout  # query timeout interval
     adaptive_timeout = exp_config.adaptiveTimeout
@@ -180,11 +168,9 @@ def run_local_name_server(node_id, config_file, node_config_file, update_trace, 
 
     if update_trace is not None and update_trace != '' and os.path.exists(update_trace):
         command += ' ' + UPDATE_TRACE_FILE + ' ' + update_trace
-        # command += ' ' + UPDATE_RATE_REGULAR + ' ' + str(get_event_rate(experiment_run_time, update_trace))
 
     command += ' ' + OUTPUT_SAMPLE_RATE + ' ' + str(output_sample_rate)
 
-    command += ' ' + NUMER_OF_TRANSMISSIONS + ' ' + str(number_of_transmissions)
     command += ' ' + MAX_QUERY_WAIT_TIME + ' ' + str(max_query_wait_time)
     command += ' ' + QUERY_TIMEOUT + ' ' + str(query_timeout)
 
@@ -197,8 +183,6 @@ def run_local_name_server(node_id, config_file, node_config_file, update_trace, 
     if emulate_ping_latencies:
         command += ' ' + EMULATE_PING_LATENCIES
         command += ' ' + VARIATION + ' ' + str(variation)
-    if exp_config.use_gns_nio_transport:
-        command += ' ' + USE_GNS_NIO_TRANSPORT
 
     command += ' ' + FILE_LOGGING_LEVEL + ' ' + file_logging_level
     command += ' ' + CONSOLE_OUTPUT_LEVEL + ' ' + console_output_level
