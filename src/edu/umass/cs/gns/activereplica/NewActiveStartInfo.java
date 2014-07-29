@@ -21,7 +21,7 @@ public class NewActiveStartInfo {
 
 	public NewActiveStartInfo(NewActiveSetStartupPacket originalPacket) {
 		this.originalPacket = originalPacket;
-		this.waitfor = new WaitforUtility(Util.setToArray(originalPacket.getNewActiveNameServers()));
+		this.waitfor = new WaitforUtility(Util.setToIntArray(originalPacket.getNewActiveNameServers()));
 	}
 
 	public synchronized boolean receivedResponseFromActive(int ID) {

@@ -49,9 +49,9 @@ class DBClient {
     this.lnsAddress = lnsAddress;
     this.lnsPort = lnsPort;
     this.myPort = myPort;
-    this.nioTransport = new NIOTransport(0, new InterfaceNodeConfig() {
+    this.nioTransport = new NIOTransport(0, new InterfaceNodeConfig<Integer>() {
       @Override
-      public boolean containsNodeInfo(int ID) {
+      public boolean containsNodeInfo(Integer ID) {
         throw new UnsupportedOperationException();
       }
 
@@ -61,7 +61,7 @@ class DBClient {
       }
 
       @Override
-      public InetAddress getNodeAddress(int ID) {
+      public InetAddress getNodeAddress(Integer ID) {
         try {
           return InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
@@ -71,7 +71,7 @@ class DBClient {
       }
 
       @Override
-      public int getNodePort(int ID) {
+      public int getNodePort(Integer ID) {
         return myPort;
       }
     }, new JSONMessageExtractor(demux));

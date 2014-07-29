@@ -14,6 +14,9 @@ import java.util.TimerTask;
 
 /* This class helps emulate delays in NIO transport. It is mostly self-explanatory. 
  * TBD: Need to figure out how to use StartNameServer's emulated latencies.
+ * 
+ * FIXME: This class works only for Integer node IDs as it is essentially a 
+ * static class.
  */
 public class JSONDelayEmulator {
   public static final String DELAY_STR = "_delay";
@@ -33,9 +36,9 @@ public class JSONDelayEmulator {
 
 		JSONObject json;
 		int destID;
-		JSONNIOTransport nioTransport;
+		JSONNIOTransport<Integer> nioTransport;
 
-		public DelayerTask(JSONNIOTransport nioTransport, int destID, JSONObject json) {
+		public DelayerTask(JSONNIOTransport<Integer> nioTransport, int destID, JSONObject json) {
 			this.json = json;
 			this.destID = destID;
 			this.nioTransport = nioTransport;
@@ -44,7 +47,7 @@ public class JSONDelayEmulator {
 		@Override
 		public void run() {
 			try {
-				nioTransport.sendToIDActual(destID, json);
+				((JSONNIOTransport<Integer>)nioTransport).sendToIDActual(destID, json);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -55,7 +58,7 @@ public class JSONDelayEmulator {
    * Emulating delays at sender side prevents GNSNIOTransport.sendToID from returning
    * the correct return value. */
   @Deprecated
-	public static int sendWithDelay(JSONNIOTransport niot, int id, JSONObject jsonData) throws IOException {
+	public static int sendWithDelay(JSONNIOTransport<Integer> niot, int id, JSONObject jsonData) throws IOException {
 		int written = 0;
 		if (JSONDelayEmulator.EMULATE_DELAYS) {
 			DelayerTask dtask = new DelayerTask(niot, id, jsonData);

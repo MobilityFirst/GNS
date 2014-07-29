@@ -18,23 +18,23 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 5/3/14.
  */
-public class GnsMessenger implements InterfaceJSONNIOTransport {
+public class GnsMessenger implements InterfaceJSONNIOTransport<Integer> {
 
   private static final long RTX_DELAY = 1000; //ms
   private static final int BACKOFF_FACTOR = 2;
 
-  private final InterfaceJSONNIOTransport gnsnioTransport;
+  private final InterfaceJSONNIOTransport<Integer> gnsnioTransport;
   private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
   private final int myID;
 
-  public GnsMessenger(int myID, InterfaceJSONNIOTransport gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+  public GnsMessenger(int myID, InterfaceJSONNIOTransport<Integer> gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
     this.myID = myID;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
     this.gnsnioTransport = gnsnioTransport;
   }
 
   @Override
-  public int getMyID() {
+  public Integer getMyID() {
     return this.myID;
   }
 
@@ -44,7 +44,7 @@ public class GnsMessenger implements InterfaceJSONNIOTransport {
   }
 
   @Override
-  public int sendToID(int id, JSONObject jsonData) throws IOException {
+  public int sendToID(Integer id, JSONObject jsonData) throws IOException {
     int sent = gnsnioTransport.sendToID(id, jsonData);
     if (sent < jsonData.length()) {
       Retransmitter rtxTask = new Retransmitter(id, jsonData, RTX_DELAY);

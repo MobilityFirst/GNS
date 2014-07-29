@@ -27,25 +27,25 @@ import edu.umass.cs.gns.protocoltask.json.ThresholdProtocolTask;
 public class ExampleNode {
 	private final int myID;
 	private final Set<Integer> nodeIDs;
-	private final JSONNIOTransport niot;
-	private final ProtocolExecutor<Packet.PacketType, Long> protocolExecutor;
+	private final JSONNIOTransport<Integer> niot;
+	private final ProtocolExecutor<Integer, Packet.PacketType, Long> protocolExecutor;
 
 	private Logger log =
 			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())
 					: GNS.getLogger();
 
-	ExampleNode(int id, InterfaceNodeConfig nc) throws IOException {
+	ExampleNode(int id, InterfaceNodeConfig<Integer> nc) throws IOException {
 		// Setting my ID and NIO with packet demultiplexer
 		this.myID = id;
 		this.nodeIDs = (nc.getNodeIDs());
 		this.niot =
-				new JSONNIOTransport(id, nc, new ExamplePacketDemultiplexer(
+				new JSONNIOTransport<Integer>(id, nc, new ExamplePacketDemultiplexer(
 						this), true);
 
 		// protocol executor
 		this.protocolExecutor =
-				new ProtocolExecutor<Packet.PacketType, Long>(
-						new JSONMessenger(niot));
+				new ProtocolExecutor<Integer, Packet.PacketType, Long>(
+						new JSONMessenger<Integer>(niot));
 
 		// Create and register local services (i.e., another level of demultiplexing)
 		this.protocolExecutor.register(Packet.PacketType.TEST_PING,
@@ -112,7 +112,7 @@ public class ExampleNode {
 	 * that the message is retransmitted only to nodes that have not yet acknowledged
 	 * it.
 	 */
-	protected ThresholdProtocolTask thresholdFetch() {
+	protected ThresholdProtocolTask<Integer, Packet.PacketType, Long> thresholdFetch() {
 		MajorityFetchProtocolTask task =
 				new MajorityFetchProtocolTask(this.myID, this.nodeIDs);
 		log.info("Node" + myID + " spawning threshold protocol task");
@@ -126,7 +126,7 @@ public class ExampleNode {
 	public static void main(String[] args) {
 		int startID = 100;
 		int numNodes = 2;
-		SampleNodeConfig snc = new SampleNodeConfig();
+		SampleNodeConfig<Integer> snc = new SampleNodeConfig<Integer>();
 		for (int i = startID; i < startID + numNodes; i++) {
 			snc.addLocal(i);
 		}

@@ -27,7 +27,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Deprecated
-public class NioServer implements Runnable, InterfaceJSONNIOTransport {
+public class NioServer implements Runnable, InterfaceJSONNIOTransport<Integer> {
 
   public static String Version = "$Revision: 838 $";
   public static final boolean DEBUG = false;
@@ -95,7 +95,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport {
 
   }
 
-  public int getMyID() {
+  public Integer getMyID() {
     return this.ID;
   }
 
@@ -138,7 +138,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport {
   private Random random = new Random();
 
   @Override
-  public int sendToID(int destID, JSONObject json) throws IOException {
+  public int sendToID(Integer destID, JSONObject json) throws IOException {
     if (emulateDelay) {
       long delay = gnsNodeConfig.getPingLatency(destID) / 2; // divide by 2 for one-way delay
       delay = (long) ((1.0 + this.variation * random.nextDouble()) * delay);

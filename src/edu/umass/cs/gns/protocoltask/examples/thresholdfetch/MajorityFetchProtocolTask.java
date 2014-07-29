@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -31,7 +32,7 @@ import edu.umass.cs.gns.util.Util;
  * sender as having responded and does not retry ("restart") the 
  * request to that node anymore.
  */
-public class MajorityFetchProtocolTask extends ThresholdProtocolTask {
+public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Packet.PacketType, Long> {
 
 	private Long key = null;
 
@@ -42,7 +43,7 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask {
 
 	public MajorityFetchProtocolTask(int id, Set<Integer> nodes) {
 		super(nodes, nodes.size()%2==0 ? nodes.size() : nodes.size()+1);
-		this.nodes = Util.setToArray(nodes);
+		this.nodes = Util.setToIntArray(nodes);
 		this.myID = id;
 	}
 
@@ -88,8 +89,8 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask {
 	}
 	
 	@Override
-	public MessagingTask[] handleThresholdEvent(
-			ProtocolTask<PacketType, Long>[] ptasks) {
+	public GenericMessagingTask<Integer,?>[] handleThresholdEvent(
+			ProtocolTask<Integer, PacketType, Long>[] ptasks) {
 		ProtocolExecutor.cancel(this);
 		return null;
 	}

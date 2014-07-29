@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.activereplica;
 
+import edu.umass.cs.gns.activereplica.scratch.CopyStateFromOldActiveTask;
+import edu.umass.cs.gns.activereplica.scratch.NewActiveStartInfo;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;

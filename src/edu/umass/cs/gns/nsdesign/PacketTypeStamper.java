@@ -17,8 +17,8 @@ import java.net.InetSocketAddress;
  * the name to StampAndSend or something to reflect that this class is 
  * actually sending the packet.
  */
-public class PacketTypeStamper implements InterfaceJSONNIOTransport {
-  private final InterfaceJSONNIOTransport nio;
+public class PacketTypeStamper implements InterfaceJSONNIOTransport<Integer> {
+  private final InterfaceJSONNIOTransport<Integer> nio;
   private final Packet.PacketType type;
 
   public PacketTypeStamper(InterfaceJSONNIOTransport nio, Packet.PacketType type) {
@@ -26,7 +26,7 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
     this.type = type;
   }
   
-  public int getMyID() {return this.nio.getMyID();}
+  public Integer getMyID() {return this.nio.getMyID();}
 
   @Override
   public void stop() {
@@ -34,7 +34,7 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
   }
 
   @Override
-  public int sendToID(int id, JSONObject jsonData) throws IOException {
+  public int sendToID(Integer id, JSONObject jsonData) throws IOException {
     try {
       // Creating a copy of json so that modifications to the original object does not modify the outgoing packet.
       // This was created to fix a bug we were seeing.
@@ -67,9 +67,9 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
   public static void main(String[] args) throws JSONException, IOException {
     System.out.println("Test if the send methods mark outgoing packets with correct packet types:");
     final Packet.PacketType type1 = Packet.PacketType.PAXOS_PACKET;
-    InterfaceJSONNIOTransport jsonnioTransport = new InterfaceJSONNIOTransport() {
+    InterfaceJSONNIOTransport<Integer> jsonnioTransport = new InterfaceJSONNIOTransport<Integer>() {
       @Override
-      public int sendToID(int id, JSONObject jsonData) throws IOException {
+      public int sendToID(Integer id, JSONObject jsonData) throws IOException {
         System.out.println("Sending Packet: " + jsonData);
         try {
           assert Packet.getPacketType(jsonData).equals(type1): "Packet type not matched";
@@ -92,7 +92,7 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport {
       }
 
       @Override
-      public int getMyID() {
+      public Integer getMyID() {
         return 0;
       }
 

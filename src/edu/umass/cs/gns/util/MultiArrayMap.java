@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 @author V. Arun
  */
 
-public class MultiArrayMap<KeyType extends Comparable<KeyType>,ValueType extends Keyable<KeyType>> {
+public class MultiArrayMap<KeyType,ValueType extends Keyable<KeyType>> {
 	private static final float SHRINKAGE = 0.75F;
 	private static final int LEVELS = 6;
 	private final int arraySize;

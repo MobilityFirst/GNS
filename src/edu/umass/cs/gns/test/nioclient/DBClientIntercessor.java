@@ -42,9 +42,9 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
   public DBClientIntercessor(int ID, final int port, AbstractPacketDemultiplexer lnsDemux) throws IOException {
     this.lnsDemux = lnsDemux;
 
-    this.nioTransport  = new NIOTransport(ID, new InterfaceNodeConfig() {
+    this.nioTransport  = new NIOTransport(ID, new InterfaceNodeConfig<Integer>() {
       @Override
-      public boolean containsNodeInfo(int ID) {
+      public boolean containsNodeInfo(Integer ID) {
         throw new UnsupportedOperationException();
       }
 
@@ -54,7 +54,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
       }
 
       @Override
-      public InetAddress getNodeAddress(int ID) {
+      public InetAddress getNodeAddress(Integer ID) {
         try {
           return InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
@@ -64,7 +64,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
       }
 
       @Override
-      public int getNodePort(int ID) {
+      public int getNodePort(Integer ID) {
         return port;
       }
     }, new JSONMessageExtractor(this));

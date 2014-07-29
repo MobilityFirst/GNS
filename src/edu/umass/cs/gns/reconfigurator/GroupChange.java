@@ -245,7 +245,7 @@ public class GroupChange {
 			// inform old actives to delete state
 			OldActiveSetStopPacket oldActiveSetStopPacket = new OldActiveSetStopPacket(packet.getName(), 0,
 					rcID, -1, packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
-			notifyOldActives = new MessagingTask(Util.setToArray(packet.getOldActiveNameServers()), oldActiveSetStopPacket.toJSONObject());
+			notifyOldActives = new MessagingTask(Util.setToIntArray(packet.getOldActiveNameServers()), oldActiveSetStopPacket.toJSONObject());
 
 			// inform self of group change completion
 			GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());

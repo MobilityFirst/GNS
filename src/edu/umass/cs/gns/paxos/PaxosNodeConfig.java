@@ -19,7 +19,7 @@ import java.util.Set;
  * Time: 7:48 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PaxosNodeConfig implements InterfaceNodeConfig {
+public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
 
   private  HashMap<Integer, NodeInfo> nodesInfo;
 
@@ -68,7 +68,7 @@ public class PaxosNodeConfig implements InterfaceNodeConfig {
   }
 
   @Override
-  public boolean containsNodeInfo(int ID) {
+  public boolean containsNodeInfo(Integer ID) {
     return  nodesInfo.containsKey(ID);
   }
 
@@ -83,13 +83,13 @@ public class PaxosNodeConfig implements InterfaceNodeConfig {
   }
 
   @Override
-  public InetAddress getNodeAddress(int ID) {
+  public InetAddress getNodeAddress(Integer ID) {
     if (containsNodeInfo(ID)) return  nodesInfo.get(ID).getAddress();
     return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public int getNodePort(int ID) {
+  public int getNodePort(Integer ID) {
     if (containsNodeInfo(ID)) return  nodesInfo.get(ID).getPort();
     return -1;  //To change body of implemented methods use File | Settings | File Templates.
   }

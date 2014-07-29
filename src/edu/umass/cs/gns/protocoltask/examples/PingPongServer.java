@@ -13,7 +13,7 @@ import edu.umass.cs.gns.protocoltask.TESTProtocolTaskConfig;
 /**
  * @author V. Arun
  */
-public class PingPongServer implements ProtocolTask<Packet.PacketType, Long> {
+public class PingPongServer implements ProtocolTask<Integer, Packet.PacketType, Long> {
 
 	private final Long key = null;
 
@@ -42,7 +42,7 @@ public class PingPongServer implements ProtocolTask<Packet.PacketType, Long> {
 	@Override
 	public MessagingTask[] handleEvent(
 			ProtocolEvent<Packet.PacketType, Long> event,
-			ProtocolTask<Packet.PacketType, Long>[] ptasks) {
+			ProtocolTask<Integer, Packet.PacketType, Long>[] ptasks) {
 
 		PingPongPacket ppp = ((PingPongPacket) event.getMessage());
 		MessagingTask mtask = null;

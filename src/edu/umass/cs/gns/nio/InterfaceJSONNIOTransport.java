@@ -12,13 +12,13 @@ import java.net.InetSocketAddress;
  *
  * Created by abhigyan on 3/13/14.
  */
-public interface InterfaceJSONNIOTransport{
+public interface InterfaceJSONNIOTransport<NodeIDType> {
 
-  public int sendToID(int id, JSONObject jsonData) throws IOException;
+  public int sendToID(NodeIDType id, JSONObject jsonData) throws IOException;
   
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException;
   
-  public int getMyID();
+  public NodeIDType getMyID();
 
   public void stop();
 }

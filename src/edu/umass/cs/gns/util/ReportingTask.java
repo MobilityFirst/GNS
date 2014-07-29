@@ -35,7 +35,7 @@ public class ReportingTask<Reportee extends Reportable> implements Runnable {
 	@Override
 	public void run() {
 		JSONObject report = this.reportee.getStats();
-		MessagingTask mtask = new MessagingTask(Util.setToArray(reportee.getRecipients()), report);
+		MessagingTask mtask = new MessagingTask(Util.setToIntArray(reportee.getRecipients()), report);
 		try {
 			this.reportee.getJSONMessenger().send(mtask);
 		} catch(IOException ioe) {

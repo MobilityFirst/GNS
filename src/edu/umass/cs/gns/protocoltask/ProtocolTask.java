@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.protocoltask;
 
-import edu.umass.cs.gns.nio.MessagingTask;
+import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.util.Keyable;
 
 /**
@@ -40,7 +40,7 @@ import edu.umass.cs.gns.util.Keyable;
  * (4) A sequence of any of the above steps.
  */
 
-public interface ProtocolTask<EventType extends Comparable<EventType>, KeyType extends Comparable<KeyType>>
+public interface ProtocolTask<NodeIDType, EventType, KeyType>
 		extends Keyable<KeyType> {
 
 	/*
@@ -49,10 +49,10 @@ public interface ProtocolTask<EventType extends Comparable<EventType>, KeyType e
 	 * event/action pairs without worrying about networking or scheduling optimizations.
 	 * The parameter ptasks[0] returns a single protocol task if any spawned by this action.
 	 */
-	public MessagingTask[] handleEvent(ProtocolEvent<EventType, KeyType> event,
-			ProtocolTask<EventType, KeyType>[] ptasks);
+	public GenericMessagingTask<NodeIDType,?>[] handleEvent(ProtocolEvent<EventType, KeyType> event,
+			ProtocolTask<NodeIDType, EventType, KeyType>[] ptasks);
 
-	public MessagingTask[] start(); // actions to be executed in the beginning
+	public GenericMessagingTask<NodeIDType,?>[] start(); // actions to be executed in the beginning
 	// To cancel, invoke ProtocolExecutor.cancel(this)
 
 	/*

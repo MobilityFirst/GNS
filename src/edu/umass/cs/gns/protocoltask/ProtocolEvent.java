@@ -14,7 +14,7 @@ import edu.umass.cs.gns.util.Keyable;
  * is the String EventType while the request identifier is the Integer
  * KeyType.
  */
-public interface ProtocolEvent<EventType extends Comparable<EventType>, KeyType extends Comparable<KeyType>>
+public interface ProtocolEvent<EventType, KeyType>
 		extends Keyable<KeyType> {
 	public EventType getType();
 

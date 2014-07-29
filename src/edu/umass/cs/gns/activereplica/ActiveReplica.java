@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.activereplica.scratch.NewActiveStartInfo;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessenger;
@@ -211,7 +212,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 
 	public int getNodeID() {return this.myID;}
 	public GNSNodeConfig getGnsNodeConfig() {return this.gnsNodeConfig;}
-	public int[] getNameServerIDs() {return Util.setToArray(this.gnsNodeConfig.getNameServerIDs());}
+	public int[] getNameServerIDs() {return Util.setToIntArray(this.gnsNodeConfig.getNameServerIDs());}
 
 	public void send(MessagingTask mtask) {
 		try {

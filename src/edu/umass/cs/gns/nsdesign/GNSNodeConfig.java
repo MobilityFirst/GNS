@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
  * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable
  * from here.
  */
-public class GNSNodeConfig implements InterfaceNodeConfig {
+public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
 
   private int nodeID = -1;
 
@@ -451,7 +451,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig {
    * @return IP address of a server
    */
   @Override
-  public InetAddress getNodeAddress(int id) {
+  public InetAddress getNodeAddress(Integer id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? null : nodeInfo.getIpAddress();
   }
@@ -474,12 +474,12 @@ public class GNSNodeConfig implements InterfaceNodeConfig {
   }
 
   @Override
-  public boolean containsNodeInfo(int ID) {
+  public boolean containsNodeInfo(Integer ID) {
     return getNodeIDs().contains(ID);
   }
 
   @Override
-  public int getNodePort(int ID) {
+  public int getNodePort(Integer ID) {
     if (this.isNameServer(ID)) {
       return this.getNSTcpPort(ID);
     }

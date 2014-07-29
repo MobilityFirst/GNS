@@ -546,9 +546,9 @@ public class PaxosManager extends AbstractPaxosManager {
 			}
 		} else if(findGroup.group!=null && findGroup.nodeID==this.myID) { // process an answer
 			PaxosInstanceStateMachine pism = this.getInstance(findGroup.getPaxosID());
-			if(pism==null || pism.getVersion()<findGroup.getVersion()) {
+			if(pism==null || (pism.getVersion()-findGroup.getVersion())<0) {
 				// kill lower versions if any and create new paxos instance
-				if(pism.getVersion()<findGroup.getVersion()) this.kill(pism);
+				if(pism.getVersion()-findGroup.getVersion()<0) this.kill(pism);
 				this.createPaxosInstance(findGroup.getPaxosID(), findGroup.getVersion(), 
 						this.myID, Util.arrayToSet(findGroup.group), myApp, null, false);
 			}

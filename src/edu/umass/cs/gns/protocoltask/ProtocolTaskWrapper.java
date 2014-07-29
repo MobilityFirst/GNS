@@ -2,6 +2,7 @@ package edu.umass.cs.gns.protocoltask;
 
 import java.util.concurrent.ScheduledFuture;
 
+import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.protocoltask.json.ThresholdProtocolTask;
 
@@ -15,17 +16,17 @@ import edu.umass.cs.gns.protocoltask.json.ThresholdProtocolTask;
  * ProtocolTask itself an abstract class instead of an interface, but the latter
  * is preferable.
  */
-class ProtocolTaskWrapper<EventType extends Comparable<EventType>, KeyType extends Comparable<KeyType>>
-implements SchedulableProtocolTask<EventType, KeyType> {
+class ProtocolTaskWrapper<NodeIDType, EventType, KeyType>
+implements SchedulableProtocolTask<NodeIDType, EventType, KeyType> {
 	protected static final long MAX_IDLE_TIME = 300000; // 5 mins
 	protected static final long MAX_LIFETIME = 1800000; // 30 mins
 
-	private final ProtocolTask<EventType, KeyType> task;
+	private final ProtocolTask<NodeIDType, EventType, KeyType> task;
 	private long startTime = System.currentTimeMillis();
 	private long lastActiveTime = System.currentTimeMillis();
 	private ScheduledFuture<?> future;
 
-	ProtocolTaskWrapper(ProtocolTask<EventType, KeyType> task) {
+	ProtocolTaskWrapper(ProtocolTask<NodeIDType, EventType, KeyType> task) {
 		this.task = task;
 	}
 
@@ -35,14 +36,14 @@ implements SchedulableProtocolTask<EventType, KeyType> {
 	}
 
 	@Override
-	public MessagingTask[] handleEvent(ProtocolEvent<EventType, KeyType> event,
-			ProtocolTask<EventType, KeyType>[] ptasks) {
+	public GenericMessagingTask<NodeIDType,?>[] handleEvent(ProtocolEvent<EventType, KeyType> event,
+			ProtocolTask<NodeIDType, EventType, KeyType>[] ptasks) {
 		this.lastActiveTime = System.currentTimeMillis();
 		return this.task.handleEvent(event, ptasks);
 	}
 
 	@Override
-	public MessagingTask[] start() {
+	public GenericMessagingTask<NodeIDType,?>[] start() {
 		this.startTime = System.currentTimeMillis();
 		return this.task.start();
 	}
@@ -71,9 +72,9 @@ implements SchedulableProtocolTask<EventType, KeyType> {
 	}
 
 	@Override
-	public MessagingTask[] restart() {
-		MessagingTask[] mtasks =
-				(this.task instanceof SchedulableProtocolTask ? ((SchedulableProtocolTask<EventType, KeyType>) (this.task)).restart()
+	public GenericMessagingTask<NodeIDType,?>[] restart() {
+		GenericMessagingTask<NodeIDType,?>[] mtasks =
+				(this.task instanceof SchedulableProtocolTask ? ((SchedulableProtocolTask<NodeIDType, EventType, KeyType>) (this.task)).restart()
 						: this.task.start()); // if schedulable, call restart
 		// if threshold task, filter out members already heard from
 		if (this.task instanceof ThresholdProtocolTask)

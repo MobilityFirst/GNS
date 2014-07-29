@@ -109,7 +109,9 @@ public class Packet {
     
     // for finite ping pong protocol task example
     TEST_PING(222),
-    TEST_PONG(223);
+    TEST_PONG(223),
+    
+    TEST_NOOP(224);
 
     private int number;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();

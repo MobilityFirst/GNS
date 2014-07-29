@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 3/30/14.
  */
-public class NSNodeConfig implements InterfaceNodeConfig {
+public class NSNodeConfig implements InterfaceNodeConfig<Integer> {
 
   GNSNodeConfig gnsNodeConfig;
 
@@ -21,7 +21,7 @@ public class NSNodeConfig implements InterfaceNodeConfig {
     this.gnsNodeConfig = gnsNodeConfig;
   }
   @Override
-  public boolean containsNodeInfo(int nodeId) {
+  public boolean containsNodeInfo(Integer nodeId) {
     return gnsNodeConfig.getNameServerIDs().contains(nodeId);
   }
 
@@ -32,12 +32,12 @@ public class NSNodeConfig implements InterfaceNodeConfig {
   }
 
   @Override
-  public InetAddress getNodeAddress(int ID) {
+  public InetAddress getNodeAddress(Integer ID) {
     return gnsNodeConfig.getNodeAddress(ID);
   }
 
   @Override
-  public int getNodePort(int ID) {
+  public int getNodePort(Integer ID) {
     if (gnsNodeConfig.isNameServer(ID)) {
       return gnsNodeConfig.getNSTcpPort(ID);
     } else {

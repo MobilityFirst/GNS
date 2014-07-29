@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -81,9 +80,14 @@ public class Util {
 		for(int i=0; i<array.length;i++) set.add(array[i]);
 		return set;
 	}
-	public static int[] setToArray(Set<Integer> set) {
+	public static int[] setToIntArray(Set<Integer> set) {
 		int[] array = new int[set.size()];
 		int i=0; for(int id : set) array[i++] = id;
+		return array;
+	}
+	public static Integer[] setToIntegerArray(Set<Integer> set) {
+		Integer[] array = new Integer[set.size()];
+		int i=0; for(Integer id : set) array[i++] = id;
 		return array;
 	}
 	public static int[] stringToArray(String string) {
@@ -92,6 +96,16 @@ public class Util {
 		int[] array = new int[tokens.length];
 		for(int i=0; i<array.length;i++) {
 			array[i] = Integer.parseInt(tokens[i]);
+		}
+		return array;
+	}
+	public static Integer[] objectToIntegerArray(Object[] objects) {
+		if(objects==null) return null;
+		else if(objects.length==0) return new Integer[0];
+		Integer[] array = new Integer[objects.length];
+		int i=0;
+		for(Object obj : objects) {
+			array[i++] = (Integer)obj;
 		}
 		return array;
 	}

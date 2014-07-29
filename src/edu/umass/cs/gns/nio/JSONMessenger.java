@@ -22,13 +22,13 @@ import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
  * backoff. But you can't rely on this backoff for anything other than
  * ephemeral traffic bursts. If you are overloaded, you are overloaded.
  */
-public class JSONMessenger implements InterfaceJSONNIOTransport {
+public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
 
 	private static final long RTX_DELAY = 1000; // ms
 	private static final int BACKOFF_FACTOR = 2;
 
-	private final int myID;
-	private final InterfaceJSONNIOTransport nioTransport;
+	private final NodeIDType myID;
+	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
 	private final ScheduledExecutorService execpool =
 			Executors.newScheduledThreadPool(5);
 
@@ -36,7 +36,7 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 			(NIOTransport.DEBUG ? Logger.getLogger(getClass().getName())
 					: GNS.getLogger());
 
-	public JSONMessenger(InterfaceJSONNIOTransport niot) {
+	public JSONMessenger(InterfaceJSONNIOTransport<NodeIDType> niot) {
 		assert (niot != null);
 		myID = niot.getMyID(); // needed only for debug printing
 		nioTransport = niot;
@@ -50,7 +50,7 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 	 * sometimes drop messages when asked to send but the channel is congested.
 	 * We use the return value of NIO send to decide whether to retransmit.
 	 */
-	public void send(MessagingTask mtask) throws JSONException, IOException {
+	public void send(GenericMessagingTask<NodeIDType,?> mtask) throws JSONException, IOException {
 		if (mtask == null || mtask.recipients == null || mtask.msgs == null) { return; }
 		for (Object msg : mtask.msgs) {
 			if (msg == null) {
@@ -71,7 +71,8 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 					continue;
 				}
 				int length = jsonMsg.toString().length();
-				int sent = nioTransport.sendToID(mtask.recipients[r], jsonMsg);
+				@SuppressWarnings("unchecked")
+				int sent = nioTransport.sendToID((NodeIDType)(mtask.recipients[r]), jsonMsg);
 				if (sent == length) {
 					log.finest("Node " + this.myID + " sent " + " to node " +
 							mtask.recipients[r] + ": " + jsonMsg);
@@ -81,8 +82,9 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 						log.warning("Node " + this.myID +
 								" messenger experiencing congestion, this is bad but not disastrous (yet)");
 					}
+					@SuppressWarnings("unchecked")
 					Retransmitter rtxTask =
-							new Retransmitter(mtask.recipients[r], jsonMsg,
+							new Retransmitter((NodeIDType)(mtask.recipients[r]), jsonMsg,
 									RTX_DELAY);
 					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore future
 				}
@@ -109,11 +111,11 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 	 */
 	private class Retransmitter implements Runnable {
 
-		private final int dest;
+		private final NodeIDType dest;
 		private final JSONObject msg;
 		private final long delay;
 
-		Retransmitter(int id, JSONObject m, long d) {
+		Retransmitter(NodeIDType id, JSONObject m, long d) {
 			this.dest = id;
 			this.msg = m;
 			this.delay = d;
@@ -162,7 +164,7 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 	 * @throws java.io.IOException
 	 */
 	@Override
-	public int sendToID(int id, JSONObject jsonData) throws IOException {
+	public int sendToID(NodeIDType id, JSONObject jsonData) throws IOException {
 		return this.nioTransport.sendToID(id, jsonData);
 	}
 
@@ -184,7 +186,7 @@ public class JSONMessenger implements InterfaceJSONNIOTransport {
 	 * @return
 	 */
 	@Override
-	public int getMyID() {
+	public NodeIDType getMyID() {
 		return this.myID;
 	}
 	/**

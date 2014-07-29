@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.gns.util.MultiArrayMap;
@@ -23,7 +23,7 @@ import edu.umass.cs.gns.util.MultiArrayMap;
  * The purpose of this class is to store ProtocolTasks and activate them when a
  * corresponding event arrives.
  */
-public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType extends Comparable<KeyType>> {
+public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	public static final boolean DEBUG = NIOTransport.DEBUG;
 	public static final int MAX_TASKS = 10000;
 	public static final int MAX_THREADS = 10;
@@ -39,35 +39,35 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	public static final long DEFAULT_RESTART_PERIOD = 60000; // anything more aggressive is bad
 	public static final long TOO_MANY_TASKS_CHECK_PERIOD = 300; // seconds
 
-	private final int myID;
-	private final JSONMessenger messenger;
+	private final NodeIDType myID;
+	private final JSONMessenger<NodeIDType> messenger;
 	private final ScheduledThreadPoolExecutor executor =
 			new ScheduledThreadPoolExecutor(MAX_THREADS);
-	private final MultiArrayMap<KeyType, ProtocolTaskWrapper<EventType, KeyType>> protocolTasks =
-			new MultiArrayMap<KeyType, ProtocolTaskWrapper<EventType, KeyType>>(
+	private final MultiArrayMap<KeyType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>> protocolTasks =
+			new MultiArrayMap<KeyType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>>(
 					MAX_TASKS);
-	private final HashMap<EventType, ProtocolTaskWrapper<EventType, KeyType>> defaultTasks =
-			new HashMap<EventType, ProtocolTaskWrapper<EventType, KeyType>>();
+	private final HashMap<EventType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>> defaultTasks =
+			new HashMap<EventType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>>();
 
 	private Logger log =
 			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())
 					: GNS.getLogger();
 
-	public ProtocolExecutor(JSONMessenger m) {
+	public ProtocolExecutor(JSONMessenger<NodeIDType> m) {
 		this.messenger = m;
 		this.myID = m.getMyID();
 		this.executor.scheduleWithFixedDelay(new TooManyTasksWarner(), 0,
 				TOO_MANY_TASKS_CHECK_PERIOD, TimeUnit.SECONDS);
 	}
 
-	public void register(EventType event, ProtocolTask<EventType, KeyType> task) {
+	public void register(EventType event, ProtocolTask<NodeIDType, EventType, KeyType> task) {
 		this.defaultTasks.put(event,
-				new ProtocolTaskWrapper<EventType, KeyType>(task));
+				new ProtocolTaskWrapper<NodeIDType, EventType, KeyType>(task));
 		assert (this.defaultTasks.size() > 0);
 	}
 
 	public void unRegister(EventType event,
-			ProtocolTask<EventType, KeyType> task) {
+			ProtocolTask<NodeIDType, EventType, KeyType> task) {
 		if (this.defaultTasks.get(event) == task) {
 			this.defaultTasks.remove(event);
 		}
@@ -79,14 +79,14 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	 * 
 	 * Refer also to schedule.
 	 */
-	public void spawn(ProtocolTask<EventType, KeyType> actualTask) {
+	public void spawn(ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		wrapSpawn(actualTask);
 	}
 
-	private ProtocolTaskWrapper<EventType, KeyType> wrapSpawn(
-			ProtocolTask<EventType, KeyType> actualTask) {
-		ProtocolTaskWrapper<EventType, KeyType> task =
-				new ProtocolTaskWrapper<EventType, KeyType>(actualTask);
+	private ProtocolTaskWrapper<NodeIDType, EventType, KeyType> wrapSpawn(
+			ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
+		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task =
+				new ProtocolTaskWrapper<NodeIDType, EventType, KeyType>(actualTask);
 		this.insert(task);
 		send(this.start(task), task.getKey()); // FIXME: Not sure if send should be done before or after enqueuing
 		return task;
@@ -98,7 +98,7 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	}
 
 	private synchronized void insert(
-			ProtocolTaskWrapper<EventType, KeyType> task) {
+			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		while (task.getKey() == null ||
 				this.protocolTasks.containsKey(task.getKey()))
 			task.refreshKey();
@@ -107,7 +107,7 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 		this.protocolTasks.put(task.getKey(), task);
 	}
 
-	private MessagingTask[] start(ProtocolTaskWrapper<EventType, KeyType> task) {
+	private GenericMessagingTask<NodeIDType,?>[] start(ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		try {
 			return task.start();
 		} catch (Exception e) {
@@ -116,9 +116,9 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 		return null;
 	}
 
-	private MessagingTask[] restart(ProtocolTaskWrapper<EventType, KeyType> task) {
+	private GenericMessagingTask<NodeIDType,?>[] restart(ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		if (task instanceof SchedulableProtocolTask) {
-			return ((SchedulableProtocolTask<EventType, KeyType>) task).restart();
+			return ((SchedulableProtocolTask<NodeIDType, EventType, KeyType>) task).restart();
 		} else
 			return start(task);
 	}
@@ -128,9 +128,9 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	 * present in the hashmap. The periodic invocation will stop once the task
 	 * is removed from the hashmap.
 	 */
-	public void schedule(ProtocolTask<EventType, KeyType> actualTask,
+	public void schedule(ProtocolTask<NodeIDType, EventType, KeyType> actualTask,
 			long period) {
-		ProtocolTaskWrapper<EventType, KeyType> task = wrapSpawn(actualTask);
+		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = wrapSpawn(actualTask);
 		// schedule restarts
 		Restarter restarter = new Restarter(task);
 		if (period > DEFAULT_RESTART_PERIOD)
@@ -140,17 +140,17 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 				period, TimeUnit.MILLISECONDS));
 	}
 
-	public void schedule(ProtocolTask<EventType, KeyType> actualTask) {
+	public void schedule(ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		this.schedule(actualTask, DEFAULT_RESTART_PERIOD);
 	}
 
-	private synchronized ProtocolTaskWrapper<EventType, KeyType> retrieve(
+	private synchronized ProtocolTaskWrapper<NodeIDType, EventType, KeyType> retrieve(
 			KeyType key) {
 		return this.protocolTasks.get(key);
 	}
 
 	private void handleException(Exception e,
-			ProtocolTaskWrapper<EventType, KeyType> task) {
+			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		if (!(e instanceof CancelProtocolTaskException)) {
 			log.severe("Exception in protocol task " + task.getClass() + ":" +
 					task.getKey());
@@ -163,22 +163,22 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	 * remove must also cancel the scheduled future if one exists.
 	 */
 	private synchronized void remove(
-			ProtocolTaskWrapper<EventType, KeyType> task) {
+			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		if (task.getFuture() != null)
 			task.getFuture().cancel(true);
 		this.protocolTasks.remove(task.getKey());
 	}
 
 	private class Restarter implements Runnable {
-		final ProtocolTaskWrapper<EventType, KeyType> task;
+		final ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task;
 
-		Restarter(ProtocolTaskWrapper<EventType, KeyType> task) {
+		Restarter(ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 			this.task = task;
 		}
 
 		public void run() {
 			// calling parent send and start
-			MessagingTask[] mtasks = restart(task);
+			GenericMessagingTask<NodeIDType,?>[] mtasks = restart(task);
 			send(mtasks, this.task.getKey());
 		}
 	}
@@ -189,7 +189,7 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	 * protocol task if one is spawned.
 	 */
 	public boolean handleEvent(ProtocolEvent<EventType, KeyType> event) {
-		ProtocolTaskWrapper<EventType, KeyType> task = null;
+		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = null;
 		/*
 		 * default task gets tried first, otherwise protocol task. Not sure if
 		 * this would be problematic in situations when a protocol task needs to
@@ -207,7 +207,7 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 		}
 		@SuppressWarnings("unchecked")
 		// FIXME: Not sure if there is a way to prevent this warning.
-		ProtocolTask<EventType, KeyType>[] ptasks = new ProtocolTask[1];
+		ProtocolTask<NodeIDType, EventType, KeyType>[] ptasks = new ProtocolTask[1];
 		try {
 			send(task.handleEvent(event, ptasks), event.getKey());
 		} catch (Exception e) {
@@ -223,17 +223,17 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	}
 
 	// FIXME: Throw exception in order to cancel a task
-	public static void cancel(ProtocolTask<?, ?> task) {
+	public static void cancel(ProtocolTask<?, ?, ?> task) {
 		throw new CancelProtocolTaskException("Canceling task " +
 				task.getClass() + " with key " + task.getKey());
 	}
 
-	private boolean send(MessagingTask[] mtasks, KeyType key) {
+	private boolean send(GenericMessagingTask<NodeIDType,?>[] mtasks, KeyType key) {
 		boolean allSent = true;
 		if (mtasks == null || mtasks.length == 0)
 			return true;
 		mtasks = setKey(mtasks, key);
-		for (MessagingTask mtask : mtasks) {
+		for (GenericMessagingTask<NodeIDType,?> mtask : mtasks) {
 			try {
 				this.messenger.send(mtask);
 			} catch (IOException ioe) {
@@ -250,10 +250,10 @@ public class ProtocolExecutor<EventType extends Comparable<EventType>, KeyType e
 	/*
 	 * This method is concretized for Long keys and ProtocolPacket messages.
 	 */
-	private MessagingTask[] setKey(MessagingTask[] mtasks, KeyType key) {
-		if (MessagingTask.isEmpty(mtasks))
+	private GenericMessagingTask<NodeIDType,?>[] setKey(GenericMessagingTask<NodeIDType,?>[] mtasks, KeyType key) {
+		if (GenericMessagingTask.isEmpty(mtasks))
 			return mtasks;
-		for (MessagingTask mtask : mtasks) {
+		for (GenericMessagingTask<NodeIDType,?> mtask : mtasks) {
 			for (int i = 0; i < mtask.msgs.length; i++) {
 				if (mtask.msgs[i] instanceof ProtocolPacket &&
 						key instanceof Long) {

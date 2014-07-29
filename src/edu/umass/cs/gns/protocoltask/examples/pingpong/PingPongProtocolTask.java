@@ -41,7 +41,7 @@ public class PingPongProtocolTask extends PingPongServer {
 
 	public PingPongProtocolTask(int id, Set<Integer> nodes, int numPings) {
 		super(id);
-		this.nodes = Util.setToArray(nodes);
+		this.nodes = Util.setToIntArray(nodes);
 		this.numPings = numPings;
 		log.info("Node" + myID + " constructing protocol task with nodeIDs " +
 				nodes);
@@ -62,7 +62,7 @@ public class PingPongProtocolTask extends PingPongServer {
 	@Override
 	public MessagingTask[] handleEvent(
 			ProtocolEvent<Packet.PacketType, Long> event,
-			ProtocolTask<Packet.PacketType, Long>[] ptasks) {
+			ProtocolTask<Integer, Packet.PacketType, Long>[] ptasks) {
 
 		JSONObject msg = null;
 		try {

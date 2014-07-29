@@ -74,7 +74,7 @@ import java.util.logging.Logger;
  * or by the selector thread when it tries to actually write the data to
  * a socket channel and encounters an exception.
  */
-public class NIOTransport implements Runnable {
+public class NIOTransport<NodeIDType> implements Runnable {
 	public static final boolean DEBUG = false;
 	public static final boolean LOCAL_LOGGER = true;
 
@@ -121,10 +121,10 @@ public class NIOTransport implements Runnable {
 	private ConcurrentHashMap<InetSocketAddress, Long> connAttempts = null;
 
 	// Maps id to socket address
-	private InterfaceNodeConfig nodeConfig = null;
+	private InterfaceNodeConfig<NodeIDType> nodeConfig = null;
 
 	/* An id corresponds to a socket address as specified in NodeConfig */
-	int myID = -1;
+	protected NodeIDType myID;
 
 	private boolean started = false;
 
@@ -134,10 +134,10 @@ public class NIOTransport implements Runnable {
 			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(NIOTransport.class.getName())
 					: GNS.getLogger();
 
-	public NIOTransport(int id, InterfaceNodeConfig nc,
+	public NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
 			InterfaceDataProcessingWorker worker) throws IOException {
 		this.myID = id;
-		this.nodeConfig = (nc != null ? nc : new SampleNodeConfig()); // null node config means no IDs
+		this.nodeConfig = (nc != null ? nc : new SampleNodeConfig<NodeIDType>()); // null node config means no IDs
 		this.selector = this.initSelector();
 		this.worker = worker;
 
@@ -155,7 +155,7 @@ public class NIOTransport implements Runnable {
 	 * is finished in a non-blocking manner by the selector thread. Data to be
 	 * sent is queued in pendingWrites, which is read later by the selector thread.
 	 */
-	public int send(int id, byte[] data) throws IOException {
+	public int send(NodeIDType id, byte[] data) throws IOException {
 		if (DEBUG)
 			log.fine("Node " + myID + " invoked send (" + id + ", " +
 					new String(data) + "), checking connection status..");
@@ -697,7 +697,7 @@ public class NIOTransport implements Runnable {
 	}
 
 	// FIXME: Unused. Either use or remove.
-	protected boolean isConnected(int id) {
+	protected boolean isConnected(NodeIDType id) {
 		return isConnected(new InetSocketAddress(
 				this.nodeConfig.getNodeAddress(id),
 				this.nodeConfig.getNodePort(id)));
@@ -805,6 +805,7 @@ public class NIOTransport implements Runnable {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setLevel(Level.FINEST);
@@ -814,15 +815,15 @@ public class NIOTransport implements Runnable {
 
 		int port = 2000;
 		int nNodes = 100;
-		SampleNodeConfig snc = new SampleNodeConfig(port);
+		SampleNodeConfig<Integer> snc = new SampleNodeConfig<Integer>(port);
 		snc.localSetup(nNodes + 1);
 		DataProcessingWorkerDefault worker = new DataProcessingWorkerDefault();
-		NIOTransport[] niots = new NIOTransport[nNodes];
+		NIOTransport<?>[] niots = new NIOTransport[nNodes];
 
 		try {
 			int smallNNodes = 2;
 			for (int i = 0; i < smallNNodes; i++) {
-				niots[i] = new NIOTransport(i, snc, worker);
+				niots[i] = new NIOTransport<Integer>(i, snc, worker);
 				new Thread(niots[i]).start();
 			}
 
@@ -835,16 +836,16 @@ public class NIOTransport implements Runnable {
 			 * from concurrency, i.e., to check that write ops flags will
 			 * be set correctly.
 			 */
-			niots[1].send(0, "Hello from 1 to 0".getBytes());
-			niots[0].send(1, "Hello back from 0 to 1".getBytes());
-			niots[0].send(1, "Second hello back from 0 to 1".getBytes());
+			((NIOTransport<Integer>)niots[1]).send(0, "Hello from 1 to 0".getBytes());
+			((NIOTransport<Integer>)niots[0]).send(1, "Hello back from 0 to 1".getBytes());
+			((NIOTransport<Integer>)niots[0]).send(1, "Second hello back from 0 to 1".getBytes());
 			try {
 				Thread.sleep(1000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			niots[0].send(1, "Third hello back from 0 to 1".getBytes());
-			niots[1].send(0,
+			((NIOTransport<Integer>)niots[0]).send(1, "Third hello back from 0 to 1".getBytes());
+			((NIOTransport<Integer>)niots[1]).send(0,
 					"Thank you for all the hellos back from 1 to 0".getBytes());
 			/**
 			 * **********************************************************************
@@ -859,7 +860,7 @@ public class NIOTransport implements Runnable {
 			 */
 			// Create the remaining nodes up to nNodes
 			for (int i = smallNNodes; i < nNodes; i++) {
-				niots[i] = new NIOTransport(i, snc, worker);
+				niots[i] = new NIOTransport<Integer>(i, snc, worker);
 				new Thread(niots[i]).start();
 			}
 
@@ -872,7 +873,7 @@ public class NIOTransport implements Runnable {
 				int j = (int) (Math.random() * nNodes);
 				System.out.println("Sending message " + i + " from " + k +
 						" to " + j);
-				niots[k].send(j, ("Hello from " + k + " to " + j).getBytes());
+				((NIOTransport<Integer>)niots[k]).send(j, ("Hello from " + k + " to " + j).getBytes());
 			}
 			/**
 			 * **********************************************************************
@@ -889,15 +890,15 @@ public class NIOTransport implements Runnable {
 
 			class TX extends TimerTask {
 
-				NIOTransport sndr = null;
+				NIOTransport<Integer> sndr = null;
 				private int rcvr = -1;
 
-				TX(int i, int id, NIOTransport[] n) {
-					sndr = n[i];
+				TX(int i, int id, NIOTransport<?>[] n) {
+					sndr = ((NIOTransport<Integer>)n[i]);
 					rcvr = id;
 				}
 
-				TX(NIOTransport niot, int id) {
+				TX(NIOTransport<Integer> niot, int id) {
 					sndr = niot;
 					rcvr = id;
 				}
@@ -912,8 +913,8 @@ public class NIOTransport implements Runnable {
 					}
 				}
 			}
-			NIOTransport concurrentSender =
-					new NIOTransport(nNodes, snc, worker);
+			NIOTransport<Integer> concurrentSender =
+					new NIOTransport<Integer>(nNodes, snc, worker);
 			new Thread(concurrentSender).start();
 			ScheduledFuture<?>[] futuresRandom = new ScheduledFuture[nNodes];
 			for (int i = 0; i < nNodes; i++) {
@@ -975,7 +976,7 @@ public class NIOTransport implements Runnable {
 			System.out.println("\n\n\nPrinting overall stats. Number of exceptions =  " +
 					numExceptions);
 			System.out.println("NIO " + (new NIOInstrumenter()));
-			for (NIOTransport niot : niots) {
+			for (NIOTransport<?> niot : niots) {
 				niot.stop();
 			}
 			concurrentSender.stop();

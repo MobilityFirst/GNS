@@ -4,6 +4,8 @@ import java.net.InetAddress;
 import java.util.Set;
 
 /**
+ * @author Abhigyan Sharma, V. Arun
+ * History:
  * Created with IntelliJ IDEA.
  * User: abhigyan
  * Date: 6/29/13
@@ -15,15 +17,15 @@ import java.util.Set;
 /* An interface to translate from integere IDs to socket addresses.
  * 
  */
-public interface InterfaceNodeConfig {
+public interface InterfaceNodeConfig<NodeIDType> {
 
-    public abstract boolean containsNodeInfo(int ID);
+    public abstract boolean containsNodeInfo(NodeIDType id);
 
-    public abstract Set<Integer> getNodeIDs();
+    public abstract Set<NodeIDType> getNodeIDs();
 
-    public abstract InetAddress getNodeAddress(int ID);
+    public abstract InetAddress getNodeAddress(NodeIDType id);
 
-    public abstract int getNodePort(int ID);
+    public abstract int getNodePort(NodeIDType id);
 
 
 }
