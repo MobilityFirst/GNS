@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.activereplica.scratch.NewActiveStartInfo;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessenger;

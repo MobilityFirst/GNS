@@ -9,7 +9,6 @@ import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.SchedulableProtocolTask;
-import edu.umass.cs.gns.protocoltask.ThresholdProtocolEvent;
 import edu.umass.cs.gns.util.Waitfor;
 
 /**
