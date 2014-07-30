@@ -394,8 +394,6 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
     if (Config.debugMode) {
       GNS.getLogger().fine("Updating state: " + state);
     }
-    Thread.dumpStack();
-
     boolean stateUpdated = false;
     try {
       TransferableNameRecordState state1 = new TransferableNameRecordState(state);

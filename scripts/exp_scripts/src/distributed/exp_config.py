@@ -25,8 +25,8 @@ db_folder = '/home/ec2-user/gnsdb/'  # remote folder where mongodb will store it
 
 mongo_sleep = 20
 ns_sleep = 20
-experiment_run_time = 60  # duration for which requests are sent
-extra_wait = 20
+experiment_run_time = 10  # duration for which requests are sent
+extra_wait = 11
 
 failed_nodes = None
 
@@ -85,11 +85,11 @@ output_sample_rate = 1.0    # fraction of requests that are logged
 ##################### LOGGING #########################
 
 # if True, log output is more verbose.
-is_debug_mode = False
+is_debug_mode = True
 
-nslog = 'WARNING'
+nslog = 'FINE'
 nslogstat = 'FINE'  # records write propagation times
-lnslog = 'WARNING'
+lnslog = 'FINE'
 lnslogstat = 'FINE'
 
 
@@ -102,7 +102,6 @@ primary_name_server = 3  # Number of primary name servers. Must be less than num
 replication_interval = 100000   # (in seconds). Intervals at which name servers compute new set of active replicas.
                                 # and local name servers sends votes to name servers
 
-
 # if True, local name servers starts sending requests as per given workload
 is_experiment_mode = False
 
@@ -111,10 +110,6 @@ emulate_ping_latencies = False
 
 # variation in latency emulation
 variation = 0.8
-
-use_gns_nio_transport = False
-
-
 
 event_file = None  # file with list of events at nodes, e.g., failure, restart, node addition, node removal
 
@@ -132,8 +127,8 @@ wfile = None   # contains workload parameters (simulated by local name servers)
 
 load_balancing = False
 
-maxQueryWaitTime = 20100
-queryTimeout = 5000           # query timeout interval
+maxQueryWaitTime = 10100
+queryTimeout = 2000           # query timeout interval
 adaptiveTimeout = False
 delta = 0.05
 mu = 1.5

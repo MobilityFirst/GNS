@@ -110,7 +110,6 @@ class FeatureTestLocal(TestSetupLocal):
         # run second experiment: restart GNS without deleting state
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)  # in seconds
         # sleep after starting NS to give ns time to recover
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
         requests = [[name, RequestType.LOOKUP],
                     [name, RequestType.UPDATE], [delay_ms, RequestType.DELAY],
                     [name, RequestType.REMOVE]]

@@ -80,16 +80,20 @@ def run_one_experiment(local_log_folder, local_config_file):
     os.system('./killJava.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +
               exp_config.local_lns_file)
 
+    os.system('./rmLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +
+                  exp_config.local_lns_file + ' ' + exp_config.remote_gns_logs)
     if exp_config.clean_start:
         print 'Doing clean start of GNS ... '
-        os.system('./rmLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +
-                  exp_config.local_lns_file + ' ' + exp_config.paxos_log_folder + ' ' + exp_config.remote_gns_logs)
+        os.system('./rmPaxosLog.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file + ' ' +
+                  exp_config.local_lns_file + ' ' + exp_config.paxos_log_folder)
         os.system('./kill_mongodb.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file
                   + ' ' + exp_config.db_folder)
         os.system('./run_mongodb.sh ' + exp_config.user + ' ' + exp_config.ssh_key + ' ' + exp_config.local_ns_file
                   + ' ' + exp_config.remote_mongo_bin + ' ' + exp_config.db_folder + ' ' + str(exp_config.mongo_port))
         print "Waiting for mongod process to start fully ..."
         os.system('sleep ' + str(exp_config.mongo_sleep))  # ensures mongo is fully running
+    else:
+        print "\nRestarting GNS from previous run ...\n"
 
     print 'Copy scripts and config files ...'
     from cp_scripts_configs import cp_scripts_configs
