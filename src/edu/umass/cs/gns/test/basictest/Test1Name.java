@@ -33,7 +33,7 @@ public class Test1Name extends Thread {
     // do a lookup and check if same value is returned
     QueryResult result = Intercessor.sendQueryBypassingAuthentication(name, key);
 
-    assert (result.get(key).get(0)).equals(initialValue);
+    assert (result.getArray(key).get(0)).equals(initialValue);
 
     // do an update
     String value = "PQRS";
@@ -43,7 +43,7 @@ public class Test1Name extends Thread {
 
     // check if same value is returned
     result = Intercessor.sendQueryBypassingAuthentication(name, key);
-    assert (result.get(key).get(0)).equals(value);
+    assert (result.getArray(key).get(0)).equals(value);
 
     // remove the record
     response = Intercessor.sendRemoveRecord(name);

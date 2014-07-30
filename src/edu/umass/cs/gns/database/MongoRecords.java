@@ -21,6 +21,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Provides insert, update, remove and lookup operations for guid, key, record triples using JSONObjects as the intermediate
+ * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for guid, key, record triples using JSONObjects as the intermediate
  * representation.
  *
  * @author westy, Abhigyan
@@ -177,11 +178,11 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public JSONObject lookup(String collectionName, String guid) throws RecordNotFoundException, FailedDBOperationException {
-    return lookup(collectionName, guid, false);
+  public JSONObject lookupEntireRecord(String collectionName, String guid) throws RecordNotFoundException, FailedDBOperationException {
+    return lookupEntireRecord(collectionName, guid, false);
   }
 
-  private JSONObject lookup(String collectionName, String guid, boolean explain) throws RecordNotFoundException, FailedDBOperationException {
+  private JSONObject lookupEntireRecord(String collectionName, String guid, boolean explain) throws RecordNotFoundException, FailedDBOperationException {
     db.requestStart();
     try {
       String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -209,96 +210,15 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public String lookup(String collectionName, String guid, String key) throws FailedDBOperationException {
-    return lookup(collectionName, guid, key, false);
-  }
-
-  private String lookup(String collectionName, String guid, String key, boolean explain) throws FailedDBOperationException {
-    db.requestStart();
-    try {
-      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      BasicDBObject projection = new BasicDBObject(key, 1).append("_id", 0);
-      DBCursor cursor = collection.find(query, projection);
-      if (explain) {
-        System.out.println(cursor.explain().toString());
-      }
-      if (cursor.hasNext()) {
-        DBObject obj = cursor.next();
-        JSONObject json = new JSONObject(obj.toString());
-        if (json.has(key)) {
-          return json.getString(key);
-        } else {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    } catch (JSONException e) {
-      GNS.getLogger().warning("Unable to parse JSON: " + e);
-      return null;
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, "reset");
-    } finally {
-      db.requestDone();
-    }
-  }
-
-  @Override
-  public ResultValue lookup(String collectionName, String guid, ArrayList<String> keys) throws FailedDBOperationException {
-    return lookup(collectionName, guid, keys, false);
-  }
-
-  private ResultValue lookup(String collectionName, String guid, ArrayList<String> keys, boolean explain) throws FailedDBOperationException {
-    db.requestStart();
-    try {
-      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-      db.requestEnsureConnection();
-
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      //The projection parameter takes a document of the following form:
-      // { field1: <boolean>, field2: <boolean> ... } where boolean is 0 or 1.
-      BasicDBObject projection = new BasicDBObject().append("_id", 0);
-      for (String key : keys) {
-        projection.append(key, 1);
-      }
-      DBCursor cursor = collection.find(query, projection);
-      if (explain) {
-        System.out.println(cursor.explain().toString());
-      }
-      ResultValue values = new ResultValue();
-      if (cursor.hasNext()) {
-        DBObject obj = cursor.next();
-        for (String key : keys) {
-          Object field = obj.get(key);
-          if (field == null) {
-            values.add(null);
-          } else {
-            values.add(field.toString());
-          }
-        }
-      } else {
-        return null;
-      }
-      return values;
-    } finally {
-      db.requestDone();
-    }
-  }
-
-  @Override
-  public HashMap<ColumnField, Object> lookup(String collectionName, String guid, ColumnField nameField,
+  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String collectionName, String guid, ColumnField nameField,
           ArrayList<ColumnField> fields1)
           throws RecordNotFoundException, FailedDBOperationException {
-    return lookup(collectionName, guid, nameField, fields1, null, null);
+    return lookupMultipleSystemAndUserFields(collectionName, guid, nameField, fields1, null, null);
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String collectionName, String guid, ColumnField nameField,
-          ArrayList<ColumnField> fields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName, String guid, ColumnField nameField,
+          ArrayList<ColumnField> systemFields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
     long t0 = System.currentTimeMillis();
     if (guid == null) {
@@ -313,8 +233,8 @@ public class MongoRecords implements NoSQLRecords {
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject projection = new BasicDBObject().append("_id", 0);
-      if (fields != null) {
-        for (ColumnField f : fields) {
+      if (systemFields != null) {
+        for (ColumnField f : systemFields) {
           projection.append(f.getName(), 1);
         }
       }
@@ -332,32 +252,45 @@ public class MongoRecords implements NoSQLRecords {
       }
       HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
       hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
-      ColumnFieldType.populateHashMap(hashMap, dbObject, fields);
+      // put all the system fields in the hashmap for the name record
+      ColumnFieldType.populateHashMap(hashMap, dbObject, systemFields);
+      // prepare to return the user values
       if (valuesMapField != null && valuesMapKeys != null) {
-        BSONObject bson = (BSONObject) dbObject.get(valuesMapField.getName());
-
+        // first we pull all the user values from the dbObject and put in a bson object
+        BasicDBObject bson = (BasicDBObject) dbObject.get(valuesMapField.getName());
+        if (Config.debugMode) {
+          GNS.getLogger().info("@@@@@@@@ " + bson.toString());
+        }
+        // then we run thru each userkey in the valuesMapKeys and pull the
+        // value put stuffing it into the values map
         ValuesMap valuesMap = new ValuesMap();
         for (int i = 0; i < valuesMapKeys.size(); i++) {
-          JSONArray fieldValue;
-          if (bson.containsField(valuesMapKeys.get(i).getName()) == false) {
+          String userKey = valuesMapKeys.get(i).getName();
+          if (containsFieldDotNotation(userKey, bson) == false) {
+            if (Config.debugMode) {
+              GNS.getLogger().info("DBObject doesn't contain " + userKey);
+            }
             continue;
           }
           try {
-            fieldValue = new JSONArray(bson.get(valuesMapKeys.get(i).getName()).toString());
-          } catch (JSONException e) {
-            GNS.getLogger().fine("Error parsing json");
-            e.printStackTrace();
-            continue;
-          }
-          if (valuesMapKeys.get(i).type().equals(ColumnFieldType.LIST_STRING)) {
-            try {
-              valuesMap.putAsArray(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(fieldValue));
-            } catch (JSONException e) {
-              GNS.getLogger().fine("Error parsing json");
-              e.printStackTrace();
+            switch (valuesMapKeys.get(i).type()) {
+              case USER_JSON:
+                Object value = getWithDotNotation(userKey, bson);
+                if (Config.debugMode) {
+                  GNS.getLogger().info("Object is " + value.toString());
+                }
+                valuesMap.put(userKey, value);
+                break;
+              case LIST_STRING:
+                valuesMap.putAsArray(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(new JSONArray(bson.get(userKey).toString())));
+                break;
+              default:
+                GNS.getLogger().severe("ERROR: Error: User keys field " + userKey + " is not of type " + ColumnFieldType.LIST_STRING);
+                break;
             }
-          } else {
-            GNS.getLogger().severe("ERROR: Error: User keys field is not of type " + ColumnFieldType.LIST_STRING);
+          } catch (JSONException e) {
+            GNS.getLogger().severe("Error parsing json: " + e);
+            e.printStackTrace();
           }
         }
         hashMap.put(valuesMapField, valuesMap);
@@ -374,6 +307,304 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
+  private Object getWithDotNotation(String key, BasicDBObject bson) throws JSONException {
+//    if (Config.debugMode) {
+//      GNS.getLogger().info("###fullkey=" + key + " bson=" + bson);
+//    }
+    if (key.contains(".")) {
+      int indexOfDot = key.indexOf(".");
+      String subKey = key.substring(0, indexOfDot);
+//      if (Config.debugMode) {
+//        GNS.getLogger().info("###subkey=" + subKey);
+//      }
+      BasicDBObject subBson = (BasicDBObject) bson.get(subKey);
+      if (subBson == null) {
+//        if (Config.debugMode) {
+//          GNS.getLogger().info("### " + subKey + " is null");
+//        }
+        throw new JSONException(subKey + " is null");
+      }
+      try {
+        return getWithDotNotation(key.substring(indexOfDot + 1), subBson);
+      } catch (JSONException e) {
+        throw new JSONException(subKey + "." + e.getMessage());
+      }
+    } else {
+      Object result =  bson.get(key);
+//      if (Config.debugMode) {
+//        GNS.getLogger().info("###result=" + result);
+//      }
+      return result;
+    }
+  }
+
+  private boolean containsFieldDotNotation(String key, BasicDBObject bson) {
+    try {
+      return getWithDotNotation(key, bson) != null;
+    } catch (JSONException e) {
+      return false;
+    }
+  }
+
+  @Override
+  public boolean contains(String collectionName, String guid) throws FailedDBOperationException {
+    db.requestStart();
+    try {
+      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+      db.requestEnsureConnection();
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      DBCursor cursor = null;
+
+      cursor = collection.find(query);
+
+      if (cursor.hasNext()) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, guid);
+    } finally {
+      db.requestDone();
+    }
+  }
+
+  @Override
+  public void removeEntireRecord(String collectionName, String guid) throws FailedDBOperationException {
+    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    try {
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      collection.remove(query);
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, guid);
+    }
+  }
+
+  @Override
+  public void update(String collectionName, String guid, JSONObject value) throws FailedDBOperationException {
+    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    BasicDBObject query = new BasicDBObject(primaryKey, guid);
+    DBObject dbObject = (DBObject) JSON.parse(value.toString());
+    try {
+      collection.update(query, dbObject);
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, dbObject.toString());
+    }
+  }
+
+  @Override
+  public void updateField(String collectionName, String guid, String key, Object object) throws FailedDBOperationException {
+    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    BasicDBObject query = new BasicDBObject(primaryKey, guid);
+    BasicDBObject newValue = new BasicDBObject(key, object);
+    BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
+    try {
+      collection.update(query, updateOperator);
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, updateOperator.toString());
+    }
+  }
+
+  @Override
+  public void update(String collectionName, String guid, ColumnField nameField,
+          ArrayList<ColumnField> fields1, ArrayList<Object> values1) throws FailedDBOperationException {
+    update(collectionName, guid, nameField, fields1, values1, null, null, null);
+  }
+
+  @Override
+  // THE ONLY METHOD THAT CURRENTLY SUPPORTS WRITING USER JSON OBJECTS AS VALUES IN THE VALUES MAP
+  public void update(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields,
+          ArrayList<Object> systemValues, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
+          ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
+    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    BasicDBObject query = new BasicDBObject(primaryKey, guid);
+    BasicDBObject updates = new BasicDBObject();
+    if (systemFields != null) {
+      for (int i = 0; i < systemFields.size(); i++) {
+        Object newValue;
+        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
+        if (systemFields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
+          // convert the JSONObject value of the ValuesMap into a string that we then parse into
+          // a BSON object (ugly, but necessary)
+          newValue = (DBObject) JSON.parse(((ValuesMap) systemValues.get(i)).toString());
+          //newValue = ((ValuesMap) values.getAsArray(i)).getMap();
+        } else {
+          newValue = systemValues.get(i);
+        }
+        updates.append(systemFields.get(i).getName(), newValue);
+      }
+    }
+    if (valuesMapField != null && valuesMapKeys != null) {
+      for (int i = 0; i < valuesMapKeys.size(); i++) {
+        String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
+        if (valuesMapKeys.get(i).type().equals(ColumnFieldType.LIST_STRING)) { // special case for old format
+          updates.append(fieldName, valuesMapValues.get(i));
+        } else if (valuesMapKeys.get(i).type().equals(ColumnFieldType.USER_JSON)) { // value is any valid JSON
+          updates.append(fieldName, JSONParse(valuesMapValues.get(i)));
+        } else {
+          GNS.getLogger().warning("Ignoring unknown format: " + valuesMapKeys.get(i).type());
+        }
+      }
+    }
+    if (updates.keySet().size() > 0) {
+      long startTime = System.currentTimeMillis();
+      try {
+        collection.update(query, new BasicDBObject("$set", updates));
+      } catch (MongoException e) {
+        throw new FailedDBOperationException(collectionName, updates.toString());
+      }
+      long finishTime = System.currentTimeMillis();
+      if (finishTime - startTime > 10) {
+        GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
+      }
+    }
+  }
+
+  // not sure why the JSON.parse doesn't handle things this way but it doesn't
+  private Object JSONParse(Object object) {
+    if (object instanceof String || object instanceof Number) {
+      return object;
+    } else {
+      return JSON.parse(object.toString());
+    }
+  }
+
+  @Override
+  public boolean updateConditional(String collectionName, String guid, ColumnField nameField,
+          ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
+          throws FailedDBOperationException {
+    boolean actuallyUpdatedTheRecord = false;
+    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    // build the query part
+    BasicDBObject query = new BasicDBObject(primaryKey, guid);
+    query.append(conditionField.getName(), conditionValue);
+    // build the updates part
+    BasicDBObject updates = new BasicDBObject();
+    if (fields != null) {
+      for (int i = 0; i < fields.size(); i++) {
+        Object newValue;
+        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
+        if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
+          // convert the JSONObject value of the ValuesMap into a string that we then parse into
+          // a BSON object (ugly, but necessary)
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
+        } else {
+          newValue = values.get(i);
+        }
+        updates.append(fields.get(i).getName(), newValue);
+      }
+    }
+
+    if (valuesMapField != null && valuesMapKeys != null) {
+      for (int i = 0; i < valuesMapKeys.size(); i++) {
+        String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
+        updates.append(fieldName, valuesMapValues.get(i));
+      }
+    }
+
+    if (debuggingEnabled) {
+      GNS.getLogger().info("UPDATES: " + updates.toString());
+    }
+
+    if (updates.keySet().size() > 0) { // only if there are some things to update
+      long startTime = System.currentTimeMillis();
+      WriteResult writeResult;
+      try {
+        writeResult = collection.update(query, new BasicDBObject("$set", updates));
+      } catch (MongoException e) {
+        throw new FailedDBOperationException(collectionName, updates.toString());
+      }
+      actuallyUpdatedTheRecord = writeResult.isUpdateOfExisting();
+      long finishTime = System.currentTimeMillis();
+      if (finishTime - startTime > 10) {
+        GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
+      }
+    }
+    if (debuggingEnabled) {
+      GNS.getLogger().info(actuallyUpdatedTheRecord ? "ACTUALLY UPDATED " : "DIDN'T UPDATE " + guid);
+    }
+    return actuallyUpdatedTheRecord;
+  }
+
+  @Override
+  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values)
+          throws FailedDBOperationException {
+    increment(collectionName, guid, fields, values, null, null, null);
+  }
+
+  @Override
+  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values,
+          ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
+          throws FailedDBOperationException {
+    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    // The query part is the "name" field in our document
+    BasicDBObject query = new BasicDBObject(primaryKey, guid);
+    // Build the updates part
+    BasicDBObject updates = new BasicDBObject();
+    if (fields != null) {
+      for (int i = 0; i < fields.size(); i++) {
+        Object newValue;
+        // NOT SURE IN WHAT SITUATION WE'RE GOING TO BE INCREMENTING THE WHOLE VALUES MAP PART OF THIS
+        // BUT THIS IS WHAT WAS WRITTEN SO WE'LL GO WITH IT - Westy
+        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
+        if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
+          // convert the JSONObject value of the ValuesMap into a string that we then parse into
+          // a BSON object (ugly, but necessary)
+          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
+        } else {
+          newValue = values.get(i);
+        }
+        updates.append(fields.get(i).getName(), newValue);
+      }
+    }
+    if (votesMapField != null && votesMapKeys != null) {
+      for (int i = 0; i < votesMapKeys.size(); i++) {
+        String fieldName = votesMapField.getName() + "." + votesMapKeys.get(i).getName();
+        updates.append(fieldName, votesMapValues.get(i));
+      }
+    }
+    // only execute the call if we have some actual updates
+    if (updates.keySet().size() > 0) {
+      try {
+        collection.update(query, new BasicDBObject("$inc", updates));
+      } catch (MongoException e) {
+        throw new FailedDBOperationException(collectionName, updates.toString());
+      }
+    }
+  }
+
+  @Override
+  public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
+          throws FailedDBOperationException {
+    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    BasicDBObject query = new BasicDBObject(primaryKey, name);
+
+    BasicDBObject updates = new BasicDBObject();
+
+    if (mapField != null && mapKeys != null) {
+      for (int i = 0; i < mapKeys.size(); i++) {
+        String fieldName = mapField.getName() + "." + mapKeys.get(i).getName();
+        updates.append(fieldName, 1);
+      }
+    }
+    if (updates.keySet().size() > 0) {
+      try {
+        collection.update(query, new BasicDBObject("$unset", updates));
+      } catch (MongoException e) {
+        throw new FailedDBOperationException(collectionName, updates.toString());
+      }
+    }
+  }
+
   /**
    * Given a key and a value return all the records that have a *user* key with that value.
    * User keys are stored in the valuesMap field.
@@ -384,6 +615,7 @@ public class MongoRecords implements NoSQLRecords {
    * @param value
    * // * @param explain
    * @return a MongoRecordCursor
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   @Override
   public MongoRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value)
@@ -540,269 +772,6 @@ public class MongoRecords implements NoSQLRecords {
     query = query.replace("~", valuesMapField.getName() + ".");
     DBObject parse = (DBObject) JSON.parse(query);
     return parse;
-  }
-
-  @Override
-  public boolean contains(String collectionName, String guid) throws FailedDBOperationException {
-    db.requestStart();
-    try {
-      String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-      db.requestEnsureConnection();
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      DBCursor cursor = null;
-
-      cursor = collection.find(query);
-
-      if (cursor.hasNext()) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, guid);
-    } finally {
-      db.requestDone();
-    }
-  }
-
-  @Override
-  public void remove(String collectionName, String guid) throws FailedDBOperationException {
-    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    try {
-      DBCollection collection = db.getCollection(collectionName);
-      BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      collection.remove(query);
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, guid);
-    }
-  }
-
-  @Override
-  public void update(String collectionName, String guid, JSONObject value) throws FailedDBOperationException {
-    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    DBObject dbObject = (DBObject) JSON.parse(value.toString());
-    try {
-      collection.update(query, dbObject);
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, dbObject.toString());
-    }
-  }
-
-  public void updateSingleValue(String collectionName, String name, String key, String value) throws FailedDBOperationException {
-    updateField(collectionName, name, key, new ArrayList(Arrays.asList(value)));
-  }
-
-  @Override
-  public void updateField(String collectionName, String guid, String key, Object object) throws FailedDBOperationException {
-    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    BasicDBObject newValue = new BasicDBObject(key, object);
-    BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-    try {
-      collection.update(query, updateOperator);
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, updateOperator.toString());
-    }
-  }
-
-  @Override
-  public void update(String collectionName, String guid, ColumnField nameField,
-          ArrayList<ColumnField> fields1, ArrayList<Object> values1) throws FailedDBOperationException {
-    update(collectionName, guid, nameField, fields1, values1, null, null, null);
-  }
-
-  @Override
-  // THE ONLY METHOD THAT CURRENTLY SUPPORTS WRITING USER JSON OBJECTS AS VALUES IN THE VALUES MAP
-  public void update(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields,
-          ArrayList<Object> systemValues, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
-    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    BasicDBObject updates = new BasicDBObject();
-    if (systemFields != null) {
-      for (int i = 0; i < systemFields.size(); i++) {
-        Object newValue;
-        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
-        if (systemFields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          // convert the JSONObject value of the ValuesMap into a string that we then parse into
-          // a BSON object (ugly, but necessary)
-          newValue = (DBObject) JSON.parse(((ValuesMap) systemValues.get(i)).toString());
-          //newValue = ((ValuesMap) values.getAsArray(i)).getMap();
-        } else {
-          newValue = systemValues.get(i);
-        }
-        updates.append(systemFields.get(i).getName(), newValue);
-      }
-    }
-    if (valuesMapField != null && valuesMapKeys != null) {
-      for (int i = 0; i < valuesMapKeys.size(); i++) {
-        String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
-        if (valuesMapKeys.get(i).type().equals(ColumnFieldType.LIST_STRING)) { // special case for old format
-          updates.append(fieldName, valuesMapValues.get(i));
-        } else if (valuesMapKeys.get(i).type().equals(ColumnFieldType.USER_JSON)) { // value is any valid JSON
-          updates.append(fieldName, JSONParse(valuesMapValues.get(i)));
-        } else {
-          GNS.getLogger().warning("Ignoring unknown format: " + valuesMapKeys.get(i).type());
-        }
-      }
-    }
-    if (updates.keySet().size() > 0) {
-      long startTime = System.currentTimeMillis();
-      try {
-        collection.update(query, new BasicDBObject("$set", updates));
-      } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, updates.toString());
-      }
-      long finishTime = System.currentTimeMillis();
-      if (finishTime - startTime > 10) {
-        GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
-      }
-    }
-  }
-  
-  // not sure why the JSON.parse doesn't handle things this way but it doesn't
-  private Object JSONParse (Object object) {
-    if (object instanceof String || object instanceof Number) {
-      return object;
-    } else {
-      return JSON.parse(object.toString());
-    }
-  }
-
-  @Override
-  public boolean updateConditional(String collectionName, String guid, ColumnField nameField,
-          ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedDBOperationException {
-    boolean actuallyUpdatedTheRecord = false;
-    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    // build the query part
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    query.append(conditionField.getName(), conditionValue);
-    // build the updates part
-    BasicDBObject updates = new BasicDBObject();
-    if (fields != null) {
-      for (int i = 0; i < fields.size(); i++) {
-        Object newValue;
-        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
-        if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          // convert the JSONObject value of the ValuesMap into a string that we then parse into
-          // a BSON object (ugly, but necessary)
-          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
-        } else {
-          newValue = values.get(i);
-        }
-        updates.append(fields.get(i).getName(), newValue);
-      }
-    }
-
-    if (valuesMapField != null && valuesMapKeys != null) {
-      for (int i = 0; i < valuesMapKeys.size(); i++) {
-        String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
-        updates.append(fieldName, valuesMapValues.get(i));
-      }
-    }
-
-    if (debuggingEnabled) {
-      GNS.getLogger().info("UPDATES: " + updates.toString());
-    }
-
-    if (updates.keySet().size() > 0) { // only if there are some things to update
-      long startTime = System.currentTimeMillis();
-      WriteResult writeResult;
-      try {
-        writeResult = collection.update(query, new BasicDBObject("$set", updates));
-      } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, updates.toString());
-      }
-      actuallyUpdatedTheRecord = writeResult.isUpdateOfExisting();
-      long finishTime = System.currentTimeMillis();
-      if (finishTime - startTime > 10) {
-        GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
-      }
-    }
-    if (debuggingEnabled) {
-      GNS.getLogger().info(actuallyUpdatedTheRecord ? "ACTUALLY UPDATED " : "DIDN'T UPDATE " + guid);
-    }
-    return actuallyUpdatedTheRecord;
-  }
-
-  @Override
-  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values)
-          throws FailedDBOperationException {
-    increment(collectionName, guid, fields, values, null, null, null);
-  }
-
-  @Override
-  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values,
-          ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
-          throws FailedDBOperationException {
-    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    // The query part is the "name" field in our document
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    // Build the updates part
-    BasicDBObject updates = new BasicDBObject();
-    if (fields != null) {
-      for (int i = 0; i < fields.size(); i++) {
-        Object newValue;
-        // NOT SURE IN WHAT SITUATION WE'RE GOING TO BE INCREMENTING THE WHOLE VALUES MAP PART OF THIS
-        // BUT THIS IS WHAT WAS WRITTEN SO WE'LL GO WITH IT - Westy
-        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
-        if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          // convert the JSONObject value of the ValuesMap into a string that we then parse into
-          // a BSON object (ugly, but necessary)
-          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
-        } else {
-          newValue = values.get(i);
-        }
-        updates.append(fields.get(i).getName(), newValue);
-      }
-    }
-    if (votesMapField != null && votesMapKeys != null) {
-      for (int i = 0; i < votesMapKeys.size(); i++) {
-        String fieldName = votesMapField.getName() + "." + votesMapKeys.get(i).getName();
-        updates.append(fieldName, votesMapValues.get(i));
-      }
-    }
-    // only execute the call if we have some actual updates
-    if (updates.keySet().size() > 0) {
-      try {
-        collection.update(query, new BasicDBObject("$inc", updates));
-      } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, updates.toString());
-      }
-    }
-  }
-
-  @Override
-  public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
-          throws FailedDBOperationException {
-    String primaryKey = MongoCollectionSpec.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    BasicDBObject query = new BasicDBObject(primaryKey, name);
-
-    BasicDBObject updates = new BasicDBObject();
-
-    if (mapField != null && mapKeys != null) {
-      for (int i = 0; i < mapKeys.size(); i++) {
-        String fieldName = mapField.getName() + "." + mapKeys.get(i).getName();
-        updates.append(fieldName, 1);
-      }
-    }
-    if (updates.keySet().size() > 0) {
-      try {
-        collection.update(query, new BasicDBObject("$unset", updates));
-      } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, updates.toString());
-      }
-    }
   }
 
   @Override

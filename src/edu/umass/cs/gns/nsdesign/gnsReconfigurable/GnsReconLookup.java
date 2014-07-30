@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.clientsupport.Defs;
+import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
@@ -27,7 +28,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 /**
- * This class executes lookup requests sent by an LNS to an active replica. If name servers are replicated,
+ * This class executes lookupJSONArray requests sent by an LNS to an active replica. If name servers are replicated,
  * then methods in this class will be executed after the coordination among active replicas at name servers
  * is complete.
  *
@@ -35,11 +36,11 @@ import java.util.ArrayList;
  */
 public class GnsReconLookup {
 
-  private static ArrayList<ColumnField> dnsFields = new ArrayList<ColumnField>();
+  private static final ArrayList<ColumnField> dnsSystemFields = new ArrayList<ColumnField>();
 
   static {
-    dnsFields.add(NameRecord.ACTIVE_VERSION);
-    dnsFields.add(NameRecord.TIME_TO_LIVE);
+    dnsSystemFields.add(NameRecord.ACTIVE_VERSION);
+    dnsSystemFields.add(NameRecord.TIME_TO_LIVE);
   }
 
   /**
@@ -47,12 +48,14 @@ public class GnsReconLookup {
    * @param dnsPacket
    * @param gnsApp
    * @param noCoordinatorState
+   * @param recovery
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws java.security.InvalidKeyException
    * @throws java.security.spec.InvalidKeySpecException
    * @throws java.security.NoSuchAlgorithmException
    * @throws java.security.SignatureException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void executeLookupLocal(DNSPacket dnsPacket, GnsReconfigurable gnsApp,
           boolean noCoordinatorState, boolean recovery)
@@ -84,7 +87,8 @@ public class GnsReconLookup {
       // Check the signature and access
       NSResponseCode errorCode = NSResponseCode.NO_ERROR;
 
-      if (reader != null) { // reader will be null for internal system reads
+      // FIXME: ignore check for non-top-level fields
+      if (reader != null && dnsPacket.keyIsAllFieldsOrTopLevel()) { // reader will be null for internal system reads
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST, gnsApp);
       }
       // return an error packet if one of the checks doesn't pass
@@ -106,13 +110,13 @@ public class GnsReconLookup {
             nameRecord = NameRecord.getNameRecord(gnsApp.getDB(), guid);
           } else {
             // otherwise grab a few system fields we need plus the field the user wanted
-            nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, dnsFields, field);
+            nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, dnsSystemFields, field);
           }
         } catch (RecordNotFoundException e) {
-          GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
+          GNS.getLogger().info("Record not found for name: " + guid + " Key = " + field);
         }
         if (Config.debugMode) {
-          GNS.getLogger().fine("Name record read is: " + nameRecord);
+          GNS.getLogger().info("Name record read is: " + nameRecord);
         }
         // Now we either have a name record with stuff it in or a null one
         // Time to send something back to the client
@@ -142,7 +146,7 @@ public class GnsReconLookup {
       // Normative case... NameRecord was found and this server is one
       // of the active servers of the record
       if (nameRecord != null && nameRecord.getActiveVersion() != NameRecord.NULL_VALUE_ACTIVE_VERSION) {
-        // how can we find a nameRecord if the guid is null?
+        // does this check make sense? how can we find a nameRecord if the guid is null?
         if (guid != null) {
           //Generate the response packet
           // assume no error... change it below if there is an error
@@ -150,26 +154,31 @@ public class GnsReconLookup {
           dnsPacket.setTTL(nameRecord.getTimeToLive());
           // Either returing one value or a bunch
           if (nameRecord.containsKey(key)) {
-            dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
-            if (Config.debugMode) {
-              GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid);
+            // if it's a sub field access just return the entire map
+            if (FieldAccess.isKeyDotNotation(key)) {
+              dnsPacket.setRecordValue(nameRecord.getValuesMap());
+            } else {
+              dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
+              if (Config.debugMode) {
+                GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid);
+              }
             }
           } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (Config.debugMode) {
-              GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + guid);
+              GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
             }
             // or we don't actually have the field
           } else { // send error msg.
             if (Config.debugMode) {
-              GNS.getLogger().fine("Record doesn't contain field: " + key + " name  = " + guid + " :: RECORD: " + nameRecord.toString());
+              GNS.getLogger().info("Record doesn't contain field: " + key + " name  = " + guid + " :: RECORD: " + nameRecord.toString());
             }
             dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
           }
           // For some reason the Guid of the packet is null
         } else { // send error msg.
           if (Config.debugMode) {
-            GNS.getLogger().fine("GUID of query is NULL!");
+            GNS.getLogger().info("GUID of query is NULL!");
           }
           dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
         }
@@ -178,7 +187,7 @@ public class GnsReconLookup {
         dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
           if (Config.debugMode) {
-            GNS.getLogger().fine("Invalid actives. Name = " + guid);
+            GNS.getLogger().info("Invalid actives. Name = " + guid);
           }
         }
       }

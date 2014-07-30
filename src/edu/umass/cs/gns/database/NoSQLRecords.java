@@ -55,30 +55,10 @@ public interface NoSQLRecords {
    * @param collection
    * @param name
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws RecordNotFoundException
    */
-  public JSONObject lookup(String collection, String name) throws FailedDBOperationException,RecordNotFoundException;
-
-  /**
-   * In the record with given name, return the value of the field (column) with the given key.
-   *
-   * @param collection
-   * @param name
-   * @param key
-   * @return
-   * @throws RecordNotFoundException
-   */
-  public String lookup(String collection, String name, String key) throws FailedDBOperationException, RecordNotFoundException;
-
-  /**
-   * In the record with given name, return the value of the fields (columns) with the given keys.
-   *
-   * @param collection
-   * @param name
-   * @param key
-   * @return Returns a ResultValue which is basically a list of Objects.
-   */
-  public ResultValue lookup(String collection, String name, ArrayList<String> key) throws FailedDBOperationException;
+  public JSONObject lookupEntireRecord(String collection, String name) throws FailedDBOperationException,RecordNotFoundException;
 
   /**
    * For the record with given name, return the values of given fields in form of a HashMap.
@@ -88,8 +68,10 @@ public interface NoSQLRecords {
    * @param nameField
    * @param fields
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
-  public abstract HashMap<ColumnField, Object> lookup(String collection, String name,
+  public abstract HashMap<ColumnField, Object> lookupMultipleSystemFields(String collection, String name,
                                                       ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException, RecordNotFoundException;
 
   /**
@@ -103,9 +85,10 @@ public interface NoSQLRecords {
    * @param valuesMapField
    * @param valuesMapKeys
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
-  public abstract HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
+  public abstract HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
                                                       ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws FailedDBOperationException, RecordNotFoundException;
 
   /**
@@ -114,6 +97,7 @@ public interface NoSQLRecords {
    * @param collection
    * @param name
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public boolean contains(String collection, String name) throws FailedDBOperationException;
 
@@ -125,7 +109,7 @@ public interface NoSQLRecords {
    * @param name
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public void remove(String collection, String name) throws FailedDBOperationException;
+  public void removeEntireRecord(String collection, String name) throws FailedDBOperationException;
 
 
   /**
@@ -253,6 +237,7 @@ public interface NoSQLRecords {
    * @param nameField
    * @param fields
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException;
 
@@ -261,6 +246,7 @@ public interface NoSQLRecords {
    *
    * @param collection
    * @return AbstractRecordCursor
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public AbstractRecordCursor getAllRowsIterator(String collection) throws FailedDBOperationException;
 
@@ -272,6 +258,7 @@ public interface NoSQLRecords {
    * @param key
    * @param value
    * @return AbstractRecordCursor
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException;
 
@@ -284,6 +271,7 @@ public interface NoSQLRecords {
    * @param key
    * @param value
    * @return AbstractRecordCursor
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) throws FailedDBOperationException;
 
@@ -297,6 +285,7 @@ public interface NoSQLRecords {
    * @param value
    * @param maxDistance
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException;
 
@@ -307,6 +296,7 @@ public interface NoSQLRecords {
    * @param valuesMapField
    * @param query
    * @return 
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException 
    */
   public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) throws FailedDBOperationException;
 
@@ -314,6 +304,7 @@ public interface NoSQLRecords {
    * Sets the collection back to an initial empty state with indexes also initialized.
    *
    * @param collection
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void reset(String collection) throws FailedDBOperationException;
 
@@ -324,6 +315,7 @@ public interface NoSQLRecords {
    * Print all the records (ONLY FOR DEBUGGING).
    *
    * @param collection
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void printAllEntries(String collection) throws FailedDBOperationException;
 

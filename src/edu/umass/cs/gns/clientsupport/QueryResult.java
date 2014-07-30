@@ -84,7 +84,7 @@ public class QueryResult implements Serializable{
    * @param key
    * @return 
    */
-  public ResultValue get(String key) {
+  public ResultValue getArray(String key) {
     if (valuesMap != null) {
       return valuesMap.getAsArray(key);
     } else {

@@ -263,7 +263,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       return;
     }
     // Keep retrying until we can store the initial state for a name in DB. Unless this step completes, future operations
-    // e.g., lookup, update, cannot succeed anyway.
+    // e.g., lookupMultipleSystemFields, update, cannot succeed anyway.
     while (true) {
       try {
         try {

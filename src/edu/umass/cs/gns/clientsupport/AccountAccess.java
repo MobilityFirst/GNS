@@ -92,7 +92,7 @@ public class AccountAccess {
     }
     if (!accountResult.isError()) {
       try {
-        return new AccountInfo(accountResult.get(ACCOUNT_INFO).toResultValueString());
+        return new AccountInfo(accountResult.getArray(ACCOUNT_INFO).toResultValueString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing accountinfo:" + e);
       } catch (ParseException e) {
@@ -115,7 +115,7 @@ public class AccountAccess {
 
     QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(guid, PRIMARY_GUID);
     if (!guidResult.isError()) {
-      return (String) guidResult.get(PRIMARY_GUID).get(0);
+      return (String) guidResult.getArray(PRIMARY_GUID).get(0);
     } else {
       return null;
     }
@@ -134,7 +134,7 @@ public class AccountAccess {
 
     QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(name, HRN_GUID);
     if (!guidResult.isError()) {
-      return (String) guidResult.get(HRN_GUID).get(0);
+      return (String) guidResult.getArray(HRN_GUID).get(0);
     } else {
       return null;
     }
@@ -153,7 +153,7 @@ public class AccountAccess {
     QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(guid, GUID_INFO);
     if (!guidResult.isError()) {
       try {
-        return new GuidInfo(guidResult.get(GUID_INFO).toResultValueString());
+        return new GuidInfo(guidResult.getArray(GUID_INFO).toResultValueString());
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem parsing guidinfo:" + e);
       } catch (ParseException e) {
@@ -328,7 +328,7 @@ public class AccountAccess {
       for (String alias : accountInfo.getAliases()) {
         Intercessor.sendRemoveRecord(alias);
       }
-      // get rid of all subguids
+      // getArray rid of all subguids
       for (String guid : accountInfo.getGuids()) {
         GuidInfo guidInfo = lookupGuidInfo(guid);
         if (guidInfo != null) { // should not be null, ignore if it is

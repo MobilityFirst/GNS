@@ -44,7 +44,7 @@ public class TestClient{
       // do a lookup and check if same value is returned
       QueryResult result = stub.sendQueryBypassingAuthentication(name, key);
 
-      assert (result.get(key).get(0)).equals(initialValue);
+      assert (result.getArray(key).get(0)).equals(initialValue);
 
       // do an update
       String value = "PQRS";
@@ -54,7 +54,7 @@ public class TestClient{
 
       // check if same value is returned
       result = stub.sendQueryBypassingAuthentication(name, key);
-      assert (result.get(key).get(0)).equals(value);
+      assert (result.getArray(key).get(0)).equals(value);
 
       // remove the record
       response = stub.sendRemoveRecord(name);

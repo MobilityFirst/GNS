@@ -50,7 +50,7 @@ public class LNSQueryHandler {
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
-    // activeReplica.getGNSNodeConfig() is a hack to get the first LNS
+    // activeReplica.getGNSNodeConfig() is a hack to getArray the first LNS
     // We need a means to find the closes LNS
     sendQueryInternal(id, pickClosestLNServer(activeReplica), name, key, activeReplica);
 //    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {

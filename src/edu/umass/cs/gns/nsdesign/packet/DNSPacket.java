@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.clientsupport.Defs;
+import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
@@ -317,6 +319,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   public NameRecordKey getKey() {
     return key;
+  }
+  
+  public boolean keyIsAllFieldsOrTopLevel() {
+    return FieldAccess.isKeyAllFieldsOrTopLevel(key.getName());
   }
 
   /**

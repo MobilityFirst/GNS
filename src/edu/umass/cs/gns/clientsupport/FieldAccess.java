@@ -11,6 +11,7 @@ import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +29,14 @@ public class FieldAccess {
   private static final String emptyJSONArrayString = new JSONArray().toString();
   private static final String emptyString = "";
 
+  public static boolean isKeyDotNotation(String key) {
+    return key.indexOf('.') != -1;
+  }
+
+  public static boolean isKeyAllFieldsOrTopLevel(String key) {
+    return Defs.ALLFIELDS.equals(key) || !isKeyDotNotation(key);
+  }
+
   public static CommandResponse lookup(String guid, String key, String reader, String signature, String message) {
 
     String resultString;
@@ -35,7 +44,28 @@ public class FieldAccess {
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      ResultValue value = result.get(key);
+      ValuesMap valuesMap = result.getValuesMapSansInternalFields();
+      try {
+        resultString = valuesMap.get(key).toString();
+      } catch (JSONException e) {
+        resultString = Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR + " " + e;
+      }
+    }
+    return new CommandResponse(resultString,
+            result.getErrorCode(),
+            result.getRoundTripTime(),
+            result.getResponder());
+  }
+
+  // old style read
+  public static CommandResponse lookupJSONArray(String guid, String key, String reader, String signature, String message) {
+
+    String resultString;
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    if (result.isError()) {
+      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+    } else {
+      ResultValue value = result.getArray(key);
       if (value != null) {
         resultString = new JSONArray(value).toString();
       } else {
@@ -71,7 +101,7 @@ public class FieldAccess {
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      ResultValue value = result.get(key);
+      ResultValue value = result.getArray(key);
       if (value != null && !value.isEmpty()) {
         resultString = (String) value.get(0);
       } else {

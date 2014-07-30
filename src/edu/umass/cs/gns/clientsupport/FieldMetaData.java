@@ -43,7 +43,7 @@ public class FieldMetaData {
     String metaDataKey = makeFieldMetaDataKey(type, key);
     QueryResult result = Intercessor.sendQuery(guid, metaDataKey, reader, signature, message);
     if (!result.isError()) {
-      return new HashSet<String>(result.get(metaDataKey).toStringSet());
+      return new HashSet<String>(result.getArray(metaDataKey).toStringSet());
     } else {
       return new HashSet<String>();
     }

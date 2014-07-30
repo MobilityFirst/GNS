@@ -139,7 +139,7 @@ public class GroupAccess {
   public static ResultValue lookup(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, GROUP, reader, signature, message);
     if (!result.isError()) {
-      return new ResultValue(result.get(GROUP));
+      return new ResultValue(result.getArray(GROUP));
     } else {
       return new ResultValue();
     }
@@ -157,7 +157,7 @@ public class GroupAccess {
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, GROUPS, reader, signature, message);
     if (!result.isError()) {
-      return new ResultValue(result.get(GROUPS));
+      return new ResultValue(result.getArray(GROUPS));
     } else {
       return new ResultValue();
     }
@@ -193,7 +193,7 @@ public class GroupAccess {
   public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, JOINREQUESTS, reader, signature, message);
     if (!result.isError()) {
-      return new ResultValue(result.get(JOINREQUESTS));
+      return new ResultValue(result.getArray(JOINREQUESTS));
     } else {
       return new ResultValue();
     }
@@ -203,7 +203,7 @@ public class GroupAccess {
   public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, LEAVEREQUESTS, reader, signature, message);
     if (!result.isError()) {
-      return new ResultValue(result.get(LEAVEREQUESTS));
+      return new ResultValue(result.getArray(LEAVEREQUESTS));
     } else {
       return new ResultValue();
     }

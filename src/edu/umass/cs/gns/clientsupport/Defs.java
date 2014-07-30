@@ -47,6 +47,7 @@ public class Defs {
   public final static String SETFIELDNULL = "setFieldNull";
   public final static String CLEAR = "clear";
   public final static String READ = "read";
+  public final static String NEWREAD = "newRead";
   public final static String READONE = "readOne";
   public final static String SELECT = "select";
   public final static String WITHIN = "within";
@@ -165,6 +166,7 @@ public class Defs {
   // Blessed field names
   public static final String LOCATION_FIELD_NAME = "geoLocation";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
+  public static final String ACL_FIELD_NAME = "ACL";
   
   
   

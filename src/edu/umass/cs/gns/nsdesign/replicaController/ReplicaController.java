@@ -245,7 +245,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
           Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
           break;
 
-        // lookup actives for name
+        // lookupMultipleSystemFields actives for name
         case REQUEST_ACTIVES:
           LookupActives.executeLookupActives(new RequestActivesPacket(json), this, recovery);
           break;

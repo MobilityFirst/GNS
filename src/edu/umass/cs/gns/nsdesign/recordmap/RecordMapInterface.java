@@ -43,10 +43,10 @@ public interface RecordMapInterface {
    */
   public void reset() throws FailedDBOperationException;
 
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws
+  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws
           FailedDBOperationException, RecordNotFoundException;
 
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws
           FailedDBOperationException, RecordNotFoundException;
 

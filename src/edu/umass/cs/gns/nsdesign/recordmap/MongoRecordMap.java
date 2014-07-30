@@ -33,7 +33,7 @@ public class MongoRecordMap extends BasicRecordMap {
     if (!containsName(name)) {
       try {
         MongoRecords records = mongoRecords;
-        JSONObject json = records.lookup(collectionName, name);
+        JSONObject json = records.lookupEntireRecord(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
         GNS.getLogger().severe("Error updating json record: " + e);
@@ -45,15 +45,15 @@ public class MongoRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
-    return mongoRecords.lookup(collectionName, name, nameField, systemFields);
+  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
+    return mongoRecords.lookupMultipleSystemFields(collectionName, name, nameField, systemFields);
 //    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> systemFields,
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> systemFields,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
-    return mongoRecords.lookup(collectionName, name, nameField, systemFields, valuesMapField, valuesMapKeys);
+    return mongoRecords.lookupMultipleSystemAndUserFields(collectionName, name, nameField, systemFields, valuesMapField, valuesMapKeys);
   }
 
   @Override
@@ -130,7 +130,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public NameRecord getNameRecord(String name) throws RecordNotFoundException, FailedDBOperationException {
     try {
-      JSONObject json = mongoRecords.lookup(collectionName, name);
+      JSONObject json = mongoRecords.lookupEntireRecord(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -184,7 +184,7 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public void removeNameRecord(String name) throws FailedDBOperationException {
-    mongoRecords.remove(collectionName, name);
+    mongoRecords.removeEntireRecord(collectionName, name);
   }
 
   @Override
@@ -203,7 +203,7 @@ public class MongoRecordMap extends BasicRecordMap {
   @Override
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException {
     try {
-      JSONObject json = mongoRecords.lookup(collectionName, name);
+      JSONObject json = mongoRecords.lookupEntireRecord(collectionName, name);
       if (json == null) {
         return null;
       } else {

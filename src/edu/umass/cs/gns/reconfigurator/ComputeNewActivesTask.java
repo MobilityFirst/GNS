@@ -218,9 +218,9 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 	}
 
 	/**
-	 * ***********************************************************
-	 * Returns the size of active replica set that should exist for this name record
-	 * depending on the lookup and update rate of this name record.
+	 * ************************************************************
+ Returns the size of active replica set that should exist for this name record
+ depending on the lookupMultipleSystemFields and update rate of this name record.
 	 * There are two special cases: (1) if there are no lookups or updates for this name, it returns 0.
 	 * (2) if (numberReplicaControllers == 1), then the system is un-replicated, therefore it always returns 1;
 	 *

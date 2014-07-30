@@ -89,8 +89,8 @@ public class Correspondent implements Runnable{
       connectTime += System.currentTimeMillis() - t0;
 
       String valueFromGns = null;
-      if (result != null && result.get(key) != null && result.get(key).size() > 0) {
-        valueFromGns = (String) result.get(key).get(0);
+      if (result != null && result.getArray(key) != null && result.getArray(key).size() > 0) {
+        valueFromGns = (String) result.getArray(key).get(0);
       }
 
       t0 = System.currentTimeMillis();

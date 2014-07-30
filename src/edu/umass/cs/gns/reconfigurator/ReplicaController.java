@@ -69,8 +69,8 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 	}
 
-	@Override public ConcurrentHashMap<Integer, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or remove
-	@Override public GNSNodeConfig getGnsNodeConfig() {return gnsNodeConfig;} // FIXME: make protected or remove
+	@Override public ConcurrentHashMap<Integer, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or removeEntireRecord
+	@Override public GNSNodeConfig getGnsNodeConfig() {return gnsNodeConfig;} // FIXME: make protected or removeEntireRecord
 
 	protected int getNodeID() {return myID;}
 	protected BasicRecordMap getDB() {return replicaControllerDB;}
@@ -181,12 +181,12 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 					mtasks = Add.executeAddActiveConfirm(new AddRecordPacket(json));
 					break;
 
-					// lookup actives for name
+					// lookupEntireRecord actives for name
 				case REQUEST_ACTIVES:
 					mtasks = LookupActives.executeLookupActives(new RequestActivesPacket(json), getDB(), getNodeID(), recovery);
 					break;
 
-					// remove
+					// removeEntireRecord
 				case REMOVE_RECORD:
 					mtasks = Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), getDB(), getNodeID(), recovery, protocolTasks);
 					break;

@@ -23,9 +23,9 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Read extends GnsCommand {
+public class NewRead extends GnsCommand {
 
-  public Read(CommandModule module) {
+  public NewRead(CommandModule module) {
     super(module);
   }
 
@@ -36,7 +36,7 @@ public class Read extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return READ;
+    return NEWREAD;
   }
 
   @Override
@@ -51,25 +51,17 @@ public class Read extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
 
-    if (getCommandName().equals(READONE)) {
-      if (ALLFIELDS.equals(field)) {
-        return FieldAccess.lookupOneMultipleValues(guid, ALLFIELDS, reader, signature, message);
-      } else {
-        return FieldAccess.lookupOne(guid, field, reader, signature, message);
-      }
+    if (ALLFIELDS.equals(field)) {
+      return FieldAccess.lookupMultipleValues(guid, ALLFIELDS, reader, signature, message);
     } else {
-      if (ALLFIELDS.equals(field)) {
-        return FieldAccess.lookupMultipleValues(guid, ALLFIELDS, reader, signature, message);
-      } else {
-        return FieldAccess.lookupJSONArray(guid, field, reader, signature, message);
-      }
+      return FieldAccess.lookup(guid, field, reader, signature, message);
     }
   }
 
   @Override
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS for the given guid after authenticating that READER making request has access authority."
-            + " Values are always returned as a JSON list."
+            + " Field can use dot notation to access subfields."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
   }
 }

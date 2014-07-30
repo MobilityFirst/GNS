@@ -45,6 +45,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.data.CreateListSelf",
     "edu.umass.cs.gns.commands.data.CreateSelf",
     "edu.umass.cs.gns.commands.data.Help",
+    "edu.umass.cs.gns.commands.data.NewRead",
     "edu.umass.cs.gns.commands.data.Read",
     "edu.umass.cs.gns.commands.data.ReadOne",
     "edu.umass.cs.gns.commands.data.ReadOneSelf",

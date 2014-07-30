@@ -34,7 +34,7 @@ public class CassandraRecordMap extends BasicRecordMap {
     if (!containsName(name)) {
       try {
         CassandraRecords records = this.cassandraRecords;
-        JSONObject json = records.lookup(collectionName, name);
+        JSONObject json = records.lookupEntireRecord(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
         GNS.getLogger().severe("Error updating json record: " + e);
@@ -46,12 +46,12 @@ public class CassandraRecordMap extends BasicRecordMap {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -105,7 +105,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public NameRecord getNameRecord(String name) {
     try {
-      JSONObject json = this.cassandraRecords.lookup(collectionName, name);
+      JSONObject json = this.cassandraRecords.lookupEntireRecord(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -163,7 +163,7 @@ public class CassandraRecordMap extends BasicRecordMap {
 
   @Override
   public void removeNameRecord(String name) {
-    this.cassandraRecords.remove(collectionName, name);
+    this.cassandraRecords.removeEntireRecord(collectionName, name);
   }
 
   @Override
@@ -179,7 +179,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   @Override
   public ReplicaControllerRecord getNameRecordPrimary(String name) {
     try {
-      JSONObject json = this.cassandraRecords.lookup(collectionName, name);
+      JSONObject json = this.cassandraRecords.lookupEntireRecord(collectionName, name);
       if (json == null) {
         return null;
       } else {

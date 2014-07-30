@@ -171,7 +171,7 @@ public class CassandraRecords implements NoSQLRecords {
 
 //  private String retrieveUserKeysString(String tableName, String guid) throws JSONException {
 //    StringBuffer result = new StringBuffer();
-//    String values = lookup(tableName, guid, NameRecord.USER_KEYS);
+//    String values = lookupEntireRecord(tableName, guid, NameRecord.USER_KEYS);
 //    String prefix = "";
 //    for (String key : JSONUtils.JSONArrayToArrayList(new JSONArray(values))) {
 //      result.append(prefix);
@@ -261,12 +261,12 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookup(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -332,7 +332,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void remove(String tableName, String guid) {
+  public void removeEntireRecord(String tableName, String guid) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "DELETE FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
@@ -359,7 +359,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public JSONObject lookup(String tableName, String guid) {
+  public JSONObject lookupEntireRecord(String tableName, String guid) {
     return retrieveJSONObject(tableName, guid);
   }
 
@@ -388,38 +388,6 @@ public class CassandraRecords implements NoSQLRecords {
   @Override
   public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedDBOperationException {
         // todo
-  }
-
-  @Override
-  public String lookup(String tableName, String guid, String key) {
-    CollectionSpec spec = getCollectionSpec(tableName);
-    if (spec != null) {
-      String query = "SELECT " + CSI(key) + " FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      GNS.getLogger().finer("Executing query " + query);
-      ResultSet results;
-      try {
-        results = session.execute(query);
-      } catch (InvalidQueryException e) {
-        // this will happen if the column does not exist
-        return null;
-      }
-      if (!results.isExhausted()) {
-        Row row = results.one();
-        return row.getString(key);
-      } else {
-        // this will happen if the row does not exist
-        return null;
-      }
-    } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
-      // this will happen if the table does not exist
-      return null;
-    }
-  }
-
-  @Override
-  public ResultValue lookup(String collection, String guid, ArrayList<String> key) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
@@ -492,13 +460,13 @@ public class CassandraRecords implements NoSQLRecords {
 //        instance.insert(DBNAMERECORD, x.getName(), x.toJSONObject());
 //      }
 //
-////    System.out.println("LOOKUP BY GUID =>" + instance.lookup(n.getName(), true));
+////    System.out.println("LOOKUP BY GUID =>" + instance.lookupEntireRecord(n.getName(), true));
 ////    instance.update(n.getName(), "timeToLive", "777");
-////    System.out.println("LOOKUP AFTER 777 =>" + instance.lookup(n.getName(), true));
+////    System.out.println("LOOKUP AFTER 777 =>" + instance.lookupEntireRecord(n.getName(), true));
 ////    instance.update(n.getName(), "FRANK", "777");
-////    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookup(n.getName(), true));
+////    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookupEntireRecord(n.getName(), true));
 ////    
-//      JSONObject json = instance.lookup(DBNAMERECORD, n.getName());
+//      JSONObject json = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
 //      System.out.println("LOOKUP BY GUID => " + json);
 //      System.out.println("CONTAINS = (should be true) " + instance.contains(DBNAMERECORD, n.getName()));
 //      System.out.println("CONTAINS = (should be false) " + instance.contains(DBNAMERECORD, "BLAH BLAH"));
@@ -506,20 +474,20 @@ public class CassandraRecords implements NoSQLRecords {
 //      record.updateKey("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
 //      System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
 //      instance.update(DBNAMERECORD, record.getName(), record.toJSONObject());
-//      JSONObject json2 = instance.lookup(DBNAMERECORD, n.getName());
+//      JSONObject json2 = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
 //      System.out.println("2ND LOOKUP BY GUID => " + json2);
 //      //
-//      //System.out.println("LOOKUP BY KEY =>" + instance.lookup(n.getName(), n.getRecordKey().getName(), true));
+//      //System.out.println("LOOKUP BY KEY =>" + instance.lookupEntireRecord(n.getName(), n.getRecordKey().getName(), true));
 //
 ////    System.out.println("DUMP =v");
 ////    instance.printAllEntries();
 ////    System.out.println(MongoRecordsV2.getInstance().db.getCollection(COLLECTIONNAME).getStats().toString());
 //      //
 //      instance.updateField(DBNAMERECORD, n.getName(), NameRecord.ACTIVE_NAMESERVERS.getFieldName(), Arrays.asList(97, 98, 99));
-//      json2 = instance.lookup(DBNAMERECORD, n.getName());
+//      json2 = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
 //      System.out.println("JSON AFTER FIELD UPDATE => " + json2);
-//      instance.remove(DBNAMERECORD, n.getName());
-//      json2 = instance.lookup(DBNAMERECORD, n.getName());
+//      instance.removeEntireRecord(DBNAMERECORD, n.getName());
+//      json2 = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
 //      System.out.println("SHOULD BE EMPTY => " + json2);
 //      System.exit(0);
 //    } catch (FieldNotFoundException e) {

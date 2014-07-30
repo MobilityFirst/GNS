@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.recordmap;
 
+import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
@@ -574,9 +575,11 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Load a name record from the backing database and retrieve all the fields.
    *
+   * @param recordMap
    * @param name
    * @return
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static NameRecord getNameRecord(BasicRecordMap recordMap, String name) throws RecordNotFoundException, FailedDBOperationException {
     return recordMap.getNameRecord(name);
@@ -585,48 +588,57 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
    *
+   * @param recordMap
    * @param name
    * @param systemFields - a list of Field structures representing "system" fields to retrieve
    * @return
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
+    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
   }
 
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
    *
+   * @param recordMap
    * @param name
    * @param systemFields - a list of Field structures representing "system" fields to retrieve
    * @param userFields - a list of Field structures representing user fields to retrieve
    * @return
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
+    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
   }
 
   /**
    * Load a name record from the backing database and retrieve certain fields as well.
    *
+   * @param recordMap
    * @param name
    * @param systemFields
    * @param userFieldNames - strings which name the user fields to return
    * @return
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookup(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
+    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
   }
 
   private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
     ArrayList<ColumnField> result = new ArrayList<ColumnField>();
-    for (String name : fieldNames) {
-      result.add(new ColumnField(name, ColumnFieldType.LIST_STRING));
+    for (String fieldName : fieldNames) {
+      result.add(new ColumnField(fieldName, 
+              FieldAccess.isKeyDotNotation(fieldName) 
+                      ? ColumnFieldType.USER_JSON 
+                      : ColumnFieldType.LIST_STRING));
     }
     return result;
   }
@@ -634,7 +646,9 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Add this name record to DB
    *
+   * @param recordMap
    * @param record
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordExistsException
    */
   public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException, RecordExistsException {
@@ -644,7 +658,9 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Replace the name record in DB with this copy of name record
    *
+   * @param recordMap
    * @param record
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException {
     recordMap.updateNameRecord(record);
@@ -653,7 +669,9 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Remove name record from DB
    *
+   * @param recordMap
    * @param name
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void removeNameRecord(BasicRecordMap recordMap, String name) throws FailedDBOperationException {
     recordMap.removeNameRecord(name);
@@ -662,7 +680,9 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
+   * @param recordMap
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor getAllRowsIterator(BasicRecordMap recordMap) throws FailedDBOperationException {
     return recordMap.getAllRowsIterator();
@@ -671,9 +691,11 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
    *
+   * @param recordMap
    * @param key
    * @param value
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) throws FailedDBOperationException {
     return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
@@ -683,9 +705,11 @@ public class NameRecord implements Comparable<NameRecord> {
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
    * string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a AbstractRecordCursor.
    *
+   * @param recordMap
    * @param key
    * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) throws FailedDBOperationException {
     return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
@@ -695,10 +719,12 @@ public class NameRecord implements Comparable<NameRecord> {
    * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
    * [LONG, LAT]. maxDistance is in meters. The returned value is a AbstractRecordCursor.
    *
+   * @param recordMap
    * @param key
    * @param value - a string that looks like this: [LONG, LAT]
    * @param maxDistance - the distance in meters
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) throws FailedDBOperationException {
     return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
@@ -707,8 +733,10 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Returns all fields that match the query.
    *
+   * @param recordMap
    * @param query
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) throws FailedDBOperationException {
     return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);

@@ -708,7 +708,7 @@ public class ReplicaControllerRecord {
 
   /**
    * Adds vote to the name server for replica selection.
-   * and increment lookup count and update count.
+   * and increment lookupEntireRecord count and update count.
    *
    * @param id Name server id receiving the vote
    */
@@ -861,7 +861,7 @@ public class ReplicaControllerRecord {
    */
   public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB, String name,
           ArrayList<ColumnField> fields) throws RecordNotFoundException, FailedDBOperationException {
-    return new ReplicaControllerRecord(replicaControllerDB, replicaControllerDB.lookup(name, ReplicaControllerRecord.NAME, fields));
+    return new ReplicaControllerRecord(replicaControllerDB, replicaControllerDB.lookupMultipleSystemFields(name, ReplicaControllerRecord.NAME, fields));
   }
 
   /**

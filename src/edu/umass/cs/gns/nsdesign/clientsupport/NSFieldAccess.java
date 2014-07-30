@@ -70,7 +70,7 @@ public class NSFieldAccess {
   private static ResultValue lookupFieldQueryLNS(String guid, String field, GnsReconfigurableInterface activeReplica) {
     QueryResult queryResult = LNSQueryHandler.sendQuery(guid, field, activeReplica);
     if (!queryResult.isError()) {
-      return queryResult.get(field);
+      return queryResult.getArray(field);
     } else {
       return new ResultValue();
     }
