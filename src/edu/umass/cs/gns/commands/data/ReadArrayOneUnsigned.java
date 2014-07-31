@@ -14,26 +14,26 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  *
  * @author westy
  */
-public class ReadOne extends Read {
+public class ReadArrayOneUnsigned extends ReadArray {
 
-  public ReadOne(CommandModule module) {
+  public ReadArrayOneUnsigned(CommandModule module) {
     super(module);
   }
 
   @Override
   public String getCommandName() {
-    return READONE;
+    return READARRAYONE;
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that the READER has access authority. "
-            + "Treats the value of key value pair as a singleton item and returns that item."
+    return "Returns one key value pair from the GNS for the given guid. Does not require authentication but field must be set to be readable by everyone."
+            + " Treats the value of key value pair as a singleton item and returns that item."
             + " Specify " + ALLFIELDS + " as the <field> to return all fields. ";
   }
 }

@@ -38,16 +38,28 @@ public class FieldAccess {
     return Defs.ALLFIELDS.equals(key) || !isKeyDotNotation(key);
   }
 
-  public static CommandResponse lookup(String guid, String key, String reader, String signature, String message) {
+  /**
+   * Reads the value of field in a guid.
+   * Field is a string the naming the field. Field can us dot 
+   * notation to indicate subfields.
+   * 
+   * @param guid
+   * @param field
+   * @param reader
+   * @param signature
+   * @param message
+   * @return the value of a single field
+   */
+  public static CommandResponse lookup(String guid, String field, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ValuesMap valuesMap = result.getValuesMapSansInternalFields();
       try {
-        resultString = valuesMap.get(key).toString();
+        resultString = valuesMap.get(field).toString();
       } catch (JSONException e) {
         resultString = Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR + " " + e;
       }
@@ -58,15 +70,29 @@ public class FieldAccess {
             result.getResponder());
   }
 
-  // old style read
-  public static CommandResponse lookupJSONArray(String guid, String key, String reader, String signature, String message) {
+  /**
+   * Supports reading of the old style data formatted as a JSONArray of strings.
+   * Much of the internal system data is still stored in this format.
+   * The new format also supports JSONArrays as part of the
+   * whole "guid data is a JSONObject" format so we might be
+   * transitioning away from this altogether at some point.
+   *
+   * @param guid
+   * @param field
+   * @param reader
+   * @param signature
+   * @param message
+   * @return
+   */
+  public static CommandResponse lookupJSONArray(String guid, String field, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.LIST_STRING);
+    // Note the use of ColumnFieldType.LIST_STRING in the sendQuery call which implies old data format.
+    QueryResult result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      ResultValue value = result.getArray(key);
+      ResultValue value = result.getArray(field);
       if (value != null) {
         resultString = new JSONArray(value).toString();
       } else {
@@ -79,10 +105,20 @@ public class FieldAccess {
             result.getResponder());
   }
 
-  public static CommandResponse lookupMultipleValues(String guid, String key, String reader, String signature, String message) {
+  /**
+   * Reads the value of all the fields in a guid.
+   * Doesn't return internal system fields.
+   * 
+   * @param guid
+   * @param reader
+   * @param signature
+   * @param message
+   * @return 
+   */
+  public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = Intercessor.sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -95,14 +131,24 @@ public class FieldAccess {
             result.getResponder());
   }
 
-  public static CommandResponse lookupOne(String guid, String key, String reader, String signature, String message) {
+  /**
+   * Returns the first value of the field in a guid in a an old-style JSONArray field value.
+   * 
+   * @param guid
+   * @param field
+   * @param reader
+   * @param signature
+   * @param message
+   * @return 
+   */
+  public static CommandResponse lookupOne(String guid, String field, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      ResultValue value = result.getArray(key);
+      ResultValue value = result.getArray(field);
       if (value != null && !value.isEmpty()) {
         resultString = (String) value.get(0);
       } else {
@@ -115,10 +161,19 @@ public class FieldAccess {
             result.getResponder());
   }
 
-  public static CommandResponse lookupOneMultipleValues(String guid, String key, String reader, String signature, String message) {
+  /**
+   * Returns the first value of all the fields in a guid in an old-style JSONArray field value.
+   * 
+   * @param guid
+   * @param reader
+   * @param signature
+   * @param message
+   * @return 
+   */
+  public static CommandResponse lookupOneMultipleValues(String guid, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = Intercessor.sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {

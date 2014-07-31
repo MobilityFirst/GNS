@@ -46,9 +46,9 @@ public class Defs {
   public final static String SET = "set";
   public final static String SETFIELDNULL = "setFieldNull";
   public final static String CLEAR = "clear";
-  public final static String READ = "read";
+  public final static String READARRAY = "readArray";
   public final static String NEWREAD = "newRead";
-  public final static String READONE = "readOne";
+  public final static String READARRAYONE = "readArrayOne";
   public final static String SELECT = "select";
   public final static String WITHIN = "within";
   public final static String NEAR = "near";

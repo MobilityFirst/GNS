@@ -153,13 +153,30 @@ public class Intercessor implements IntercessorInterface {
   }
 
   /**
-   * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
+   
    */
-  public static QueryResult sendQuery(String name, String key, String reader, String signature, String message, ColumnFieldType returnFormat) {
-    GNS.getLogger().fine("Sending query: " + name + " " + key);
+  /**
+   * Sends a query to the Nameserver for a field in a guid. 
+   * Field is a string naming the field. Field can us dot notation to indicate subfields.
+   * Field can also be +ALL+ meaing retrieve all the fields (including internal system fields).
+   * Return format should be one of ColumnFieldType.USER_JSON signifying new JSONObject format or
+   * ColumnFieldType.LIST_STRING signifying old JSONArray of strings format.
+   * 
+   * 
+   * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
+   * @param name
+   * @param field
+   * @param reader
+   * @param signature
+   * @param message
+   * @param returnFormat
+   * @return 
+   */
+  public static QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
+    GNS.getLogger().fine("Sending query: " + name + " " + field);
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), 
+    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field), 
             returnFormat, reader, signature, message);
     JSONObject json;
     try {
@@ -192,7 +209,7 @@ public class Intercessor implements IntercessorInterface {
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime - sentTime;
     GNS.getLogger().fine("Query (" + id + ") RTT = " + rtt + "ms");
-    GNS.getLogger().finer("Query (" + id + "): " + name + "/" + key + "\n  Returning: " + result.toString());
+    GNS.getLogger().finer("Query (" + id + "): " + name + "/" + field + "\n  Returning: " + result.toString());
     result.setRoundTripTime(rtt);
     return result;
   }
@@ -200,22 +217,22 @@ public class Intercessor implements IntercessorInterface {
   /**
    * This version bypasses any signature checks and is meant for "system" use.
    */
-  public static QueryResult sendQueryBypassingAuthentication(String name, String key) {
-    return sendQuery(name, key, null, null, null, ColumnFieldType.LIST_STRING);
+  public static QueryResult sendQueryBypassingAuthentication(String name, String field) {
+    return sendQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
 
   /**
    * Sends an AddRecord packet to the Local Name Server with an initial value.
    *
    * @param name
-   * @param key
+   * @param field
    * @param value
    * @return
    */
-  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value) {
+  public static NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
-    GNS.getLogger().fine("Sending add: " + name + " / " + key + "->" + value);
-    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
+    GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
+    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
     GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     try {
       JSONObject json = pkt.toJSONObject();
@@ -227,7 +244,7 @@ public class Intercessor implements IntercessorInterface {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().fine("Add (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
+    GNS.getLogger().fine("Add (" + id + "): " + name + "/" + field + "\n  Returning: " + result);
     return result;
   }
 

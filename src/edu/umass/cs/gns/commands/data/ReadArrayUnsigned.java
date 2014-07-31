@@ -14,9 +14,9 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  *
  * @author westy
  */
-public class ReadUnsigned extends Read {
+public class ReadArrayUnsigned extends ReadArray {
 
-  public ReadUnsigned(CommandModule module) {
+  public ReadArrayUnsigned(CommandModule module) {
     super(module);
   }
 

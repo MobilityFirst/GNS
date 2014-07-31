@@ -52,7 +52,7 @@ public class NewRead extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
 
     if (ALLFIELDS.equals(field)) {
-      return FieldAccess.lookupMultipleValues(guid, ALLFIELDS, reader, signature, message);
+      return FieldAccess.lookupMultipleValues(guid, reader, signature, message);
     } else {
       return FieldAccess.lookup(guid, field, reader, signature, message);
     }

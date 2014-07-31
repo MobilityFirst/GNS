@@ -20,12 +20,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * This is the main class for a whole set of commands that support reading of the old style data formatted as
+ * JSONArrays. These are here for backward compatibility. The new format also supports JSONArrays as part of the
+ * whole "guid data is a JSONObject" format.
+ * 
  * @author westy
  */
-public class Read extends GnsCommand {
+public class ReadArray extends GnsCommand {
 
-  public Read(CommandModule module) {
+  public ReadArray(CommandModule module) {
     super(module);
   }
 
@@ -36,7 +39,7 @@ public class Read extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return READ;
+    return READARRAY;
   }
 
   @Override
@@ -51,15 +54,15 @@ public class Read extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
 
-    if (getCommandName().equals(READONE)) {
+    if (getCommandName().equals(READARRAYONE)) {
       if (ALLFIELDS.equals(field)) {
-        return FieldAccess.lookupOneMultipleValues(guid, ALLFIELDS, reader, signature, message);
+        return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message);
       } else {
         return FieldAccess.lookupOne(guid, field, reader, signature, message);
       }
     } else {
       if (ALLFIELDS.equals(field)) {
-        return FieldAccess.lookupMultipleValues(guid, ALLFIELDS, reader, signature, message);
+        return FieldAccess.lookupMultipleValues(guid, reader, signature, message);
       } else {
         return FieldAccess.lookupJSONArray(guid, field, reader, signature, message);
       }

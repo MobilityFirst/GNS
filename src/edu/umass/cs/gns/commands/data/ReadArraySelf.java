@@ -14,9 +14,9 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  *
  * @author westy
  */
-public class ReadSelf extends Read {
+public class ReadArraySelf extends ReadArray {
 
-  public ReadSelf(CommandModule module) {
+  public ReadArraySelf(CommandModule module) {
     super(module);
   }
 
