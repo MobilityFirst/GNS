@@ -6,12 +6,12 @@
 package edu.umass.cs.gns.nsdesign.clientsupport;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,7 +64,9 @@ public class LNSQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurableInterface activeReplica) {
-    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, new NameRecordKey(key), null, null, null);
+    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, new NameRecordKey(key), 
+            ColumnFieldType.LIST_STRING,
+            null, null, null);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();

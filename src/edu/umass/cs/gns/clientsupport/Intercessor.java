@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
@@ -154,11 +155,12 @@ public class Intercessor implements IntercessorInterface {
   /**
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    */
-  public static QueryResult sendQuery(String name, String key, String reader, String signature, String message) {
+  public static QueryResult sendQuery(String name, String key, String reader, String signature, String message, ColumnFieldType returnFormat) {
     GNS.getLogger().fine("Sending query: " + name + " " + key);
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), reader, signature, message);
+    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(key), 
+            returnFormat, reader, signature, message);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
@@ -199,7 +201,7 @@ public class Intercessor implements IntercessorInterface {
    * This version bypasses any signature checks and is meant for "system" use.
    */
   public static QueryResult sendQueryBypassingAuthentication(String name, String key) {
-    return sendQuery(name, key, null, null, null);
+    return sendQuery(name, key, null, null, null, ColumnFieldType.LIST_STRING);
   }
 
   /**

@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.test.nioclient;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
@@ -80,7 +81,8 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         int tryCount = 0;
         while (tryCount < maxTries) {
           try {
-            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
+            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, 
+                   ColumnFieldType.LIST_STRING, null, null, null);
             dbClient.sendRequest(dnsPacket.toJSONObject());
             waitForResponse();
             DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);
@@ -123,7 +125,8 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         String valueRead = null;
         while (tryCount < maxTries) {
           try {
-            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, null, null);
+            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, ColumnFieldType.LIST_STRING,
+                    null, null, null);
             dbClient.sendRequest(dnsPacket.toJSONObject());
             waitForResponse();
             DNSPacket dnsResponse = new DNSPacket(mostRecentResponse);

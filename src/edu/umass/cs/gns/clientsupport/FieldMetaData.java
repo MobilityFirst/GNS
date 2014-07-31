@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class FieldMetaData {
    */
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature, String message) {
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    QueryResult result = Intercessor.sendQuery(guid, metaDataKey, reader, signature, message);
+    QueryResult result = Intercessor.sendQuery(guid, metaDataKey, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new HashSet<String>(result.getArray(metaDataKey).toStringSet());
     } else {

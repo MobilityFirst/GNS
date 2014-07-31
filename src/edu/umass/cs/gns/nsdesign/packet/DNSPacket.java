@@ -5,8 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
@@ -34,6 +34,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   private final static String LNS_ID = "lnsId";
   private final static String SOURCE_ID = "sourceId";
   private final static String RESPONDER = "rspndr";
+  private final static String RETURN_FORMAT = "format";
+
   /**
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
@@ -56,14 +58,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   private final NameRecordKey key;
   /**
-   * This is the Id of the source of the request, -1 means the client is the intercessor of the LNS handling the request. 
+   * This is the Id of the source of the request, -1 means the client is the intercessor of the LNS handling the request.
    */
   private int sourceId;
   /**
    * This is used by the Nameservers so they know which LNS to send the packet back to. *
    */
   private int lnsId = -1; // will be -1 until set at the LNS
-
 
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
@@ -79,10 +80,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   private ValuesMap recordValue;
   /**
+   * Determines the format of the return value that we get back in the response packet.
+   */
+  ColumnFieldType returnFormat;
+  /**
    * For response packets this is the node that responded
    */
   private int responder = -1;
-
 
   /**
    * Constructs a packet for querying a name server for name information.
@@ -94,8 +98,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param accessor
    * @param signature
    * @param message
+   * @param returnFormat
    */
-  public DNSPacket(int sourceId, int id, String qname, NameRecordKey key, String accessor, String signature, String message) {
+  public DNSPacket(int sourceId, int id, String qname, NameRecordKey key, ColumnFieldType returnFormat, 
+          String accessor, String signature, String message) {
     super(accessor, signature, message);
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
     this.guid = qname;
@@ -103,6 +109,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.sourceId = sourceId;
     this.lnsId = -1; // this will be -1 until it is set by the handling LNS before sending to an NS
     this.responder = -1;
+    this.returnFormat = returnFormat;
   }
 
   /**
@@ -123,6 +130,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.lnsId = json.getInt(LNS_ID);
     // read the optional responder if it is there
     this.responder = json.optInt(RESPONDER, -1);
+    this.returnFormat = json.has(RETURN_FORMAT) ? ColumnFieldType.valueOf(json.getString(RETURN_FORMAT)) : null;
 
     // These will only be present in non-error response packets
     if (header.isResponse() && !header.isAnyKindOfError()) {
@@ -172,6 +180,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.recordValue = entireRecord;
     this.ttl = TTL;
     this.responder = -1;
+    this.returnFormat = null;
   }
 
   /**
@@ -234,6 +243,9 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     json.put(GUID, getGuid());
     json.put(SOURCE_ID, sourceId);
     json.put(LNS_ID, lnsId);
+    if (returnFormat != null) {
+      json.put(RETURN_FORMAT, returnFormat.name());
+    }
     // this goes in with query (if it's not empty -1) in case it's an error response and we want to know the reponder
     if (responder != -1) {
       json.put(RESPONDER, responder);
@@ -250,6 +262,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    *
    * Returns true if the packet is a query, false otherwise
+   * @return 
    */
   public boolean isQuery() {
     return getHeader().isQuery();
@@ -257,6 +270,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
 
   /**
    * Returns true if the packet is a response, false otherwise
+   * @return 
    */
   public boolean isResponse() {
     return getHeader().isResponse();
@@ -266,6 +280,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    **
    * Returns true if the packet contains a response error, false otherwise
    *
+   * @return 
    */
   public boolean containsAnyError() {
     return getHeader().isAnyKindOfError();
@@ -279,6 +294,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    **
    * Returns the ID for this query from the packet header. Used by the requester to match up replies to outstanding queries
    *
+   * @return 
    */
   public int getQueryId() {
     return getHeader().getId();
@@ -320,7 +336,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public NameRecordKey getKey() {
     return key;
   }
-  
+
   public boolean keyIsAllFieldsOrTopLevel() {
     return FieldAccess.isKeyAllFieldsOrTopLevel(key.getName());
   }
@@ -387,6 +403,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
 
   public void setResponder(int responder) {
     this.responder = responder;
+  }
+
+  public ColumnFieldType getReturnFormat() {
+    return returnFormat;
   }
 
 }

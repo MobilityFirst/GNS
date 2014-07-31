@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stats;
@@ -110,7 +111,7 @@ public class PerformanceTests {
       // acessing the RoundTripTime fields of the ValuesMap class which records the
       // time between the LNS sending the request to the NS and the return message.
       for (String field : fields) {
-        QueryResult value = Intercessor.sendQuery(guid, field, null, null, null);
+        QueryResult value = Intercessor.sendQuery(guid, field, null, null, null, ColumnFieldType.LIST_STRING);
         if (!value.isError()) {
           //result.append(value.getRoundTripTime());
           if (times.get(value.getResponder()) == null) {

@@ -629,7 +629,8 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFieldList(userFieldNames)));
+    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, 
+            userFieldList(userFieldNames)));
   }
 
   private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
@@ -639,6 +640,23 @@ public class NameRecord implements Comparable<NameRecord> {
               FieldAccess.isKeyDotNotation(fieldName) 
                       ? ColumnFieldType.USER_JSON 
                       : ColumnFieldType.LIST_STRING));
+    }
+    return result;
+  }
+  
+  // IN PROGRESS
+  
+  public static NameRecord getNameRecordMultiField2(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, 
+          ColumnFieldType returnType, String... userFieldNames)
+          throws RecordNotFoundException, FailedDBOperationException {
+    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, 
+            userFieldList2(returnType, userFieldNames)));
+  }
+
+  private static ArrayList<ColumnField> userFieldList2(ColumnFieldType returnType, String... fieldNames) {
+    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
+    for (String fieldName : fieldNames) {
+      result.add(new ColumnField(fieldName, returnType));
     }
     return result;
   }

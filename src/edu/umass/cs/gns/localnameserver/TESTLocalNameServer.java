@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
@@ -46,7 +47,9 @@ public class TESTLocalNameServer {
     int numRequests = 1000;
     for (int i = 0; i < numRequests; i++) {
       // send 1 lookup with invalid response
-      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd", NameRecordKey.EdgeRecord, null, null, null).toJSONObjectQuestion());
+      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd", 
+              NameRecordKey.EdgeRecord, 
+              ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();
@@ -59,7 +62,9 @@ public class TESTLocalNameServer {
     int numNames = 1000;
     for (int i = 0; i < numNames; i++) {
       // send 1 lookup with invalid response
-      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd"+i, NameRecordKey.EdgeRecord, null, null, null).toJSONObjectQuestion());
+      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd"+i, 
+              NameRecordKey.EdgeRecord, 
+              ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();

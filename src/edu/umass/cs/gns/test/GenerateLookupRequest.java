@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.test;
 
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.util.NameRecordKey;
@@ -26,7 +27,9 @@ public class GenerateLookupRequest extends TimerTask {
 
   @Override
   public void run() {
-    DNSPacket queryRecord = new DNSPacket(-1, lookupCount, name, NameRecordKey.EdgeRecord, null, null, null);
+    DNSPacket queryRecord = new DNSPacket(-1, lookupCount, name, 
+            NameRecordKey.EdgeRecord, 
+            ColumnFieldType.LIST_STRING, null, null, null);
     queryRecord.getHeader().setId(lookupCount);
 
     JSONObject json;

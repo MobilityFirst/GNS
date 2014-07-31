@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
@@ -40,7 +41,7 @@ public class FieldAccess {
   public static CommandResponse lookup(String guid, String key, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -61,7 +62,7 @@ public class FieldAccess {
   public static CommandResponse lookupJSONArray(String guid, String key, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -81,7 +82,7 @@ public class FieldAccess {
   public static CommandResponse lookupMultipleValues(String guid, String key, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -97,7 +98,7 @@ public class FieldAccess {
   public static CommandResponse lookupOne(String guid, String key, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -117,7 +118,7 @@ public class FieldAccess {
   public static CommandResponse lookupOneMultipleValues(String guid, String key, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message);
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {

@@ -153,7 +153,9 @@ public class Lookup {
   private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, int responder, ClientRequestHandlerInterface handler) {
 
     try {
-      DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getSourceId(), query.getIncomingPacket().getHeader().getId(), query.getIncomingPacket().getGuid(),
+      DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getSourceId(), 
+              query.getIncomingPacket().getHeader().getId(), 
+              query.getIncomingPacket().getGuid(),
               query.getIncomingPacket().getKey(), returnValue, TTL, new HashSet<Integer>());
       outgoingPacket.setResponder(responder);
       sendDNSResponseBackToSource(outgoingPacket, handler);
