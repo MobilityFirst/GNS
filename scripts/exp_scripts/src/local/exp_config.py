@@ -79,9 +79,9 @@ gen_workload = False   # if True, generate new workload,
 # logging options
 is_debug_mode = True   #
 
-nslog = 'WARNING'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+nslog = 'FINE'       # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 nslogstat = 'FINE'  # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
-lnslog = 'WARNING'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
+lnslog = 'FINE'    # Set to  FINER for more verbose output; INFO or SEVERE for less verbose output
 lnslogstat = 'FINE'  # Always set to 'FINE'
 
 

@@ -126,7 +126,7 @@ class FeatureTestLocal(TestSetupLocal):
         """Add and remove a name to GNS, restart GNS, and test if we can again add and remove it.
         This check if name is cleanly removed on log recovery as well.."""
         self.test_a_1name()
-        self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
+        # self.config_parse.set(ConfigParser.DEFAULTSECT, 'ns_sleep', str(5))  # in seconds
         self.config_parse.set(ConfigParser.DEFAULTSECT, 'clean_start', False)
         self.test_a_1name()
 

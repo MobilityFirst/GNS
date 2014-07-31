@@ -202,11 +202,12 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
           recordCount += 1;
           JSONObject json = new JSONObject(x);
           ReplicaControllerRecord rcr = new ReplicaControllerRecord(replicaControllerDB, json);
-
-          GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
+          if (Config.debugMode) {
+            GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
+          }
           try {
             ReplicaControllerRecord.addNameRecordPrimary(replicaControllerDB, rcr);
-          } catch (FailedDBOperationException e) {
+          } catch (RecordExistsException e) {
             ReplicaControllerRecord.updateNameRecordPrimary(replicaControllerDB, rcr);
           }
           startIndex = endIndex;
@@ -218,9 +219,6 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
       e.printStackTrace();
     } catch (FailedDBOperationException e) {
       GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-      e.printStackTrace();
-    } catch (RecordExistsException e) {
-      GNS.getLogger().severe("Record exists exception: " + e.getMessage());
       e.printStackTrace();
     }
     GNS.getLogger().info("Number of rc records updated in DB: " + recordCount);

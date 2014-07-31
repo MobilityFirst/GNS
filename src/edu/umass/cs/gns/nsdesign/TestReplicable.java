@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +33,7 @@ public class TestReplicable implements Replicable{
 
       JSONObject json = new JSONObject(value);
       if (Packet.getPacketType(json).equals(Packet.PacketType.PAXOS_PACKET)) {
-        GNS.getLogger().info(" Received decision: " + value);
+        if (Config.debugMode) GNS.getLogger().fine(" Received decision: " + value);
         RequestPacket requestPacket = new RequestPacket(json);
         value = requestPacket.requestValue;
         noop = value.equals(RequestPacket.NO_OP);

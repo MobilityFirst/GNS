@@ -98,7 +98,6 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
    */
   @Override
   public boolean handleJSONObject(final JSONObject json) {
-
     incrementMsgCount();
     try {
       final Packet.PacketType type = Packet.getPacketType(json);
