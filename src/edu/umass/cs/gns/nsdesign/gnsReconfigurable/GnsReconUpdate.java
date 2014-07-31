@@ -76,7 +76,7 @@ public class GnsReconUpdate {
         if (field == null) {
           nameRecord = NameRecord.getNameRecord(replica.getDB(), guid);
         } else {
-          nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), guid, null, field);
+          nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid);

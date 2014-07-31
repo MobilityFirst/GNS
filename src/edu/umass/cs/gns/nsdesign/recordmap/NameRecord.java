@@ -622,44 +622,55 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param recordMap
    * @param name
    * @param systemFields
+   * @param returnType - the format which the returned data should be in
    * @param userFieldNames - strings which name the user fields to return
    * @return
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
-          throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, 
-            userFieldList(userFieldNames)));
-  }
-
-  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
-    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
-    for (String fieldName : fieldNames) {
-      result.add(new ColumnField(fieldName, 
-              FieldAccess.isKeyDotNotation(fieldName) 
-                      ? ColumnFieldType.USER_JSON 
-                      : ColumnFieldType.LIST_STRING));
-    }
-    return result;
-  }
-  
-  // IN PROGRESS
-  
-  public static NameRecord getNameRecordMultiField2(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, 
+  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, 
           ColumnFieldType returnType, String... userFieldNames)
           throws RecordNotFoundException, FailedDBOperationException {
     return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, 
-            userFieldList2(returnType, userFieldNames)));
+            userFieldList(returnType, userFieldNames)));
   }
 
-  private static ArrayList<ColumnField> userFieldList2(ColumnFieldType returnType, String... fieldNames) {
+  private static ArrayList<ColumnField> userFieldList(ColumnFieldType returnType, String... fieldNames) {
     ArrayList<ColumnField> result = new ArrayList<ColumnField>();
     for (String fieldName : fieldNames) {
       result.add(new ColumnField(fieldName, returnType));
     }
     return result;
   }
+  
+//  /**
+//   * Load a name record from the backing database and retrieve certain fields as well.
+//   *
+//   * @param recordMap
+//   * @param name
+//   * @param systemFields
+//   * @param userFieldNames - strings which name the user fields to return
+//   * @return
+//   * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+//   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
+//   */
+//  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
+//          throws RecordNotFoundException, FailedDBOperationException {
+//    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, 
+//            userFieldList(userFieldNames)));
+//  }
+//
+//  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
+//    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
+//    for (String fieldName : fieldNames) {
+//      result.add(new ColumnField(fieldName, 
+//              FieldAccess.isKeyDotNotation(fieldName) 
+//                      ? ColumnFieldType.USER_JSON 
+//                      : ColumnFieldType.LIST_STRING));
+//    }
+//    return result;
+//  }
+  
 
   /**
    * Add this name record to DB

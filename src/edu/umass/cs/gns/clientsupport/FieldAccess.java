@@ -98,7 +98,7 @@ public class FieldAccess {
   public static CommandResponse lookupOne(String guid, String key, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = Intercessor.sendQuery(guid, key, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {

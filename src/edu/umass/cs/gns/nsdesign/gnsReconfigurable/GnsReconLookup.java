@@ -5,6 +5,7 @@ import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
+import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
@@ -109,8 +110,11 @@ public class GnsReconLookup {
             // need everything so just grab all the fields
             nameRecord = NameRecord.getNameRecord(gnsApp.getDB(), guid);
           } else {
+            if (Config.debugMode) {
+              GNS.getLogger().info("#### Field=" + field + " Format=" + dnsPacket.getReturnFormat());
+            }
             // otherwise grab a few system fields we need plus the field the user wanted
-            nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, dnsSystemFields, field);
+            nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, dnsSystemFields, dnsPacket.getReturnFormat(), field);
           }
         } catch (RecordNotFoundException e) {
           GNS.getLogger().info("Record not found for name: " + guid + " Key = " + field);
@@ -154,8 +158,8 @@ public class GnsReconLookup {
           dnsPacket.setTTL(nameRecord.getTimeToLive());
           // Either returing one value or a bunch
           if (nameRecord.containsKey(key)) {
-            // if it's a sub field access just return the entire map
-            if (FieldAccess.isKeyDotNotation(key)) {
+            // if it's a USER JSON access just return the entire map
+            if (ColumnFieldType.USER_JSON.equals(dnsPacket.getReturnFormat())) {
               dnsPacket.setRecordValue(nameRecord.getValuesMap());
             } else {
               dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
@@ -163,6 +167,7 @@ public class GnsReconLookup {
                 GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid);
               }
             }
+            //FIXME: this might be redundant with above USER_JSON special case
           } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (Config.debugMode) {

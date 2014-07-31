@@ -36,7 +36,7 @@ public class NSFieldAccess {
   public static ResultValue lookupFieldOnThisServer(String guid, String field, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     ResultValue result = null;
     try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, field);
+      NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
       GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       result = nameRecord.getKey(field);
     } catch (FieldNotFoundException e) {
