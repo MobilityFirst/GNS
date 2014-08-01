@@ -139,6 +139,7 @@ public enum UpdateOperation {
       // the valuesMap read from the database has user fields and hidden "systems" fields so we
       // have to update it field-by-field using writeToValuesMap so as not to clobber 
       // any of the systems fields
+      // This also supports dot notation.
       return userJSON.writeToValuesMap(valuesMap); 
     }
   }

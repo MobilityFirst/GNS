@@ -360,8 +360,10 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param newValues
    * @param oldValues
    * @param operation
+   * @param userJSON
    * @return True if the update does anything, false otherwise.
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public boolean updateNameRecord(String recordKey, ResultValue newValues, ResultValue oldValues, int argument,
           ValuesMap userJSON, UpdateOperation operation) throws FieldNotFoundException, FailedDBOperationException {
@@ -394,7 +396,9 @@ public class NameRecord implements Comparable<NameRecord> {
     } else {
       valuesMap = getValuesMap(); // this will throw an exception if field is not read.
     }
-    boolean updated = UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
+    // FIXME: might want to handle this without a special case at some point
+    boolean updated = UpdateOperation.USER_JSON_REPLACE.equals(operation) || UpdateOperation.USER_JSON_REPLACE_OR_CREATE.equals(operation) 
+            ? true : UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
     if (updated) {
       // commit update to database
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();

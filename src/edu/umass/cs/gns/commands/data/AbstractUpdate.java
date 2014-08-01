@@ -62,9 +62,8 @@ public abstract class AbstractUpdate extends GnsCommand {
     } else {
       // single field update 
       if (!(responseCode = FieldAccess.update(guid, field,
-              value != null ? new ResultValue(Arrays.asList(value))
-              // special case for the ops which doesn't need a value
-              : new ResultValue(),
+              // special case for the ops which do not need a value
+              value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
               index,
               getUpdateOperation(),
