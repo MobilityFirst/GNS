@@ -88,14 +88,14 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
         // call proposeStop
         case ACTIVE_REMOVE: // stop request for removing a name record
-          if (Config.debugMode) GNS.getLogger().fine("*******Before proposing remove: " + request);
+          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Before proposing remove: " + request);
           OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket(request);
           paxosID = paxosManager.proposeStop(stopPacket1.getName(), stopPacket1.toString(), stopPacket1.getVersion());
           if (paxosID == null) {
             callHandleDecision = stopPacket1.toJSONObject();
             noCoordinatorState = true;
           }
-          if (Config.debugMode) GNS.getLogger().fine("*******Remove proposed: " + request);
+          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Remove proposed: " + request);
           break;
         case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
           OldActiveSetStopPacket stopPacket2 = new OldActiveSetStopPacket(request);
@@ -108,11 +108,11 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
         // call createPaxosInstance
         case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
           // calling handle decision before creating paxos instance to insert state for name in database.
-          if (Config.debugMode) GNS.getLogger().fine("*******Before creating paxos instance: " + request);
+          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Before creating paxos instance: " + request);
           callHandleDecisionWithRetry(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
           paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, recordPacket.getActiveNameSevers(), paxosInterface);
-          if (Config.debugMode) GNS.getLogger().fine("*******Added paxos instance:" + recordPacket.getName());
+          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Added paxos instance:" + recordPacket.getName());
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
           // active replica has already put initial state for the name in DB. we only need to create paxos instance.

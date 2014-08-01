@@ -76,7 +76,7 @@ public class StartActiveSetTask implements RCProtocolTask {
         if (replicaController.getOngoingStartActiveRequests().get(requestID) == null){
           // normally, this task will be the terminated via this branch of code..
           terminateTask = true;
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().info("New active name servers running. Name = " + name + " All Actives: "
                     + newActiveNameServers + " Actives Queried: " + newActivesQueried);
           }
@@ -100,7 +100,7 @@ public class StartActiveSetTask implements RCProtocolTask {
                     (short)oldActiveVersion, (short)newActiveVersion, PacketType.NEW_ACTIVE_START, initialValue, false);
             packet.setUniqueID(requestID);
             replicaController.getNioServer().sendToID(selectedActive, packet.toJSONObject());
-            if (Config.debugMode) {
+            if (Config.debuggingEnabled) {
               GNS.getLogger().fine(" NEW ACTIVE STARTUP PACKET SENT Name: "+ name + "\t" + packet.toString());
             }
           }

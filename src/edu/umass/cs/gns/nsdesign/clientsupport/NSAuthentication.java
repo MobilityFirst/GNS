@@ -30,7 +30,7 @@ public class NSAuthentication {
     GuidInfo guidInfo;
     GuidInfo readerGuidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, gnsApp)) == null) {
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().info("Name " + guid + " key = " + field + ": BAD_GUID_ERROR");
       }
       return NSResponseCode.BAD_GUID_ERROR;
@@ -38,26 +38,26 @@ public class NSAuthentication {
     if (reader.equals(guid)) {
       readerGuidInfo = guidInfo;
     } else if ((readerGuidInfo = NSAccountAccess.lookupGuidInfo(reader, true, gnsApp)) == null) {
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().info("Name " + guid + " key = " + field + ": BAD_ACCESOR_ERROR");
       }
       return NSResponseCode.BAD_ACCESSOR_ERROR;
     }
     if (signature == null) {
       if (!NSAccessSupport.fieldAccessibleByEveryone(access, guidInfo.getGuid(), field, gnsApp)) {
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         }
         return NSResponseCode.ACCESS_ERROR;
       }
     } else if (signature != null) {
       if (!NSAccessSupport.verifySignature(readerGuidInfo, signature, message)) {
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         }
         return NSResponseCode.SIGNATURE_ERROR;
       } else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, readerGuidInfo, gnsApp)) {
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         }
         return NSResponseCode.ACCESS_ERROR;

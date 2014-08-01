@@ -83,7 +83,7 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 		}
 		try {
 
-			if (Config.debugMode) log.info(" NEW_ACTIVE_START_FORWARD received packet: " + packet.toJSONObject());
+			if (Config.debuggingEnabled) log.info(" NEW_ACTIVE_START_FORWARD received packet: " + packet.toJSONObject());
 
 			if (activeReplica.getOngoingStateTransferRequests().get(requestID) == null) {
 				log.info(" COPY State from Old Active Successful! Cancel Task; Actives Queried: " + oldActivesQueried);
@@ -101,7 +101,7 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 				throw new CancelExecutorTaskException();
 			}
 			oldActivesQueried.add(oldActive);
-			if (Config.debugMode) log.info(" OLD ACTIVE SELECTED = : " + oldActive);
+			if (Config.debuggingEnabled) log.info(" OLD ACTIVE SELECTED = : " + oldActive);
 
 			try {
 				activeReplica.send(new MessagingTask(oldActive, packet.toJSONObject()));
@@ -109,7 +109,7 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 				log.severe(" JSONException here: " + e.getMessage());
 				e.printStackTrace();
 			}
-			if (Config.debugMode) log.info(" REQUESTED VALUE from OLD ACTIVE. PACKET: " + packet);
+			if (Config.debuggingEnabled) log.info(" REQUESTED VALUE from OLD ACTIVE. PACKET: " + packet);
 
 		} catch (JSONException e) {
 			e.printStackTrace();

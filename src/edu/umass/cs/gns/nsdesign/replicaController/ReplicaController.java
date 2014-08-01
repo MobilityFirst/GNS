@@ -202,7 +202,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
           recordCount += 1;
           JSONObject json = new JSONObject(x);
           ReplicaControllerRecord rcr = new ReplicaControllerRecord(replicaControllerDB, json);
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
           }
           try {
@@ -299,7 +299,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
 
   private void updateNSLoad(JSONObject json) throws JSONException {
     NameServerLoadPacket nsLoad  = new NameServerLoadPacket(json);
-    if (Config.debugMode) GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
+    if (Config.debuggingEnabled) GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
             "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID()) +
             "\tNewNoad: " + nsLoad.getLoadValue() + "\t");
     nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());

@@ -195,7 +195,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
 
   public boolean stopVersion(String name, short version) {
     boolean executed = false;
-    if (Config.debugMode) {
+    if (Config.debuggingEnabled) {
       GNS.getLogger().fine("executing stop version: " + name + "\t" + version);
     }
     NameRecord nameRecord;
@@ -269,7 +269,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
         try {
           NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl);
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
           }
         } catch (RecordExistsException e) {
@@ -368,11 +368,11 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   public String getState(String name) {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().fine(nameRecord.toString());
       }
       TransferableNameRecordState state = new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().fine("Getting state: " + state.toString());
       }
       return state.toString();
@@ -391,7 +391,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
 
   @Override
   public boolean updateState(String name, String state) {
-    if (Config.debugMode) {
+    if (Config.debuggingEnabled) {
       GNS.getLogger().fine("Updating state: " + state);
     }
     boolean stateUpdated = false;

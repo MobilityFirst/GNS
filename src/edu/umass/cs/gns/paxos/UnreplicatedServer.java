@@ -66,7 +66,7 @@ public class UnreplicatedServer {
     // start TCP transport thread
     try {
       tcpTransport = new NioServer(nodeID, worker, new PaxosNodeConfig(nodeConfigFile));
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().fine(" TRANSPORT OBJECT CREATED ... ");
       }
       new Thread(tcpTransport).start();
@@ -95,7 +95,7 @@ public class UnreplicatedServer {
 
   public static void main(String[] args) {
 
-    Config.debugMode = false;
+    Config.debuggingEnabled = false;
     String nodeConfigFile = args[0];
     String serverLogFileName = args[1];
     int nodeID = Integer.parseInt(args[2]);

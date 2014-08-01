@@ -34,7 +34,7 @@ public class GnsReconUpdate {
   public static void executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
           boolean noCoordinatonState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
-    if (Config.debugMode) {
+    if (Config.debuggingEnabled) {
       GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
     }
 
@@ -91,7 +91,7 @@ public class GnsReconUpdate {
     }
 
     // Apply update
-    if (Config.debugMode) {
+    if (Config.debuggingEnabled) {
       if (field != null) {
       GNS.getLogger().fine("****** field=" + field + " operation= " + updatePacket.getOperation().toString() +
               " value= " + updatePacket.getUpdateValue() +
@@ -104,13 +104,13 @@ public class GnsReconUpdate {
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
               updatePacket.getUserJSON(),
               updatePacket.getOperation());
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().fine("Update operation result = " + result + "\t"
                 + updatePacket.getUpdateValue());
       }
 
       if (!result) { // update failed
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().info("Update operation failed " + updatePacket);
         }
         if (updatePacket.getNameServerId() == replica.getNodeID()) { //if this node proposed this update
@@ -118,7 +118,7 @@ public class GnsReconUpdate {
           ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket);
           }
           if (!recovery) {
@@ -127,7 +127,7 @@ public class GnsReconUpdate {
         }
 
       } else {
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().fine("Update applied" + updatePacket);
         }
 
@@ -138,7 +138,7 @@ public class GnsReconUpdate {
           ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
           }
           if (!recovery) {

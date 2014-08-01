@@ -79,7 +79,7 @@ public class SendRequestLoadTask extends TimerTask{
     taskRunCount += 1;
 
     double nextRunDelaySec = activeReplica.getGnsNodeConfig().getNameServerIDs().size()/SEND_RATE;
-    if (Config.debugMode) GNS.getLogger().fine("Next run delay " + nextRunDelaySec + " sec");
+    if (Config.debuggingEnabled) GNS.getLogger().fine("Next run delay " + nextRunDelaySec + " sec");
     SendRequestLoadTask task = new SendRequestLoadTask(activeApp, activeReplica, prevReqCount, taskRunCount, prevRunTime);
     activeReplica.getScheduledThreadPoolExecutor().schedule(task, (int) nextRunDelaySec + 1, TimeUnit.SECONDS);
   }

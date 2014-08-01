@@ -21,7 +21,7 @@ public class Add {
   public static void handleActiveAdd(AddRecordPacket addRecordPacket, GnsReconfigurable gnsApp)
           throws JSONException, IOException, FailedDBOperationException {
 
-    if (Config.debugMode) GNS.getLogger().fine("Add record at active replica. name = " + addRecordPacket.getName() +
+    if (Config.debuggingEnabled) GNS.getLogger().fine("Add record at active replica. name = " + addRecordPacket.getName() +
             " node id: " + gnsApp.getNodeID());
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.putAsArray(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
@@ -40,7 +40,7 @@ public class Add {
         GNS.getLogger().severe("Name record exists when we just deleted it!!! - " + e.getMessage());
         e1.printStackTrace();
       }
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().fine("Name record already exists, i.e., record deleted and reinserted. Here is the inserted record: " + nameRecord);
       }
     }

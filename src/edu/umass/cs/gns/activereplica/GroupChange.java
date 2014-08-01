@@ -95,7 +95,7 @@ public class GroupChange {
 	protected static MessagingTask handlePrevValueRequest(NewActiveSetStartupPacket packet, String finalState, int activeID)
 			throws JSONException, IOException {
 		MessagingTask sendOldActiveState = null;
-		if (Config.debugMode) log.info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
+		if (Config.debuggingEnabled) log.info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
 				activeID);
 		// obtain name record
 		if (finalState == null) {
@@ -108,7 +108,7 @@ public class GroupChange {
 
 		packet.changePacketTypeToPreviousValueResponse();
 
-		if (Config.debugMode) log.info(" NEW_ACTIVE_START_PREV_VALUE_REQUEST reply sent to: " + packet.getSendingActive());
+		if (Config.debuggingEnabled) log.info(" NEW_ACTIVE_START_PREV_VALUE_REQUEST reply sent to: " + packet.getSendingActive());
 		// reply to sending active
 		sendOldActiveState = new MessagingTask(packet.getSendingActive(), packet.toJSONObject());
 		return sendOldActiveState;
@@ -141,7 +141,7 @@ public class GroupChange {
 		// send to all nodes, except self
 		packet.changePacketTypeToForward();
 		packet.setUniqueID(activeStartInfo.hashCode()); // this ID is set by active replica for identifying this packet.
-		if (Config.debugMode) log.info("NEW_ACTIVE_START: forwarded msg to nodes; "
+		if (Config.debuggingEnabled) log.info("NEW_ACTIVE_START: forwarded msg to nodes; "
 				+ packet.getNewActiveNameServers());
 		for (int nodeID: packet.getNewActiveNameServers()) {
 			if (arID != nodeID) { // exclude myself
@@ -182,11 +182,11 @@ public class GroupChange {
 			int sendingActive = originalPacket.getSendingActive();
 			originalPacket.changeSendingActive(activeID);
 
-			if (Config.debugMode) log.info("Node "+activeID+" NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
+			if (Config.debuggingEnabled) log.info("Node "+activeID+" NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
 
 			replyToActive = new MessagingTask(sendingActive, originalPacket.toJSONObject());
 		} else {
-			if (Config.debugMode) log.info(" NewActiveSetStartupPacket not found for response.");
+			if (Config.debuggingEnabled) log.info(" NewActiveSetStartupPacket not found for response.");
 		}
 		return replyToActive;
 	}
@@ -201,12 +201,12 @@ public class GroupChange {
 			throws JSONException, IOException {
 		MessagingTask replyToRC = null;
 		NewActiveStartInfo info = (NewActiveStartInfo) activeStartups.get(packet.getUniqueID());
-		if (Config.debugMode) log.info("NEW_ACTIVE_START: received confirmation from node: " +
+		if (Config.debuggingEnabled) log.info("NEW_ACTIVE_START: received confirmation from node: " +
 				packet.getSendingActive());
 		if (info != null) {
 			info.receivedResponseFromActive(packet.getSendingActive());
 			if (info.haveMajorityActivesResponded()) {
-				if (Config.debugMode) log.info("NEW_ACTIVE_START: received confirmation from majority. name = " + packet.getName());
+				if (Config.debuggingEnabled) log.info("NEW_ACTIVE_START: received confirmation from majority. name = " + packet.getName());
 				info.originalPacket.changePacketTypeToConfirmation();
 				replyToRC = new MessagingTask(info.originalPacket.getSendingPrimary(), info.originalPacket.toJSONObject());
 				activeStartups.remove(packet.getUniqueID());

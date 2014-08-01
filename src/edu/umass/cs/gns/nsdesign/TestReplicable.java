@@ -33,7 +33,7 @@ public class TestReplicable implements Replicable{
 
       JSONObject json = new JSONObject(value);
       if (Packet.getPacketType(json).equals(Packet.PacketType.PAXOS_PACKET)) {
-        if (Config.debugMode) GNS.getLogger().fine(" Received decision: " + value);
+        if (Config.debuggingEnabled) GNS.getLogger().fine(" Received decision: " + value);
         RequestPacket requestPacket = new RequestPacket(json);
         value = requestPacket.requestValue;
         noop = value.equals(RequestPacket.NO_OP);

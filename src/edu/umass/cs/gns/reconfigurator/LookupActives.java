@@ -37,7 +37,7 @@ public class LookupActives {
 		MessagingTask replyToLNS = null;
 		boolean isError = false;
 
-		if(Config.debugMode) log.fine("Received Request Active Packet Name = " + packet.getName());
+		if(Config.debuggingEnabled) log.fine("Received Request Active Packet Name = " + packet.getName());
 		try {
 			ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
 					DB, packet.getName(), ReplicaControllerRecord.MARKED_FOR_REMOVAL,
@@ -47,7 +47,7 @@ public class LookupActives {
 			} else { // send reply to LNS
 				packet.setActiveNameServers(rcRecord.getActiveNameservers());
 				replyToLNS = new MessagingTask(packet.getLNSID(), packet.toJSONObject());
-				if(Config.debugMode) log.fine("Sent actives for " + packet.getName() + " = " + rcRecord.getActiveNameservers());
+				if(Config.debuggingEnabled) log.fine("Sent actives for " + packet.getName() + " = " + rcRecord.getActiveNameservers());
 			}
 		} catch (RecordNotFoundException e) {
 			isError = true;

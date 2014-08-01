@@ -17,7 +17,7 @@ public class TestConfig {
   int numPaxosReplicas;
 
   int startingPort = 23434;
-//  boolean debugMode;
+//  boolean debuggingEnabled;
   int maxThreads;
 
   int MEMORY_GARBAGE_COLLECTION_INTERVAL = 100; // milliseconds
@@ -43,7 +43,7 @@ public class TestConfig {
   private  void readTestConfigFile(String testConfig) {
     File f = new File(testConfig);
     if (!f.exists()) {
-      if (Config.debugMode) GNS.getLogger().fine(" testConfig file does not exist. Quit. " +
+      if (Config.debuggingEnabled) GNS.getLogger().fine(" testConfig file does not exist. Quit. " +
               "Filename =  " + testConfig);
       System.exit(2);
     }
@@ -57,7 +57,7 @@ public class TestConfig {
 
       if (prop.containsKey("NumberOfReplicas"))  numPaxosReplicas = Integer.parseInt(prop.getProperty("NumberOfReplicas"));
 
-      if (prop.containsKey("EnableLogging")) Config.debugMode = Boolean.parseBoolean(prop.getProperty("EnableLogging"));
+      if (prop.containsKey("EnableLogging")) Config.debuggingEnabled = Boolean.parseBoolean(prop.getProperty("EnableLogging"));
 
       if (prop.containsKey("MaxThreads")) maxThreads = Integer.parseInt(prop.getProperty("MaxThreads"));
 

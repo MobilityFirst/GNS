@@ -45,7 +45,7 @@ public class Add {
                                                   boolean recovery)
           throws JSONException, FailedDBOperationException, IOException {
 
-    if (Config.debugMode) GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket +
+    if (Config.debuggingEnabled) GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket +
             " Local name server ID = " + addRecordPacket.getLocalNameServerID());
     if (recovery) ReplicaControllerRecord.removeNameRecordPrimary(replicaController.getDB(), addRecordPacket.getName());
 
@@ -69,14 +69,14 @@ public class Add {
           // change packet type and inform all active replicas.
           addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
           addRecordPacket.setActiveNameSevers(rcRecord.getActiveNameservers());
-          if (Config.debugMode) GNS.getLogger().fine("Name: " + rcRecord.getName() + " Initial active replicas: " + rcRecord.getActiveNameservers());
+          if (Config.debuggingEnabled) GNS.getLogger().fine("Name: " + rcRecord.getName() + " Initial active replicas: " + rcRecord.getActiveNameservers());
           for (Integer nodeID: rcRecord.getActiveNameservers()) {
             replicaController.getNioServer().sendToID(nodeID, addRecordPacket.toJSONObject());
           }
         }
 
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
-        if (Config.debugMode) GNS.getLogger().fine("Add complete informing client. " + addRecordPacket
+        if (Config.debuggingEnabled) GNS.getLogger().fine("Add complete informing client. " + addRecordPacket
                 + " Local name server ID = " + addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
         if (!recovery) {
           replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
@@ -92,7 +92,7 @@ public class Add {
       if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
         // send error to client
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
-        if (Config.debugMode)
+        if (Config.debuggingEnabled)
           GNS.getLogger().fine("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server ID = " +
                   addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
         if (!recovery) {

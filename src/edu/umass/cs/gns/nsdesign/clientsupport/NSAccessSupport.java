@@ -35,6 +35,8 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  */
 public class NSAccessSupport {
 
+  private static boolean debuggingEnabled = false;
+
   // try this for now
   private static final Set<String> WORLDREADABLEFIELDS = new HashSet<String>(Arrays.asList(GroupAccess.JOINREQUESTS, GroupAccess.LEAVEREQUESTS));
 
@@ -46,7 +48,9 @@ public class NSAccessSupport {
     if (publickeyString == null) { // bogus public key
       return false;
     }
-    //GNS.getLogger().info("NS: User " + guidInfo.getName() + " signature:" + signature + " message: " + message);
+    if (debuggingEnabled) {
+      GNS.getLogger().info("NS: User " + guidInfo.getName() + " signature:" + signature + " message: " + message);
+    }
     KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyString);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
@@ -55,7 +59,9 @@ public class NSAccessSupport {
     sig.initVerify(publicKey);
     sig.update(message.getBytes());
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    //GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+    }
     return result;
   }
 
@@ -70,7 +76,9 @@ public class NSAccessSupport {
    * @return
    */
   public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
-    GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
+    if (debuggingEnabled) {
+      GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
+    }
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
     } else if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
@@ -78,7 +86,9 @@ public class NSAccessSupport {
     } else if (checkForAccess(access, guidInfo, ALLFIELDS, accessorInfo, activeReplica)) {
       return true; // accessor can see all fields
     } else {
-      GNS.getLogger().info("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
+      if (debuggingEnabled) {
+        GNS.getLogger().info("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
+      }
       return false;
     }
   }
@@ -90,10 +100,14 @@ public class NSAccessSupport {
     }
     try {
       Set<String> allowedusers = NSFieldMetaData.lookupOnThisNameServer(access, guidInfo, field, activeReplica);
-      GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+      if (debuggingEnabled) {
+        GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+      }
       if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers, activeReplica)) {
-        GNS.getLogger().info("User " + accessorInfo.getName() + " allowed to access "
-                + (field != ALLFIELDS ? ("user " + guidInfo.getName() + "'s " + field + " field") : ("all of user " + guidInfo.getName() + "'s fields")));
+        if (debuggingEnabled) {
+          GNS.getLogger().info("User " + accessorInfo.getName() + " allowed to access "
+                  + (field != ALLFIELDS ? ("user " + guidInfo.getName() + "'s " + field + " field") : ("all of user " + guidInfo.getName() + "'s fields")));
+        }
         return true;
       }
       return false;
@@ -113,9 +127,9 @@ public class NSAccessSupport {
     } else if (allowedUsers.contains(EVERYONE)) {
       return true;
     } else {
-     // see if allowed users (the list of guids and group guids that is in the ACL) intersects with the groups that this
-     // guid is a member of (which is stored with this guid)
-     return !Sets.intersection(allowedUsers, NSGroupAccess.lookupGroups(accesserGuid, activeReplica)).isEmpty();
+      // see if allowed users (the list of guids and group guids that is in the ACL) intersects with the groups that this
+      // guid is a member of (which is stored with this guid)
+      return !Sets.intersection(allowedUsers, NSGroupAccess.lookupGroups(accesserGuid, activeReplica)).isEmpty();
 //      // map over the allowedusers and see if any of them are groups that the user belongs to
 //      for (String potentialGroupGuid : allowedUsers) {
 //        // Fix this to use the reverse group lookup because the info we want will be on this host then.
@@ -128,9 +142,13 @@ public class NSAccessSupport {
   }
 
   public static String removeSignature(String fullString, String fullSignatureField) {
-    GNS.getLogger().finer("fullstring = " + fullString + " fullSignatureField = " + fullSignatureField);
+    if (debuggingEnabled) {
+      GNS.getLogger().finer("fullstring = " + fullString + " fullSignatureField = " + fullSignatureField);
+    }
     String result = fullString.substring(0, fullString.lastIndexOf(fullSignatureField));
-    GNS.getLogger().finer("result = " + result);
+    if (debuggingEnabled) {
+      GNS.getLogger().finer("result = " + result);
+    }
     return result;
   }
 

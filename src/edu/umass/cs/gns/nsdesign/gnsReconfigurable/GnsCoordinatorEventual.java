@@ -105,7 +105,7 @@ public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
           paxosInterface.handleDecision(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
           paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
-          if (Config.debugMode) GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
+          if (Config.debuggingEnabled) GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
           // active replica has already put initial state for the name in DB. we only need to create paxos instance.

@@ -65,7 +65,7 @@ public class Intercessor implements IntercessorInterface {
   // Instrumentation
   private static ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  private static boolean debuggingEnabled = true;
+  private static boolean debuggingEnabled = false;
 
   static {
     randomID = new Random();
@@ -109,7 +109,7 @@ public class Intercessor implements IntercessorInterface {
           ConfirmUpdatePacket packet = new ConfirmUpdatePacket(json);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
-          if (StartLocalNameServer.debugMode) {
+          if (debuggingEnabled) {
             GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");
           }
           synchronized (monitorUpdate) {
@@ -122,7 +122,7 @@ public class Intercessor implements IntercessorInterface {
           id = dnsResponsePacket.getQueryId();
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
-            if (StartLocalNameServer.debugMode) {
+            if (debuggingEnabled) {
               GNS.getLogger().fine("Query (" + id + "): "
                       + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                       + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
@@ -132,7 +132,7 @@ public class Intercessor implements IntercessorInterface {
               monitor.notifyAll();
             }
           } else {
-            if (StartLocalNameServer.debugMode) {
+            if (debuggingEnabled) {
               GNS.getLogger().info("Intercessor: Query (" + id + "): "
                       + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
                       + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
@@ -176,7 +176,9 @@ public class Intercessor implements IntercessorInterface {
    * @return
    */
   public static QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
-    GNS.getLogger().fine("Sending query: " + name + " " + field);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Sending query: " + name + " " + field);
+    }
     int id = nextQueryRequestID();
 
     DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field),
@@ -194,13 +196,17 @@ public class Intercessor implements IntercessorInterface {
 
     // now we wait until the correct packet comes back
     try {
-      GNS.getLogger().fine("Waiting for query id: " + id);
+      if (debuggingEnabled) {
+        GNS.getLogger().fine("Waiting for query id: " + id);
+      }
       synchronized (monitor) {
         while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
       }
-      GNS.getLogger().fine("Query id response received: " + id);
+      if (debuggingEnabled) {
+        GNS.getLogger().fine("Query id response received: " + id);
+      }
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for return packet was interrupted " + x);
 
@@ -236,9 +242,13 @@ public class Intercessor implements IntercessorInterface {
    */
   public static NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
-    GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
+    }
     AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
-    GNS.getLogger().fine("#####PACKET: " + pkt.toString());
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
+    }
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -249,13 +259,17 @@ public class Intercessor implements IntercessorInterface {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().fine("Add (" + id + "): " + name + "/" + field + "\n  Returning: " + result);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Add (" + id + "): " + name + "/" + field + "\n  Returning: " + result);
+    }
     return result;
   }
 
   public static NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
-    GNS.getLogger().fine("Sending remove: " + name);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Sending remove: " + name);
+    }
     RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, id, name, localServerID);
     try {
       JSONObject json = pkt.toJSONObject();
@@ -266,7 +280,9 @@ public class Intercessor implements IntercessorInterface {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().fine("Remove (" + id + "): " + name + "\n  Returning: " + result);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Remove (" + id + "): " + name + "\n  Returning: " + result);
+    }
     return result;
   }
 
@@ -317,7 +333,9 @@ public class Intercessor implements IntercessorInterface {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().fine("Update (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Update (" + id + "): " + name + "/" + key + "\n  Returning: " + result);
+    }
     return result;
   }
 
@@ -341,7 +359,9 @@ public class Intercessor implements IntercessorInterface {
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
-    GNS.getLogger().fine("Update userJSON (" + id + "): " + name + "\n  Returning: " + result);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Update userJSON (" + id + "): " + name + "\n  Returning: " + result);
+    }
     return result;
   }
 
@@ -382,9 +402,13 @@ public class Intercessor implements IntercessorInterface {
           String writer, String signature, String message) {
 
     if (userJSON != null) {
-      GNS.getLogger().finer("Sending userJSON update: " + name + " : " + userJSON);
+      if (debuggingEnabled) {
+        GNS.getLogger().finer("Sending userJSON update: " + name + " : " + userJSON);
+      }
     } else {
-      GNS.getLogger().finer("Sending single field update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
+      if (debuggingEnabled) {
+        GNS.getLogger().finer("Sending single field update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
+      }
     }
     UpdatePacket packet = new UpdatePacket(
             UpdatePacket.LOCAL_SOURCE_ID, // means it came from Intercessor

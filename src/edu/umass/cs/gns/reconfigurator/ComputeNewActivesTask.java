@@ -114,7 +114,7 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 				HashMap<ColumnField, Object> hashMap = iterator.nextHashMap();
 				ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), hashMap);
 
-				if (Config.debugMode) {
+				if (Config.debuggingEnabled) {
 					log.fine("\tComputeNewActivesConsidering\t" + rcRecord.getName() + "\tCount\t" + numNamesRead +
 							"\tRound\t" + replicationRound);
 				}
@@ -148,7 +148,7 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 						e.printStackTrace();
 					}
 				} else {
-					if (Config.debugMode) {
+					if (Config.debuggingEnabled) {
 						log.fine("Old and new active name servers are same. No Operation.");
 					}
 				}

@@ -51,7 +51,7 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
       JSONObject json = new JSONObject(value);
       if (Packet.getPacketType(json).equals(Packet.PacketType.OLD_ACTIVE_STOP)) {
         OldActiveSetStopPacket stopPkt = new OldActiveSetStopPacket(json);
-        if (Config.debugMode) GNS.getLogger().fine("Executing stop request: " + value);
+        if (Config.debuggingEnabled) GNS.getLogger().fine("Executing stop request: " + value);
         boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
         if (noCoordinationState) {
           // probably stop has already been executed, so send confirmation to replica controller

@@ -105,7 +105,7 @@ public class GnsReconLookup {
             // need everything so just grab all the fields
             nameRecord = NameRecord.getNameRecord(gnsApp.getDB(), guid);
           } else {
-            if (Config.debugMode) {
+            if (Config.debuggingEnabled) {
               GNS.getLogger().finer("#### Field=" + field + " Format=" + dnsPacket.getReturnFormat());
             }
             // otherwise grab a few system fields we need plus the field the user wanted
@@ -114,7 +114,7 @@ public class GnsReconLookup {
         } catch (RecordNotFoundException e) {
           GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
         }
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().fine("Name record read is: " + nameRecord);
         }
         // Now we either have a name record with stuff it in or a null one
@@ -158,26 +158,26 @@ public class GnsReconLookup {
               dnsPacket.setRecordValue(nameRecord.getValuesMap());
             } else {
               dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
-              if (Config.debugMode) {
+              if (Config.debuggingEnabled) {
                 GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue());
               }
             }
             //FIXME: this might be redundant with above USER_JSON special case
           } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
-            if (Config.debugMode) {
+            if (Config.debuggingEnabled) {
               GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + guid);
             }
             // or we don't actually have the field
           } else { // send error msg.
-            if (Config.debugMode) {
+            if (Config.debuggingEnabled) {
               GNS.getLogger().info("Record doesn't contain field: " + key + " guid = " + guid + " record = " + nameRecord.toString());
             }
             dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
           }
           // For some reason the Guid of the packet is null
         } else { // send error msg.
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().info("GUID of query is NULL!");
           }
           dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
@@ -186,13 +186,13 @@ public class GnsReconLookup {
       } else { // send invalid error msg.
         dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().info("Invalid actives. Name = " + guid);
           }
         }
       }
     } catch (FieldNotFoundException e) {
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       }
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);

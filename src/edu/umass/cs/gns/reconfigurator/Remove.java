@@ -81,7 +81,7 @@ public class Remove {
 			// check if record marked as removed; it may not be if a group change for this name is in progress.
 			if (rcRecord.isMarkedForRemoval() && removeRecord.getNameServerID() == rcID && !recovery) {
 				// if marked for removal and this node received packet from client and not recover, inform actives
-				if (Config.debugMode) log.info("Node "+rcID+ " marked for removal: " + removeRecord);
+				if (Config.debuggingEnabled) log.info("Node "+rcID+ " marked for removal: " + removeRecord);
 				assert rcRecord.isActiveRunning() : "Node "+rcID + " active not running: "+rcRecord;
 				assert(protocolTasks.length>0);
 				StopActiveSetTask stopActiveSetTask = new StopActiveSetTask(removeRecord.getName(),
@@ -92,7 +92,7 @@ public class Remove {
 				sendError = true;
 				log.info("Remove record not executed because group change for the name is in progress " + removeRecord);
 			} else if (removeRecord.getNameServerID() != rcID){
-				if (Config.debugMode) log.info("SKIP: remove record request does not not contain node ID " + rcRecord.getName());
+				if (Config.debuggingEnabled) log.info("SKIP: remove record request does not not contain node ID " + rcRecord.getName());
 			}
 		} catch (FailedDBOperationException e) {
 			sendError = true;
@@ -101,7 +101,7 @@ public class Remove {
 			sendError = true;
 			log.info("Record not found. Sent failure confirmation to client. Name = " + removeRecord.getName());
 		} catch (FieldNotFoundException e) {
-			if (Config.debugMode) log.severe("Field Not Found Exception. " + e.getMessage());
+			if (Config.debuggingEnabled) log.severe("Field Not Found Exception. " + e.getMessage());
 			e.printStackTrace();
 		} finally {
 			if (sendError && removeRecord.getNameServerID() == rcID) {
@@ -119,10 +119,10 @@ public class Remove {
 			boolean recovery) throws JSONException, IOException {
 		if(recovery) return null;
 		MessagingTask removeFromSelf = null;
-		if (Config.debugMode) log.fine("RC handling active remove record ... " + activeStop);
+		if (Config.debuggingEnabled) log.fine("RC handling active remove record ... " + activeStop);
 		// response received for active stop request, so remove from set, which will cancel the OldActiveSetStopPacket task
 		RemoveRecordPacket removePacket = (RemoveRecordPacket) map.remove(activeStop.getRequestID());
-		if (Config.debugMode) log.fine("RC remove packet fetched ... " + removePacket);
+		if (Config.debuggingEnabled) log.fine("RC remove packet fetched ... " + removePacket);
 		if (removePacket != null) { // response has not been already received
 			removePacket.changePacketTypeToRcRemove();
 			removeFromSelf = new MessagingTask(rcID, removePacket.toJSONObject());
@@ -143,7 +143,7 @@ public class Remove {
 	 */
 	protected static MessagingTask[] executeRemoveRecord(RemoveRecordPacket removeRecordPacket, BasicRecordMap DB, int rcID,
 			boolean recovery) throws JSONException, FailedDBOperationException, IOException {
-		if (Config.debugMode) log.fine("DECISION executing remove record at RC: " + removeRecordPacket);
+		if (Config.debuggingEnabled) log.fine("DECISION executing remove record at RC: " + removeRecordPacket);
 		DB.removeNameRecord(removeRecordPacket.getName());
 
 		if(recovery) return null;
@@ -153,7 +153,7 @@ public class Remove {
 			// first received the client's request
 			ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
 			replyToLNS = new MessagingTask(removeRecordPacket.getLocalNameServerID(), confirmPacket.toJSONObject());
-			if (Config.debugMode) log.fine("Remove record response sent to LNS: " + removeRecordPacket.getName() + " lns "
+			if (Config.debuggingEnabled) log.fine("Remove record response sent to LNS: " + removeRecordPacket.getName() + " lns "
 					+ removeRecordPacket.getLocalNameServerID());
 		}
 		return replyToLNS.toArray();

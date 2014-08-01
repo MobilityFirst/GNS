@@ -484,7 +484,7 @@ public class PaxosLogger extends Thread {
         if (debugMode) {
           GNS.getLogger().fine("Deletable : " + x);
         }
-//          if (debugMode) GNS.getLogger().fine("NOT Deletable : " + x);
+//          if (debuggingEnabled) GNS.getLogger().fine("NOT Deletable : " + x);
       } else {
         if (debugMode) {
           GNS.getLogger().fine("NOT Deletable: " + x);
@@ -1301,7 +1301,7 @@ public class PaxosLogger extends Thread {
         if (line == null) {
           break;
         }
-//        if (debugMode) GNS.getLogger().fine("Reading line: " + line);
+//        if (debuggingEnabled) GNS.getLogger().fine("Reading line: " + line);
         PaxosLogMessage logMessage = new PaxosLogMessage(line);
         if (paxosIDs.contains(logMessage.getPaxosID()) == false) {
           paxosIDs.add(logMessage.getPaxosID());
@@ -1500,7 +1500,7 @@ public class PaxosLogger extends Thread {
       FileWriter fileWriter = new FileWriter("/state/partition1/myfilename", true);
 //      TODO How is BufferedWriter different from FileWriter? what should we use?
       String s = "klllkjasdl;fjaoial;smaso;imwa;eoimaw;cmaiw;coiamw;lcj;lhvalijwoij;lcmasdfasdfcawe;ojakls;dcl;w";
-//      if (debugMode) GNS.getLogger().fine("Logging this now: " + s);
+//      if (debuggingEnabled) GNS.getLogger().fine("Logging this now: " + s);
       fileWriter.write(s);
       fileWriter.close();
       long t1 = System.currentTimeMillis();

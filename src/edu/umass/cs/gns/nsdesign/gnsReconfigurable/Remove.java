@@ -71,7 +71,7 @@ public class Remove {
    */
   public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable gnsApp,
                                                      boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
-    if (Config.debugMode) GNS.getLogger().fine("Executing remove: " + oldActiveStopPacket);
+    if (Config.debuggingEnabled) GNS.getLogger().fine("Executing remove: " + oldActiveStopPacket);
 //    GNSMessagingTask msgTask = null;
     if (noCoordinationState == false) { // normal case:
       try {

@@ -24,7 +24,7 @@ public class Config {
 
   private static boolean initialized = false;
 
-  public static boolean debugMode = true;
+  public static boolean debuggingEnabled = false;
   
   // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?
   public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/"; 
@@ -180,7 +180,7 @@ public class Config {
     }
 
     if (allValues.containsKey(NSParameterNames.DEBUG_MODE)) {
-      debugMode = Boolean.parseBoolean(allValues.get(NSParameterNames.DEBUG_MODE));
+      debuggingEnabled = Boolean.parseBoolean(allValues.get(NSParameterNames.DEBUG_MODE));
     }
 
     if (allValues.containsKey(NSParameterNames.MULTI_PAXOS)) {
@@ -194,7 +194,7 @@ public class Config {
       GNS.numPrimaryReplicas = 1;
       Config.minReplica = 1;
       singleNS = true;
-      if (Config.debugMode) GNS.getLogger().fine("Number of primary: " + GNS.numPrimaryReplicas + " \tSingleNS\t" + singleNS);
+      if (Config.debuggingEnabled) GNS.getLogger().fine("Number of primary: " + GNS.numPrimaryReplicas + " \tSingleNS\t" + singleNS);
     }
   }
 

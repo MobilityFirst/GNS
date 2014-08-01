@@ -51,7 +51,7 @@ public class Add {
 		MessagingTask activeMTask=null, LNSMTask=null;  // send add at active, confirmation or error to LNS
 		boolean addedAtReplicaController= false;
 
-		if (Config.debugMode) log.fine("Executing ADD at replica controller " + addRecordPacket +
+		if (Config.debuggingEnabled) log.fine("Executing ADD at replica controller " + addRecordPacket +
 				" Local name server ID = " + addRecordPacket.getLocalNameServerID());
 		
 		// FIXME: earlier version removed record if recovery. Unclear why we shouldn't just try and fail.
@@ -72,7 +72,7 @@ public class Add {
 			if (addRecordPacket.getNameServerID() == rcID) {
 				// send ERROR to LNS
 				ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
-				if (Config.debugMode) log.fine("Record exists. sending failure: name = " + addRecordPacket.getName() + 
+				if (Config.debuggingEnabled) log.fine("Record exists. sending failure: name = " + addRecordPacket.getName() + 
 						" Local name server ID = " + addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
 				LNSMTask = new MessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
 			}
@@ -87,7 +87,7 @@ public class Add {
 			// send NO_ERROR confirmation to LNS
 			if (colocatedActiveAndReplicaController(addRecordPacket, rcID)) { // FIXME: Why is this check needed?
 				ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
-				if (Config.debugMode) log.fine("Add complete informing client. " + addRecordPacket + " LocalNameServerID = " +
+				if (Config.debuggingEnabled) log.fine("Add complete informing client. " + addRecordPacket + " LocalNameServerID = " +
 						addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
 				LNSMTask = new MessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
 			}

@@ -129,12 +129,12 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 	/* Received a response containing the final state from the previous version */
 	private NewActiveSetStartupPacket processNewActiveStartPrevValueResponse(JSONObject msg) throws JSONException {
 		NewActiveSetStartupPacket response = new NewActiveSetStartupPacket(msg);
-		if (Config.debugMode) log.info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + getNodeID());
+		if (Config.debuggingEnabled) log.info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + getNodeID());
 		if (response.getPreviousValueCorrect()) {
 			this.app.putInitialState(response.getName(), response.getNewActiveVersion(), response.getPreviousValue());
 			getCoordinator().coordinateRequest(response.toJSONObject());
 			return (NewActiveSetStartupPacket) getOngoingStateTransferRequests().remove(response.getUniqueID());
-		} else if (Config.debugMode) log.info("Node "+myID+" Old Active did not return previous value.");
+		} else if (Config.debuggingEnabled) log.info("Node "+myID+" Old Active did not return previous value.");
 		return null;
 	}
 
@@ -146,7 +146,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 			JSONObject json = new JSONObject(value);
 			if (Packet.getPacketType(json).equals(Packet.PacketType.OLD_ACTIVE_STOP)) {
 				OldActiveSetStopPacket stopPkt = new OldActiveSetStopPacket(json);
-				if (Config.debugMode) log.fine("Node "+myID+" executing stop request: " + value);
+				if (Config.debuggingEnabled) log.fine("Node "+myID+" executing stop request: " + value);
 				boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
 				if (noCoordinationState) {
 					// probably stop has already been executed, so send confirmation to replica controller

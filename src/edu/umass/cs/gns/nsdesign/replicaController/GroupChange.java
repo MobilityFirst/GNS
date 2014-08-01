@@ -149,7 +149,7 @@ public class GroupChange {
           // todo could use failure detector here
           // todo if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
           // todo then proposing node has failed, so I will start group change
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().fine(" : Stop oldActiveSet now: Name = " + activeProposalPacket.getName());
           }
           StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
@@ -195,11 +195,11 @@ public class GroupChange {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
               replicaController.getDB(), packet.getName(), startActiveSetFields);
 
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().info("Old active stopped. write to nameRecord: " + packet.getName());
       }
       if (!rcRecord.isActiveRunning()) {
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().info("OLD Active  stopped. Name: " + rcRecord.getName() + " Old Version: "
                   + packet.getVersion());
         }
@@ -229,7 +229,7 @@ public class GroupChange {
    */
   public static void handleNewActiveStartConfirmMessage(NewActiveSetStartupPacket packet, ReplicaController replicaController)
           throws JSONException, IOException {
-    if (Config.debugMode) {
+    if (Config.debuggingEnabled) {
       GNS.getLogger().info("NEW_ACTIVE_START: Received confirmation at primary. " + packet.getName());
     }
     Object o = replicaController.getOngoingStartActiveRequests().remove(packet.getUniqueID());
@@ -242,7 +242,7 @@ public class GroupChange {
       }
       GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());
       replicaController.getNioServer().sendToID(replicaController.getNodeID(), proposePacket.toJSONObject());
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().info(" Propose group change complete message for coordination: " + packet.getName()
                 + " Version = " + packet.getNewActiveNameServers());
       }
@@ -264,7 +264,7 @@ public class GroupChange {
   public static void executeActiveNameServersRunning(GroupChangeCompletePacket packet,
                                                      ReplicaController replicaController, boolean recovery)
           throws JSONException, FailedDBOperationException {
-    if (Config.debugMode) {
+    if (Config.debuggingEnabled) {
       GNS.getLogger().info("Execute: New active started. write to database: " + packet);
     }
     try {
@@ -274,7 +274,7 @@ public class GroupChange {
       GNS.getLogger().info("Group change complete. name = " + rcRecord.getName() + " Version "
               + rcRecord.getActiveVersion());
       if (rcRecord.setNewActiveRunning(packet.getVersion())) {
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
           GNS.getLogger().info("New active running. Name: " + packet.getName() + " Version: " + packet.getVersion());
         }
       } else {

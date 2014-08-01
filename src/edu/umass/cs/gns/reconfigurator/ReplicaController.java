@@ -263,7 +263,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
 	private void updateNSLoad(JSONObject json) throws JSONException {
 		NameServerLoadPacket nsLoad  = new NameServerLoadPacket(json);
-		if (Config.debugMode) log.fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
+		if (Config.debuggingEnabled) log.fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
 				"\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID()) +
 				"\tNewNoad: " + nsLoad.getLoadValue() + "\t");
 		nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());

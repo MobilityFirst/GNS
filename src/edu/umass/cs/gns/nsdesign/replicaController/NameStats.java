@@ -22,7 +22,7 @@ public class NameStats {
    * read rate, write rate, and votes for closest name server.
    */
   public static void handleLNSVotesPacket(JSONObject incomingJSON, ReplicaController replicaController) throws JSONException {
-    if (Config.debugMode) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
+    if (Config.debuggingEnabled) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
     NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(incomingJSON);
     try {
       ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), selectionPacket.getName());

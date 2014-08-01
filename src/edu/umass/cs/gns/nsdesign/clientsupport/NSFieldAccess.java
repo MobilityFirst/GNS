@@ -38,16 +38,16 @@ public class NSFieldAccess {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       }
       result = nameRecord.getKey(field);
     } catch (FieldNotFoundException e) {
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().info("Field not found " + guid + " : " + field);
       }
     } catch (RecordNotFoundException e) {
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
         GNS.getLogger().info("Record not found " + guid + " : " + field);
       }
     }

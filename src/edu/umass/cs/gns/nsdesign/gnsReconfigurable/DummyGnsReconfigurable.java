@@ -111,7 +111,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
          * Packets sent from replica controller *
          */
         case ACTIVE_ADD: // sent when new name is added to GNS
-          if (Config.debugMode) GNS.getLogger().fine("Add received at GNS: " + json);
+          if (Config.debuggingEnabled) GNS.getLogger().fine("Add received at GNS: " + json);
           // ha ha do nothing
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
@@ -140,7 +140,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
       // confirm to primary
       oldActiveStopPacket.changePacketTypeToActiveRemoved();
       nioServer.sendToID(oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
-      if (Config.debugMode) GNS.getLogger().fine("Active removed: Name Record updated. Sent confirmation to replica " +
+      if (Config.debuggingEnabled) GNS.getLogger().fine("Active removed: Name Record updated. Sent confirmation to replica " +
               "controller. Packet = " + oldActiveStopPacket);
     } else {
       // other nodes do nothing.
@@ -151,7 +151,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
   private void executeUpdateLocal(UpdatePacket updatePacket, boolean noCoordinationState) throws JSONException, IOException {
     JSONObject returnJson = null;
     if (noCoordinationState) {
-      if (Config.debugMode) GNS.getLogger().fine("Sending invalid active error to client: " + updatePacket);
+      if (Config.debuggingEnabled) GNS.getLogger().fine("Sending invalid active error to client: " + updatePacket);
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       returnJson = failConfirmPacket.toJSONObject();
     } else {
@@ -159,7 +159,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                 updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
                 NSResponseCode.NO_ERROR);
-        if (Config.debugMode)
+        if (Config.debuggingEnabled)
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
         returnJson = confirmPacket.toJSONObject();
       }
@@ -171,11 +171,11 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
 
   private void executeLookupLocal(DNSPacket dnsPacket, boolean noCoordinatorState) throws JSONException, IOException {
     if (noCoordinatorState) {
-      if (Config.debugMode) GNS.getLogger().fine("Sending invalid active error to client: " + dnsPacket);
+      if (Config.debuggingEnabled) GNS.getLogger().fine("Sending invalid active error to client: " + dnsPacket);
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     } else {
-      if (Config.debugMode) GNS.getLogger().fine("Sending correct lookup response to client: " + dnsPacket);
+      if (Config.debuggingEnabled) GNS.getLogger().fine("Sending correct lookup response to client: " + dnsPacket);
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.setResponder(nodeID);
       dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);

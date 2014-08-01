@@ -74,7 +74,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
     }
     try {
 
-      if (Config.debugMode) GNS.getLogger().info(" NEW_ACTIVE_START_FORWARD received packet: " + packet.toJSONObject());
+      if (Config.debuggingEnabled) GNS.getLogger().info(" NEW_ACTIVE_START_FORWARD received packet: " + packet.toJSONObject());
 
       if (activeReplica.getOngoingStateTransferRequests().get(requestID) == null) {
         GNS.getLogger().info(" COPY State from Old Active Successful! Cancel Task; Actives Queried: " + oldActivesQueried);
@@ -92,7 +92,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
         throw new CancelExecutorTaskException();
       }
       oldActivesQueried.add(oldActive);
-      if (Config.debugMode) GNS.getLogger().info(" OLD ACTIVE SELECTED = : " + oldActive);
+      if (Config.debuggingEnabled) GNS.getLogger().info(" OLD ACTIVE SELECTED = : " + oldActive);
 
       try {
         activeReplica.getNioServer().sendToID(oldActive, packet.toJSONObject());
@@ -103,7 +103,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
         GNS.getLogger().severe(" JSONException here: " + e.getMessage());
         e.printStackTrace();
       }
-      if (Config.debugMode) GNS.getLogger().info(" REQUESTED VALUE from OLD ACTIVE. PACKET: " + packet);
+      if (Config.debuggingEnabled) GNS.getLogger().info(" REQUESTED VALUE from OLD ACTIVE. PACKET: " + packet);
 
     } catch (JSONException e) {
       e.printStackTrace();

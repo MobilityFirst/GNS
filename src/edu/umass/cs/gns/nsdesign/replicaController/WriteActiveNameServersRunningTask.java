@@ -85,7 +85,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
         throw  new CancelExecutorTaskException();
       }
 
-      if (Config.debugMode) GNS.getLogger().info("PROPOSAL write active NS running. Version " + version +
+      if (Config.debuggingEnabled) GNS.getLogger().info("PROPOSAL write active NS running. Version " + version +
               "\tnumAttempts\t" + numAttempts);
 
       // otherwise propose again.

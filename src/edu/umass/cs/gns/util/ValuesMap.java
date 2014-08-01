@@ -25,7 +25,7 @@ import org.json.JSONArray;
  */
 public class ValuesMap extends JSONObject {
 
-  private static boolean debuggingEnabled = true;
+  private static boolean debuggingEnabled = false;
 
   /**
    * Creates an empty ValuesMap.

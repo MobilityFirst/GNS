@@ -153,7 +153,7 @@ public class GroupChange {
 			// todo could use failure detector here
 			// if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
 			// then proposing node has failed, so I will start group change
-			if (Config.debugMode) log.fine("Node "+rcID+" : stop oldActiveSet name = " + activeProposalPacket.getName());
+			if (Config.debuggingEnabled) log.fine("Node "+rcID+" : stop oldActiveSet name = " + activeProposalPacket.getName());
 			StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
 					rcRecord.getOldActiveNameservers(), rcRecord.getOldActiveVersion(),
 					Packet.PacketType.OLD_ACTIVE_STOP, activeProposalPacket);
@@ -205,11 +205,11 @@ public class GroupChange {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
               DB, packet.getName(), startActiveSetFields);
 
-      if (Config.debugMode) {
+      if (Config.debuggingEnabled) {
 				log.info("Old active stopped. write to nameRecord: " + packet.getName());
 			}
 			if (!rcRecord.isActiveRunning()) {
-				if (Config.debugMode) {
+				if (Config.debuggingEnabled) {
 					log.info("OLD Active  stopped. Name: " + rcRecord.getName() + " Old Version: "
 							+ packet.getVersion());
 				}
@@ -238,7 +238,7 @@ public class GroupChange {
 	public static MessagingTask[] handleNewActiveStartConfirmMessage(NewActiveSetStartupPacket packet, int rcID, 
 			UniqueIDHashMap ongoingStarts, RCProtocolTask[] protocolTasks) throws JSONException, IOException {
 		MessagingTask notifyRC = null, notifyOldActives = null;
-		if (Config.debugMode) log.info("NEW_ACTIVE_START: Received confirmation at primary. " + packet.getName());
+		if (Config.debuggingEnabled) log.info("NEW_ACTIVE_START: Received confirmation at primary. " + packet.getName());
 
 		Object removed = ongoingStarts.remove(packet.getUniqueID());
 		if (removed != null) {
@@ -251,7 +251,7 @@ public class GroupChange {
 			GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());
 			notifyRC = new MessagingTask(rcID, proposePacket.toJSONObject());
 
-			if (Config.debugMode)  log.info(" Propose group change complete message for coordination: " + packet.getName()
+			if (Config.debuggingEnabled)  log.info(" Propose group change complete message for coordination: " + packet.getName()
 					+ " Version = " + packet.getNewActiveNameServers());
 			/* This task is created to check if replica controllers have updated their database, if not, the request is 
 			 * re-proposed for coordination.
@@ -277,7 +277,7 @@ public class GroupChange {
 			BasicRecordMap DB, int rcID, boolean recovery)
 					throws JSONException {
 		MessagingTask replyToLNS = null;
-		if (Config.debugMode) log.info("Node "+rcID+": new active started; writing to database: " + packet);
+		if (Config.debuggingEnabled) log.info("Node "+rcID+": new active started; writing to database: " + packet);
 		try {
 			ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
 					DB, packet.getName(), newActiveStartedFields);
@@ -285,7 +285,7 @@ public class GroupChange {
 			log.info("Node "+rcID + " group change complete. name = " + rcRecord.getName() + " Version "
 					+ rcRecord.getActiveVersion());
 			if (rcRecord.setNewActiveRunning(packet.getVersion())) {
-				if (Config.debugMode) log.info("Node "+rcID+" new active running: " + packet.getName() + " : " + 
+				if (Config.debuggingEnabled) log.info("Node "+rcID+" new active running: " + packet.getName() + " : " + 
 						packet.getVersion());
 			} else {
 				log.info("Node "+rcID+" IGNORE MSG: NEW Active Version NOT FOUND while setting it to inactive. " +

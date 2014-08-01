@@ -103,7 +103,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
       final Packet.PacketType type = Packet.getPacketType(json);
 
       // return value should be true if packet type matches these packets:
-      if (Config.debugMode) GNS.getLogger().fine(" MsgType " + type + " Msg " + json);
+      if (Config.debuggingEnabled) GNS.getLogger().fine(" MsgType " + type + " Msg " + json);
       nameServer.getExecutorService().submit(new Runnable() {
         @Override
         public void run() {

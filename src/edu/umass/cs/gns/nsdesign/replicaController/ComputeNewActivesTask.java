@@ -95,7 +95,7 @@ public class ComputeNewActivesTask extends TimerTask {
         HashMap<ColumnField, Object> hashMap = iterator.nextHashMap();
         ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), hashMap);
 
-        if (Config.debugMode) {
+        if (Config.debuggingEnabled) {
         GNS.getLogger().fine("\tComputeNewActivesConsidering\t" + rcRecord.getName() + "\tCount\t" + numNamesRead +
                   "\tRound\t" + replicationRound);
         }
@@ -129,7 +129,7 @@ public class ComputeNewActivesTask extends TimerTask {
             e.printStackTrace();
           }
         } else {
-          if (Config.debugMode) {
+          if (Config.debuggingEnabled) {
             GNS.getLogger().fine("Old and new active name servers are same. No Operation.");
           }
         }

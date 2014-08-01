@@ -162,7 +162,7 @@ public class NameServer implements Shutdownable{
       replicaControllerCoordinator = new DefaultRcCoordinator(nodeID, replicaController);
     } else {
       PaxosConfig paxosConfig = new PaxosConfig();
-      paxosConfig.setDebugMode(Config.debugMode);
+      paxosConfig.setDebugMode(Config.debuggingEnabled);
       paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
       paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
       paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);

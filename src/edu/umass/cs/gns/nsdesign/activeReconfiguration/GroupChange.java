@@ -82,7 +82,7 @@ public class GroupChange {
    */
   public static void handlePrevValueRequest(NewActiveSetStartupPacket packet, ActiveReplica<?> activeReplica)
           throws JSONException, IOException {
-    if (Config.debugMode) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
+    if (Config.debuggingEnabled) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
             activeReplica.getNodeID());
     // obtain name record
     String value = activeReplica.getActiveReplicaApp().getFinalState(packet.getName(), (short) packet.getOldActiveVersion());
@@ -96,7 +96,7 @@ public class GroupChange {
 
     packet.changePacketTypeToPreviousValueResponse();
 
-    if (Config.debugMode) GNS.getLogger().info(" NEW_ACTIVE_START_PREV_VALUE_REQUEST reply sent to: " + packet.getSendingActive());
+    if (Config.debuggingEnabled) GNS.getLogger().info(" NEW_ACTIVE_START_PREV_VALUE_REQUEST reply sent to: " + packet.getSendingActive());
     // reply to sending active
     activeReplica.getNioServer().sendToID(packet.getSendingActive(), packet.toJSONObject());
   }
@@ -134,7 +134,7 @@ public class GroupChange {
     // send to all nodes, except self
     packet.changePacketTypeToForward();
     packet.setUniqueID(requestID); // this ID is set by active replica for identifying this packet.
-    if (Config.debugMode) GNS.getLogger().info("NEW_ACTIVE_START: forwarded msg to nodes; "
+    if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: forwarded msg to nodes; "
             + packet.getNewActiveNameServers());
     for (int nodeID: packet.getNewActiveNameServers()) {
       if (activeReplica.getNodeID() != nodeID) { // exclude myself
@@ -166,7 +166,7 @@ public class GroupChange {
    */
   public static void handlePrevValueResponse(NewActiveSetStartupPacket packet, ActiveReplica<?> activeReplica)
           throws JSONException, IOException{
-    if (Config.debugMode) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + activeReplica.getNodeID());
+    if (Config.debuggingEnabled) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + activeReplica.getNodeID());
     if (packet.getPreviousValueCorrect()) {
       activeReplica.getActiveReplicaApp().putInitialState(packet.getName(), (short) packet.getNewActiveVersion(),
               packet.getPreviousValue());
@@ -179,14 +179,14 @@ public class GroupChange {
         int sendingActive = originalPacket.getSendingActive();
         originalPacket.changeSendingActive(activeReplica.getNodeID());
 
-        if (Config.debugMode) GNS.getLogger().info("NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
+        if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);
 
         activeReplica.getNioServer().sendToID(sendingActive, originalPacket.toJSONObject());
       } else {
-        if (Config.debugMode) GNS.getLogger().info(" NewActiveSetStartupPacket not found for response.");
+        if (Config.debuggingEnabled) GNS.getLogger().info(" NewActiveSetStartupPacket not found for response.");
       }
     } else {
-      if (Config.debugMode) GNS.getLogger().info(" Old Active did not return previous value.");
+      if (Config.debuggingEnabled) GNS.getLogger().info(" Old Active did not return previous value.");
     }
   }
 
@@ -199,12 +199,12 @@ public class GroupChange {
   public static void handleNewActiveStartResponse(NewActiveSetStartupPacket packet, ActiveReplica<?> activeReplica)
           throws JSONException, IOException {
     NewActiveStartInfo info = (NewActiveStartInfo) activeReplica.getActiveStartupInProgress().get(packet.getUniqueID());
-    if (Config.debugMode) GNS.getLogger().info("NEW_ACTIVE_START: received confirmation from node: " +
+    if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: received confirmation from node: " +
             packet.getSendingActive());
     if (info != null) {
       info.receivedResponseFromActive(packet.getSendingActive());
       if (info.haveMajorityActivesResponded()) {
-        if (Config.debugMode) GNS.getLogger().info("NEW_ACTIVE_START: received confirmation from majority. name = " + packet.getName());
+        if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: received confirmation from majority. name = " + packet.getName());
         info.originalPacket.changePacketTypeToConfirmation();
         activeReplica.getNioServer().sendToID(info.originalPacket.getSendingPrimary(), info.originalPacket.toJSONObject());
         activeReplica.getActiveStartupInProgress().remove(packet.getUniqueID());
