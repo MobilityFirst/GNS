@@ -32,7 +32,11 @@ public class NSFieldMetaData {
    * @param type
    * @param guidInfo
    * @param key
+   * @param activeReplica
    * @return
+   * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
           GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
@@ -45,7 +49,11 @@ public class NSFieldMetaData {
    * @param type
    * @param guid
    * @param key
+   * @param activeReplica
    * @return
+   * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
           GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
@@ -59,13 +67,13 @@ public class NSFieldMetaData {
 
   public static void add(MetaDataTypeName type, String guid, String key, String value, GnsReconfigurableInterface activeReplica) {
 
-    String metaDataKey = FieldMetaData.makeFieldMetaDataKey(type, key);
-    LNSUpdateHandler.sendUpdate(guid, metaDataKey, new ResultValue(Arrays.asList(value)), UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica);
+    LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica);
   }
 
   public static void remove(MetaDataTypeName type, String guid, String key, String value, GnsReconfigurable activeReplica) {
 
-    String metaDataKey = FieldMetaData.makeFieldMetaDataKey(type, key);
-    LNSUpdateHandler.sendUpdate(guid, metaDataKey, new ResultValue(Arrays.asList(value)), UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
+    LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
+            UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
   }
 }

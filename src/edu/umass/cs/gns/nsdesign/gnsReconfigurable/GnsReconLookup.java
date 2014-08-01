@@ -1,8 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.clientsupport.Defs;
-import edu.umass.cs.gns.clientsupport.FieldAccess;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
@@ -12,9 +10,6 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
-import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
-import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
@@ -89,7 +84,7 @@ public class GnsReconLookup {
       NSResponseCode errorCode = NSResponseCode.NO_ERROR;
 
       // FIXME: ignore check for non-top-level fields
-      if (reader != null && dnsPacket.keyIsAllFieldsOrTopLevel()) { // reader will be null for internal system reads
+      if (reader != null) { // reader will be null for internal system reads
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST, gnsApp);
       }
       // return an error packet if one of the checks doesn't pass
@@ -111,16 +106,16 @@ public class GnsReconLookup {
             nameRecord = NameRecord.getNameRecord(gnsApp.getDB(), guid);
           } else {
             if (Config.debugMode) {
-              GNS.getLogger().info("#### Field=" + field + " Format=" + dnsPacket.getReturnFormat());
+              GNS.getLogger().finer("#### Field=" + field + " Format=" + dnsPacket.getReturnFormat());
             }
             // otherwise grab a few system fields we need plus the field the user wanted
             nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, dnsSystemFields, dnsPacket.getReturnFormat(), field);
           }
         } catch (RecordNotFoundException e) {
-          GNS.getLogger().info("Record not found for name: " + guid + " Key = " + field);
+          GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
         }
         if (Config.debugMode) {
-          GNS.getLogger().info("Name record read is: " + nameRecord);
+          GNS.getLogger().fine("Name record read is: " + nameRecord);
         }
         // Now we either have a name record with stuff it in or a null one
         // Time to send something back to the client
@@ -164,19 +159,19 @@ public class GnsReconLookup {
             } else {
               dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
               if (Config.debugMode) {
-                GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid);
+                GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue());
               }
             }
             //FIXME: this might be redundant with above USER_JSON special case
           } else if (Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (Config.debugMode) {
-              GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
+              GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + guid);
             }
             // or we don't actually have the field
           } else { // send error msg.
             if (Config.debugMode) {
-              GNS.getLogger().info("Record doesn't contain field: " + key + " name  = " + guid + " :: RECORD: " + nameRecord.toString());
+              GNS.getLogger().info("Record doesn't contain field: " + key + " guid = " + guid + " record = " + nameRecord.toString());
             }
             dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
           }

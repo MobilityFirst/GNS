@@ -128,7 +128,7 @@ public enum UpdateOperation {
       if (valuesList == null) {
         valuesList = new ResultValue();
       }
-      if (UpdateSingleField(valuesList, key, newValues, oldValues, argument, operation)) {
+      if (UpdateSingleField(valuesList, newValues, oldValues, argument, operation)) {
         valuesMap.putAsArray(key, valuesList);
         return true;
       } else {
@@ -148,9 +148,8 @@ public enum UpdateOperation {
     return !valuesList.isEmpty() && valuesList.get(0).equals(Defs.NULLRESPONSE);
   }
 
-  private static boolean UpdateSingleField(ResultValue valuesList, String key,
-          ResultValue newValues, ResultValue oldValues, int argument,
-          UpdateOperation operation) {
+  private static boolean UpdateSingleField(ResultValue valuesList, ResultValue newValues, ResultValue oldValues, 
+          int argument, UpdateOperation operation) {
     switch (operation) {
       case SINGLE_FIELD_CLEAR:
         valuesList.clear();

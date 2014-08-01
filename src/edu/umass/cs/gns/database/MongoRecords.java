@@ -21,7 +21,6 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -256,7 +255,7 @@ public class MongoRecords implements NoSQLRecords {
       if (valuesMapField != null && valuesMapKeys != null) {
         // first we pull all the user values from the dbObject and put in a bson object
         BasicDBObject bson = (BasicDBObject) dbObject.get(valuesMapField.getName());
-        if (Config.debugMode) {
+        if (debuggingEnabled) {
           GNS.getLogger().info("@@@@@@@@ " + bson.toString());
         }
         // then we run thru each userkey in the valuesMapKeys and pull the
@@ -265,7 +264,7 @@ public class MongoRecords implements NoSQLRecords {
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String userKey = valuesMapKeys.get(i).getName();
           if (containsFieldDotNotation(userKey, bson) == false) {
-            if (Config.debugMode) {
+            if (debuggingEnabled) {
               GNS.getLogger().info("DBObject doesn't contain " + userKey);
             }
             continue;
@@ -274,16 +273,17 @@ public class MongoRecords implements NoSQLRecords {
             switch (valuesMapKeys.get(i).type()) {
               case USER_JSON:
                 Object value = getWithDotNotation(userKey, bson);
-                if (Config.debugMode) {
+                if (debuggingEnabled) {
                   GNS.getLogger().info("Object is " + value.toString());
                 }
                 valuesMap.put(userKey, value);
                 break;
               case LIST_STRING:
-                valuesMap.putAsArray(valuesMapKeys.get(i).getName(), JSONUtils.JSONArrayToResultValue(new JSONArray(bson.get(userKey).toString())));
+                valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(getWithDotNotation(userKey, bson).toString())));
+                //valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(bson.get(userKey).toString())));
                 break;
               default:
-                GNS.getLogger().severe("ERROR: Error: User keys field " + userKey + " is not of type " + ColumnFieldType.LIST_STRING);
+                GNS.getLogger().severe("ERROR: Error: User keys field " + userKey + " is not a known type:" + valuesMapKeys.get(i).type());
                 break;
             }
           } catch (JSONException e) {

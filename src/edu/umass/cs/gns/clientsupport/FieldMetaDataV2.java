@@ -16,11 +16,21 @@ import java.util.Set;
  *
  * @author westy
  */
-public class FieldMetaData {
+public class FieldMetaDataV2 {
+
+  public static boolean isMetaDataField(String string) {
+   for (MetaDataTypeName mdType : MetaDataTypeName.values()) {
+     if (string.startsWith(mdType.getFieldPath())) {
+       return true;
+     }
+   }
+   return false;
+  }
   
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
     return metaDataType.getFieldPath() + "." + key;
   }
+  
   
   /**
    * Adds a value to the metadata of the field in the guid.
@@ -59,6 +69,11 @@ public class FieldMetaData {
     }
   }
 
+  
+
+  // Deprecated because it doesn't require use authentication
+  // Still used in account registration
+  @Deprecated
   public static void add(MetaDataTypeName type, String guid, String key, String value) {
     Intercessor.sendUpdateRecordBypassingAuthentication(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }

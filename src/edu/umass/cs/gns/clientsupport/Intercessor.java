@@ -65,6 +65,8 @@ public class Intercessor implements IntercessorInterface {
   // Instrumentation
   private static ConcurrentMap<Integer, Long> queryTimeStamp;
 
+  private static boolean debuggingEnabled = true;
+
   static {
     randomID = new Random();
     queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
@@ -153,30 +155,31 @@ public class Intercessor implements IntercessorInterface {
   }
 
   /**
-   
+   *
    */
   /**
-   * Sends a query to the Nameserver for a field in a guid. 
+   * Sends a query to the Nameserver for a field in a guid.
    * Field is a string naming the field. Field can us dot notation to indicate subfields.
    * Field can also be +ALL+ meaing retrieve all the fields (including internal system fields).
    * Return format should be one of ColumnFieldType.USER_JSON signifying new JSONObject format or
    * ColumnFieldType.LIST_STRING signifying old JSONArray of strings format.
-   * 
-   * 
+   *
+   *
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
+   *
    * @param name
    * @param field
    * @param reader
    * @param signature
    * @param message
    * @param returnFormat
-   * @return 
+   * @return
    */
   public static QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     GNS.getLogger().fine("Sending query: " + name + " " + field);
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field), 
+    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field),
             returnFormat, reader, signature, message);
     JSONObject json;
     try {
@@ -208,8 +211,10 @@ public class Intercessor implements IntercessorInterface {
     Long sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime - sentTime;
-    GNS.getLogger().fine("Query (" + id + ") RTT = " + rtt + "ms");
-    GNS.getLogger().finer("Query (" + id + "): " + name + "/" + field + "\n  Returning: " + result.toString());
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("Query (" + id + ") RTT = " + rtt + "ms");
+      GNS.getLogger().info("Query (" + id + "): " + name + "/" + field + "\n  Returning: " + result.toString());
+    }
     result.setRoundTripTime(rtt);
     return result;
   }
@@ -384,7 +389,7 @@ public class Intercessor implements IntercessorInterface {
     UpdatePacket packet = new UpdatePacket(
             UpdatePacket.LOCAL_SOURCE_ID, // means it came from Intercessor
             id,
-            name, 
+            name,
             key != null ? new NameRecordKey(key) : null,
             newValue,
             oldValue,

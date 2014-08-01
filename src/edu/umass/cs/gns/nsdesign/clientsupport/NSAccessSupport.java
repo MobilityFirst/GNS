@@ -8,7 +8,6 @@
 package edu.umass.cs.gns.nsdesign.clientsupport;
 
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
@@ -61,18 +60,6 @@ public class NSAccessSupport {
   }
 
   /**
-   * Checks to see if the reader given in readerInfo can access all of the fields of the user given by guidInfo.
-   *
-   * @param access
-   * @param contectInfo
-   * @param readerInfo
-   * @return
-   */
-  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo contectInfo, GuidInfo readerInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
-    return verifyAccess(access, contectInfo, ALLFIELDS, readerInfo, activeReplica);
-  }
-
-  /**
    * Checks to see if the reader given in readerInfo can access the field of the user given by guidInfo. Access type is some combo
    * of read, write, blacklist and whitelist. Note: Blacklists are currently not activated.
    *
@@ -83,7 +70,7 @@ public class NSAccessSupport {
    * @return
    */
   public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
-    GNS.getLogger().fine("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
+    GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
     } else if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
@@ -91,7 +78,7 @@ public class NSAccessSupport {
     } else if (checkForAccess(access, guidInfo, ALLFIELDS, accessorInfo, activeReplica)) {
       return true; // accessor can see all fields
     } else {
-      GNS.getLogger().fine("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
+      GNS.getLogger().info("User " + accessorInfo.getName() + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
       return false;
     }
   }
@@ -103,9 +90,9 @@ public class NSAccessSupport {
     }
     try {
       Set<String> allowedusers = NSFieldMetaData.lookupOnThisNameServer(access, guidInfo, field, activeReplica);
-      GNS.getLogger().fine(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+      GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers, activeReplica)) {
-        GNS.getLogger().fine("User " + accessorInfo.getName() + " allowed to access "
+        GNS.getLogger().info("User " + accessorInfo.getName() + " allowed to access "
                 + (field != ALLFIELDS ? ("user " + guidInfo.getName() + "'s " + field + " field") : ("all of user " + guidInfo.getName() + "'s fields")));
         return true;
       }

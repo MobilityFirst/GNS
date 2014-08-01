@@ -92,7 +92,11 @@ public class GnsReconUpdate {
 
     // Apply update
     if (Config.debugMode) {
-      GNS.getLogger().fine("NAME RECORD is: " + nameRecord.toString());
+      if (field != null) {
+      GNS.getLogger().fine("****** field=" + field + " operation= " + updatePacket.getOperation().toString() +
+              " value= " + updatePacket.getUpdateValue() +
+              " name Record=" + nameRecord.toString());
+      }
     }
     boolean result;
     try {
@@ -107,7 +111,7 @@ public class GnsReconUpdate {
 
       if (!result) { // update failed
         if (Config.debugMode) {
-          GNS.getLogger().fine("Update operation failed " + updatePacket);
+          GNS.getLogger().info("Update operation failed " + updatePacket);
         }
         if (updatePacket.getNameServerId() == replica.getNodeID()) { //if this node proposed this update
           // send error message to client
@@ -115,7 +119,7 @@ public class GnsReconUpdate {
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
           if (Config.debugMode) {
-            GNS.getLogger().fine("Error msg sent to client for failed update " + updatePacket);
+            GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket);
           }
           if (!recovery) {
             replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());

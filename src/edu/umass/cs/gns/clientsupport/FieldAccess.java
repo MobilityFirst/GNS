@@ -198,6 +198,11 @@ public class FieldAccess {
     return Intercessor.sendUpdateRecord(guid, key, value, oldValue, argument,
             operation, writer, signature, message);
   }
+  
+  public static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
+          String writer, String signature, String message) {
+    return Intercessor.sendUpdateUserJSON(guid, new ValuesMap(json), operation, writer, signature, message);
+  }
 
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message) {
 

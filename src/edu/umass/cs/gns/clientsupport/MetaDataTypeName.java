@@ -7,13 +7,33 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import static edu.umass.cs.gns.clientsupport.InternalField.makeInternalFieldString;
+
 /**
  *
  * @author westy
  */
 public enum MetaDataTypeName {
-  READ_WHITELIST, WRITE_WHITELIST, READ_BLACKLIST, WRITE_BLACKLIST, TIMESTAMP;
+  READ_WHITELIST("ACL"), 
+  WRITE_WHITELIST("ACL"), 
+  READ_BLACKLIST("ACL"), 
+  WRITE_BLACKLIST("ACL"), 
+  TIMESTAMP("MD");
+  
+  private String prefix;
 
+  private MetaDataTypeName(String prefix) {
+    this.prefix = makeInternalFieldString(prefix);
+  }
+
+  public String getPrefix() {
+    return prefix;
+  }
+  
+  public String getFieldPath() {
+    return prefix + "." + name();
+  }
+ 
   public static String typesToString() {
     StringBuilder result = new StringBuilder();
     String prefix = "";

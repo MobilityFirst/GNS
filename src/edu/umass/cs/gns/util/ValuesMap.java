@@ -13,6 +13,7 @@ import java.util.Arrays;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Iterator;
+import org.json.JSONArray;
 
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
@@ -23,6 +24,8 @@ import java.util.Iterator;
  * @author westy
  */
 public class ValuesMap extends JSONObject {
+
+  private static boolean debuggingEnabled = true;
 
   /**
    * Creates an empty ValuesMap.
@@ -74,20 +77,50 @@ public class ValuesMap extends JSONObject {
     }
   }
 
+  @Override
+  /**
+   * Returns true if the ValuesMap contains the key.
+   * Supports dot notation.
+   */
+  public boolean has(String key) {
+    // if key is "flapjack.sally" this returns true if the map looks like this
+    // {"flapjack.sally":{"left":"eight","right":"seven"}}
+    // or this
+    // {"flapjack":{sally":{"left":"eight","right":"seven"}}}
+    return super.has(key) || containsFieldDotNotation(key, this);
+  }
+
   /**
    * Returns the value to which the specified key is mapped as an array,
    * or null if this ValuesMap contains no mapping for the key.
+   * Supports dot notation.
    *
    * @param key
    * @return
    */
   public ResultValue getAsArray(String key) {
     try {
-      if (has(key)) {
+      // handles this case: // {"flapjack.sally":{"left":"eight","right":"seven"}}
+      if (super.has(key)) {
         return new ResultValue(JSONUtils.JSONArrayToArrayList(super.getJSONArray(key)));
+      }
+      // handles this case: // {"flapjack":{sally":{"left":"eight","right":"seven"}}}
+      if (containsFieldDotNotation(key, this)) {
+        Object object = getWithDotNotation(key, this);
+        if (object instanceof JSONArray) {
+          return new ResultValue(JSONUtils.JSONArrayToArrayList((JSONArray) object));
+        }
+        throw new JSONException("JSONObject[" + quote(key) + "] is not a JSONArray.");
+
+        //return new ResultValue(JSONUtils.JSONArrayToArrayList((JSONArray)getWithDotNotation(key, this)));
       } else {
         return null;
       }
+//      if (has(key)) {
+//        return new ResultValue(JSONUtils.JSONArrayToArrayList(super.getJSONArray(key)));
+//      } else {
+//        return null;
+//      }
     } catch (JSONException e) {
       GNS.getLogger().severe("Unable to parse JSON array: " + e);
       e.printStackTrace();
@@ -96,29 +129,32 @@ public class ValuesMap extends JSONObject {
   }
 
   /**
-   * Associates the specified value with the specified key in this ValuesMap.
+   * Associates the specified value which is an array with the specified key in this ValuesMap.
+   * Supports dot notation.
    *
    * @param key
    * @param value
    */
   public void putAsArray(String key, ResultValue value) {
     try {
-      super.put(key, value);
+      putWithDotNotation(this, key, new JSONArray(value));
+      //super.put(key, value);
       //GNS.getLogger().severe("@@@@@AFTER PUT (key =" + key + " value=" + value + "): " + newContent.toString());
     } catch (JSONException e) {
+      e.printStackTrace();
       GNS.getLogger().severe("Unable to add JSON array to JSON Object: " + e);
     }
   }
 
   /**
    * Write the contents of this ValuesMap to the destination ValuesMap.
-   * 
+   *
    * Keys not contained in the source ValuesMap are not altered in the destination ValuesMap.
    * Supports dot notation, that is the keys in the source ValuesMap can be dotted to
    * index subfields in the destination.
-   * 
+   *
    * @param destination
-   * @return 
+   * @return
    */
   public boolean writeToValuesMap(ValuesMap destination) {
     boolean somethingChanged = false;
@@ -136,31 +172,73 @@ public class ValuesMap extends JSONObject {
     return somethingChanged;
   }
 
-  private static boolean putWithDotNotation(Object destination, String key, Object value) {
-    try {
-      //GNS.getLogger().info("###fullkey=" + key + " dest=" + destination);
-      if (key.contains(".")) {
-        int indexOfDot = key.indexOf(".");
-        String subKey = key.substring(0, indexOfDot);
-        //GNS.getLogger().info("###subkey=" + subKey);
-        Object subDestination = ((JSONObject)destination).get(subKey);
-        if (subDestination == null) {
-          return false;
-        }
-        return putWithDotNotation(subDestination, key.substring(indexOfDot + 1), value);
-      } else {
-        ((JSONObject)destination).put(key, value);
-        //GNS.getLogger().info("###write=" + key + "->" + value);
-        return true;
+  private static boolean putWithDotNotation(JSONObject destination, String key, Object value) throws JSONException {
+    //try {
+    //GNS.getLogger().info("###fullkey=" + key + " dest=" + destination);
+    if (key.contains(".")) {
+      int indexOfDot = key.indexOf(".");
+      String subKey = key.substring(0, indexOfDot);
+      //GNS.getLogger().info("###subkey=" + subKey);
+      Object subDestination = destination.opt(subKey);
+      if (subDestination == null) {
+        destination.put(subKey, new JSONObject());
+        subDestination = destination.get(subKey);
+        // FIXME: could also allow JSONArray here if the subkey is in integer
+      } else if (!(subDestination instanceof JSONObject)) {
+        return false;
       }
+      return putWithDotNotation((JSONObject) subDestination, key.substring(indexOfDot + 1), value);
+    } else {
+      destination.put(key, value);
+      //GNS.getLogger().info("###write=" + key + "->" + value);
+      return true;
+    }
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
+//      return false;
+//    }
+  }
+
+  private static Object getWithDotNotation(String key, Object json) throws JSONException {
+    if (debuggingEnabled) {
+      GNS.getLogger().info("###fullkey=" + key + " json=" + json);
+    }
+    if (key.contains(".")) {
+      int indexOfDot = key.indexOf(".");
+      String subKey = key.substring(0, indexOfDot);
+      if (debuggingEnabled) {
+        GNS.getLogger().info("###subkey=" + subKey);
+      }
+      Object subBson = ((JSONObject) json).get(subKey);
+      if (subBson == null) {
+        if (debuggingEnabled) {
+          GNS.getLogger().info("### " + subKey + " is null");
+        }
+        throw new JSONException(subKey + " is null");
+      }
+      try {
+        return getWithDotNotation(key.substring(indexOfDot + 1), subBson);
+      } catch (JSONException e) {
+        throw new JSONException(subKey + "." + e.getMessage());
+      }
+    } else {
+      Object result = ((JSONObject) json).get(key);
+      if (debuggingEnabled) {
+        GNS.getLogger().info("###result=" + result);
+      }
+      return result;
+    }
+  }
+
+  private static boolean containsFieldDotNotation(String key, Object json) {
+    try {
+      return getWithDotNotation(key, json) != null;
     } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
       return false;
     }
   }
 
   // Test Code
-  
   public static void main(String[] args) throws JSONException {
     JSONObject json = new JSONObject();
     json.put("name", "frank");
@@ -186,6 +264,10 @@ public class ValuesMap extends JSONObject {
     moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
     putWithDotNotation(valuesMap, "flapjack", moreJson);
     System.out.println(valuesMap);
+
+    System.out.println(getWithDotNotation("flapjack.sally.right", json));
+    System.out.println(getWithDotNotation("flapjack.crash", valuesMap));
+
   }
 
 }

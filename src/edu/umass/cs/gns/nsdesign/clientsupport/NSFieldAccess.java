@@ -13,6 +13,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
@@ -37,10 +38,18 @@ public class NSFieldAccess {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
-      GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
+      if (Config.debugMode) {
+        GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
+      }
       result = nameRecord.getKey(field);
     } catch (FieldNotFoundException e) {
+      if (Config.debugMode) {
+        GNS.getLogger().info("Field not found " + guid + " : " + field);
+      }
     } catch (RecordNotFoundException e) {
+      if (Config.debugMode) {
+        GNS.getLogger().info("Record not found " + guid + " : " + field);
+      }
     }
     if (result != null) {
       return result;
@@ -48,7 +57,7 @@ public class NSFieldAccess {
       return new ResultValue();
     }
   }
-  
+
   /**
    * Looks up the first element of field in the guid on this NameServer as a String.
    * Returns null if the field or the record cannot be found.
