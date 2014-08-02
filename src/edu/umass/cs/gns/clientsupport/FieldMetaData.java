@@ -18,6 +18,13 @@ import java.util.Set;
  */
 public class FieldMetaData {
   
+  /**
+   * Creates a key for looking up metadata in a guid record.
+   * 
+   * @param metaDataType
+   * @param key
+   * @return 
+   */
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
     return metaDataType.getFieldPath() + "." + key;
   }
