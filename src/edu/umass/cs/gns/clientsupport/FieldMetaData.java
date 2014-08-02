@@ -26,7 +26,7 @@ public class FieldMetaData {
    * @return 
    */
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
-    return metaDataType.getFieldPath() + "." + key;
+    return metaDataType.getFieldPath() + "." + key + ".ACL";
   }
   
   /**
