@@ -40,7 +40,7 @@ import org.apache.commons.cli.ParseException;
  *
  * @author westy
  */
-public class GNSInstallerV3 {
+public class GNSInstaller {
 
   private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
@@ -140,6 +140,8 @@ public class GNSInstallerV3 {
 
   /**
    * Copies the latest version of the JAR files to the all the hosts in the runset given by name and restarts all the servers.
+   * Does this using a separate Thread for each host.
+   * 
    *
    * @param name
    * @param action
@@ -467,6 +469,12 @@ public class GNSInstallerV3 {
 
   private static boolean checkAndSetConfFilePaths(String configNameOrFolder) {
 
+    // first check for a least a config folder
+    if (!fileExistsSomewhere(configNameOrFolder, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " not found... exiting. ");
+      System.exit(1);
+    }
+    
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + INSTALLER_CONFIG_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + INSTALLER_CONFIG_FILENAME);
     }
@@ -668,7 +676,7 @@ public class GNSInstallerV3 {
     @Override
     public void run() {
       try {
-        GNSInstallerV3.updateAndRunGNS(nsId, lnsId, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
+        GNSInstaller.updateAndRunGNS(nsId, lnsId, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }
