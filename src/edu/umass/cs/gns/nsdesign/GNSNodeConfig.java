@@ -431,7 +431,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     if (isNameServer(id)) {
       return getNSPingPort(id);
     } else {
-      return getNSPingPort(id);
+      return getLNSPingPort(id);
     }
   }
 
