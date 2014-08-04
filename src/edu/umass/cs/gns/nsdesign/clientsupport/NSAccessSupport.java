@@ -35,7 +35,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  */
 public class NSAccessSupport {
 
-  private static boolean debuggingEnabled = true;
+  private static boolean debuggingEnabled = false;
 
   // try this for now
   private static final Set<String> WORLDREADABLEFIELDS = new HashSet<String>(Arrays.asList(GroupAccess.JOINREQUESTS, GroupAccess.LEAVEREQUESTS));

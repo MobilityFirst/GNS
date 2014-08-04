@@ -11,6 +11,7 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
 import org.json.JSONException;
@@ -33,7 +34,9 @@ public class CommandRequest {
 
   public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
-    GNS.getLogger().fine("######## COMMAND PACKET RECEIVED: " + incomingJSON);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("######## COMMAND PACKET RECEIVED: " + incomingJSON);
+    }
     final CommandPacket packet = new CommandPacket(incomingJSON);
     // Set the host field. Used by the help command and email module.
     commandModule.setHost(packet.getSenderAddress());
@@ -50,7 +53,9 @@ public class CommandRequest {
         try {
           CommandResponse returnValue = executeCommand(command, jsonFormattedCommand);
           CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue);
-          GNS.getLogger().fine("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+          }
           handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
         } catch (JSONException e) {
           GNS.getLogger().severe("Problem  executing command: " + e);
