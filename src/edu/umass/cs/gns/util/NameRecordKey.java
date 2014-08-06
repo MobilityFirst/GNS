@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.util;
 
 /**
- *
+ * Used as a the key in the lookup of a key / value in a guid record.
  *
  * @author westy
  */
@@ -9,7 +9,7 @@ public class NameRecordKey {
   
  private String value; 
   
- // define some constants for GNRS use
+ // define some constants for GNS use
  public static final NameRecordKey EdgeRecord = new NameRecordKey("edge");
  public static final NameRecordKey CoreRecord = new NameRecordKey("core");
  public static final NameRecordKey GroupRecord = new NameRecordKey("group");

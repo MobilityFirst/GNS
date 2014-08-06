@@ -52,10 +52,14 @@ public abstract class RequestInfo {
 
   // Abstract methods
 
-  /** Returns the log entry that we will log at local name server */
+  /** 
+   * Returns the log entry that we will log at local name server
+   * @return  */
   public abstract String getLogString();
 
-  /** Returns the error message to be sent to client if name server returns no response to a request. */
+  /** 
+   * Returns the error message to be sent to client if name server returns no response to a request.
+   * @return  */
   public abstract JSONObject getErrorMessage();
 
 
@@ -74,7 +78,10 @@ public abstract class RequestInfo {
   }
 
 
-  /** Time duration for which the request was under processing at the local name server */
+  /** 
+   * Time duration for which the request was under processing at the local name server.
+   * @return 
+   */
   public synchronized long getResponseLatency() {
     return finishTime - startTime;
   }
@@ -99,7 +106,10 @@ public abstract class RequestInfo {
     return lookupActives;
   }
 
-  /** Returns true if actives are currently not being requested currently. Otherwise false. */
+  /** 
+   * Returns true if actives are currently not being requested currently. Otherwise false.
+   * @return 
+   */
   public synchronized boolean setLookupActives() {
     if (lookupActives) {
       return false;

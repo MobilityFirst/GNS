@@ -95,7 +95,18 @@ public class NSAccessSupport {
     }
   }
 
-  // 
+  /**
+   * Handles checking of fields with dot notation.
+   * Checks deepest field first then backs up.
+   * 
+   * @param access
+   * @param guidInfo
+   * @param field
+   * @param accessorInfo
+   * @param activeReplica
+   * @return
+   * @throws FailedDBOperationException 
+   */
   private static boolean hierarchicalAccessCheck(MetaDataTypeName access, GuidInfo guidInfo, String field,
           GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     if (debuggingEnabled) {

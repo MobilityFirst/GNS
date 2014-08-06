@@ -8,10 +8,12 @@ package edu.umass.cs.gns.nsdesign.packet;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
+import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +31,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   private final static String HEADER = "dns_header";
   private final static String GUID = "dns_guid";
   private final static String KEY = "dns_key";
+  private final static String KEYS = "dns_keys";
   private final static String TIME_TO_LIVE = "ttlAddress";
   private final static String RECORD_VALUE = "recordValue";
   private final static String LNS_ID = "lnsId";
@@ -54,9 +57,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   private String guid;
   /**
-   * The key of the value key pair.
+   * The key of the value key pair. Mutually exclusive with keys.
    */
   private final NameRecordKey key;
+  /**
+   * The keys when we are doing a multiple field query lookup. Mutually exclusive with key.
+   */
+  private final ArrayList<String> keys;
   /**
    * This is the Id of the source of the request, -1 means the client is the intercessor of the LNS handling the request.
    */
@@ -100,12 +107,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param message
    * @param returnFormat
    */
-  public DNSPacket(int sourceId, int id, String qname, NameRecordKey key, ColumnFieldType returnFormat, 
+  public DNSPacket(int sourceId, int id, String qname, NameRecordKey key, ColumnFieldType returnFormat,
           String accessor, String signature, String message) {
     super(accessor, signature, message);
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
     this.guid = qname;
     this.key = key;
+    this.keys = null;
     this.sourceId = sourceId;
     this.lnsId = -1; // this will be -1 until it is set by the handling LNS before sending to an NS
     this.responder = -1;
@@ -125,7 +133,16 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     super(json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.header = new Header(json.getJSONObject(HEADER));
     this.guid = json.getString(GUID);
-    this.key = NameRecordKey.valueOf(json.getString(KEY));
+    if (json.has(KEY)) {
+      this.key = NameRecordKey.valueOf(json.getString(KEY));
+    } else {
+      this.key = null;
+    }
+    if (json.has(KEYS)) {
+      this.keys = JSONUtils.JSONArrayToArrayListString(json.getJSONArray(KEYS));
+    } else {
+      this.keys = null;
+    }
     this.sourceId = json.getInt(SOURCE_ID);
     this.lnsId = json.getInt(LNS_ID);
     // read the optional responder if it is there
@@ -146,11 +163,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * Creates a DNS packet for when you just have a single field you want to return.
    * This packet has both a query and response section.
    *
+   * @param sourceId
    * @param id
    * @param name
    * @param key
    * @param fieldValue
    * @param TTL
+   * @param activeNameServers
    */
   public DNSPacket(int sourceId, int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
     this(sourceId, id, name, key, new ValuesMap(), TTL, activeNameServers);
@@ -175,6 +194,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
+    this.keys = null;
     this.lnsId = -1; // we don't care about this once it's heading back to the LNS
     this.sourceId = sourceId;
     this.recordValue = entireRecord;
@@ -239,8 +259,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     }
     // query section
     json.put(HEADER, getHeader().toJSONObject());
-    json.put(KEY, getKey().getName());
-    json.put(GUID, getGuid());
+    if (key != null) {
+      json.put(KEY, key.getName());
+    }
+    if (keys != null) {
+      json.put(KEYS, keys);
+    }
+    json.put(GUID, guid);
     json.put(SOURCE_ID, sourceId);
     json.put(LNS_ID, lnsId);
     if (returnFormat != null) {
@@ -262,7 +287,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    *
    * Returns true if the packet is a query, false otherwise
-   * @return 
+   *
+   * @return
    */
   public boolean isQuery() {
     return getHeader().isQuery();
@@ -270,7 +296,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
 
   /**
    * Returns true if the packet is a response, false otherwise
-   * @return 
+   *
+   * @return
    */
   public boolean isResponse() {
     return getHeader().isResponse();
@@ -280,7 +307,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    **
    * Returns true if the packet contains a response error, false otherwise
    *
-   * @return 
+   * @return
    */
   public boolean containsAnyError() {
     return getHeader().isAnyKindOfError();
@@ -294,7 +321,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    **
    * Returns the ID for this query from the packet header. Used by the requester to match up replies to outstanding queries
    *
-   * @return 
+   * @return
    */
   public int getQueryId() {
     return getHeader().getId();
@@ -339,6 +366,15 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
 
   public boolean keyIsAllFieldsOrTopLevel() {
     return FieldAccess.isKeyAllFieldsOrTopLevel(key.getName());
+  }
+
+  /**
+   * Returns the keys in a multi-field query.
+   * 
+   * @return 
+   */
+  public ArrayList<String> getKeys() {
+    return keys;
   }
 
   /**
