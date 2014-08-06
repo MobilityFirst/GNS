@@ -63,7 +63,7 @@ public class LNSQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurableInterface activeReplica) {
-    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, 
+    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, null,
             ColumnFieldType.LIST_STRING,
             null, null, null);
     JSONObject json;

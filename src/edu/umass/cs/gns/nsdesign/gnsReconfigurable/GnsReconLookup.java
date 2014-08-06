@@ -77,6 +77,7 @@ public class GnsReconLookup {
       // First we do signature and ACL checks
       String guid = dnsPacket.getGuid();
       String field = dnsPacket.getKey();
+      ArrayList<String> fields = dnsPacket.getKeys();
       String reader = dnsPacket.getAccessor();
       String signature = dnsPacket.getSignature();
       String message = dnsPacket.getMessage();
@@ -85,7 +86,17 @@ public class GnsReconLookup {
 
       // FIXME: ignore check for non-top-level fields
       if (reader != null) { // reader will be null for internal system reads
-        errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST, gnsApp);
+        if (field != null) {// single field check
+          errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST, gnsApp);
+        } else { //multi field check - return an error if any field doesn't pass
+          for (String key : fields) {
+            NSResponseCode code;
+            if ((code = NSAuthentication.signatureAndACLCheck(guid, key, reader, signature,
+                    message, MetaDataTypeName.READ_WHITELIST, gnsApp)).isAnError()) {
+              errorCode = code;
+            }
+          }
+        }
       }
       // return an error packet if one of the checks doesn't pass
       if (errorCode.isAnError()) {

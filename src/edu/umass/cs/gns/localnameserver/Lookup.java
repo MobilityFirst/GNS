@@ -156,7 +156,8 @@ public class Lookup {
       DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getSourceId(), 
               query.getIncomingPacket().getHeader().getId(), 
               query.getIncomingPacket().getGuid(),
-              query.getIncomingPacket().getKey(), returnValue, TTL, new HashSet<Integer>());
+              query.getIncomingPacket().getKey(), query.getIncomingPacket().getKeys(),
+              returnValue, TTL, new HashSet<Integer>());
       outgoingPacket.setResponder(responder);
       sendDNSResponseBackToSource(outgoingPacket, handler);
     } catch (Exception e) {

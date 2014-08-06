@@ -99,18 +99,19 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    *
    * @param sourceId - the id of the server sending the request, equal to LOCAL_SOURCE_ID means the intercessor of the LNS (the usual case)
    * @param id
-   * @param qname
+   * @param guid
    * @param key
    * @param accessor
    * @param signature
    * @param message
    * @param returnFormat
    */
-  public DNSPacket(int sourceId, int id, String qname, String key, ColumnFieldType returnFormat,
+  public DNSPacket(int sourceId, int id, String guid, String key, ArrayList<String> keys,
+          ColumnFieldType returnFormat,
           String accessor, String signature, String message) {
     super(accessor, signature, message);
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
-    this.guid = qname;
+    this.guid = guid;
     this.key = key;
     this.keys = null;
     this.sourceId = sourceId;
@@ -171,13 +172,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param activeNameServers
    */
   public DNSPacket(int sourceId, int id, String name, String key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
-    this(sourceId, id, name, key, new ValuesMap(), TTL, activeNameServers);
+    this(sourceId, id, name, key, null, new ValuesMap(), TTL, activeNameServers);
     // slide that baby in...
     this.recordValue.putAsArray(key, fieldValue);
   }
 
   /**
-   * Creates a DNS packet for when you want to return all of a NameRecord.
+   * Creates a DNS packet for when you want to return multiple fields from a NameRecord.
    * This packet has both a query and response section.
    *
    * @param sourceId
@@ -188,12 +189,12 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param TTL
    * @param activeNameServers
    */
-  public DNSPacket(int sourceId, int id, String name, String key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
+  public DNSPacket(int sourceId, int id, String name, String key, ArrayList<String> keys, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
     super(); // no sigs for this baby
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
-    this.keys = null;
+    this.keys = keys;
     this.lnsId = -1; // we don't care about this once it's heading back to the LNS
     this.sourceId = sourceId;
     this.recordValue = entireRecord;
@@ -378,6 +379,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    */
   public ArrayList<String> getKeys() {
     return keys;
+  }
+  
+  public String getKeyOrKeysString() {
+    return key != null ? key : keys.toString();
   }
 
   /**

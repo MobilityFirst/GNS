@@ -122,7 +122,7 @@ public class Intercessor implements IntercessorInterface {
             //Packet is a response and does not have a response error
             if (debuggingEnabled) {
               GNS.getLogger().fine("Query (" + id + "): "
-                      + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
+                      + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
                       + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
             }
             synchronized (monitor) {
@@ -132,7 +132,7 @@ public class Intercessor implements IntercessorInterface {
           } else {
             if (debuggingEnabled) {
               GNS.getLogger().info("Intercessor: Query (" + id + "): "
-                      + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
+                      + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
                       + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             }
             synchronized (monitor) {
@@ -179,7 +179,7 @@ public class Intercessor implements IntercessorInterface {
     }
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, field,
+    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, field, null, // <-keys is null for now
             returnFormat, reader, signature, message);
     JSONObject json;
     try {

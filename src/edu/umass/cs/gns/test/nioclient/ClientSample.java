@@ -80,7 +80,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         int tryCount = 0;
         while (tryCount < maxTries) {
           try {
-            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, 
+            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, 
                    ColumnFieldType.LIST_STRING, null, null, null);
             dbClient.sendRequest(dnsPacket.toJSONObject());
             waitForResponse();
@@ -124,7 +124,8 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         String valueRead = null;
         while (tryCount < maxTries) {
           try {
-            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, ColumnFieldType.LIST_STRING,
+            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, 
+                    ColumnFieldType.LIST_STRING,
                     null, null, null);
             dbClient.sendRequest(dnsPacket.toJSONObject());
             waitForResponse();

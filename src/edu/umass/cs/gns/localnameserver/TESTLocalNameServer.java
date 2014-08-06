@@ -47,7 +47,7 @@ public class TESTLocalNameServer {
     for (int i = 0; i < numRequests; i++) {
       // send 1 lookup with invalid response
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd", 
-              "EdgeRecord", 
+              "EdgeRecord", null,
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
@@ -62,7 +62,7 @@ public class TESTLocalNameServer {
     for (int i = 0; i < numNames; i++) {
       // send 1 lookup with invalid response
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd"+i, 
-              "EdgeRecord", 
+              "EdgeRecord", null,
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
