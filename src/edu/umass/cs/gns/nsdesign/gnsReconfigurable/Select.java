@@ -236,11 +236,12 @@ public class Select {
     AbstractRecordCursor cursor = null;
     switch (request.getSelectOperation()) {
       case EQUALS:
-        cursor = NameRecord.selectRecords(ar.getDB(), request.getKey().getName(), request.getValue());
+        cursor = NameRecord.selectRecords(ar.getDB(), request.getKey(), request.getValue());
         break;
       case NEAR:
         if (request.getValue() instanceof String) {
-          cursor = NameRecord.selectRecordsNear(ar.getDB(), request.getKey().getName(), (String) request.getValue(),
+          cursor = NameRecord.selectRecordsNear(ar.getDB(), request.getKey()
+                  , (String) request.getValue(),
                   Double.parseDouble((String) request.getOtherValue()));
         } else {
           break;
@@ -248,7 +249,7 @@ public class Select {
         break;
       case WITHIN:
         if (request.getValue() instanceof String) {
-          cursor = NameRecord.selectRecordsWithin(ar.getDB(), request.getKey().getName(), (String) request.getValue());
+          cursor = NameRecord.selectRecordsWithin(ar.getDB(), request.getKey(), (String) request.getValue());
         } else {
           break;
         }

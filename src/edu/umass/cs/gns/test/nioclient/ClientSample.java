@@ -6,7 +6,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
@@ -61,7 +60,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
       for (int i = 0; i < repeatCycles; i++) {
         // send add request
         String name = "testName";
-        NameRecordKey key = new NameRecordKey("testKey" + i);
+        String key = "testKey" + i;
         String firstValue = "firstValue-"+ Util.randomString(10) ;
         ResultValue rv = new ResultValue();
         rv.add(firstValue);
@@ -89,7 +88,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
             if (!noAssert) {
               assert dnsResponse.getQueryId() == reqCount : "Lookup failure: Request ID mismatch. " + dnsResponse;
               assert !dnsResponse.containsAnyError() : "Lookup failure: Error. " + dnsResponse;
-              assert dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(firstValue) : "Lookup failure: Value mismatch. Initial value not found. " + dnsResponse;
+              assert dnsResponse.getRecordValue().getAsArray(key).get(0).equals(firstValue) : "Lookup failure: Value mismatch. Initial value not found. " + dnsResponse;
             }
           } catch (AssertionError e) {
             GNS.getLogger().info("Retrying lookup to read initial value ... ");
@@ -133,8 +132,8 @@ public class ClientSample extends AbstractPacketDemultiplexer {
             if (!noAssert) {
               assert dnsResponse.getQueryId() == reqCount : "Lookup failure: Request ID mismatch. " + dnsResponse;
               assert !dnsResponse.containsAnyError() : "Lookup failure: Error. " + dnsResponse;
-              assert dnsResponse.getRecordValue().getAsArray(key.getName()).get(0).equals(secondValue) : "Lookup failure: Value mismatch. Updated value not found. " + dnsResponse;
-              valueRead = (String) dnsResponse.getRecordValue().getAsArray(key.getName()).get(0);
+              assert dnsResponse.getRecordValue().getAsArray(key).get(0).equals(secondValue) : "Lookup failure: Value mismatch. Updated value not found. " + dnsResponse;
+              valueRead = (String) dnsResponse.getRecordValue().getAsArray(key).get(0);
             }
           } catch (AssertionError e) {
             GNS.getLogger().info("Retrying lookup to read updated value ... " + "First: " + firstValue + " Updated: " + secondValue + " Read: " + valueRead);

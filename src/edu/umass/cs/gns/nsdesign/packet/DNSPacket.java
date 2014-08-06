@@ -10,7 +10,6 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    * The key of the value key pair. Mutually exclusive with keys.
    */
-  private final NameRecordKey key;
+  private final String key;
   /**
    * The keys when we are doing a multiple field query lookup. Mutually exclusive with key.
    */
@@ -107,7 +106,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param message
    * @param returnFormat
    */
-  public DNSPacket(int sourceId, int id, String qname, NameRecordKey key, ColumnFieldType returnFormat,
+  public DNSPacket(int sourceId, int id, String qname, String key, ColumnFieldType returnFormat,
           String accessor, String signature, String message) {
     super(accessor, signature, message);
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
@@ -134,7 +133,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(json.getJSONObject(HEADER));
     this.guid = json.getString(GUID);
     if (json.has(KEY)) {
-      this.key = NameRecordKey.valueOf(json.getString(KEY));
+      this.key = json.getString(KEY);
     } else {
       this.key = null;
     }
@@ -171,10 +170,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param TTL
    * @param activeNameServers
    */
-  public DNSPacket(int sourceId, int id, String name, NameRecordKey key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
+  public DNSPacket(int sourceId, int id, String name, String key, ResultValue fieldValue, int TTL, Set<Integer> activeNameServers) {
     this(sourceId, id, name, key, new ValuesMap(), TTL, activeNameServers);
     // slide that baby in...
-    this.recordValue.putAsArray(key.getName(), fieldValue);
+    this.recordValue.putAsArray(key, fieldValue);
   }
 
   /**
@@ -189,7 +188,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
    * @param TTL
    * @param activeNameServers
    */
-  public DNSPacket(int sourceId, int id, String name, NameRecordKey key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
+  public DNSPacket(int sourceId, int id, String name, String key, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
     super(); // no sigs for this baby
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
@@ -260,7 +259,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     // query section
     json.put(HEADER, getHeader().toJSONObject());
     if (key != null) {
-      json.put(KEY, key.getName());
+      json.put(KEY, key);
     }
     if (keys != null) {
       json.put(KEYS, keys);
@@ -360,18 +359,22 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    * @return the qrecordKey
    */
-  public NameRecordKey getKey() {
+  public String getKey() {
     return key;
   }
 
   public boolean keyIsAllFieldsOrTopLevel() {
-    return FieldAccess.isKeyAllFieldsOrTopLevel(key.getName());
+    if (key != null) {
+      return FieldAccess.isKeyAllFieldsOrTopLevel(key);
+    } else {
+      return false;
+    }
   }
 
   /**
    * Returns the keys in a multi-field query.
-   * 
-   * @return 
+   *
+   * @return
    */
   public ArrayList<String> getKeys() {
     return keys;
@@ -414,7 +417,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     if (this.recordValue == null) {
       this.recordValue = new ValuesMap();
     }
-    this.recordValue.putAsArray(key.getName(), data);
+    this.recordValue.putAsArray(key, data);
   }
 
   public int getLnsId() {

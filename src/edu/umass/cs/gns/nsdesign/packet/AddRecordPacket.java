@@ -7,7 +7,6 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 
 import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,7 +68,7 @@ public class AddRecordPacket extends BasicPacket {
   /**
    * The key of the value key pair. *
    */
-  private NameRecordKey recordKey;
+  private String recordKey;
 
   /**
    * the value *
@@ -118,7 +117,7 @@ public class AddRecordPacket extends BasicPacket {
    * @param localNameServerID Id of local nameserver sending this request.
    * @param ttl TTL of name record.
    */
-  public AddRecordPacket(int sourceId, int requestID, String name, NameRecordKey recordKey, ResultValue value, int localNameServerID, int ttl) {
+  public AddRecordPacket(int sourceId, int requestID, String name, String recordKey, ResultValue value, int localNameServerID, int ttl) {
     this.type = Packet.PacketType.ADD_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestID;
@@ -148,7 +147,7 @@ public class AddRecordPacket extends BasicPacket {
     this.sourceId = json.getInt(SOURCE_ID);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
-    this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
+    this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
     this.localNameServerID = json.getInt(LOCALNAMESERVERID);
@@ -172,7 +171,7 @@ public class AddRecordPacket extends BasicPacket {
     json.put(SOURCE_ID, getSourceId());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
-    json.put(RECORDKEY, getRecordKey().getName());
+    json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
     json.put(VALUE, new JSONArray(getValue()));
     json.put(LOCALNAMESERVERID, getLocalNameServerID());
@@ -213,7 +212,7 @@ public class AddRecordPacket extends BasicPacket {
   /**
    * @return the recordKey
    */
-  public NameRecordKey getRecordKey() {
+  public String getRecordKey() {
     return recordKey;
   }
 

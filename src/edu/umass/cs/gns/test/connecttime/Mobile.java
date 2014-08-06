@@ -4,7 +4,6 @@ import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
@@ -33,7 +32,7 @@ public class Mobile implements Runnable{
 
   private String name = "test_name";
 
-  private String key = NameRecordKey.EdgeRecord.getName();
+  private String key = "EdgeRecord";
 
   private String currentValue;
 

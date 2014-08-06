@@ -11,10 +11,8 @@ import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -181,7 +179,7 @@ public class Intercessor implements IntercessorInterface {
     }
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field),
+    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, field,
             returnFormat, reader, signature, message);
     JSONObject json;
     try {
@@ -245,7 +243,7 @@ public class Intercessor implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, new NameRecordKey(field), value, localServerID, GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, field, value, localServerID, GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -414,7 +412,7 @@ public class Intercessor implements IntercessorInterface {
             UpdatePacket.LOCAL_SOURCE_ID, // means it came from Intercessor
             id,
             name,
-            key != null ? new NameRecordKey(key) : null,
+            key,
             newValue,
             oldValue,
             argument,

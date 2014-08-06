@@ -22,7 +22,6 @@ import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
-import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -147,7 +146,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
 
 
   @Override
-  public int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket) {
+  public int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket) {
     int id;
     do {
       id = random.nextInt();
@@ -252,7 +251,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   }
 
   @Override
-  public void updateCacheEntry(ConfirmUpdatePacket packet, String name, NameRecordKey key) {
+  public void updateCacheEntry(ConfirmUpdatePacket packet, String name, String key) {
     switch (packet.getType()) {
       case CONFIRM_ADD:
         cache.put(name, new CacheEntry(name, ConsistentHashing.getReplicaControllerSet(name)));
@@ -309,7 +308,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   }
 
   @Override
-  public int timeSinceAddressCached(String name, NameRecordKey recordKey) {
+  public int timeSinceAddressCached(String name, String recordKey) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.timeSinceAddressCached(recordKey) : -1;
   }

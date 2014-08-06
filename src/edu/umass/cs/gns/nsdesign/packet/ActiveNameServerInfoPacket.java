@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +34,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   /**
    * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord. *
    */
-  private NameRecordKey recordKey;
+  private String recordKey;
   /**
    * Primary name server receiving the request *
    */
@@ -62,7 +61,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
    * @param activeNameserver Set containing ids of active name servers
    ***********************************************************
    */
-  public ActiveNameServerInfoPacket(int localNameServer, int primaryNameServer, String name, NameRecordKey recordType, Set<Integer> activeNameservers) {
+  public ActiveNameServerInfoPacket(int localNameServer, int primaryNameServer, String name, String recordType, Set<Integer> activeNameservers) {
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
     this.primaryNameServer = primaryNameServer;
     this.localNameServer = localNameServer;
@@ -79,7 +78,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
    * @param name Host/domain/device name
    ***********************************************************
    */
-  public ActiveNameServerInfoPacket(int localNameServer, String name, NameRecordKey recordKey) {
+  public ActiveNameServerInfoPacket(int localNameServer, String name, String recordKey) {
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
     this.primaryNameServer = -1;
     this.localNameServer = localNameServer;
@@ -105,7 +104,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
     this.primaryNameServer = json.getInt(PRIMARY_NAMESERVER);
     this.localNameServer = json.getInt(LOCAL_NAMESERVER);
-    this.recordKey = NameRecordKey.valueOf(json.getString(RECORDKEY));
+    this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
     this.activeNameServers = (json.has(ACTIVE_NAMESERVERS))
             ? toSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
@@ -125,7 +124,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(PRIMARY_NAMESERVER, getPrimaryNameServer());
     json.put(LOCAL_NAMESERVER, getLocalNameServer());
-    json.put(RECORDKEY, getRecordKey().getName());
+    json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
     if (getActiveNameServers() != null) {
       json.put(ACTIVE_NAMESERVERS, new JSONArray(getActiveNameServers()));
@@ -162,7 +161,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
    */
   public static void main(String[] args) throws Exception {
     long t1 = System.currentTimeMillis();
-    ActiveNameServerInfoPacket pkt = new ActiveNameServerInfoPacket(13, "h.com", NameRecordKey.EdgeRecord);	//0ms
+    ActiveNameServerInfoPacket pkt = new ActiveNameServerInfoPacket(13, "h.com", "EdgeRecord");	//0ms
     long t2 = System.currentTimeMillis();
     JSONObject json = pkt.toJSONObject();		//3ms
     long t3 = System.currentTimeMillis();
@@ -205,7 +204,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   /**
    * @return the recordKey
    */
-  public NameRecordKey getRecordKey() {
+  public String getRecordKey() {
     return recordKey;
   }
 

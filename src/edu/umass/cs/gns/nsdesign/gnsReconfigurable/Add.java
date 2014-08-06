@@ -24,7 +24,7 @@ public class Add {
     if (Config.debuggingEnabled) GNS.getLogger().fine("Add record at active replica. name = " + addRecordPacket.getName() +
             " node id: " + gnsApp.getNodeID());
     ValuesMap valuesMap = new ValuesMap();
-    valuesMap.putAsArray(addRecordPacket.getRecordKey().getName(), addRecordPacket.getValue());
+    valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
 
     NameRecord nameRecord = new NameRecord(gnsApp.getDB(), addRecordPacket.getName(), Config.FIRST_VERSION,
             valuesMap, addRecordPacket.getTTL());

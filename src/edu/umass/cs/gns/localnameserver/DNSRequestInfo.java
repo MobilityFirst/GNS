@@ -66,7 +66,7 @@ public class DNSRequestInfo extends RequestInfo{
     if(isCacheHit()) str.append("CacheHit");
     str.append("\t");
     str.append("0\t");
-    str.append(incomingPacket.getKey().getName() + "\t");
+    str.append(incomingPacket.getKey() + "\t");
     str.append(name);
     str.append("\t" + getResponseLatency());
     str.append("\t0");

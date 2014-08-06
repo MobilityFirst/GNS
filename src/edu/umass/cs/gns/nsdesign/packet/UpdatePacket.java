@@ -8,7 +8,6 @@ package edu.umass.cs.gns.nsdesign.packet;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import net.sourceforge.sizeof.SizeOf;
@@ -83,7 +82,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
   /**
    * The key of the value key pair.
    */
-  private NameRecordKey recordKey;
+  private String recordKey;
   /**
    * Value for updating.
    * This is mutually exclusive with userJSON below - one or the other will be used in any operation, but not both.
@@ -151,7 +150,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
    * @param signature
    * @param message
    */
-  public UpdatePacket(int sourceId, int requestID, String name, NameRecordKey recordKey,
+  public UpdatePacket(int sourceId, int requestID, String name, String recordKey,
           ResultValue newValue, ResultValue oldValue, int argument, UpdateOperation operation, int localNameServerId, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, null, operation, localNameServerId, -1, ttl,
@@ -198,7 +197,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
    * @param signature
    * @param message
    */
-  public UpdatePacket(int sourceId, int requestID, String name, NameRecordKey recordKey,
+  public UpdatePacket(int sourceId, int requestID, String name, String recordKey,
           ResultValue newValue, ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation, int localNameServerId, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, userJSON, operation, localNameServerId, -1, ttl,
@@ -229,7 +228,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
   public UpdatePacket(
           int sourceId,
           int requestID, int LNSRequestID,
-          String name, NameRecordKey recordKey,
+          String name, String recordKey,
           ResultValue newValue,
           ResultValue oldValue,
           int argument,
@@ -271,7 +270,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
 //    this.NSRequestID = json.getInt(NameServerREQUESTID);
     this.name = json.getString(NAME);
-    this.recordKey = json.has(RECORDKEY) ? NameRecordKey.valueOf(json.getString(RECORDKEY)) : null;
+    this.recordKey = json.has(RECORDKEY) ? json.getString(RECORDKEY) : null;
     this.operation = UpdateOperation.valueOf(json.getString(OPERATION));
     this.updateValue = json.has(NEWVALUE) ? JSONUtils.JSONArrayToResultValue(json.getJSONArray(NEWVALUE)) : null;
     this.argument = json.optInt(ARGUMENT, -1);
@@ -311,7 +310,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
     json.put(LocalNSREQUESTID, LNSRequestID);
     json.put(NAME, name);
     if (recordKey != null) {
-      json.put(RECORDKEY, recordKey.getName());
+      json.put(RECORDKEY, recordKey);
     }
     
     if (updateValue != null) {
@@ -365,7 +364,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
   /**
    * @return the recordKey
    */
-  public NameRecordKey getRecordKey() {
+  public String getRecordKey() {
     return recordKey;
   }
 
@@ -448,7 +447,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfo {
     x.add("12345678");
     //
     UpdatePacket up = new UpdatePacket(-1, 32234234, 123, "12322323",
-            NameRecordKey.EdgeRecord, x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, 123, 123,
+            "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, 123, 123,
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
 
     SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields

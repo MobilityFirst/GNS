@@ -8,7 +8,6 @@ import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -193,7 +192,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
     ValuesMap valuesMap = new ValuesMap();
     fakeResultValue = new ResultValue();
     fakeResultValue.add("pqrst");
-    valuesMap.putAsArray(NameRecordKey.EdgeRecord.getName(), fakeResultValue);
+    valuesMap.putAsArray("EdgeRecord", fakeResultValue);
     fakeState = new TransferableNameRecordState(valuesMap, 0).toString();
   }
 

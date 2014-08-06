@@ -5,7 +5,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -48,7 +47,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
     ValuesMap valuesMap = new ValuesMap();
     ResultValue rv = new ResultValue();
     rv.add("pqrst");
-    valuesMap.putAsArray(NameRecordKey.EdgeRecord.getName(), rv);
+    valuesMap.putAsArray("EdgeRecord", rv);
     packet.changePacketTypeToPreviousValueResponse();
     packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
   }

@@ -10,7 +10,6 @@ import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
@@ -48,13 +47,13 @@ public class TESTLocalNameServer {
     for (int i = 0; i < numRequests; i++) {
       // send 1 lookup with invalid response
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd", 
-              NameRecordKey.EdgeRecord, 
+              "EdgeRecord", 
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
-      UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd", NameRecordKey.EdgeRecord,
+      UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd", "EdgeRecord",
               newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, i, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
@@ -63,13 +62,13 @@ public class TESTLocalNameServer {
     for (int i = 0; i < numNames; i++) {
       // send 1 lookup with invalid response
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd"+i, 
-              NameRecordKey.EdgeRecord, 
+              "EdgeRecord", 
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
-      UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd"+i, NameRecordKey.EdgeRecord,
+      UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd"+i, "EdgeRecord",
               newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, i, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);

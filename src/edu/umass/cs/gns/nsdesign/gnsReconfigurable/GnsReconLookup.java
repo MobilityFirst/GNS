@@ -76,7 +76,7 @@ public class GnsReconLookup {
     } else {
       // First we do signature and ACL checks
       String guid = dnsPacket.getGuid();
-      String field = dnsPacket.getKey().getName();
+      String field = dnsPacket.getKey();
       String reader = dnsPacket.getAccessor();
       String signature = dnsPacket.getSignature();
       String message = dnsPacket.getMessage();
@@ -101,7 +101,7 @@ public class GnsReconLookup {
         NameRecord nameRecord = null;
         // Try to look up the value in the database
         try {
-          if (Defs.ALLFIELDS.equals(dnsPacket.getKey().getName())) {
+          if (Defs.ALLFIELDS.equals(dnsPacket.getKey())) {
             // need everything so just grab all the fields
             nameRecord = NameRecord.getNameRecord(gnsApp.getDB(), guid);
           } else {
@@ -140,7 +140,7 @@ public class GnsReconLookup {
     dnsPacket.setResponder(gnsApp.getNodeID());
     // change it to a response packet
     String guid = dnsPacket.getGuid();
-    String key = dnsPacket.getKey().getName();
+    String key = dnsPacket.getKey();
     try {
       // Normative case... NameRecord was found and this server is one
       // of the active servers of the record

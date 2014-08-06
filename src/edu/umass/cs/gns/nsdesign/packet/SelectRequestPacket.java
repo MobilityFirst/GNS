@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,7 +46,7 @@ public class SelectRequestPacket extends BasicPacket {
   private final static String REFRESH = "refresh";
   //
   private int id;
-  private NameRecordKey key;
+  private String key;
   private Object value;
   private Object otherValue;
   private String query;
@@ -69,7 +68,7 @@ public class SelectRequestPacket extends BasicPacket {
    * @param value
    * @param lns 
    */
-  public SelectRequestPacket(int id, int lns, SelectOperation selectOperation, GroupBehavior groupBehavior, NameRecordKey key, Object value, Object otherValue) {
+  public SelectRequestPacket(int id, int lns, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
@@ -149,7 +148,7 @@ public class SelectRequestPacket extends BasicPacket {
     }
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
-    this.key = json.has(KEY) ? NameRecordKey.valueOf(json.getString(KEY)) : null;
+    this.key = json.has(KEY) ? json.getString(KEY) : null;
     this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
     this.query = json.optString(QUERY, null);
@@ -180,7 +179,7 @@ public class SelectRequestPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(ID, id);
     if (key != null) {
-      json.put(KEY, key.getName());
+      json.put(KEY, key);
     }
     if (value != null) {
       json.put(VALUE, value);
@@ -221,7 +220,7 @@ public class SelectRequestPacket extends BasicPacket {
     return id;
   }
 
-  public NameRecordKey getKey() {
+  public String getKey() {
     return key;
   }
 

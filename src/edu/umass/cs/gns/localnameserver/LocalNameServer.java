@@ -19,7 +19,6 @@ import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.test.StartExperiment;
 import edu.umass.cs.gns.test.nioclient.DBClientIntercessor;
-import edu.umass.cs.gns.util.NameRecordKey;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -191,7 +190,7 @@ public class LocalNameServer {
     return requestHandler.getRequestInfo(id);
   }
 
-  public static int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket) {
+  public static int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket) {
     return requestHandler.addSelectInfo(recordKey, incomingPacket);
   }
 
@@ -248,7 +247,7 @@ public class LocalNameServer {
     requestHandler.updateCacheEntry(packet);
   }
 
-  public static void updateCacheEntry(ConfirmUpdatePacket packet, String name, NameRecordKey key) {
+  public static void updateCacheEntry(ConfirmUpdatePacket packet, String name, String key) {
     requestHandler.updateCacheEntry(packet, name, key);
   }
 
@@ -280,7 +279,7 @@ public class LocalNameServer {
     return requestHandler.isValidNameserverInCache(name);
   }
 
-  public static int timeSinceAddressCached(String name, NameRecordKey recordKey) {
+  public static int timeSinceAddressCached(String name, String recordKey) {
     return requestHandler.timeSinceAddressCached(name, recordKey);
   }
 

@@ -8,7 +8,6 @@ package edu.umass.cs.gns.clientsupport;
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
@@ -210,7 +209,7 @@ public class FieldAccess {
   }
 
   public static CommandResponse select(String key, Object value) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, new NameRecordKey(key), value, null);
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, key, value, null);
     if (result != null) {
       return new CommandResponse(result);
     } else {
@@ -219,7 +218,7 @@ public class FieldAccess {
   }
 
   public static CommandResponse selectWithin(String key, String value) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, new NameRecordKey(key), value, null);
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, key, value, null);
     if (result != null) {
       return new CommandResponse(result);
     } else {
@@ -228,7 +227,7 @@ public class FieldAccess {
   }
 
   public static CommandResponse selectNear(String key, String value, String maxDistance) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, new NameRecordKey(key), value, maxDistance);
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, key, value, maxDistance);
     if (result != null) {
       return new CommandResponse(result);
     } else {

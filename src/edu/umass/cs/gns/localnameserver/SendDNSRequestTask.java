@@ -10,7 +10,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -164,7 +163,7 @@ public class SendDNSRequestTask extends TimerTask {
    * Log data for entries already in cache.
    */
   private void loggingForAddressInCache(DNSRequestInfo info) {
-    NameRecordKey nameRecordKey = incomingPacket.getKey();
+    String nameRecordKey = incomingPacket.getKey();
     String name = incomingPacket.getGuid();
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Valid Address in cache... "

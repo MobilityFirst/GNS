@@ -10,7 +10,6 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.reconfigurator.Add;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -56,7 +55,7 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 		ResultValue rv = new ResultValue();
 		rv.add("pqrst");
 		try {
-			valuesMap.put(NameRecordKey.EdgeRecord.getName(), rv);
+			valuesMap.put("EdgeRecord", rv);
 		} catch(JSONException je) {
 			je.printStackTrace();
 		}

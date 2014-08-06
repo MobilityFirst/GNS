@@ -4,7 +4,6 @@ import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
 
 import java.io.BufferedReader;
@@ -40,7 +39,7 @@ public class Correspondent implements Runnable{
 
   private String name = "test_name";
 
-  private String key = NameRecordKey.EdgeRecord.getName();
+  private String key = "EdgeRecord";
 
   public Correspondent(int mobileID) {
     mobileAddress = LocalNameServer.getGnsNodeConfig().getNodeAddress(mobileID);

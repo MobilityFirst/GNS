@@ -11,7 +11,6 @@ import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
-import edu.umass.cs.gns.util.NameRecordKey;
 import java.util.Set;
 import org.json.JSONObject;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -84,7 +83,7 @@ public interface ClientRequestHandlerInterface {
    * @param incomingPacket
    * @return
    */
-  public int addSelectInfo(NameRecordKey recordKey, SelectRequestPacket incomingPacket);
+  public int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket);
 
   /**
    * @param id
@@ -154,7 +153,7 @@ public interface ClientRequestHandlerInterface {
    * @param name
    * @param key 
    */
-  public void updateCacheEntry(ConfirmUpdatePacket packet, String name, NameRecordKey key);
+  public void updateCacheEntry(ConfirmUpdatePacket packet, String name, String key);
 
   /**
    * Returns a cache entry for the specified name. Returns null if the cache does not have the key mapped to an entry
@@ -178,7 +177,7 @@ public interface ClientRequestHandlerInterface {
    * @param recordKey
    * @return 
    */
-  public int timeSinceAddressCached(String name, NameRecordKey recordKey);
+  public int timeSinceAddressCached(String name, String recordKey);
 
   /**
    * Invalidates the active name server set in cache by setting its value to <i>null</i>.

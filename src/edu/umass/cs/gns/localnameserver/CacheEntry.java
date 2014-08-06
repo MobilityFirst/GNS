@@ -6,12 +6,10 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.ConsistentHashing;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -195,9 +193,9 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @param key
    * @return
    */
-  public synchronized ResultValue getValueAsArray(NameRecordKey key) {
-    if (isValidValue(key.getName())) {
-      return valuesMap.getAsArray(key.getName());
+  public synchronized ResultValue getValueAsArray(String key) {
+    if (isValidValue(key)) {
+      return valuesMap.getAsArray(key);
     }
     return null;
   }
@@ -248,8 +246,8 @@ public class CacheEntry implements Comparable<CacheEntry> {
     return activeNameServers != null && activeNameServers.size() != 0;
   }
 
-  public synchronized int timeSinceAddressCached(NameRecordKey nameRecordKey) {
-    Long ts = timestampAddress.get(nameRecordKey.getName());
+  public synchronized int timeSinceAddressCached(String key) {
+    Long ts = timestampAddress.get(key);
     if (ts == null) {
       return -1;
     }

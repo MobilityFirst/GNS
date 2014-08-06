@@ -8,7 +8,6 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
-import edu.umass.cs.gns.util.NameRecordKey;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
@@ -82,7 +81,7 @@ public class LNSUpdateHandler {
   private static void sendUpdateInternal(int updateId, int recipientId, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurableInterface activeReplica) {
     UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), updateId,
-            name, new NameRecordKey(key), newValue, oldValue, argument, operation,
+            name, key, newValue, oldValue, argument, operation,
             -1, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
     try {
@@ -104,7 +103,7 @@ public class LNSUpdateHandler {
     outStandingUpdates.put(id, id);
     int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
     GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID() + "; Sending add: " + name + " : " + key +"->" + value + " to LNS " + recipientId);
-    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, new NameRecordKey(key), value, -1, GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, -1, GNS.DEFAULT_TTL_SECONDS);
     try {
       activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
     } catch (JSONException e) {
