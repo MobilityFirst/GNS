@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.ValuesMap;
+import java.util.ArrayList;
 
 /**
  * One of a number of class that implement client support in the GNS server.
@@ -153,15 +154,11 @@ public class Intercessor implements IntercessorInterface {
   }
 
   /**
-   *
-   */
-  /**
    * Sends a query to the Nameserver for a field in a guid.
    * Field is a string naming the field. Field can us dot notation to indicate subfields.
-   * Field can also be +ALL+ meaing retrieve all the fields (including internal system fields).
+   * Field can also be +ALL+ meaning retrieve all the fields (including internal system fields).
    * Return format should be one of ColumnFieldType.USER_JSON signifying new JSONObject format or
    * ColumnFieldType.LIST_STRING signifying old JSONArray of strings format.
-   *
    *
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    *
@@ -174,12 +171,36 @@ public class Intercessor implements IntercessorInterface {
    * @return
    */
   public static QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
+    return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
+  }
+  
+  /**
+   * Sends a query to the Nameserver for multiple fields in a guid.
+   * Fields is a list if strings naming the fields. Fields can us dot notation to indicate subfields.
+   * Return format should be one of ColumnFieldType.USER_JSON signifying new JSONObject format or
+   * ColumnFieldType.LIST_STRING signifying old JSONArray of strings format.
+   * 
+   * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
+   * 
+   * @param name
+   * @param fields
+   * @param reader
+   * @param signature
+   * @param message
+   * @param returnFormat
+   * @return 
+   */
+  public static QueryResult sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
+    return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
+  }
+  
+  private static QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {  
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending query: " + name + " " + field);
     }
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, field, null, // <-keys is null for now
+    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, field, fields,
             returnFormat, reader, signature, message);
     JSONObject json;
     try {

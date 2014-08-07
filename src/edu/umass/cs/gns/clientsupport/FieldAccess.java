@@ -12,6 +12,7 @@ import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.ValuesMap;
+import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,21 +39,27 @@ public class FieldAccess {
   }
 
   /**
-   * Reads the value of field in a guid.
-   * Field is a string the naming the field. Field can us dot 
+   * Reads the value of field or fields in a guid.
+   * Field(s) is a string the naming the field(s). Field(s) can us dot
    * notation to indicate subfields.
-   * 
+   *
    * @param guid
-   * @param field
+   * @param field - mutually exclusive with fields
+   * @param fields - mutually exclusive with field
    * @param reader
    * @param signature
    * @param message
    * @return the value of a single field
    */
-  public static CommandResponse lookup(String guid, String field, String reader, String signature, String message) {
+  public static CommandResponse lookup(String guid, String field, ArrayList<String> fields, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result;
+    if (field != null) {
+      result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
+    } else {
+      result = Intercessor.sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
+    }
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -107,12 +114,12 @@ public class FieldAccess {
   /**
    * Reads the value of all the fields in a guid.
    * Doesn't return internal system fields.
-   * 
+   *
    * @param guid
    * @param reader
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message) {
 
@@ -132,13 +139,13 @@ public class FieldAccess {
 
   /**
    * Returns the first value of the field in a guid in a an old-style JSONArray field value.
-   * 
+   *
    * @param guid
    * @param field
    * @param reader
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static CommandResponse lookupOne(String guid, String field, String reader, String signature, String message) {
 
@@ -162,12 +169,12 @@ public class FieldAccess {
 
   /**
    * Returns the first value of all the fields in a guid in an old-style JSONArray field value.
-   * 
+   *
    * @param guid
    * @param reader
    * @param signature
    * @param message
-   * @return 
+   * @return
    */
   public static CommandResponse lookupOneMultipleValues(String guid, String reader, String signature, String message) {
 
@@ -197,7 +204,7 @@ public class FieldAccess {
     return Intercessor.sendUpdateRecord(guid, key, value, oldValue, argument,
             operation, writer, signature, message);
   }
-  
+
   public static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
           String writer, String signature, String message) {
     return Intercessor.sendUpdateUserJSON(guid, new ValuesMap(json), operation, writer, signature, message);

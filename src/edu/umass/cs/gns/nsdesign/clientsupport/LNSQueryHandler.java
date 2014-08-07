@@ -95,26 +95,26 @@ public class LNSQueryHandler {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
           GNS.getLogger().fine("First success response (" + id + "): "
-                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
+                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()+ " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later success response (" + id + "): "
-                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey() + " Successful Received");
+                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()+ " Successful Received");
         }
       }
     } else {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
           GNS.getLogger().fine("First error response (" + id + "): "
-                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
+                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), activeReplica.getNodeID()));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later error response (" + id + "): "
-                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKey()
+                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
         }
       }

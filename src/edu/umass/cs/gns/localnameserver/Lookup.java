@@ -160,7 +160,7 @@ public class Lookup {
               returnValue, TTL, new HashSet<Integer>());
       outgoingPacket.setResponder(responder);
       sendDNSResponseBackToSource(outgoingPacket, handler);
-    } catch (Exception e) {
+    } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }
   }

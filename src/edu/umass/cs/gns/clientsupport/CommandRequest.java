@@ -14,6 +14,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
+import edu.umass.cs.gns.util.CanonicalJSON;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.net.UnknownHostException;
@@ -72,7 +73,8 @@ public class CommandRequest {
     if (command.has(SIGNATURE)) {
       String signature = command.getString(SIGNATURE);
       command.remove(SIGNATURE);
-      String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
+      String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
+      //String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
       GNS.getLogger().fine("######## WITHOUT SIGNATURE: " + commandSansSignature);
       command.put(SIGNATURE, signature);
       command.put(SIGNATUREFULLMESSAGE, commandSansSignature);
@@ -90,7 +92,7 @@ public class CommandRequest {
       }
     } catch (JSONException e) {
       e.printStackTrace();
-      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e);
+      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e + " while executing command.");
     } catch (NoSuchAlgorithmException e) {
       return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (InvalidKeySpecException e) {

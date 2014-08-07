@@ -273,24 +273,24 @@ public class JSONUtils {
     return json;
   }
 
-  /**
-   * Returns a JSON Object string sorted by keys. 
-   * This is only canonical one level deep. You've been warned.
-   * @param json
-   * @return 
-   */
-  public static String getCanonicalJSONString(JSONObject json) {
-    SortedMap map = new TreeMap<String, Object>();
-    Iterator<String> nameItr = json.keys();
-    while (nameItr.hasNext()) {
-      String key = nameItr.next();
-      try {
-        map.put(key, json.get(key));
-      } catch (JSONException e) {
-        // punt on any fields that hose us
-      }
-    }
-    return map.toString();
-  }
+//  /**
+//   * Returns a JSON Object string sorted by keys. 
+//   * This is only canonical one level deep. You've been warned.
+//   * @param json
+//   * @return 
+//   */
+//  public static String getCanonicalJSONString(JSONObject json) {
+//    SortedMap map = new TreeMap<String, Object>();
+//    Iterator<String> nameItr = json.keys();
+//    while (nameItr.hasNext()) {
+//      String key = nameItr.next();
+//      try {
+//        map.put(key, json.get(key));
+//      } catch (JSONException e) {
+//        // punt on any fields that hose us
+//      }
+//    }
+//    return map.toString();
+//  }
 
 }

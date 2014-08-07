@@ -143,6 +143,7 @@ public class Defs {
   public final static String APPGUID = "appGuid";
   public final static String ACCESSER = "accesser";
   public final static String FIELD = "field";
+  public final static String FIELDS = "fields";
   public final static String VALUE = "value";
   public final static String OLDVALUE = "oldvalue";
   public final static String USERJSON = "userjson";

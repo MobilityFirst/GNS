@@ -319,21 +319,21 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
       for (JSONObject json : jsonArray) {
         if (json.has(JSONNIOTransport.DEFAULT_IP_FIELD)) {
           if (Config.debuggingEnabled) {
-            log.info("HAS ADDRESS: " + json.getString(JSONNIOTransport.DEFAULT_IP_FIELD));
+            log.fine("HAS ADDRESS: " + json.getString(JSONNIOTransport.DEFAULT_IP_FIELD));
           }
         } else {
           if (Config.debuggingEnabled) {
-            log.info("STAMP ADDRESS: " + address);
+            log.fine("STAMP ADDRESS: " + address);
           }
           json.put(JSONNIOTransport.DEFAULT_IP_FIELD, address);
         }
         if (json.has(JSONNIOTransport.DEFAULT_PORT_FIELD)) {
           if (Config.debuggingEnabled) {
-            log.info("HAS PORT: " + json.getString(JSONNIOTransport.DEFAULT_PORT_FIELD));
+            log.fine("HAS PORT: " + json.getString(JSONNIOTransport.DEFAULT_PORT_FIELD));
           }
         } else {
           if (Config.debuggingEnabled) {
-            log.info("STAMP PORT: " + port);
+            log.fine("STAMP PORT: " + port);
           }
           json.put(JSONNIOTransport.DEFAULT_PORT_FIELD, port);
         }

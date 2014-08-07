@@ -113,7 +113,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
     this.guid = guid;
     this.key = key;
-    this.keys = null;
+    this.keys = keys;
     this.sourceId = sourceId;
     this.lnsId = -1; // this will be -1 until it is set by the handling LNS before sending to an NS
     this.responder = -1;
