@@ -65,7 +65,11 @@ public class FieldAccess {
     } else {
       ValuesMap valuesMap = result.getValuesMapSansInternalFields();
       try {
-        resultString = valuesMap.get(field).toString();
+        if (field != null) {
+          resultString = valuesMap.get(field).toString();
+        } else {
+          resultString = valuesMap.toString();
+        }
       } catch (JSONException e) {
         resultString = Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR + " " + e;
       }

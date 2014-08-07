@@ -116,11 +116,6 @@ public class ValuesMap extends JSONObject {
       } else {
         return null;
       }
-//      if (has(key)) {
-//        return new ResultValue(JSONUtils.JSONArrayToArrayList(super.getJSONArray(key)));
-//      } else {
-//        return null;
-//      }
     } catch (JSONException e) {
       GNS.getLogger().severe("Unable to parse JSON array: " + e);
       e.printStackTrace();
@@ -173,7 +168,6 @@ public class ValuesMap extends JSONObject {
   }
 
   private static boolean putWithDotNotation(JSONObject destination, String key, Object value) throws JSONException {
-    //try {
     //GNS.getLogger().info("###fullkey=" + key + " dest=" + destination);
     if (key.contains(".")) {
       int indexOfDot = key.indexOf(".");
@@ -193,10 +187,6 @@ public class ValuesMap extends JSONObject {
       //GNS.getLogger().info("###write=" + key + "->" + value);
       return true;
     }
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
-//      return false;
-//    }
   }
 
   private static Object getWithDotNotation(String key, Object json) throws JSONException {
@@ -234,7 +224,7 @@ public class ValuesMap extends JSONObject {
     try {
       return getWithDotNotation(key, json) != null;
     } catch (JSONException e) {
-      return false;
+      return false; // normal negative result when the key isn't present
     }
   }
 
