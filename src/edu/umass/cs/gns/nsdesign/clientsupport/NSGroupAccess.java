@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.clientsupport.InternalField;
+import edu.umass.cs.gns.clientsupport.SelectHandler;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
@@ -132,7 +133,8 @@ public class NSGroupAccess {
     if (!resultValue.isEmpty()) {
       return Integer.parseInt((String) resultValue.get(0));
     } else {
-      return 0;
+      // if we can't get it just return the default. No harm, no foul.
+      return SelectHandler.DEFAULT_MIN_REFRESH_INTERVAL;
     }
   }
 

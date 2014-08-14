@@ -53,6 +53,7 @@ public class Defs {
   public final static String WITHIN = "within";
   public final static String NEAR = "near";
   public final static String QUERY = "query";
+  public final static String INTERVAL = "interval";
   public final static String MAXDISTANCE = "maxDistance";
   public final static String REMOVEFIELD = "removeField";
   public final static String REPLACEUSERJSON = "replaceUserJSON";

@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.commands;
 
-import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.main.GNS;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +23,11 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- *
+ * This class helps to implement a unified set of client support commands that translate between client support requests
+ * and core GNS commands that are sent to the server. Specifically the CommandModule class maintains the list
+ * of commands, mechanisms for looking up commands from the contents of JSONObject encoded command packets
+ * as well as supporting generation of command documentation.
+ * 
  * @author westy
  */
 public class CommandModule {
@@ -33,6 +36,9 @@ public class CommandModule {
   private String host;
   private boolean adminMode = false;
 
+  /**
+   * Creates a CommandModule.
+   */
   public CommandModule() {
     initCommands();
   }
@@ -72,6 +78,12 @@ public class CommandModule {
     }
   }
 
+  /**
+   * Finds the command that corresponds to the JSONObject which was received command packet.
+   * 
+   * @param json
+   * @return 
+   */
   public GnsCommand lookupCommand(JSONObject json) {
     String action;
     try {

@@ -78,8 +78,16 @@ public class Select {
     }
   }
 
-  // handle a select request from an LNS
-  // this node is the broadcaster and selector
+  /**
+   * Handle a select request from an LNS.
+   * This node is the broadcaster and selector.
+   * 
+   * @param incomingJSON
+   * @param replica
+   * @throws JSONException
+   * @throws UnknownHostException
+   * @throws FailedDBOperationException 
+   */
   private static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
     // special case handling of the GROUP_LOOK operation
@@ -88,7 +96,7 @@ public class Select {
       // grab the timing parameters that we squirreled away from the SETUP
       Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica);
       int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica);
-      if (lastUpdate != null && minRefreshInterval != 0) {
+      if (lastUpdate != null) {
         GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
         // if not enough time has passed we just return the current value of the group
         if (new Date().getTime() - lastUpdate.getTime() <= minRefreshInterval) {
@@ -101,11 +109,12 @@ public class Select {
         GNS.getLogger().info("GROUP_LOOKUP Request: No Last Update Info ");
       }
     }
-    // the code below executes for regualr selects and also for GROUP SETUP and GROUP LOOKUP but for lookup
+    // the code below executes for regular selects and also for GROUP SETUP and GROUP LOOKUP but for lookup
     // only if enough time has elapsed since last lookup (see above)
+    // OR in the anamolous situation where the update info could not be found
     GNS.getLogger().info(packet.getSelectOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
     // If it's not a group lookup or is but enough time has passed we do the usual thing
-    // and send the request out to all the servers. We'll get a response sent  on the flipside.
+    // and send the request out to all the servers. We'll get a response sent on the flipside.
     Set<Integer> serverIds = replica.getGNSNodeConfig().getNameServerIDs();
     // store the info for later
     int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
@@ -126,8 +135,14 @@ public class Select {
     }
   }
 
-  // handle a select request from the collecting NS
-  // this node looks up the records and returns them
+  /**
+   * Handle a select request from the collecting NS.
+   * This node looks up the records and returns them.
+   * 
+   * @param incomingJSON
+   * @param replica
+   * @throws JSONException 
+   */
   private static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException {
     GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
@@ -152,7 +167,14 @@ public class Select {
     }
   }
 
-  // this code runs in the collecing NS
+  /**
+   * Handles a select response.
+   * This code runs in the collecting NS.
+   * 
+   * @param json
+   * @param replica
+   * @throws JSONException 
+   */
   public static void handleSelectResponse(JSONObject json, GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket packet = new SelectResponsePacket(json);
     GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());

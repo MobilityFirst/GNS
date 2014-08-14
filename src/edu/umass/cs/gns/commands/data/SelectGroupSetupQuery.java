@@ -39,7 +39,8 @@ public class SelectGroupSetupQuery extends GnsCommand {
   public CommandResponse execute(JSONObject json) throws JSONException {
     String guid = json.getString(GUID);
     String query = json.getString(QUERY);
-    return FieldAccess.selectGroupSetupQuery(query, guid);
+    int interval = json.optInt(INTERVAL, -1);
+    return FieldAccess.selectGroupSetupQuery(query, guid, interval);
   }
 
   @Override

@@ -81,6 +81,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.data.SelectQuery",
     "edu.umass.cs.gns.commands.data.SelectGroupLookupQuery",
     "edu.umass.cs.gns.commands.data.SelectGroupSetupQuery",
+    "edu.umass.cs.gns.commands.data.SelectGroupSetupQueryWithInterval",
     "edu.umass.cs.gns.commands.data.Substitute",
     "edu.umass.cs.gns.commands.data.SubstituteList",
     "edu.umass.cs.gns.commands.data.SubstituteListSelf",

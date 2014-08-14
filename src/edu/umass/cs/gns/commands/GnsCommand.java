@@ -16,7 +16,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * This class helps to implement a unified set of client support commands that translate between client support requests
+ * and core GNS commands that are sent to the server. Specifically the GnsCommand is the superclass for all other commands.
+ * It supports command sorting to facilitate command lookup. It also supports command documentation. 
+ * 
  * @author westy
  */
 public abstract class GnsCommand implements Comparable<GnsCommand> {
@@ -32,29 +35,57 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     this.module = module;
   }
 
-  // We need to sort the commands to put the longer ones with the same command name first.
+  /**
+   * Supports command sorting to facilitate command lookup.
+   * We need to sort the commands to put the longer ones with the same command name first.
+   * 
+   * @param otherCommand
+   * @return 
+   */
+  // 
   @Override
-  public int compareTo(GnsCommand c) {
-    int alphaResult = getCommandName().compareTo(c.getCommandName());
+  public int compareTo(GnsCommand otherCommand) {
+    int alphaResult = getCommandName().compareTo(otherCommand.getCommandName());
     // sort by number of arguments putting the longer ones first because we need to do longest match first.
     if (alphaResult == 0) {
-      int lengthDifference = getCommandParameters().length - c.getCommandParameters().length;
+      int lengthDifference = getCommandParameters().length - otherCommand.getCommandParameters().length;
       if (lengthDifference != 0) {
         // longest should be "less than"
         return -(Integer.signum(lengthDifference));
       } else {
         // same length parameter strings just sort them alphabetically... they can't be equal
-        return getCommandParametersString().compareTo(c.getCommandParametersString());
+        return getCommandParametersString().compareTo(otherCommand.getCommandParametersString());
       }
     } else {
       return alphaResult;
     }
   }
 
+  /**
+   * Returns a string array with names of the argument parameters to the command.
+   * 
+   * @return argument parameters
+   */
   public abstract String[] getCommandParameters();
 
+  /**
+   * Returns the name of the command as a string.
+   * 
+   * @return 
+   */
   public abstract String getCommandName();
 
+  /**
+   * Executes the command. Arguments are passed in the JSONObject.
+   * 
+   * @param json
+   * @return
+   * @throws InvalidKeyException
+   * @throws InvalidKeySpecException
+   * @throws JSONException
+   * @throws NoSuchAlgorithmException
+   * @throws SignatureException 
+   */
   public abstract CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException;
 
@@ -68,6 +99,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
   /**
    * Get the usage of the command.
    *
+   * @param format
    * @return <code>String</code> of the command usage ()
    */
   public String getUsage(CommandModule.CommandDescriptionFormat format) {
@@ -84,7 +116,12 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     }
   }
 
-  public String getHTMLForm() {
+  /**
+   * Returns a string showing the HTML client usage of the command.
+   * 
+   * @return 
+   */
+  private String getHTMLForm() {
     StringBuilder result = new StringBuilder();
     result.append(getCommandName());
     String[] parameters = getCommandParameters();
@@ -102,7 +139,12 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     return result.toString();
   }
 
-  public String getTCPForm() {
+  /**
+   * Returns a string showing the TCP client usage of the command.
+   * 
+   * @return 
+   */
+  private String getTCPForm() {
     StringBuilder result = new StringBuilder();
     result.append("Command: ");
     result.append(getCommandName());
@@ -124,7 +166,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    * 
    * @return 
    */
-  public String getTCPWikiForm() {
+  private String getTCPWikiForm() {
     StringBuilder result = new StringBuilder();
     result.append("|- "); // start row
     result.append(NEWLINE);
@@ -144,6 +186,11 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
   }
   
   
+  /**
+   * Returns a string describing the parameters of the command.
+   * 
+   * @return 
+   */
   public String getCommandParametersString() {
     StringBuilder result = new StringBuilder();
     String[] parameters = getCommandParameters();

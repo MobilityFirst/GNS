@@ -58,7 +58,7 @@ public class SelectRequestPacket extends BasicPacket {
   private GroupBehavior groupBehavior;
   // for group guid
   private String guid; // the group GUID we are maintaning or null for simple select
-  private int minRefreshInterval; // minimum time between allowed refreshs of the guid
+  private int minRefreshInterval; // minimum time between allowed refreshes of the guid
 
   /**
    * Constructs a new QueryResponsePacket
@@ -82,6 +82,17 @@ public class SelectRequestPacket extends BasicPacket {
     this.guid = null;
   }
 
+  /**
+   * Helper to construct a SelectRequestPacket for a context aware group guid.
+   * 
+   * @param id
+   * @param lns
+   * @param selectOperation
+   * @param groupOperation
+   * @param query
+   * @param guid
+   * @param minRefreshInterval 
+   */
   private SelectRequestPacket(int id, int lns, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
