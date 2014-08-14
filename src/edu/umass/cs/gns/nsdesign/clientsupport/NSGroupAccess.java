@@ -28,50 +28,72 @@ public class NSGroupAccess {
   public static final String GROUP_LAST_UPDATE = InternalField.makeInternalFieldString("groupLastUpdate");
   public static final String GROUP_QUERY_STRING = InternalField.makeInternalFieldString("groupQueryString");
 
-  public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+  public static void updateMembers(String guid, Set<String> members, GnsReconfigurable activeReplica) {
+    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
+            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
+    // We could roll back the above operation if the one below gets an error, but we don't
+    // We'll worry about this when we get transactions working.
+    if (!groupResponse.isAnError()) {
+      // This is probably a bad idea to update every member
+      for (String member : members) {
+        LNSUpdateHandler.sendUpdate(member, GroupAccess.GROUPS, new ResultValue(Arrays.asList(guid)),
+                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica);
+      }
+    }
+  }
+  
+  /**
+   * Return the members of a the group guid.
+   * 
+   * @param guid
+   * @param allowQueryToOtherNSs
+   * @param activeReplica
+   * @return
+   * @throws FailedDBOperationException 
+   */
+  public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) 
+          throws FailedDBOperationException {
     return NSFieldAccess.lookupField(guid, GroupAccess.GROUP, allowQueryToOtherNSs, activeReplica);
   }
-  
-  public static void updateMembers(String guid, Set<String> members, GnsReconfigurable activeReplica) {
-    LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
-            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
-  }
-  
+
   /**
    * Returns the groups that a GUID is a member of.
    *
    * @param guid
+   * @param activeReplica
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<String> lookupGroups(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     // this guid could be on another NS hence the true below
     return NSFieldAccess.lookupField(guid, GroupAccess.GROUPS, true, activeReplica).toStringSet();
   }
-  
+
   /**
    * Removes from the groupGuid the memberGuid.
-   * 
+   *
    * @param groupGuid
    * @param memberGuid
    * @param activeReplica
-   * @return 
+   * @return
    */
   public static NSResponseCode removeFromGroup(String groupGuid, String memberGuid, GnsReconfigurableInterface activeReplica) {
-    NSResponseCode groupResponse =  LNSUpdateHandler.sendUpdate(groupGuid, GroupAccess.GROUP, new ResultValue(Arrays.asList(memberGuid)),
+    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(groupGuid, GroupAccess.GROUP,
+            new ResultValue(Arrays.asList(memberGuid)),
             UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about this when we get transactions working.
     if (!groupResponse.isAnError()) {
-       LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(groupGuid)),
+      LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(groupGuid)),
               UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
     }
     return groupResponse;
   }
 
-/**
+  /**
    * Removes all group links when we're deleting a guid.
-   * 
-   * @param guid 
+   *
+   * @param guid
    */
   public static void cleanupGroupsForDelete(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
     for (String groupGuid : lookupGroups(guid, activeReplica)) {
@@ -88,7 +110,7 @@ public class NSGroupAccess {
     LNSUpdateHandler.sendUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, new ResultValue(Arrays.asList(Integer.toString(minRefresh))),
             UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
   }
-  
+
   public static void updateQueryString(String guid, String queryString, GnsReconfigurable activeReplica) {
     LNSUpdateHandler.sendUpdate(guid, GROUP_QUERY_STRING, new ResultValue(Arrays.asList(queryString)),
             UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica);
@@ -96,7 +118,7 @@ public class NSGroupAccess {
 
   public static Date getLastUpdate(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_LAST_UPDATE, true, activeReplica);
-    GNS.getLogger().fine("++++ResultValue = " +resultValue);
+    GNS.getLogger().fine("++++ResultValue = " + resultValue);
     if (!resultValue.isEmpty()) {
       return new Date(Long.parseLong((String) resultValue.get(0)));
     } else {
@@ -106,17 +128,17 @@ public class NSGroupAccess {
 
   public static int getMinRefresh(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica);
-    GNS.getLogger().fine("++++ResultValue = " +resultValue);
+    GNS.getLogger().fine("++++ResultValue = " + resultValue);
     if (!resultValue.isEmpty()) {
       return Integer.parseInt((String) resultValue.get(0));
     } else {
       return 0;
     }
   }
-  
+
   public static String getQueryString(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_QUERY_STRING, true, activeReplica);
-    GNS.getLogger().fine("++++ResultValue = " +resultValue);
+    GNS.getLogger().fine("++++ResultValue = " + resultValue);
     if (!resultValue.isEmpty()) {
       return (String) resultValue.get(0);
     } else {

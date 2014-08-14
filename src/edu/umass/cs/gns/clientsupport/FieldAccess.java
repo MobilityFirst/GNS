@@ -160,7 +160,17 @@ public class FieldAccess {
     } else {
       ResultValue value = result.getArray(field);
       if (value != null && !value.isEmpty()) {
-        resultString = (String) value.get(0);
+        // Ideally we could return Strings or Numbers here, but 
+        // this is the "older" return type and we already support 
+        // Strings or Numbers via the new JSONObject return type.
+        // So for now here we're just
+        // going to punt if we see a number and make it into a string.
+        Object singleValue = value.get(0);
+        if (singleValue instanceof Number) {
+          resultString = ((Number)singleValue).toString();
+        } else {
+          resultString = (String) value.get(0);
+        }
       } else {
         resultString = emptyString;
       }

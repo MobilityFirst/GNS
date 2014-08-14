@@ -7,7 +7,6 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
@@ -15,8 +14,6 @@ import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -24,7 +21,8 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 
 /**
- *
+ * Handles the set of select commands all of which return a set of guids based on a query.
+ * 
  * @author westy
  */
 public class SelectHandler {
@@ -33,11 +31,27 @@ public class SelectHandler {
   private static ConcurrentMap<Integer, SelectResponsePacket> resultsMap = new ConcurrentHashMap<Integer, SelectResponsePacket>(10, 0.75f, 3);
   private static Random randomID = new Random();
   
+  /**
+   * Sends the basic Select query which returns a list of guids that have contain the given key / value pair.
+   * 
+   * @param operation
+   * @param key
+   * @param value
+   * @param otherValue
+   * @return 
+   */
   public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue) {
     int id = nextRequestID();
     return sendSelectHelper(id, new SelectRequestPacket(id, LocalNameServer.getNodeID(), operation, GroupBehavior.NONE, key, value, otherValue)); 
   }
   
+  
+  /**
+   * Sends the a Select query which returns a list of guids match the given query.
+   * 
+   * @param query
+   * @return 
+   */
   public static String sendSelectQuery(String query) {
     int id = nextRequestID();
     return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, LocalNameServer.getNodeID(), query));
@@ -45,17 +59,31 @@ public class SelectHandler {
   
   private static int MIN_REFRESH_INTERVAL = 60; //seconds
   
+  /**
+   * Sends the Select query which sets up a group guid whose members match the given query.
+   * 
+   * @param query
+   * @param guid
+   * @return 
+   */
   public static String sendGroupGuidSetupSelectQuery(String query, String guid) {
     int id = nextRequestID();
     return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, LocalNameServer.getNodeID(), query, guid, MIN_REFRESH_INTERVAL));
   }
   
+  
+  /**
+   * Sends the Select query which returns the members of a previously created group guid.
+   * 
+   * @param guid
+   * @return 
+   */
   public static String sendGroupGuidLookupSelectQuery(String guid) {
     int id = nextRequestID();
     return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, LocalNameServer.getNodeID(), guid));
   }
   
-  public static String sendSelectHelper(int id, SelectRequestPacket sendPacket) {
+  private static String sendSelectHelper(int id, SelectRequestPacket sendPacket) {
     try {
       Intercessor.injectPacketIntoLNSQueue(sendPacket.toJSONObject());
     } catch (JSONException e) {
@@ -76,38 +104,7 @@ public class SelectHandler {
       return Defs.BADRESPONSE + " " + Defs.SELECTERROR + " " + packet.getErrorMessage();
     }
   }
-  
-  private static String buildResultString(JSONArray json) {
-    // extract the name and values from the returned records
-    JSONArray result = new JSONArray();
-    for (int i = 0; i < json.length(); i++) {
-      JSONObject jsonRecord = new JSONObject();
-      try {
-        jsonRecord.put("GUID", json.getJSONObject(i).getString(NameRecord.NAME.getName()));
-        extractFieldsIntoJSONObject(json.getJSONObject(i).getJSONObject(NameRecord.VALUES_MAP.getName()), jsonRecord);
-        result.put(jsonRecord);
-      } catch (JSONException e) {
-        GNS.getLogger().warning("Ignoring JSON error processing Select response: " + e);
-      }
-    }
-    return result.toString();
-  }
-  
-  public static JSONObject extractFieldsIntoJSONObject(JSONObject record, JSONObject JSONresult) {
-    Iterator<String> iter = record.keys();
-    while (iter.hasNext()) {
-      String key = iter.next();
-      if (!InternalField.isInternalField(key)) {
-        try {
-          JSONresult.put(key, record.getJSONArray(key));
-        } catch (JSONException e) {
-          GNS.getLogger().warning("Ignoring JSON error while extracting result from Select response: " + e);
-        }
-      }
-    }
-    return JSONresult;
-  }
-  
+ 
   public static void processSelectResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {

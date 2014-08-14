@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import org.json.JSONObject;
@@ -17,18 +16,23 @@ import java.util.concurrent.ConcurrentHashMap;
  * about Select operations performed on the GNS.
  */
 public class NSSelectInfo {
-  private int id;
-  private Set<Integer> serversToBeProcessed; // the list of servers that have yet to be processed
-  private ConcurrentHashMap<String, JSONObject> responses;
-  private SelectOperation selectOperation;
-  private GroupBehavior groupBehavior;
-  private String guid; // the group GUID we are maintaning or null for simple select
-  private String query; // The string used to set up the query if applicable
-  private int minRefreshInterval; // in seconds
+  private final int id;
+  private final Set<Integer> serversToBeProcessed; // the list of servers that have yet to be processed
+  private final ConcurrentHashMap<String, JSONObject> responses;
+  private final SelectOperation selectOperation;
+  private final GroupBehavior groupBehavior;
+  private final String guid; // the group GUID we are maintaining or null for simple select
+  private final String query; // The string used to set up the query if applicable
+  private final int minRefreshInterval; // in seconds
   /**
    * 
    * @param id
    * @param serverIds 
+   * @param selectOperation 
+   * @param groupBehavior 
+   * @param query 
+   * @param minRefreshInterval 
+   * @param guid 
    */
   public NSSelectInfo(int id, Set<Integer> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     this.id = id;

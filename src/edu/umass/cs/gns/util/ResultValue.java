@@ -17,7 +17,7 @@ import org.json.JSONException;
  * This class is the underlying representation used to transmit the value in the key / value store from
  * the client to the server.
  * 
- * This is extends ArrayList (like a JSONArray), but we made a class for this (as opposed to just using a
+ * This extends ArrayList (like a JSONArray), but we made a class for this (as opposed to just using a
  * ArrayList or a JSONArray) so we can dispatch off it in methods and also more easily instrument it.
  * 
  * One of the ideas here is to make it easy to mess with the implementation of this.
