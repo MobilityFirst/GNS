@@ -302,13 +302,13 @@ public class AccountAccess {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           Intercessor.sendRemoveRecord(name);
-          return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID);
+          return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
         }
       } else {
-        return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
+        return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + name);
       }
     } catch (JSONException e) {
-      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR);
+      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());
     }
   }
 
@@ -361,7 +361,7 @@ public class AccountAccess {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid) != null) {
-        return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID);
+        return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
       }
       // do this first so if there is an execption we don't have to back out of anything
       ResultValue guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
@@ -383,9 +383,9 @@ public class AccountAccess {
       }
       // otherwise roll it back
       accountInfo.removeGuid(guid);
-      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
+      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + name);
     } catch (JSONException e) {
-      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR);
+      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());
     }
   }
 
@@ -483,7 +483,7 @@ public class AccountAccess {
     if (Intercessor.sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       // roll this back
       accountInfo.removeAlias(alias);
-      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME);
+      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + alias);
     }
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();

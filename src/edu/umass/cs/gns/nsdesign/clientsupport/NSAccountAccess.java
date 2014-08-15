@@ -314,13 +314,13 @@ public class NSAccountAccess {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           LNSUpdateHandler.sendRemoveRecord(name, activeReplica);
-          return BADRESPONSE + " " + DUPLICATEGUID;
+          return BADRESPONSE + " " + DUPLICATEGUID + " " + guid;
         }
       } else {
-        return BADRESPONSE + " " + DUPLICATENAME;
+        return BADRESPONSE + " " + DUPLICATENAME + " " + name;
       }
     } catch (JSONException e) {
-      return BADRESPONSE + " " + JSONPARSEERROR;
+      return BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage();
     }
   }
 
@@ -373,7 +373,7 @@ public class NSAccountAccess {
     try {
       // insure that the guis doesn't exist already
       if (lookupGuidInfo(guid, activeReplica) != null) {
-        return BADRESPONSE + " " + DUPLICATEGUID;
+        return BADRESPONSE + " " + DUPLICATEGUID + " " + guid;
       }
       // do this first so if there is an execption we don't have to back out of anything
       ResultValue guidInfoFormatted = new GuidInfo(name, guid, publicKey).toDBFormat();
@@ -395,9 +395,9 @@ public class NSAccountAccess {
       }
       // otherwise roll it back
       accountInfo.removeGuid(guid);
-      return BADRESPONSE + " " + DUPLICATENAME;
+      return BADRESPONSE + " " + DUPLICATENAME + " " + name;
     } catch (JSONException e) {
-      return BADRESPONSE + " " + JSONPARSEERROR;
+      return BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage();
     }
   }
 
@@ -502,7 +502,7 @@ public class NSAccountAccess {
     }
     // roll this back
     accountInfo.removeAlias(alias);
-    return BADRESPONSE + " " + DUPLICATENAME;
+    return BADRESPONSE + " " + DUPLICATENAME + " " + alias;
   }
 
   /**
