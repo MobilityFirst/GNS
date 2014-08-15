@@ -5,11 +5,10 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
  * All Rights Reserved
  */
 
-
-
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
@@ -81,12 +80,12 @@ public class Select {
   /**
    * Handle a select request from an LNS.
    * This node is the broadcaster and selector.
-   * 
+   *
    * @param incomingJSON
    * @param replica
    * @throws JSONException
    * @throws UnknownHostException
-   * @throws FailedDBOperationException 
+   * @throws FailedDBOperationException
    */
   private static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
@@ -97,10 +96,14 @@ public class Select {
       Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica);
       int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica);
       if (lastUpdate != null) {
-        GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
+        }
         // if not enough time has passed we just return the current value of the group
         if (new Date().getTime() - lastUpdate.getTime() <= minRefreshInterval) {
-          GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
+          }
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica);
           sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsID(), result.toStringSet(), replica);
           return;
@@ -112,7 +115,9 @@ public class Select {
     // the code below executes for regular selects and also for GROUP SETUP and GROUP LOOKUP but for lookup
     // only if enough time has elapsed since last lookup (see above)
     // OR in the anamolous situation where the update info could not be found
-    GNS.getLogger().info(packet.getSelectOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info(packet.getSelectOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
+    }
     // If it's not a group lookup or is but enough time has passed we do the usual thing
     // and send the request out to all the servers. We'll get a response sent on the flipside.
     Set<Integer> serverIds = replica.getGNSNodeConfig().getNameServerIDs();
@@ -126,10 +131,13 @@ public class Select {
     packet.setNsID(replica.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
-    GNS.getLogger().fine("NS" + replica.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("NS" + replica.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
+    }
     try {
-      for (int serverId: serverIds)
+      for (int serverId : serverIds) {
         replica.getNioServer().sendToID(serverId, outgoingJSON); // send to myself too
+      }
     } catch (IOException e) {
       GNS.getLogger().severe("Exception while sending select request: " + e);
     }
@@ -138,20 +146,24 @@ public class Select {
   /**
    * Handle a select request from the collecting NS.
    * This node looks up the records and returns them.
-   * 
+   *
    * @param incomingJSON
    * @param replica
-   * @throws JSONException 
+   * @throws JSONException
    */
   private static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException {
-    GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
+    }
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, replica);
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsID(),
               request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
-      GNS.getLogger().fine("NS" + replica.getNodeID() + " sending back " + jsonRecords.length() + " records");
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().fine("NS" + replica.getNodeID() + " sending back " + jsonRecords.length() + " records");
+      }
       // and send them back to the originating NS
       replica.getNioServer().sendToID(request.getNsID(), response.toJSONObject());
     } catch (Exception e) {
@@ -170,14 +182,16 @@ public class Select {
   /**
    * Handles a select response.
    * This code runs in the collecting NS.
-   * 
+   *
    * @param json
    * @param replica
-   * @throws JSONException 
+   * @throws JSONException
    */
   public static void handleSelectResponse(JSONObject json, GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());
+    }
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
     if (info == null) {
       GNS.getLogger().warning("NS" + replica.getNodeID() + " unabled to located query info:" + packet.getNsQueryId());
@@ -188,11 +202,15 @@ public class Select {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getRecords(), info, replica);
     } else { // error response
-      GNS.getLogger().fine("NS" + replica.getNodeID() + " processing error response: " + packet.getErrorMessage());
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().fine("NS" + replica.getNodeID() + " processing error response: " + packet.getErrorMessage());
+      }
     }
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServer());
-    GNS.getLogger().fine("NS" + replica.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("NS" + replica.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
+    }
     if (info.allServersResponded()) {
       handledAllServersResponded(packet, info, replica);
     }
@@ -262,8 +280,7 @@ public class Select {
         break;
       case NEAR:
         if (request.getValue() instanceof String) {
-          cursor = NameRecord.selectRecordsNear(ar.getDB(), request.getKey()
-                  , (String) request.getValue(),
+          cursor = NameRecord.selectRecordsNear(ar.getDB(), request.getKey(), (String) request.getValue(),
                   Double.parseDouble((String) request.getOtherValue()));
         } else {
           break;
@@ -277,7 +294,9 @@ public class Select {
         }
         break;
       case QUERY:
-        GNS.getLogger().fine("NS" + ar.getNodeID() + " query: " + request.getQuery());
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().fine("NS" + ar.getNodeID() + " query: " + request.getQuery());
+        }
         cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
         break;
       default:
@@ -294,15 +313,21 @@ public class Select {
   // takes the JSON records that are returned from each NS and 
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info, GnsReconfigurable ar) throws JSONException {
     int length = jsonArray.length();
-    GNS.getLogger().fine("NS" + ar.getNodeID() + " processing " + length + " records");
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("NS" + ar.getNodeID() + " processing " + length + " records");
+    }
     // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
       JSONObject record = jsonArray.getJSONObject(i);
       String name = record.getString(NameRecord.NAME.getName());
       if (info.addResponseIfNotSeenYet(name, record)) {
-        GNS.getLogger().fine("NS" + ar.getNodeID() + " added record for " + name);
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().fine("NS" + ar.getNodeID() + " added record for " + name);
+        }
       } else {
-        GNS.getLogger().fine("NS" + ar.getNodeID() + " DID NOT ADD record for " + name);
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().fine("NS" + ar.getNodeID() + " DID NOT ADD record for " + name);
+        }
       }
     }
   }

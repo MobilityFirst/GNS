@@ -8,6 +8,7 @@ package edu.umass.cs.gns.util;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 
+import edu.umass.cs.gns.nsdesign.Config;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -132,7 +133,9 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+      }
       return true;
 
     } catch (Exception e) {
@@ -193,7 +196,9 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+      }
       return true;
 
     } catch (Exception e) {
@@ -256,7 +261,9 @@ public class Email {
 
       // Send message
       Transport.send(message);
-      GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+      }
       return true;
     } catch (Exception e) {
       if (!suppressWarning) {
