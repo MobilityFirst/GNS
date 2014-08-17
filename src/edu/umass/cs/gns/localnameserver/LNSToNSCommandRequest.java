@@ -20,7 +20,7 @@ import java.net.UnknownHostException;
  */
 public class LNSToNSCommandRequest {
 
-  public static void handlePacketCommandRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
+  public static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     LNSToNSCommandPacket packet = new LNSToNSCommandPacket(incomingJSON);
     if (packet.getReturnValue() == null) {
@@ -29,9 +29,9 @@ public class LNSToNSCommandRequest {
       // that is the active server for that GUID
       // because the code at the name server assumes it can look up the info for that record locally on the server.
       // We pick a name server based on that record name using the active name servers info in the cache.
-      int serverID = pickNameServer(getUsefulRecordName(packet.getCommand()));
+      int serverID = pickNameServer(getUsefulRecordName(packet.getCommand()), handler);
       GNS.getLogger().info("LNS" + LocalNameServer.getNodeID() + " transmitting CommandPacket " + incomingJSON + " to " + serverID);
-      LocalNameServer.sendToNS(incomingJSON, serverID);
+      handler.sendToNS(incomingJSON, serverID);
     } else {
       // PACKET IS COMING BACK FROM A NAMESERVER
       LocalNameServer.getIntercessor().handleIncomingPacket(incomingJSON);
@@ -63,19 +63,20 @@ public class LNSToNSCommandRequest {
    * @param guid
    * @return
    */
-  private static int pickNameServer(String guid) {
+  private static int pickNameServer(String guid, ClientRequestHandlerInterface handler) {
     if (guid != null) {
-      CacheEntry cacheEntry = LocalNameServer.getCacheEntry(guid);
+      CacheEntry cacheEntry = handler.getCacheEntry(guid);
       // PRoBABLY WILL NEED SOMETHING IN HERE TO FORCE IT TO UPDATE THE ActiveNameServers
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
-        int id = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
+        int id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (id != GNSNodeConfig.INVALID_NAME_SERVER_ID) {
+          
           GNS.getLogger().info("@@@@@@@ Picked NS" + id + " for record " + guid);
           return id;
         }
       }
       GNS.getLogger().warning("!?!?!?!?!?!?!?! NO SERVER FOR NS for record " + guid);
     }
-    return LocalNameServer.getGnsNodeConfig().getClosestServer(LocalNameServer.getGnsNodeConfig().getNameServerIDs());
+    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNameServerIDs());
   }
 }

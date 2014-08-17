@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
@@ -20,25 +21,27 @@ import java.net.UnknownHostException;
  */
 public class Select {
 
-  public static void handlePacketSelectRequest(JSONObject incomingJSON) throws JSONException, UnknownHostException {
+  public static void handlePacketSelectRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
 
-    int queryId = LocalNameServer.addSelectInfo(packet.getKey(), packet);
+    int queryId = handler.addSelectInfo(packet.getKey(), packet);
     packet.setLnsQueryId(queryId);
     JSONObject outgoingJSON = packet.toJSONObject();
     // Pick one NS to send it to
     // This should pick a Nameserver using the same method as a query!!
-    int serverID = pickNameServer(packet.getGuid());
-    GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
+    int serverID = pickNameServer(packet.getGuid(), handler);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("LNS" + handler.getNodeID() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
+    }
     LocalNameServer.sendToNS(outgoingJSON, serverID);
   }
 
-  private static int pickNameServer(String guid) {
+  private static int pickNameServer(String guid, ClientRequestHandlerInterface handler) {
     if (guid != null) {
-      CacheEntry cacheEntry = LocalNameServer.getCacheEntry(guid);
+      CacheEntry cacheEntry = handler.getCacheEntry(guid);
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
-        int id = LocalNameServer.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
+        int id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (id != GNSNodeConfig.INVALID_NAME_SERVER_ID) {
           return id;
         }
@@ -47,13 +50,17 @@ public class Select {
     return LocalNameServer.getGnsNodeConfig().getClosestServer(LocalNameServer.getGnsNodeConfig().getNameServerIDs());
   }
 
-  public static void handlePacketSelectResponse(JSONObject json) throws JSONException {
-    GNS.getLogger().finer("LNS" + LocalNameServer.getNodeID() + " recvd QueryResponse: " + json);
+  public static void handlePacketSelectResponse(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().finer("LNS" + handler.getNodeID() + " recvd QueryResponse: " + json);
+    }
     SelectResponsePacket packet = new SelectResponsePacket(json);
-    GNS.getLogger().fine("LNS" + LocalNameServer.getNodeID() + " recvd from NS" + packet.getNameServer());
-    SelectInfo info = LocalNameServer.getSelectInfo(packet.getLnsQueryId());
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("LNS" + handler.getNodeID() + " recvd from NS" + packet.getNameServer());
+    }
+    SelectInfo info = handler.getSelectInfo(packet.getLnsQueryId());
     // send a response back to the client
     LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
-    LocalNameServer.removeSelectInfo(packet.getLnsQueryId());
+    handler.removeSelectInfo(packet.getLnsQueryId());
   }
 }

@@ -54,6 +54,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
    */
   @Override
   public boolean handleJSONObject(JSONObject json) {
+    handler.incrementReceivedRequests();
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("******* Incoming packet: " + json);
     }
@@ -104,10 +105,10 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
           PendingTasks.handleActivesRequestReply(json);
           break;
         case SELECT_REQUEST:
-          Select.handlePacketSelectRequest(json);
+          Select.handlePacketSelectRequest(json, handler);
           break;
         case SELECT_RESPONSE:
-          Select.handlePacketSelectResponse(json);
+          Select.handlePacketSelectResponse(json, handler);
           break;
 
         // Requests sent only during testing
@@ -118,7 +119,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
           LNSTestRequests.handleGroupChangeComplete(json);
           break;
         case LNS_TO_NS_COMMAND:
-          LNSToNSCommandRequest.handlePacketCommandRequest(json);
+          LNSToNSCommandRequest.handlePacketCommandRequest(json, handler);
           break;
         case COMMAND:
           CommandRequest.handlePacketCommandRequest(json, handler);

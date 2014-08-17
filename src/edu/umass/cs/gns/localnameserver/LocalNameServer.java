@@ -36,16 +36,24 @@ import java.util.concurrent.TimeUnit;
  */
 public class LocalNameServer {
 
-  // Implements handling of client requests, comms and caching
-  private static ClientRequestHandlerInterface requestHandler;
-
   /**
    * Local Name Server ID *
    */
   private static int nodeID;
 
+  
+  // FIXME: Future code cleanup note: The ClientRequestHandlerInterface and the IntercessorInterface
+  // are closely related. Both encapsulate some functionality in the LocalNameServer that we might want to 
+  // be able to abstract out (maybe to a Nameserver someday). There should be a way to combine them further.
+  // One tanglible goal is to remove all references to static LocalNameServer calls in the code.
+  /**
+   * Implements handling of client requests, comms and caching.
+   */
+  private static ClientRequestHandlerInterface requestHandler;
 
-  /** A local name server forwards the final response for all requests to intercessor. */
+  /**
+   * A local name server forwards the final response for all requests to intercessor. 
+   */
   private static IntercessorInterface intercessor;
 
   private static ConcurrentHashMap<Integer, Double> nameServerLoads;

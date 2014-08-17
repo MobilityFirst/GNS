@@ -81,6 +81,11 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    * Name Server ID *
    */
   private final int nodeID;
+  
+  /**
+   * Instrumentation: Keep track of the number of requests coming in.
+   */
+  long receivedRequests = 0;
 
   public BasicClientRequestHandler(int nodeID, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
@@ -483,4 +488,13 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return "***NameRecordStatsMap***" + str.toString();
   }
 
+  @Override
+  public void incrementReceivedRequests() {
+    receivedRequests++;
+  }
+
+  @Override
+  public long getReceivedRequests() {
+    return receivedRequests;
+  }
 }

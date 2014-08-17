@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
@@ -53,7 +52,8 @@ public class CommandRequest {
       public void run() {
         try {
           CommandResponse returnValue = executeCommand(command, jsonFormattedCommand);
-          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue);
+          // the last argument here in the call below is instrumentation that the client can use to determine LNS load
+          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue, handler.getReceivedRequests());
           if (Config.debuggingEnabled) {
             GNS.getLogger().info("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
           }

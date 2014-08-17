@@ -268,5 +268,9 @@ public interface ClientRequestHandlerInterface {
    * @return 
    */
   public String getNameRecordStatsMapLogString();
+  
+  public void incrementReceivedRequests();
+  
+  public long getReceivedRequests();
 }
   

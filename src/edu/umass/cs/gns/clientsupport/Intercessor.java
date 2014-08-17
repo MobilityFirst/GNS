@@ -56,13 +56,13 @@ public class Intercessor implements IntercessorInterface {
    * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
    * multiple value returns.
    */
-  private static ConcurrentMap<Integer, QueryResult> queryResultMap;
-  private static Random randomID;
+  private static final ConcurrentMap<Integer, QueryResult> queryResultMap;
+  private static final Random randomID;
   /* Used for sending updates and getting confirmations */
   public static Transport transport;
-  private static ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
+  private static final ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
   // Instrumentation
-  private static ConcurrentMap<Integer, Long> queryTimeStamp;
+  private static final ConcurrentMap<Integer, Long> queryTimeStamp;
 
   private static boolean debuggingEnabled = false;
 
@@ -99,7 +99,8 @@ public class Intercessor implements IntercessorInterface {
    *
    * @param json
    */
-  public static void handleIncomingPackets(JSONObject json) {
+  @Override
+  public void handleIncomingPacket(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case CONFIRM_UPDATE:
@@ -490,10 +491,5 @@ public class Intercessor implements IntercessorInterface {
     if (isPacketTypeFound == false) {
       GNS.getLogger().severe("Packet type not found at demultiplexer: " + isPacketTypeFound);
     }
-  }
-
-  @Override
-  public void handleIncomingPacket(JSONObject jsonObject) {
-    handleIncomingPackets(jsonObject);
   }
 }
