@@ -269,8 +269,12 @@ public interface ClientRequestHandlerInterface {
    */
   public String getNameRecordStatsMapLogString();
   
-  public void incrementReceivedRequests();
+  public void updateRequestStatistics();
   
   public long getReceivedRequests();
+  
+  public int getRequestsPerSecond();
+  
+  
 }
   

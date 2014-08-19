@@ -52,8 +52,9 @@ public class CommandRequest {
       public void run() {
         try {
           CommandResponse returnValue = executeCommand(command, jsonFormattedCommand);
-          // the last argument here in the call below is instrumentation that the client can use to determine LNS load
-          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue, handler.getReceivedRequests());
+          // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
+          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue, 
+                  handler.getReceivedRequests(), handler.getRequestsPerSecond());
           if (Config.debuggingEnabled) {
             GNS.getLogger().info("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
           }

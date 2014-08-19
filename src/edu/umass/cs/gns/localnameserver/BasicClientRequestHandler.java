@@ -81,11 +81,13 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    * Name Server ID *
    */
   private final int nodeID;
-  
+
   /**
    * Instrumentation: Keep track of the number of requests coming in.
    */
   long receivedRequests = 0;
+  long lastRequestTime = -1;
+  int requestsPerSecond = 0;
 
   public BasicClientRequestHandler(int nodeID, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
@@ -149,7 +151,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     requestInfoMap.put(id, requestInfo);
   }
 
-
   @Override
   public int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket) {
     int id;
@@ -179,18 +180,15 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return requestInfoMap.remove(id);
   }
 
-
   @Override
   public SelectInfo removeSelectInfo(int id) {
     return selectTransmittedMap.remove(id);
   }
 
-
   @Override
   public SelectInfo getSelectInfo(int id) {
     return selectTransmittedMap.get(id);
   }
-
 
   // CACHE METHODS
   @Override
@@ -367,10 +365,14 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   public int getClosestReplicaController(String name, Set<Integer> nameServersQueried) {
     try {
       Set<Integer> primary = getReplicaControllers(name);
-      if (parameters.isDebugMode()) GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
+      if (parameters.isDebugMode()) {
+        GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
+      }
 
       int x = gnsNodeConfig.getClosestServer(primary, nameServersQueried);
-      if (parameters.isDebugMode()) GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
+      if (parameters.isDebugMode()) {
+        GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
+      }
       return x;
     } catch (Exception e) {
       return -1;
@@ -391,7 +393,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
       e.printStackTrace();
     }
   }
-  
+
   /**
    * Send packet to NS
    */
@@ -488,13 +490,39 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return "***NameRecordStatsMap***" + str.toString();
   }
 
+  private int deferedCnt = 0; // a little hair in case we are getting requests to fast for the millisecond timer (is this likely?)
+  
   @Override
-  public void incrementReceivedRequests() {
+  public void updateRequestStatistics() {
+    long currentTime = System.currentTimeMillis();
+    long timeDiff =  currentTime - lastRequestTime;
+    deferedCnt++;
+    if (timeDiff != 0) {
+      requestsPerSecond = (int) (deferedCnt * 1000L / timeDiff);
+      deferedCnt = 0;
+      lastRequestTime = currentTime;
+    }
     receivedRequests++;
   }
 
+  /**
+   * Instrumentation.
+   *
+   * @return
+   */
   @Override
   public long getReceivedRequests() {
     return receivedRequests;
   }
+
+  /**
+   * Instrumentation.
+   *
+   * @return
+   */
+  @Override
+  public int getRequestsPerSecond() {
+    return requestsPerSecond;
+  }
+
 }

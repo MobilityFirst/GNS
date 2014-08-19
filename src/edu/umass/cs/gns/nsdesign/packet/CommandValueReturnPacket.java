@@ -8,10 +8,10 @@ import org.json.JSONObject;
 
 /**
  * Packet format back to the client by local name server in response to a CommandPacket.
- * Contains the original id plus the return value (as a STRING) 
- * plus a possible error code (could be null) 
+ * Contains the original id plus the return value (as a STRING)
+ * plus a possible error code (could be null)
  * plus instrumentation.
- * 
+ *
  * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent.
  */
 public class CommandValueReturnPacket extends BasicPacket {
@@ -22,6 +22,7 @@ public class CommandValueReturnPacket extends BasicPacket {
   private final static String LNSROUNDTRIPTIME = "lnsRtt";
   private final static String RESPONDER = "responder";
   private final static String REQUESTCNT = "requestCnt";
+  private final static String REQUESTRATE = "requestRate";
 
   /**
    * Identifier of the request.
@@ -44,9 +45,13 @@ public class CommandValueReturnPacket extends BasicPacket {
    */
   private final int responder;
   /**
-   * Instrumentation - the request counter from the LNS (can be used to tell how busy LNS is)
+   * Instrumentation - the request counter from the LNS)
    */
   private final long requestCnt;
+  /**
+   * Instrumentation - the current requests per second from the LNS (can be used to tell how busy LNS is)
+   */
+  private final int requestRate;
 
   /**
    * Creates a CommandValueReturnPacket from a CommandResponse.
@@ -55,7 +60,7 @@ public class CommandValueReturnPacket extends BasicPacket {
    * @param response
    * @param requestCnt - current number of requests handled by the LNS (can be used to tell how busy LNS is)
    */
-  public CommandValueReturnPacket(int requestId, CommandResponse response, long requestCnt) {
+  public CommandValueReturnPacket(int requestId, CommandResponse response, long requestCnt, int requestRate) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.requestId = requestId;
     this.returnValue = response.getReturnValue();
@@ -63,6 +68,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     this.LNSRoundTripTime = response.getLNSRoundTripTime();
     this.responder = response.getResponder();
     this.requestCnt = requestCnt;
+    this.requestRate = requestRate;
   }
 
   /**
@@ -80,6 +86,8 @@ public class CommandValueReturnPacket extends BasicPacket {
     } else {
       this.errorCode = NSResponseCode.NO_ERROR;
     }
+    // instrumentation
+    this.requestRate = json.getInt(REQUESTRATE);
     this.requestCnt = json.getLong(REQUESTCNT);
     //
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
@@ -101,6 +109,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     if (errorCode != null) {
       json.put(ERRORCODE, errorCode.getCodeValue());
     }
+    json.put(REQUESTRATE, requestRate); // instrumentation
     json.put(REQUESTCNT, requestCnt); // instrumentation
     // instrumentation
     if (LNSRoundTripTime != -1) {
@@ -135,6 +144,10 @@ public class CommandValueReturnPacket extends BasicPacket {
 
   public long getRequestCnt() {
     return requestCnt;
+  }
+
+  public int getRequestRate() {
+    return requestRate;
   }
 
 }

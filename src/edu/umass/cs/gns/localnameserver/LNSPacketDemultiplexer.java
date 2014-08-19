@@ -54,7 +54,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
    */
   @Override
   public boolean handleJSONObject(JSONObject json) {
-    handler.incrementReceivedRequests();
+    handler.updateRequestStatistics();
     if (StartLocalNameServer.debugMode) {
       GNS.getLogger().fine("******* Incoming packet: " + json);
     }
