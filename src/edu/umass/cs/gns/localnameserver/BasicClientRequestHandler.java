@@ -22,6 +22,7 @@ import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
+import edu.umass.cs.gns.util.MovingAverage;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -87,7 +88,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    */
   long receivedRequests = 0;
   long lastRequestTime = -1;
-  int requestsPerSecond = 0;
 
   public BasicClientRequestHandler(int nodeID, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
@@ -490,7 +490,8 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return "***NameRecordStatsMap***" + str.toString();
   }
 
-  private int deferedCnt = 0; // a little hair in case we are getting requests to fast for the millisecond timer (is this likely?)
+  private long deferedCnt = 0; // a little hair in case we are getting requests to fast for the millisecond timer (is this likely?)
+  private MovingAverage averageRequestsPerSecond = new MovingAverage(30);
   
   @Override
   public void updateRequestStatistics() {
@@ -498,7 +499,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     long timeDiff =  currentTime - lastRequestTime;
     deferedCnt++;
     if (timeDiff != 0) {
-      requestsPerSecond = (int) (deferedCnt * 1000L / timeDiff);
+      averageRequestsPerSecond.add((int) (deferedCnt * 1000L / timeDiff));
       deferedCnt = 0;
       lastRequestTime = currentTime;
     }
@@ -522,7 +523,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    */
   @Override
   public int getRequestsPerSecond() {
-    return requestsPerSecond;
+    return (int) Math.round(averageRequestsPerSecond.getAverage());
   }
 
 }

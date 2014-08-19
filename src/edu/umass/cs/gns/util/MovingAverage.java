@@ -115,13 +115,15 @@ public class MovingAverage {
 
   /*************************************************************
    * Returns the String representation of this object
+   * @return 
    ************************************************************/
   @Override
   public String toString() {
     return "Window:" + window.toString() + " Size:" + window.size() + " Sum:" + sum + " Avg:" + getAverage();
   }
 
-  /** Test **/
+  /** Test
+   * @param args **/
   public static void main(String[] args) {
     int[] testData = {1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
     int[] windowSizes = {3, 5};

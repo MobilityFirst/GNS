@@ -208,6 +208,16 @@ public class AccountAccess {
   private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server at %s.\n"
           + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
 
+  /**
+   * Adds an account guid.
+   * 
+   * @param host
+   * @param name
+   * @param guid
+   * @param publicKey
+   * @param password
+   * @return 
+   */
   public static CommandResponse addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
     CommandResponse response;
     if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).getReturnValue().equals(OKRESPONSE)) {
@@ -526,6 +536,7 @@ public class AccountAccess {
    * @param alias
    * @param writer
    * @param signature
+   * @param message
    * @return status result
    */
   public static CommandResponse removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message) {
