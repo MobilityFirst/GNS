@@ -36,9 +36,24 @@ import java.util.Date;
  */
 public class AccountAccess {
 
+  /**
+   * Defines the field name in an account guid where account information is stored.
+   */
   public static final String ACCOUNT_INFO = InternalField.makeInternalFieldString("account_info");
+
+  /**
+   * Defines the field name in an HRN record (the reverse record) where guid is stored.
+   */
   public static final String HRN_GUID = InternalField.makeInternalFieldString("guid");
+
+  /**
+   * Defines the field name in the subguid where parent guid is stored.
+   */
   public static final String PRIMARY_GUID = InternalField.makeInternalFieldString("primary_guid");
+
+  /**
+   * Defines the field name in the guid where guid info is stored.
+   */
   public static final String GUID_INFO = InternalField.makeInternalFieldString("guid_info");
 
   /**
@@ -237,6 +252,13 @@ public class AccountAccess {
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 
+  /**
+   * Performs the account verification for a given guid using the verification code.
+   * 
+   * @param guid
+   * @param code
+   * @return
+   */
   public static CommandResponse verifyAccount(String guid, String code) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid)) == null) {
@@ -280,6 +302,7 @@ public class AccountAccess {
    * @param guid
    * @param publicKey
    * @param password
+   * @param emailVerify
    * @return status result
    */
   public static CommandResponse addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
@@ -393,7 +416,6 @@ public class AccountAccess {
    * Remove a GUID. Guid should not be an account GUID.
    *
    * @param guid
-   * @param accountInfo
    * @return
    */
   public static CommandResponse removeGuid(GuidInfo guid) {
@@ -502,6 +524,8 @@ public class AccountAccess {
    *
    * @param accountInfo
    * @param alias
+   * @param writer
+   * @param signature
    * @return status result
    */
   public static CommandResponse removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message) {
@@ -527,6 +551,9 @@ public class AccountAccess {
    *
    * @param accountInfo
    * @param password
+   * @param writer
+   * @param signature
+   * @param message
    * @return status result
    */
   public static CommandResponse setPassword(AccountInfo accountInfo, String password, String writer, String signature, String message) {
@@ -543,6 +570,9 @@ public class AccountAccess {
    *
    * @param guidInfo
    * @param tag
+   * @param writer
+   * @param signature
+   * @param message
    * @return status result
    */
   public static CommandResponse addTag(GuidInfo guidInfo, String tag, String writer, String signature, String message) {
@@ -559,6 +589,9 @@ public class AccountAccess {
    *
    * @param guidInfo
    * @param tag
+   * @param writer
+   * @param signature
+   * @param message
    * @return status result
    */
   public static CommandResponse removeTag(GuidInfo guidInfo, String tag, String writer, String signature, String message) {
@@ -621,5 +654,7 @@ public class AccountAccess {
     }
     return false;
   }
+  
+  //
   public static String Version = "$Revision$";
 }

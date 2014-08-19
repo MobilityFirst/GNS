@@ -176,6 +176,16 @@ public class GroupAccess {
     }
   }
 
+  /**
+   *
+   * @param guid
+   * @param memberGuid
+   * @param writer
+   * @param signature
+   * @param message
+   * @return
+   * @deprecated
+   */
   @Deprecated
   public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
@@ -183,6 +193,16 @@ public class GroupAccess {
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
+  /**
+   *
+   * @param guid
+   * @param memberGuid
+   * @param writer
+   * @param signature
+   * @param message
+   * @return
+   * @deprecated
+   */
   @Deprecated
   public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
@@ -190,7 +210,16 @@ public class GroupAccess {
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
-   @Deprecated
+  /**
+   *
+   * @param guid
+   * @param reader
+   * @param signature
+   * @param message
+   * @return
+   * @deprecated
+   */
+  @Deprecated
   public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
@@ -200,6 +229,15 @@ public class GroupAccess {
     }
   }
 
+  /**
+   *
+   * @param guid
+   * @param reader
+   * @param signature
+   * @param message
+   * @return
+   * @deprecated
+   */
   @Deprecated
   public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message) {
     QueryResult result = Intercessor.sendQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
@@ -210,6 +248,16 @@ public class GroupAccess {
     }
   }
   
+  /**
+   *
+   * @param guid
+   * @param requests
+   * @param writer
+   * @param signature
+   * @param message
+   * @return
+   * @deprecated
+   */
   @Deprecated
   public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
@@ -223,6 +271,16 @@ public class GroupAccess {
     return false;
   }
 
+  /**
+   *
+   * @param guid
+   * @param requests
+   * @param writer
+   * @param signature
+   * @param message
+   * @return
+   * @deprecated
+   */
   @Deprecated
   public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
@@ -235,5 +293,9 @@ public class GroupAccess {
     }
     return false;
   }
+
+  /**
+   *
+   */
   public static String Version = "$Revision$";
 }

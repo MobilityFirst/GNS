@@ -100,5 +100,8 @@ public class LNSToNSCommandRequestHandler {
     return id;
   }
   
+  /**
+   *
+   */
   public static String Version = "$Revision$";
 }

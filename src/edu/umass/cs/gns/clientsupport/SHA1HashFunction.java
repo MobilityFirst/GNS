@@ -26,6 +26,12 @@ public class SHA1HashFunction extends BasicHashFunction {
     }
   }
 
+  /**
+   * Hash the string.
+   * 
+   * @param key
+   * @return
+   */
   @Override
   public synchronized byte[] hash(String key) {
     hashfunction.update(key.getBytes());
@@ -33,11 +39,22 @@ public class SHA1HashFunction extends BasicHashFunction {
 
   }
   
+  /**
+   * Hash the byte array.
+   * 
+   * @param bytes
+   * @return
+   */
   public synchronized byte[] hash(byte[] bytes) {
     hashfunction.update(bytes);
     return hashfunction.digest();
   }
 
+  /**
+   * Returns the single instance of the SHA1HashFunction.
+   * 
+   * @return
+   */
   public static SHA1HashFunction getInstance() {
     return SHA1HashFunctionHolder.INSTANCE;
   }

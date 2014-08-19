@@ -43,6 +43,7 @@ public class QueryResult implements Serializable{
    * Creates a "normal" (non-error) QueryResult.
    * 
    * @param valuesMap 
+   * @param responder 
    */
   public QueryResult(ValuesMap valuesMap, int responder) {
     this.valuesMap = valuesMap;
@@ -53,6 +54,7 @@ public class QueryResult implements Serializable{
    * Creates an error QueryResult.
    * 
    * @param errorCode 
+   * @param responder 
    */
   public QueryResult(NSResponseCode errorCode, int responder) {
     this.errorCode = errorCode;
@@ -112,6 +114,11 @@ public class QueryResult implements Serializable{
     return valuesMap;
   }
 
+  /**
+   * Returns the error code. Can be null.
+   * 
+   * @return
+   */
   public NSResponseCode getErrorCode() {
     return errorCode;
   }
@@ -128,6 +135,7 @@ public class QueryResult implements Serializable{
   /** 
    * Instrumentation - holds the time between the LNS sending the request to the NS and the return message
    * being received.
+   * @return 
    */
   public long getRoundTripTime() {
     return roundTripTime;
@@ -136,11 +144,17 @@ public class QueryResult implements Serializable{
   /** 
    * Instrumentation - holds the time between the LNS sending the request to the NS and the return message
    * being received.
+   * @param roundTripTime
    */
   public void setRoundTripTime(long roundTripTime) {
     this.roundTripTime = roundTripTime;
   }
 
+  /**
+   * Returns the responder. Might be -1 if missing.
+   * 
+   * @return
+   */
   public int getResponder() {
     return responder;
   }

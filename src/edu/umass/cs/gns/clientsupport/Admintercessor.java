@@ -38,7 +38,7 @@ public class Admintercessor {
 
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   private static Random randomID;
-  private static int localServerID = 0;
+  private static int localServerID = 0; // Can this go away? It will when we remove IDs from the LNS.
   /**
    * Used for the general admin wait / notify handling
    */
@@ -67,10 +67,20 @@ public class Admintercessor {
     adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
   }
 
+  /**
+   * Returns the local server ID associate with the Admintercessor.
+   * 
+   * @return
+   */
   public static int getLocalServerID() {
     return localServerID;
   }
 
+  /**
+   * Sets the local server ID associate with the Admintercessor.
+   * 
+   * @param localServerID
+   */
   public static void setLocalServerID(int localServerID) {
     Admintercessor.localServerID = localServerID;
 
@@ -94,6 +104,11 @@ public class Admintercessor {
     return false;
   }
 
+  /**
+   * Sends the delete all records command.
+   * 
+   * @return
+   */
   public static boolean sendDeleteAllRecords() {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject());
@@ -104,6 +119,11 @@ public class Admintercessor {
     return false;
   }
 
+  /**
+   * Sends the clear cache command.
+   * 
+   * @return
+   */
   public static boolean sendClearCache() {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject());
@@ -114,6 +134,11 @@ public class Admintercessor {
     return false;
   }
 
+  /**
+   * Sends the dump cache command.
+   * 
+   * @return
+   */
   public static String sendDumpCache() {
     int id = nextAdminRequestID();
     try {
@@ -131,6 +156,12 @@ public class Admintercessor {
     }
   }
 
+  /**
+   * Sends the ping table command for a given node.
+   * 
+   * @param node
+   * @return a string containing the ping results for the node
+   */
   public static String sendPingTable(String node) {
     int id = nextAdminRequestID();
     try {
@@ -151,10 +182,26 @@ public class Admintercessor {
     }
   }
 
+  /**
+   * Sends the ping value command for node1 to node2 specified as integers. 
+   * Returns the ping value between those nodes.
+   * 
+   * @param node1
+   * @param node2
+   * @return the ping value between those nodes
+   */
   public static String sendPingValue(int node1, int node2) {
     return sendPingValue(Integer.toString(node1), Integer.toString(node2));
   }
 
+  /**
+   * Sends the ping value command for node1 to node2 specified as strings. 
+   * Returns the ping value between those nodes.
+   * 
+   * @param node1
+   * @param node2
+   * @return
+   */
   public static String sendPingValue(String node1, String node2) {
     int id = nextAdminRequestID();
     try {
@@ -175,6 +222,12 @@ public class Admintercessor {
     }
   }
 
+  /**
+   * Sends the change log level command.
+   * 
+   * @param level
+   * @return
+   */
   public static boolean sendChangeLogLevel(Level level) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
@@ -200,6 +253,11 @@ public class Admintercessor {
     }
   }
 
+  /**
+   * Processes incoming AdminResponse packets.
+   * 
+   * @param json
+   */
   public static void handleIncomingAdminResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
@@ -239,7 +297,13 @@ public class Admintercessor {
   }
 
   // DUMP
-  public static CommandResponse sendDump() {
+
+  /**
+   * Sends the dump command to the LNS.
+   * 
+   * @return
+   */
+    public static CommandResponse sendDump() {
     int id;
     if ((id = sendDumpOutputHelper(null)) == -1) {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
@@ -318,6 +382,11 @@ public class Admintercessor {
     return result.toString();
   }
 
+  /**
+   * Processes incoming Dump packets.
+   * 
+   * @param json
+   */
   public static void handleIncomingDumpResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
@@ -364,6 +433,12 @@ public class Admintercessor {
     }
   }
 
+  /**
+   * Sends a command to collect all guids that contain the given tag.
+   * 
+   * @param tagName
+   * @return
+   */
   public static HashSet<String> collectTaggedGuids(String tagName) {
     int id;
     if ((id = sendDumpOutputHelper(tagName)) == -1) {

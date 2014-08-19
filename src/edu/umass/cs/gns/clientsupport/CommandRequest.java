@@ -32,6 +32,14 @@ public class CommandRequest {
   // handles command processing
   private static final CommandModule commandModule = new CommandModule();
 
+  /**
+   * Handles command packets coming in from the client.
+   * 
+   * @param incomingJSON
+   * @param handler
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
   public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     if (Config.debuggingEnabled) {
@@ -82,6 +90,13 @@ public class CommandRequest {
     }
   }
 
+  /**
+   * Executes the given command with the parameters supplied in the JSONObject.
+   * 
+   * @param command
+   * @param json
+   * @return
+   */
   public static CommandResponse executeCommand(GnsCommand command, JSONObject json) {
     try {
       if (command != null) {

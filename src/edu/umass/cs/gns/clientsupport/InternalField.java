@@ -34,6 +34,11 @@ public class InternalField {
     return key.startsWith(INTERNAL_PREFIX);
   }
 
+  /**
+   * Returns the length of the prefix used with internal fields.
+   * 
+   * @return
+   */
   public static int getPrefixLength() {
     return INTERNAL_PREFIX.length();
   }

@@ -47,7 +47,7 @@ import java.util.ArrayList;
  */
 public class Intercessor implements IntercessorInterface {
 
-  private static int localServerID = 0;
+  private static int localServerID = 0; // Can this go away? It will when we remove IDs from the LNS.
   /* Used by the wait/notify calls */
   private static final Object monitor = new Object();
   /* Used by update confirmation */
@@ -58,8 +58,8 @@ public class Intercessor implements IntercessorInterface {
    */
   private static final ConcurrentMap<Integer, QueryResult> queryResultMap;
   private static final Random randomID;
-  /* Used for sending updates and getting confirmations */
-  public static Transport transport;
+
+  //public static Transport transport;
   private static final ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
   // Instrumentation
   private static final ConcurrentMap<Integer, Long> queryTimeStamp;
@@ -76,14 +76,29 @@ public class Intercessor implements IntercessorInterface {
   // local instance of LNSPacketDemultiplexer class.
   private static LNSPacketDemultiplexer lnsPacketDemultiplexer;
 
+  /**
+   * Initializes the Intercessor.
+   * 
+   * @param handler
+   */
   public static void init(ClientRequestHandlerInterface handler) {
     lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
   }
 
+  /**
+   * Returns the local server ID associate with the Intercessor.
+   * 
+   * @return
+   */
   public static int getLocalServerID() {
     return localServerID;
   }
 
+  /**
+   * Sets the local server ID associate with the Intercessor.
+   * 
+   * @param localServerID
+   */
   public static void setLocalServerID(int localServerID) {
     Intercessor.localServerID = localServerID;
 
@@ -247,6 +262,9 @@ public class Intercessor implements IntercessorInterface {
 
   /**
    * This version bypasses any signature checks and is meant for "system" use.
+   * @param name
+   * @param field
+   * @return 
    */
   public static QueryResult sendQueryBypassingAuthentication(String name, String field) {
     return sendQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
@@ -285,6 +303,11 @@ public class Intercessor implements IntercessorInterface {
     return result;
   }
 
+  /**
+   * Sends an RemoveRecord packet to the Local Name Server.
+   * @param name
+   * @return
+   */
   public static NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
@@ -342,6 +365,7 @@ public class Intercessor implements IntercessorInterface {
    * @param operation
    * @param writer
    * @param signature
+   * @param message
    * @return
    */
   public static NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
@@ -363,7 +387,6 @@ public class Intercessor implements IntercessorInterface {
    * Sends an update request for an entire JSON Object.
    *
    * @param name
-   * @param key
    * @param userJSON
    * @param operation
    * @param writer

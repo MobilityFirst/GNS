@@ -66,14 +66,36 @@ public class FieldMetaData {
     }
   }
 
+  /**
+   *
+   * @param type
+   * @param guid
+   * @param key
+   * @param value
+   */
   public static void add(MetaDataTypeName type, String guid, String key, String value) {
     Intercessor.sendUpdateRecordBypassingAuthentication(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }
 
+  /**
+   *
+   * @param type
+   * @param guid
+   * @param key
+   * @param value
+   * @param writer
+   * @param signature
+   * @param message
+   * @return
+   */
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
     return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
   //
-  public static String Version = "$Revision$";
+
+  /**
+   *
+   */
+    public static String Version = "$Revision$";
 }

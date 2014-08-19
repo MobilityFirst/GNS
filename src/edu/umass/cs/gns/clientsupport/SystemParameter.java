@@ -10,25 +10,32 @@ import java.lang.reflect.Field;
 /**
  * Provides an interface to set values of static fields that act as system parameters.
  * Currently only supports boolean, string and integer fields.
- * Relies on the fact that the fields in question are static! 
- * 
+ * Relies on the fact that the fields in question are static!
+ *
  * @author westy
  */
 public enum SystemParameter {
+
   // NOTE: All the fields in here MUST be static fields.
+
   EMAIL(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableEmailAccountAuthentication",
-  "Determines if email authentication is used."),
+          "Determines if email authentication is used."),
   SIGNATURE(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableSignatureVerification",
-  "Determines if query and field authentication using signatures and ACLS is enabled."),
+          "Determines if query and field authentication using signatures and ACLS is enabled."),
   MAXGUIDS(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXGUIDS",
-  "Puts a limit on the number of guids an account can have."),
+          "Puts a limit on the number of guids an account can have."),
   MAXALIASES(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXALIASES",
-  "Puts a limit on the number of alias an account can have.");
+          "Puts a limit on the number of alias an account can have.");
 
   //
+  /**
+   *
+   */
   public enum ParameterType {
 
-    Boolean, Integer, String
+    Boolean,
+    Integer,
+    String
   }
   //
   ParameterType type;
@@ -56,6 +63,11 @@ public enum SystemParameter {
     }
   }
 
+  /**
+   *
+   * @param value
+   * @throws Exception
+   */
   public void setFieldValue(String value) throws Exception {
     Class closs = Class.forName(className);
     Field field = closs.getField(fieldName);
@@ -64,6 +76,11 @@ public enum SystemParameter {
     field.set(o, parseValue(value));
   }
 
+  /**
+   *
+   * @return
+   * @throws Exception
+   */
   public Object getFieldValue() throws Exception {
     Class closs = Class.forName(className);
     Field field = closs.getField(fieldName);
@@ -71,6 +88,10 @@ public enum SystemParameter {
     return field.get(o);
   }
 
+  /**
+   *
+   * @return
+   */
   public static String listParameters() {
     StringBuilder result = new StringBuilder();
     String prefix = "";
@@ -90,20 +111,37 @@ public enum SystemParameter {
     return result.toString();
   }
 
+  /**
+   *
+   * @return
+   */
   public ParameterType getType() {
     return type;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getClassName() {
     return className;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getFieldName() {
     return fieldName;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getDescription() {
     return description;
   }
+
   public final static String NEWLINE = System.getProperty("line.separator");
 }

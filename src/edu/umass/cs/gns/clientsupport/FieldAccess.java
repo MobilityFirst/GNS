@@ -381,5 +381,9 @@ public class FieldAccess {
       return new CommandResponse(emptyJSONArrayString);
     }
   }
+
+  /**
+   *
+   */
   public static String Version = "$Revision$";
 }

@@ -26,14 +26,26 @@ public enum MetaDataTypeName {
     this.prefix = makeInternalFieldString(prefix);
   }
 
+  /**
+   *
+   * @return
+   */
   public String getPrefix() {
     return prefix;
   }
   
+  /**
+   *
+   * @return
+   */
   public String getFieldPath() {
     return prefix + "." + name();
   }
  
+  /**
+   *
+   * @return
+   */
   public static String typesToString() {
     StringBuilder result = new StringBuilder();
     String prefix = "";

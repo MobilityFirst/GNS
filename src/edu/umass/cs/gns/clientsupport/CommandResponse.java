@@ -25,6 +25,14 @@ public class CommandResponse {
    */
   private int responder;
 
+  /**
+   * Create a command response object from a return value with an error code.
+   * 
+   * @param returnValue
+   * @param errorCode
+   * @param LNSRoundTripTime
+   * @param responder
+   */
   public CommandResponse(String returnValue, NSResponseCode errorCode, long LNSRoundTripTime, int responder) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
@@ -32,26 +40,48 @@ public class CommandResponse {
     this.responder = responder;
   }
 
+  /**
+   * Create a command response object from a return value with no error.
+   * 
+   * @param returnValue
+   */
   public CommandResponse(String returnValue) {
     this(returnValue, NSResponseCode.NO_ERROR, -1, -1);
   }
 
+  /**
+   * Gets the return value.
+   * 
+   * @return
+   */
   public String getReturnValue() {
     return returnValue;
   }
 
+  /**
+   * Gets the error code.
+   * 
+   * @return
+   */
   public NSResponseCode getErrorCode() {
     return errorCode;
   }
 
+  /**
+   * Gets the LNS round trip time (computed from LNS to NS and back).
+   * @return
+   */
   public long getLNSRoundTripTime() {
     return LNSRoundTripTime;
   }
 
+  /**
+   * Gets the is id fd the name server that responded (could be -1 if not known).
+   * 
+   * @return
+   */
   public int getResponder() {
     return responder;
   }
 
-
-  
 }

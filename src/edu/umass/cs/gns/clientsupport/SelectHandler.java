@@ -129,6 +129,11 @@ public class SelectHandler {
     }
   }
 
+  /**
+   * Processes incoming SelectResponsePacket packets.
+   * 
+   * @param json
+   */
   public static void processSelectResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {

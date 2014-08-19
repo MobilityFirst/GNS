@@ -43,6 +43,8 @@ public class PerformanceTests {
    * here we can avoid having to do GUID verification and message signing.
    * 
    * @param numFields
+   * @param guidCnt
+   * @param verbose
    * @return 
    */
   public static String runRttPerformanceTest(int numFields, int guidCnt, boolean verbose) {
