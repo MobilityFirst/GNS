@@ -491,7 +491,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   }
 
   private long deferedCnt = 0; // a little hair in case we are getting requests too fast for the millisecond timer (is this likely?)
-  private MovingAverage averageRequestsPerSecond = new MovingAverage(30);
+  private MovingAverage averageRequestsPerSecond = new MovingAverage(10);
   
   @Override
   public void updateRequestStatistics() {
