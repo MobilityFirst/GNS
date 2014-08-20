@@ -490,7 +490,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return "***NameRecordStatsMap***" + str.toString();
   }
 
-  private long deferedCnt = 0; // a little hair in case we are getting requests to fast for the millisecond timer (is this likely?)
+  private long deferedCnt = 0; // a little hair in case we are getting requests too fast for the millisecond timer (is this likely?)
   private MovingAverage averageRequestsPerSecond = new MovingAverage(30);
   
   @Override
@@ -499,6 +499,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     long timeDiff =  currentTime - lastRequestTime;
     deferedCnt++;
     if (timeDiff != 0) {
+      // multiple by 1000 cuz we're computing Ops per SECOND
       averageRequestsPerSecond.add((int) (deferedCnt * 1000L / timeDiff));
       deferedCnt = 0;
       lastRequestTime = currentTime;
