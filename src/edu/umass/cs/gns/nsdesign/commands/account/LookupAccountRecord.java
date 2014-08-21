@@ -22,6 +22,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  *
  * @author westy
  */
+@Deprecated
 public class LookupAccountRecord extends NSCommand {
 
   public LookupAccountRecord(NSCommandModule module) {

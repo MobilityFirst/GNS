@@ -21,6 +21,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.COMMANDNAME;
  *
  * @author westy
  */
+@Deprecated
 public class NSCommandModule {
 
   private TreeSet<NSCommand> commands;

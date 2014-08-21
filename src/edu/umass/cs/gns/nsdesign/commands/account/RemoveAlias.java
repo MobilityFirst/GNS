@@ -29,6 +29,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RemoveAlias extends NSCommand {
 
   public RemoveAlias(NSCommandModule module) {

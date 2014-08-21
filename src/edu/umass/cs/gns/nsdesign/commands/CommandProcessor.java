@@ -27,6 +27,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  *
  * @author westy
  */
+@Deprecated
 public class CommandProcessor {
   
   private static final NSCommandModule commandModule = new NSCommandModule();

@@ -29,6 +29,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RemoveAccount extends NSCommand {
 
   public RemoveAccount(NSCommandModule module) {

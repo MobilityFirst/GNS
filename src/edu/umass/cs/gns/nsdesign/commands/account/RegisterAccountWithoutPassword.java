@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
  *
  * @author westy
  */
+@Deprecated
 public class RegisterAccountWithoutPassword extends RegisterAccount {
 
   public RegisterAccountWithoutPassword(NSCommandModule module) {

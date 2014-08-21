@@ -27,6 +27,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class VerifyAccount extends NSCommand {
   
   public VerifyAccount(NSCommandModule module) {

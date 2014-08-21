@@ -19,6 +19,7 @@ import java.security.spec.InvalidKeySpecException;
  *
  * @author westy
  */
+@Deprecated
 public abstract class NSCommand implements Comparable<NSCommand> {
 
   protected NSCommandModule module;

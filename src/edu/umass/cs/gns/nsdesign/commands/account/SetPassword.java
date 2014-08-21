@@ -29,6 +29,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class SetPassword extends NSCommand {
 
   public SetPassword(NSCommandModule module) {

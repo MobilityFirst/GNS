@@ -22,6 +22,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class LookupGuid extends NSCommand {
 
   public LookupGuid(NSCommandModule module) {

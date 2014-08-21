@@ -30,6 +30,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RegisterAccount extends NSCommand {
 
   public RegisterAccount(NSCommandModule module) {

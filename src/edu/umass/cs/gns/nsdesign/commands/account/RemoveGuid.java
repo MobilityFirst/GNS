@@ -29,6 +29,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RemoveGuid extends NSCommand {
 
   public RemoveGuid(NSCommandModule module) {

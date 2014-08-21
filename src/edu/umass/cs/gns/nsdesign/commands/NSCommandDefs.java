@@ -13,6 +13,7 @@ import edu.umass.cs.gns.commands.*;
  *
  * @author westy
  */
+@Deprecated
 public class NSCommandDefs {
 
   private static String[] commands = new String[]{

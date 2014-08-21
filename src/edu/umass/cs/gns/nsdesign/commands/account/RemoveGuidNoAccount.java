@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
  *
  * @author westy
  */
+@Deprecated
 public class RemoveGuidNoAccount extends RemoveGuid {
 
   public RemoveGuidNoAccount(NSCommandModule module) {

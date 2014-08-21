@@ -33,6 +33,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
  *
  * @author westy
  */
+@Deprecated
 public class AddGuid extends NSCommand {
 
   public AddGuid(NSCommandModule module) {
