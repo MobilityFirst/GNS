@@ -490,8 +490,9 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return "***NameRecordStatsMap***" + str.toString();
   }
 
+  // Maintains a moving average of server request load to smooth out the burstiness.
   private long deferedCnt = 0; // a little hair in case we are getting requests too fast for the millisecond timer (is this likely?)
-  private MovingAverage averageRequestsPerSecond = new MovingAverage(10);
+  private MovingAverage averageRequestsPerSecond = new MovingAverage(30);
   
   @Override
   public void updateRequestStatistics() {

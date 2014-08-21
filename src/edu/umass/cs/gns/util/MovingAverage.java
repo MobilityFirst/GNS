@@ -8,43 +8,50 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
-
-/*************************************************************
+/**
+ * ***********************************************************
  * This class implements the moving average
- * 
+ *
  * @author Hardeep Uppal
- ************************************************************/
+ ***********************************************************
+ */
 public class MovingAverage {
 
-  /** FIFO Queue for calculating moving average **/
-  private Queue<Integer> window;
-  /** Size of the moving average window **/
+  /**
+   * FIFO Queue for calculating moving average *
+   */
+  private final Queue<Integer> window;
+  /**
+   * Size of the moving average window *
+   */
   private final int WINDOW_SIZE;
 
-
-  /** Sum of all numbers in the window **/
+  /**
+   * Sum of all numbers in the window *
+   */
   private double sum;
 
-  /*************************************************************
-   * Constructs a new MovingAverage object with the specified 
+  /**
+   * ***********************************************************
+   * Constructs a new MovingAverage object with the specified
    * window size
-   * @param windowSize Window size 
-   ************************************************************/
+   *
+   * @param windowSize Window size
+   ***********************************************************
+   */
   public MovingAverage(int windowSize) {
     this.window = new LinkedList<Integer>();
     this.WINDOW_SIZE = windowSize;
     this.sum = 0;
   }
-  
-  /*************************************************************
-   * Constructs a new MovingAverage from a JSON Array with integers 
-   ************************************************************/
-  public MovingAverage(JSONArray json, int windowSize) {
-    try {
-      this.window = new LinkedList<Integer>(JSONUtils.JSONArrayToArrayListInteger(json));
-    } catch (JSONException e) {
-      this.window = new LinkedList<Integer>();
-    }
+
+  /**
+   * ***********************************************************
+   * Constructs a new MovingAverage from a JSON Array with integers
+   ***********************************************************
+   */
+  public MovingAverage(JSONArray json, int windowSize) throws JSONException {
+    this.window = new LinkedList<Integer>(JSONUtils.JSONArrayToArrayListInteger(json));
     this.WINDOW_SIZE = windowSize;
     this.sum = 0;
     for (Integer x : this.window) {
@@ -65,20 +72,23 @@ public class MovingAverage {
     return sum;
   }
 
-  public JSONArray toJSONArray () {
+  public JSONArray toJSONArray() {
     return new JSONArray(window);
   }
-  
+
   public ArrayList<Integer> toArrayList() {
     return new ArrayList<Integer>(this.window);
   }
 
-  /*************************************************************
+  /**
+   * ***********************************************************
    * Adds a new number to the moving average window.
-   * When the window is full, the oldest entry (head) in the 
+   * When the window is full, the oldest entry (head) in the
    * queue is removed and the new number is added to the tail.
+   *
    * @param num New number added to the window
-   ************************************************************/
+   ***********************************************************
+   */
   public void add(int num) {
     sum += num;
     window.add(num);
@@ -88,42 +98,56 @@ public class MovingAverage {
     }
   }
 
-  /*************************************************************
+  /**
+   * ***********************************************************
    * Returns the moving average.<br/>
    * Returns 0 if the window is empty.
-   ************************************************************/
+   ***********************************************************
+   * @return 
+   */
   public double getAverage() {
     return (window.isEmpty()) ? 0 : (sum / window.size());
   }
 
-  /*************************************************************
+  /**
+   * ***********************************************************
    * Returns the median value in window.<br/>
    * Returns 0 if the window is empty.
-   ************************************************************/
+   ***********************************************************
+   * @return 
+   */
   public double getMedian() {
-	  if  (window.isEmpty()) return 0;
-	  int[] sortedList = new int[window.size()];
-	  int i = 0; 
-	  for (int x: window) {
-		  sortedList[i] = x;
-		  i++;
-	  }
-	  Arrays.sort(sortedList);
-	  return sortedList[sortedList.length / 2];
-	  
+    if (window.isEmpty()) {
+      return 0;
+    }
+    int[] sortedList = new int[window.size()];
+    int i = 0;
+    for (int x : window) {
+      sortedList[i] = x;
+      i++;
+    }
+    Arrays.sort(sortedList);
+    return sortedList[sortedList.length / 2];
+
   }
 
-  /*************************************************************
+  /**
+   * ***********************************************************
    * Returns the String representation of this object
-   * @return 
-   ************************************************************/
+   *
+   * @return
+   ***********************************************************
+   */
   @Override
   public String toString() {
     return "Window:" + window.toString() + " Size:" + window.size() + " Sum:" + sum + " Avg:" + getAverage();
   }
 
-  /** Test
-   * @param args **/
+  /**
+   * Test
+   *
+   * @param args *
+   */
   public static void main(String[] args) {
     int[] testData = {1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
     int[] windowSizes = {3, 5};
@@ -140,10 +164,10 @@ public class MovingAverage {
     }
     System.out.println("TESTING FULL CREATE"); // Westy
     try {
-    MovingAverage ma = new MovingAverage(new JSONArray(testData), testData.length);
-    System.out.println(ma.toString());
+      MovingAverage ma = new MovingAverage(new JSONArray(testData), testData.length);
+      System.out.println(ma.toString());
     } catch (JSONException e) {
-       System.out.println("Error: " + e); // Westy
+      System.out.println("Error: " + e); // Westy
     }
   }
 }

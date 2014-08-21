@@ -269,10 +269,23 @@ public interface ClientRequestHandlerInterface {
    */
   public String getNameRecordStatsMapLogString();
   
+  /**
+   * Instrumentation - Updates various instrumentation including the request counter and requests per second
+   */
   public void updateRequestStatistics();
   
+  /**
+   * Instrumentation - Return the request counter.
+   * 
+   * @return 
+   */
   public long getReceivedRequests();
   
+  /**
+   * Instrumentation - Return the requests per second measure.
+   * 
+   * @return 
+   */
   public int getRequestsPerSecond();
   
   
