@@ -47,9 +47,9 @@ public class RemoveAccount extends GnsCommand {
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-    } else {
+//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
+//    } else {
       String name = json.getString(NAME);
       String guid = json.getString(GUID);
       String signature = json.getString(SIGNATURE);
@@ -68,7 +68,7 @@ public class RemoveAccount extends GnsCommand {
       } else {
         return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
       }
-    }
+    //}
   }
 
   @Override

@@ -47,9 +47,9 @@ public class SetPassword extends GnsCommand {
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-    } else {
+//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
+//    } else {
       String guid = json.getString(GUID);
       String password = json.getString(PASSWORD);
       String signature = json.getString(SIGNATURE);
@@ -73,7 +73,7 @@ public class SetPassword extends GnsCommand {
 //      } else {
 //        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
 //      }
-    }
+   // }
   }
 
   @Override

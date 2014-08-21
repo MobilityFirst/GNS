@@ -48,9 +48,9 @@ public class AddAlias extends GnsCommand {
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-    } else {
+//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
+//    } else {
       String guid = json.getString(GUID);
       String name = json.getString(NAME);
       String signature = json.getString(SIGNATURE);
@@ -90,7 +90,7 @@ public class AddAlias extends GnsCommand {
 //      } else {
 //        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
 //      }
-    }
+   // }
   }
 
   @Override

@@ -47,9 +47,9 @@ public class RemoveGuid extends GnsCommand {
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-    } else {
+//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
+//    } else {
       String guidToRemove = json.getString(GUID);
       String accountGuid = json.optString(ACCOUNT_GUID, null);
       String signature = json.getString(SIGNATURE);
@@ -76,7 +76,7 @@ public class RemoveGuid extends GnsCommand {
       } else {
         return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
       }
-    }
+    //}
   }
 
   @Override

@@ -39,9 +39,9 @@ public class LookupPrimaryGuid extends GnsCommand {
 
   @Override
   public CommandResponse execute(JSONObject json) throws JSONException {
-    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-    } else {
+//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
+//    } else {
       String guid = json.getString(GUID);
       String result = AccountAccess.lookupPrimaryGuid(guid);
       if (result != null) {
@@ -49,7 +49,7 @@ public class LookupPrimaryGuid extends GnsCommand {
       } else {
         return new CommandResponse(BADRESPONSE + " " + BADGUID);
       }
-    }
+    //}
   }
 
   @Override

@@ -51,9 +51,9 @@ public class AddGuid extends GnsCommand {
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-    } else {
+//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
+//    } else {
       String name = json.getString(NAME);
       String accountGuid = json.getString(GUID);
       String publicKey = json.getString(PUBLICKEY);
@@ -89,7 +89,7 @@ public class AddGuid extends GnsCommand {
       } else {
         return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
       }
-    }
+    //}
   }
 
   @Override

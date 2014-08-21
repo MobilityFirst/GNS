@@ -161,8 +161,9 @@ public class Intercessor implements IntercessorInterface {
         case SELECT_RESPONSE:
           SelectHandler.processSelectResponsePackets(json);
           break;
-        case LNS_TO_NS_COMMAND:
-          LNSToNSCommandRequestHandler.processCommandResponsePackets(json);
+//        case LNS_TO_NS_COMMAND:
+//          LNSToNSCommandRequestHandler.processCommandResponsePackets(json);
+//          break;
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON error: " + e);

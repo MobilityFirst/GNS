@@ -18,10 +18,11 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 
 /**
- * Provides methods for sending commands to a NameServer.
+ * Provides methods for sending commands to a NameServer. Deprecated.
  *
  * @author westy
  */
+@Deprecated
 public class LNSToNSCommandRequestHandler {
   
   private static final Object monitor = new Object();

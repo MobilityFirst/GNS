@@ -40,9 +40,9 @@ public class LookupGuidRecord extends GnsCommand {
 
   @Override
   public CommandResponse execute(JSONObject json) throws JSONException {
-    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-    } else {
+//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
+//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
+//    } else {
       String guid = json.getString(GUID);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
@@ -57,7 +57,7 @@ public class LookupGuidRecord extends GnsCommand {
       } else {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
-    }
+   // }
   }
 
   @Override
