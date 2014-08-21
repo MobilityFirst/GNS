@@ -46,7 +46,7 @@ public class LookupActives {
 				isError = true;
 			} else { // send reply to LNS
 				packet.setActiveNameServers(rcRecord.getActiveNameservers());
-				replyToLNS = new MessagingTask(packet.getLNSID(), packet.toJSONObject());
+				replyToLNS = new MessagingTask(packet.getLnsAddress(), packet.toJSONObject());
 				if(Config.debuggingEnabled) log.fine("Sent actives for " + packet.getName() + " = " + rcRecord.getActiveNameservers());
 			}
 		} catch (RecordNotFoundException e) {
@@ -57,7 +57,7 @@ public class LookupActives {
 		} finally {
 			if(isError) { // may be set within catch block above or if record isMarkedForRemoval()
 				packet.setActiveNameServers(null);
-				replyToLNS = new MessagingTask(packet.getLNSID(), packet.toJSONObject());
+				replyToLNS = new MessagingTask(packet.getLnsAddress(), packet.toJSONObject());
 				log.info("Error: Record does not exist for " + packet.getName());
 			}
 		}

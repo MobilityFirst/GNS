@@ -12,6 +12,7 @@ import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,15 +34,17 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   private final static String KEYS = "dns_keys";
   private final static String TIME_TO_LIVE = "ttlAddress";
   private final static String RECORD_VALUE = "recordValue";
-  @Deprecated
-  private final static String LNS_ID = "lnsId";
+//  @Deprecated
+//  private final static String LNS_ID = "lnsId";
+  // these two replace LNSID
   private final static String LNS_ADDRESS = "lnsAddress";
+  private final static String LNS_PORT = "lnsPort";
   private final static String SOURCE_ID = "sourceId";
   private final static String RESPONDER = "rspndr";
   private final static String RETURN_FORMAT = "format";
 
   /**
-   * 
+   *
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
    */
@@ -74,14 +77,14 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   /**
    * This is used by the Nameservers so they know which LNS to send the packet back to. *
    */
-  @Deprecated
-  private int lnsId = -1; // will be -1 until set at the LNS
-  
+//  @Deprecated
+//  private int lnsId = -1; // will be -1 until set at the LNS
+
   /**
    * This is used by the Nameservers so they know which LNS to send the packet back to.
    * Replaces lnsId.
    */
-  private String lnsAddress = null;
+  private InetSocketAddress lnsAddress = null;
 
   /**
    * Time interval (in seconds) that the resource record may be cached before it should be discarded
@@ -126,8 +129,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.key = key;
     this.keys = keys;
     this.sourceId = sourceId;
-    this.lnsId = -1; // this will be -1 until it is set by the handling LNS before sending to an NS
-    this.lnsAddress = null;
+    //this.lnsId = -1; // this will be -1 until it is set by the handling LNS before sending to an NS
+    this.lnsAddress = null; // this will be null until it is set by the handling LNS before sending to an NS
     this.responder = -1;
     this.returnFormat = returnFormat;
   }
@@ -156,8 +159,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
       this.keys = null;
     }
     this.sourceId = json.getInt(SOURCE_ID);
-    this.lnsId = json.getInt(LNS_ID);
-    this.lnsAddress = json.optString(LNS_ADDRESS, null);
+    //this.lnsId = json.getInt(LNS_ID);
+    this.lnsAddress = json.has(LNS_ADDRESS) && json.has(LNS_PORT)
+            ? new InetSocketAddress(json.getString(LNS_ADDRESS), json.getInt(LNS_PORT))
+            : null;
     // read the optional responder if it is there
     this.responder = json.optInt(RESPONDER, -1);
     this.returnFormat = json.has(RETURN_FORMAT) ? ColumnFieldType.valueOf(json.getString(RETURN_FORMAT)) : null;
@@ -208,7 +213,8 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.guid = name;
     this.key = key;
     this.keys = keys;
-    this.lnsId = -1; // we don't care about this once it's heading back to the LNS
+    //this.lnsId = -1; // we don't care about this once it's heading back to the LNS
+    this.lnsAddress = null; // we don't care about this once it's heading back to the LNS
     this.sourceId = sourceId;
     this.recordValue = entireRecord;
     this.ttl = TTL;
@@ -280,9 +286,10 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     }
     json.put(GUID, guid);
     json.put(SOURCE_ID, sourceId);
-    json.put(LNS_ID, lnsId);
+    //json.put(LNS_ID, lnsId);
     if (lnsAddress != null) {
-      json.put(LNS_ADDRESS, lnsAddress);
+      json.put(LNS_ADDRESS, lnsAddress.getHostString());
+      json.put(LNS_PORT, lnsAddress.getPort());
     }
     if (returnFormat != null) {
       json.put(RETURN_FORMAT, returnFormat.name());
@@ -396,7 +403,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
   public ArrayList<String> getKeys() {
     return keys;
   }
-  
+
   public String getKeyOrKeysString() {
     return key != null ? key : keys.toString();
   }
@@ -441,32 +448,33 @@ public class DNSPacket extends BasicPacketWithSignatureInfo {
     this.recordValue.putAsArray(key, data);
   }
 
-  @Deprecated
-  public int getLnsId() {
-    return lnsId;
-  }
-
-  @Deprecated
-  public void setLnsId(int lnsId) {
-    this.lnsId = lnsId;
-  }
+//  @Deprecated
+//  public int getLnsId() {
+//    return lnsId;
+//  }
+//
+//  @Deprecated
+//  public void setLnsId(int lnsId) {
+//    this.lnsId = lnsId;
+//  }
 
   /**
    * Returns the address of LNS that the response should be returned to.
    * Replaces <code>getLnsId</code>
-   * @return 
+   *
+   * @return
    */
-  public String getLnsAddress() {
+  public InetSocketAddress getLnsAddress() {
     return lnsAddress;
   }
 
   /**
    * Sets the address of LNS that the response should be returned to.
    * Replaces <code>setLnsId</code>.
-   * 
-   * @param lnsAddress 
+   *
+   * @param lnsAddress
    */
-  public void setLnsAddress(String lnsAddress) {
+  public void setLnsAddress(InetSocketAddress lnsAddress) {
     this.lnsAddress = lnsAddress;
   }
 

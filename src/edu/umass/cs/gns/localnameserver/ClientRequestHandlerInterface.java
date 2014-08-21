@@ -11,6 +11,7 @@ import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import java.net.InetSocketAddress;
 import java.util.Set;
 import org.json.JSONObject;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -53,7 +54,15 @@ public interface ClientRequestHandlerInterface {
    * 
    * @return 
    */
+  @Deprecated
   public int getNodeID();
+  
+  /**
+   * Returns the address of this node.
+   * 
+   * @return 
+   */
+   public InetSocketAddress getNodeAddress();
 
   // REQUEST INFO METHODS
 

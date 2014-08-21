@@ -134,9 +134,9 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           // current active replica set, it will continue sending requests to the far away name server.
           Set<Integer> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
-            RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsId(), 0, nodeID);
+            RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);
-            nioTransport.sendToID(dnsPacket.getLnsId(), requestActives.toJSONObject());
+            nioTransport.sendToAddress(dnsPacket.getLnsAddress(), requestActives.toJSONObject());
           }
           if (readCoordination && dnsPacket.isQuery()) {
             dnsPacket.setResponder(nodeID);

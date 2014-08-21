@@ -181,7 +181,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
       dnsPacket.setTTL(0);
       dnsPacket.setSingleReturnValue(fakeResultValue);
     }
-    nioServer.sendToID(dnsPacket.getLnsId(), dnsPacket.toJSONObject());
+    nioServer.sendToAddress(dnsPacket.getLnsAddress(), dnsPacket.toJSONObject());
   }
 
   private static ResultValue fakeResultValue;

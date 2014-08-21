@@ -92,14 +92,14 @@ public class RequestActivesTask extends TimerTask {
 
 
   /**
-   * send request to primary to send actives
+   * Send a request to primary to send actives.
    * @param name name for which actives are requested
    * @param primaryID ID of name server
    * @param requestID requestID for <code>RequestActivesPacket</code>
    */
   private void sendActivesRequestPacketToPrimary(String name, int primaryID, int requestID) {
 
-    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getNodeID(), requestID, primaryID);
+    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getAddress(), requestID, primaryID);
     try
     {
       JSONObject sendJson = packet.toJSONObject();

@@ -73,7 +73,7 @@ public class GnsReconLookup {
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       if (!recovery) {
-        gnsApp.getNioServer().sendToID(dnsPacket.getLnsId(), dnsPacket.toJSONObject());
+        gnsApp.getNioServer().sendToAddress(dnsPacket.getLnsAddress(), dnsPacket.toJSONObject());
       }
     } else {
       // First we do signature and ACL checks
@@ -106,10 +106,10 @@ public class GnsReconLookup {
         dnsPacket.getHeader().setResponseCode(errorCode);
         dnsPacket.setResponder(gnsApp.getNodeID());
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("Sending to " + dnsPacket.getLnsId() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+          GNS.getLogger().fine("Sending to " + dnsPacket.getLnsAddress() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
         }
         if (!recovery) {
-          gnsApp.getNioServer().sendToID(dnsPacket.getLnsId(), dnsPacket.toJSONObjectForErrorResponse());
+          gnsApp.getNioServer().sendToAddress(dnsPacket.getLnsAddress(), dnsPacket.toJSONObjectForErrorResponse());
         }
       } else {
         // All signature and ACL checks passed see if we can find the field to return;
@@ -147,7 +147,7 @@ public class GnsReconLookup {
         // Time to send something back to the client
         dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
         if (!recovery) {
-          gnsApp.getNioServer().sendToID(dnsPacket.getLnsId(), dnsPacket.toJSONObject());
+          gnsApp.getNioServer().sendToAddress(dnsPacket.getLnsAddress(), dnsPacket.toJSONObject());
         }
       }
     }

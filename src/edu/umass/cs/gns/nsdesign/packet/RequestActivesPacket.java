@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.JSONUtils;
+import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +28,9 @@ public class RequestActivesPacket extends BasicPacket {
 
   public static final String NAME = "name";
   public static final String ACTIVES = "actives";
-  public static final String LNSID = "lnsid";
+  //public static final String LNSID = "lnsid";
+  private final static String LNS_ADDRESS = "lnsAddress";
+  private final static String LNS_PORT = "lnsPort";
   public static final String LNS_REQ_ID = "lnsreqid";
   public static final String NSID = "nsid";
 
@@ -36,11 +39,16 @@ public class RequestActivesPacket extends BasicPacket {
    */
   private String name;
 
+//  /**
+//   * Local name server sending the request.
+//   */
+//  private int lnsID;
+  
   /**
    * Local name server sending the request.
+   * Replaces lnsId.
    */
-  private int lnsID;
-
+  private InetSocketAddress lnsAddress = null;
 
   /**
    * Name server that received request from LNS.
@@ -58,10 +66,11 @@ public class RequestActivesPacket extends BasicPacket {
    */
   private int lnsRequestID;
 
-  public RequestActivesPacket(String name, int lnsID, int lnsRequestID, int nsID) {
+  public RequestActivesPacket(String name, InetSocketAddress lnsAddress, int lnsRequestID, int nsID) {
     this.name = name;
     this.type = PacketType.REQUEST_ACTIVES;
-    this.lnsID = lnsID;
+    //this.lnsID = lnsID;
+    this.lnsAddress = lnsAddress;
     this.lnsRequestID = lnsRequestID;
     this.nsID = nsID;
   }
@@ -70,7 +79,8 @@ public class RequestActivesPacket extends BasicPacket {
     this.name = json.getString(NAME);
     this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVES));
     this.type = PacketType.REQUEST_ACTIVES;
-    this.lnsID = json.getInt(LNSID);
+    //this.lnsID = json.getInt(LNSID);
+    this.lnsAddress = new InetSocketAddress(json.getString(LNS_ADDRESS), json.getInt(LNS_PORT));
     this.lnsRequestID = json.getInt(LNS_REQ_ID);
     this.nsID = json.getInt(NSID);
   }
@@ -81,7 +91,9 @@ public class RequestActivesPacket extends BasicPacket {
     json.put(NAME, name);
     json.put(ACTIVES, new JSONArray(activeNameServers));
     Packet.putPacketType(json, getType());
-    json.put(LNSID, lnsID);
+    //json.put(LNSID, lnsID);
+    json.put(LNS_ADDRESS, lnsAddress.getHostString());
+    json.put(LNS_PORT, lnsAddress.getPort());
     json.put(LNS_REQ_ID, lnsRequestID);
     json.put(NSID, nsID);
     return json;
@@ -99,8 +111,11 @@ public class RequestActivesPacket extends BasicPacket {
     return activeNameServers;
   }
 
-  public int getLNSID() {
-    return lnsID;
+//  public int getLNSID() {
+//    return lnsID;
+//  }
+  public InetSocketAddress getLnsAddress() {
+    return lnsAddress;
   }
 
   public int getLnsRequestID() {

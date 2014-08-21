@@ -16,8 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.*;
 
 /**
@@ -96,22 +96,22 @@ public class TESTLocalNameServer {
     DNSPacket dnsPacket = new DNSPacket(json);
     dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
-    send(nodeID, dnsPacket.getLnsId(), dnsPacket.toJSONObjectForErrorResponse(), getDelay());
+    send(nodeID, dnsPacket.getLnsAddress(), dnsPacket.toJSONObjectForErrorResponse(), getDelay());
   }
 
   public static void handleRequestActives(int nodeID, JSONObject json) throws JSONException, IOException {
     RequestActivesPacket requestActives = new RequestActivesPacket(json);
     requestActives.setActiveNameServers(getActiveNameServers(requestActives.getName()));
-    send(nodeID, requestActives.getLNSID(), requestActives.toJSONObject(), getDelay());
+    send(nodeID, requestActives.getLnsAddress(), requestActives.toJSONObject(), getDelay());
   }
 
-  private static void send(final int nsID, final int lnsID, final JSONObject json, long delay) {
+  private static void send(final int nsID, final InetSocketAddress lnsAddress, final JSONObject json, long delay) {
     if (delay > 0) {
       t.schedule(new TimerTask() {
         @Override
         public void run() {
           try {
-            nsNiots.get(nsID).sendToID(lnsID, json);
+            nsNiots.get(nsID).sendToAddress(lnsAddress, json);
           } catch (IOException e) {
             e.printStackTrace();
           }
@@ -119,7 +119,7 @@ public class TESTLocalNameServer {
       }, delay);
     } else {
       try {
-        nsNiots.get(nsID).sendToID(lnsID, json);
+        nsNiots.get(nsID).sendToAddress(lnsAddress, json);
       } catch (IOException e) {
         e.printStackTrace();
       }

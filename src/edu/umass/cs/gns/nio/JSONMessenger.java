@@ -15,6 +15,7 @@ import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType>
  */
 /*
  * This class is separate in order to separate communication from the

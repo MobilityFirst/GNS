@@ -36,7 +36,7 @@ public class LookupActives {
         isError = true;
       } else { // send reply to client
         packet.setActiveNameServers(rcRecord.getActiveNameservers());
-        replicaController.getNioServer().sendToID(packet.getLNSID(), packet.toJSONObject());
+        replicaController.getNioServer().sendToAddress(packet.getLnsAddress(), packet.toJSONObject());
         GNS.getLogger().fine("Sent actives for " + packet.getName() + " Actives = " + rcRecord.getActiveNameservers());
       }
     } catch (RecordNotFoundException e) {
@@ -48,7 +48,7 @@ public class LookupActives {
 
     if (isError) {
       packet.setActiveNameServers(null);
-      replicaController.getNioServer().sendToID(packet.getLNSID(), packet.toJSONObject());
+      replicaController.getNioServer().sendToAddress(packet.getLnsAddress(), packet.toJSONObject());
         GNS.getLogger().fine("Error: Record does not exist for " + packet.getName());
     }
   }

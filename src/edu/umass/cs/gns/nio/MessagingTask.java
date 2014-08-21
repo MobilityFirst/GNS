@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.nio;
 
+import java.net.InetSocketAddress;
+
 /**
 @author V. Arun
  */
@@ -16,13 +18,13 @@ package edu.umass.cs.gns.nio;
  */
 public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 
-	public final int[] recipients;
+	public final Object[] recipients;
 	public final Object[] msgs;
 	
 	// Unicast
 	public MessagingTask(int destID, Object pkt) {
 		assert(pkt!=null) : "Incorrect usage: MessagingTask should not be instantiated with no messages";
-		this.recipients = new int[1];
+		this.recipients = new Integer[1];
 		this.recipients[0] = destID;
 		
 		this.msgs = new Object[pkt==null?0:1];
@@ -31,7 +33,7 @@ public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 	// Multicast
 	public MessagingTask(int[] destIDs, Object pkt) {
 		assert(pkt!=null && destIDs!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages or destinations";
-		this.recipients = destIDs;
+		this.recipients = toObject(destIDs);
 		this.msgs = new Object[pkt==null?0:1];
 		if(pkt!=null) msgs[0] = pkt;
 	}
@@ -39,7 +41,7 @@ public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 	public MessagingTask(int destID, Object[] pkts) {
 		assert(pkts!=null && pkts.length>0 && pkts[0]!=null) : "Incorrect usage: MessagingTask should not be instantiated with no messages";
 
-		this.recipients = new int[1];
+		this.recipients = new Integer[1];
 		this.recipients[0] = destID;
 		this.msgs = pkts==null ? new Object[0] : pkts;
 	}
@@ -52,8 +54,18 @@ public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 		assert(pkts!=null && destIDs!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages or destinations";
 		for(Object obj : pkts) assert(obj!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages";
 
-		this.recipients = (destIDs==null ? new int[0] : destIDs);
+		this.recipients = (destIDs==null ? new Integer[0] : toObject(destIDs));
 		this.msgs = pkts==null ? new Object[0] : pkts;
+	}
+        
+        // Unicast to addresses... all we need for now.
+        public MessagingTask(InetSocketAddress destID, Object pkt) {
+		assert(pkt!=null) : "Incorrect usage: MessagingTask should not be instantiated with no messages";
+		this.recipients = new InetSocketAddress[1];
+		this.recipients[0] = destID;
+		
+		this.msgs = new Object[pkt==null?0:1];
+		if(pkt!=null) msgs[0] = pkt;
 	}
 	
 	public boolean isEmpty() {
@@ -100,6 +112,17 @@ public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 		if(msgs.length>1) s+="\n]";
 		return s;
 	}
+        
+        public static Integer[] toObject(int[] intArray) {
+ 
+		Integer[] result = new Integer[intArray.length];
+		for (int i = 0; i < intArray.length; i++) {
+			result[i] = Integer.valueOf(intArray[i]);
+		}
+		return result;
+ 
+	}
+ 
 
 	/**
 	 * @param args
