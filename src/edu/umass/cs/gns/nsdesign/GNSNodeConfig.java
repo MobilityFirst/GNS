@@ -326,16 +326,16 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   /**
-   * Returns the TCP port of a Local Nameserver
+   * Returns the TCP port of a Local Nameserver. Deprecated.
    *
    * @param id Nameserver id
    * @return the stats port for a nameserver
    */
+  @Deprecated // replaced with GNS.DEFAULT_LNS_TCP_PORT
   public int getLNSTcpPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_TCP_PORT.getOffset();
-  }
-
+    return GNS.DEFAULT_LNS_TCP_PORT;
+  }       
+  
   /**
    * Returns the UDP port of a Local Nameserver
    *
@@ -402,9 +402,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * @param id
    * @return the port
    */
+  @Deprecated
   public int getLNSPingPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_PING_PORT.getOffset();
+    return GNS.DEFAULT_LNS_PING_PORT;
   }
 
   /**
@@ -428,7 +428,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     if (isNameServer(id)) {
       return getNSPingPort(id);
     } else {
-      return getLNSPingPort(id);
+      return GNS.DEFAULT_LNS_PING_PORT;
     }
   }
 
@@ -480,8 +480,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     if (this.isNameServer(ID)) {
       return this.getNSTcpPort(ID);
     }
-    return this.getLNSTcpPort(ID);
-  }
+    return GNS.DEFAULT_LNS_TCP_PORT;   }
 
   /**
    * Returns the Name Server (not including Local Name Servers) with lowest latency.

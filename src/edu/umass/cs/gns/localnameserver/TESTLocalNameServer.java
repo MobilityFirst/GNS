@@ -16,6 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.*;
 
 /**
@@ -33,7 +35,7 @@ public class TESTLocalNameServer {
     GNS.fileLoggingLevel = GNS.consoleOutputLevel = "SEVERE";
     StartLocalNameServer.experimentMode = false;
     StartLocalNameServer.debugMode = false;
-    StartLocalNameServer.startLNSConfigFile(8, configFile, null, null, null);
+    StartLocalNameServer.startLNSConfigFile(8, InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null, null);
 
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, 0);
 

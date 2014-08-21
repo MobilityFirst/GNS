@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,7 +16,10 @@ public class LNSToNSCommandPacket extends BasicPacket {
   private final static String REQUESTID = "reqID";
   private final static String COMMAND = "command";
   private final static String RETURNVALUE = "returnValue";
-  private final static String LNSID = "lnsid";
+  //private final static String LNSID = "lnsid";
+  // these two replace LNSID
+  private final static String LNSADDRESS = "lnsAddress";
+  private final static String LNSPORT = "lnsPort";
 
   /**
    * Identifier of the request.
@@ -27,7 +31,11 @@ public class LNSToNSCommandPacket extends BasicPacket {
    */
   private final JSONObject command;
   private String returnValue;
-  private final int lnsID; // the local name server handling this request
+  //private final int lnsID; // the local name server handling this request
+  /**
+   * The address of the local name server handling this request.
+   */
+  private final InetSocketAddress lnsAddress;
   
 
   /**
@@ -35,19 +43,18 @@ public class LNSToNSCommandPacket extends BasicPacket {
    * @param requestId
    * @param command
    */
-  public LNSToNSCommandPacket(int requestId, int lns, JSONObject command) {
+  public LNSToNSCommandPacket(int requestId, InetSocketAddress lnsAddress, JSONObject command) {
     this.setType(PacketType.LNS_TO_NS_COMMAND);
     this.requestId = requestId;
-    this.lnsID = lns;
+    this.lnsAddress = lnsAddress;
     this.command = command;
     this.returnValue = null; // only set when the packet is ready to send back
-
   }
 
   public LNSToNSCommandPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.requestId = json.getInt(REQUESTID);
-    this.lnsID = json.getInt(LNSID);
+    this.lnsAddress = new InetSocketAddress(json.getString(LNSADDRESS), json.getInt(LNSPORT));
     this.command = json.getJSONObject(COMMAND);
     this.returnValue = json.has(RETURNVALUE) ? json.optString(RETURNVALUE, null) : null;
   }
@@ -63,7 +70,8 @@ public class LNSToNSCommandPacket extends BasicPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(REQUESTID, this.requestId);
-    json.put(LNSID, lnsID);
+    json.put(LNSADDRESS, lnsAddress.getHostString());
+    json.put(LNSPORT, lnsAddress.getPort());
     json.put(COMMAND, this.command);
     if (returnValue != null) {
       json.put(RETURNVALUE, returnValue);
@@ -75,14 +83,15 @@ public class LNSToNSCommandPacket extends BasicPacket {
     return requestId;
   }
 
-  public static String getLNSID() {
-    return LNSID;
-  }
+//  @Deprecated
+//  public int getLnsID() {
+//    return lnsID;
+//  }
 
-  public int getLnsID() {
-    return lnsID;
+  public InetSocketAddress getLnsAddress() {
+    return lnsAddress;
   }
-
+  
   public JSONObject getCommand() {
     return command;
   }

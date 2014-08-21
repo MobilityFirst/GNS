@@ -81,7 +81,13 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   /**
    * Name Server ID *
    */
+  @Deprecated
   private final int nodeID;
+  
+  /**
+   * Host address of the local name server.
+   */
+  private final InetSocketAddress nodeAddress;
 
   /**
    * Instrumentation: Keep track of the number of requests coming in.
@@ -89,9 +95,10 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   long receivedRequests = 0;
   long lastRequestTime = -1;
 
-  public BasicClientRequestHandler(int nodeID, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
+  public BasicClientRequestHandler(int nodeID, InetSocketAddress nodeAddress, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
     this.nodeID = nodeID;
+    this.nodeAddress = nodeAddress;
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -129,8 +136,13 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   }
 
   @Override
+  @Deprecated
   public int getNodeID() {
     return nodeID;
+  }
+
+  public InetSocketAddress getNodeAddress() {
+    return nodeAddress;
   }
 
   @Override

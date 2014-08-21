@@ -86,7 +86,8 @@ public class Admintercessor {
 
     GNS.getLogger().info("Local server id: " + localServerID
             + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
-            + " Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
+            + " Port: " + GNS.DEFAULT_LNS_TCP_PORT);
+            //+ " Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
   }
 
   /**

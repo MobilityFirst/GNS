@@ -23,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,9 +40,11 @@ public class LocalNameServer {
   /**
    * Local Name Server ID *
    */
+  @Deprecated
   private static int nodeID;
-
   
+  private static InetSocketAddress address; // will replace nodeId
+
   // FIXME: Future code cleanup note: The ClientRequestHandlerInterface and the IntercessorInterface
   // are closely related. Both encapsulate some functionality in the LocalNameServer that we might want to 
   // be able to abstract out (maybe to a Nameserver someday). There should be a way to combine them further.
@@ -81,10 +84,11 @@ public class LocalNameServer {
    * @param nodeID Local Name Server Id
    * @throws IOException
    */
-  public LocalNameServer(int nodeID, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
+  public LocalNameServer(int nodeID, InetSocketAddress address, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
     // set node ID first because constructor for BasicClientRequestHandler reads 'nodeID' value.
-    LocalNameServer.nodeID = nodeID;
+    this.nodeID = nodeID;
+    this.address = address; // replaces id
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
             StartLocalNameServer.experimentMode,
@@ -99,7 +103,7 @@ public class LocalNameServer {
             StartLocalNameServer.replicationFramework
     );
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    requestHandler = new BasicClientRequestHandler(nodeID, gnsNodeConfig, parameters);
+    requestHandler = new BasicClientRequestHandler(nodeID, address, gnsNodeConfig, parameters);
 
     if (!parameters.isExperimentMode()) {
       // intercessor for regular GNS use
@@ -145,10 +149,20 @@ public class LocalNameServer {
   /**
    * @return the nodeID
    */
+  @Deprecated
   public static int getNodeID() {
     return nodeID;
   }
 
+  /**
+   * Returns the host address of this LN server.
+   * 
+   * @return 
+   */
+  public static InetSocketAddress getAddress() {
+    return address;
+  }
+  
   /**
    * Should really only be used for testing code.
    * 

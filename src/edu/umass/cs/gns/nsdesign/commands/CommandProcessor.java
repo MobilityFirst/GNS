@@ -22,6 +22,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import java.net.InetSocketAddress;
 
 /**
  *
@@ -35,9 +36,9 @@ public class CommandProcessor {
   public static void processCommandPacket(LNSToNSCommandPacket packet, GnsReconfigurableInterface gnsReconfigurable) throws IOException, JSONException{
     String returnValue = processCommand(packet.getCommand(), gnsReconfigurable);
     packet.setReturnValue(returnValue);
-     GNS.getLogger().info("NS" + gnsReconfigurable.getNodeID() + " sending back to LNS " + packet.getLnsID()
+     GNS.getLogger().info("NS" + gnsReconfigurable.getNodeID() + " sending back to LNS " + packet.getLnsAddress()
              + " command result: " + returnValue );
-    gnsReconfigurable.getNioServer().sendToID(packet.getLnsID(), packet.toJSONObject());
+    gnsReconfigurable.getNioServer().sendToAddress(packet.getLnsAddress(), packet.toJSONObject());
   }
   
   public static String processCommand(JSONObject json, GnsReconfigurableInterface gnsReconfigurable) {

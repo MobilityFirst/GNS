@@ -11,6 +11,7 @@ import org.apache.commons.cli.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,7 +28,10 @@ public class StartLocalNameServer {
           "experiments and can be ignored otherwise.";
   public static final String HELP_FOOTER = "";
   public static final String CONFIG_FILE = "configFile";
+  @Deprecated
   public static final String ID = "id";
+  public static final String ADDRESS = "address";
+  public static final String PORT = "port";
   public static final String NS_FILE = "nsfile";
   public static final String LNS_FILE = "lnsfile";
   public static final String CACHE_SIZE = "cacheSize";
@@ -186,6 +190,12 @@ public class StartLocalNameServer {
     Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
             .withDescription("Node id")
             .create(ID);
+     Option address = OptionBuilder.withArgName("address").hasArg()
+            .withDescription("Address")
+            .create(ADDRESS);
+      Option port = OptionBuilder.withArgName("port").hasArg()
+            .withDescription("Port")
+            .create(PORT);
 
     Option nsFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("File with node configuration of all name servers")
@@ -247,6 +257,8 @@ public class StartLocalNameServer {
     commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(nodeId);
+    commandLineOptions.addOption(address);
+    commandLineOptions.addOption(port);
     commandLineOptions.addOption(nsFile);
     commandLineOptions.addOption(lnsFile);
     commandLineOptions.addOption(regularWorkload);
@@ -310,7 +322,8 @@ public class StartLocalNameServer {
   /*
    * Sample invocation
    * 
-   java -Xmx2g -cp ../../build/jars/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer  -id 3 -nsfile name-server-info 
+   java -Xmx2g -cp ../../build/jars/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer -address 127.0.0.1 -port 24398
+   -nsfile name-server-info 
    -cacheSize 10000 -primary 3 -location -vInterval 1000 -chooseFromClosestK 1 -lookupRate 10000 
    -updateRateMobile 0 -updateRateRegular 10000 -maxQueryWaitTime 100000 -queryTimeout 100
    -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO
@@ -325,12 +338,12 @@ public class StartLocalNameServer {
    */
   public static void main(String[] args) {
     // all parameters will be specified in the arg list
-    startLNS(0, null, null, args);
+    startLNS(0, null, -1, null, null, args);
   }
 
   // supports old style single name-server-info style as nsFile with lnsFile being null
   // as well as new format where the NSs are in nsFile and the LNSs are in lnsFile
-  public static void startLNS(int id, String nsFile, String lnsFile, String... args) {
+  public static void startLNS(int id, String address, int port, String nsFile, String lnsFile, String... args) {
     try {
       CommandLine parser = null;
       try {
@@ -351,7 +364,7 @@ public class StartLocalNameServer {
         configFile = parser.getOptionValue(CONFIG_FILE);
       }
 
-      startLNSConfigFile(id, nsFile, lnsFile, configFile, parser);
+      startLNSConfigFile(id, address, port, nsFile, lnsFile, configFile, parser);
     } catch (Exception e1) {
       e1.printStackTrace();
       printUsage();
@@ -365,12 +378,14 @@ public class StartLocalNameServer {
    * sufficient to start local name server; <code>CommandLine</code> can be null. Values of id and nsFile will not be
    * used, if config file also contains values of these parameters.
    *
-   * @param id ID of local name server
+   * @param id ID of local name server (GOING AWAY)
+   * @param address // replaces id
    * @param nsFile node config file (can be null)
+   * @param lnsFile
    * @param configFile config file with parameters (can be null)
    * @param parser command line arguments (can be null)
    */
-  public static void startLNSConfigFile(int id, String nsFile, String lnsFile, String configFile, CommandLine parser) {
+  public static void startLNSConfigFile(int id, String address, int port, String nsFile, String lnsFile, String configFile, CommandLine parser) {
     try {
 
       // create a hash map with all options including options in config file and the command line arguments
@@ -412,6 +427,14 @@ public class StartLocalNameServer {
       if (allValues.containsKey(ID)) {
         id = Integer.parseInt(allValues.get(ID));
       }
+      if (allValues.containsKey(ADDRESS)) {
+        address = allValues.get(ADDRESS);
+      }
+      
+      if (allValues.containsKey(PORT)) {
+        port = Integer.parseInt(allValues.get(PORT));
+      }
+      
       if (allValues.containsKey(NS_FILE)) {
         nsFile = allValues.get(NS_FILE);
       }
@@ -514,7 +537,9 @@ public class StartLocalNameServer {
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     Date date = new Date();
     GNS.getLogger().info("Date: " + dateFormat.format(date));
-    GNS.getLogger().info("Id: " + id);
+    GNS.getLogger().info("Id (DEPRECATED): " + id);
+    GNS.getLogger().info("Address: " + address);
+    GNS.getLogger().info("Port: " + port);
     GNS.getLogger().info("NS File: " + nsFile);
     GNS.getLogger().info("LNS File: " + lnsFile);
     GNS.getLogger().info("Regular Workload Size: " + regularWorkloadSize);
@@ -542,7 +567,7 @@ public class StartLocalNameServer {
       ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
 
       //Start local name server
-      new LocalNameServer(id, gnsNodeConfig);
+      new LocalNameServer(id, new InetSocketAddress(address, port), gnsNodeConfig);
     } catch (Exception e) {
       e.printStackTrace();
     }

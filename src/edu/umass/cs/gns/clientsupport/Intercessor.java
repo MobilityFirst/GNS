@@ -104,7 +104,8 @@ public class Intercessor implements IntercessorInterface {
 
     GNS.getLogger().info("Local server id: " + localServerID
             + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
-            + " LNS TCP Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
+            + " LNS TCP Port: " + GNS.DEFAULT_LNS_TCP_PORT);
+            //+ " LNS TCP Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
   }
 
   /**
