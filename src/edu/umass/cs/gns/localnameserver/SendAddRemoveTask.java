@@ -158,22 +158,20 @@ public class SendAddRemoveTask extends TimerTask {
   }
 
 
-  // This code screams for using a super class other than BasicPacket
+  // Special case code like this screams for using a super class other than BasicPacket
   private void updatePacketWithRequestID(BasicPacket packet, int requestID) {
-
     switch (packet.getType()) {
       case ADD_RECORD:
         AddRecordPacket addRecordPacket = (AddRecordPacket) packet;
         addRecordPacket.setLNSRequestID(requestID);
-        addRecordPacket.setLocalNameServerID(handler.getNodeID());
+        addRecordPacket.setLnsAddress(handler.getNodeAddress());
         break;
       case REMOVE_RECORD:
         RemoveRecordPacket removeRecordPacket = (RemoveRecordPacket) packet;
         removeRecordPacket.setLNSRequestID(requestID);
-        removeRecordPacket.setLocalNameServerID(handler.getNodeID());
+        removeRecordPacket.setLnsAddress(handler.getNodeAddress());
         break;
     }
-
   }
 
   /**

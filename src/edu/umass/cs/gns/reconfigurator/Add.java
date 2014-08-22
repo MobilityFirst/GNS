@@ -52,7 +52,7 @@ public class Add {
 		boolean addedAtReplicaController= false;
 
 		if (Config.debuggingEnabled) log.fine("Executing ADD at replica controller " + addRecordPacket +
-				" Local name server ID = " + addRecordPacket.getLocalNameServerID());
+				" Local name server address = " + addRecordPacket.getLnsAddress());
 		
 		// FIXME: earlier version removed record if recovery. Unclear why we shouldn't just try and fail.
 		//if (recovery) ReplicaControllerRecord.removeNameRecordPrimary(replicaController.getDB(), addRecordPacket.getName());
@@ -66,15 +66,15 @@ public class Add {
 			// send ERROR to LNS
 			ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
 			if (colocatedActiveAndReplicaController(addRecordPacket, rcID)) {
-				LNSMTask = new MessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+				LNSMTask = new MessagingTask(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
 			}
 		} catch (RecordExistsException e) {
 			if (addRecordPacket.getNameServerID() == rcID) {
 				// send ERROR to LNS
 				ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
 				if (Config.debuggingEnabled) log.fine("Record exists. sending failure: name = " + addRecordPacket.getName() + 
-						" Local name server ID = " + addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
-				LNSMTask = new MessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+						" Local name server address = " + addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
+				LNSMTask = new MessagingTask(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
 			}
 		}
 
@@ -87,9 +87,9 @@ public class Add {
 			// send NO_ERROR confirmation to LNS
 			if (colocatedActiveAndReplicaController(addRecordPacket, rcID)) { // FIXME: Why is this check needed?
 				ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
-				if (Config.debuggingEnabled) log.fine("Add complete informing client. " + addRecordPacket + " LocalNameServerID = " +
-						addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
-				LNSMTask = new MessagingTask(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+				if (Config.debuggingEnabled) log.fine("Add complete informing client. " + addRecordPacket + " LocalNameServer address = " +
+						addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
+				LNSMTask = new MessagingTask(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
 			}
 		}
 		

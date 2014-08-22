@@ -106,7 +106,7 @@ public class Remove {
 		} finally {
 			if (sendError && removeRecord.getNameServerID() == rcID) {
 				ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
-				replyToLNS = new MessagingTask(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
+				replyToLNS = new MessagingTask(removeRecord.getLnsAddress(), failPacket.toJSONObject());
 			}
 		}
 		return !recovery ? replyToLNS.toArray() : null;
@@ -152,9 +152,9 @@ public class Remove {
 		if (removeRecordPacket.getNameServerID() == rcID) { // this will be true at the replica controller who
 			// first received the client's request
 			ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
-			replyToLNS = new MessagingTask(removeRecordPacket.getLocalNameServerID(), confirmPacket.toJSONObject());
+			replyToLNS = new MessagingTask(removeRecordPacket.getLnsAddress(), confirmPacket.toJSONObject());
 			if (Config.debuggingEnabled) log.fine("Remove record response sent to LNS: " + removeRecordPacket.getName() + " lns "
-					+ removeRecordPacket.getLocalNameServerID());
+					+ removeRecordPacket.getLnsAddress());
 		}
 		return replyToLNS.toArray();
 	}

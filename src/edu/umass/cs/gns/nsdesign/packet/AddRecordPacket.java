@@ -8,6 +8,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
+import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,14 +32,14 @@ import java.util.Set;
  * <code>ConfirmUpdateLNSPacket</code>. But it uses fields in this packet in sending the reply.
  *
  */
-public class AddRecordPacket extends BasicPacket {
+public class AddRecordPacket extends BasicPacketWithLnsAddress {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
   private final static String RECORDKEY = "recordkey";
   private final static String VALUE = "value";
-  private final static String LOCALNAMESERVERID = "localID";
+  //private final static String LOCALNAMESERVERID = "localID";
   private final static String NAMESERVER_ID = "ns_ID";
   private final static String SOURCE_ID = "sourceId"; 
   private final static String TIME_TO_LIVE = "ttlAddress";
@@ -63,27 +64,27 @@ public class AddRecordPacket extends BasicPacket {
   /**
    * Host/domain/device name *
    */
-  private String name;
+  private final String name;
 
   /**
    * The key of the value key pair. *
    */
-  private String recordKey;
+  private final String recordKey;
 
   /**
    * the value *
    */
-  private ResultValue value;
+  private final ResultValue value;
 
   /**
    * Time interval (in seconds) that the record may be cached before it should be discarded
    */
-  private int ttl;
+  private final int ttl;
 
-  /**
-   * Id of local nameserver handling this request *
-   */
-  private int localNameServerID;
+//  /**
+//   * Id of local nameserver handling this request *
+//   */
+//  private int localNameServerID;
 
   /**
    * ID of name server receiving the message.
@@ -93,7 +94,7 @@ public class AddRecordPacket extends BasicPacket {
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
-  private int sourceId;
+  private final int sourceId;
 
   /**
    * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
@@ -110,21 +111,23 @@ public class AddRecordPacket extends BasicPacket {
    * We can also change the <code>localNameServerID</code> field in this packet by calling
    * <code>setLocalNameServerID</code>.
    *
+   * @param sourceId
    * @param requestID Unique identifier used by the entity making the initial request to confirm
    * @param name   Host/domain/device name
    * @param recordKey The initial key that will be stored in the name record.
    * @param value The inital value of the key that is specified.
-   * @param localNameServerID Id of local nameserver sending this request.
+   * @param lnsAddress
    * @param ttl TTL of name record.
    */
-  public AddRecordPacket(int sourceId, int requestID, String name, String recordKey, ResultValue value, int localNameServerID, int ttl) {
+  public AddRecordPacket(int sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
+    super(lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestID;
     this.recordKey = recordKey;
     this.name = name;
     this.value = value;
-    this.localNameServerID = localNameServerID;
+    //this.localNameServerID = localNameServerID;
     this.ttl = ttl;
     this.nameServerID = -1;
     this.activeNameSevers = null;
@@ -137,12 +140,12 @@ public class AddRecordPacket extends BasicPacket {
    * @throws org.json.JSONException
    */
   public AddRecordPacket(JSONObject json) throws JSONException {
+    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
     }
-
     this.type = Packet.getPacketType(json);
     this.sourceId = json.getInt(SOURCE_ID);
     this.requestID = json.getInt(REQUESTID);
@@ -150,7 +153,7 @@ public class AddRecordPacket extends BasicPacket {
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
-    this.localNameServerID = json.getInt(LOCALNAMESERVERID);
+    //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.ttl = json.getInt(TIME_TO_LIVE);
     this.nameServerID = json.getInt(NAMESERVER_ID);
     if (json.has(ACTIVE_NAMESERVERS)) {
@@ -168,13 +171,14 @@ public class AddRecordPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    super.addToJSONObject(json);
     json.put(SOURCE_ID, getSourceId());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
     json.put(VALUE, new JSONArray(getValue()));
-    json.put(LOCALNAMESERVERID, getLocalNameServerID());
+    //json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(TIME_TO_LIVE, getTTL());
     json.put(NAMESERVER_ID, getNameServerID());
     if (getActiveNameSevers() != null)
@@ -223,16 +227,16 @@ public class AddRecordPacket extends BasicPacket {
     return value;
   }
 
-  /**
-   * @return the local name server ID that sent this request.
-   */
-  public int getLocalNameServerID() {
-    return localNameServerID;
-  }
-
-  public void setLocalNameServerID(int localNameServerID1) {
-    localNameServerID = localNameServerID1;
-  }
+//  /**
+//   * @return the local name server ID that sent this request.
+//   */
+//  public int getLocalNameServerID() {
+//    return localNameServerID;
+//  }
+//
+//  public void setLocalNameServerID(int localNameServerID1) {
+//    localNameServerID = localNameServerID1;
+//  }
 
   /**
    * @return the ttl

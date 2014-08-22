@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,12 +22,12 @@ import org.json.JSONObject;
  * But it uses fields in this packet in sending the reply.
  *
  */
-public class RemoveRecordPacket extends BasicPacket {
+public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
-  private final static String LOCALNAMESERVERID = "local";
+  //private final static String LOCALNAMESERVERID = "local";
   private final static String NAME_SERVER_ID = "nsID";
   private final static String SOURCE_ID = "sourceId";
    /**
@@ -48,12 +49,12 @@ public class RemoveRecordPacket extends BasicPacket {
   /**
    * Host/domain/device name *
    */
-  private String name;
+  private final String name;
 
-  /**
-   * Id of local nameserver sending this request *
-   */
-  private int localNameServerID;
+//  /**
+//   * Id of local nameserver sending this request *
+//   */
+//  private int localNameServerID;
 
 
   /**
@@ -64,7 +65,7 @@ public class RemoveRecordPacket extends BasicPacket {
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
-  private int sourceId;
+  private final int sourceId;
 
 
   /**
@@ -73,14 +74,15 @@ public class RemoveRecordPacket extends BasicPacket {
    * @param sourceId the originator of this packet (either a server Id or -1 to indicate The intercessor)
    * @param requestId  Unique identifier used by the entity making the initial request to confirm
    * @param name Host/domain/device name
-   * @param localNameServerID Id of local nameserver sending this request.
+   * @param lnsAddress
    */
-  public RemoveRecordPacket(int sourceId, int requestId, String name, int localNameServerID) {
+  public RemoveRecordPacket(int sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
+    super(lnsAddress);
     this.type = Packet.PacketType.REMOVE_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestId;
     this.name = name;
-    this.localNameServerID = localNameServerID;
+    //this.localNameServerID = localNameServerID;
     this.nameServerID = -1; // this field will be set by name server after it received the packet
   }
 
@@ -91,17 +93,17 @@ public class RemoveRecordPacket extends BasicPacket {
    * @throws org.json.JSONException
    */
   public RemoveRecordPacket(JSONObject json) throws JSONException {
+    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
     }
-
     this.type = Packet.getPacketType(json);
     this.sourceId = json.getInt(SOURCE_ID);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
-    this.localNameServerID = json.getInt(LOCALNAMESERVERID);
+    //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.nameServerID = json.getInt(NAME_SERVER_ID);
   }
 
@@ -115,11 +117,12 @@ public class RemoveRecordPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    super.addToJSONObject(json);
     json.put(SOURCE_ID, getSourceId());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(NAME, getName());
-    json.put(LOCALNAMESERVERID, getLocalNameServerID());
+    //json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(NAME_SERVER_ID, getNameServerID());
     return json;
   }
@@ -144,17 +147,17 @@ public class RemoveRecordPacket extends BasicPacket {
   }
 
 
-  /**
-   * @return the primaryNameserverId
-   */
-  public int getLocalNameServerID() {
-    return localNameServerID;
-  }
-
-
-  public void setLocalNameServerID(int localNameServerID) {
-    this.localNameServerID = localNameServerID;
-  }
+//  /**
+//   * @return the primaryNameserverId
+//   */
+//  public int getLocalNameServerID() {
+//    return localNameServerID;
+//  }
+//
+//
+//  public void setLocalNameServerID(int localNameServerID) {
+//    this.localNameServerID = localNameServerID;
+//  }
 
 
   public int getNameServerID() {

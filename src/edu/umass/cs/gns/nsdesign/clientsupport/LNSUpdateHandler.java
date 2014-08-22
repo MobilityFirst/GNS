@@ -103,7 +103,7 @@ public class LNSUpdateHandler {
     outStandingUpdates.put(id, id);
     int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
     GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID() + "; Sending add: " + name + " : " + key +"->" + value + " to LNS " + recipientId);
-    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, -1, GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null, GNS.DEFAULT_TTL_SECONDS);
     try {
       activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
     } catch (JSONException e) {
@@ -122,7 +122,7 @@ public class LNSUpdateHandler {
     outStandingUpdates.put(id, id);
     int recipientId = LNSQueryHandler.pickClosestLNServer(activeReplica);
     GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID() + "; Sending remove: " + name + " to LNS " + recipientId);
-    RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, -1);
+    RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, null);
     try {
       activeReplica.getNioServer().sendToID(recipientId, packet.toJSONObject());
     } catch (JSONException e) {

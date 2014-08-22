@@ -41,7 +41,7 @@ class GenerateAddRequest extends TimerTask {
 
     ResultValue newValue = new ResultValue();
     newValue.add(Util.randomString(objectSizeKB));
-    AddRecordPacket packet = new AddRecordPacket(-1, requestCount, name, "EdgeRecord", newValue, -1, ttl);
+    AddRecordPacket packet = new AddRecordPacket(-1, requestCount, name, "EdgeRecord", newValue, null, ttl);
 
     if (activeNameServers != null) packet.setActiveNameSevers(activeNameServers);
 

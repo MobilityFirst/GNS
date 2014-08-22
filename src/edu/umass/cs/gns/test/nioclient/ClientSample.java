@@ -65,7 +65,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         ResultValue rv = new ResultValue();
         rv.add(firstValue);
         AddRecordPacket addRecordPacket = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv,
-                -1, 0);
+                null, 0);
         dbClient.sendRequest(addRecordPacket.toJSONObject());
         waitForResponse();
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
@@ -149,7 +149,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         GNS.getLogger().info("SUCCESS: Name lookup returned updated value");
 
         // remove name
-        RemoveRecordPacket removePacket = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, ++reqCount, name, -1);
+        RemoveRecordPacket removePacket = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, ++reqCount, name, null);
         dbClient.sendRequest(removePacket.toJSONObject());
         waitForResponse();
         confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);

@@ -106,7 +106,7 @@ public class Remove {
     }
     if (removeRecord.getNameServerID() == rc.getNodeID() && sendError & !recovery) {
       ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(respCode, removeRecord);
-      rc.getNioServer().sendToID(removeRecord.getLocalNameServerID(), failPacket.toJSONObject());
+      rc.getNioServer().sendToAddress(removeRecord.getLnsAddress(), failPacket.toJSONObject());
     }
   }
 
@@ -146,9 +146,9 @@ public class Remove {
     if (removeRecordPacket.getNameServerID() == rc.getNodeID() && !recovery) { // this will be true at the replica controller who
       // first received the client's request
       ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
-      rc.getNioServer().sendToID(removeRecordPacket.getLocalNameServerID(), confirmPacket.toJSONObject());
-      if (Config.debuggingEnabled) GNS.getLogger().fine("Remove record response sent to LNS: " + removeRecordPacket.getName() + " lns "
-              + removeRecordPacket.getLocalNameServerID());
+      rc.getNioServer().sendToAddress(removeRecordPacket.getLnsAddress(), confirmPacket.toJSONObject());
+      if (Config.debuggingEnabled) GNS.getLogger().fine("Remove record response sent to LNS: " 
+              + removeRecordPacket.getName() + " lns " + removeRecordPacket.getLnsAddress());
     }
   }
 }

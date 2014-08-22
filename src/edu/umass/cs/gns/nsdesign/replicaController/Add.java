@@ -46,7 +46,7 @@ public class Add {
           throws JSONException, FailedDBOperationException, IOException {
 
     if (Config.debuggingEnabled) GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket +
-            " Local name server ID = " + addRecordPacket.getLocalNameServerID());
+            " Local name server address = " + addRecordPacket.getLnsAddress());
     if (recovery) ReplicaControllerRecord.removeNameRecordPrimary(replicaController.getDB(), addRecordPacket.getName());
 
     ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(), true);
@@ -77,9 +77,9 @@ public class Add {
 
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
         if (Config.debuggingEnabled) GNS.getLogger().fine("Add complete informing client. " + addRecordPacket
-                + " Local name server ID = " + addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
+                + " Local name server address = " + addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
         if (!recovery) {
-          replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+          replicaController.getNioServer().sendToAddress(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
         }
       }
 //    } catch (FailedDBOperationException e) {
@@ -93,10 +93,10 @@ public class Add {
         // send error to client
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
         if (Config.debuggingEnabled)
-          GNS.getLogger().fine("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server ID = " +
-                  addRecordPacket.getLocalNameServerID() + "Response code: " + confirmPkt);
+          GNS.getLogger().fine("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server address = " +
+                  addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
         if (!recovery) {
-          replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
+          replicaController.getNioServer().sendToAddress(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
         }
       }
     } catch (FieldNotFoundException e) {

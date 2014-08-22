@@ -285,7 +285,7 @@ public class Intercessor implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, field, value, localServerID, GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, field, value, LocalNameServer.getAddress(), GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -315,7 +315,7 @@ public class Intercessor implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, id, name, localServerID);
+    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, id, name, LocalNameServer.getAddress());
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);

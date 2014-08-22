@@ -26,7 +26,7 @@ class GenerateRemoveRequest extends TimerTask {
   @Override
   public void run() {
 
-    RemoveRecordPacket packet = new RemoveRecordPacket(-1, requestCount, name, -1);
+    RemoveRecordPacket packet = new RemoveRecordPacket(-1, requestCount, name, null);
 
     try {
       packetDemultiplexer.handleJSONObject(packet.toJSONObject());

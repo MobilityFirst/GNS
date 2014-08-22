@@ -10,7 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Provides the basics for Packets including a type field.
+ * Provides an LNS address to packets. Address can be null.
  *
  * @author westy
  */
@@ -27,6 +27,11 @@ public abstract class BasicPacketWithLnsAddress extends BasicPacket implements P
    */
   private InetSocketAddress lnsAddress = null;
 
+  /**
+   * Creates a BasicPacketWithLnsAddress.
+   *
+   * @param address
+   */
   public BasicPacketWithLnsAddress(InetSocketAddress address) {
     this.lnsAddress = address;
   }
